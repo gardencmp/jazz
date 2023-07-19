@@ -56,20 +56,20 @@ function newTeam() {
     return { node, team, admin, adminID };
 }
 
-function expectTeam(content: CoJsonValue): CoMap<AgentID, Role, {}> {
+function expectTeam(content: CoJsonValue): CoMap<{[key: AgentID]: Role}, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    return content as CoMap<AgentID, Role, {}>;
+    return content as CoMap<{[key: AgentID]: Role}, {}>;
 }
 
-function expectMap(content: CoJsonValue): CoMap<string, string, {}> {
+function expectMap(content: CoJsonValue): CoMap<{[key: string]: string}, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    return content as CoMap<string, string, {}>;
+    return content as CoMap<{[key: string]: string}, {}>;
 }
 
 test("Initial admin can add another admin to a team", () => {

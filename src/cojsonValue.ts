@@ -6,7 +6,7 @@ export type CoValueID<T extends CoValue> = MultiLogID & {
 };
 
 export type CoValue =
-    | CoMap<string, JsonValue, JsonValue>
+    | CoMap<{[key: string]: JsonValue}, JsonValue>
     | CoList<JsonValue, JsonValue>
     | MultiStream<JsonValue, JsonValue>
     | Static<JsonValue>;
@@ -30,49 +30,52 @@ export type MapOpPayload<K extends string, V extends JsonValue> =
       };
 
 export class CoMap<
-    K extends string,
-    V extends JsonValue,
-    Meta extends JsonValue
+    M extends {[key: string]: JsonValue},
+    Meta extends JsonValue,
+    K extends string = keyof M & string,
+    V extends JsonValue = M[K],
+    MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
 > {
-    id: CoValueID<CoMap<K, V, Meta>>;
+    id: CoValueID<CoMap<MM, Meta>>;
     multiLog: MultiLog;
     type: "comap" = "comap";
-    ops: Map<K, MapOp<K, V>[]>;
+    ops: {[KK in K]?: MapOp<K, M[KK]>[]};
 
     constructor(multiLog: MultiLog) {
-        this.id = multiLog.id as CoValueID<CoMap<K, V, Meta>>;
+        this.id = multiLog.id as CoValueID<CoMap<MM, Meta>>;
         this.multiLog = multiLog;
-        this.ops = new Map();
+        this.ops = {};
 
         this.fillOpsFromMultilog();
     }
 
     protected fillOpsFromMultilog() {
         for (const { txID, changes, madeAt } of this.multiLog.getValidSortedTransactions()) {
-            for (const [changeIdx, change] of (
-                changes as MapOpPayload<K, V>[]
+            for (const [changeIdx, changeUntyped] of (
+                changes
             ).entries()) {
-                let entries = this.ops.get(change.key);
+                const change = changeUntyped as MapOpPayload<K, V>
+                let entries = this.ops[change.key];
                 if (!entries) {
                     entries = [];
-                    this.ops.set(change.key, entries);
+                    this.ops[change.key] = entries;
                 }
                 entries.push({
                     txID,
                     madeAt,
                     changeIdx,
-                    ...change,
+                    ...(change as any),
                 });
             }
         }
     }
 
-    keys(): IterableIterator<K> {
-        return this.ops.keys();
+    keys(): K[] {
+        return Object.keys(this.ops) as K[];
     }
 
-    get(key: K): V | undefined {
-        const ops = this.ops.get(key);
+    get<KK extends K>(key: KK): M[KK] | undefined {
+        const ops = this.ops[key];
         if (!ops) {
             return undefined;
         }
@@ -86,8 +89,8 @@ export class CoMap<
         }
     }
 
-    getAtTime(key: K, time: number): V | undefined {
-        const ops = this.ops.get(key);
+    getAtTime<KK extends K>(key: KK, time: number): M[KK] | undefined {
+        const ops = this.ops[key];
         if (!ops) {
             return undefined;
         }
@@ -118,19 +121,21 @@ export class CoMap<
         return json;
     }
 
-    edit(changer: (editable: WriteableCoMap<K, V, Meta>) => void): void {
-        const editable = new WriteableCoMap<K, V, Meta>(this.multiLog);
+    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): void {
+        const editable = new WriteableCoMap<M, Meta>(this.multiLog);
         changer(editable);
     }
 }
 
 export class WriteableCoMap<
-    K extends string,
-    V extends JsonValue,
-    Meta extends JsonValue
-> extends CoMap<K, V, Meta> {
+    M extends {[key: string]: JsonValue},
+    Meta extends JsonValue,
+    K extends string = keyof M & string,
+    V extends JsonValue = M[K],
+    MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
+> extends CoMap<M, Meta, K, V, MM> {
     // TODO: change default to private
-    set(key: K, value: V, privacy: "private" | "trusting" = "trusting"): void {
+    set<KK extends K>(key: KK, value: M[KK], privacy: "private" | "trusting" = "trusting"): void {
         this.multiLog.makeTransaction([
             {
                 op: "insert",
