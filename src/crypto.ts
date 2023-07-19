@@ -3,10 +3,9 @@ import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
 import { JsonValue } from "./jsonValue";
 import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
-import { blake2b } from "@noble/hashes/blake2b";
-import { concatBytes } from "@noble/ciphers/utils";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
+import { MultiLogID, TransactionID } from "./multilog";
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;
@@ -65,57 +64,80 @@ export function getRecipientID(secret: RecipientSecret): RecipientID {
     )}`;
 }
 
-// same construction as libsodium sealed_Uox
-export function sealFor(recipient: RecipientID, message: JsonValue): Sealed {
-    const ephemeralSenderPriv = x25519.utils.randomPrivateKey();
-    const ephemeralSenderPub = x25519.getPublicKey(ephemeralSenderPriv);
-    const recipientPub = base58.decode(
-        recipient.substring("recipient_z".length)
-    );
-    const sharedSecret = x25519.getSharedSecret(
-        ephemeralSenderPriv,
-        recipientPub
-    );
-    const nonce = blake2b(concatBytes(ephemeralSenderPub, recipientPub)).slice(
-        0,
-        24
+type SealedSet = {
+    [recipient: RecipientID]: Sealed;
+};
+
+export function seal(
+    message: JsonValue,
+    from: RecipientSecret,
+    to: Set<RecipientID>,
+    nOnceMaterial: { in: MultiLogID; tx: TransactionID }
+): SealedSet {
+    const nOnce = blake3(
+        textEncoder.encode(stableStringify(nOnceMaterial))
+    ).slice(0, 24);
+
+    const recipientsSorted = Array.from(to).sort();
+    const recipientPubs = recipientsSorted.map((recipient) => {
+        return base58.decode(recipient.substring("recipient_z".length));
+    });
+    const senderPriv = base58.decode(
+        from.substring("recipientSecret_z".length)
     );
 
     const plaintext = textEncoder.encode(stableStringify(message));
 
-    const sealedBox = concatBytes(
-        ephemeralSenderPub,
-        xsalsa20_poly1305(sharedSecret, nonce).encrypt(plaintext)
-    );
+    const sealedSet: SealedSet = {};
 
-    return `sealed_U${base64url.encode(sealedBox)}`;
+    for (let i = 0; i < recipientsSorted.length; i++) {
+        const recipient = recipientsSorted[i];
+        const sharedSecret = x25519.getSharedSecret(
+            senderPriv,
+            recipientPubs[i]
+        );
+
+        const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(
+            plaintext
+        );
+
+        sealedSet[recipient] = `sealed_U${base64url.encode(sealedBytes)}`;
+    }
+
+    return sealedSet;
 }
 
-export function unsealAs(
-    recipientSecret: RecipientSecret,
-    sealed: Sealed
+export function openAs(
+    sealedSet: SealedSet,
+    recipient: RecipientSecret,
+    from: RecipientID,
+    nOnceMaterial: { in: MultiLogID; tx: TransactionID }
 ): JsonValue | undefined {
+    const nOnce = blake3(
+        textEncoder.encode(stableStringify(nOnceMaterial))
+    ).slice(0, 24);
+
+    const recipientPriv = base58.decode(
+        recipient.substring("recipientSecret_z".length)
+    );
+
+    const senderPub = base58.decode(from.substring("recipient_z".length));
+
+    const sealed = sealedSet[getRecipientID(recipient)];
+    console.log("sealed", sealed);
+    if (!sealed) {
+        return undefined;
+    }
+
     const sealedBytes = base64url.decode(sealed.substring("sealed_U".length));
 
-    const ephemeralSenderPub = sealedBytes.slice(0, 32);
-    const recipentPriv = base58.decode(
-        recipientSecret.substring("recipientSecret_z".length)
-    );
-    const recipientPub = x25519.getPublicKey(recipentPriv);
-    const sharedSecret = x25519.getSharedSecret(
-        recipentPriv,
-        ephemeralSenderPub
-    );
-    const nonce = blake2b(concatBytes(ephemeralSenderPub, recipientPub)).slice(
-        0,
-        24
+    const sharedSecret = x25519.getSharedSecret(recipientPriv, senderPub);
+
+    const plaintext = xsalsa20_poly1305(sharedSecret, nOnce).decrypt(
+        sealedBytes
     );
 
-    const ciphertext = sealedBytes.slice(32);
     try {
-        const plaintext = xsalsa20_poly1305(sharedSecret, nonce).decrypt(
-            ciphertext
-        );
         return JSON.parse(textDecoder.decode(plaintext));
     } catch (e) {
         return undefined;
