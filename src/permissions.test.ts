@@ -12,26 +12,26 @@ import { CoMap } from "./cojsonValue";
 import { Role } from "./permissions";
 
 function teamWithTwoAdmins() {
-    const { multilog, admin, adminID } = newTeam();
+    const { team, admin, adminID } = newTeam();
 
     const otherAdmin = newRandomAgentCredential();
     const otherAdminID = getAgentID(getAgent(otherAdmin));
 
-    let content = expectTeam(multilog.getCurrentContent());
+    let content = expectTeam(team.getCurrentContent());
 
     content.edit((editable) => {
         editable.set(otherAdminID, "admin", "trusting");
         expect(editable.get(otherAdminID)).toEqual("admin");
     });
 
-    content = expectTeam(multilog.getCurrentContent());
+    content = expectTeam(team.getCurrentContent());
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
     expect(content.get(otherAdminID)).toEqual("admin");
-    return { multilog, admin, adminID, otherAdmin, otherAdminID };
+    return { team, admin, adminID, otherAdmin, otherAdminID };
 }
 
 function newTeam() {
@@ -40,20 +40,20 @@ function newTeam() {
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
 
-    const multilog = node.createMultiLog({
+    const team = node.createMultiLog({
         type: "comap",
         ruleset: { type: "team", initialAdmin: adminID },
         meta: null,
     });
 
-    const content = expectTeam(multilog.getCurrentContent());
+    const teamContent = expectTeam(team.getCurrentContent());
 
-    content.edit((editable) => {
+    teamContent.edit((editable) => {
         editable.set(adminID, "admin", "trusting");
         expect(editable.get(adminID)).toEqual("admin");
     });
 
-    return { node, multilog, admin, adminID };
+    return { node, team, admin, adminID };
 }
 
 function expectTeam(content: CoJsonValue): CoMap<AgentID, Role, {}> {
@@ -77,14 +77,14 @@ test("Initial admin can add another admin to a team", () => {
 });
 
 test("Added admin can add a third admin to a team", () => {
-    const { multilog, otherAdmin, otherAdminID } = teamWithTwoAdmins();
+    const { team, otherAdmin, otherAdminID } = teamWithTwoAdmins();
 
-    const otherAdminMultilog = multilog.testWithDifferentCredentials(
+    const teamAsOtherAdmin = team.testWithDifferentCredentials(
         otherAdmin,
         newRandomSessionID(otherAdminID)
     );
 
-    let otherContent = expectTeam(otherAdminMultilog.getCurrentContent());
+    let otherContent = expectTeam(teamAsOtherAdmin.getCurrentContent());
 
     expect(otherContent.get(otherAdminID)).toEqual("admin");
 
@@ -96,69 +96,69 @@ test("Added admin can add a third admin to a team", () => {
         expect(editable.get(thirdAdminID)).toEqual("admin");
     });
 
-    otherContent = expectTeam(otherAdminMultilog.getCurrentContent());
+    otherContent = expectTeam(teamAsOtherAdmin.getCurrentContent());
 
     expect(otherContent.get(thirdAdminID)).toEqual("admin");
 });
 
 test("Admins can't demote other admins in a team", () => {
-    const { multilog, adminID, otherAdmin, otherAdminID } = teamWithTwoAdmins();
+    const { team, adminID, otherAdmin, otherAdminID } = teamWithTwoAdmins();
 
-    let content = expectTeam(multilog.getCurrentContent());
+    let teamContent = expectTeam(team.getCurrentContent());
 
-    content.edit((editable) => {
+    teamContent.edit((editable) => {
         editable.set(otherAdminID, "writer", "trusting");
         expect(editable.get(otherAdminID)).toEqual("admin");
     });
 
-    content = expectTeam(multilog.getCurrentContent());
-    expect(content.get(otherAdminID)).toEqual("admin");
+    teamContent = expectTeam(team.getCurrentContent());
+    expect(teamContent.get(otherAdminID)).toEqual("admin");
 
-    const otherAdminMultilog = multilog.testWithDifferentCredentials(
+    const teamAsOtherAdmin = team.testWithDifferentCredentials(
         otherAdmin,
         newRandomSessionID(otherAdminID)
     );
 
-    let otherContent = expectTeam(otherAdminMultilog.getCurrentContent());
+    let teamContentAsOtherAdmin = expectTeam(teamAsOtherAdmin.getCurrentContent());
 
-    otherContent.edit((editable) => {
+    teamContentAsOtherAdmin.edit((editable) => {
         editable.set(adminID, "writer", "trusting");
         expect(editable.get(adminID)).toEqual("admin");
     });
 
-    otherContent = expectTeam(otherAdminMultilog.getCurrentContent());
+    teamContentAsOtherAdmin = expectTeam(teamAsOtherAdmin.getCurrentContent());
 
-    expect(otherContent.get(adminID)).toEqual("admin");
+    expect(teamContentAsOtherAdmin.get(adminID)).toEqual("admin");
 });
 
 test("Admins an add writers to a team, who can't add admins, writers, or readers", () => {
-    const { multilog } = newTeam();
+    const { team } = newTeam();
     const writer = newRandomAgentCredential();
     const writerID = getAgentID(getAgent(writer));
 
-    let content = expectTeam(multilog.getCurrentContent());
+    let teamContent = expectTeam(team.getCurrentContent());
 
-    content.edit((editable) => {
+    teamContent.edit((editable) => {
         editable.set(writerID, "writer", "trusting");
         expect(editable.get(writerID)).toEqual("writer");
     });
 
-    content = expectTeam(multilog.getCurrentContent());
-    expect(content.get(writerID)).toEqual("writer");
+    teamContent = expectTeam(team.getCurrentContent());
+    expect(teamContent.get(writerID)).toEqual("writer");
 
-    const writerMultilog = multilog.testWithDifferentCredentials(
+    const teamAsWriter = team.testWithDifferentCredentials(
         writer,
         newRandomSessionID(writerID)
     );
 
-    let writerContent = expectTeam(writerMultilog.getCurrentContent());
+    let teamContentAsWriter = expectTeam(teamAsWriter.getCurrentContent());
 
-    expect(writerContent.get(writerID)).toEqual("writer");
+    expect(teamContentAsWriter.get(writerID)).toEqual("writer");
 
     const otherAgent = newRandomAgentCredential();
     const otherAgentID = getAgentID(getAgent(otherAgent));
 
-    writerContent.edit((editable) => {
+    teamContentAsWriter.edit((editable) => {
         editable.set(otherAgentID, "admin", "trusting");
         expect(editable.get(otherAgentID)).toBeUndefined();
 
@@ -169,39 +169,39 @@ test("Admins an add writers to a team, who can't add admins, writers, or readers
         expect(editable.get(otherAgentID)).toBeUndefined();
     });
 
-    writerContent = expectTeam(writerMultilog.getCurrentContent());
+    teamContentAsWriter = expectTeam(teamAsWriter.getCurrentContent());
 
-    expect(writerContent.get(otherAgentID)).toBeUndefined();
+    expect(teamContentAsWriter.get(otherAgentID)).toBeUndefined();
 });
 
 test("Admins can add readers to a team, who can't add admins, writers, or readers", () => {
-    const { multilog } = newTeam();
+    const { team } = newTeam();
     const reader = newRandomAgentCredential();
     const readerID = getAgentID(getAgent(reader));
 
-    let content = expectTeam(multilog.getCurrentContent());
+    let teamContent = expectTeam(team.getCurrentContent());
 
-    content.edit((editable) => {
+    teamContent.edit((editable) => {
         editable.set(readerID, "reader", "trusting");
         expect(editable.get(readerID)).toEqual("reader");
     });
 
-    content = expectTeam(multilog.getCurrentContent());
-    expect(content.get(readerID)).toEqual("reader");
+    teamContent = expectTeam(team.getCurrentContent());
+    expect(teamContent.get(readerID)).toEqual("reader");
 
-    const readerMultilog = multilog.testWithDifferentCredentials(
+    const teamAsReader = team.testWithDifferentCredentials(
         reader,
         newRandomSessionID(readerID)
     );
 
-    let readerContent = expectTeam(readerMultilog.getCurrentContent());
+    let teamContentAsReader = expectTeam(teamAsReader.getCurrentContent());
 
-    expect(readerContent.get(readerID)).toEqual("reader");
+    expect(teamContentAsReader.get(readerID)).toEqual("reader");
 
     const otherAgent = newRandomAgentCredential();
     const otherAgentID = getAgentID(getAgent(otherAgent));
 
-    readerContent.edit((editable) => {
+    teamContentAsReader.edit((editable) => {
         editable.set(otherAgentID, "admin", "trusting");
         expect(editable.get(otherAgentID)).toBeUndefined();
 
@@ -212,17 +212,17 @@ test("Admins can add readers to a team, who can't add admins, writers, or reader
         expect(editable.get(otherAgentID)).toBeUndefined();
     });
 
-    readerContent = expectTeam(readerMultilog.getCurrentContent());
+    teamContentAsReader = expectTeam(teamAsReader.getCurrentContent());
 
-    expect(readerContent.get(otherAgentID)).toBeUndefined();
+    expect(teamContentAsReader.get(otherAgentID)).toBeUndefined();
 });
 
 test("Admins can write to an object that is owned by their team", () => {
-    const { node, multilog, adminID } = newTeam();
+    const { node, team } = newTeam();
 
     const childObject = node.createMultiLog({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: multilog.id },
+        ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
     });
 
@@ -236,24 +236,22 @@ test("Admins can write to an object that is owned by their team", () => {
     childContent = expectMap(childObject.getCurrentContent());
 
     expect(childContent.get("foo")).toEqual("bar");
-})
+});
 
 test("Writers can write to an object that is owned by their team", () => {
-    const { node, multilog, adminID } = newTeam();
-
-    const content = expectTeam(multilog.getCurrentContent());
+    const { node, team } = newTeam();
 
     const writer = newRandomAgentCredential();
     const writerID = getAgentID(getAgent(writer));
 
-    content.edit((editable) => {
+    expectTeam(team.getCurrentContent()).edit((editable) => {
         editable.set(writerID, "writer", "trusting");
         expect(editable.get(writerID)).toEqual("writer");
     });
 
     const childObject = node.createMultiLog({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: multilog.id },
+        ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
     });
 
@@ -275,21 +273,19 @@ test("Writers can write to an object that is owned by their team", () => {
 });
 
 test("Readers can not write to an object that is owned by their team", () => {
-    const { node, multilog, adminID } = newTeam();
-
-    const content = expectTeam(multilog.getCurrentContent());
+    const { node, team } = newTeam();
 
     const reader = newRandomAgentCredential();
     const readerID = getAgentID(getAgent(reader));
 
-    content.edit((editable) => {
+    expectTeam(team.getCurrentContent()).edit((editable) => {
         editable.set(readerID, "reader", "trusting");
         expect(editable.get(readerID)).toEqual("reader");
     });
 
     const childObject = node.createMultiLog({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: multilog.id },
+        ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
     });
 
