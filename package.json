@@ -1,0 +1,19 @@
+{
+  "name": "cojson",
+  "module": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^0.1.3",
+    "@noble/curves": "^1.1.0",
+    "@noble/hashes": "^1.3.1",
+    "@scure/base": "^1.1.1",
+    "fast-json-stable-stringify": "^2.1.0"
+  }
+}
