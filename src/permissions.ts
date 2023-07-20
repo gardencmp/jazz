@@ -1,4 +1,4 @@
-import { CoMap, CoValue, MapOpPayload } from "./cojsonValue";
+import { CoMap, CoValue, MapOpPayload } from "./coValue";
 import { JsonValue } from "./jsonValue";
 import { KeyID, RecipientID, SealedSet, SignatoryID } from "./crypto";
 import {

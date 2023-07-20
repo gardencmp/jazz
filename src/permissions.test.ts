@@ -6,7 +6,7 @@ import {
     newRandomSessionID,
 } from "./multilog";
 import { LocalNode } from "./node";
-import { expectMap } from "./cojsonValue";
+import { expectMap } from "./coValue";
 import { expectTeam } from "./permissions";
 import { getRecipientID, newRandomKeySecret, seal } from "./crypto";
 

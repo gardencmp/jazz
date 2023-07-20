@@ -1,4 +1,4 @@
-import { CoValue } from "./cojsonValue";
+import { CoValue } from "./coValue";
 import { JsonValue } from "./jsonValue";
 import { MultiLog } from "./multilog";
 import { LocalNode } from "./node";

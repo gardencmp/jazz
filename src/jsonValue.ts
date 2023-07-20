@@ -1,4 +1,4 @@
-import { CoValueID, CoValue } from "./cojsonValue";
+import { CoValueID, CoValue } from "./coValue";
 
 export type JsonAtom = string | number | boolean | null;
 export type JsonValue = JsonAtom | JsonArray | JsonObject | CoValueID<CoValue>;

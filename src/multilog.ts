@@ -1,5 +1,5 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { CoList, CoMap, CoValue, Static, MultiStream } from "./cojsonValue";
+import { CoList, CoMap, CoValue, Static, MultiStream } from "./coValue";
 import {
     Encrypted,
     Hash,
