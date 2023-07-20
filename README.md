@@ -20,7 +20,7 @@ THIS IS WORK IN PROGRESS
 - boolean
 - number
 - string
-  - stringly-encoded CoJSON identifiers & data (`CoValueID`, `AgentID`, `SessionID`, `SignatoryID`, `SignatorySecret`, `Signature`, `RecipientID`, `RecipientSecret`, `Sealed`, `Hash`, `ShortHash`, `SecretKey`, `EncryptedChunk`, `Role`)
+  - stringly-encoded CoJSON identifiers & data (`CoValueID`, `AgentID`, `SessionID`, `SignatoryID`, `SignatorySecret`, `Signature`, `RecipientID`, `RecipientSecret`, `Sealed`, `Hash`, `ShortHash`, `KeySecret`, `KeyID`, `Encrypted`, `Role`)
 
 - array
 - object
@@ -49,5 +49,5 @@ THIS IS WORK IN PROGRESS
 ## Extensions & higher-level protocols
 
 ### More complex datastructures
-- MarCo: a clean way to collaboratively mark up rich text with CoJSON
+- CoText: a clean way to collaboratively mark up rich text with CoJSON
 - CoJSON Tree: a clean way to represent collaborative tree structures with CoJSON
