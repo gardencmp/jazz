@@ -1,5 +1,6 @@
 import { test, expect } from "bun:test";
 import {
+    agentIDfromSessionID,
     getAgent,
     getAgentID,
     newRandomAgentCredential,
@@ -99,5 +100,39 @@ test("Can get map entry values at different points in time", () => {
         expect(editable.getAtTime("hello", beforeA)).toEqual(undefined);
         expect(editable.getAtTime("hello", beforeB)).toEqual("A");
         expect(editable.getAtTime("hello", beforeC)).toEqual("B");
+    });
+});
+
+test("Can get last tx ID for a key", () => {
+    const agentCredential = newRandomAgentCredential();
+    const node = new LocalNode(
+        agentCredential,
+        newRandomSessionID(getAgentID(getAgent(agentCredential)))
+    );
+
+    const multilog = node.createMultiLog({
+        type: "comap",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+    });
+
+    const content = multilog.getCurrentContent();
+
+    if (content.type !== "comap") {
+        throw new Error("Expected map");
+    }
+
+    expect(content.type).toEqual("comap");
+
+    content.edit((editable) => {
+        expect(editable.getLastTxID("hello")).toEqual(undefined);
+        editable.set("hello", "A");
+        const sessionID = editable.getLastTxID("hello")?.sessionID
+        expect(sessionID && agentIDfromSessionID(sessionID)).toEqual(getAgentID(getAgent(agentCredential)));
+        expect(editable.getLastTxID("hello")?.txIndex).toEqual(0);
+        editable.set("hello", "B");
+        expect(editable.getLastTxID("hello")?.txIndex).toEqual(1);
+        editable.set("hello", "C");
+        expect(editable.getLastTxID("hello")?.txIndex).toEqual(2);
     });
 })

@@ -7,8 +7,8 @@ type Value = JsonValue | CoValue;
 
 export {
     JsonValue,
-    CoValue as CoJsonValue,
+    CoValue,
     Value,
-    LocalNode as Node,
+    LocalNode,
     MultiLog
 }

@@ -5,7 +5,7 @@ import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { MultiLogID, TransactionID } from "./multilog";
+import { MultiLogID, SessionID, TransactionID } from "./multilog";
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;
@@ -64,7 +64,7 @@ export function getRecipientID(secret: RecipientSecret): RecipientID {
     )}`;
 }
 
-type SealedSet = {
+export type SealedSet = {
     [recipient: RecipientID]: Sealed;
 };
 
@@ -124,7 +124,7 @@ export function openAs(
     const senderPub = base58.decode(from.substring("recipient_z".length));
 
     const sealed = sealedSet[getRecipientID(recipient)];
-    console.log("sealed", sealed);
+
     if (!sealed) {
         return undefined;
     }
@@ -181,87 +181,56 @@ export function shortHash(value: JsonValue): ShortHash {
     )}`;
 }
 
-export type EncryptedStreamChunk<T extends JsonValue> =
-    `encryptedChunk_U${string}`;
+export type Encrypted<T extends JsonValue> =
+    `encrypted_U${string}`;
 
-export type SecretKey = `secretKey_z${string}`;
+export type KeySecret = `keySecret_z${string}`;
+export type KeyID = `key_z${string}`;
 
-export function newRandomSecretKey(): SecretKey {
-    return `secretKey_z${base58.encode(randomBytes(32))}`;
+export function newRandomKeySecret(): { secret: KeySecret; id: KeyID } {
+    return {
+        secret: `keySecret_z${base58.encode(randomBytes(32))}`,
+        id: `key_z${base58.encode(randomBytes(12))}`,
+    };
 }
 
-export class EncryptionStream {
-    secretKey: Uint8Array;
-    nonce: Uint8Array;
-    counter: number;
+export function encrypt<T extends JsonValue>(value: T, keySecret: KeySecret, nOnceMaterial: {in: MultiLogID, tx: TransactionID}): Encrypted<T> {
+    const keySecretBytes = base58.decode(
+        keySecret.substring("keySecret_z".length)
+    );
+    const nOnce = blake3(
+        textEncoder.encode(stableStringify(nOnceMaterial))
+    ).slice(0, 24);
 
-    constructor(secretKey: SecretKey, nonce: Uint8Array) {
-        this.secretKey = base58.decode(
-            secretKey.substring("secretKey_z".length)
-        );
-        this.nonce = nonce;
-        this.counter = 0;
-    }
+    const plaintext = textEncoder.encode(stableStringify(value));
+    const ciphertext = xsalsa20(
+        keySecretBytes,
+        nOnce,
+        plaintext,
+    );
+    return `encrypted_U${base64url.encode(ciphertext)}`;
+};
 
-    static resume(secretKey: SecretKey, nonce: Uint8Array, counter: number) {
-        const stream = new EncryptionStream(secretKey, nonce);
-        stream.counter = counter;
-        return stream;
-    }
+export function decrypt<T extends JsonValue>(encrypted: Encrypted<T>, keySecret: KeySecret, nOnceMaterial: {in: MultiLogID, tx: TransactionID}): T | undefined {
+    const keySecretBytes = base58.decode(
+        keySecret.substring("keySecret_z".length)
+    );
+    const nOnce = blake3(
+        textEncoder.encode(stableStringify(nOnceMaterial))
+    ).slice(0, 24);
 
-    encrypt<T extends JsonValue>(value: T): EncryptedStreamChunk<T> {
-        const plaintext = textEncoder.encode(stableStringify(value));
-        const ciphertext = xsalsa20(
-            this.secretKey,
-            this.nonce,
-            plaintext,
-            new Uint8Array(plaintext.length),
-            this.counter
-        );
-        this.counter++;
+    const ciphertext = base64url.decode(
+        encrypted.substring("encrypted_U".length)
+    );
+    const plaintext = xsalsa20(
+        keySecretBytes,
+        nOnce,
+        ciphertext,
+    );
 
-        return `encryptedChunk_U${base64url.encode(ciphertext)}`;
-    }
-}
-
-export class DecryptionStream {
-    secretKey: Uint8Array;
-    nonce: Uint8Array;
-    counter: number;
-
-    constructor(secretKey: SecretKey, nonce: Uint8Array) {
-        this.secretKey = base58.decode(
-            secretKey.substring("secretKey_z".length)
-        );
-        this.nonce = nonce;
-        this.counter = 0;
-    }
-
-    static resume(secretKey: SecretKey, nonce: Uint8Array, counter: number) {
-        const stream = new DecryptionStream(secretKey, nonce);
-        stream.counter = counter;
-        return stream;
-    }
-
-    decrypt<T extends JsonValue>(
-        encryptedChunk: EncryptedStreamChunk<T>
-    ): T | undefined {
-        const ciphertext = base64url.decode(
-            encryptedChunk.substring("encryptedChunk_U".length)
-        );
-        const plaintext = xsalsa20(
-            this.secretKey,
-            this.nonce,
-            ciphertext,
-            new Uint8Array(ciphertext.length),
-            this.counter
-        );
-        this.counter++;
-
-        try {
-            return JSON.parse(textDecoder.decode(plaintext));
-        } catch (e) {
-            return undefined;
-        }
+    try {
+        return JSON.parse(textDecoder.decode(plaintext));
+    } catch (e) {
+        return undefined;
     }
 }

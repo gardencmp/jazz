@@ -1,14 +1,9 @@
 import { randomBytes } from "@noble/hashes/utils";
+import { CoList, CoMap, CoValue, Static, MultiStream } from "./cojsonValue";
 import {
-    CoList,
-    CoMap,
-    CoValue,
-    Static,
-    MultiStream,
-} from "./cojsonValue";
-import {
-    EncryptedStreamChunk,
+    Encrypted,
     Hash,
+    KeySecret,
     RecipientID,
     RecipientSecret,
     SignatoryID,
@@ -19,21 +14,25 @@ import {
     getSignatoryID,
     newRandomRecipient,
     newRandomSignatory,
+    openAs,
     shortHash,
     sign,
     verify,
+    encrypt,
+    decrypt,
 } from "./crypto";
 import { JsonValue } from "./jsonValue";
 import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
     determineValidTransactions,
+    expectTeam,
 } from "./permissions";
 
 export type MultiLogID = `coval_${string}`;
 
 export type MultiLogHeader = {
-    type: CoValue['type'];
+    type: CoValue["type"];
     ruleset: RulesetDef;
     meta: JsonValue;
 };
@@ -63,7 +62,7 @@ type SessionLog = {
 export type PrivateTransaction = {
     privacy: "private";
     madeAt: number;
-    encryptedChanges: EncryptedStreamChunk<JsonValue[]>;
+    encryptedChanges: Encrypted<JsonValue[]>;
 };
 
 export type TrustingTransaction = {
@@ -145,6 +144,14 @@ export class MultiLog {
         return this.header?.meta ?? null;
     }
 
+    nextTransactionID(): TransactionID {
+        const sessionID = this.ownSessionID;
+        return {
+            sessionID,
+            txIndex: this.sessions[sessionID]?.transactions.length || 0,
+        };
+    }
+
     tryAddTransactions(
         sessionID: SessionID,
         newTransactions: Transaction[],
@@ -224,9 +231,18 @@ export class MultiLog {
 
         const transaction: Transaction =
             privacy === "private"
-                ? (() => {
-                      throw new Error("Not implemented");
-                  })()
+                ? {
+                      privacy: "private",
+                      madeAt,
+                      encryptedChanges: encrypt(
+                          changes,
+                          this.getCurrentReadKey(),
+                          {
+                              in: this.id,
+                              tx: this.nextTransactionID(),
+                          }
+                      ),
+                  }
                 : {
                       privacy: "trusting",
                       madeAt,
@@ -277,21 +293,77 @@ export class MultiLog {
 
         const allTransactions: DecryptedTransaction[] = validTransactions.map(
             ({ txID, tx }) => {
-                if (tx.privacy === "private") {
-                    throw new Error("Private transactions not supported yet");
-                } else {
-                    return {
-                        txID,
-                        changes: tx.changes,
-                        madeAt: tx.madeAt,
-                    };
-                }
+                return {
+                    txID,
+                    madeAt: tx.madeAt,
+                    changes:
+                        tx.privacy === "private"
+                            ? decrypt(
+                                  tx.encryptedChanges,
+                                  this.getCurrentReadKey(),
+                                  {
+                                      in: this.id,
+                                      tx: txID,
+                                  }
+                              ) || (() => {throw new Error("Couldn't decrypt changes")})()
+                            : tx.changes,
+                };
             }
         );
         // TODO: sort by timestamp, then by txID
         allTransactions.sort((a, b) => a.madeAt - b.madeAt);
 
         return allTransactions;
+    }
+
+    getCurrentReadKey(): KeySecret {
+        if (this.header.ruleset.type === "team") {
+            const content = expectTeam(this.getCurrentContent());
+
+            const currentRevelation = content.get("readKey");
+
+            if (!currentRevelation) {
+                throw new Error("No readKey");
+            }
+
+            const revelationTxID = content.getLastTxID("readKey");
+
+            if (!revelationTxID) {
+                throw new Error("No readKey transaction ID");
+            }
+
+            const revealer = agentIDfromSessionID(revelationTxID.sessionID);
+
+            const revealerAgent = this.knownAgents[revealer];
+
+            if (!revealerAgent) {
+                throw new Error("Unknown revealer");
+            }
+
+            const secret = openAs(
+                currentRevelation.revelation,
+                this.agentCredential.recipientSecret,
+                revealerAgent.recipientID,
+                {
+                    in: this.id,
+                    tx: revelationTxID,
+                }
+            );
+
+            if (!secret) {
+                throw new Error("Couldn't decrypt readKey");
+            }
+
+            return secret as KeySecret;
+        } else if (this.header.ruleset.type === "ownedByTeam") {
+            return this.requiredMultiLogs[
+                this.header.ruleset.team
+            ].getCurrentReadKey();
+        } else {
+            throw new Error(
+                "Only teams or values owned by teams have read secrets"
+            );
+        }
     }
 }
 

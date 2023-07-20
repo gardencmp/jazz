@@ -1,15 +1,14 @@
 import { test, expect } from "bun:test";
 import {
-    AgentID,
     getAgent,
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
 } from "./multilog";
 import { LocalNode } from "./node";
-import { CoJsonValue } from ".";
-import { CoMap } from "./cojsonValue";
-import { Role } from "./permissions";
+import { expectMap } from "./cojsonValue";
+import { expectTeam } from "./permissions";
+import { getRecipientID, newRandomKeySecret, seal } from "./crypto";
 
 function teamWithTwoAdmins() {
     const { team, admin, adminID } = newTeam();
@@ -54,22 +53,6 @@ function newTeam() {
     });
 
     return { node, team, admin, adminID };
-}
-
-function expectTeam(content: CoJsonValue): CoMap<{[key: AgentID]: Role}, {}> {
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
-
-    return content as CoMap<{[key: AgentID]: Role}, {}>;
-}
-
-function expectMap(content: CoJsonValue): CoMap<{[key: string]: string}, {}> {
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
-
-    return content as CoMap<{[key: string]: string}, {}>;
 }
 
 test("Initial admin can add another admin to a team", () => {
@@ -119,7 +102,9 @@ test("Admins can't demote other admins in a team", () => {
         newRandomSessionID(otherAdminID)
     );
 
-    let teamContentAsOtherAdmin = expectTeam(teamAsOtherAdmin.getCurrentContent());
+    let teamContentAsOtherAdmin = expectTeam(
+        teamAsOtherAdmin.getCurrentContent()
+    );
 
     teamContentAsOtherAdmin.edit((editable) => {
         editable.set(adminID, "writer", "trusting");
@@ -304,4 +289,45 @@ test("Readers can not write to an object that is owned by their team", () => {
     childContent = expectMap(childObjectAsReader.getCurrentContent());
 
     expect(childContent.get("foo")).toBeUndefined();
+});
+
+test("Admins can set team read key and then use it to create and read private transactions in owned objects", () => {
+    const { node, team, admin, adminID } = newTeam();
+
+    const teamContent = expectTeam(team.getCurrentContent());
+
+    teamContent.edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.recipientSecret,
+            new Set([getRecipientID(admin.recipientSecret)]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+        editable.set("readKey", { keyID: readKeyID, revelation });
+        expect(editable.get("readKey")).toEqual({
+            keyID: readKeyID,
+            revelation,
+        });
+        expect(team.getCurrentReadKey()).toEqual(readKey);
+    });
+
+    const childObject = node.createMultiLog({
+        type: "comap",
+        ruleset: { type: "ownedByTeam", team: team.id },
+        meta: null,
+    });
+
+    let childContent = expectMap(childObject.getCurrentContent());
+
+    childContent.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    childContent = expectMap(childObject.getCurrentContent());
+    expect(childContent.get("foo")).toEqual("bar");
 });

@@ -108,6 +108,17 @@ export class CoMap<
         }
     }
 
+    getLastTxID<KK extends K>(key: KK): TransactionID | undefined {
+        const ops = this.ops[key];
+        if (!ops) {
+            return undefined;
+        }
+
+        const lastEntry = ops[ops.length - 1];
+
+        return lastEntry.txID;
+    }
+
     toJSON(): JsonObject {
         const json: JsonObject = {};
 
@@ -185,4 +196,12 @@ export class Static<T extends JsonValue> {
     constructor(multilog: MultiLog) {
         this.id = multilog.id as CoValueID<Static<T>>;
     }
+}
+
+export function expectMap(content: CoValue): CoMap<{ [key: string]: string }, {}> {
+    if (content.type !== "comap") {
+        throw new Error("Expected map");
+    }
+
+    return content as CoMap<{ [key: string]: string }, {}>;
 }
