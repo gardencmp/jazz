@@ -103,6 +103,63 @@ test("Can get map entry values at different points in time", () => {
     });
 });
 
+test("Can get all historic values of key", () => {
+    const agentCredential = newRandomAgentCredential();
+    const node = new LocalNode(
+        agentCredential,
+        newRandomSessionID(getAgentID(getAgent(agentCredential)))
+    );
+
+    const multilog = node.createMultiLog({
+        type: "comap",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+    });
+
+    const content = multilog.getCurrentContent();
+
+    if (content.type !== "comap") {
+        throw new Error("Expected map");
+    }
+
+    expect(content.type).toEqual("comap");
+
+    content.edit((editable) => {
+        editable.set("hello", "A");
+        const txA = editable.getLastTxID("hello");
+        editable.set("hello", "B");
+        const txB = editable.getLastTxID("hello");
+        editable.delete("hello");
+        const txDel = editable.getLastTxID("hello");
+        editable.set("hello", "C");
+        const txC = editable.getLastTxID("hello");
+        expect(
+            editable.getHistory("hello")
+        ).toEqual([
+            {
+                txID: txA,
+                value: "A",
+                at: txA && multilog.getTx(txA)?.madeAt,
+            },
+            {
+                txID: txB,
+                value: "B",
+                at: txB && multilog.getTx(txB)?.madeAt,
+            },
+            {
+                txID: txDel,
+                value: undefined,
+                at: txDel && multilog.getTx(txDel)?.madeAt,
+            },
+            {
+                txID: txC,
+                value: "C",
+                at: txC && multilog.getTx(txC)?.madeAt,
+            },
+        ]);
+    });
+});
+
 test("Can get last tx ID for a key", () => {
     const agentCredential = newRandomAgentCredential();
     const node = new LocalNode(
@@ -127,12 +184,14 @@ test("Can get last tx ID for a key", () => {
     content.edit((editable) => {
         expect(editable.getLastTxID("hello")).toEqual(undefined);
         editable.set("hello", "A");
-        const sessionID = editable.getLastTxID("hello")?.sessionID
-        expect(sessionID && agentIDfromSessionID(sessionID)).toEqual(getAgentID(getAgent(agentCredential)));
+        const sessionID = editable.getLastTxID("hello")?.sessionID;
+        expect(sessionID && agentIDfromSessionID(sessionID)).toEqual(
+            getAgentID(getAgent(agentCredential))
+        );
         expect(editable.getLastTxID("hello")?.txIndex).toEqual(0);
         editable.set("hello", "B");
         expect(editable.getLastTxID("hello")?.txIndex).toEqual(1);
         editable.set("hello", "C");
         expect(editable.getLastTxID("hello")?.txIndex).toEqual(2);
     });
-})
+});

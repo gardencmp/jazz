@@ -50,6 +50,8 @@ export class CoMap<
     }
 
     protected fillOpsFromMultilog() {
+        this.ops = {};
+
         for (const { txID, changes, madeAt } of this.multiLog.getValidSortedTransactions()) {
             for (const [changeIdx, changeUntyped] of (
                 changes
@@ -117,6 +119,25 @@ export class CoMap<
         const lastEntry = ops[ops.length - 1];
 
         return lastEntry.txID;
+    }
+
+    getHistory<KK extends K>(key: KK): {at: number, txID: TransactionID, value: M[KK] | undefined}[] {
+        const ops = this.ops[key];
+        if (!ops) {
+            return [];
+        }
+
+        const history: {at: number, txID: TransactionID, value: M[KK] | undefined}[] = [];
+
+        for (const op of ops) {
+            if (op.op === "delete") {
+                history.push({at: op.madeAt, txID: op.txID, value: undefined});
+            } else {
+                history.push({at: op.madeAt, txID: op.txID, value: op.value});
+            }
+        }
+
+        return history;
     }
 
     toJSON(): JsonObject {
