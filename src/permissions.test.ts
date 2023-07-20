@@ -307,7 +307,7 @@ test("Admins can set team read key and then use it to create and read private tr
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation });
+        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
         expect(editable.get("readKey")).toEqual({
             keyID: readKeyID,
             revelation,
@@ -354,7 +354,7 @@ test("Admins can set team read key and then writers can use it to create and rea
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation });
+        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
     });
 
     const childObject = node.createMultiLog({
@@ -404,7 +404,7 @@ test("Admins can set team read key and then use it to create private transaction
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation });
+        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
     });
 
     const childObject = node.createMultiLog({
@@ -446,7 +446,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation });
+        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
         expect(editable.get("readKey")).toEqual({
             keyID: readKeyID,
             revelation,
@@ -483,7 +483,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
             }
         );
 
-        editable.set("readKey", { keyID: readKeyID2, revelation });
+        editable.set("readKey", { keyID: readKeyID2, revelation }, "trusting");
         expect(editable.get("readKey")).toEqual({
             keyID: readKeyID2,
             revelation,

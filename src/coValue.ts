@@ -166,8 +166,7 @@ export class WriteableCoMap<
     V extends JsonValue = M[K],
     MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
 > extends CoMap<M, Meta, K, V, MM> {
-    // TODO: change default to private
-    set<KK extends K>(key: KK, value: M[KK], privacy: "private" | "trusting" = "trusting"): void {
+    set<KK extends K>(key: KK, value: M[KK], privacy: "private" | "trusting" = "private"): void {
         this.multiLog.makeTransaction([
             {
                 op: "insert",
@@ -179,8 +178,7 @@ export class WriteableCoMap<
         this.fillOpsFromMultilog();
     }
 
-    // TODO: change default to private
-    delete(key: K, privacy: "private" | "trusting" = "trusting"): void {
+    delete(key: K, privacy: "private" | "trusting" = "private"): void {
         this.multiLog.makeTransaction([
             {
                 op: "delete",
