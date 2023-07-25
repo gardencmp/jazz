@@ -449,6 +449,87 @@ test("Admins can set team read key and then use it to create private transaction
     expect(childContentAsReader.get("foo")).toEqual("bar");
 });
 
+test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key", () => {
+    const { node, team, admin } = newTeam();
+
+    const reader1 = newRandomAgentCredential();
+    const reader1ID = getAgentID(getAgent(reader1));
+    const reader2 = newRandomAgentCredential();
+    const reader2ID = getAgentID(getAgent(reader2));
+    const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+
+    const teamContent = expectTeam(team.getCurrentContent());
+
+    teamContent.edit((editable) => {
+        editable.set(reader1ID, "reader", "trusting");
+        expect(editable.get(reader1ID)).toEqual("reader");
+
+        const revelation1 = seal(
+            readKey,
+            admin.recipientSecret,
+            new Set([
+                getRecipientID(admin.recipientSecret),
+                getRecipientID(reader1.recipientSecret),
+            ]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+        editable.set("readKey", { keyID: readKeyID, revelation: revelation1 }, "trusting");
+
+        const revelation2 = seal(
+            readKey,
+            admin.recipientSecret,
+            new Set([
+                getRecipientID(reader2.recipientSecret),
+            ]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+        editable.set("readKey", { keyID: readKeyID, revelation: revelation2 }, "trusting");
+    });
+
+    const childObject = node.createMultiLog({
+        type: "comap",
+        ruleset: { type: "ownedByTeam", team: team.id },
+        meta: null,
+    });
+
+    expectMap(childObject.getCurrentContent()).edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    const childObjectAsReader1 = childObject.testWithDifferentCredentials(
+        reader1,
+        newRandomSessionID(reader1ID)
+    );
+
+    expect(childObjectAsReader1.getCurrentReadKey().keySecret).toEqual(readKey);
+
+    const childContentAsReader1 = expectMap(
+        childObjectAsReader1.getCurrentContent()
+    );
+
+    expect(childContentAsReader1.get("foo")).toEqual("bar");
+
+    const childObjectAsReader2 = childObject.testWithDifferentCredentials(
+        reader2,
+        newRandomSessionID(reader2ID)
+    );
+
+    expect(childObjectAsReader2.getCurrentReadKey().keySecret).toEqual(readKey);
+
+    const childContentAsReader2 = expectMap(
+        childObjectAsReader2.getCurrentContent()
+    );
+
+    expect(childContentAsReader2.get("foo")).toEqual("bar");
+})
+
 test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, make another private transaction, and both can be read by the admin", () => {
     const { node, team, admin, adminID } = newTeam();
 
