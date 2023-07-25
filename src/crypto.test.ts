@@ -5,15 +5,22 @@ import {
     secureHash,
     newRandomRecipient,
     newRandomSignatory,
-    sealFor,
+    seal,
     sign,
-    unsealAs,
+    openAs,
     verify,
     shortHash,
-    newRandomSecretKey,
-    EncryptionStream,
-    DecryptionStream,
+    newRandomKeySecret,
+    encryptForTransaction,
+    decryptForTransaction,
+    sealKeySecret,
+    unsealKeySecret,
 } from "./crypto";
+import { base58, base64url } from "@scure/base";
+import { x25519 } from "@noble/curves/ed25519";
+import { xsalsa20_poly1305 } from "@noble/ciphers/_slow";
+import { blake3 } from "@noble/hashes/blake3";
+import stableStringify from "fast-json-stable-stringify";
 
 test("Signatures round-trip and use stable stringify", () => {
     const data = { b: "world", a: "hello" };
@@ -35,22 +42,55 @@ test("Invalid signatures don't verify", () => {
     expect(verify(wrongSignature, data, getSignatoryID(signatory))).toBe(false);
 });
 
-test("Sealing round-trips", () => {
+test("Sealing round-trips, but invalid receiver can't unseal", () => {
     const data = { b: "world", a: "hello" };
-    const recipient = newRandomRecipient();
-    const sealed = sealFor(getRecipientID(recipient), data);
-
-    expect(sealed).toMatch(/^sealed_U/);
-    expect(unsealAs(recipient, sealed)).toEqual(data);
-});
-
-test("Invalid receiver can't unseal", () => {
-    const data = { b: "world", a: "hello" };
-    const recipient = newRandomRecipient();
+    const sender = newRandomRecipient();
+    const recipient1 = newRandomRecipient();
     const recipient2 = newRandomRecipient();
-    const sealed = sealFor(getRecipientID(recipient), data);
+    const recipient3 = newRandomRecipient();
 
-    expect(unsealAs(recipient2, sealed)).toBeUndefined();
+    const nOnceMaterial = {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+    } as const;
+
+    const sealed = seal(
+        data,
+        sender,
+        new Set([getRecipientID(recipient1), getRecipientID(recipient2)]),
+        nOnceMaterial
+    );
+
+    expect(sealed[getRecipientID(recipient1)]).toMatch(/^sealed_U/);
+    expect(sealed[getRecipientID(recipient2)]).toMatch(/^sealed_U/);
+    expect(
+        openAs(sealed, recipient1, getRecipientID(sender), nOnceMaterial)
+    ).toEqual(data);
+    expect(
+        openAs(sealed, recipient2, getRecipientID(sender), nOnceMaterial)
+    ).toEqual(data);
+    expect(
+        openAs(sealed, recipient3, getRecipientID(sender), nOnceMaterial)
+    ).toBeUndefined();
+
+    // trying with wrong recipient secret, by hand
+    const nOnce = blake3(
+        new TextEncoder().encode(stableStringify(nOnceMaterial))
+    ).slice(0, 24);
+    const recipient3priv = base58.decode(
+        recipient3.substring("recipientSecret_z".length)
+    );
+    const senderPub = base58.decode(
+        getRecipientID(sender).substring("recipient_z".length)
+    );
+    const sealedBytes = base64url.decode(
+        sealed[getRecipientID(recipient1)].substring("sealed_U".length)
+    );
+    const sharedSecret = x25519.getSharedSecret(recipient3priv, senderPub);
+
+    expect(() => {
+        const _ = xsalsa20_poly1305(sharedSecret, nOnce).decrypt(sealedBytes);
+    }).toThrow("Wrong tag");
 });
 
 test("Hashing is deterministic", () => {
@@ -63,41 +103,84 @@ test("Hashing is deterministic", () => {
     );
 });
 
-test("Encryption streams round-trip", () => {
-    const secretKey = newRandomSecretKey();
-    const nonce = new Uint8Array(24);
-
-    const encryptionStream = new EncryptionStream(secretKey, nonce);
-    const decryptionStream = new DecryptionStream(secretKey, nonce);
+test("Encryption for transactions round-trips", () => {
+    const { secret } = newRandomKeySecret();
 
     const encryptedChunks = [
-        encryptionStream.encrypt({ a: "hello" }),
-        encryptionStream.encrypt({ b: "world" }),
+        encryptForTransaction({ a: "hello" }, secret, {
+            in: "coval_zTEST",
+            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        }),
+        encryptForTransaction({ b: "world" }, secret, {
+            in: "coval_zTEST",
+            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+        }),
     ];
 
-    const decryptedChunks = encryptedChunks.map((chunk) =>
-        decryptionStream.decrypt(chunk)
+    const decryptedChunks = encryptedChunks.map((chunk, i) =>
+        decryptForTransaction(chunk, secret, {
+            in: "coval_zTEST",
+            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: i },
+        })
     );
 
     expect(decryptedChunks).toEqual([{ a: "hello" }, { b: "world" }]);
 });
 
-test("Encryption streams don't decrypt with a wrong key", () => {
-    const secretKey = newRandomSecretKey();
-    const secretKey2 = newRandomSecretKey();
-    const nonce = new Uint8Array(24);
-
-    const encryptionStream = new EncryptionStream(secretKey, nonce);
-    const decryptionStream = new DecryptionStream(secretKey2, nonce);
+test("Encryption for transactions doesn't decrypt with a wrong key", () => {
+    const { secret } = newRandomKeySecret();
+    const { secret: secret2 } = newRandomKeySecret();
 
     const encryptedChunks = [
-        encryptionStream.encrypt({ a: "hello" }),
-        encryptionStream.encrypt({ b: "world" }),
+        encryptForTransaction({ a: "hello" }, secret, {
+            in: "coval_zTEST",
+            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        }),
+        encryptForTransaction({ b: "world" }, secret, {
+            in: "coval_zTEST",
+            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+        }),
     ];
 
-    const decryptedChunks = encryptedChunks.map((chunk) =>
-        decryptionStream.decrypt(chunk)
+    const decryptedChunks = encryptedChunks.map((chunk, i) =>
+        decryptForTransaction(chunk, secret2, {
+            in: "coval_zTEST",
+            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: i },
+        })
     );
 
     expect(decryptedChunks).toEqual([undefined, undefined]);
+});
+
+test("Encryption of keySecrets round-trips", () => {
+    const toSeal = newRandomKeySecret();
+    const sealing = newRandomKeySecret();
+
+    const keys = {
+        toSeal,
+        sealing,
+    };
+
+    const sealed = sealKeySecret(keys);
+
+    const unsealed = unsealKeySecret(sealed, sealing.secret);
+
+    expect(unsealed).toEqual(toSeal.secret);
+});
+
+test("Encryption of keySecrets doesn't unseal with a wrong key", () => {
+    const toSeal = newRandomKeySecret();
+    const sealing = newRandomKeySecret();
+    const sealingWrong = newRandomKeySecret();
+
+    const keys = {
+        toSeal,
+        sealing,
+    };
+
+    const sealed = sealKeySecret(keys);
+
+    const unsealed = unsealKeySecret(sealed, sealingWrong.secret);
+
+    expect(unsealed).toBeUndefined();
 });

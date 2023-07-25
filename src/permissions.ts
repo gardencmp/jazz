@@ -1,5 +1,6 @@
-import { MapOpPayload } from "./cojsonValue";
-import { RecipientID, SignatoryID } from "./crypto";
+import { CoMap, CoValue, MapOpPayload } from "./coValue";
+import { JsonValue } from "./jsonValue";
+import { Encrypted, KeyID, KeySecret, RecipientID, SealedSet, SignatoryID } from "./crypto";
 import {
     AgentID,
     MultiLog,
@@ -69,19 +70,32 @@ export function determineValidTransactions(
             // console.log("before", { memberState, validTransactions });
             const transactor = agentIDfromSessionID(sessionID);
 
-            const change = tx.changes[0] as MapOpPayload<AgentID, Role>;
+            const change = tx.changes[0] as
+                | MapOpPayload<AgentID, Role>
+                | MapOpPayload<"readKey", JsonValue>;
             if (tx.changes.length !== 1) {
                 console.warn("Team transaction must have exactly one change");
                 continue;
             }
 
-            const affectedMember = change.key;
-
             if (change.op !== "insert") {
-                console.warn("Team transaction must set a role");
+                console.warn("Team transaction must set a role or readKey");
                 continue;
             }
 
+            if (change.key === "readKey") {
+                if (memberState[transactor] !== "admin") {
+                    console.warn("Only admins can set readKeys");
+                    continue;
+                }
+
+                // TODO: check validity of agents who the key is revealed to?
+
+                validTransactions.push({ txID: { sessionID, txIndex }, tx });
+                continue;
+            }
+
+            const affectedMember = change.key;
             const assignedRole = change.value;
 
             if (
@@ -168,4 +182,18 @@ export function determineValidTransactions(
     } else {
         throw new Error("Unknown ruleset type " + multilog.header.ruleset.type);
     }
+}
+
+export type TeamContent = { [key: AgentID]: Role } & {
+    readKey: { keyID: KeyID; revelation: SealedSet, previousKeys?: {
+        [key: KeyID]: Encrypted<KeySecret>
+    } };
+};
+
+export function expectTeam(content: CoValue): CoMap<TeamContent, {}> {
+    if (content.type !== "comap") {
+        throw new Error("Expected map");
+    }
+
+    return content as CoMap<TeamContent, {}>;
 }
