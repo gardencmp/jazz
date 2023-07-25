@@ -11,8 +11,10 @@ import {
     verify,
     shortHash,
     newRandomKeySecret,
-    encrypt,
-    decrypt,
+    encryptForTransaction,
+    decryptForTransaction,
+    sealKeySecret,
+    unsealKeySecret,
 } from "./crypto";
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
@@ -101,22 +103,22 @@ test("Hashing is deterministic", () => {
     );
 });
 
-test("Encryption streams round-trip", () => {
+test("Encryption for transactions round-trips", () => {
     const { secret } = newRandomKeySecret();
 
     const encryptedChunks = [
-        encrypt({ a: "hello" }, secret, {
+        encryptForTransaction({ a: "hello" }, secret, {
             in: "coval_zTEST",
             tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
         }),
-        encrypt({ b: "world" }, secret, {
+        encryptForTransaction({ b: "world" }, secret, {
             in: "coval_zTEST",
             tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
         }),
     ];
 
     const decryptedChunks = encryptedChunks.map((chunk, i) =>
-        decrypt(chunk, secret, {
+        decryptForTransaction(chunk, secret, {
             in: "coval_zTEST",
             tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: i },
         })
@@ -125,27 +127,60 @@ test("Encryption streams round-trip", () => {
     expect(decryptedChunks).toEqual([{ a: "hello" }, { b: "world" }]);
 });
 
-test("Encryption streams don't decrypt with a wrong key", () => {
+test("Encryption for transactions doesn't decrypt with a wrong key", () => {
     const { secret } = newRandomKeySecret();
     const { secret: secret2 } = newRandomKeySecret();
 
     const encryptedChunks = [
-        encrypt({ a: "hello" }, secret, {
+        encryptForTransaction({ a: "hello" }, secret, {
             in: "coval_zTEST",
             tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
         }),
-        encrypt({ b: "world" }, secret, {
+        encryptForTransaction({ b: "world" }, secret, {
             in: "coval_zTEST",
             tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
         }),
     ];
 
     const decryptedChunks = encryptedChunks.map((chunk, i) =>
-        decrypt(chunk, secret2, {
+        decryptForTransaction(chunk, secret2, {
             in: "coval_zTEST",
             tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: i },
         })
     );
 
     expect(decryptedChunks).toEqual([undefined, undefined]);
+});
+
+test("Encryption of keySecrets round-trips", () => {
+    const toSeal = newRandomKeySecret();
+    const sealing = newRandomKeySecret();
+
+    const keys = {
+        toSeal,
+        sealing,
+    };
+
+    const sealed = sealKeySecret(keys);
+
+    const unsealed = unsealKeySecret(sealed, sealing.secret);
+
+    expect(unsealed).toEqual(toSeal.secret);
+});
+
+test("Encryption of keySecrets doesn't unseal with a wrong key", () => {
+    const toSeal = newRandomKeySecret();
+    const sealing = newRandomKeySecret();
+    const sealingWrong = newRandomKeySecret();
+
+    const keys = {
+        toSeal,
+        sealing,
+    };
+
+    const sealed = sealKeySecret(keys);
+
+    const unsealed = unsealKeySecret(sealed, sealingWrong.secret);
+
+    expect(unsealed).toBeUndefined();
 });

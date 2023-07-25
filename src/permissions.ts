@@ -1,6 +1,6 @@
 import { CoMap, CoValue, MapOpPayload } from "./coValue";
 import { JsonValue } from "./jsonValue";
-import { KeyID, RecipientID, SealedSet, SignatoryID } from "./crypto";
+import { Encrypted, KeyID, KeySecret, RecipientID, SealedSet, SignatoryID } from "./crypto";
 import {
     AgentID,
     MultiLog,
@@ -185,7 +185,9 @@ export function determineValidTransactions(
 }
 
 export type TeamContent = { [key: AgentID]: Role } & {
-    readKey: { keyID: KeyID; revelation: SealedSet };
+    readKey: { keyID: KeyID; revelation: SealedSet, previousKeys?: {
+        [key: KeyID]: Encrypted<KeySecret>
+    } };
 };
 
 export function expectTeam(content: CoValue): CoMap<TeamContent, {}> {

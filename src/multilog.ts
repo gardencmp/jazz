@@ -18,9 +18,10 @@ import {
     shortHash,
     sign,
     verify,
-    encrypt,
-    decrypt,
+    encryptForTransaction,
+    decryptForTransaction,
     KeyID,
+    unsealKeySecret,
 } from "./crypto";
 import { JsonValue } from "./jsonValue";
 import { base58 } from "@scure/base";
@@ -122,7 +123,15 @@ export class MultiLog {
             agentCredential,
             ownSessionID,
             knownAgents,
-            this.requiredMultiLogs
+            Object.fromEntries(
+                Object.entries(this.requiredMultiLogs).map(([id, multilog]) => [
+                    id,
+                    multilog.testWithDifferentCredentials(
+                        agentCredential,
+                        ownSessionID
+                    ),
+                ])
+            )
         );
 
         cloned.sessions = JSON.parse(JSON.stringify(this.sessions));
@@ -240,7 +249,7 @@ export class MultiLog {
                 privacy: "private",
                 madeAt,
                 keyUsed: keyID,
-                encryptedChanges: encrypt(changes, keySecret, {
+                encryptedChanges: encryptForTransaction(changes, keySecret, {
                     in: this.id,
                     tx: this.nextTransactionID(),
                 }),
@@ -302,7 +311,7 @@ export class MultiLog {
                     madeAt: tx.madeAt,
                     changes:
                         tx.privacy === "private"
-                            ? decrypt(
+                            ? decryptForTransaction(
                                   tx.encryptedChanges,
                                   this.getReadKey(tx.keyUsed),
                                   {
@@ -385,7 +394,9 @@ export class MultiLog {
 
             const readKeyHistory = content.getHistory("readKey");
 
-            const matchingEntry = readKeyHistory.find(entry => entry.value?.keyID === keyID);
+            const matchingEntry = readKeyHistory.find(
+                (entry) => entry.value?.keyID === keyID
+            );
 
             if (!matchingEntry || !matchingEntry.value) {
                 throw new Error("No matching readKey");
@@ -408,15 +419,30 @@ export class MultiLog {
                 }
             );
 
-            if (!secret) {
-                throw new Error("Couldn't decrypt readKey");
+            if (secret) return secret as KeySecret;
+
+            for (const entry of readKeyHistory) {
+                if (entry.value?.previousKeys?.[keyID]) {
+                    const sealingKeyID = entry.value.keyID;
+                    const sealingKeySecret = this.getReadKey(sealingKeyID);
+
+                    if (!sealingKeySecret) {
+                        continue;
+                    }
+
+                    const secret = unsealKeySecret({ sealed: keyID, sealing: sealingKeyID, encrypted: entry.value.previousKeys[keyID] }, sealingKeySecret);
+
+                    if (secret) {
+                        return secret;
+                    }
+                }
             }
 
-            return secret as KeySecret;
+            throw new Error("readKey " + keyID + " not revealed for " + getAgentID(getAgent(this.agentCredential)));
         } else if (this.header.ruleset.type === "ownedByTeam") {
-            return this.requiredMultiLogs[
-                this.header.ruleset.team
-            ].getReadKey(keyID);
+            return this.requiredMultiLogs[this.header.ruleset.team].getReadKey(
+                keyID
+            );
         } else {
             throw new Error(
                 "Only teams or values owned by teams have read secrets"

@@ -8,7 +8,12 @@ import {
 import { LocalNode } from "./node";
 import { expectMap } from "./coValue";
 import { expectTeam } from "./permissions";
-import { getRecipientID, newRandomKeySecret, seal } from "./crypto";
+import {
+    getRecipientID,
+    newRandomKeySecret,
+    seal,
+    sealKeySecret,
+} from "./crypto";
 
 function teamWithTwoAdmins() {
     const { team, admin, adminID } = newTeam();
@@ -245,7 +250,9 @@ test("Writers can write to an object that is owned by their team", () => {
         newRandomSessionID(writerID)
     );
 
-    let childContentAsWriter = expectMap(childObjectAsWriter.getCurrentContent());
+    let childContentAsWriter = expectMap(
+        childObjectAsWriter.getCurrentContent()
+    );
 
     childContentAsWriter.edit((editable) => {
         editable.set("foo", "bar", "trusting");
@@ -279,7 +286,9 @@ test("Readers can not write to an object that is owned by their team", () => {
         newRandomSessionID(readerID)
     );
 
-    let childContentAsReader = expectMap(childObjectAsReader.getCurrentContent());
+    let childContentAsReader = expectMap(
+        childObjectAsReader.getCurrentContent()
+    );
 
     childContentAsReader.edit((editable) => {
         editable.set("foo", "bar", "trusting");
@@ -348,7 +357,10 @@ test("Admins can set team read key and then writers can use it to create and rea
         const revelation = seal(
             readKey,
             admin.recipientSecret,
-            new Set([getRecipientID(admin.recipientSecret), getRecipientID(writer.recipientSecret)]),
+            new Set([
+                getRecipientID(admin.recipientSecret),
+                getRecipientID(writer.recipientSecret),
+            ]),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -370,7 +382,9 @@ test("Admins can set team read key and then writers can use it to create and rea
 
     expect(childObject.getCurrentReadKey().keySecret).toEqual(readKey);
 
-    let childContentAsWriter = expectMap(childObjectAsWriter.getCurrentContent());
+    let childContentAsWriter = expectMap(
+        childObjectAsWriter.getCurrentContent()
+    );
 
     childContentAsWriter.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -398,7 +412,10 @@ test("Admins can set team read key and then use it to create private transaction
         const revelation = seal(
             readKey,
             admin.recipientSecret,
-            new Set([getRecipientID(admin.recipientSecret), getRecipientID(reader.recipientSecret)]),
+            new Set([
+                getRecipientID(admin.recipientSecret),
+                getRecipientID(reader.recipientSecret),
+            ]),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -425,7 +442,9 @@ test("Admins can set team read key and then use it to create private transaction
 
     expect(childObjectAsReader.getCurrentReadKey().keySecret).toEqual(readKey);
 
-    const childContentAsReader = expectMap(childObjectAsReader.getCurrentContent());
+    const childContentAsReader = expectMap(
+        childObjectAsReader.getCurrentContent()
+    );
 
     expect(childContentAsReader.get("foo")).toEqual("bar");
 });
@@ -501,4 +520,108 @@ test("Admins can set team read key, make a private transaction in an owned objec
     childContent = expectMap(childObject.getCurrentContent());
     expect(childContent.get("foo")).toEqual("bar");
     expect(childContent.get("foo2")).toEqual("bar2");
-})
+});
+
+test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, add a reader, make another private transaction in the owned object, and both can be read by the reader", () => {
+    const { node, team, admin, adminID } = newTeam();
+
+    const childObject = node.createMultiLog({
+        type: "comap",
+        ruleset: { type: "ownedByTeam", team: team.id },
+        meta: null,
+    });
+
+    const teamContent = expectTeam(team.getCurrentContent());
+    const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+
+    teamContent.edit((editable) => {
+        const revelation = seal(
+            readKey,
+            admin.recipientSecret,
+            new Set([getRecipientID(admin.recipientSecret)]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
+        expect(editable.get("readKey")).toEqual({
+            keyID: readKeyID,
+            revelation,
+        });
+        expect(team.getCurrentReadKey().keySecret).toEqual(readKey);
+    });
+
+    let childContent = expectMap(childObject.getCurrentContent());
+
+    childContent.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    childContent = expectMap(childObject.getCurrentContent());
+    expect(childContent.get("foo")).toEqual("bar");
+
+    const reader = newRandomAgentCredential();
+    const readerID = getAgentID(getAgent(reader));
+    const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
+
+    teamContent.edit((editable) => {
+        const revelation = seal(
+            readKey2,
+            admin.recipientSecret,
+            new Set([
+                getRecipientID(admin.recipientSecret),
+                getRecipientID(reader.recipientSecret),
+            ]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            "readKey",
+            {
+                keyID: readKeyID2,
+                revelation,
+                previousKeys: {
+                    [readKeyID]: sealKeySecret({
+                        toSeal: { id: readKeyID, secret: readKey },
+                        sealing: { id: readKeyID2, secret: readKey2 },
+                    }).encrypted,
+                },
+            },
+            "trusting"
+        );
+        expect(editable.get("readKey")).toMatchObject({
+            keyID: readKeyID2,
+            revelation,
+        });
+        expect(team.getCurrentReadKey().keySecret).toEqual(readKey2);
+
+        editable.set(readerID, "reader", "trusting");
+        expect(editable.get(readerID)).toEqual("reader");
+    });
+
+    childContent.edit((editable) => {
+        editable.set("foo2", "bar2", "private");
+        expect(editable.get("foo2")).toEqual("bar2");
+    });
+
+    const childObjectAsReader = childObject.testWithDifferentCredentials(
+        reader,
+        newRandomSessionID(readerID)
+    );
+
+    expect(childObjectAsReader.getCurrentReadKey().keySecret).toEqual(readKey2);
+
+    console.log(readKeyID2);
+
+    const childContentAsReader = expectMap(
+        childObjectAsReader.getCurrentContent()
+    );
+
+    expect(childContentAsReader.get("foo")).toEqual("bar");
+    expect(childContentAsReader.get("foo2")).toEqual("bar2");
+});
