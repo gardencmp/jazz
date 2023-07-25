@@ -340,42 +340,17 @@ export class MultiLog {
         if (this.header.ruleset.type === "team") {
             const content = expectTeam(this.getCurrentContent());
 
-            const currentRevelation = content.get("readKey");
+            const currentKeyId = content.get("readKey")?.keyID;
 
-            if (!currentRevelation) {
-                throw new Error("No readKey");
+            if (!currentKeyId) {
+                throw new Error("No readKey set");
             }
 
-            const revelationTxID = content.getLastTxID("readKey");
-
-            if (!revelationTxID) {
-                throw new Error("No readKey transaction ID");
-            }
-
-            const revealer = agentIDfromSessionID(revelationTxID.sessionID);
-            const revealerAgent = this.knownAgents[revealer];
-
-            if (!revealerAgent) {
-                throw new Error("Unknown revealer");
-            }
-
-            const secret = openAs(
-                currentRevelation.revelation,
-                this.agentCredential.recipientSecret,
-                revealerAgent.recipientID,
-                {
-                    in: this.id,
-                    tx: revelationTxID,
-                }
-            );
-
-            if (!secret) {
-                throw new Error("Couldn't decrypt readKey");
-            }
+            const secret = this.getReadKey(currentKeyId);
 
             return {
-                keySecret: secret as KeySecret,
-                keyID: currentRevelation.keyID,
+                keySecret: secret,
+                keyID: currentKeyId,
             };
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.requiredMultiLogs[
@@ -394,32 +369,32 @@ export class MultiLog {
 
             const readKeyHistory = content.getHistory("readKey");
 
-            const matchingEntry = readKeyHistory.find(
-                (entry) => entry.value?.keyID === keyID
-            );
+            // Try to find direct relevation of key for us
 
-            if (!matchingEntry || !matchingEntry.value) {
-                throw new Error("No matching readKey");
-            }
+            for (const entry of readKeyHistory) {
+                if (entry.value?.keyID === keyID) {
+                    const revealer = agentIDfromSessionID(entry.txID.sessionID);
+                    const revealerAgent = this.knownAgents[revealer];
 
-            const revealer = agentIDfromSessionID(matchingEntry.txID.sessionID);
-            const revealerAgent = this.knownAgents[revealer];
+                    if (!revealerAgent) {
+                        throw new Error("Unknown revealer");
+                    }
 
-            if (!revealerAgent) {
-                throw new Error("Unknown revealer");
-            }
+                    const secret = openAs(
+                        entry.value.revelation,
+                        this.agentCredential.recipientSecret,
+                        revealerAgent.recipientID,
+                        {
+                            in: this.id,
+                            tx: entry.txID,
+                        }
+                    );
 
-            const secret = openAs(
-                matchingEntry.value.revelation,
-                this.agentCredential.recipientSecret,
-                revealerAgent.recipientID,
-                {
-                    in: this.id,
-                    tx: matchingEntry.txID,
+                    if (secret) return secret as KeySecret;
                 }
-            );
+            }
 
-            if (secret) return secret as KeySecret;
+            // Try to find indirect revelation through previousKeys
 
             for (const entry of readKeyHistory) {
                 if (entry.value?.previousKeys?.[keyID]) {
@@ -430,7 +405,14 @@ export class MultiLog {
                         continue;
                     }
 
-                    const secret = unsealKeySecret({ sealed: keyID, sealing: sealingKeyID, encrypted: entry.value.previousKeys[keyID] }, sealingKeySecret);
+                    const secret = unsealKeySecret(
+                        {
+                            sealed: keyID,
+                            sealing: sealingKeyID,
+                            encrypted: entry.value.previousKeys[keyID],
+                        },
+                        sealingKeySecret
+                    );
 
                     if (secret) {
                         return secret;
@@ -438,7 +420,12 @@ export class MultiLog {
                 }
             }
 
-            throw new Error("readKey " + keyID + " not revealed for " + getAgentID(getAgent(this.agentCredential)));
+            throw new Error(
+                "readKey " +
+                    keyID +
+                    " not revealed for " +
+                    getAgentID(getAgent(this.agentCredential))
+            );
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.requiredMultiLogs[this.header.ruleset.team].getReadKey(
                 keyID
