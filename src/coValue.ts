@@ -153,9 +153,10 @@ export class CoMap<
         return json;
     }
 
-    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): void {
+    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
         const editable = new WriteableCoMap<M, Meta>(this.multiLog);
         changer(editable);
+        return new CoMap(this.multiLog);
     }
 }
 

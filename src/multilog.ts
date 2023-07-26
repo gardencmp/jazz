@@ -28,7 +28,7 @@ import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
     determineValidTransactions,
-    expectTeam,
+    expectTeamContent,
 } from "./permissions";
 
 export type MultiLogID = `coval_${string}`;
@@ -65,7 +65,7 @@ export type PrivateTransaction = {
     privacy: "private";
     madeAt: number;
     keyUsed: KeyID;
-    encryptedChanges: Encrypted<JsonValue[]>;
+    encryptedChanges: Encrypted<JsonValue[], {in: MultiLogID, tx: TransactionID}>;
 };
 
 export type TrustingTransaction = {
@@ -338,7 +338,7 @@ export class MultiLog {
 
     getCurrentReadKey(): { secret: KeySecret; id: KeyID } {
         if (this.header.ruleset.type === "team") {
-            const content = expectTeam(this.getCurrentContent());
+            const content = expectTeamContent(this.getCurrentContent());
 
             const currentKeyId = content.get("readKey")?.keyID;
 
@@ -365,7 +365,7 @@ export class MultiLog {
 
     getReadKey(keyID: KeyID): KeySecret {
         if (this.header.ruleset.type === "team") {
-            const content = expectTeam(this.getCurrentContent());
+            const content = expectTeamContent(this.getCurrentContent());
 
             const readKeyHistory = content.getHistory("readKey");
 
@@ -416,6 +416,8 @@ export class MultiLog {
 
                     if (secret) {
                         return secret;
+                    } else {
+                        console.error(`Sealing ${sealingKeyID} key didn't unseal ${keyID}`);
                     }
                 }
             }
