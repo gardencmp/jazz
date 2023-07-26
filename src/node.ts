@@ -1,3 +1,5 @@
+import { CoMap } from "./coValue";
+import { newRandomKeySecret, seal } from "./crypto";
 import {
     MultiLogID,
     MultiLog,
@@ -10,6 +12,7 @@ import {
     getAgentMultilogHeader,
     MultiLogHeader,
 } from "./multilog";
+import { Team, expectTeamContent } from "./permissions";
 
 export class LocalNode {
     multilogs: { [key: MultiLogID]: Promise<MultiLog> | MultiLog } = {};
@@ -38,9 +41,14 @@ export class LocalNode {
     }
 
     createMultiLog(header: MultiLogHeader): MultiLog {
-        const requiredMultiLogs = header.ruleset.type === "ownedByTeam" ? {
-            [header.ruleset.team]: this.expectMultiLogLoaded(header.ruleset.team)
-        } : {};
+        const requiredMultiLogs =
+            header.ruleset.type === "ownedByTeam"
+                ? {
+                      [header.ruleset.team]: this.expectMultiLogLoaded(
+                          header.ruleset.team
+                      ),
+                  }
+                : {};
 
         const multilog = new MultiLog(
             header,
@@ -62,6 +70,44 @@ export class LocalNode {
             throw new Error(`Multilog ${id} not yet loaded`);
         }
         return multilog;
+    }
+
+    addKnownAgent(agent: Agent) {
+        const agentID = getAgentID(agent);
+        this.knownAgents[agentID] = agent;
+    }
+
+    createTeam(): Team {
+        const teamMultilog = this.createMultiLog({
+            type: "comap",
+            ruleset: { type: "team", initialAdmin: this.agentID },
+            meta: null,
+        });
+
+        let teamContent = expectTeamContent(teamMultilog.getCurrentContent());
+
+        teamContent = teamContent.edit((editable) => {
+            editable.set(this.agentID, "admin", "trusting");
+
+            const readKey = newRandomKeySecret();
+            const revelation = seal(
+                readKey.secret,
+                this.agentCredential.recipientSecret,
+                new Set([getAgent(this.agentCredential).recipientID]),
+                {
+                    in: teamMultilog.id,
+                    tx: teamMultilog.nextTransactionID(),
+                }
+            );
+
+            editable.set(
+                "readKey",
+                { keyID: readKey.id, revelation },
+                "trusting"
+            );
+        });
+
+        return new Team(teamContent, this);
     }
 }
 

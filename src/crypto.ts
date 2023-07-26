@@ -13,7 +13,7 @@ export type Signature = `signature_z${string}`;
 
 export type RecipientSecret = `recipientSecret_z${string}`;
 export type RecipientID = `recipient_z${string}`;
-export type Sealed = `sealed_U${string}`;
+export type Sealed<T> = `sealed_U${string}` & { __type: T };
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
@@ -64,16 +64,16 @@ export function getRecipientID(secret: RecipientSecret): RecipientID {
     )}`;
 }
 
-export type SealedSet = {
-    [recipient: RecipientID]: Sealed;
+export type SealedSet<T> = {
+    [recipient: RecipientID]: Sealed<T>;
 };
 
-export function seal(
-    message: JsonValue,
+export function seal<T extends JsonValue>(
+    message: T,
     from: RecipientSecret,
     to: Set<RecipientID>,
     nOnceMaterial: { in: MultiLogID; tx: TransactionID }
-): SealedSet {
+): SealedSet<T> {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
@@ -88,7 +88,7 @@ export function seal(
 
     const plaintext = textEncoder.encode(stableStringify(message));
 
-    const sealedSet: SealedSet = {};
+    const sealedSet: SealedSet<T> = {};
 
     for (let i = 0; i < recipientsSorted.length; i++) {
         const recipient = recipientsSorted[i];
@@ -101,18 +101,20 @@ export function seal(
             plaintext
         );
 
-        sealedSet[recipient] = `sealed_U${base64url.encode(sealedBytes)}`;
+        sealedSet[recipient] = `sealed_U${base64url.encode(
+            sealedBytes
+        )}` as Sealed<T>;
     }
 
     return sealedSet;
 }
 
-export function openAs(
-    sealedSet: SealedSet,
+export function openAs<T extends JsonValue>(
+    sealedSet: SealedSet<T>,
     recipient: RecipientSecret,
     from: RecipientID,
     nOnceMaterial: { in: MultiLogID; tx: TransactionID }
-): JsonValue | undefined {
+): T | undefined {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
@@ -140,6 +142,7 @@ export function openAs(
     try {
         return JSON.parse(textDecoder.decode(plaintext));
     } catch (e) {
+        console.error("Failed to decrypt/parse sealed message", e);
         return undefined;
     }
 }
@@ -181,7 +184,10 @@ export function shortHash(value: JsonValue): ShortHash {
     )}`;
 }
 
-export type Encrypted<T extends JsonValue> = `encrypted_U${string}`;
+export type Encrypted<
+    T extends JsonValue,
+    N extends JsonValue
+> = `encrypted_U${string}` & { __type: T; __nOnceMaterial: N };
 
 export type KeySecret = `keySecret_z${string}`;
 export type KeyID = `key_z${string}`;
@@ -197,7 +203,7 @@ function encrypt<T extends JsonValue, N extends JsonValue>(
     value: T,
     keySecret: KeySecret,
     nOnceMaterial: N
-): Encrypted<T> {
+): Encrypted<T, N> {
     const keySecretBytes = base58.decode(
         keySecret.substring("keySecret_z".length)
     );
@@ -207,21 +213,25 @@ function encrypt<T extends JsonValue, N extends JsonValue>(
 
     const plaintext = textEncoder.encode(stableStringify(value));
     const ciphertext = xsalsa20(keySecretBytes, nOnce, plaintext);
-    return `encrypted_U${base64url.encode(ciphertext)}`;
+    return `encrypted_U${base64url.encode(ciphertext)}` as Encrypted<T, N>;
 }
 
 export function encryptForTransaction<T extends JsonValue>(
     value: T,
     keySecret: KeySecret,
     nOnceMaterial: { in: MultiLogID; tx: TransactionID }
-): Encrypted<T> {
+): Encrypted<T, { in: MultiLogID; tx: TransactionID }> {
     return encrypt(value, keySecret, nOnceMaterial);
 }
 
 export function sealKeySecret(keys: {
     toSeal: { id: KeyID; secret: KeySecret };
     sealing: { id: KeyID; secret: KeySecret };
-}): { sealed: KeyID; sealing: KeyID; encrypted: Encrypted<KeySecret> } {
+}): {
+    sealed: KeyID;
+    sealing: KeyID;
+    encrypted: Encrypted<KeySecret, { sealed: KeyID; sealing: KeyID }>;
+} {
     const nOnceMaterial = {
         sealed: keys.toSeal.id,
         sealing: keys.sealing.id,
@@ -239,7 +249,7 @@ export function sealKeySecret(keys: {
 }
 
 function decrypt<T extends JsonValue, N extends JsonValue>(
-    encrypted: Encrypted<T>,
+    encrypted: Encrypted<T, N>,
     keySecret: KeySecret,
     nOnceMaterial: N
 ): T | undefined {
@@ -263,7 +273,7 @@ function decrypt<T extends JsonValue, N extends JsonValue>(
 }
 
 export function decryptForTransaction<T extends JsonValue>(
-    encrypted: Encrypted<T>,
+    encrypted: Encrypted<T, { in: MultiLogID; tx: TransactionID }>,
     keySecret: KeySecret,
     nOnceMaterial: { in: MultiLogID; tx: TransactionID }
 ): T | undefined {
@@ -271,10 +281,17 @@ export function decryptForTransaction<T extends JsonValue>(
 }
 
 export function unsealKeySecret(
-    sealedInfo: { sealed: KeyID; sealing: KeyID; encrypted: Encrypted<KeySecret> },
+    sealedInfo: {
+        sealed: KeyID;
+        sealing: KeyID;
+        encrypted: Encrypted<KeySecret, { sealed: KeyID; sealing: KeyID }>;
+    },
     sealingSecret: KeySecret
 ): KeySecret | undefined {
-    const nOnceMaterial = { sealed: sealedInfo.sealed, sealing: sealedInfo.sealing };
+    const nOnceMaterial = {
+        sealed: sealedInfo.sealed,
+        sealing: sealedInfo.sealing,
+    };
 
     return decrypt(sealedInfo.encrypted, sealingSecret, nOnceMaterial);
 }

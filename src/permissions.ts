@@ -1,7 +1,19 @@
 import { CoMap, CoValue, MapOpPayload } from "./coValue";
 import { JsonValue } from "./jsonValue";
-import { Encrypted, KeyID, KeySecret, RecipientID, SealedSet, SignatoryID } from "./crypto";
 import {
+    Encrypted,
+    KeyID,
+    KeySecret,
+    RecipientID,
+    SealedSet,
+    SignatoryID,
+    encryptForTransaction,
+    newRandomKeySecret,
+    seal,
+    sealKeySecret,
+} from "./crypto";
+import {
+    AgentCredential,
     AgentID,
     MultiLog,
     MultiLogID,
@@ -11,6 +23,7 @@ import {
     TrustingTransaction,
     agentIDfromSessionID,
 } from "./multilog";
+import { LocalNode } from ".";
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AgentID; parentTeams?: MultiLogID[] }
@@ -101,7 +114,8 @@ export function determineValidTransactions(
             if (
                 change.value !== "admin" &&
                 change.value !== "writer" &&
-                change.value !== "reader"
+                change.value !== "reader" &&
+                change.value !== "revoked"
             ) {
                 console.warn("Team transaction must set a valid role");
                 continue;
@@ -185,15 +199,150 @@ export function determineValidTransactions(
 }
 
 export type TeamContent = { [key: AgentID]: Role } & {
-    readKey: { keyID: KeyID; revelation: SealedSet, previousKeys?: {
-        [key: KeyID]: Encrypted<KeySecret>
-    } };
+    readKey: {
+        keyID: KeyID;
+        revelation: SealedSet<KeySecret>;
+        previousKeys?: {
+            [key: KeyID]: Encrypted<
+                KeySecret,
+                { sealed: KeyID; sealing: KeyID }
+            >;
+        };
+    };
 };
 
-export function expectTeam(content: CoValue): CoMap<TeamContent, {}> {
+export function expectTeamContent(content: CoValue): CoMap<TeamContent, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
     return content as CoMap<TeamContent, {}>;
+}
+
+export class Team {
+    teamMap: CoMap<TeamContent, {}>;
+    node: LocalNode;
+
+    constructor(teamMap: CoMap<TeamContent, {}>, node: LocalNode) {
+        this.teamMap = teamMap;
+        this.node = node;
+    }
+
+    addMember(agentID: AgentID, role: Role) {
+        this.teamMap = this.teamMap.edit((map) => {
+            const agent = this.node.knownAgents[agentID];
+
+            if (!agent) {
+                throw new Error("Unknown agent " + agentID);
+            }
+
+            map.set(agentID, role, "trusting");
+            if (map.get(agentID) !== role) {
+                throw new Error("Failed to set role");
+            }
+
+            const currentReadKey = this.teamMap.multiLog.getCurrentReadKey();
+
+            const revelation = seal(
+                currentReadKey.secret,
+                this.teamMap.multiLog.agentCredential.recipientSecret,
+                new Set([agent.recipientID]),
+                {
+                    in: this.teamMap.multiLog.id,
+                    tx: this.teamMap.multiLog.nextTransactionID(),
+                }
+            );
+
+            map.set(
+                "readKey",
+                { keyID: currentReadKey.id, revelation },
+                "trusting"
+            );
+        });
+    }
+
+    rotateReadKey() {
+        const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
+            if (key.startsWith("agent_")) {
+                const role = this.teamMap.get(key);
+                return (
+                    role === "admin" || role === "writer" || role === "reader"
+                );
+            } else {
+                return false;
+            }
+        }) as AgentID[];
+
+        const currentReadKey = this.teamMap.multiLog.getCurrentReadKey();
+
+        const newReadKey = newRandomKeySecret();
+
+        const newReadKeyRevelation = seal(
+            newReadKey.secret,
+            this.teamMap.multiLog.agentCredential.recipientSecret,
+            new Set(
+                currentlyPermittedReaders.map(
+                    (reader) => this.node.knownAgents[reader].recipientID
+                )
+            ),
+            {
+                in: this.teamMap.multiLog.id,
+                tx: this.teamMap.multiLog.nextTransactionID(),
+            }
+        );
+
+        this.teamMap = this.teamMap.edit((map) => {
+            map.set(
+                "readKey",
+                {
+                    keyID: newReadKey.id,
+                    revelation: newReadKeyRevelation,
+                    previousKeys: {
+                        [currentReadKey.id]: sealKeySecret({
+                            sealing: newReadKey,
+                            toSeal: currentReadKey,
+                        }).encrypted,
+                    },
+                },
+                "trusting"
+            );
+        });
+    }
+
+    removeMember(agentID: AgentID) {
+        this.teamMap = this.teamMap.edit((map) => {
+            map.set(agentID, "revoked", "trusting");
+        });
+
+        this.rotateReadKey();
+    }
+
+    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonValue>(
+        meta?: M
+    ): CoMap<M, Meta> {
+        return this.node
+            .createMultiLog({
+                type: "comap",
+                ruleset: {
+                    type: "ownedByTeam",
+                    team: this.teamMap.id,
+                },
+                meta: meta || null,
+            })
+            .getCurrentContent() as CoMap<M, Meta>;
+    }
+
+    testWithDifferentCredentials(
+        credential: AgentCredential,
+        sessionId: SessionID
+    ): Team {
+        return new Team(
+            expectTeamContent(
+                this.teamMap.multiLog
+                    .testWithDifferentCredentials(credential, sessionId)
+                    .getCurrentContent()
+            ),
+            this.node
+        );
+    }
 }

@@ -106,50 +106,54 @@ test("Hashing is deterministic", () => {
 test("Encryption for transactions round-trips", () => {
     const { secret } = newRandomKeySecret();
 
-    const encryptedChunks = [
-        encryptForTransaction({ a: "hello" }, secret, {
-            in: "coval_zTEST",
-            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
-        }),
-        encryptForTransaction({ b: "world" }, secret, {
-            in: "coval_zTEST",
-            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
-        }),
-    ];
+    const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+    });
 
-    const decryptedChunks = encryptedChunks.map((chunk, i) =>
-        decryptForTransaction(chunk, secret, {
-            in: "coval_zTEST",
-            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: i },
-        })
-    );
+    const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+    });
 
-    expect(decryptedChunks).toEqual([{ a: "hello" }, { b: "world" }]);
+    const decrypted1 = decryptForTransaction(encrypted1, secret, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+    });
+
+    const decrypted2 =  decryptForTransaction(encrypted2, secret, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+    });
+
+    expect([decrypted1, decrypted2]).toEqual([{ a: "hello" }, { b: "world" }]);
 });
 
 test("Encryption for transactions doesn't decrypt with a wrong key", () => {
     const { secret } = newRandomKeySecret();
     const { secret: secret2 } = newRandomKeySecret();
 
-    const encryptedChunks = [
-        encryptForTransaction({ a: "hello" }, secret, {
-            in: "coval_zTEST",
-            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
-        }),
-        encryptForTransaction({ b: "world" }, secret, {
-            in: "coval_zTEST",
-            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
-        }),
-    ];
+    const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+    });
 
-    const decryptedChunks = encryptedChunks.map((chunk, i) =>
-        decryptForTransaction(chunk, secret2, {
-            in: "coval_zTEST",
-            tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: i },
-        })
-    );
+    const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+    });
 
-    expect(decryptedChunks).toEqual([undefined, undefined]);
+    const decrypted1 = decryptForTransaction(encrypted1, secret2, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+    });
+
+    const decrypted2 =  decryptForTransaction(encrypted2, secret2, {
+        in: "coval_zTEST",
+        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+    });
+
+    expect([decrypted1, decrypted2]).toEqual([undefined, undefined]);
 });
 
 test("Encryption of keySecrets round-trips", () => {
