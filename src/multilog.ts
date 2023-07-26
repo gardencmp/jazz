@@ -243,7 +243,7 @@ export class MultiLog {
         let transaction: Transaction;
 
         if (privacy === "private") {
-            const { keySecret, keyID } = this.getCurrentReadKey();
+            const { secret: keySecret, id: keyID } = this.getCurrentReadKey();
 
             transaction = {
                 privacy: "private",
@@ -336,7 +336,7 @@ export class MultiLog {
         return allTransactions;
     }
 
-    getCurrentReadKey(): { keySecret: KeySecret; keyID: KeyID } {
+    getCurrentReadKey(): { secret: KeySecret; id: KeyID } {
         if (this.header.ruleset.type === "team") {
             const content = expectTeam(this.getCurrentContent());
 
@@ -349,8 +349,8 @@ export class MultiLog {
             const secret = this.getReadKey(currentKeyId);
 
             return {
-                keySecret: secret,
-                keyID: currentKeyId,
+                secret: secret,
+                id: currentKeyId,
             };
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.requiredMultiLogs[

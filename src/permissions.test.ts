@@ -321,7 +321,7 @@ test("Admins can set team read key and then use it to create and read private tr
             keyID: readKeyID,
             revelation,
         });
-        expect(team.getCurrentReadKey().keySecret).toEqual(readKey);
+        expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
     const childObject = node.createMultiLog({
@@ -380,7 +380,7 @@ test("Admins can set team read key and then writers can use it to create and rea
         newRandomSessionID(writerID)
     );
 
-    expect(childObject.getCurrentReadKey().keySecret).toEqual(readKey);
+    expect(childObject.getCurrentReadKey().secret).toEqual(readKey);
 
     let childContentAsWriter = expectMap(
         childObjectAsWriter.getCurrentContent()
@@ -440,7 +440,7 @@ test("Admins can set team read key and then use it to create private transaction
         newRandomSessionID(readerID)
     );
 
-    expect(childObjectAsReader.getCurrentReadKey().keySecret).toEqual(readKey);
+    expect(childObjectAsReader.getCurrentReadKey().secret).toEqual(readKey);
 
     const childContentAsReader = expectMap(
         childObjectAsReader.getCurrentContent()
@@ -508,7 +508,7 @@ test("Admins can set team read key and then use it to create private transaction
         newRandomSessionID(reader1ID)
     );
 
-    expect(childObjectAsReader1.getCurrentReadKey().keySecret).toEqual(readKey);
+    expect(childObjectAsReader1.getCurrentReadKey().secret).toEqual(readKey);
 
     const childContentAsReader1 = expectMap(
         childObjectAsReader1.getCurrentContent()
@@ -521,7 +521,7 @@ test("Admins can set team read key and then use it to create private transaction
         newRandomSessionID(reader2ID)
     );
 
-    expect(childObjectAsReader2.getCurrentReadKey().keySecret).toEqual(readKey);
+    expect(childObjectAsReader2.getCurrentReadKey().secret).toEqual(readKey);
 
     const childContentAsReader2 = expectMap(
         childObjectAsReader2.getCurrentContent()
@@ -551,7 +551,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
             keyID: readKeyID,
             revelation,
         });
-        expect(team.getCurrentReadKey().keySecret).toEqual(readKey);
+        expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
     const childObject = node.createMultiLog({
@@ -588,7 +588,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
             keyID: readKeyID2,
             revelation,
         });
-        expect(team.getCurrentReadKey().keySecret).toEqual(readKey2);
+        expect(team.getCurrentReadKey().secret).toEqual(readKey2);
     });
 
     childContent = expectMap(childObject.getCurrentContent());
@@ -630,7 +630,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
             keyID: readKeyID,
             revelation,
         });
-        expect(team.getCurrentReadKey().keySecret).toEqual(readKey);
+        expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -679,7 +679,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
             keyID: readKeyID2,
             revelation,
         });
-        expect(team.getCurrentReadKey().keySecret).toEqual(readKey2);
+        expect(team.getCurrentReadKey().secret).toEqual(readKey2);
 
         editable.set(readerID, "reader", "trusting");
         expect(editable.get(readerID)).toEqual("reader");
@@ -695,9 +695,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         newRandomSessionID(readerID)
     );
 
-    expect(childObjectAsReader.getCurrentReadKey().keySecret).toEqual(readKey2);
-
-    console.log(readKeyID2);
+    expect(childObjectAsReader.getCurrentReadKey().secret).toEqual(readKey2);
 
     const childContentAsReader = expectMap(
         childObjectAsReader.getCurrentContent()
@@ -706,3 +704,113 @@ test("Admins can set team read key, make a private transaction in an owned objec
     expect(childContentAsReader.get("foo")).toEqual("bar");
     expect(childContentAsReader.get("foo2")).toEqual("bar2");
 });
+
+test("Admins can set team read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions", () => {
+    const { node, team, admin, adminID } = newTeam();
+
+    const childObject = node.createMultiLog({
+        type: "comap",
+        ruleset: { type: "ownedByTeam", team: team.id },
+        meta: null,
+    });
+
+    const teamContent = expectTeam(team.getCurrentContent());
+    const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+    const reader = newRandomAgentCredential();
+    const readerID = getAgentID(getAgent(reader));
+    const reader2 = newRandomAgentCredential();
+    const reader2ID = getAgentID(getAgent(reader));
+
+    teamContent.edit((editable) => {
+        const revelation = seal(
+            readKey,
+            admin.recipientSecret,
+            new Set([getRecipientID(admin.recipientSecret), getRecipientID(reader.recipientSecret), getRecipientID(reader2.recipientSecret)]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
+        expect(editable.get("readKey")).toEqual({
+            keyID: readKeyID,
+            revelation,
+        });
+        expect(team.getCurrentReadKey().secret).toEqual(readKey);
+
+        editable.set(readerID, "reader", "trusting");
+        expect(editable.get(readerID)).toEqual("reader");
+        editable.set(reader2ID, "reader", "trusting");
+        expect(editable.get(reader2ID)).toEqual("reader");
+    });
+
+    let childContent = expectMap(childObject.getCurrentContent());
+
+    childContent.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    childContent = expectMap(childObject.getCurrentContent());
+    expect(childContent.get("foo")).toEqual("bar");
+
+    let childObjectAsReader = childObject.testWithDifferentCredentials(
+        reader,
+        newRandomSessionID(readerID)
+    );
+
+    expect(expectMap(childObjectAsReader.getCurrentContent()).get("foo")).toEqual("bar");
+
+    let childObjectAsReader2 = childObject.testWithDifferentCredentials(
+        reader,
+        newRandomSessionID(readerID)
+    );
+
+    expect(expectMap(childObjectAsReader2.getCurrentContent()).get("foo")).toEqual("bar");
+
+    const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
+
+    teamContent.edit((editable) => {
+        const revelation = seal(
+            readKey2,
+            admin.recipientSecret,
+            new Set([getRecipientID(admin.recipientSecret), getRecipientID(reader2.recipientSecret)]),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+        editable.set("readKey", { keyID: readKeyID2, revelation }, "trusting");
+        expect(editable.get("readKey")).toEqual({
+            keyID: readKeyID2,
+            revelation,
+        });
+        expect(team.getCurrentReadKey().secret).toEqual(readKey2);
+
+        editable.set(readerID, "revoked", "trusting");
+        // expect(editable.get(readerID)).toEqual("revoked");
+    });
+
+
+    expect(childObject.getCurrentReadKey().secret).toEqual(readKey2);
+
+    childContent = expectMap(childObject.getCurrentContent());
+    childContent.edit((editable) => {
+        editable.set("foo2", "bar2", "private");
+        expect(editable.get("foo2")).toEqual("bar2");
+    });
+
+    // TODO: make sure these instances of multilogs sync between each other so this isn't necessary?
+    childObjectAsReader = childObject.testWithDifferentCredentials(
+        reader,
+        newRandomSessionID(readerID)
+    );
+    childObjectAsReader2 = childObject.testWithDifferentCredentials(
+        reader2,
+        newRandomSessionID(reader2ID)
+    );
+
+    expect(() => expectMap(childObjectAsReader.getCurrentContent())).toThrow(/readKey (.+?) not revealed for (.+?)/);
+    expect(expectMap(childObjectAsReader2.getCurrentContent()).get("foo2")).toEqual("bar2");
+    expect(() => {childObjectAsReader.getCurrentContent()}).toThrow();
+})
