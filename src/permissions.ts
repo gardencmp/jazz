@@ -228,6 +228,10 @@ export class Team {
         this.node = node;
     }
 
+    get id(): MultiLogID {
+        return this.teamMap.id;
+    }
+
     addMember(agentID: AgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
             const agent = this.node.knownAgents[agentID];

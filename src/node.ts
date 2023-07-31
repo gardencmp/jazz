@@ -13,10 +13,20 @@ import {
     MultiLogHeader,
 } from "./multilog";
 import { Team, expectTeamContent } from "./permissions";
+import {
+    NewContentMessage,
+    Peer,
+    PeerID,
+    SessionNewContent,
+    SubscribeMessage,
+    SyncMessage,
+    UnsubscribeMessage,
+    WrongAssumedKnownStateMessage,
+} from "./sync";
 
 export class LocalNode {
     multilogs: { [key: MultiLogID]: Promise<MultiLog> | MultiLog } = {};
-    // peers: {[key: Hostname]: Peer} = {};
+    peers: { [key: PeerID]: Peer } = {};
     agentCredential: AgentCredential;
     agentID: AgentID;
     ownSessionID: SessionID;
@@ -109,13 +119,80 @@ export class LocalNode {
 
         return new Team(teamContent, this);
     }
+
+    async addPeer(peer: Peer) {
+        this.peers[peer.id] = peer;
+
+        const writer = peer.outgoing.getWriter();
+
+        for await (const msg of peer.incoming) {
+            const response = this.handleSyncMessage(msg);
+
+            if (response) {
+                await writer.write(response);
+            }
+        }
+    }
+
+    handleSyncMessage(msg: SyncMessage): SyncMessage | undefined {
+        // TODO: validate
+        switch (msg.type) {
+            case "subscribe":
+                return this.handleSubscribe(msg);
+            case "newContent":
+                return this.handleNewContent(msg);
+            case "wrongAssumedKnownState":
+                return this.handleWrongAssumedKnownState(msg);
+            case "unsubscribe":
+                return this.handleUnsubscribe(msg);
+        }
+    }
+
+    handleSubscribe(msg: SubscribeMessage): SyncMessage | undefined {
+        const multilog = this.expectMultiLogLoaded(msg.knownState.multilogID);
+
+        return {
+            type: "newContent",
+            multilogID: multilog.id,
+            header: multilog.header,
+            newContent: Object.fromEntries(
+                Object.entries(multilog.sessions)
+                    .map(([sessionID, log]) => {
+                        const newTransactions = log.transactions.slice(
+                            msg.knownState.sessions[sessionID as SessionID] || 0
+                        );
+
+                        if (
+                            newTransactions.length === 0 ||
+                            !log.lastHash ||
+                            !log.lastSignature
+                        ) {
+                            return undefined;
+                        }
+
+                        return [
+                            sessionID,
+                            {
+                                after:
+                                    msg.knownState.sessions[
+                                        sessionID as SessionID
+                                    ] || 0,
+                                newTransactions,
+                                lastHash: log.lastHash,
+                                lastSignature: log.lastSignature,
+                            },
+                        ];
+                    })
+                    .filter((x): x is Exclude<typeof x, undefined> => !!x)
+            ),
+        };
+    }
+
+    handleNewContent(msg: NewContentMessage): SyncMessage | undefined {}
+
+    handleWrongAssumedKnownState(
+        msg: WrongAssumedKnownStateMessage
+    ): SyncMessage | undefined {}
+
+    handleUnsubscribe(msg: UnsubscribeMessage): SyncMessage | undefined {}
 }
-
-// type Hostname = string;
-
-// interface Peer {
-//     hostname: Hostname;
-//     incoming: ReadableStream<SyncMessage>;
-//     outgoing: WritableStream<SyncMessage>;
-//     optimisticKnownStates: {[multilogID: MultiLogID]: MultilogKnownState};
-// }
