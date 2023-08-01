@@ -1,7 +1,7 @@
 import { Hash } from "./crypto";
 import { MultiLogHeader, MultiLogID, SessionID, Transaction } from "./multilog";
 
-type MultiLogKnownState = {
+export type MultiLogKnownState = {
     multilogID: MultiLogID;
     header: boolean;
     sessions: { [sessionID: SessionID]: number };
@@ -50,6 +50,11 @@ export interface Peer {
     id: PeerID;
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStream<SyncMessage>;
-    optimisticKnownStates: {[multilogID: MultiLogID]: MultiLogKnownState};
 }
 
+export interface PeerState {
+    id: PeerID;
+    optimisticKnownStates: {[multilogID: MultiLogID]: MultiLogKnownState};
+    incoming: ReadableStream<SyncMessage>;
+    outgoing: WritableStreamDefaultWriter<SyncMessage>;
+}

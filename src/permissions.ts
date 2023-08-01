@@ -155,9 +155,9 @@ export function determineValidTransactions(
         return validTransactions;
     } else if (multilog.header.ruleset.type === "ownedByTeam") {
         const teamContent =
-            multilog.requiredMultiLogs[
+            multilog.node.expectMultiLogLoaded(
                 multilog.header.ruleset.team
-            ].getCurrentContent();
+            ).getCurrentContent();
 
         if (teamContent.type !== "comap") {
             throw new Error("Team must be a map");
@@ -249,7 +249,7 @@ export class Team {
 
             const revelation = seal(
                 currentReadKey.secret,
-                this.teamMap.multiLog.agentCredential.recipientSecret,
+                this.teamMap.multiLog.node.agentCredential.recipientSecret,
                 new Set([agent.recipientID]),
                 {
                     in: this.teamMap.multiLog.id,
@@ -283,7 +283,7 @@ export class Team {
 
         const newReadKeyRevelation = seal(
             newReadKey.secret,
-            this.teamMap.multiLog.agentCredential.recipientSecret,
+            this.teamMap.multiLog.node.agentCredential.recipientSecret,
             new Set(
                 currentlyPermittedReaders.map(
                     (reader) => this.node.knownAgents[reader].recipientID

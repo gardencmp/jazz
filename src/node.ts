@@ -11,12 +11,14 @@ import {
     getAgentID,
     getAgentMultilogHeader,
     MultiLogHeader,
+    agentIDfromSessionID,
 } from "./multilog";
 import { Team, expectTeamContent } from "./permissions";
 import {
     NewContentMessage,
     Peer,
     PeerID,
+    PeerState,
     SessionNewContent,
     SubscribeMessage,
     SyncMessage,
@@ -26,7 +28,7 @@ import {
 
 export class LocalNode {
     multilogs: { [key: MultiLogID]: Promise<MultiLog> | MultiLog } = {};
-    peers: { [key: PeerID]: Peer } = {};
+    peers: { [key: PeerID]: PeerState } = {};
     agentCredential: AgentCredential;
     agentID: AgentID;
     ownSessionID: SessionID;
@@ -40,13 +42,7 @@ export class LocalNode {
         this.knownAgents[agentID] = agent;
         this.ownSessionID = ownSessionID;
 
-        const agentMultilog = new MultiLog(
-            getAgentMultilogHeader(agent),
-            agentCredential,
-            ownSessionID,
-            this.knownAgents,
-            {}
-        );
+        const agentMultilog = new MultiLog(getAgentMultilogHeader(agent), this);
         this.multilogs[agentMultilog.id] = Promise.resolve(agentMultilog);
     }
 
@@ -60,13 +56,7 @@ export class LocalNode {
                   }
                 : {};
 
-        const multilog = new MultiLog(
-            header,
-            this.agentCredential,
-            this.ownSessionID,
-            this.knownAgents,
-            requiredMultiLogs
-        );
+        const multilog = new MultiLog(header, this);
         this.multilogs[multilog.id] = multilog;
         return multilog;
     }
@@ -121,24 +111,31 @@ export class LocalNode {
     }
 
     async addPeer(peer: Peer) {
-        this.peers[peer.id] = peer;
+        const peerState = {
+            id: peer.id,
+            optimisticKnownStates: {},
+            incoming: peer.incoming,
+            outgoing: peer.outgoing.getWriter(),
+        };
+        this.peers[peer.id] = peerState;
 
-        const writer = peer.outgoing.getWriter();
-
-        for await (const msg of peer.incoming) {
-            const response = this.handleSyncMessage(msg);
+        for await (const msg of peerState.incoming) {
+            const response = this.handleSyncMessage(msg, peerState);
 
             if (response) {
-                await writer.write(response);
+                await peerState.outgoing.write(response);
             }
         }
     }
 
-    handleSyncMessage(msg: SyncMessage): SyncMessage | undefined {
+    handleSyncMessage(
+        msg: SyncMessage,
+        peer: PeerState
+    ): SyncMessage | undefined {
         // TODO: validate
         switch (msg.type) {
             case "subscribe":
-                return this.handleSubscribe(msg);
+                return this.handleSubscribe(msg, peer);
             case "newContent":
                 return this.handleNewContent(msg);
             case "wrongAssumedKnownState":
@@ -148,51 +145,73 @@ export class LocalNode {
         }
     }
 
-    handleSubscribe(msg: SubscribeMessage): SyncMessage | undefined {
+    handleSubscribe(
+        msg: SubscribeMessage,
+        peer: PeerState
+    ): SyncMessage | undefined {
         const multilog = this.expectMultiLogLoaded(msg.knownState.multilogID);
 
-        return {
-            type: "newContent",
-            multilogID: multilog.id,
-            header: multilog.header,
-            newContent: Object.fromEntries(
-                Object.entries(multilog.sessions)
-                    .map(([sessionID, log]) => {
-                        const newTransactions = log.transactions.slice(
-                            msg.knownState.sessions[sessionID as SessionID] || 0
-                        );
+        peer.optimisticKnownStates[multilog.id] = multilog.knownState();
 
-                        if (
-                            newTransactions.length === 0 ||
-                            !log.lastHash ||
-                            !log.lastSignature
-                        ) {
-                            return undefined;
-                        }
-
-                        return [
-                            sessionID,
-                            {
-                                after:
-                                    msg.knownState.sessions[
-                                        sessionID as SessionID
-                                    ] || 0,
-                                newTransactions,
-                                lastHash: log.lastHash,
-                                lastSignature: log.lastSignature,
-                            },
-                        ];
-                    })
-                    .filter((x): x is Exclude<typeof x, undefined> => !!x)
-            ),
-        };
+        return multilog.newContentSince(msg.knownState);
     }
 
-    handleNewContent(msg: NewContentMessage): SyncMessage | undefined {}
+    handleNewContent(msg: NewContentMessage): SyncMessage | undefined {
+        return undefined;
+    }
 
     handleWrongAssumedKnownState(
         msg: WrongAssumedKnownStateMessage
-    ): SyncMessage | undefined {}
+    ): SyncMessage | undefined {
+        return undefined;
+    }
 
-    handleUnsubscribe(msg: UnsubscribeMessage): SyncMessage | undefined {}
+    handleUnsubscribe(msg: UnsubscribeMessage): SyncMessage | undefined {
+        return undefined;
+    }
+
+    async syncMultiLog(multilog: MultiLog) {
+        for (const peer of Object.values(this.peers)) {
+            const optimisticKnownState =
+                peer.optimisticKnownStates[multilog.id];
+
+            const newContent = multilog.newContentSince(optimisticKnownState);
+
+            peer.optimisticKnownStates[multilog.id] = multilog.knownState();
+
+            if (newContent) {
+                await peer.outgoing.write(newContent);
+            }
+        }
+    }
+
+    testWithDifferentCredentials(
+        agentCredential: AgentCredential,
+        ownSessionID: SessionID
+    ): LocalNode {
+        const newNode = new LocalNode(agentCredential, ownSessionID);
+
+        newNode.multilogs = Object.fromEntries(
+            Object.entries(this.multilogs)
+                .map(([id, multilog]) => {
+                    if (multilog instanceof Promise) {
+                        return [id, undefined];
+                    }
+
+                    const newMultilog = new MultiLog(multilog.header, newNode);
+
+                    newMultilog.sessions = multilog.sessions;
+
+                    return [id, newMultilog];
+                })
+                .filter((x): x is Exclude<typeof x, undefined> => !!x)
+        );
+
+        newNode.knownAgents = {
+            ...this.knownAgents,
+            [agentIDfromSessionID(ownSessionID)]: getAgent(agentCredential),
+        };
+
+        return newNode;
+    }
 }
