@@ -139,7 +139,7 @@ export class LocalNode {
             case "newContent":
                 return this.handleNewContent(msg);
             case "wrongAssumedKnownState":
-                return this.handleWrongAssumedKnownState(msg);
+                return this.handleWrongAssumedKnownState(msg, peer);
             case "unsubscribe":
                 return this.handleUnsubscribe(msg);
         }
@@ -161,9 +161,14 @@ export class LocalNode {
     }
 
     handleWrongAssumedKnownState(
-        msg: WrongAssumedKnownStateMessage
+        msg: WrongAssumedKnownStateMessage,
+        peer: PeerState
     ): SyncMessage | undefined {
-        return undefined;
+        const multilog = this.expectMultiLogLoaded(msg.knownState.multilogID);
+
+        peer.optimisticKnownStates[msg.knownState.multilogID] = msg.knownState;
+
+        return multilog.newContentSince(msg.knownState);
     }
 
     handleUnsubscribe(msg: UnsubscribeMessage): SyncMessage | undefined {
