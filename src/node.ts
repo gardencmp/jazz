@@ -123,6 +123,21 @@ export class LocalNode {
         };
         this.peers[peer.id] = peerState;
 
+        if (peer.role === "server") {
+            for (const multilog of Object.values(this.multilogs)) {
+                if (multilog instanceof Promise) {
+                    continue;
+                }
+
+                await peerState.outgoing.write(
+                    {
+                        type: "subscribe",
+                        knownState: multilog.knownState(),
+                    }
+                );
+            }
+        }
+
         for await (const msg of peerState.incoming) {
             const response = this.handleSyncMessage(msg, peerState);
 

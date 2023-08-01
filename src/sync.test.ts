@@ -412,6 +412,7 @@ test("If we add a server peer, all updates to all multilogs are sent to it, even
     });
 
     const reader = outRx.getReader();
+    const _initialSyncMessage = await reader.read();
 
     const firstMessage = await reader.read();
 
@@ -464,9 +465,10 @@ test("If we add a server peer, it even receives just headers of newly created mu
         role: "server",
     });
 
-    const map = team.createMap();
-
     const reader = outRx.getReader();
+    const _initialSyncMessage = await reader.read();
+
+    const map = team.createMap();
 
     const firstMessage = await reader.read();
 
@@ -476,7 +478,44 @@ test("If we add a server peer, it even receives just headers of newly created mu
         header: map.multiLog.header,
         newContent: {},
     } satisfies SyncMessage);
-})
+});
+
+test("When we connect a new server peer, we try to sync all existing multilogs to it", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const map = team.createMap();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "server",
+    });
+
+    const reader = outRx.getReader();
+
+    const firstMessage = await reader.read();
+
+    expect(firstMessage.value).toEqual({
+        type: "subscribe",
+        knownState: team.teamMap.multiLog.knownState(),
+    } satisfies SyncMessage);
+
+    const secondMessage = await reader.read();
+
+    expect(secondMessage.value).toEqual({
+        type: "subscribe",
+        knownState: map.multiLog.knownState(),
+    } satisfies SyncMessage);
+});
 
 function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
     const queue: T[] = [];
