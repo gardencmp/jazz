@@ -50,6 +50,7 @@ export interface Peer {
     id: PeerID;
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStream<SyncMessage>;
+    role: 'peer' | 'server' | 'client';
 }
 
 export interface PeerState {
@@ -57,4 +58,5 @@ export interface PeerState {
     optimisticKnownStates: {[multilogID: MultiLogID]: MultiLogKnownState};
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStreamDefaultWriter<SyncMessage>;
+    role: 'peer' | 'server' | 'client';
 }

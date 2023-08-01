@@ -32,6 +32,7 @@ test(
             id: "test",
             incoming: inRx,
             outgoing: outTx,
+            role: "peer",
         });
 
         const writer = inTx.getWriter();
@@ -107,6 +108,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
         id: "test",
         incoming: inRx,
         outgoing: outTx,
+        role: "peer",
     });
 
     const writer = inTx.getWriter();
@@ -172,6 +174,7 @@ test("After subscribing, node sends new txs to peer", async () => {
         id: "test",
         incoming: inRx,
         outgoing: outTx,
+        role: "peer",
     });
 
     const writer = inTx.getWriter();
@@ -282,6 +285,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: "test",
         incoming: inRx,
         outgoing: outTx,
+        role: "peer",
     });
 
     const writer = inTx.getWriter();
@@ -354,6 +358,126 @@ test("No matter the optimistic known state, node respects invalid known state me
     } satisfies SyncMessage);
 });
 
+test("If we add a peer, but it never subscribes to a multilog, it won't get any messages", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const map = team.createMap();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "peer",
+    });
+
+    map.edit((editable) => {
+        editable.set("hello", "world", "trusting");
+    });
+
+    const reader = outRx.getReader();
+
+    await shouldNotResolve(reader.read(), { timeout: 50 });
+});
+
+test("If we add a server peer, all updates to all multilogs are sent to it, even if it doesn't subscribe", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const map = team.createMap();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "server",
+    });
+
+    map.edit((editable) => {
+        editable.set("hello", "world", "trusting");
+    });
+
+    const reader = outRx.getReader();
+
+    const firstMessage = await reader.read();
+
+    expect(firstMessage.value).toEqual({
+        type: "newContent",
+        multilogID: map.multiLog.id,
+        header: map.multiLog.header,
+        newContent: {
+            [node.ownSessionID]: {
+                after: 0,
+                newTransactions: [
+                    {
+                        privacy: "trusting",
+                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                            .transactions[0].madeAt,
+                        changes: [
+                            {
+                                op: "insert",
+                                key: "hello",
+                                value: "world",
+                            } satisfies MapOpPayload<string, string>,
+                        ],
+                    },
+                ],
+                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastSignature:
+                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+            },
+        },
+    } satisfies SyncMessage);
+});
+
+test("If we add a server peer, it even receives just headers of newly created multilogs", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    team.createMap();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "server",
+    });
+
+    const map = team.createMap();
+
+    const reader = outRx.getReader();
+
+    const firstMessage = await reader.read();
+
+    expect(firstMessage.value).toEqual({
+        type: "newContent",
+        multilogID: map.multiLog.id,
+        header: map.multiLog.header,
+        newContent: {},
+    } satisfies SyncMessage);
+})
+
 function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
     const queue: T[] = [];
     let resolveNextItemReady: () => void = () => {};
@@ -363,7 +487,7 @@ function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
 
     const readable = new ReadableStream<T>({
         async pull(controller) {
-            while(true) {
+            while (true) {
                 if (queue.length > 0) {
                     controller.enqueue(queue.shift());
                     if (queue.length === 0) {
@@ -389,4 +513,18 @@ function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
     });
 
     return [readable, writable];
+}
+
+function shouldNotResolve(promise: Promise<any>, ops: { timeout: number }) {
+    return new Promise((resolve, reject) => {
+        promise.then((v) =>
+            reject(
+                new Error(
+                    "Should not have resolved, but resolved to " +
+                        JSON.stringify(v)
+                )
+            )
+        );
+        setTimeout(resolve, ops.timeout);
+    });
 }

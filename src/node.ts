@@ -58,6 +58,9 @@ export class LocalNode {
 
         const multilog = new MultiLog(header, this);
         this.multilogs[multilog.id] = multilog;
+
+        this.syncMultiLog(multilog);
+
         return multilog;
     }
 
@@ -116,6 +119,7 @@ export class LocalNode {
             optimisticKnownStates: {},
             incoming: peer.incoming,
             outgoing: peer.outgoing.getWriter(),
+            role: peer.role,
         };
         this.peers[peer.id] = peerState;
 
@@ -180,12 +184,15 @@ export class LocalNode {
             const optimisticKnownState =
                 peer.optimisticKnownStates[multilog.id];
 
-            const newContent = multilog.newContentSince(optimisticKnownState);
+            if (optimisticKnownState || peer.role === "server") {
+                const newContent =
+                    multilog.newContentSince(optimisticKnownState);
 
-            peer.optimisticKnownStates[multilog.id] = multilog.knownState();
+                peer.optimisticKnownStates[multilog.id] = multilog.knownState();
 
-            if (newContent) {
-                await peer.outgoing.write(newContent);
+                if (newContent) {
+                    await peer.outgoing.write(newContent);
+                }
             }
         }
     }
