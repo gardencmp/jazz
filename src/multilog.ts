@@ -501,6 +501,10 @@ export function getAgentID(agent: Agent): AgentID {
     )}`;
 }
 
+export function agentIDasMultiLogID(agentID: AgentID): MultiLogID {
+    return `coval_${agentID.substring("agent_".length)}`;
+}
+
 export type AgentCredential = {
     signatorySecret: SignatorySecret;
     recipientSecret: RecipientSecret;

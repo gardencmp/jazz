@@ -22,6 +22,7 @@ export type SubscribeMessage = {
 export type SubscribeResponseMessage = {
     action: "subscribeResponse";
     knownState: MultiLogKnownState;
+    asDependencyOf?: MultiLogID;
 };
 
 export type NewContentMessage = {
