@@ -198,6 +198,10 @@ export class CoList<T extends JsonValue, Meta extends JsonValue> {
     constructor(multilog: MultiLog) {
         this.id = multilog.id as CoValueID<CoList<T, Meta>>;
     }
+
+    toJSON(): JsonObject {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export class MultiStream<T extends JsonValue, Meta extends JsonValue> {
@@ -207,6 +211,10 @@ export class MultiStream<T extends JsonValue, Meta extends JsonValue> {
     constructor(multilog: MultiLog) {
         this.id = multilog.id as CoValueID<MultiStream<T, Meta>>;
     }
+
+    toJSON(): JsonObject {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export class Static<T extends JsonValue> {
@@ -215,6 +223,10 @@ export class Static<T extends JsonValue> {
 
     constructor(multilog: MultiLog) {
         this.id = multilog.id as CoValueID<Static<T>>;
+    }
+
+    toJSON(): JsonObject {
+        throw new Error("Method not implemented.");
     }
 }
 

@@ -7,7 +7,7 @@ import {
 } from "./multilog";
 import { LocalNode } from "./node";
 import { SyncMessage } from "./sync";
-import { MapOpPayload } from "./coValue";
+import { MapOpPayload, expectMap } from "./coValue";
 
 test(
     "Node replies with initial tx and header to empty subscribe",
@@ -38,7 +38,7 @@ test(
         const writer = inTx.getWriter();
 
         await writer.write({
-            type: "subscribe",
+            action: "subscribe",
             knownState: {
                 multilogID: map.multiLog.id,
                 header: false,
@@ -51,7 +51,14 @@ test(
         const firstMessage = await reader.read();
 
         expect(firstMessage.value).toEqual({
-            type: "newContent",
+            action: "subscribeResponse",
+            knownState: map.multiLog.knownState(),
+        } satisfies SyncMessage);
+
+        const secondMessage = await reader.read();
+
+        expect(secondMessage.value).toEqual({
+            action: "newContent",
             multilogID: map.multiLog.id,
             header: {
                 type: "comap",
@@ -114,7 +121,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const writer = inTx.getWriter();
 
     await writer.write({
-        type: "subscribe",
+        action: "subscribe",
         knownState: {
             multilogID: map.multiLog.id,
             header: true,
@@ -126,10 +133,17 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     const reader = outRx.getReader();
 
-    const firstMessage = await reader.read();
+    const msg1 = await reader.read();
 
-    expect(firstMessage.value).toEqual({
-        type: "newContent",
+    expect(msg1.value).toEqual({
+        action: "subscribeResponse",
+        knownState: map.multiLog.knownState(),
+    } satisfies SyncMessage);
+
+    const msg2 = await reader.read();
+
+    expect(msg2.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         header: undefined,
         newContent: {
@@ -157,7 +171,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     } satisfies SyncMessage);
 });
 
-test("After subscribing, node sends new txs to peer", async () => {
+test("After subscribing, node sends own known state and new txs to peer", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -180,7 +194,7 @@ test("After subscribing, node sends new txs to peer", async () => {
     const writer = inTx.getWriter();
 
     await writer.write({
-        type: "subscribe",
+        action: "subscribe",
         knownState: {
             multilogID: map.multiLog.id,
             header: false,
@@ -192,10 +206,17 @@ test("After subscribing, node sends new txs to peer", async () => {
 
     const reader = outRx.getReader();
 
-    const firstMessage = await reader.read();
+    const msg1 = await reader.read();
 
-    expect(firstMessage.value).toEqual({
-        type: "newContent",
+    expect(msg1.value).toEqual({
+        action: "subscribeResponse",
+        knownState: map.multiLog.knownState(),
+    } satisfies SyncMessage);
+
+    const msg2 = await reader.read();
+
+    expect(msg2.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         header: map.multiLog.header,
         newContent: {},
@@ -205,10 +226,10 @@ test("After subscribing, node sends new txs to peer", async () => {
         editable.set("hello", "world", "trusting");
     });
 
-    const secondMessage = await reader.read();
+    const msg3 = await reader.read();
 
-    expect(secondMessage.value).toEqual({
-        type: "newContent",
+    expect(msg3.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         newContent: {
             [node.ownSessionID]: {
@@ -238,10 +259,10 @@ test("After subscribing, node sends new txs to peer", async () => {
         editable.set("goodbye", "world", "trusting");
     });
 
-    const thirdMessage = await reader.read();
+    const msg4 = await reader.read();
 
-    expect(thirdMessage.value).toEqual({
-        type: "newContent",
+    expect(msg4.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         newContent: {
             [node.ownSessionID]: {
@@ -255,6 +276,76 @@ test("After subscribing, node sends new txs to peer", async () => {
                             {
                                 op: "insert",
                                 key: "goodbye",
+                                value: "world",
+                            } satisfies MapOpPayload<string, string>,
+                        ],
+                    },
+                ],
+                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastSignature:
+                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+            },
+        },
+    } satisfies SyncMessage);
+});
+
+test("Client replies with known new content to subscribeResponse from server", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const map = team.createMap();
+
+    map.edit((editable) => {
+        editable.set("hello", "world", "trusting");
+    });
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "peer",
+    });
+
+    const writer = inTx.getWriter();
+
+    await writer.write({
+        action: "subscribeResponse",
+        knownState: {
+            multilogID: map.multiLog.id,
+            header: false,
+            sessions: {
+                [node.ownSessionID]: 0,
+            },
+        },
+    });
+
+    const reader = outRx.getReader();
+
+    const msg1 = await reader.read();
+
+    expect(msg1.value).toEqual({
+        action: "newContent",
+        multilogID: map.multiLog.id,
+        header: map.multiLog.header,
+        newContent: {
+            [node.ownSessionID]: {
+                after: 0,
+                newTransactions: [
+                    {
+                        privacy: "trusting",
+                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                            .transactions[0].madeAt,
+                        changes: [
+                            {
+                                op: "insert",
+                                key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
                         ],
@@ -291,7 +382,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     const writer = inTx.getWriter();
 
     await writer.write({
-        type: "subscribe",
+        action: "subscribe",
         knownState: {
             multilogID: map.multiLog.id,
             header: false,
@@ -303,7 +394,8 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     const reader = outRx.getReader();
 
-    const _firstMessage = await reader.read();
+    const _msg1 = await reader.read();
+    const _msg2 = await reader.read();
 
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
@@ -313,11 +405,11 @@ test("No matter the optimistic known state, node respects invalid known state me
         editable.set("goodbye", "world", "trusting");
     });
 
-    const _secondMessage = await reader.read();
-    const _thirdMessage = await reader.read();
+    const _msg3 = await reader.read();
+    const _msg4 = await reader.read();
 
     await writer.write({
-        type: "wrongAssumedKnownState",
+        action: "wrongAssumedKnownState",
         knownState: {
             multilogID: map.multiLog.id,
             header: true,
@@ -327,10 +419,10 @@ test("No matter the optimistic known state, node respects invalid known state me
         },
     } satisfies SyncMessage);
 
-    const fourthMessage = await reader.read();
+    const msg5 = await reader.read();
 
-    expect(fourthMessage.value).toEqual({
-        type: "newContent",
+    expect(msg5.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         header: undefined,
         newContent: {
@@ -412,12 +504,24 @@ test("If we add a server peer, all updates to all multilogs are sent to it, even
     });
 
     const reader = outRx.getReader();
-    const _initialSyncMessage = await reader.read();
+    const _adminSubscribeMsg = await reader.read();
+    const _teamSubscribeMsg = await reader.read();
 
-    const firstMessage = await reader.read();
+    const subscribeMsg = await reader.read();
 
-    expect(firstMessage.value).toEqual({
-        type: "newContent",
+    expect(subscribeMsg.value).toEqual({
+        action: "subscribe",
+        knownState: {
+            multilogID: map.multiLog.id,
+            header: true,
+            sessions: {},
+        },
+    } satisfies SyncMessage);
+
+    const newContentMsg = await reader.read();
+
+    expect(newContentMsg.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         header: map.multiLog.header,
         newContent: {
@@ -445,7 +549,7 @@ test("If we add a server peer, all updates to all multilogs are sent to it, even
     } satisfies SyncMessage);
 });
 
-test("If we add a server peer, it even receives just headers of newly created multilogs", async () => {
+test("If we add a server peer, newly created multilogs are auto-subscribed to", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -466,19 +570,29 @@ test("If we add a server peer, it even receives just headers of newly created mu
     });
 
     const reader = outRx.getReader();
-    const _initialSyncMessage = await reader.read();
+    const _initialMsg1 = await reader.read();
+    const _initialMsg2 = await reader.read();
 
     const map = team.createMap();
 
-    const firstMessage = await reader.read();
+    const msg1 = await reader.read();
 
-    expect(firstMessage.value).toEqual({
-        type: "newContent",
+    expect(msg1.value).toEqual({
+        action: "subscribe",
+        knownState: map.multiLog.knownState(),
+    } satisfies SyncMessage);
+
+    const msg2 = await reader.read();
+
+    expect(msg2.value).toEqual({
+        action: "newContent",
         multilogID: map.multiLog.id,
         header: map.multiLog.header,
         newContent: {},
     } satisfies SyncMessage);
 });
+
+test.skip("TODO: when receiving a subscribe response that is behind our optimistic state (due to already sent content), we ignore it", () => {});
 
 test("When we connect a new server peer, we try to sync all existing multilogs to it", async () => {
     const admin = newRandomAgentCredential();
@@ -502,19 +616,141 @@ test("When we connect a new server peer, we try to sync all existing multilogs t
 
     const reader = outRx.getReader();
 
-    const firstMessage = await reader.read();
+    const _adminSubscribeMessage = await reader.read();
+    const teamSubscribeMessage = await reader.read();
 
-    expect(firstMessage.value).toEqual({
-        type: "subscribe",
+    expect(teamSubscribeMessage.value).toEqual({
+        action: "subscribe",
         knownState: team.teamMap.multiLog.knownState(),
     } satisfies SyncMessage);
 
     const secondMessage = await reader.read();
 
     expect(secondMessage.value).toEqual({
-        type: "subscribe",
+        action: "subscribe",
         knownState: map.multiLog.knownState(),
     } satisfies SyncMessage);
+});
+
+test("When receiving a subscribe with a known state that is ahead of our own, peers should respond with a corresponding subscribe response message", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const map = team.createMap();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "peer",
+    });
+
+    const writer = inTx.getWriter();
+
+    await writer.write({
+        action: "subscribe",
+        knownState: {
+            multilogID: map.multiLog.id,
+            header: true,
+            sessions: {
+                [node.ownSessionID]: 1,
+            },
+        },
+    });
+
+    const reader = outRx.getReader();
+
+    const firstMessage = await reader.read();
+
+    expect(firstMessage.value).toEqual({
+        action: "subscribeResponse",
+        knownState: map.multiLog.knownState(),
+    } satisfies SyncMessage);
+});
+
+test("When replaying creation and transactions of a multilog as new content, the receiving peer integrates this information", async () => {
+    const admin = newRandomAgentCredential();
+    const adminID = getAgentID(getAgent(admin));
+
+    const node1 = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node1.createTeam();
+
+    const [inRx1, inTx1] = newStreamPair<SyncMessage>();
+    const [outRx1, outTx1] = newStreamPair<SyncMessage>();
+
+    node1.addPeer({
+        id: "test2",
+        incoming: inRx1,
+        outgoing: outTx1,
+        role: "server",
+    });
+
+    const reader1 = outRx1.getReader();
+
+    const _adminSubscriptionMsg = await reader1.read();
+    const teamSubscribeMsg = await reader1.read();
+
+    const map = team.createMap();
+
+    const mapSubscriptionMsg = await reader1.read();
+    const mapNewContentMsg = await reader1.read();
+
+    map.edit((editable) => {
+        editable.set("hello", "world", "trusting");
+    });
+
+    const mapEditMsg = await reader1.read();
+
+    const node2 = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const [inRx2, inTx2] = newStreamPair<SyncMessage>();
+    const [outRx2, outTx2] = newStreamPair<SyncMessage>();
+
+    node2.addPeer({
+        id: "test1",
+        incoming: inRx2,
+        outgoing: outTx2,
+        role: "client",
+    });
+
+    const writer2 = inTx2.getWriter();
+    const reader2 = outRx2.getReader();
+
+    await writer2.write(teamSubscribeMsg.value);
+    const teamSubscribeResponseMsg = await reader2.read();
+
+    expect(node2.multilogs[team.teamMap.multiLog.id]?.state).toEqual("loading");
+
+    const writer1 = inTx1.getWriter();
+
+    await writer1.write(teamSubscribeResponseMsg.value);
+    const teamContentMsg = await reader1.read();
+
+    await writer2.write(teamContentMsg.value);
+
+    await writer2.write(mapSubscriptionMsg.value);
+    const _mapSubscribeResponseMsg = await reader2.read();
+    await writer2.write(mapNewContentMsg.value);
+
+    expect(node2.multilogs[map.multiLog.id]?.state).toEqual("loading");
+
+    await writer2.write(mapEditMsg.value);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(
+        expectMap(
+            node2.expectMultiLogLoaded(map.multiLog.id).getCurrentContent()
+        ).get("hello")
+    ).toEqual("world");
 });
 
 function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {

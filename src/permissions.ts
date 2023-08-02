@@ -156,7 +156,8 @@ export function determineValidTransactions(
     } else if (multilog.header.ruleset.type === "ownedByTeam") {
         const teamContent =
             multilog.node.expectMultiLogLoaded(
-                multilog.header.ruleset.team
+                multilog.header.ruleset.team,
+                "Determining valid transaction in owned object but its team wasn't loaded"
             ).getCurrentContent();
 
         if (teamContent.type !== "comap") {
@@ -193,8 +194,11 @@ export function determineValidTransactions(
                 }));
             }
         );
+    } else if (multilog.header.ruleset.type === "agent") {
+        // TODO
+        return [];
     } else {
-        throw new Error("Unknown ruleset type " + multilog.header.ruleset.type);
+        throw new Error("Unknown ruleset type " + (multilog.header.ruleset as any).type);
     }
 }
 

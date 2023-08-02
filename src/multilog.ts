@@ -60,7 +60,7 @@ type SessionLog = {
     transactions: Transaction[];
     lastHash?: Hash;
     streamingHash: StreamingHash;
-    lastSignature: string;
+    lastSignature: Signature;
 };
 
 export type PrivateTransaction = {
@@ -426,7 +426,7 @@ export class MultiLog {
 
     newContentSince(knownState: MultiLogKnownState | undefined): NewContentMessage | undefined {
         const newContent: NewContentMessage = {
-            type: "newContent",
+            action: "newContent",
             multilogID: this.id,
             header: knownState?.header ? undefined : this.header,
             newContent: Object.fromEntries(
