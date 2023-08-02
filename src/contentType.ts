@@ -1,14 +1,14 @@
 import { JsonAtom, JsonObject, JsonValue } from "./jsonValue";
 import { MultiLog, MultiLogID, TransactionID } from "./multilog";
 
-export type CoValueID<T extends CoValueContent> = MultiLogID & {
+export type CoValueID<T extends ContentType> = MultiLogID & {
     readonly __type: T;
 };
 
-export type CoValueContent =
+export type ContentType =
     | CoMap<{[key: string]: JsonValue}, JsonValue>
     | CoList<JsonValue, JsonValue>
-    | MultiStream<JsonValue, JsonValue>
+    | CoStream<JsonValue, JsonValue>
     | Static<JsonValue>;
 
 type MapOp<K extends string, V extends JsonValue> = {
@@ -204,12 +204,12 @@ export class CoList<T extends JsonValue, Meta extends JsonValue> {
     }
 }
 
-export class MultiStream<T extends JsonValue, Meta extends JsonValue> {
-    id: CoValueID<MultiStream<T, Meta>>;
-    type: "multistream" = "multistream";
+export class CoStream<T extends JsonValue, Meta extends JsonValue> {
+    id: CoValueID<CoStream<T, Meta>>;
+    type: "costream" = "costream";
 
     constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<MultiStream<T, Meta>>;
+        this.id = multilog.id as CoValueID<CoStream<T, Meta>>;
     }
 
     toJSON(): JsonObject {
@@ -230,7 +230,7 @@ export class Static<T extends JsonValue> {
     }
 }
 
-export function expectMap(content: CoValueContent): CoMap<{ [key: string]: string }, {}> {
+export function expectMap(content: ContentType): CoMap<{ [key: string]: string }, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }

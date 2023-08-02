@@ -30,7 +30,7 @@ THIS IS WORK IN PROGRESS
   - Team (`AgentID` → `Role`)
 - CoList (`Immutable[]`, addressable positions, insertAfter semantics)
   - Agent (`{signatoryID, recipientID}[]`)
-- MultiStream (independent per-session streams of `Immutable`s)
+- CoStream (independent per-session streams of `Immutable`s)
 - Static (single addressable `Immutable`)
 
 ## Implementation Abstractions

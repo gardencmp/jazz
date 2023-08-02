@@ -1,4 +1,4 @@
-import { CoMap } from "./coValue";
+import { CoMap } from "./contentType";
 import { newRandomKeySecret, seal } from "./crypto";
 import {
     MultiLogID,

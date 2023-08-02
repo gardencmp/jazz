@@ -6,7 +6,7 @@ import {
     newRandomSessionID,
 } from "./multilog";
 import { LocalNode } from "./node";
-import { expectMap } from "./coValue";
+import { expectMap } from "./contentType";
 import { expectTeamContent } from "./permissions";
 import {
     getRecipientID,

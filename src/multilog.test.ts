@@ -18,7 +18,7 @@ test("Can create multilog with new agent credentials and add transaction to it",
     );
 
     const multilog = node.createMultiLog({
-        type: "multistream",
+        type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
@@ -58,7 +58,7 @@ test("transactions with wrong signature are rejected", () => {
     );
 
     const multilog = node.createMultiLog({
-        type: "multistream",
+        type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
@@ -97,7 +97,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
     );
 
     const multilog = node.createMultiLog({
-        type: "multistream",
+        type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });

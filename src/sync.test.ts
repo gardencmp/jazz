@@ -7,7 +7,7 @@ import {
 } from "./multilog";
 import { LocalNode } from "./node";
 import { Peer, SyncMessage } from "./sync";
-import { MapOpPayload, expectMap } from "./coValue";
+import { MapOpPayload, expectMap } from "./contentType";
 
 test(
     "Node replies with initial tx and header to empty subscribe",
