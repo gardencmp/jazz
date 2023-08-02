@@ -1,8 +1,8 @@
 import { Hash, Signature } from "./crypto";
-import { MultiLogHeader, MultiLogID, SessionID, Transaction } from "./multilog";
+import { CoValueHeader, RawCoValueID, SessionID, Transaction } from "./coValue";
 
-export type MultiLogKnownState = {
-    multilogID: MultiLogID;
+export type CoValueKnownState = {
+    coValueID: RawCoValueID;
     header: boolean;
     sessions: { [sessionID: SessionID]: number };
 };
@@ -16,19 +16,19 @@ export type SyncMessage =
 
 export type SubscribeMessage = {
     action: "subscribe";
-    knownState: MultiLogKnownState;
+    knownState: CoValueKnownState;
 };
 
 export type SubscribeResponseMessage = {
     action: "subscribeResponse";
-    knownState: MultiLogKnownState;
-    asDependencyOf?: MultiLogID;
+    knownState: CoValueKnownState;
+    asDependencyOf?: RawCoValueID;
 };
 
 export type NewContentMessage = {
     action: "newContent";
-    multilogID: MultiLogID;
-    header?: MultiLogHeader;
+    coValueID: RawCoValueID;
+    header?: CoValueHeader;
     newContent: {
         [sessionID: SessionID]: SessionNewContent;
     };
@@ -44,12 +44,12 @@ export type SessionNewContent = {
 
 export type WrongAssumedKnownStateMessage = {
     action: "wrongAssumedKnownState";
-    knownState: MultiLogKnownState;
+    knownState: CoValueKnownState;
 };
 
 export type UnsubscribeMessage = {
     action: "unsubscribe";
-    multilogID: MultiLogID;
+    coValueID: RawCoValueID;
 };
 
 export type PeerID = string;
@@ -63,15 +63,15 @@ export interface Peer {
 
 export interface PeerState {
     id: PeerID;
-    optimisticKnownStates: { [multilogID: MultiLogID]: MultiLogKnownState };
+    optimisticKnownStates: { [coValueID: RawCoValueID]: CoValueKnownState };
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStreamDefaultWriter<SyncMessage>;
     role: "peer" | "server" | "client";
 }
 
 export function weAreStrictlyAhead(
-    ourKnownState: MultiLogKnownState,
-    theirKnownState: MultiLogKnownState
+    ourKnownState: CoValueKnownState,
+    theirKnownState: CoValueKnownState
 ): boolean {
     if (theirKnownState.header && !ourKnownState.header) {
         return false;
@@ -94,8 +94,8 @@ export function weAreStrictlyAhead(
     return true;
 }
 
-export function combinedKnownStates(stateA: MultiLogKnownState, stateB: MultiLogKnownState): MultiLogKnownState {
-    const sessionStates: MultiLogKnownState["sessions"] = {};
+export function combinedKnownStates(stateA: CoValueKnownState, stateB: CoValueKnownState): CoValueKnownState {
+    const sessionStates: CoValueKnownState["sessions"] = {};
 
     const allSessions = new Set([...Object.keys(stateA.sessions), ...Object.keys(stateB.sessions)] as SessionID[]);
 
@@ -107,7 +107,7 @@ export function combinedKnownStates(stateA: MultiLogKnownState, stateB: MultiLog
     }
 
     return {
-        multilogID: stateA.multilogID,
+        coValueID: stateA.coValueID,
         header: stateA.header || stateB.header,
         sessions: sessionStates,
     };

@@ -5,7 +5,7 @@ import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { MultiLogID, SessionID, TransactionID } from "./multilog";
+import { RawCoValueID, SessionID, TransactionID } from "./coValue";
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;
@@ -72,7 +72,7 @@ export function seal<T extends JsonValue>(
     message: T,
     from: RecipientSecret,
     to: Set<RecipientID>,
-    nOnceMaterial: { in: MultiLogID; tx: TransactionID }
+    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
 ): SealedSet<T> {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
@@ -113,7 +113,7 @@ export function openAs<T extends JsonValue>(
     sealedSet: SealedSet<T>,
     recipient: RecipientSecret,
     from: RecipientID,
-    nOnceMaterial: { in: MultiLogID; tx: TransactionID }
+    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
 ): T | undefined {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
@@ -219,8 +219,8 @@ function encrypt<T extends JsonValue, N extends JsonValue>(
 export function encryptForTransaction<T extends JsonValue>(
     value: T,
     keySecret: KeySecret,
-    nOnceMaterial: { in: MultiLogID; tx: TransactionID }
-): Encrypted<T, { in: MultiLogID; tx: TransactionID }> {
+    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
+): Encrypted<T, { in: RawCoValueID; tx: TransactionID }> {
     return encrypt(value, keySecret, nOnceMaterial);
 }
 
@@ -273,9 +273,9 @@ function decrypt<T extends JsonValue, N extends JsonValue>(
 }
 
 export function decryptForTransaction<T extends JsonValue>(
-    encrypted: Encrypted<T, { in: MultiLogID; tx: TransactionID }>,
+    encrypted: Encrypted<T, { in: RawCoValueID; tx: TransactionID }>,
     keySecret: KeySecret,
-    nOnceMaterial: { in: MultiLogID; tx: TransactionID }
+    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
 ): T | undefined {
     return decrypt(encrypted, keySecret, nOnceMaterial);
 }

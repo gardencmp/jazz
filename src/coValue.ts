@@ -1,239 +1,521 @@
-import { JsonAtom, JsonObject, JsonValue } from "./jsonValue";
-import { MultiLog, MultiLogID, TransactionID } from "./multilog";
+import { randomBytes } from "@noble/hashes/utils";
+import { CoList, CoMap, ContentType, Static, CoStream } from "./contentType";
+import {
+    Encrypted,
+    Hash,
+    KeySecret,
+    RecipientID,
+    RecipientSecret,
+    SignatoryID,
+    SignatorySecret,
+    Signature,
+    StreamingHash,
+    getRecipientID,
+    getSignatoryID,
+    newRandomRecipient,
+    newRandomSignatory,
+    openAs,
+    shortHash,
+    sign,
+    verify,
+    encryptForTransaction,
+    decryptForTransaction,
+    KeyID,
+    unsealKeySecret,
+} from "./crypto";
+import { JsonValue } from "./jsonValue";
+import { base58 } from "@scure/base";
+import {
+    PermissionsDef as RulesetDef,
+    determineValidTransactions,
+    expectTeamContent,
+} from "./permissions";
+import { LocalNode } from "./node";
+import { CoValueKnownState, NewContentMessage } from "./sync";
 
-export type CoValueID<T extends CoValue> = MultiLogID & {
-    readonly __type: T;
+export type RawCoValueID = `coval_${string}`;
+
+export type CoValueHeader = {
+    type: ContentType["type"];
+    ruleset: RulesetDef;
+    meta: JsonValue;
 };
 
-export type CoValue =
-    | CoMap<{[key: string]: JsonValue}, JsonValue>
-    | CoList<JsonValue, JsonValue>
-    | MultiStream<JsonValue, JsonValue>
-    | Static<JsonValue>;
+function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
+    const hash = shortHash(header);
+    return `coval_${hash.slice("shortHash_".length)}`;
+}
 
-type MapOp<K extends string, V extends JsonValue> = {
-    txID: TransactionID;
+export type SessionID = `session_${string}_${AgentID}`;
+
+export function agentIDfromSessionID(sessionID: SessionID): AgentID {
+    return `agent_${sessionID.substring(sessionID.lastIndexOf("_") + 1)}`;
+}
+
+export function newRandomSessionID(agentID: AgentID): SessionID {
+    return `session_${base58.encode(randomBytes(8))}_${agentID}`;
+}
+
+type SessionLog = {
+    transactions: Transaction[];
+    lastHash?: Hash;
+    streamingHash: StreamingHash;
+    lastSignature: Signature;
+};
+
+export type PrivateTransaction = {
+    privacy: "private";
     madeAt: number;
-    changeIdx: number;
-} & MapOpPayload<K, V>;
+    keyUsed: KeyID;
+    encryptedChanges: Encrypted<
+        JsonValue[],
+        { in: RawCoValueID; tx: TransactionID }
+    >;
+};
 
-// TODO: add after TransactionID[] for conflicts/ordering
-export type MapOpPayload<K extends string, V extends JsonValue> =
-    | {
-          op: "insert";
-          key: K;
-          value: V;
-      }
-    | {
-          op: "delete";
-          key: K;
-      };
+export type TrustingTransaction = {
+    privacy: "trusting";
+    madeAt: number;
+    changes: JsonValue[];
+};
 
-export class CoMap<
-    M extends {[key: string]: JsonValue},
-    Meta extends JsonValue,
-    K extends string = keyof M & string,
-    V extends JsonValue = M[K],
-    MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
-> {
-    id: CoValueID<CoMap<MM, Meta>>;
-    multiLog: MultiLog;
-    type: "comap" = "comap";
-    ops: {[KK in K]?: MapOp<K, M[KK]>[]};
+export type Transaction = PrivateTransaction | TrustingTransaction;
 
-    constructor(multiLog: MultiLog) {
-        this.id = multiLog.id as CoValueID<CoMap<MM, Meta>>;
-        this.multiLog = multiLog;
-        this.ops = {};
+export type DecryptedTransaction = {
+    txID: TransactionID;
+    changes: JsonValue[];
+    madeAt: number;
+};
 
-        this.fillOpsFromMultilog();
+export type TransactionID = { sessionID: SessionID; txIndex: number };
+
+export class CoValue {
+    id: RawCoValueID;
+    node: LocalNode;
+    header: CoValueHeader;
+    sessions: { [key: SessionID]: SessionLog };
+    content?: ContentType;
+
+    constructor(header: CoValueHeader, node: LocalNode) {
+        this.id = coValueIDforHeader(header);
+        this.header = header;
+        this.sessions = {};
+        this.node = node;
     }
 
-    protected fillOpsFromMultilog() {
-        this.ops = {};
+    testWithDifferentCredentials(
+        agentCredential: AgentCredential,
+        ownSessionID: SessionID
+    ): CoValue {
+        const newNode = this.node.testWithDifferentCredentials(
+            agentCredential,
+            ownSessionID
+        );
 
-        for (const { txID, changes, madeAt } of this.multiLog.getValidSortedTransactions()) {
-            for (const [changeIdx, changeUntyped] of (
-                changes
-            ).entries()) {
-                const change = changeUntyped as MapOpPayload<K, V>
-                let entries = this.ops[change.key];
-                if (!entries) {
-                    entries = [];
-                    this.ops[change.key] = entries;
-                }
-                entries.push({
+        return newNode.expectCoValueLoaded(this.id);
+    }
+
+    knownState(): CoValueKnownState {
+        return {
+            coValueID: this.id,
+            header: true,
+            sessions: Object.fromEntries(
+                Object.entries(this.sessions).map(([k, v]) => [
+                    k,
+                    v.transactions.length,
+                ])
+            ),
+        };
+    }
+
+    get meta(): JsonValue {
+        return this.header?.meta ?? null;
+    }
+
+    nextTransactionID(): TransactionID {
+        const sessionID = this.node.ownSessionID;
+        return {
+            sessionID,
+            txIndex: this.sessions[sessionID]?.transactions.length || 0,
+        };
+    }
+
+    tryAddTransactions(
+        sessionID: SessionID,
+        newTransactions: Transaction[],
+        newHash: Hash,
+        newSignature: Signature
+    ): boolean {
+        const signatoryID =
+            this.node.knownAgents[agentIDfromSessionID(sessionID)]?.signatoryID;
+
+        if (!signatoryID) {
+            console.warn("Unknown agent", agentIDfromSessionID(sessionID));
+            return false;
+        }
+
+        const { expectedNewHash, newStreamingHash } = this.expectedNewHashAfter(
+            sessionID,
+            newTransactions
+        );
+
+        if (newHash !== expectedNewHash) {
+            console.warn("Invalid hash", { newHash, expectedNewHash });
+            return false;
+        }
+
+        if (!verify(newSignature, newHash, signatoryID)) {
+            console.warn(
+                "Invalid signature",
+                newSignature,
+                newHash,
+                signatoryID
+            );
+            return false;
+        }
+
+        const transactions = this.sessions[sessionID]?.transactions ?? [];
+
+        transactions.push(...newTransactions);
+
+        this.sessions[sessionID] = {
+            transactions,
+            lastHash: newHash,
+            streamingHash: newStreamingHash,
+            lastSignature: newSignature,
+        };
+
+        this.content = undefined;
+
+        this.node.syncCoValue(this);
+
+        const _ = this.getCurrentContent();
+
+        return true;
+    }
+
+    expectedNewHashAfter(
+        sessionID: SessionID,
+        newTransactions: Transaction[]
+    ): { expectedNewHash: Hash; newStreamingHash: StreamingHash } {
+        const streamingHash =
+            this.sessions[sessionID]?.streamingHash.clone() ??
+            new StreamingHash();
+        for (const transaction of newTransactions) {
+            streamingHash.update(transaction);
+        }
+
+        const newStreamingHash = streamingHash.clone();
+
+        return {
+            expectedNewHash: streamingHash.digest(),
+            newStreamingHash,
+        };
+    }
+
+    makeTransaction(
+        changes: JsonValue[],
+        privacy: "private" | "trusting"
+    ): boolean {
+        const madeAt = Date.now();
+
+        let transaction: Transaction;
+
+        if (privacy === "private") {
+            const { secret: keySecret, id: keyID } = this.getCurrentReadKey();
+
+            transaction = {
+                privacy: "private",
+                madeAt,
+                keyUsed: keyID,
+                encryptedChanges: encryptForTransaction(changes, keySecret, {
+                    in: this.id,
+                    tx: this.nextTransactionID(),
+                }),
+            };
+        } else {
+            transaction = {
+                privacy: "trusting",
+                madeAt,
+                changes,
+            };
+        }
+
+        const sessionID = this.node.ownSessionID;
+
+        const { expectedNewHash } = this.expectedNewHashAfter(sessionID, [
+            transaction,
+        ]);
+
+        const signature = sign(
+            this.node.agentCredential.signatorySecret,
+            expectedNewHash
+        );
+
+        return this.tryAddTransactions(
+            sessionID,
+            [transaction],
+            expectedNewHash,
+            signature
+        );
+    }
+
+    getCurrentContent(): ContentType {
+        if (this.content) {
+            return this.content;
+        }
+
+        if (this.header.type === "comap") {
+            this.content = new CoMap(this);
+        } else if (this.header.type === "colist") {
+            this.content = new CoList(this);
+        } else if (this.header.type === "costream") {
+            this.content = new CoStream(this);
+        } else if (this.header.type === "static") {
+            this.content = new Static(this);
+        } else {
+            throw new Error(`Unknown coValue type ${this.header.type}`);
+        }
+
+        return this.content;
+    }
+
+    getValidSortedTransactions(): DecryptedTransaction[] {
+        const validTransactions = determineValidTransactions(this);
+
+        const allTransactions: DecryptedTransaction[] = validTransactions.map(
+            ({ txID, tx }) => {
+                return {
                     txID,
-                    madeAt,
-                    changeIdx,
-                    ...(change as any),
-                });
+                    madeAt: tx.madeAt,
+                    changes:
+                        tx.privacy === "private"
+                            ? decryptForTransaction(
+                                  tx.encryptedChanges,
+                                  this.getReadKey(tx.keyUsed),
+                                  {
+                                      in: this.id,
+                                      tx: txID,
+                                  }
+                              ) ||
+                              (() => {
+                                  throw new Error("Couldn't decrypt changes");
+                              })()
+                            : tx.changes,
+                };
             }
-        }
+        );
+        allTransactions.sort(
+            (a, b) =>
+                a.madeAt - b.madeAt ||
+                (a.txID.sessionID < b.txID.sessionID ? -1 : 1) ||
+                a.txID.txIndex - b.txID.txIndex
+        );
+
+        return allTransactions;
     }
 
-    keys(): K[] {
-        return Object.keys(this.ops) as K[];
-    }
+    getCurrentReadKey(): { secret: KeySecret; id: KeyID } {
+        if (this.header.ruleset.type === "team") {
+            const content = expectTeamContent(this.getCurrentContent());
 
-    get<KK extends K>(key: KK): M[KK] | undefined {
-        const ops = this.ops[key];
-        if (!ops) {
-            return undefined;
-        }
+            const currentKeyId = content.get("readKey")?.keyID;
 
-        let lastEntry = ops[ops.length - 1];
+            if (!currentKeyId) {
+                throw new Error("No readKey set");
+            }
 
-        if (lastEntry.op === "delete") {
-            return undefined;
+            const secret = this.getReadKey(currentKeyId);
+
+            return {
+                secret: secret,
+                id: currentKeyId,
+            };
+        } else if (this.header.ruleset.type === "ownedByTeam") {
+            return this.node
+                .expectCoValueLoaded(this.header.ruleset.team)
+                .getCurrentReadKey();
         } else {
-            return lastEntry.value;
+            throw new Error(
+                "Only teams or values owned by teams have read secrets"
+            );
         }
     }
 
-    getAtTime<KK extends K>(key: KK, time: number): M[KK] | undefined {
-        const ops = this.ops[key];
-        if (!ops) {
-            return undefined;
-        }
+    getReadKey(keyID: KeyID): KeySecret {
+        if (this.header.ruleset.type === "team") {
+            const content = expectTeamContent(this.getCurrentContent());
 
-        const lastOpBeforeOrAtTime = ops.findLast((op) => op.madeAt <= time);
+            const readKeyHistory = content.getHistory("readKey");
 
-        if (!lastOpBeforeOrAtTime) {
-            return undefined;
-        }
+            // Try to find direct relevation of key for us
 
-        if (lastOpBeforeOrAtTime.op === "delete") {
-            return undefined;
+            for (const entry of readKeyHistory) {
+                if (entry.value?.keyID === keyID) {
+                    const revealer = agentIDfromSessionID(entry.txID.sessionID);
+                    const revealerAgent = this.node.knownAgents[revealer];
+
+                    if (!revealerAgent) {
+                        throw new Error("Unknown revealer");
+                    }
+
+                    const secret = openAs(
+                        entry.value.revelation,
+                        this.node.agentCredential.recipientSecret,
+                        revealerAgent.recipientID,
+                        {
+                            in: this.id,
+                            tx: entry.txID,
+                        }
+                    );
+
+                    if (secret) return secret as KeySecret;
+                }
+            }
+
+            // Try to find indirect revelation through previousKeys
+
+            for (const entry of readKeyHistory) {
+                if (entry.value?.previousKeys?.[keyID]) {
+                    const sealingKeyID = entry.value.keyID;
+                    const sealingKeySecret = this.getReadKey(sealingKeyID);
+
+                    if (!sealingKeySecret) {
+                        continue;
+                    }
+
+                    const secret = unsealKeySecret(
+                        {
+                            sealed: keyID,
+                            sealing: sealingKeyID,
+                            encrypted: entry.value.previousKeys[keyID],
+                        },
+                        sealingKeySecret
+                    );
+
+                    if (secret) {
+                        return secret;
+                    } else {
+                        console.error(
+                            `Sealing ${sealingKeyID} key didn't unseal ${keyID}`
+                        );
+                    }
+                }
+            }
+
+            throw new Error(
+                "readKey " +
+                    keyID +
+                    " not revealed for " +
+                    getAgentID(getAgent(this.node.agentCredential))
+            );
+        } else if (this.header.ruleset.type === "ownedByTeam") {
+            return this.node
+                .expectCoValueLoaded(this.header.ruleset.team)
+                .getReadKey(keyID);
         } else {
-            return lastOpBeforeOrAtTime.value;
+            throw new Error(
+                "Only teams or values owned by teams have read secrets"
+            );
         }
     }
 
-    getLastTxID<KK extends K>(key: KK): TransactionID | undefined {
-        const ops = this.ops[key];
-        if (!ops) {
+    getTx(txID: TransactionID): Transaction | undefined {
+        return this.sessions[txID.sessionID]?.transactions[txID.txIndex];
+    }
+
+    newContentSince(knownState: CoValueKnownState | undefined): NewContentMessage | undefined {
+        const newContent: NewContentMessage = {
+            action: "newContent",
+            coValueID: this.id,
+            header: knownState?.header ? undefined : this.header,
+            newContent: Object.fromEntries(
+                Object.entries(this.sessions)
+                    .map(([sessionID, log]) => {
+                        const newTransactions = log.transactions.slice(
+                            knownState?.sessions[sessionID as SessionID] || 0
+                        );
+
+                        if (
+                            newTransactions.length === 0 ||
+                            !log.lastHash ||
+                            !log.lastSignature
+                        ) {
+                            return undefined;
+                        }
+
+                        return [
+                            sessionID,
+                            {
+                                after:
+                                    knownState?.sessions[
+                                        sessionID as SessionID
+                                    ] || 0,
+                                newTransactions,
+                                lastHash: log.lastHash,
+                                lastSignature: log.lastSignature,
+                            },
+                        ];
+                    })
+                    .filter((x): x is Exclude<typeof x, undefined> => !!x)
+            ),
+        }
+
+        if (!newContent.header && Object.keys(newContent.newContent).length === 0) {
             return undefined;
         }
 
-        const lastEntry = ops[ops.length - 1];
-
-        return lastEntry.txID;
-    }
-
-    getHistory<KK extends K>(key: KK): {at: number, txID: TransactionID, value: M[KK] | undefined}[] {
-        const ops = this.ops[key];
-        if (!ops) {
-            return [];
-        }
-
-        const history: {at: number, txID: TransactionID, value: M[KK] | undefined}[] = [];
-
-        for (const op of ops) {
-            if (op.op === "delete") {
-                history.push({at: op.madeAt, txID: op.txID, value: undefined});
-            } else {
-                history.push({at: op.madeAt, txID: op.txID, value: op.value});
-            }
-        }
-
-        return history;
-    }
-
-    toJSON(): JsonObject {
-        const json: JsonObject = {};
-
-        for (const key of this.keys()) {
-            const value = this.get(key);
-            if (value !== undefined) {
-                json[key] = value;
-            }
-        }
-
-        return json;
-    }
-
-    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
-        const editable = new WriteableCoMap<M, Meta>(this.multiLog);
-        changer(editable);
-        return new CoMap(this.multiLog);
+        return newContent;
     }
 }
 
-export class WriteableCoMap<
-    M extends {[key: string]: JsonValue},
-    Meta extends JsonValue,
-    K extends string = keyof M & string,
-    V extends JsonValue = M[K],
-    MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
-> extends CoMap<M, Meta, K, V, MM> {
-    set<KK extends K>(key: KK, value: M[KK], privacy: "private" | "trusting" = "private"): void {
-        this.multiLog.makeTransaction([
-            {
-                op: "insert",
-                key,
-                value,
-            },
-        ], privacy);
+export type AgentID = `agent_${string}`;
 
-        this.fillOpsFromMultilog();
-    }
+export type Agent = {
+    signatoryID: SignatoryID;
+    recipientID: RecipientID;
+};
 
-    delete(key: K, privacy: "private" | "trusting" = "private"): void {
-        this.multiLog.makeTransaction([
-            {
-                op: "delete",
-                key,
-            },
-        ], privacy);
-
-        this.fillOpsFromMultilog();
-    }
+export function getAgent(agentCredential: AgentCredential) {
+    return {
+        signatoryID: getSignatoryID(agentCredential.signatorySecret),
+        recipientID: getRecipientID(agentCredential.recipientSecret),
+    };
 }
 
-export class CoList<T extends JsonValue, Meta extends JsonValue> {
-    id: CoValueID<CoList<T, Meta>>;
-    type: "colist" = "colist";
-
-    constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<CoList<T, Meta>>;
-    }
-
-    toJSON(): JsonObject {
-        throw new Error("Method not implemented.");
-    }
+export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
+    return {
+        type: "comap",
+        ruleset: {
+            type: "agent",
+            initialSignatoryID: agent.signatoryID,
+            initialRecipientID: agent.recipientID,
+        },
+        meta: null,
+    };
 }
 
-export class MultiStream<T extends JsonValue, Meta extends JsonValue> {
-    id: CoValueID<MultiStream<T, Meta>>;
-    type: "multistream" = "multistream";
-
-    constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<MultiStream<T, Meta>>;
-    }
-
-    toJSON(): JsonObject {
-        throw new Error("Method not implemented.");
-    }
+export function getAgentID(agent: Agent): AgentID {
+    return `agent_${coValueIDforHeader(getAgentCoValueHeader(agent)).slice(
+        "coval_".length
+    )}`;
 }
 
-export class Static<T extends JsonValue> {
-    id: CoValueID<Static<T>>;
-    type: "static" = "static";
-
-    constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<Static<T>>;
-    }
-
-    toJSON(): JsonObject {
-        throw new Error("Method not implemented.");
-    }
+export function agentIDAsCoValueID(agentID: AgentID): RawCoValueID {
+    return `coval_${agentID.substring("agent_".length)}`;
 }
 
-export function expectMap(content: CoValue): CoMap<{ [key: string]: string }, {}> {
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
+export type AgentCredential = {
+    signatorySecret: SignatorySecret;
+    recipientSecret: RecipientSecret;
+};
 
-    return content as CoMap<{ [key: string]: string }, {}>;
+export function newRandomAgentCredential(): AgentCredential {
+    const signatorySecret = newRandomSignatory();
+    const recipientSecret = newRandomRecipient();
+    return { signatorySecret, recipientSecret };
 }
+
+// type Role = "admin" | "writer" | "reader";
+
+// type PermissionsDef = CJMap<AgentID, Role, {[agent: AgentID]: Role}>;

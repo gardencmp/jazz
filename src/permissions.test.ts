@@ -4,9 +4,9 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./multilog";
+} from "./coValue";
 import { LocalNode } from "./node";
-import { expectMap } from "./coValue";
+import { expectMap } from "./contentType";
 import { expectTeamContent } from "./permissions";
 import {
     getRecipientID,
@@ -44,7 +44,7 @@ function newTeam() {
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
 
-    const team = node.createMultiLog({
+    const team = node.createCoValue({
         type: "comap",
         ruleset: { type: "team", initialAdmin: adminID },
         meta: null,
@@ -351,7 +351,7 @@ test("Admins can add readers to a team, who can't add admins, writers, or reader
 test("Admins can write to an object that is owned by their team", () => {
     const { node, team } = newTeam();
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -393,7 +393,7 @@ test("Writers can write to an object that is owned by their team", () => {
         expect(editable.get(writerID)).toEqual("writer");
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -431,7 +431,7 @@ test("Writers can write to an object that is owned by their team (high level)", 
     const childObject = team.createMap();
 
     let childObjectAsWriter = expectMap(
-        childObject.multiLog
+        childObject.coValue
             .testWithDifferentCredentials(writer, newRandomSessionID(writerID))
             .getCurrentContent()
     );
@@ -455,7 +455,7 @@ test("Readers can not write to an object that is owned by their team", () => {
         expect(editable.get(readerID)).toEqual("reader");
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -493,7 +493,7 @@ test("Readers can not write to an object that is owned by their team (high level
     const childObject = team.createMap();
 
     let childObjectAsReader = expectMap(
-        childObject.multiLog
+        childObject.coValue
             .testWithDifferentCredentials(reader, newRandomSessionID(readerID))
             .getCurrentContent()
     );
@@ -530,7 +530,7 @@ test("Admins can set team read key and then use it to create and read private tr
         expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -588,7 +588,7 @@ test("Admins can set team read key and then writers can use it to create and rea
         editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -628,7 +628,7 @@ test("Admins can set team read key and then writers can use it to create and rea
     const childObject = team.createMap();
 
     let childObjectAsWriter = expectMap(
-        childObject.multiLog
+        childObject.coValue
             .testWithDifferentCredentials(writer, newRandomSessionID(writerID))
             .getCurrentContent()
     );
@@ -669,7 +669,7 @@ test("Admins can set team read key and then use it to create private transaction
         editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -711,7 +711,7 @@ test("Admins can set team read key and then use it to create private transaction
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const childContentAsReader = expectMap(childObject.multiLog.testWithDifferentCredentials(
+    const childContentAsReader = expectMap(childObject.coValue.testWithDifferentCredentials(
         reader,
         newRandomSessionID(readerID)
     ).getCurrentContent());
@@ -769,7 +769,7 @@ test("Admins can set team read key and then use it to create private transaction
         );
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -827,7 +827,7 @@ test("Admins can set team read key and then use it to create private transaction
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const childContentAsReader1 = expectMap(childObject.multiLog.testWithDifferentCredentials(
+    const childContentAsReader1 = expectMap(childObject.coValue.testWithDifferentCredentials(
         reader1,
         newRandomSessionID(reader1ID)
     ).getCurrentContent());
@@ -836,7 +836,7 @@ test("Admins can set team read key and then use it to create private transaction
 
     team.addMember(reader2ID, "reader");
 
-    const childContentAsReader2 = expectMap(childObject.multiLog.testWithDifferentCredentials(
+    const childContentAsReader2 = expectMap(childObject.coValue.testWithDifferentCredentials(
         reader2,
         newRandomSessionID(reader2ID)
     ).getCurrentContent());
@@ -869,7 +869,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -923,7 +923,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     let childObject = team.createMap();
 
-    const firstReadKey = childObject.multiLog.getCurrentReadKey();
+    const firstReadKey = childObject.coValue.getCurrentReadKey();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -934,7 +934,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     team.rotateReadKey();
 
-    expect(childObject.multiLog.getCurrentReadKey()).not.toEqual(firstReadKey);
+    expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
 
     childObject = childObject.edit((editable) => {
         editable.set("foo2", "bar2", "private");
@@ -948,7 +948,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, add a reader, make another private transaction in the owned object, and both can be read by the reader", () => {
     const { node, team, admin, adminID } = newTeam();
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -1052,7 +1052,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     let childObject = team.createMap();
 
-    const firstReadKey = childObject.multiLog.getCurrentReadKey();
+    const firstReadKey = childObject.coValue.getCurrentReadKey();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -1063,7 +1063,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     team.rotateReadKey();
 
-    expect(childObject.multiLog.getCurrentReadKey()).not.toEqual(firstReadKey);
+    expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
 
     const reader = newRandomAgentCredential();
     const readerID = getAgentID(getAgent(reader));
@@ -1077,7 +1077,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         expect(editable.get("foo2")).toEqual("bar2");
     });
 
-    const childContentAsReader = expectMap(childObject.multiLog.testWithDifferentCredentials(
+    const childContentAsReader = expectMap(childObject.coValue.testWithDifferentCredentials(
         reader,
         newRandomSessionID(readerID)
     ).getCurrentContent());
@@ -1090,7 +1090,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 test("Admins can set team read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions", () => {
     const { node, team, admin, adminID } = newTeam();
 
-    const childObject = node.createMultiLog({
+    const childObject = node.createCoValue({
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
@@ -1192,7 +1192,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
         expect(editable.get("foo2")).toEqual("bar2");
     });
 
-    // TODO: make sure these instances of multilogs sync between each other so this isn't necessary?
+    // TODO: make sure these instances of coValues sync between each other so this isn't necessary?
     childObjectAsReader = childObject.testWithDifferentCredentials(
         reader,
         newRandomSessionID(readerID)
@@ -1228,7 +1228,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     team.rotateReadKey();
 
-    const secondReadKey = childObject.multiLog.getCurrentReadKey();
+    const secondReadKey = childObject.coValue.getCurrentReadKey();
 
     const reader = newRandomAgentCredential();
     const readerID = getAgentID(getAgent(reader));
@@ -1251,14 +1251,14 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     team.removeMember(readerID);
 
-    expect(childObject.multiLog.getCurrentReadKey()).not.toEqual(secondReadKey);
+    expect(childObject.coValue.getCurrentReadKey()).not.toEqual(secondReadKey);
 
     childObject = childObject.edit((editable) => {
         editable.set("foo3", "bar3", "private");
         expect(editable.get("foo3")).toEqual("bar3");
     });
 
-    const childContentAsReader2 = expectMap(childObject.multiLog.testWithDifferentCredentials(
+    const childContentAsReader2 = expectMap(childObject.coValue.testWithDifferentCredentials(
         reader2,
         newRandomSessionID(reader2ID)
     ).getCurrentContent());
@@ -1267,7 +1267,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     expect(childContentAsReader2.get("foo2")).toEqual("bar2");
     expect(childContentAsReader2.get("foo3")).toEqual("bar3");
 
-    expect(() => childObject.multiLog.testWithDifferentCredentials(
+    expect(() => childObject.coValue.testWithDifferentCredentials(
         reader,
         newRandomSessionID(readerID)
     ).getCurrentContent()).toThrow(/readKey (.+?) not revealed for (.+?)/);

@@ -4,10 +4,10 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./multilog";
+} from "./coValue";
 import { LocalNode } from "./node";
 import { Peer, SyncMessage } from "./sync";
-import { MapOpPayload, expectMap } from "./coValue";
+import { MapOpPayload, expectMap } from "./contentType";
 
 test(
     "Node replies with initial tx and header to empty subscribe",
@@ -40,7 +40,7 @@ test(
         await writer.write({
             action: "subscribe",
             knownState: {
-                multilogID: map.multiLog.id,
+                coValueID: map.coValue.id,
                 header: false,
                 sessions: {},
             },
@@ -57,14 +57,14 @@ test(
 
         expect(subscribeResponseMsg.value).toEqual({
             action: "subscribeResponse",
-            knownState: map.multiLog.knownState(),
+            knownState: map.coValue.knownState(),
         } satisfies SyncMessage);
 
         const newContentMsg = await reader.read();
 
         expect(newContentMsg.value).toEqual({
             action: "newContent",
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: {
                 type: "comap",
                 ruleset: { type: "ownedByTeam", team: team.id },
@@ -76,7 +76,7 @@ test(
                     newTransactions: [
                         {
                             privacy: "trusting",
-                            madeAt: map.multiLog.sessions[node.ownSessionID]
+                            madeAt: map.coValue.sessions[node.ownSessionID]
                                 .transactions[0].madeAt,
                             changes: [
                                 {
@@ -88,9 +88,9 @@ test(
                         },
                     ],
                     lastHash:
-                        map.multiLog.sessions[node.ownSessionID].lastHash!,
+                        map.coValue.sessions[node.ownSessionID].lastHash!,
                     lastSignature:
-                        map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                        map.coValue.sessions[node.ownSessionID].lastSignature!,
                 },
             },
         } satisfies SyncMessage);
@@ -128,7 +128,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     await writer.write({
         action: "subscribe",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: true,
             sessions: {
                 [node.ownSessionID]: 1,
@@ -147,14 +147,14 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     expect(mapSubscribeResponseMsg.value).toEqual({
         action: "subscribeResponse",
-        knownState: map.multiLog.knownState(),
+        knownState: map.coValue.knownState(),
     } satisfies SyncMessage);
 
     const mapNewContentMsg = await reader.read();
 
     expect(mapNewContentMsg.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
+        coValueID: map.coValue.id,
         header: undefined,
         newContent: {
             [node.ownSessionID]: {
@@ -162,7 +162,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                 newTransactions: [
                     {
                         privacy: "trusting",
-                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                        madeAt: map.coValue.sessions[node.ownSessionID]
                             .transactions[1].madeAt,
                         changes: [
                             {
@@ -173,15 +173,15 @@ test("Node replies with only new tx to subscribe with some known state", async (
                         ],
                     },
                 ],
-                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastHash: map.coValue.sessions[node.ownSessionID].lastHash!,
                 lastSignature:
-                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                    map.coValue.sessions[node.ownSessionID].lastSignature!,
             },
         },
     } satisfies SyncMessage);
 });
 
-test.skip("TODO: node only replies with new tx to subscribe with some known state, even in the depended on multilogs", () => {});
+test.skip("TODO: node only replies with new tx to subscribe with some known state, even in the depended on coValues", () => {});
 
 test("After subscribing, node sends own known state and new txs to peer", async () => {
     const admin = newRandomAgentCredential();
@@ -208,7 +208,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     await writer.write({
         action: "subscribe",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: false,
             sessions: {
                 [node.ownSessionID]: 0,
@@ -227,15 +227,15 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapSubscribeResponseMsg.value).toEqual({
         action: "subscribeResponse",
-        knownState: map.multiLog.knownState(),
+        knownState: map.coValue.knownState(),
     } satisfies SyncMessage);
 
     const mapNewContentHeaderOnlyMsg = await reader.read();
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
-        header: map.multiLog.header,
+        coValueID: map.coValue.id,
+        header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
 
@@ -247,14 +247,14 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapEditMsg1.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
+        coValueID: map.coValue.id,
         newContent: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting",
-                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                        madeAt: map.coValue.sessions[node.ownSessionID]
                             .transactions[0].madeAt,
                         changes: [
                             {
@@ -265,9 +265,9 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         ],
                     },
                 ],
-                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastHash: map.coValue.sessions[node.ownSessionID].lastHash!,
                 lastSignature:
-                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                    map.coValue.sessions[node.ownSessionID].lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -280,14 +280,14 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapEditMsg2.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
+        coValueID: map.coValue.id,
         newContent: {
             [node.ownSessionID]: {
                 after: 1,
                 newTransactions: [
                     {
                         privacy: "trusting",
-                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                        madeAt: map.coValue.sessions[node.ownSessionID]
                             .transactions[1].madeAt,
                         changes: [
                             {
@@ -298,9 +298,9 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         ],
                     },
                 ],
-                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastHash: map.coValue.sessions[node.ownSessionID].lastHash!,
                 lastSignature:
-                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                    map.coValue.sessions[node.ownSessionID].lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -335,7 +335,7 @@ test("Client replies with known new content to subscribeResponse from server", a
     await writer.write({
         action: "subscribeResponse",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: false,
             sessions: {
                 [node.ownSessionID]: 0,
@@ -349,15 +349,15 @@ test("Client replies with known new content to subscribeResponse from server", a
 
     expect(msg1.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
-        header: map.multiLog.header,
+        coValueID: map.coValue.id,
+        header: map.coValue.header,
         newContent: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting",
-                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                        madeAt: map.coValue.sessions[node.ownSessionID]
                             .transactions[0].madeAt,
                         changes: [
                             {
@@ -368,9 +368,9 @@ test("Client replies with known new content to subscribeResponse from server", a
                         ],
                     },
                 ],
-                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastHash: map.coValue.sessions[node.ownSessionID].lastHash!,
                 lastSignature:
-                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                    map.coValue.sessions[node.ownSessionID].lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -401,7 +401,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     await writer.write({
         action: "subscribe",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: false,
             sessions: {
                 [node.ownSessionID]: 0,
@@ -432,7 +432,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     await writer.write({
         action: "wrongAssumedKnownState",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: true,
             sessions: {
                 [node.ownSessionID]: 1,
@@ -444,7 +444,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     expect(newContentAfterWrongAssumedState.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
+        coValueID: map.coValue.id,
         header: undefined,
         newContent: {
             [node.ownSessionID]: {
@@ -452,7 +452,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                 newTransactions: [
                     {
                         privacy: "trusting",
-                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                        madeAt: map.coValue.sessions[node.ownSessionID]
                             .transactions[1].madeAt,
                         changes: [
                             {
@@ -463,15 +463,15 @@ test("No matter the optimistic known state, node respects invalid known state me
                         ],
                     },
                 ],
-                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastHash: map.coValue.sessions[node.ownSessionID].lastHash!,
                 lastSignature:
-                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                    map.coValue.sessions[node.ownSessionID].lastSignature!,
             },
         },
     } satisfies SyncMessage);
 });
 
-test("If we add a peer, but it never subscribes to a multilog, it won't get any messages", async () => {
+test("If we add a peer, but it never subscribes to a coValue, it won't get any messages", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -500,7 +500,7 @@ test("If we add a peer, but it never subscribes to a multilog, it won't get any 
     await shouldNotResolve(reader.read(), { timeout: 50 });
 });
 
-test("If we add a server peer, all updates to all multilogs are sent to it, even if it doesn't subscribe", async () => {
+test("If we add a server peer, all updates to all coValues are sent to it, even if it doesn't subscribe", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -533,7 +533,7 @@ test("If we add a server peer, all updates to all multilogs are sent to it, even
     expect(subscribeMsg.value).toEqual({
         action: "subscribe",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: true,
             sessions: {},
         },
@@ -543,15 +543,15 @@ test("If we add a server peer, all updates to all multilogs are sent to it, even
 
     expect(newContentMsg.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
-        header: map.multiLog.header,
+        coValueID: map.coValue.id,
+        header: map.coValue.header,
         newContent: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting",
-                        madeAt: map.multiLog.sessions[node.ownSessionID]
+                        madeAt: map.coValue.sessions[node.ownSessionID]
                             .transactions[0].madeAt,
                         changes: [
                             {
@@ -562,15 +562,15 @@ test("If we add a server peer, all updates to all multilogs are sent to it, even
                         ],
                     },
                 ],
-                lastHash: map.multiLog.sessions[node.ownSessionID].lastHash!,
+                lastHash: map.coValue.sessions[node.ownSessionID].lastHash!,
                 lastSignature:
-                    map.multiLog.sessions[node.ownSessionID].lastSignature!,
+                    map.coValue.sessions[node.ownSessionID].lastSignature!,
             },
         },
     } satisfies SyncMessage);
 });
 
-test("If we add a server peer, newly created multilogs are auto-subscribed to", async () => {
+test("If we add a server peer, newly created coValues are auto-subscribed to", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -600,22 +600,22 @@ test("If we add a server peer, newly created multilogs are auto-subscribed to", 
 
     expect(msg1.value).toEqual({
         action: "subscribe",
-        knownState: map.multiLog.knownState(),
+        knownState: map.coValue.knownState(),
     } satisfies SyncMessage);
 
     const msg2 = await reader.read();
 
     expect(msg2.value).toEqual({
         action: "newContent",
-        multilogID: map.multiLog.id,
-        header: map.multiLog.header,
+        coValueID: map.coValue.id,
+        header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
 });
 
 test.skip("TODO: when receiving a subscribe response that is behind our optimistic state (due to already sent content), we ignore it", () => {});
 
-test("When we connect a new server peer, we try to sync all existing multilogs to it", async () => {
+test("When we connect a new server peer, we try to sync all existing coValues to it", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -642,14 +642,14 @@ test("When we connect a new server peer, we try to sync all existing multilogs t
 
     expect(teamSubscribeMessage.value).toEqual({
         action: "subscribe",
-        knownState: team.teamMap.multiLog.knownState(),
+        knownState: team.teamMap.coValue.knownState(),
     } satisfies SyncMessage);
 
     const secondMessage = await reader.read();
 
     expect(secondMessage.value).toEqual({
         action: "subscribe",
-        knownState: map.multiLog.knownState(),
+        knownState: map.coValue.knownState(),
     } satisfies SyncMessage);
 });
 
@@ -678,7 +678,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
     await writer.write({
         action: "subscribe",
         knownState: {
-            multilogID: map.multiLog.id,
+            coValueID: map.coValue.id,
             header: true,
             sessions: {
                 [node.ownSessionID]: 1,
@@ -696,11 +696,11 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
 
     expect(mapSubscribeResponse.value).toEqual({
         action: "subscribeResponse",
-        knownState: map.multiLog.knownState(),
+        knownState: map.coValue.knownState(),
     } satisfies SyncMessage);
 });
 
-test("When replaying creation and transactions of a multilog as new content, the receiving peer integrates this information", async () => {
+test("When replaying creation and transactions of a coValue as new content, the receiving peer integrates this information", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -752,7 +752,7 @@ test("When replaying creation and transactions of a multilog as new content, the
     await writer2.write(teamSubscribeMsg.value);
     const teamSubscribeResponseMsg = await reader2.read();
 
-    expect(node2.multilogs[team.teamMap.multiLog.id]?.state).toEqual("loading");
+    expect(node2.coValues[team.teamMap.coValue.id]?.state).toEqual("loading");
 
     const writer1 = inTx1.getWriter();
 
@@ -765,7 +765,7 @@ test("When replaying creation and transactions of a multilog as new content, the
     const _mapSubscribeResponseMsg = await reader2.read();
     await writer2.write(mapNewContentMsg.value);
 
-    expect(node2.multilogs[map.multiLog.id]?.state).toEqual("loading");
+    expect(node2.coValues[map.coValue.id]?.state).toEqual("loading");
 
     await writer2.write(mapEditMsg.value);
 
@@ -773,12 +773,12 @@ test("When replaying creation and transactions of a multilog as new content, the
 
     expect(
         expectMap(
-            node2.expectMultiLogLoaded(map.multiLog.id).getCurrentContent()
+            node2.expectCoValueLoaded(map.coValue.id).getCurrentContent()
         ).get("hello")
     ).toEqual("world");
 });
 
-test("When loading a multilog on one node, the server node it is requested from replies with all the necessary depended on multilogs to make it work", async () => {
+test("When loading a coValue on one node, the server node it is requested from replies with all the necessary depended on coValues to make it work", async () => {
     const admin = newRandomAgentCredential();
     const adminID = getAgentID(getAgent(admin));
 
@@ -798,11 +798,11 @@ test("When loading a multilog on one node, the server node it is requested from 
     node1.addPeer(node2asPeer);
     node2.addPeer(node1asPeer);
 
-    await node2.loadMultiLog(map.multiLog.id);
+    await node2.loadCoValue(map.coValue.id);
 
     expect(
         expectMap(
-            node2.expectMultiLogLoaded(map.multiLog.id).getCurrentContent()
+            node2.expectCoValueLoaded(map.coValue.id).getCurrentContent()
         ).get("hello")
     ).toEqual("world");
 });
