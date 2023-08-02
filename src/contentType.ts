@@ -1,7 +1,7 @@
 import { JsonAtom, JsonObject, JsonValue } from "./jsonValue";
-import { MultiLog, MultiLogID, TransactionID } from "./multilog";
+import { CoValue, RawCoValueID, TransactionID } from "./coValue";
 
-export type CoValueID<T extends ContentType> = MultiLogID & {
+export type CoValueID<T extends ContentType> = RawCoValueID & {
     readonly __type: T;
 };
 
@@ -37,22 +37,22 @@ export class CoMap<
     MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
 > {
     id: CoValueID<CoMap<MM, Meta>>;
-    multiLog: MultiLog;
+    coValue: CoValue;
     type: "comap" = "comap";
     ops: {[KK in K]?: MapOp<K, M[KK]>[]};
 
-    constructor(multiLog: MultiLog) {
-        this.id = multiLog.id as CoValueID<CoMap<MM, Meta>>;
-        this.multiLog = multiLog;
+    constructor(coValue: CoValue) {
+        this.id = coValue.id as CoValueID<CoMap<MM, Meta>>;
+        this.coValue = coValue;
         this.ops = {};
 
-        this.fillOpsFromMultilog();
+        this.fillOpsFromCoValue();
     }
 
-    protected fillOpsFromMultilog() {
+    protected fillOpsFromCoValue() {
         this.ops = {};
 
-        for (const { txID, changes, madeAt } of this.multiLog.getValidSortedTransactions()) {
+        for (const { txID, changes, madeAt } of this.coValue.getValidSortedTransactions()) {
             for (const [changeIdx, changeUntyped] of (
                 changes
             ).entries()) {
@@ -154,9 +154,9 @@ export class CoMap<
     }
 
     edit(changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
-        const editable = new WriteableCoMap<M, Meta>(this.multiLog);
+        const editable = new WriteableCoMap<M, Meta>(this.coValue);
         changer(editable);
-        return new CoMap(this.multiLog);
+        return new CoMap(this.coValue);
     }
 }
 
@@ -168,7 +168,7 @@ export class WriteableCoMap<
     MM extends {[key: string]: JsonValue} = {[KK in K]: M[KK]}
 > extends CoMap<M, Meta, K, V, MM> {
     set<KK extends K>(key: KK, value: M[KK], privacy: "private" | "trusting" = "private"): void {
-        this.multiLog.makeTransaction([
+        this.coValue.makeTransaction([
             {
                 op: "insert",
                 key,
@@ -176,18 +176,18 @@ export class WriteableCoMap<
             },
         ], privacy);
 
-        this.fillOpsFromMultilog();
+        this.fillOpsFromCoValue();
     }
 
     delete(key: K, privacy: "private" | "trusting" = "private"): void {
-        this.multiLog.makeTransaction([
+        this.coValue.makeTransaction([
             {
                 op: "delete",
                 key,
             },
         ], privacy);
 
-        this.fillOpsFromMultilog();
+        this.fillOpsFromCoValue();
     }
 }
 
@@ -195,8 +195,8 @@ export class CoList<T extends JsonValue, Meta extends JsonValue> {
     id: CoValueID<CoList<T, Meta>>;
     type: "colist" = "colist";
 
-    constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<CoList<T, Meta>>;
+    constructor(coValue: CoValue) {
+        this.id = coValue.id as CoValueID<CoList<T, Meta>>;
     }
 
     toJSON(): JsonObject {
@@ -208,8 +208,8 @@ export class CoStream<T extends JsonValue, Meta extends JsonValue> {
     id: CoValueID<CoStream<T, Meta>>;
     type: "costream" = "costream";
 
-    constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<CoStream<T, Meta>>;
+    constructor(coValue: CoValue) {
+        this.id = coValue.id as CoValueID<CoStream<T, Meta>>;
     }
 
     toJSON(): JsonObject {
@@ -221,8 +221,8 @@ export class Static<T extends JsonValue> {
     id: CoValueID<Static<T>>;
     type: "static" = "static";
 
-    constructor(multilog: MultiLog) {
-        this.id = multilog.id as CoValueID<Static<T>>;
+    constructor(coValue: CoValue) {
+        this.id = coValue.id as CoValueID<Static<T>>;
     }
 
     toJSON(): JsonObject {

@@ -15,19 +15,19 @@ import {
 import {
     AgentCredential,
     AgentID,
-    MultiLog,
-    MultiLogID,
+    CoValue,
+    RawCoValueID,
     SessionID,
     Transaction,
     TransactionID,
     TrustingTransaction,
     agentIDfromSessionID,
-} from "./multilog";
+} from "./coValue";
 import { LocalNode } from ".";
 
 export type PermissionsDef =
-    | { type: "team"; initialAdmin: AgentID; parentTeams?: MultiLogID[] }
-    | { type: "ownedByTeam"; team: MultiLogID }
+    | { type: "team"; initialAdmin: AgentID; parentTeams?: RawCoValueID[] }
+    | { type: "ownedByTeam"; team: RawCoValueID }
     | {
           type: "agent";
           initialSignatoryID: SignatoryID;
@@ -38,11 +38,11 @@ export type PermissionsDef =
 export type Role = "reader" | "writer" | "admin" | "revoked";
 
 export function determineValidTransactions(
-    multilog: MultiLog
+    coValue: CoValue
 ): { txID: TransactionID; tx: Transaction }[] {
-    if (multilog.header.ruleset.type === "team") {
+    if (coValue.header.ruleset.type === "team") {
         const allTrustingTransactionsSorted = Object.entries(
-            multilog.sessions
+            coValue.sessions
         ).flatMap(([sessionID, sessionLog]) => {
             return sessionLog.transactions
                 .map((tx, txIndex) => ({ sessionID, txIndex, tx }))
@@ -64,7 +64,7 @@ export function determineValidTransactions(
             return a.tx.madeAt - b.tx.madeAt;
         });
 
-        const initialAdmin = multilog.header.ruleset.initialAdmin;
+        const initialAdmin = coValue.header.ruleset.initialAdmin;
 
         if (!initialAdmin) {
             throw new Error("Team must have initialAdmin");
@@ -153,10 +153,10 @@ export function determineValidTransactions(
         }
 
         return validTransactions;
-    } else if (multilog.header.ruleset.type === "ownedByTeam") {
+    } else if (coValue.header.ruleset.type === "ownedByTeam") {
         const teamContent =
-            multilog.node.expectMultiLogLoaded(
-                multilog.header.ruleset.team,
+            coValue.node.expectCoValueLoaded(
+                coValue.header.ruleset.team,
                 "Determining valid transaction in owned object but its team wasn't loaded"
             ).getCurrentContent();
 
@@ -164,7 +164,7 @@ export function determineValidTransactions(
             throw new Error("Team must be a map");
         }
 
-        return Object.entries(multilog.sessions).flatMap(
+        return Object.entries(coValue.sessions).flatMap(
             ([sessionID, sessionLog]) => {
                 const transactor = agentIDfromSessionID(sessionID as SessionID);
                 return sessionLog.transactions
@@ -185,8 +185,8 @@ export function determineValidTransactions(
                     }));
             }
         );
-    } else if (multilog.header.ruleset.type === "unsafeAllowAll") {
-        return Object.entries(multilog.sessions).flatMap(
+    } else if (coValue.header.ruleset.type === "unsafeAllowAll") {
+        return Object.entries(coValue.sessions).flatMap(
             ([sessionID, sessionLog]) => {
                 return sessionLog.transactions.map((tx, txIndex) => ({
                     txID: { sessionID: sessionID as SessionID, txIndex },
@@ -194,11 +194,11 @@ export function determineValidTransactions(
                 }));
             }
         );
-    } else if (multilog.header.ruleset.type === "agent") {
+    } else if (coValue.header.ruleset.type === "agent") {
         // TODO
         return [];
     } else {
-        throw new Error("Unknown ruleset type " + (multilog.header.ruleset as any).type);
+        throw new Error("Unknown ruleset type " + (coValue.header.ruleset as any).type);
     }
 }
 
@@ -232,7 +232,7 @@ export class Team {
         this.node = node;
     }
 
-    get id(): MultiLogID {
+    get id(): RawCoValueID {
         return this.teamMap.id;
     }
 
@@ -249,15 +249,15 @@ export class Team {
                 throw new Error("Failed to set role");
             }
 
-            const currentReadKey = this.teamMap.multiLog.getCurrentReadKey();
+            const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
 
             const revelation = seal(
                 currentReadKey.secret,
-                this.teamMap.multiLog.node.agentCredential.recipientSecret,
+                this.teamMap.coValue.node.agentCredential.recipientSecret,
                 new Set([agent.recipientID]),
                 {
-                    in: this.teamMap.multiLog.id,
-                    tx: this.teamMap.multiLog.nextTransactionID(),
+                    in: this.teamMap.coValue.id,
+                    tx: this.teamMap.coValue.nextTransactionID(),
                 }
             );
 
@@ -281,21 +281,21 @@ export class Team {
             }
         }) as AgentID[];
 
-        const currentReadKey = this.teamMap.multiLog.getCurrentReadKey();
+        const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
 
         const newReadKey = newRandomKeySecret();
 
         const newReadKeyRevelation = seal(
             newReadKey.secret,
-            this.teamMap.multiLog.node.agentCredential.recipientSecret,
+            this.teamMap.coValue.node.agentCredential.recipientSecret,
             new Set(
                 currentlyPermittedReaders.map(
                     (reader) => this.node.knownAgents[reader].recipientID
                 )
             ),
             {
-                in: this.teamMap.multiLog.id,
-                tx: this.teamMap.multiLog.nextTransactionID(),
+                in: this.teamMap.coValue.id,
+                tx: this.teamMap.coValue.nextTransactionID(),
             }
         );
 
@@ -329,7 +329,7 @@ export class Team {
         meta?: M
     ): CoMap<M, Meta> {
         return this.node
-            .createMultiLog({
+            .createCoValue({
                 type: "comap",
                 ruleset: {
                     type: "ownedByTeam",
@@ -346,7 +346,7 @@ export class Team {
     ): Team {
         return new Team(
             expectTeamContent(
-                this.teamMap.multiLog
+                this.teamMap.coValue
                     .testWithDifferentCredentials(credential, sessionId)
                     .getCurrentContent()
             ),

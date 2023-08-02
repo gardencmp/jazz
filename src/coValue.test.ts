@@ -1,23 +1,23 @@
 import { expect, test } from "bun:test";
 import {
-    MultiLog,
+    CoValue,
     Transaction,
     getAgent,
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./multilog";
+} from "./coValue";
 import { LocalNode } from "./node";
 import { sign } from "./crypto";
 
-test("Can create multilog with new agent credentials and add transaction to it", () => {
+test("Can create coValue with new agent credentials and add transaction to it", () => {
     const agentCredential = newRandomAgentCredential();
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
@@ -33,13 +33,13 @@ test("Can create multilog with new agent credentials and add transaction to it",
         ],
     };
 
-    const { expectedNewHash } = multilog.expectedNewHashAfter(
+    const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.ownSessionID,
         [transaction]
     );
 
     expect(
-        multilog.tryAddTransactions(
+        coValue.tryAddTransactions(
             node.ownSessionID,
             [transaction],
             expectedNewHash,
@@ -57,7 +57,7 @@ test("transactions with wrong signature are rejected", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
@@ -73,13 +73,13 @@ test("transactions with wrong signature are rejected", () => {
         ],
     };
 
-    const { expectedNewHash } = multilog.expectedNewHashAfter(
+    const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.ownSessionID,
         [transaction]
     );
 
     expect(
-        multilog.tryAddTransactions(
+        coValue.tryAddTransactions(
             node.ownSessionID,
             [transaction],
             expectedNewHash,
@@ -96,7 +96,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
@@ -112,7 +112,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
         ],
     };
 
-    const { expectedNewHash } = multilog.expectedNewHashAfter(
+    const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.ownSessionID,
         [
             {
@@ -128,7 +128,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
     );
 
     expect(
-        multilog.tryAddTransactions(
+        coValue.tryAddTransactions(
             node.ownSessionID,
             [transaction],
             expectedNewHash,

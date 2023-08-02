@@ -31,17 +31,17 @@ import {
     expectTeamContent,
 } from "./permissions";
 import { LocalNode } from "./node";
-import { MultiLogKnownState, NewContentMessage } from "./sync";
+import { CoValueKnownState, NewContentMessage } from "./sync";
 
-export type MultiLogID = `coval_${string}`;
+export type RawCoValueID = `coval_${string}`;
 
-export type MultiLogHeader = {
+export type CoValueHeader = {
     type: ContentType["type"];
     ruleset: RulesetDef;
     meta: JsonValue;
 };
 
-function multilogIDforHeader(header: MultiLogHeader): MultiLogID {
+function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     const hash = shortHash(header);
     return `coval_${hash.slice("shortHash_".length)}`;
 }
@@ -69,7 +69,7 @@ export type PrivateTransaction = {
     keyUsed: KeyID;
     encryptedChanges: Encrypted<
         JsonValue[],
-        { in: MultiLogID; tx: TransactionID }
+        { in: RawCoValueID; tx: TransactionID }
     >;
 };
 
@@ -89,15 +89,15 @@ export type DecryptedTransaction = {
 
 export type TransactionID = { sessionID: SessionID; txIndex: number };
 
-export class MultiLog {
-    id: MultiLogID;
+export class CoValue {
+    id: RawCoValueID;
     node: LocalNode;
-    header: MultiLogHeader;
+    header: CoValueHeader;
     sessions: { [key: SessionID]: SessionLog };
     content?: ContentType;
 
-    constructor(header: MultiLogHeader, node: LocalNode) {
-        this.id = multilogIDforHeader(header);
+    constructor(header: CoValueHeader, node: LocalNode) {
+        this.id = coValueIDforHeader(header);
         this.header = header;
         this.sessions = {};
         this.node = node;
@@ -106,18 +106,18 @@ export class MultiLog {
     testWithDifferentCredentials(
         agentCredential: AgentCredential,
         ownSessionID: SessionID
-    ): MultiLog {
+    ): CoValue {
         const newNode = this.node.testWithDifferentCredentials(
             agentCredential,
             ownSessionID
         );
 
-        return newNode.expectMultiLogLoaded(this.id);
+        return newNode.expectCoValueLoaded(this.id);
     }
 
-    knownState(): MultiLogKnownState {
+    knownState(): CoValueKnownState {
         return {
-            multilogID: this.id,
+            coValueID: this.id,
             header: true,
             sessions: Object.fromEntries(
                 Object.entries(this.sessions).map(([k, v]) => [
@@ -187,7 +187,7 @@ export class MultiLog {
 
         this.content = undefined;
 
-        this.node.syncMultiLog(this);
+        this.node.syncCoValue(this);
 
         const _ = this.getCurrentContent();
 
@@ -274,7 +274,7 @@ export class MultiLog {
         } else if (this.header.type === "static") {
             this.content = new Static(this);
         } else {
-            throw new Error(`Unknown multilog type ${this.header.type}`);
+            throw new Error(`Unknown coValue type ${this.header.type}`);
         }
 
         return this.content;
@@ -333,7 +333,7 @@ export class MultiLog {
             };
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.node
-                .expectMultiLogLoaded(this.header.ruleset.team)
+                .expectCoValueLoaded(this.header.ruleset.team)
                 .getCurrentReadKey();
         } else {
             throw new Error(
@@ -411,7 +411,7 @@ export class MultiLog {
             );
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.node
-                .expectMultiLogLoaded(this.header.ruleset.team)
+                .expectCoValueLoaded(this.header.ruleset.team)
                 .getReadKey(keyID);
         } else {
             throw new Error(
@@ -424,10 +424,10 @@ export class MultiLog {
         return this.sessions[txID.sessionID]?.transactions[txID.txIndex];
     }
 
-    newContentSince(knownState: MultiLogKnownState | undefined): NewContentMessage | undefined {
+    newContentSince(knownState: CoValueKnownState | undefined): NewContentMessage | undefined {
         const newContent: NewContentMessage = {
             action: "newContent",
-            multilogID: this.id,
+            coValueID: this.id,
             header: knownState?.header ? undefined : this.header,
             newContent: Object.fromEntries(
                 Object.entries(this.sessions)
@@ -483,7 +483,7 @@ export function getAgent(agentCredential: AgentCredential) {
     };
 }
 
-export function getAgentMultilogHeader(agent: Agent): MultiLogHeader {
+export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
     return {
         type: "comap",
         ruleset: {
@@ -496,12 +496,12 @@ export function getAgentMultilogHeader(agent: Agent): MultiLogHeader {
 }
 
 export function getAgentID(agent: Agent): AgentID {
-    return `agent_${multilogIDforHeader(getAgentMultilogHeader(agent)).slice(
+    return `agent_${coValueIDforHeader(getAgentCoValueHeader(agent)).slice(
         "coval_".length
     )}`;
 }
 
-export function agentIDasMultiLogID(agentID: AgentID): MultiLogID {
+export function agentIDAsCoValueID(agentID: AgentID): RawCoValueID {
     return `coval_${agentID.substring("agent_".length)}`;
 }
 

@@ -34,13 +34,13 @@ THIS IS WORK IN PROGRESS
 - Static (single addressable `Immutable`)
 
 ## Implementation Abstractions
-- MultiLog
+- CoValue
   - Session Logs
   - Transactions
     - Private (encrypted) transactions
     - Trusting (unencrypted) transactions
   - Rulesets
-- CoValue Types
+- CoValue Content Types
 - LocalNode
   - Peers
   - AgentCredentials

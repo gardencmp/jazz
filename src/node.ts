@@ -1,19 +1,19 @@
 import { CoMap } from "./contentType";
 import { newRandomKeySecret, seal } from "./crypto";
 import {
-    MultiLogID,
-    MultiLog,
+    RawCoValueID,
+    CoValue,
     AgentCredential,
     AgentID,
     SessionID,
     Agent,
     getAgent,
     getAgentID,
-    getAgentMultilogHeader,
-    MultiLogHeader,
+    getAgentCoValueHeader,
+    CoValueHeader,
     agentIDfromSessionID,
-    agentIDasMultiLogID,
-} from "./multilog";
+    agentIDAsCoValueID,
+} from "./coValue";
 import { Team, expectTeamContent } from "./permissions";
 import {
     NewContentMessage,
@@ -31,7 +31,7 @@ import {
 } from "./sync";
 
 export class LocalNode {
-    multilogs: { [key: MultiLogID]: MultilogState } = {};
+    coValues: { [key: RawCoValueID]: CoValueState } = {};
     peers: { [key: PeerID]: PeerState } = {};
     agentCredential: AgentCredential;
     agentID: AgentID;
@@ -46,35 +46,35 @@ export class LocalNode {
         this.knownAgents[agentID] = agent;
         this.ownSessionID = ownSessionID;
 
-        const agentMultilog = new MultiLog(getAgentMultilogHeader(agent), this);
-        this.multilogs[agentMultilog.id] = {
+        const agentCoValue = new CoValue(getAgentCoValueHeader(agent), this);
+        this.coValues[agentCoValue.id] = {
             state: "loaded",
-            multilog: agentMultilog,
+            coValue: agentCoValue,
         };
     }
 
-    createMultiLog(header: MultiLogHeader): MultiLog {
-        const multilog = new MultiLog(header, this);
-        this.multilogs[multilog.id] = { state: "loaded", multilog };
+    createCoValue(header: CoValueHeader): CoValue {
+        const coValue = new CoValue(header, this);
+        this.coValues[coValue.id] = { state: "loaded", coValue: coValue };
 
-        this.syncMultiLog(multilog);
+        this.syncCoValue(coValue);
 
-        return multilog;
+        return coValue;
     }
 
-    loadMultiLog(id: MultiLogID): Promise<MultiLog> {
-        let entry = this.multilogs[id];
+    loadCoValue(id: RawCoValueID): Promise<CoValue> {
+        let entry = this.coValues[id];
         if (!entry) {
             entry = newLoadingState();
 
-            this.multilogs[id] = entry;
+            this.coValues[id] = entry;
 
             for (const peer of Object.values(this.peers)) {
                 peer.outgoing
                     .write({
                         action: "subscribe",
                         knownState: {
-                            multilogID: id,
+                            coValueID: id,
                             header: false,
                             sessions: {},
                         },
@@ -85,26 +85,26 @@ export class LocalNode {
             }
         }
         if (entry.state === "loaded") {
-            return Promise.resolve(entry.multilog);
+            return Promise.resolve(entry.coValue);
         }
         return entry.done;
     }
 
-    expectMultiLogLoaded(id: MultiLogID, expectation?: string): MultiLog {
-        const entry = this.multilogs[id];
+    expectCoValueLoaded(id: RawCoValueID, expectation?: string): CoValue {
+        const entry = this.coValues[id];
         if (!entry) {
             throw new Error(
-                `${expectation ? expectation + ": " : ""}Unknown multilog ${id}`
+                `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`
             );
         }
         if (entry.state === "loading") {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }Multilog ${id} not yet loaded`
+                }CoValue ${id} not yet loaded`
             );
         }
-        return entry.multilog;
+        return entry.coValue;
     }
 
     addKnownAgent(agent: Agent) {
@@ -113,13 +113,13 @@ export class LocalNode {
     }
 
     createTeam(): Team {
-        const teamMultilog = this.createMultiLog({
+        const teamCoValue = this.createCoValue({
             type: "comap",
             ruleset: { type: "team", initialAdmin: this.agentID },
             meta: null,
         });
 
-        let teamContent = expectTeamContent(teamMultilog.getCurrentContent());
+        let teamContent = expectTeamContent(teamCoValue.getCurrentContent());
 
         teamContent = teamContent.edit((editable) => {
             editable.set(this.agentID, "admin", "trusting");
@@ -130,8 +130,8 @@ export class LocalNode {
                 this.agentCredential.recipientSecret,
                 new Set([getAgent(this.agentCredential).recipientID]),
                 {
-                    in: teamMultilog.id,
-                    tx: teamMultilog.nextTransactionID(),
+                    in: teamCoValue.id,
+                    tx: teamCoValue.nextTransactionID(),
                 }
             );
 
@@ -156,7 +156,7 @@ export class LocalNode {
         this.peers[peer.id] = peerState;
 
         if (peer.role === "server") {
-            for (const entry of Object.values(this.multilogs)) {
+            for (const entry of Object.values(this.coValues)) {
                 if (entry.state === "loading") {
                     continue;
                 }
@@ -164,15 +164,15 @@ export class LocalNode {
                 peerState.outgoing
                     .write({
                         action: "subscribe",
-                        knownState: entry.multilog.knownState(),
+                        knownState: entry.coValue.knownState(),
                     })
                     .catch((e) => {
                         // TODO: handle error
                         console.error("Error writing to peer", e);
                     });
 
-                peerState.optimisticKnownStates[entry.multilog.id] = {
-                    multilogID: entry.multilog.id,
+                peerState.optimisticKnownStates[entry.coValue.id] = {
+                    coValueID: entry.coValue.id,
                     header: false,
                     sessions: {},
                 };
@@ -217,20 +217,20 @@ export class LocalNode {
     handleSubscribe(
         msg: SubscribeMessage,
         peer: PeerState,
-        asDependencyOf?: MultiLogID
+        asDependencyOf?: RawCoValueID
     ): SyncMessage[] {
-        const entry = this.multilogs[msg.knownState.multilogID];
+        const entry = this.coValues[msg.knownState.coValueID];
 
         if (!entry || entry.state === "loading") {
             if (!entry) {
-                this.multilogs[msg.knownState.multilogID] = newLoadingState();
+                this.coValues[msg.knownState.coValueID] = newLoadingState();
             }
 
             return [
                 {
                     action: "subscribeResponse",
                     knownState: {
-                        multilogID: msg.knownState.multilogID,
+                        coValueID: msg.knownState.coValueID,
                         header: false,
                         sessions: {},
                     },
@@ -238,39 +238,39 @@ export class LocalNode {
             ];
         }
 
-        peer.optimisticKnownStates[entry.multilog.id] =
-            entry.multilog.knownState();
+        peer.optimisticKnownStates[entry.coValue.id] =
+            entry.coValue.knownState();
 
-        const newContent = entry.multilog.newContentSince(msg.knownState);
+        const newContent = entry.coValue.newContentSince(msg.knownState);
 
-        const dependedOnMultilogs =
-            entry.multilog.header.ruleset.type === "team"
-                ? expectTeamContent(entry.multilog.getCurrentContent())
+        const dependedOnCoValues =
+            entry.coValue.header.ruleset.type === "team"
+                ? expectTeamContent(entry.coValue.getCurrentContent())
                       .keys()
                       .filter((k): k is AgentID => k.startsWith("agent_"))
-                      .map((agent) => agentIDasMultiLogID(agent))
-                : entry.multilog.header.ruleset.type === "ownedByTeam"
-                ? [entry.multilog.header.ruleset.team]
+                      .map((agent) => agentIDAsCoValueID(agent))
+                : entry.coValue.header.ruleset.type === "ownedByTeam"
+                ? [entry.coValue.header.ruleset.team]
                 : [];
 
         return [
-            ...dependedOnMultilogs.flatMap((multilogID) =>
+            ...dependedOnCoValues.flatMap((coValueID) =>
                 this.handleSubscribe(
                     {
                         action: "subscribe",
                         knownState: {
-                            multilogID,
+                            coValueID,
                             header: false,
                             sessions: {},
                         },
                     },
                     peer,
-                    asDependencyOf || msg.knownState.multilogID
+                    asDependencyOf || msg.knownState.coValueID
                 )
             ),
             {
                 action: "subscribeResponse",
-                knownState: entry.multilog.knownState(),
+                knownState: entry.coValue.knownState(),
                 asDependencyOf,
             },
             ...(newContent ? [newContent] : []),
@@ -281,70 +281,70 @@ export class LocalNode {
         msg: SubscribeResponseMessage,
         peer: PeerState
     ): SyncMessage[] {
-        let entry = this.multilogs[msg.knownState.multilogID];
+        let entry = this.coValues[msg.knownState.coValueID];
 
         if (!entry) {
             if (msg.asDependencyOf) {
-                if (this.multilogs[msg.asDependencyOf]) {
+                if (this.coValues[msg.asDependencyOf]) {
                     entry = newLoadingState();
 
-                    this.multilogs[msg.knownState.multilogID] = entry;
+                    this.coValues[msg.knownState.coValueID] = entry;
                 }
             } else {
                 throw new Error(
-                    "Expected multilog entry to be created, missing subscribe?"
+                    "Expected coValue entry to be created, missing subscribe?"
                 );
             }
         }
 
         if (entry.state === "loading") {
-            peer.optimisticKnownStates[msg.knownState.multilogID] =
+            peer.optimisticKnownStates[msg.knownState.coValueID] =
                 msg.knownState;
             return [];
         }
 
-        const newContent = entry.multilog.newContentSince(msg.knownState);
-        peer.optimisticKnownStates[msg.knownState.multilogID] =
-            combinedKnownStates(msg.knownState, entry.multilog.knownState());
+        const newContent = entry.coValue.newContentSince(msg.knownState);
+        peer.optimisticKnownStates[msg.knownState.coValueID] =
+            combinedKnownStates(msg.knownState, entry.coValue.knownState());
 
         return newContent ? [newContent] : [];
     }
 
     handleNewContent(msg: NewContentMessage): SyncMessage[] {
-        let entry = this.multilogs[msg.multilogID];
+        let entry = this.coValues[msg.coValueID];
 
         if (!entry) {
             throw new Error(
-                "Expected multilog entry to be created, missing subscribe?"
+                "Expected coValue entry to be created, missing subscribe?"
             );
         }
 
-        let resolveAfterDone: ((multilog: MultiLog) => void) | undefined;
+        let resolveAfterDone: ((coValue: CoValue) => void) | undefined;
 
         if (entry.state === "loading") {
             if (!msg.header) {
                 throw new Error("Expected header to be sent in first message");
             }
 
-            const multilog = new MultiLog(msg.header, this);
+            const coValue = new CoValue(msg.header, this);
 
             resolveAfterDone = entry.resolve;
 
             entry = {
                 state: "loaded",
-                multilog,
+                coValue: coValue,
             };
 
-            this.multilogs[msg.multilogID] = entry;
+            this.coValues[msg.coValueID] = entry;
         }
 
-        const multilog = entry.multilog;
+        const coValue = entry.coValue;
 
         let invalidStateAssumed = false;
 
         for (const sessionID of Object.keys(msg.newContent) as SessionID[]) {
             const ourKnownTxIdx =
-                multilog.sessions[sessionID]?.transactions.length;
+                coValue.sessions[sessionID]?.transactions.length;
             const theirFirstNewTxIdx = msg.newContent[sessionID].after;
 
             if ((ourKnownTxIdx || 0) < theirFirstNewTxIdx) {
@@ -361,7 +361,7 @@ export class LocalNode {
                     alreadyKnownOffset
                 );
 
-            const success = multilog.tryAddTransactions(
+            const success = coValue.tryAddTransactions(
                 sessionID,
                 newTransactions,
                 msg.newContent[sessionID].lastHash,
@@ -375,14 +375,14 @@ export class LocalNode {
         }
 
         if (resolveAfterDone) {
-            resolveAfterDone(multilog);
+            resolveAfterDone(coValue);
         }
 
         return invalidStateAssumed
             ? [
                   {
                       action: "wrongAssumedKnownState",
-                      knownState: multilog.knownState(),
+                      knownState: coValue.knownState(),
                   },
               ]
             : [];
@@ -392,12 +392,12 @@ export class LocalNode {
         msg: WrongAssumedKnownStateMessage,
         peer: PeerState
     ): SyncMessage[] {
-        const multilog = this.expectMultiLogLoaded(msg.knownState.multilogID);
+        const coValue = this.expectCoValueLoaded(msg.knownState.coValueID);
 
-        peer.optimisticKnownStates[msg.knownState.multilogID] =
-            combinedKnownStates(msg.knownState, multilog.knownState());
+        peer.optimisticKnownStates[msg.knownState.coValueID] =
+            combinedKnownStates(msg.knownState, coValue.knownState());
 
-        const newContent = multilog.newContentSince(msg.knownState);
+        const newContent = coValue.newContentSince(msg.knownState);
 
         return newContent ? [newContent] : [];
     }
@@ -406,28 +406,28 @@ export class LocalNode {
         throw new Error("Method not implemented.");
     }
 
-    async syncMultiLog(multilog: MultiLog) {
+    async syncCoValue(coValue: CoValue) {
         for (const peer of Object.values(this.peers)) {
             const optimisticKnownState =
-                peer.optimisticKnownStates[multilog.id];
+                peer.optimisticKnownStates[coValue.id];
 
             if (optimisticKnownState || peer.role === "server") {
                 const newContent =
-                    multilog.newContentSince(optimisticKnownState);
+                    coValue.newContentSince(optimisticKnownState);
 
-                peer.optimisticKnownStates[multilog.id] = peer
-                    .optimisticKnownStates[multilog.id]
+                peer.optimisticKnownStates[coValue.id] = peer
+                    .optimisticKnownStates[coValue.id]
                     ? combinedKnownStates(
-                          peer.optimisticKnownStates[multilog.id],
-                          multilog.knownState()
+                          peer.optimisticKnownStates[coValue.id],
+                          coValue.knownState()
                       )
-                    : multilog.knownState();
+                    : coValue.knownState();
 
                 if (!optimisticKnownState && peer.role === "server") {
                     // auto-subscribe
                     await peer.outgoing.write({
                         action: "subscribe",
-                        knownState: multilog.knownState(),
+                        knownState: coValue.knownState(),
                     });
                 }
 
@@ -444,21 +444,21 @@ export class LocalNode {
     ): LocalNode {
         const newNode = new LocalNode(agentCredential, ownSessionID);
 
-        newNode.multilogs = Object.fromEntries(
-            Object.entries(this.multilogs)
+        newNode.coValues = Object.fromEntries(
+            Object.entries(this.coValues)
                 .map(([id, entry]) => {
                     if (entry.state === "loading") {
                         return undefined;
                     }
 
-                    const newMultilog = new MultiLog(
-                        entry.multilog.header,
+                    const newCoValue = new CoValue(
+                        entry.coValue.header,
                         newNode
                     );
 
-                    newMultilog.sessions = entry.multilog.sessions;
+                    newCoValue.sessions = entry.coValue.sessions;
 
-                    return [id, { state: "loaded", multilog: newMultilog }];
+                    return [id, { state: "loaded", coValue: newCoValue }];
                 })
                 .filter((x): x is Exclude<typeof x, undefined> => !!x)
         );
@@ -472,18 +472,18 @@ export class LocalNode {
     }
 }
 
-type MultilogState =
+type CoValueState =
     | {
           state: "loading";
-          done: Promise<MultiLog>;
-          resolve: (multilog: MultiLog) => void;
+          done: Promise<CoValue>;
+          resolve: (coValue: CoValue) => void;
       }
-    | { state: "loaded"; multilog: MultiLog };
+    | { state: "loaded"; coValue: CoValue };
 
-function newLoadingState(): MultilogState {
-    let resolve: (multilog: MultiLog) => void;
+function newLoadingState(): CoValueState {
+    let resolve: (coValue: CoValue) => void;
 
-    const promise = new Promise<MultiLog>((r) => {
+    const promise = new Promise<CoValue>((r) => {
         resolve = r;
     });
 

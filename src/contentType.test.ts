@@ -5,7 +5,7 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./multilog";
+} from "./coValue";
 import { LocalNode } from "./node";
 
 test("Empty COJSON Map works", () => {
@@ -15,13 +15,13 @@ test("Empty COJSON Map works", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
 
-    const content = multilog.getCurrentContent();
+    const content = coValue.getCurrentContent();
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -39,13 +39,13 @@ test("Can insert and delete Map entries in edit()", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
 
-    const content = multilog.getCurrentContent();
+    const content = coValue.getCurrentContent();
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -71,13 +71,13 @@ test("Can get map entry values at different points in time", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
 
-    const content = multilog.getCurrentContent();
+    const content = coValue.getCurrentContent();
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -110,13 +110,13 @@ test("Can get all historic values of key", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
 
-    const content = multilog.getCurrentContent();
+    const content = coValue.getCurrentContent();
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -139,22 +139,22 @@ test("Can get all historic values of key", () => {
             {
                 txID: txA,
                 value: "A",
-                at: txA && multilog.getTx(txA)?.madeAt,
+                at: txA && coValue.getTx(txA)?.madeAt,
             },
             {
                 txID: txB,
                 value: "B",
-                at: txB && multilog.getTx(txB)?.madeAt,
+                at: txB && coValue.getTx(txB)?.madeAt,
             },
             {
                 txID: txDel,
                 value: undefined,
-                at: txDel && multilog.getTx(txDel)?.madeAt,
+                at: txDel && coValue.getTx(txDel)?.madeAt,
             },
             {
                 txID: txC,
                 value: "C",
-                at: txC && multilog.getTx(txC)?.madeAt,
+                at: txC && coValue.getTx(txC)?.madeAt,
             },
         ]);
     });
@@ -167,13 +167,13 @@ test("Can get last tx ID for a key", () => {
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
     );
 
-    const multilog = node.createMultiLog({
+    const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
     });
 
-    const content = multilog.getCurrentContent();
+    const content = coValue.getCurrentContent();
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
