@@ -155,9 +155,10 @@ export function determineValidTransactions(
         return validTransactions;
     } else if (multilog.header.ruleset.type === "ownedByTeam") {
         const teamContent =
-            multilog.requiredMultiLogs[
-                multilog.header.ruleset.team
-            ].getCurrentContent();
+            multilog.node.expectMultiLogLoaded(
+                multilog.header.ruleset.team,
+                "Determining valid transaction in owned object but its team wasn't loaded"
+            ).getCurrentContent();
 
         if (teamContent.type !== "comap") {
             throw new Error("Team must be a map");
@@ -193,8 +194,11 @@ export function determineValidTransactions(
                 }));
             }
         );
+    } else if (multilog.header.ruleset.type === "agent") {
+        // TODO
+        return [];
     } else {
-        throw new Error("Unknown ruleset type " + multilog.header.ruleset.type);
+        throw new Error("Unknown ruleset type " + (multilog.header.ruleset as any).type);
     }
 }
 
@@ -228,6 +232,10 @@ export class Team {
         this.node = node;
     }
 
+    get id(): MultiLogID {
+        return this.teamMap.id;
+    }
+
     addMember(agentID: AgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
             const agent = this.node.knownAgents[agentID];
@@ -245,7 +253,7 @@ export class Team {
 
             const revelation = seal(
                 currentReadKey.secret,
-                this.teamMap.multiLog.agentCredential.recipientSecret,
+                this.teamMap.multiLog.node.agentCredential.recipientSecret,
                 new Set([agent.recipientID]),
                 {
                     in: this.teamMap.multiLog.id,
@@ -279,7 +287,7 @@ export class Team {
 
         const newReadKeyRevelation = seal(
             newReadKey.secret,
-            this.teamMap.multiLog.agentCredential.recipientSecret,
+            this.teamMap.multiLog.node.agentCredential.recipientSecret,
             new Set(
                 currentlyPermittedReaders.map(
                     (reader) => this.node.knownAgents[reader].recipientID

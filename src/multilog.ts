@@ -30,6 +30,8 @@ import {
     determineValidTransactions,
     expectTeamContent,
 } from "./permissions";
+import { LocalNode } from "./node";
+import { MultiLogKnownState, NewContentMessage } from "./sync";
 
 export type MultiLogID = `coval_${string}`;
 
@@ -58,14 +60,17 @@ type SessionLog = {
     transactions: Transaction[];
     lastHash?: Hash;
     streamingHash: StreamingHash;
-    lastSignature: string;
+    lastSignature: Signature;
 };
 
 export type PrivateTransaction = {
     privacy: "private";
     madeAt: number;
     keyUsed: KeyID;
-    encryptedChanges: Encrypted<JsonValue[], {in: MultiLogID, tx: TransactionID}>;
+    encryptedChanges: Encrypted<
+        JsonValue[],
+        { in: MultiLogID; tx: TransactionID }
+    >;
 };
 
 export type TrustingTransaction = {
@@ -86,61 +91,33 @@ export type TransactionID = { sessionID: SessionID; txIndex: number };
 
 export class MultiLog {
     id: MultiLogID;
+    node: LocalNode;
     header: MultiLogHeader;
     sessions: { [key: SessionID]: SessionLog };
-    agentCredential: AgentCredential;
-    ownSessionID: SessionID;
-    knownAgents: { [key: AgentID]: Agent };
-    requiredMultiLogs: { [key: MultiLogID]: MultiLog };
     content?: CoValue;
 
-    constructor(
-        header: MultiLogHeader,
-        agentCredential: AgentCredential,
-        ownSessionID: SessionID,
-        knownAgents: { [key: AgentID]: Agent },
-        requiredMultiLogs: { [key: MultiLogID]: MultiLog }
-    ) {
+    constructor(header: MultiLogHeader, node: LocalNode) {
         this.id = multilogIDforHeader(header);
         this.header = header;
         this.sessions = {};
-        this.agentCredential = agentCredential;
-        this.ownSessionID = ownSessionID;
-        this.knownAgents = knownAgents;
-        this.requiredMultiLogs = requiredMultiLogs;
+        this.node = node;
     }
 
     testWithDifferentCredentials(
         agentCredential: AgentCredential,
         ownSessionID: SessionID
     ): MultiLog {
-        const knownAgents = {
-            ...this.knownAgents,
-            [agentIDfromSessionID(ownSessionID)]: getAgent(agentCredential),
-        };
-        const cloned = new MultiLog(
-            this.header,
+        const newNode = this.node.testWithDifferentCredentials(
             agentCredential,
-            ownSessionID,
-            knownAgents,
-            Object.fromEntries(
-                Object.entries(this.requiredMultiLogs).map(([id, multilog]) => [
-                    id,
-                    multilog.testWithDifferentCredentials(
-                        agentCredential,
-                        ownSessionID
-                    ),
-                ])
-            )
+            ownSessionID
         );
 
-        cloned.sessions = JSON.parse(JSON.stringify(this.sessions));
-
-        return cloned;
+        return newNode.expectMultiLogLoaded(this.id);
     }
 
-    knownState(): MultilogKnownState {
+    knownState(): MultiLogKnownState {
         return {
+            multilogID: this.id,
             header: true,
             sessions: Object.fromEntries(
                 Object.entries(this.sessions).map(([k, v]) => [
@@ -156,7 +133,7 @@ export class MultiLog {
     }
 
     nextTransactionID(): TransactionID {
-        const sessionID = this.ownSessionID;
+        const sessionID = this.node.ownSessionID;
         return {
             sessionID,
             txIndex: this.sessions[sessionID]?.transactions.length || 0,
@@ -170,7 +147,7 @@ export class MultiLog {
         newSignature: Signature
     ): boolean {
         const signatoryID =
-            this.knownAgents[agentIDfromSessionID(sessionID)]?.signatoryID;
+            this.node.knownAgents[agentIDfromSessionID(sessionID)]?.signatoryID;
 
         if (!signatoryID) {
             console.warn("Unknown agent", agentIDfromSessionID(sessionID));
@@ -209,6 +186,8 @@ export class MultiLog {
         };
 
         this.content = undefined;
+
+        this.node.syncMultiLog(this);
 
         const _ = this.getCurrentContent();
 
@@ -262,14 +241,14 @@ export class MultiLog {
             };
         }
 
-        const sessionID = this.ownSessionID;
+        const sessionID = this.node.ownSessionID;
 
         const { expectedNewHash } = this.expectedNewHashAfter(sessionID, [
             transaction,
         ]);
 
         const signature = sign(
-            this.agentCredential.signatorySecret,
+            this.node.agentCredential.signatorySecret,
             expectedNewHash
         );
 
@@ -353,9 +332,9 @@ export class MultiLog {
                 id: currentKeyId,
             };
         } else if (this.header.ruleset.type === "ownedByTeam") {
-            return this.requiredMultiLogs[
-                this.header.ruleset.team
-            ].getCurrentReadKey();
+            return this.node
+                .expectMultiLogLoaded(this.header.ruleset.team)
+                .getCurrentReadKey();
         } else {
             throw new Error(
                 "Only teams or values owned by teams have read secrets"
@@ -374,7 +353,7 @@ export class MultiLog {
             for (const entry of readKeyHistory) {
                 if (entry.value?.keyID === keyID) {
                     const revealer = agentIDfromSessionID(entry.txID.sessionID);
-                    const revealerAgent = this.knownAgents[revealer];
+                    const revealerAgent = this.node.knownAgents[revealer];
 
                     if (!revealerAgent) {
                         throw new Error("Unknown revealer");
@@ -382,7 +361,7 @@ export class MultiLog {
 
                     const secret = openAs(
                         entry.value.revelation,
-                        this.agentCredential.recipientSecret,
+                        this.node.agentCredential.recipientSecret,
                         revealerAgent.recipientID,
                         {
                             in: this.id,
@@ -417,7 +396,9 @@ export class MultiLog {
                     if (secret) {
                         return secret;
                     } else {
-                        console.error(`Sealing ${sealingKeyID} key didn't unseal ${keyID}`);
+                        console.error(
+                            `Sealing ${sealingKeyID} key didn't unseal ${keyID}`
+                        );
                     }
                 }
             }
@@ -426,12 +407,12 @@ export class MultiLog {
                 "readKey " +
                     keyID +
                     " not revealed for " +
-                    getAgentID(getAgent(this.agentCredential))
+                    getAgentID(getAgent(this.node.agentCredential))
             );
         } else if (this.header.ruleset.type === "ownedByTeam") {
-            return this.requiredMultiLogs[this.header.ruleset.team].getReadKey(
-                keyID
-            );
+            return this.node
+                .expectMultiLogLoaded(this.header.ruleset.team)
+                .getReadKey(keyID);
         } else {
             throw new Error(
                 "Only teams or values owned by teams have read secrets"
@@ -442,12 +423,51 @@ export class MultiLog {
     getTx(txID: TransactionID): Transaction | undefined {
         return this.sessions[txID.sessionID]?.transactions[txID.txIndex];
     }
-}
 
-type MultilogKnownState = {
-    header: boolean;
-    sessions: { [key: SessionID]: number };
-};
+    newContentSince(knownState: MultiLogKnownState | undefined): NewContentMessage | undefined {
+        const newContent: NewContentMessage = {
+            action: "newContent",
+            multilogID: this.id,
+            header: knownState?.header ? undefined : this.header,
+            newContent: Object.fromEntries(
+                Object.entries(this.sessions)
+                    .map(([sessionID, log]) => {
+                        const newTransactions = log.transactions.slice(
+                            knownState?.sessions[sessionID as SessionID] || 0
+                        );
+
+                        if (
+                            newTransactions.length === 0 ||
+                            !log.lastHash ||
+                            !log.lastSignature
+                        ) {
+                            return undefined;
+                        }
+
+                        return [
+                            sessionID,
+                            {
+                                after:
+                                    knownState?.sessions[
+                                        sessionID as SessionID
+                                    ] || 0,
+                                newTransactions,
+                                lastHash: log.lastHash,
+                                lastSignature: log.lastSignature,
+                            },
+                        ];
+                    })
+                    .filter((x): x is Exclude<typeof x, undefined> => !!x)
+            ),
+        }
+
+        if (!newContent.header && Object.keys(newContent.newContent).length === 0) {
+            return undefined;
+        }
+
+        return newContent;
+    }
+}
 
 export type AgentID = `agent_${string}`;
 
@@ -479,6 +499,10 @@ export function getAgentID(agent: Agent): AgentID {
     return `agent_${multilogIDforHeader(getAgentMultilogHeader(agent)).slice(
         "coval_".length
     )}`;
+}
+
+export function agentIDasMultiLogID(agentID: AgentID): MultiLogID {
+    return `coval_${agentID.substring("agent_".length)}`;
 }
 
 export type AgentCredential = {

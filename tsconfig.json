@@ -16,6 +16,8 @@
     "noEmit": true,
     "types": [
       "bun-types" // add Bun global
-    ]
+    ],
+
+    // "noUncheckedIndexedAccess": true
   }
 }

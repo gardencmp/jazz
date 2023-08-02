@@ -11,12 +11,28 @@ import {
     getAgentID,
     getAgentMultilogHeader,
     MultiLogHeader,
+    agentIDfromSessionID,
+    agentIDasMultiLogID,
 } from "./multilog";
 import { Team, expectTeamContent } from "./permissions";
+import {
+    NewContentMessage,
+    Peer,
+    PeerID,
+    PeerState,
+    SessionNewContent,
+    SubscribeMessage,
+    SubscribeResponseMessage,
+    SyncMessage,
+    UnsubscribeMessage,
+    WrongAssumedKnownStateMessage,
+    combinedKnownStates,
+    weAreStrictlyAhead,
+} from "./sync";
 
 export class LocalNode {
-    multilogs: { [key: MultiLogID]: Promise<MultiLog> | MultiLog } = {};
-    // peers: {[key: Hostname]: Peer} = {};
+    multilogs: { [key: MultiLogID]: MultilogState } = {};
+    peers: { [key: PeerID]: PeerState } = {};
     agentCredential: AgentCredential;
     agentID: AgentID;
     ownSessionID: SessionID;
@@ -30,46 +46,65 @@ export class LocalNode {
         this.knownAgents[agentID] = agent;
         this.ownSessionID = ownSessionID;
 
-        const agentMultilog = new MultiLog(
-            getAgentMultilogHeader(agent),
-            agentCredential,
-            ownSessionID,
-            this.knownAgents,
-            {}
-        );
-        this.multilogs[agentMultilog.id] = Promise.resolve(agentMultilog);
+        const agentMultilog = new MultiLog(getAgentMultilogHeader(agent), this);
+        this.multilogs[agentMultilog.id] = {
+            state: "loaded",
+            multilog: agentMultilog,
+        };
     }
 
     createMultiLog(header: MultiLogHeader): MultiLog {
-        const requiredMultiLogs =
-            header.ruleset.type === "ownedByTeam"
-                ? {
-                      [header.ruleset.team]: this.expectMultiLogLoaded(
-                          header.ruleset.team
-                      ),
-                  }
-                : {};
+        const multilog = new MultiLog(header, this);
+        this.multilogs[multilog.id] = { state: "loaded", multilog };
 
-        const multilog = new MultiLog(
-            header,
-            this.agentCredential,
-            this.ownSessionID,
-            this.knownAgents,
-            requiredMultiLogs
-        );
-        this.multilogs[multilog.id] = multilog;
+        this.syncMultiLog(multilog);
+
         return multilog;
     }
 
-    expectMultiLogLoaded(id: MultiLogID): MultiLog {
-        const multilog = this.multilogs[id];
-        if (!multilog) {
-            throw new Error(`Unknown multilog ${id}`);
+    loadMultiLog(id: MultiLogID): Promise<MultiLog> {
+        let entry = this.multilogs[id];
+        if (!entry) {
+            entry = newLoadingState();
+
+            this.multilogs[id] = entry;
+
+            for (const peer of Object.values(this.peers)) {
+                peer.outgoing
+                    .write({
+                        action: "subscribe",
+                        knownState: {
+                            multilogID: id,
+                            header: false,
+                            sessions: {},
+                        },
+                    })
+                    .catch((e) => {
+                        console.error("Error writing to peer", e);
+                    });
+            }
         }
-        if (multilog instanceof Promise) {
-            throw new Error(`Multilog ${id} not yet loaded`);
+        if (entry.state === "loaded") {
+            return Promise.resolve(entry.multilog);
         }
-        return multilog;
+        return entry.done;
+    }
+
+    expectMultiLogLoaded(id: MultiLogID, expectation?: string): MultiLog {
+        const entry = this.multilogs[id];
+        if (!entry) {
+            throw new Error(
+                `${expectation ? expectation + ": " : ""}Unknown multilog ${id}`
+            );
+        }
+        if (entry.state === "loading") {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }Multilog ${id} not yet loaded`
+            );
+        }
+        return entry.multilog;
     }
 
     addKnownAgent(agent: Agent) {
@@ -109,13 +144,352 @@ export class LocalNode {
 
         return new Team(teamContent, this);
     }
+
+    addPeer(peer: Peer) {
+        const peerState: PeerState = {
+            id: peer.id,
+            optimisticKnownStates: {},
+            incoming: peer.incoming,
+            outgoing: peer.outgoing.getWriter(),
+            role: peer.role,
+        };
+        this.peers[peer.id] = peerState;
+
+        if (peer.role === "server") {
+            for (const entry of Object.values(this.multilogs)) {
+                if (entry.state === "loading") {
+                    continue;
+                }
+
+                peerState.outgoing
+                    .write({
+                        action: "subscribe",
+                        knownState: entry.multilog.knownState(),
+                    })
+                    .catch((e) => {
+                        // TODO: handle error
+                        console.error("Error writing to peer", e);
+                    });
+
+                peerState.optimisticKnownStates[entry.multilog.id] = {
+                    multilogID: entry.multilog.id,
+                    header: false,
+                    sessions: {},
+                };
+            }
+        }
+
+        const readIncoming = async () => {
+            for await (const msg of peerState.incoming) {
+                for (const responseMsg of this.handleSyncMessage(
+                    msg,
+                    peerState
+                )) {
+                    await peerState.outgoing.write(responseMsg);
+                }
+            }
+        };
+
+        readIncoming().catch((e) => {
+            // TODO: handle error
+            console.error("Error reading from peer", e);
+        });
+    }
+
+    handleSyncMessage(msg: SyncMessage, peer: PeerState): SyncMessage[] {
+        // TODO: validate
+        switch (msg.action) {
+            case "subscribe":
+                return this.handleSubscribe(msg, peer);
+            case "subscribeResponse":
+                return this.handleSubscribeResponse(msg, peer);
+            case "newContent":
+                return this.handleNewContent(msg);
+            case "wrongAssumedKnownState":
+                return this.handleWrongAssumedKnownState(msg, peer);
+            case "unsubscribe":
+                return this.handleUnsubscribe(msg);
+            default:
+                throw new Error(`Unknown message type ${(msg as any).action}`);
+        }
+    }
+
+    handleSubscribe(
+        msg: SubscribeMessage,
+        peer: PeerState,
+        asDependencyOf?: MultiLogID
+    ): SyncMessage[] {
+        const entry = this.multilogs[msg.knownState.multilogID];
+
+        if (!entry || entry.state === "loading") {
+            if (!entry) {
+                this.multilogs[msg.knownState.multilogID] = newLoadingState();
+            }
+
+            return [
+                {
+                    action: "subscribeResponse",
+                    knownState: {
+                        multilogID: msg.knownState.multilogID,
+                        header: false,
+                        sessions: {},
+                    },
+                },
+            ];
+        }
+
+        peer.optimisticKnownStates[entry.multilog.id] =
+            entry.multilog.knownState();
+
+        const newContent = entry.multilog.newContentSince(msg.knownState);
+
+        const dependedOnMultilogs =
+            entry.multilog.header.ruleset.type === "team"
+                ? expectTeamContent(entry.multilog.getCurrentContent())
+                      .keys()
+                      .filter((k): k is AgentID => k.startsWith("agent_"))
+                      .map((agent) => agentIDasMultiLogID(agent))
+                : entry.multilog.header.ruleset.type === "ownedByTeam"
+                ? [entry.multilog.header.ruleset.team]
+                : [];
+
+        return [
+            ...dependedOnMultilogs.flatMap((multilogID) =>
+                this.handleSubscribe(
+                    {
+                        action: "subscribe",
+                        knownState: {
+                            multilogID,
+                            header: false,
+                            sessions: {},
+                        },
+                    },
+                    peer,
+                    asDependencyOf || msg.knownState.multilogID
+                )
+            ),
+            {
+                action: "subscribeResponse",
+                knownState: entry.multilog.knownState(),
+                asDependencyOf,
+            },
+            ...(newContent ? [newContent] : []),
+        ];
+    }
+
+    handleSubscribeResponse(
+        msg: SubscribeResponseMessage,
+        peer: PeerState
+    ): SyncMessage[] {
+        let entry = this.multilogs[msg.knownState.multilogID];
+
+        if (!entry) {
+            if (msg.asDependencyOf) {
+                if (this.multilogs[msg.asDependencyOf]) {
+                    entry = newLoadingState();
+
+                    this.multilogs[msg.knownState.multilogID] = entry;
+                }
+            } else {
+                throw new Error(
+                    "Expected multilog entry to be created, missing subscribe?"
+                );
+            }
+        }
+
+        if (entry.state === "loading") {
+            peer.optimisticKnownStates[msg.knownState.multilogID] =
+                msg.knownState;
+            return [];
+        }
+
+        const newContent = entry.multilog.newContentSince(msg.knownState);
+        peer.optimisticKnownStates[msg.knownState.multilogID] =
+            combinedKnownStates(msg.knownState, entry.multilog.knownState());
+
+        return newContent ? [newContent] : [];
+    }
+
+    handleNewContent(msg: NewContentMessage): SyncMessage[] {
+        let entry = this.multilogs[msg.multilogID];
+
+        if (!entry) {
+            throw new Error(
+                "Expected multilog entry to be created, missing subscribe?"
+            );
+        }
+
+        let resolveAfterDone: ((multilog: MultiLog) => void) | undefined;
+
+        if (entry.state === "loading") {
+            if (!msg.header) {
+                throw new Error("Expected header to be sent in first message");
+            }
+
+            const multilog = new MultiLog(msg.header, this);
+
+            resolveAfterDone = entry.resolve;
+
+            entry = {
+                state: "loaded",
+                multilog,
+            };
+
+            this.multilogs[msg.multilogID] = entry;
+        }
+
+        const multilog = entry.multilog;
+
+        let invalidStateAssumed = false;
+
+        for (const sessionID of Object.keys(msg.newContent) as SessionID[]) {
+            const ourKnownTxIdx =
+                multilog.sessions[sessionID]?.transactions.length;
+            const theirFirstNewTxIdx = msg.newContent[sessionID].after;
+
+            if ((ourKnownTxIdx || 0) < theirFirstNewTxIdx) {
+                invalidStateAssumed = true;
+                continue;
+            }
+
+            const alreadyKnownOffset = ourKnownTxIdx
+                ? ourKnownTxIdx - theirFirstNewTxIdx
+                : 0;
+
+            const newTransactions =
+                msg.newContent[sessionID].newTransactions.slice(
+                    alreadyKnownOffset
+                );
+
+            const success = multilog.tryAddTransactions(
+                sessionID,
+                newTransactions,
+                msg.newContent[sessionID].lastHash,
+                msg.newContent[sessionID].lastSignature
+            );
+
+            if (!success) {
+                console.error("Failed to add transactions", newTransactions);
+                continue;
+            }
+        }
+
+        if (resolveAfterDone) {
+            resolveAfterDone(multilog);
+        }
+
+        return invalidStateAssumed
+            ? [
+                  {
+                      action: "wrongAssumedKnownState",
+                      knownState: multilog.knownState(),
+                  },
+              ]
+            : [];
+    }
+
+    handleWrongAssumedKnownState(
+        msg: WrongAssumedKnownStateMessage,
+        peer: PeerState
+    ): SyncMessage[] {
+        const multilog = this.expectMultiLogLoaded(msg.knownState.multilogID);
+
+        peer.optimisticKnownStates[msg.knownState.multilogID] =
+            combinedKnownStates(msg.knownState, multilog.knownState());
+
+        const newContent = multilog.newContentSince(msg.knownState);
+
+        return newContent ? [newContent] : [];
+    }
+
+    handleUnsubscribe(msg: UnsubscribeMessage): SyncMessage[] {
+        throw new Error("Method not implemented.");
+    }
+
+    async syncMultiLog(multilog: MultiLog) {
+        for (const peer of Object.values(this.peers)) {
+            const optimisticKnownState =
+                peer.optimisticKnownStates[multilog.id];
+
+            if (optimisticKnownState || peer.role === "server") {
+                const newContent =
+                    multilog.newContentSince(optimisticKnownState);
+
+                peer.optimisticKnownStates[multilog.id] = peer
+                    .optimisticKnownStates[multilog.id]
+                    ? combinedKnownStates(
+                          peer.optimisticKnownStates[multilog.id],
+                          multilog.knownState()
+                      )
+                    : multilog.knownState();
+
+                if (!optimisticKnownState && peer.role === "server") {
+                    // auto-subscribe
+                    await peer.outgoing.write({
+                        action: "subscribe",
+                        knownState: multilog.knownState(),
+                    });
+                }
+
+                if (newContent) {
+                    await peer.outgoing.write(newContent);
+                }
+            }
+        }
+    }
+
+    testWithDifferentCredentials(
+        agentCredential: AgentCredential,
+        ownSessionID: SessionID
+    ): LocalNode {
+        const newNode = new LocalNode(agentCredential, ownSessionID);
+
+        newNode.multilogs = Object.fromEntries(
+            Object.entries(this.multilogs)
+                .map(([id, entry]) => {
+                    if (entry.state === "loading") {
+                        return undefined;
+                    }
+
+                    const newMultilog = new MultiLog(
+                        entry.multilog.header,
+                        newNode
+                    );
+
+                    newMultilog.sessions = entry.multilog.sessions;
+
+                    return [id, { state: "loaded", multilog: newMultilog }];
+                })
+                .filter((x): x is Exclude<typeof x, undefined> => !!x)
+        );
+
+        newNode.knownAgents = {
+            ...this.knownAgents,
+            [agentIDfromSessionID(ownSessionID)]: getAgent(agentCredential),
+        };
+
+        return newNode;
+    }
 }
 
-// type Hostname = string;
+type MultilogState =
+    | {
+          state: "loading";
+          done: Promise<MultiLog>;
+          resolve: (multilog: MultiLog) => void;
+      }
+    | { state: "loaded"; multilog: MultiLog };
 
-// interface Peer {
-//     hostname: Hostname;
-//     incoming: ReadableStream<SyncMessage>;
-//     outgoing: WritableStream<SyncMessage>;
-//     optimisticKnownStates: {[multilogID: MultiLogID]: MultilogKnownState};
-// }
+function newLoadingState(): MultilogState {
+    let resolve: (multilog: MultiLog) => void;
+
+    const promise = new Promise<MultiLog>((r) => {
+        resolve = r;
+    });
+
+    return {
+        state: "loading",
+        done: promise,
+        resolve: resolve!,
+    };
+}
