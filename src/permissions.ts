@@ -1,4 +1,4 @@
-import { CoMap, CoValue, MapOpPayload } from "./coValue";
+import { CoMap, CoValueContent, MapOpPayload } from "./coValue";
 import { JsonValue } from "./jsonValue";
 import {
     Encrypted,
@@ -215,7 +215,7 @@ export type TeamContent = { [key: AgentID]: Role } & {
     };
 };
 
-export function expectTeamContent(content: CoValue): CoMap<TeamContent, {}> {
+export function expectTeamContent(content: CoValueContent): CoMap<TeamContent, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }

@@ -1,5 +1,5 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { CoList, CoMap, CoValue, Static, MultiStream } from "./coValue";
+import { CoList, CoMap, CoValueContent, Static, MultiStream } from "./coValue";
 import {
     Encrypted,
     Hash,
@@ -36,7 +36,7 @@ import { MultiLogKnownState, NewContentMessage } from "./sync";
 export type MultiLogID = `coval_${string}`;
 
 export type MultiLogHeader = {
-    type: CoValue["type"];
+    type: CoValueContent["type"];
     ruleset: RulesetDef;
     meta: JsonValue;
 };
@@ -94,7 +94,7 @@ export class MultiLog {
     node: LocalNode;
     header: MultiLogHeader;
     sessions: { [key: SessionID]: SessionLog };
-    content?: CoValue;
+    content?: CoValueContent;
 
     constructor(header: MultiLogHeader, node: LocalNode) {
         this.id = multilogIDforHeader(header);
@@ -260,7 +260,7 @@ export class MultiLog {
         );
     }
 
-    getCurrentContent(): CoValue {
+    getCurrentContent(): CoValueContent {
         if (this.content) {
             return this.content;
         }

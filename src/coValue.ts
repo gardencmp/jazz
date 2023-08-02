@@ -1,11 +1,11 @@
 import { JsonAtom, JsonObject, JsonValue } from "./jsonValue";
 import { MultiLog, MultiLogID, TransactionID } from "./multilog";
 
-export type CoValueID<T extends CoValue> = MultiLogID & {
+export type CoValueID<T extends CoValueContent> = MultiLogID & {
     readonly __type: T;
 };
 
-export type CoValue =
+export type CoValueContent =
     | CoMap<{[key: string]: JsonValue}, JsonValue>
     | CoList<JsonValue, JsonValue>
     | MultiStream<JsonValue, JsonValue>
@@ -230,7 +230,7 @@ export class Static<T extends JsonValue> {
     }
 }
 
-export function expectMap(content: CoValue): CoMap<{ [key: string]: string }, {}> {
+export function expectMap(content: CoValueContent): CoMap<{ [key: string]: string }, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }

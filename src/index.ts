@@ -1,13 +1,13 @@
-import { CoValue } from "./coValue";
+import { CoValueContent } from "./coValue";
 import { JsonValue } from "./jsonValue";
 import { MultiLog } from "./multilog";
 import { LocalNode } from "./node";
 
-type Value = JsonValue | CoValue;
+type Value = JsonValue | CoValueContent;
 
 export {
     JsonValue,
-    CoValue,
+    CoValueContent as CoValue,
     Value,
     LocalNode,
     MultiLog
