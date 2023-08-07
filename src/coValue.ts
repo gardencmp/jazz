@@ -231,6 +231,10 @@ export class CoValue {
         if (privacy === "private") {
             const { secret: keySecret, id: keyID } = this.getCurrentReadKey();
 
+            if (!keySecret) {
+                throw new Error("Can't make transaction without read key secret");
+            }
+
             transaction = {
                 privacy: "private",
                 madeAt,
@@ -298,26 +302,40 @@ export class CoValue {
 
         const allTransactions: DecryptedTransaction[] = validTransactions.map(
             ({ txID, tx }) => {
-                return {
-                    txID,
-                    madeAt: tx.madeAt,
-                    changes:
-                        tx.privacy === "private"
-                            ? decryptForTransaction(
-                                  tx.encryptedChanges,
-                                  this.getReadKey(tx.keyUsed),
-                                  {
-                                      in: this.id,
-                                      tx: txID,
-                                  }
-                              ) ||
-                              (() => {
-                                  throw new Error("Couldn't decrypt changes");
-                              })()
-                            : tx.changes,
-                };
+                if (tx.privacy === "trusting") {
+                    return {
+                        txID,
+                        madeAt: tx.madeAt,
+                        changes: tx.changes,
+                    };
+                } else {
+                    const readKey = this.getReadKey(tx.keyUsed);
+
+                    if (!readKey) {
+                        return undefined;
+                    } else {
+                        const decrytedChanges = decryptForTransaction(
+                            tx.encryptedChanges,
+                            readKey,
+                            {
+                                in: this.id,
+                                tx: txID,
+                            }
+                        );
+
+                        if (!decrytedChanges) {
+                            console.error("Failed to decrypt transaction despite having key");
+                            return undefined;
+                        }
+                        return {
+                            txID,
+                            madeAt: tx.madeAt,
+                            changes: decrytedChanges,
+                        };
+                    }
+                }
             }
-        );
+        ).filter((x): x is Exclude<typeof x, undefined> => !!x);
         allTransactions.sort(
             (a, b) =>
                 a.madeAt - b.madeAt ||
@@ -328,7 +346,7 @@ export class CoValue {
         return allTransactions;
     }
 
-    getCurrentReadKey(): { secret: KeySecret; id: KeyID } {
+    getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {
         if (this.header.ruleset.type === "team") {
             const content = expectTeamContent(this.getCurrentContent());
 
@@ -355,7 +373,7 @@ export class CoValue {
         }
     }
 
-    getReadKey(keyID: KeyID): KeySecret {
+    getReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "team") {
             const content = expectTeamContent(this.getCurrentContent());
 
@@ -416,12 +434,7 @@ export class CoValue {
                 }
             }
 
-            throw new Error(
-                "readKey " +
-                    keyID +
-                    " not revealed for " +
-                    getAgentID(getAgent(this.node.agentCredential))
-            );
+            return undefined;
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.node
                 .expectCoValueLoaded(this.header.ruleset.team)

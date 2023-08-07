@@ -251,6 +251,10 @@ export class Team {
 
             const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
 
+            if (!currentReadKey.secret) {
+                throw new Error("Can't add member without read key secret");
+            }
+
             const revelation = seal(
                 currentReadKey.secret,
                 this.teamMap.coValue.node.agentCredential.recipientSecret,
@@ -281,7 +285,16 @@ export class Team {
             }
         }) as AgentID[];
 
-        const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
+        const maybeCurrentReadKey = this.teamMap.coValue.getCurrentReadKey();
+
+        if (!maybeCurrentReadKey.secret) {
+            throw new Error("Can't rotate read key secret we don't have access to");
+        }
+
+        const currentReadKey = {
+            id: maybeCurrentReadKey.id,
+            secret: maybeCurrentReadKey.secret,
+        };
 
         const newReadKey = newRandomKeySecret();
 

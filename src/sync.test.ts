@@ -909,7 +909,6 @@ test("Can sync a coValue through a server to another client", async () => {
     const server = new LocalNode(serverUser, newRandomSessionID(serverUserID));
 
     const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
-        trace: true,
         peer1role: "server",
         peer2role: "client",
     });
@@ -922,7 +921,7 @@ test("Can sync a coValue through a server to another client", async () => {
     const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
         "server",
         "client2",
-        { trace: true, peer1role: "server", peer2role: "client" }
+        { peer1role: "server", peer2role: "client" }
     );
 
     client2.sync.addPeer(serverAsOtherPeer);

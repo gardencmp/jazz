@@ -1194,15 +1194,12 @@ test("Admins can set team read rey, make a private transaction in an owned objec
         newRandomSessionID(reader2ID)
     );
 
-    expect(() => expectMap(childObjectAsReader.getCurrentContent())).toThrow(
-        /readKey (.+?) not revealed for (.+?)/
-    );
+    expect(
+        expectMap(childObjectAsReader.getCurrentContent()).get("foo2")
+    ).toBeUndefined();
     expect(
         expectMap(childObjectAsReader2.getCurrentContent()).get("foo2")
     ).toEqual("bar2");
-    expect(() => {
-        childObjectAsReader.getCurrentContent();
-    }).toThrow();
 });
 
 test("Admins can set team read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", () => {
@@ -1259,9 +1256,14 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     expect(childContentAsReader2.get("foo2")).toEqual("bar2");
     expect(childContentAsReader2.get("foo3")).toEqual("bar3");
 
-    expect(() =>
-        childObject.coValue
-            .testWithDifferentCredentials(reader, newRandomSessionID(readerID))
-            .getCurrentContent()
-    ).toThrow(/readKey (.+?) not revealed for (.+?)/);
+    expect(
+        expectMap(
+            childObject.coValue
+                .testWithDifferentCredentials(
+                    reader,
+                    newRandomSessionID(readerID)
+                )
+                .getCurrentContent()
+        ).get("foo3")
+    ).toBeUndefined();
 });
