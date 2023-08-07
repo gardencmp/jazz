@@ -238,7 +238,7 @@ export class Team {
 
     addMember(agentID: AgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
-            const agent = this.node.knownAgents[agentID];
+            const agent = this.node.expectAgentLoaded(agentID, "Expected to know agent to add them to team");
 
             if (!agent) {
                 throw new Error("Unknown agent " + agentID);
@@ -250,6 +250,10 @@ export class Team {
             }
 
             const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
+
+            if (!currentReadKey.secret) {
+                throw new Error("Can't add member without read key secret");
+            }
 
             const revelation = seal(
                 currentReadKey.secret,
@@ -271,7 +275,7 @@ export class Team {
 
     rotateReadKey() {
         const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
-            if (key.startsWith("agent_")) {
+            if (key.startsWith("co_agent")) {
                 const role = this.teamMap.get(key);
                 return (
                     role === "admin" || role === "writer" || role === "reader"
@@ -281,7 +285,16 @@ export class Team {
             }
         }) as AgentID[];
 
-        const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
+        const maybeCurrentReadKey = this.teamMap.coValue.getCurrentReadKey();
+
+        if (!maybeCurrentReadKey.secret) {
+            throw new Error("Can't rotate read key secret we don't have access to");
+        }
+
+        const currentReadKey = {
+            id: maybeCurrentReadKey.id,
+            secret: maybeCurrentReadKey.secret,
+        };
 
         const newReadKey = newRandomKeySecret();
 
@@ -290,7 +303,13 @@ export class Team {
             this.teamMap.coValue.node.agentCredential.recipientSecret,
             new Set(
                 currentlyPermittedReaders.map(
-                    (reader) => this.node.knownAgents[reader].recipientID
+                    (reader) => {
+                        const readerAgent = this.node.expectAgentLoaded(reader, "Expected to know currently permitted reader");
+                        if (!readerAgent) {
+                            throw new Error("Unknown agent " + reader);
+                        }
+                        return readerAgent.recipientID
+                    }
                 )
             ),
             {
@@ -336,6 +355,7 @@ export class Team {
                     team: this.teamMap.id,
                 },
                 meta: meta || null,
+                publicNickname: "map",
             })
             .getCurrentContent() as CoMap<M, Meta>;
     }

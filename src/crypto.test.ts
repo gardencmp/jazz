@@ -1,4 +1,3 @@
-import { expect, test } from "bun:test";
 import {
     getRecipientID,
     getSignatoryID,
@@ -18,7 +17,7 @@ import {
 } from "./crypto";
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
-import { xsalsa20_poly1305 } from "@noble/ciphers/_slow";
+import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";
 import { blake3 } from "@noble/hashes/blake3";
 import stableStringify from "fast-json-stable-stringify";
 
@@ -50,8 +49,8 @@ test("Sealing round-trips, but invalid receiver can't unseal", () => {
     const recipient3 = newRandomRecipient();
 
     const nOnceMaterial = {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
     } as const;
 
     const sealed = seal(
@@ -84,7 +83,7 @@ test("Sealing round-trips, but invalid receiver can't unseal", () => {
         getRecipientID(sender).substring("recipient_z".length)
     );
     const sealedBytes = base64url.decode(
-        sealed[getRecipientID(recipient1)].substring("sealed_U".length)
+        sealed[getRecipientID(recipient1)]!.substring("sealed_U".length)
     );
     const sharedSecret = x25519.getSharedSecret(recipient3priv, senderPub);
 
@@ -107,23 +106,23 @@ test("Encryption for transactions round-trips", () => {
     const { secret } = newRandomKeySecret();
 
     const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
     });
 
     const decrypted1 = decryptForTransaction(encrypted1, secret, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const decrypted2 =  decryptForTransaction(encrypted2, secret, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
     });
 
     expect([decrypted1, decrypted2]).toEqual([{ a: "hello" }, { b: "world" }]);
@@ -134,23 +133,23 @@ test("Encryption for transactions doesn't decrypt with a wrong key", () => {
     const { secret: secret2 } = newRandomKeySecret();
 
     const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
     });
 
     const decrypted1 = decryptForTransaction(encrypted1, secret2, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 0 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const decrypted2 =  decryptForTransaction(encrypted2, secret2, {
-        in: "coval_zTEST",
-        tx: { sessionID: "session_zTEST_agent_zTEST", txIndex: 1 },
+        in: "co_zTEST",
+        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
     });
 
     expect([decrypted1, decrypted2]).toEqual([undefined, undefined]);

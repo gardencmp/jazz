@@ -14,10 +14,8 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "noEmit": true,
-    "types": [
-      "bun-types" // add Bun global
-    ],
-
-    // "noUncheckedIndexedAccess": true
-  }
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+  },
+  "include": ["./src/**/*"],
 }

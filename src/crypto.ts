@@ -2,7 +2,7 @@ import { ed25519, x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
 import { JsonValue } from "./jsonValue";
 import { base58, base64url } from "@scure/base";
-import stableStringify from "fast-json-stable-stringify";
+import { default as stableStringify } from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
 import { RawCoValueID, SessionID, TransactionID } from "./coValue";
@@ -91,10 +91,10 @@ export function seal<T extends JsonValue>(
     const sealedSet: SealedSet<T> = {};
 
     for (let i = 0; i < recipientsSorted.length; i++) {
-        const recipient = recipientsSorted[i];
+        const recipient = recipientsSorted[i]!;
         const sharedSecret = x25519.getSharedSecret(
             senderPriv,
-            recipientPubs[i]
+            recipientPubs[i]!
         );
 
         const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(

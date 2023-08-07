@@ -33,27 +33,34 @@ import {
 import { LocalNode } from "./node";
 import { CoValueKnownState, NewContentMessage } from "./sync";
 
-export type RawCoValueID = `coval_${string}`;
+export type RawCoValueID = `co_z${string}` | `co_${string}_z${string}`;
 
 export type CoValueHeader = {
     type: ContentType["type"];
     ruleset: RulesetDef;
     meta: JsonValue;
+    publicNickname?: string;
 };
 
 function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     const hash = shortHash(header);
-    return `coval_${hash.slice("shortHash_".length)}`;
+    if (header.publicNickname) {
+        return `co_${header.publicNickname}_z${hash.slice(
+            "shortHash_z".length
+        )}`;
+    } else {
+        return `co_z${hash.slice("shortHash_z".length)}`;
+    }
 }
 
-export type SessionID = `session_${string}_${AgentID}`;
+export type SessionID = `${AgentID}_session_z${string}`;
 
 export function agentIDfromSessionID(sessionID: SessionID): AgentID {
-    return `agent_${sessionID.substring(sessionID.lastIndexOf("_") + 1)}`;
+    return sessionID.split("_session")[0] as AgentID;
 }
 
 export function newRandomSessionID(agentID: AgentID): SessionID {
-    return `session_${base58.encode(randomBytes(8))}_${agentID}`;
+    return `${agentID}_session_z${base58.encode(randomBytes(8))}`;
 }
 
 type SessionLog = {
@@ -146,8 +153,10 @@ export class CoValue {
         newHash: Hash,
         newSignature: Signature
     ): boolean {
-        const signatoryID =
-            this.node.knownAgents[agentIDfromSessionID(sessionID)]?.signatoryID;
+        const signatoryID = this.node.expectAgentLoaded(
+            agentIDfromSessionID(sessionID),
+            "Expected to know signatory of transaction"
+        ).signatoryID;
 
         if (!signatoryID) {
             console.warn("Unknown agent", agentIDfromSessionID(sessionID));
@@ -187,8 +196,6 @@ export class CoValue {
 
         this.content = undefined;
 
-        this.node.syncCoValue(this);
-
         const _ = this.getCurrentContent();
 
         return true;
@@ -224,6 +231,10 @@ export class CoValue {
         if (privacy === "private") {
             const { secret: keySecret, id: keyID } = this.getCurrentReadKey();
 
+            if (!keySecret) {
+                throw new Error("Can't make transaction without read key secret");
+            }
+
             transaction = {
                 privacy: "private",
                 madeAt,
@@ -252,12 +263,18 @@ export class CoValue {
             expectedNewHash
         );
 
-        return this.tryAddTransactions(
+        const success = this.tryAddTransactions(
             sessionID,
             [transaction],
             expectedNewHash,
             signature
         );
+
+        if (success) {
+            void this.node.sync.syncCoValue(this);
+        }
+
+        return success;
     }
 
     getCurrentContent(): ContentType {
@@ -285,26 +302,40 @@ export class CoValue {
 
         const allTransactions: DecryptedTransaction[] = validTransactions.map(
             ({ txID, tx }) => {
-                return {
-                    txID,
-                    madeAt: tx.madeAt,
-                    changes:
-                        tx.privacy === "private"
-                            ? decryptForTransaction(
-                                  tx.encryptedChanges,
-                                  this.getReadKey(tx.keyUsed),
-                                  {
-                                      in: this.id,
-                                      tx: txID,
-                                  }
-                              ) ||
-                              (() => {
-                                  throw new Error("Couldn't decrypt changes");
-                              })()
-                            : tx.changes,
-                };
+                if (tx.privacy === "trusting") {
+                    return {
+                        txID,
+                        madeAt: tx.madeAt,
+                        changes: tx.changes,
+                    };
+                } else {
+                    const readKey = this.getReadKey(tx.keyUsed);
+
+                    if (!readKey) {
+                        return undefined;
+                    } else {
+                        const decrytedChanges = decryptForTransaction(
+                            tx.encryptedChanges,
+                            readKey,
+                            {
+                                in: this.id,
+                                tx: txID,
+                            }
+                        );
+
+                        if (!decrytedChanges) {
+                            console.error("Failed to decrypt transaction despite having key");
+                            return undefined;
+                        }
+                        return {
+                            txID,
+                            madeAt: tx.madeAt,
+                            changes: decrytedChanges,
+                        };
+                    }
+                }
             }
-        );
+        ).filter((x): x is Exclude<typeof x, undefined> => !!x);
         allTransactions.sort(
             (a, b) =>
                 a.madeAt - b.madeAt ||
@@ -315,7 +346,7 @@ export class CoValue {
         return allTransactions;
     }
 
-    getCurrentReadKey(): { secret: KeySecret; id: KeyID } {
+    getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {
         if (this.header.ruleset.type === "team") {
             const content = expectTeamContent(this.getCurrentContent());
 
@@ -342,7 +373,7 @@ export class CoValue {
         }
     }
 
-    getReadKey(keyID: KeyID): KeySecret {
+    getReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "team") {
             const content = expectTeamContent(this.getCurrentContent());
 
@@ -353,11 +384,10 @@ export class CoValue {
             for (const entry of readKeyHistory) {
                 if (entry.value?.keyID === keyID) {
                     const revealer = agentIDfromSessionID(entry.txID.sessionID);
-                    const revealerAgent = this.node.knownAgents[revealer];
-
-                    if (!revealerAgent) {
-                        throw new Error("Unknown revealer");
-                    }
+                    const revealerAgent = this.node.expectAgentLoaded(
+                        revealer,
+                        "Expected to know revealer"
+                    );
 
                     const secret = openAs(
                         entry.value.revelation,
@@ -376,7 +406,8 @@ export class CoValue {
             // Try to find indirect revelation through previousKeys
 
             for (const entry of readKeyHistory) {
-                if (entry.value?.previousKeys?.[keyID]) {
+                const encryptedPreviousKey = entry.value?.previousKeys?.[keyID];
+                if (entry.value && encryptedPreviousKey) {
                     const sealingKeyID = entry.value.keyID;
                     const sealingKeySecret = this.getReadKey(sealingKeyID);
 
@@ -388,7 +419,7 @@ export class CoValue {
                         {
                             sealed: keyID,
                             sealing: sealingKeyID,
-                            encrypted: entry.value.previousKeys[keyID],
+                            encrypted: encryptedPreviousKey,
                         },
                         sealingKeySecret
                     );
@@ -403,12 +434,7 @@ export class CoValue {
                 }
             }
 
-            throw new Error(
-                "readKey " +
-                    keyID +
-                    " not revealed for " +
-                    getAgentID(getAgent(this.node.agentCredential))
-            );
+            return undefined;
         } else if (this.header.ruleset.type === "ownedByTeam") {
             return this.node
                 .expectCoValueLoaded(this.header.ruleset.team)
@@ -424,7 +450,9 @@ export class CoValue {
         return this.sessions[txID.sessionID]?.transactions[txID.txIndex];
     }
 
-    newContentSince(knownState: CoValueKnownState | undefined): NewContentMessage | undefined {
+    newContentSince(
+        knownState: CoValueKnownState | undefined
+    ): NewContentMessage | undefined {
         const newContent: NewContentMessage = {
             action: "newContent",
             coValueID: this.id,
@@ -459,27 +487,42 @@ export class CoValue {
                     })
                     .filter((x): x is Exclude<typeof x, undefined> => !!x)
             ),
-        }
+        };
 
-        if (!newContent.header && Object.keys(newContent.newContent).length === 0) {
+        if (
+            !newContent.header &&
+            Object.keys(newContent.newContent).length === 0
+        ) {
             return undefined;
         }
 
         return newContent;
     }
+
+    getDependedOnCoValues(): RawCoValueID[] {
+        return this.header.ruleset.type === "team"
+            ? expectTeamContent(this.getCurrentContent())
+                  .keys()
+                  .filter((k): k is AgentID => k.startsWith("co_agent"))
+            : this.header.ruleset.type === "ownedByTeam"
+            ? [this.header.ruleset.team]
+            : [];
+    }
 }
 
-export type AgentID = `agent_${string}`;
+export type AgentID = `co_agent${string}_z${string}`;
 
 export type Agent = {
     signatoryID: SignatoryID;
     recipientID: RecipientID;
+    publicNickname?: string;
 };
 
 export function getAgent(agentCredential: AgentCredential) {
     return {
         signatoryID: getSignatoryID(agentCredential.signatorySecret),
         recipientID: getRecipientID(agentCredential.recipientSecret),
+        publicNickname: agentCredential.publicNickname,
     };
 }
 
@@ -492,28 +535,27 @@ export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
             initialRecipientID: agent.recipientID,
         },
         meta: null,
+        publicNickname:
+            "agent" + (agent.publicNickname ? `-${agent.publicNickname}` : ""),
     };
 }
 
 export function getAgentID(agent: Agent): AgentID {
-    return `agent_${coValueIDforHeader(getAgentCoValueHeader(agent)).slice(
-        "coval_".length
-    )}`;
-}
-
-export function agentIDAsCoValueID(agentID: AgentID): RawCoValueID {
-    return `coval_${agentID.substring("agent_".length)}`;
+    return coValueIDforHeader(getAgentCoValueHeader(agent)) as AgentID;
 }
 
 export type AgentCredential = {
     signatorySecret: SignatorySecret;
     recipientSecret: RecipientSecret;
+    publicNickname?: string;
 };
 
-export function newRandomAgentCredential(): AgentCredential {
+export function newRandomAgentCredential(
+    publicNickname: string
+): AgentCredential {
     const signatorySecret = newRandomSignatory();
     const recipientSecret = newRandomRecipient();
-    return { signatorySecret, recipientSecret };
+    return { signatorySecret, recipientSecret, publicNickname };
 }
 
 // type Role = "admin" | "writer" | "reader";
