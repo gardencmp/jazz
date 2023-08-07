@@ -89,6 +89,7 @@ export class LocalNode {
             type: "comap",
             ruleset: { type: "team", initialAdmin: this.agentID },
             meta: null,
+            publicNickname: "team",
         });
 
         let teamContent = expectTeamContent(teamCoValue.getCurrentContent());

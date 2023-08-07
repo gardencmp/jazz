@@ -1,6 +1,5 @@
 import {
     AgentID,
-    agentIDAsCoValueID,
     getAgent,
     getAgentID,
     newRandomAgentCredential,
@@ -19,7 +18,7 @@ import {
 test(
     "Node replies with initial tx and header to empty subscribe",
     async () => {
-        const admin = newRandomAgentCredential();
+        const admin = newRandomAgentCredential("admin");
         const adminID = getAgentID(getAgent(admin));
 
         const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -74,6 +73,7 @@ test(
                 type: "comap",
                 ruleset: { type: "ownedByTeam", team: team.id },
                 meta: null,
+                publicNickname: "map",
             },
             newContent: {
                 [node.ownSessionID]: {
@@ -103,7 +103,7 @@ test(
 );
 
 test("Node replies with only new tx to subscribe with some known state", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -188,7 +188,7 @@ test.todo(
 );
 
 test("After subscribing, node sends own known state and new txs to peer", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -309,7 +309,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 });
 
 test("Client replies with known new content to tellKnownState from server", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -391,7 +391,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 });
 
 test("No matter the optimistic known state, node respects invalid known state messages and resyncs", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -496,7 +496,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 });
 
 test("If we add a peer, but it never subscribes to a coValue, it won't get any messages", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -525,7 +525,7 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
 });
 
 test("If we add a server peer, all updates to all coValues are sent to it, even if it doesn't subscribe", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -547,7 +547,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     const reader = outRx.getReader();
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
-        coValueID: agentIDAsCoValueID(adminID),
+        coValueID: adminID,
     });
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
@@ -602,7 +602,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
 });
 
 test("If we add a server peer, newly created coValues are auto-subscribed to", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -624,7 +624,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const reader = outRx.getReader();
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
-        coValueID: agentIDAsCoValueID(adminID),
+        coValueID: adminID,
     });
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
@@ -658,7 +658,7 @@ test.todo(
 );
 
 test("When we connect a new server peer, we try to sync all existing coValues to it", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -696,7 +696,7 @@ test("When we connect a new server peer, we try to sync all existing coValues to
 });
 
 test("When receiving a subscribe with a known state that is ahead of our own, peers should respond with a corresponding subscribe response message", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node = new LocalNode(admin, newRandomSessionID(adminID));
@@ -740,7 +740,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
 
 test.skip("When replaying creation and transactions of a coValue as new content, the receiving peer integrates this information", async () => {
     // TODO: this test is mostly correct but also slightly unrealistic, make sure we pass all messages back and forth as expected and then it should work
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node1 = new LocalNode(admin, newRandomSessionID(adminID));
@@ -778,7 +778,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const adminSubscribeMessage = await from1.read();
     expect(adminSubscribeMessage.value).toMatchObject({
         action: "subscribe",
-        coValueID: agentIDAsCoValueID(adminID),
+        coValueID: adminID,
     });
     const teamSubscribeMsg = await from1.read();
     expect(teamSubscribeMsg.value).toMatchObject({
@@ -862,7 +862,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
 test.skip("When loading a coValue on one node, the server node it is requested from replies with all the necessary depended on coValues to make it work", async () => {
     // TODO: this test is mostly correct but also slightly unrealistic, make sure we pass all messages back and forth as expected and then it should work
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const node1 = new LocalNode(admin, newRandomSessionID(adminID));
@@ -891,7 +891,7 @@ test.skip("When loading a coValue on one node, the server node it is requested f
 });
 
 test("Can sync a coValue through a server to another client", async () => {
-    const admin = newRandomAgentCredential();
+    const admin = newRandomAgentCredential("admin");
     const adminID = getAgentID(getAgent(admin));
 
     const client1 = new LocalNode(admin, newRandomSessionID(adminID));
@@ -903,7 +903,55 @@ test("Can sync a coValue through a server to another client", async () => {
         editable.set("hello", "world", "trusting");
     });
 
-    const server = new LocalNode(admin, newRandomSessionID(adminID));
+    const serverUser = newRandomAgentCredential("serverUser");
+    const serverUserID = getAgentID(getAgent(serverUser));
+
+    const server = new LocalNode(serverUser, newRandomSessionID(serverUserID));
+
+    const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
+        trace: true,
+        peer1role: "server",
+        peer2role: "client",
+    });
+
+    client1.sync.addPeer(serverAsPeer);
+    server.sync.addPeer(client1AsPeer);
+
+    const client2 = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
+        "server",
+        "client2",
+        { trace: true, peer1role: "server", peer2role: "client" }
+    );
+
+    client2.sync.addPeer(serverAsOtherPeer);
+    server.sync.addPeer(client2AsPeer);
+
+    const mapOnClient2 = await client2.loadCoValue(map.coValue.id);
+
+    expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
+        "world"
+    );
+});
+
+test("Can sync a coValue with private transactions through a server to another client", async () => {
+    const admin = newRandomAgentCredential("admin");
+    const adminID = getAgentID(getAgent(admin));
+
+    const client1 = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = client1.createTeam();
+
+    const map = team.createMap();
+    map.edit((editable) => {
+        editable.set("hello", "world", "private");
+    });
+
+    const serverUser = newRandomAgentCredential("serverUser");
+    const serverUserID = getAgentID(getAgent(serverUser));
+
+    const server = new LocalNode(serverUser, newRandomSessionID(serverUserID));
 
     const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
         trace: true,
@@ -942,7 +990,7 @@ function teamContentEx(team: Team) {
 function admContEx(adminID: AgentID) {
     return {
         action: "newContent",
-        coValueID: agentIDAsCoValueID(adminID),
+        coValueID: adminID,
     };
 }
 
@@ -956,7 +1004,7 @@ function teamStateEx(team: Team) {
 function admStateEx(adminID: AgentID) {
     return {
         action: "tellKnownState",
-        coValueID: agentIDAsCoValueID(adminID),
+        coValueID: adminID,
     };
 }
 

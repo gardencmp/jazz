@@ -10,7 +10,7 @@ import { LocalNode } from "./node";
 import { sign } from "./crypto";
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -48,9 +48,8 @@ test("Can create coValue with new agent credentials and add transaction to it", 
 });
 
 test("transactions with wrong signature are rejected", () => {
-    const agent = newRandomAgentCredential();
-    const wrongAgent = newRandomAgentCredential();
-    const agentCredential = newRandomAgentCredential();
+    const wrongAgent = newRandomAgentCredential("wrongAgent");
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -88,8 +87,7 @@ test("transactions with wrong signature are rejected", () => {
 });
 
 test("transactions with correctly signed, but wrong hash are rejected", () => {
-    const agent = newRandomAgentCredential();
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -131,7 +129,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(agent.signatorySecret, expectedNewHash)
+            sign(agentCredential.signatorySecret, expectedNewHash)
         )
     ).toBe(false);
 });

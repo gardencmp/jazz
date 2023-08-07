@@ -8,7 +8,7 @@ import {
 import { LocalNode } from "./node";
 
 test("Empty COJSON Map works", () => {
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -32,7 +32,7 @@ test("Empty COJSON Map works", () => {
 });
 
 test("Can insert and delete Map entries in edit()", () => {
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -64,7 +64,7 @@ test("Can insert and delete Map entries in edit()", () => {
 });
 
 test("Can get map entry values at different points in time", () => {
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -103,7 +103,7 @@ test("Can get map entry values at different points in time", () => {
 });
 
 test("Can get all historic values of key", () => {
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))
@@ -160,7 +160,7 @@ test("Can get all historic values of key", () => {
 });
 
 test("Can get last tx ID for a key", () => {
-    const agentCredential = newRandomAgentCredential();
+    const agentCredential = newRandomAgentCredential("agent1");
     const node = new LocalNode(
         agentCredential,
         newRandomSessionID(getAgentID(getAgent(agentCredential)))

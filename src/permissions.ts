@@ -271,7 +271,7 @@ export class Team {
 
     rotateReadKey() {
         const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
-            if (key.startsWith("agent_")) {
+            if (key.startsWith("co_agent")) {
                 const role = this.teamMap.get(key);
                 return (
                     role === "admin" || role === "writer" || role === "reader"
@@ -342,6 +342,7 @@ export class Team {
                     team: this.teamMap.id,
                 },
                 meta: meta || null,
+                publicNickname: "map",
             })
             .getCurrentContent() as CoMap<M, Meta>;
     }

@@ -33,27 +33,32 @@ import {
 import { LocalNode } from "./node";
 import { CoValueKnownState, NewContentMessage } from "./sync";
 
-export type RawCoValueID = `coval_${string}`;
+export type RawCoValueID = `co_z${string}` | `co_${string}_z${string}`;
 
 export type CoValueHeader = {
     type: ContentType["type"];
     ruleset: RulesetDef;
     meta: JsonValue;
+    publicNickname?: string;
 };
 
 function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     const hash = shortHash(header);
-    return `coval_${hash.slice("shortHash_".length)}`;
+    if (header.publicNickname) {
+        return `co_${header.publicNickname}_z${hash.slice("shortHash_z".length)}`;
+    } else {
+        return `co_z${hash.slice("shortHash_z".length)}`;
+    }
 }
 
-export type SessionID = `session_${string}_${AgentID}`;
+export type SessionID = `${AgentID}_session_z${string}`;
 
 export function agentIDfromSessionID(sessionID: SessionID): AgentID {
-    return `agent_${sessionID.substring(sessionID.lastIndexOf("_") + 1)}`;
+    return sessionID.split("_session")[0] as AgentID;
 }
 
 export function newRandomSessionID(agentID: AgentID): SessionID {
-    return `session_${base58.encode(randomBytes(8))}_${agentID}`;
+    return `${agentID}_session_z${base58.encode(randomBytes(8))}`;
 }
 
 type SessionLog = {
@@ -482,25 +487,26 @@ export class CoValue {
         return this.header.ruleset.type === "team"
             ? expectTeamContent(this.getCurrentContent())
                   .keys()
-                  .filter((k): k is AgentID => k.startsWith("agent_"))
-                  .map((agent) => agentIDAsCoValueID(agent))
+                  .filter((k): k is AgentID => k.startsWith("co_agent"))
             : this.header.ruleset.type === "ownedByTeam"
             ? [this.header.ruleset.team]
             : [];
     }
 }
 
-export type AgentID = `agent_${string}`;
+export type AgentID = `co_agent${string}_z${string}`;
 
 export type Agent = {
     signatoryID: SignatoryID;
     recipientID: RecipientID;
+    publicNickname?: string;
 };
 
 export function getAgent(agentCredential: AgentCredential) {
     return {
         signatoryID: getSignatoryID(agentCredential.signatorySecret),
         recipientID: getRecipientID(agentCredential.recipientSecret),
+        publicNickname: agentCredential.publicNickname,
     };
 }
 
@@ -513,28 +519,24 @@ export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
             initialRecipientID: agent.recipientID,
         },
         meta: null,
+        publicNickname: "agent" + agent.publicNickname?.slice(0, 1).toUpperCase() + agent.publicNickname?.slice(1),
     };
 }
 
 export function getAgentID(agent: Agent): AgentID {
-    return `agent_${coValueIDforHeader(getAgentCoValueHeader(agent)).slice(
-        "coval_".length
-    )}`;
-}
-
-export function agentIDAsCoValueID(agentID: AgentID): RawCoValueID {
-    return `coval_${agentID.substring("agent_".length)}`;
+    return coValueIDforHeader(getAgentCoValueHeader(agent)) as AgentID;
 }
 
 export type AgentCredential = {
     signatorySecret: SignatorySecret;
     recipientSecret: RecipientSecret;
+    publicNickname?: string;
 };
 
-export function newRandomAgentCredential(): AgentCredential {
+export function newRandomAgentCredential(publicNickname: string): AgentCredential {
     const signatorySecret = newRandomSignatory();
     const recipientSecret = newRandomRecipient();
-    return { signatorySecret, recipientSecret };
+    return { signatorySecret, recipientSecret, publicNickname };
 }
 
 // type Role = "admin" | "writer" | "reader";
