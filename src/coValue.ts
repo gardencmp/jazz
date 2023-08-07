@@ -187,8 +187,6 @@ export class CoValue {
 
         this.content = undefined;
 
-        this.node.syncCoValue(this);
-
         const _ = this.getCurrentContent();
 
         return true;
@@ -252,12 +250,18 @@ export class CoValue {
             expectedNewHash
         );
 
-        return this.tryAddTransactions(
+        const success = this.tryAddTransactions(
             sessionID,
             [transaction],
             expectedNewHash,
             signature
         );
+
+        if (success) {
+            void this.node.sync.syncCoValue(this);
+        }
+
+        return success;
     }
 
     getCurrentContent(): ContentType {
@@ -376,7 +380,8 @@ export class CoValue {
             // Try to find indirect revelation through previousKeys
 
             for (const entry of readKeyHistory) {
-                if (entry.value?.previousKeys?.[keyID]) {
+                const encryptedPreviousKey = entry.value?.previousKeys?.[keyID];
+                if (entry.value && encryptedPreviousKey) {
                     const sealingKeyID = entry.value.keyID;
                     const sealingKeySecret = this.getReadKey(sealingKeyID);
 
@@ -388,7 +393,7 @@ export class CoValue {
                         {
                             sealed: keyID,
                             sealing: sealingKeyID,
-                            encrypted: entry.value.previousKeys[keyID],
+                            encrypted: encryptedPreviousKey,
                         },
                         sealingKeySecret
                     );
@@ -424,7 +429,9 @@ export class CoValue {
         return this.sessions[txID.sessionID]?.transactions[txID.txIndex];
     }
 
-    newContentSince(knownState: CoValueKnownState | undefined): NewContentMessage | undefined {
+    newContentSince(
+        knownState: CoValueKnownState | undefined
+    ): NewContentMessage | undefined {
         const newContent: NewContentMessage = {
             action: "newContent",
             coValueID: this.id,
@@ -459,13 +466,27 @@ export class CoValue {
                     })
                     .filter((x): x is Exclude<typeof x, undefined> => !!x)
             ),
-        }
+        };
 
-        if (!newContent.header && Object.keys(newContent.newContent).length === 0) {
+        if (
+            !newContent.header &&
+            Object.keys(newContent.newContent).length === 0
+        ) {
             return undefined;
         }
 
         return newContent;
+    }
+
+    getDependedOnCoValues(): RawCoValueID[] {
+        return this.header.ruleset.type === "team"
+            ? expectTeamContent(this.getCurrentContent())
+                  .keys()
+                  .filter((k): k is AgentID => k.startsWith("agent_"))
+                  .map((agent) => agentIDAsCoValueID(agent))
+            : this.header.ruleset.type === "ownedByTeam"
+            ? [this.header.ruleset.team]
+            : [];
     }
 }
 

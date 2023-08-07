@@ -1,4 +1,3 @@
-import { expect, test } from "bun:test";
 import {
     getRecipientID,
     getSignatoryID,
@@ -18,7 +17,7 @@ import {
 } from "./crypto";
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
-import { xsalsa20_poly1305 } from "@noble/ciphers/_slow";
+import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";
 import { blake3 } from "@noble/hashes/blake3";
 import stableStringify from "fast-json-stable-stringify";
 
@@ -84,7 +83,7 @@ test("Sealing round-trips, but invalid receiver can't unseal", () => {
         getRecipientID(sender).substring("recipient_z".length)
     );
     const sealedBytes = base64url.decode(
-        sealed[getRecipientID(recipient1)].substring("sealed_U".length)
+        sealed[getRecipientID(recipient1)]!.substring("sealed_U".length)
     );
     const sharedSecret = x25519.getSharedSecret(recipient3priv, senderPub);
 

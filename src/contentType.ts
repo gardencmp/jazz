@@ -82,7 +82,7 @@ export class CoMap<
             return undefined;
         }
 
-        let lastEntry = ops[ops.length - 1];
+        const lastEntry = ops[ops.length - 1]!;
 
         if (lastEntry.op === "delete") {
             return undefined;
@@ -116,7 +116,7 @@ export class CoMap<
             return undefined;
         }
 
-        const lastEntry = ops[ops.length - 1];
+        const lastEntry = ops[ops.length - 1]!;
 
         return lastEntry.txID;
     }

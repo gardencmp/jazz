@@ -1,4 +1,3 @@
-import { test, expect } from "bun:test";
 import {
     agentIDfromSessionID,
     getAgent,
@@ -87,13 +86,13 @@ test("Can get map entry values at different points in time", () => {
 
     content.edit((editable) => {
         const beforeA = Date.now();
-        Bun.sleepSync(1);
+        while(Date.now() < beforeA + 10){}
         editable.set("hello", "A", "trusting");
         const beforeB = Date.now();
-        Bun.sleepSync(1);
+        while(Date.now() < beforeB + 10){}
         editable.set("hello", "B", "trusting");
         const beforeC = Date.now();
-        Bun.sleepSync(1);
+        while(Date.now() < beforeC + 10){}
         editable.set("hello", "C", "trusting");
         expect(editable.get("hello")).toEqual("C");
         expect(editable.getAtTime("hello", Date.now())).toEqual("C");

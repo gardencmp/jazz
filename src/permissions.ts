@@ -290,7 +290,13 @@ export class Team {
             this.teamMap.coValue.node.agentCredential.recipientSecret,
             new Set(
                 currentlyPermittedReaders.map(
-                    (reader) => this.node.knownAgents[reader].recipientID
+                    (reader) => {
+                        const readerAgent = this.node.knownAgents[reader];
+                        if (!readerAgent) {
+                            throw new Error("Unknown agent " + reader);
+                        }
+                        return readerAgent.recipientID
+                    }
                 )
             ),
             {
