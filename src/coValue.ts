@@ -45,7 +45,9 @@ export type CoValueHeader = {
 function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     const hash = shortHash(header);
     if (header.publicNickname) {
-        return `co_${header.publicNickname}_z${hash.slice("shortHash_z".length)}`;
+        return `co_${header.publicNickname}_z${hash.slice(
+            "shortHash_z".length
+        )}`;
     } else {
         return `co_z${hash.slice("shortHash_z".length)}`;
     }
@@ -151,8 +153,10 @@ export class CoValue {
         newHash: Hash,
         newSignature: Signature
     ): boolean {
-        const signatoryID =
-            this.node.knownAgents[agentIDfromSessionID(sessionID)]?.signatoryID;
+        const signatoryID = this.node.expectAgentLoaded(
+            agentIDfromSessionID(sessionID),
+            "Expected to know signatory of transaction"
+        ).signatoryID;
 
         if (!signatoryID) {
             console.warn("Unknown agent", agentIDfromSessionID(sessionID));
@@ -362,11 +366,10 @@ export class CoValue {
             for (const entry of readKeyHistory) {
                 if (entry.value?.keyID === keyID) {
                     const revealer = agentIDfromSessionID(entry.txID.sessionID);
-                    const revealerAgent = this.node.knownAgents[revealer];
-
-                    if (!revealerAgent) {
-                        throw new Error("Unknown revealer");
-                    }
+                    const revealerAgent = this.node.expectAgentLoaded(
+                        revealer,
+                        "Expected to know revealer"
+                    );
 
                     const secret = openAs(
                         entry.value.revelation,
@@ -519,7 +522,8 @@ export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
             initialRecipientID: agent.recipientID,
         },
         meta: null,
-        publicNickname: "agent" + agent.publicNickname?.slice(0, 1).toUpperCase() + agent.publicNickname?.slice(1),
+        publicNickname:
+            "agent" + (agent.publicNickname ? `-${agent.publicNickname}` : ""),
     };
 }
 
@@ -533,7 +537,9 @@ export type AgentCredential = {
     publicNickname?: string;
 };
 
-export function newRandomAgentCredential(publicNickname: string): AgentCredential {
+export function newRandomAgentCredential(
+    publicNickname: string
+): AgentCredential {
     const signatorySecret = newRandomSignatory();
     const recipientSecret = newRandomRecipient();
     return { signatorySecret, recipientSecret, publicNickname };

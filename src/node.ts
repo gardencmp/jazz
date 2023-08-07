@@ -11,6 +11,7 @@ import {
     getAgentCoValueHeader,
     CoValueHeader,
     agentIDfromSessionID,
+    newRandomAgentCredential,
 } from "./coValue";
 import { Team, expectTeamContent } from "./permissions";
 import { SyncManager } from "./sync";
@@ -20,7 +21,6 @@ export class LocalNode {
     agentCredential: AgentCredential;
     agentID: AgentID;
     ownSessionID: SessionID;
-    knownAgents: { [key: AgentID]: Agent } = {};
     sync = new SyncManager(this);
 
     constructor(agentCredential: AgentCredential, ownSessionID: SessionID) {
@@ -28,7 +28,6 @@ export class LocalNode {
         const agent = getAgent(agentCredential);
         const agentID = getAgentID(agent);
         this.agentID = agentID;
-        this.knownAgents[agentID] = agent;
         this.ownSessionID = ownSessionID;
 
         const agentCoValue = new CoValue(getAgentCoValueHeader(agent), this);
@@ -79,9 +78,33 @@ export class LocalNode {
         return entry.coValue;
     }
 
-    addKnownAgent(agent: Agent) {
-        const agentID = getAgentID(agent);
-        this.knownAgents[agentID] = agent;
+    createAgent(publicNickname: string): AgentCredential {
+        const agentCredential = newRandomAgentCredential(publicNickname);
+
+        this.createCoValue(getAgentCoValueHeader(getAgent(agentCredential)));
+
+        return agentCredential;
+    }
+
+    expectAgentLoaded(id: AgentID, expectation?: string): Agent {
+        const coValue = this.expectCoValueLoaded(
+            id,
+            expectation
+        );
+
+        if (coValue.header.type !== "comap" || coValue.header.ruleset.type !== "agent") {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }CoValue ${id} is not an agent`
+            );
+        }
+
+        return {
+            recipientID: coValue.header.ruleset.initialRecipientID,
+            signatoryID: coValue.header.ruleset.initialSignatoryID,
+            publicNickname: coValue.header.publicNickname?.replace("agent-", ""),
+        }
     }
 
     createTeam(): Team {
@@ -142,11 +165,6 @@ export class LocalNode {
                 })
                 .filter((x): x is Exclude<typeof x, undefined> => !!x)
         );
-
-        newNode.knownAgents = {
-            ...this.knownAgents,
-            [agentIDfromSessionID(ownSessionID)]: getAgent(agentCredential),
-        };
 
         return newNode;
     }

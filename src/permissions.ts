@@ -238,7 +238,7 @@ export class Team {
 
     addMember(agentID: AgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
-            const agent = this.node.knownAgents[agentID];
+            const agent = this.node.expectAgentLoaded(agentID, "Expected to know agent to add them to team");
 
             if (!agent) {
                 throw new Error("Unknown agent " + agentID);
@@ -291,7 +291,7 @@ export class Team {
             new Set(
                 currentlyPermittedReaders.map(
                     (reader) => {
-                        const readerAgent = this.node.knownAgents[reader];
+                        const readerAgent = this.node.expectAgentLoaded(reader, "Expected to know currently permitted reader");
                         if (!readerAgent) {
                             throw new Error("Unknown agent " + reader);
                         }

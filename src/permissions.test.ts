@@ -15,9 +15,9 @@ import {
 } from "./crypto";
 
 function teamWithTwoAdmins() {
-    const { team, admin, adminID } = newTeam();
+    const { team, admin, adminID, node } = newTeam();
 
-    const otherAdmin = newRandomAgentCredential("otherAdmin");
+    const otherAdmin = node.createAgent("otherAdmin");
     const otherAdminID = getAgentID(getAgent(otherAdmin));
 
     let content = expectTeamContent(team.getCurrentContent());
@@ -34,7 +34,7 @@ function teamWithTwoAdmins() {
     }
 
     expect(content.get(otherAdminID)).toEqual("admin");
-    return { team, admin, adminID, otherAdmin, otherAdminID };
+    return { team, admin, adminID, otherAdmin, otherAdminID, node };
 }
 
 function newTeam() {
@@ -47,7 +47,7 @@ function newTeam() {
         type: "comap",
         ruleset: { type: "team", initialAdmin: adminID },
         meta: null,
-        publicNickname: "team"
+        publicNickname: "team",
     });
 
     const teamContent = expectTeamContent(team.getCurrentContent());
@@ -78,10 +78,8 @@ function newTeamHighLevel() {
 function teamWithTwoAdminsHighLevel() {
     const { admin, adminID, node, team } = newTeamHighLevel();
 
-    const otherAdmin = newRandomAgentCredential("otherAdmin");
+    const otherAdmin = node.createAgent("otherAdmin");
     const otherAdminID = getAgentID(getAgent(otherAdmin));
-
-    node.addKnownAgent(getAgent(otherAdmin));
 
     team.addMember(otherAdminID, "admin");
 
@@ -93,7 +91,7 @@ test("Initial admin can add another admin to a team (high level)", () => {
 });
 
 test("Added admin can add a third admin to a team", () => {
-    const { team, otherAdmin, otherAdminID } = teamWithTwoAdmins();
+    const { team, otherAdmin, otherAdminID, node } = teamWithTwoAdmins();
 
     const teamAsOtherAdmin = team.testWithDifferentCredentials(
         otherAdmin,
@@ -104,7 +102,7 @@ test("Added admin can add a third admin to a team", () => {
 
     expect(otherContent.get(otherAdminID)).toEqual("admin");
 
-    const thirdAdmin = newRandomAgentCredential("admin");
+    const thirdAdmin = node.createAgent("thirdAdmin");
     const thirdAdminID = getAgentID(getAgent(thirdAdmin));
 
     otherContent.edit((editable) => {
@@ -126,10 +124,8 @@ test("Added adming can add a third admin to a team (high level)", () => {
         newRandomSessionID(otherAdminID)
     );
 
-    const thirdAdmin = newRandomAgentCredential("admin");
+    const thirdAdmin = node.createAgent("thirdAdmin");
     const thirdAdminID = getAgentID(getAgent(thirdAdmin));
-
-    node.addKnownAgent(getAgent(thirdAdmin));
 
     teamAsOtherAdmin.addMember(thirdAdminID, "admin");
 
@@ -187,8 +183,8 @@ test("Admins can't demote other admins in a team (high level)", () => {
 });
 
 test("Admins an add writers to a team, who can't add admins, writers, or readers", () => {
-    const { team } = newTeam();
-    const writer = newRandomAgentCredential("writer");
+    const { team, node } = newTeam();
+    const writer = node.createAgent("writer");
     const writerID = getAgentID(getAgent(writer));
 
     let teamContent = expectTeamContent(team.getCurrentContent());
@@ -212,7 +208,7 @@ test("Admins an add writers to a team, who can't add admins, writers, or readers
 
     expect(teamContentAsWriter.get(writerID)).toEqual("writer");
 
-    const otherAgent = newRandomAgentCredential("otherAgent");
+    const otherAgent = node.createAgent("otherAgent");
     const otherAgentID = getAgentID(getAgent(otherAgent));
 
     teamContentAsWriter.edit((editable) => {
@@ -234,10 +230,8 @@ test("Admins an add writers to a team, who can't add admins, writers, or readers
 test("Admins an add writers to a team, who can't add admins, writers, or readers (high level)", () => {
     const { team, node } = newTeamHighLevel();
 
-    const writer = newRandomAgentCredential("writer");
+    const writer = node.createAgent("writer");
     const writerID = getAgentID(getAgent(writer));
-
-    node.addKnownAgent(getAgent(writer));
 
     team.addMember(writerID, "writer");
     expect(team.teamMap.get(writerID)).toEqual("writer");
@@ -249,10 +243,8 @@ test("Admins an add writers to a team, who can't add admins, writers, or readers
 
     expect(teamAsWriter.teamMap.get(writerID)).toEqual("writer");
 
-    const otherAgent = newRandomAgentCredential("otherAgent");
+    const otherAgent = node.createAgent("otherAgent");
     const otherAgentID = getAgentID(getAgent(otherAgent));
-
-    node.addKnownAgent(getAgent(otherAgent));
 
     expect(() => teamAsWriter.addMember(otherAgentID, "admin")).toThrow(
         "Failed to set role"
@@ -268,8 +260,8 @@ test("Admins an add writers to a team, who can't add admins, writers, or readers
 });
 
 test("Admins can add readers to a team, who can't add admins, writers, or readers", () => {
-    const { team } = newTeam();
-    const reader = newRandomAgentCredential("reader");
+    const { team, node } = newTeam();
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
 
     let teamContent = expectTeamContent(team.getCurrentContent());
@@ -293,7 +285,7 @@ test("Admins can add readers to a team, who can't add admins, writers, or reader
 
     expect(teamContentAsReader.get(readerID)).toEqual("reader");
 
-    const otherAgent = newRandomAgentCredential("otherAgent");
+    const otherAgent = node.createAgent("otherAgent");
     const otherAgentID = getAgentID(getAgent(otherAgent));
 
     teamContentAsReader.edit((editable) => {
@@ -315,10 +307,8 @@ test("Admins can add readers to a team, who can't add admins, writers, or reader
 test("Admins can add readers to a team, who can't add admins, writers, or readers (high level)", () => {
     const { team, node } = newTeamHighLevel();
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
-
-    node.addKnownAgent(getAgent(reader));
 
     team.addMember(readerID, "reader");
     expect(team.teamMap.get(readerID)).toEqual("reader");
@@ -330,10 +320,8 @@ test("Admins can add readers to a team, who can't add admins, writers, or reader
 
     expect(teamAsReader.teamMap.get(readerID)).toEqual("reader");
 
-    const otherAgent = newRandomAgentCredential("otherAgent");
+    const otherAgent = node.createAgent("otherAgent");
     const otherAgentID = getAgentID(getAgent(otherAgent));
-
-    node.addKnownAgent(getAgent(otherAgent));
 
     expect(() => teamAsReader.addMember(otherAgentID, "admin")).toThrow(
         "Failed to set role"
@@ -355,7 +343,7 @@ test("Admins can write to an object that is owned by their team", () => {
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -386,7 +374,7 @@ test("Admins can write to an object that is owned by their team (high level)", (
 test("Writers can write to an object that is owned by their team", () => {
     const { node, team } = newTeam();
 
-    const writer = newRandomAgentCredential("writer");
+    const writer = node.createAgent("writer");
     const writerID = getAgentID(getAgent(writer));
 
     expectTeamContent(team.getCurrentContent()).edit((editable) => {
@@ -398,7 +386,7 @@ test("Writers can write to an object that is owned by their team", () => {
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     const childObjectAsWriter = childObject.testWithDifferentCredentials(
@@ -423,10 +411,8 @@ test("Writers can write to an object that is owned by their team", () => {
 test("Writers can write to an object that is owned by their team (high level)", () => {
     const { node, team } = newTeamHighLevel();
 
-    const writer = newRandomAgentCredential("writer");
+    const writer = node.createAgent("writer");
     const writerID = getAgentID(getAgent(writer));
-
-    node.addKnownAgent(getAgent(writer));
 
     team.addMember(writerID, "writer");
 
@@ -449,7 +435,7 @@ test("Writers can write to an object that is owned by their team (high level)", 
 test("Readers can not write to an object that is owned by their team", () => {
     const { node, team } = newTeam();
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
 
     expectTeamContent(team.getCurrentContent()).edit((editable) => {
@@ -461,7 +447,7 @@ test("Readers can not write to an object that is owned by their team", () => {
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     const childObjectAsReader = childObject.testWithDifferentCredentials(
@@ -486,10 +472,8 @@ test("Readers can not write to an object that is owned by their team", () => {
 test("Readers can not write to an object that is owned by their team (high level)", () => {
     const { node, team } = newTeamHighLevel();
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
-
-    node.addKnownAgent(getAgent(reader));
 
     team.addMember(readerID, "reader");
 
@@ -537,7 +521,7 @@ test("Admins can set team read key and then use it to create and read private tr
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -567,7 +551,7 @@ test("Admins can set team read key and then use it to create and read private tr
 test("Admins can set team read key and then writers can use it to create and read private transactions in owned objects", () => {
     const { node, team, admin } = newTeam();
 
-    const writer = newRandomAgentCredential("writer");
+    const writer = node.createAgent("writer");
     const writerID = getAgentID(getAgent(writer));
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
@@ -596,7 +580,7 @@ test("Admins can set team read key and then writers can use it to create and rea
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     const childObjectAsWriter = childObject.testWithDifferentCredentials(
@@ -623,10 +607,8 @@ test("Admins can set team read key and then writers can use it to create and rea
 test("Admins can set team read key and then writers can use it to create and read private transactions in owned objects (high level)", () => {
     const { node, team, admin } = newTeamHighLevel();
 
-    const writer = newRandomAgentCredential("writer");
+    const writer = node.createAgent("writer");
     const writerID = getAgentID(getAgent(writer));
-
-    node.addKnownAgent(getAgent(writer));
 
     team.addMember(writerID, "writer");
 
@@ -649,7 +631,7 @@ test("Admins can set team read key and then writers can use it to create and rea
 test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read", () => {
     const { node, team, admin } = newTeam();
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
@@ -678,7 +660,7 @@ test("Admins can set team read key and then use it to create private transaction
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     expectMap(childObject.getCurrentContent()).edit((editable) => {
@@ -703,10 +685,8 @@ test("Admins can set team read key and then use it to create private transaction
 test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read (high level)", () => {
     const { node, team, admin } = newTeamHighLevel();
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
-
-    node.addKnownAgent(getAgent(reader));
 
     team.addMember(readerID, "reader");
 
@@ -717,21 +697,21 @@ test("Admins can set team read key and then use it to create private transaction
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const childContentAsReader = expectMap(childObject.coValue.testWithDifferentCredentials(
-        reader,
-        newRandomSessionID(readerID)
-    ).getCurrentContent());
+    const childContentAsReader = expectMap(
+        childObject.coValue
+            .testWithDifferentCredentials(reader, newRandomSessionID(readerID))
+            .getCurrentContent()
+    );
 
     expect(childContentAsReader.get("foo")).toEqual("bar");
 });
 
-
 test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key", () => {
     const { node, team, admin } = newTeam();
 
-    const reader1 = newRandomAgentCredential("reader1");
+    const reader1 = node.createAgent("reader1");
     const reader1ID = getAgentID(getAgent(reader1));
-    const reader2 = newRandomAgentCredential("reader2");
+    const reader2 = node.createAgent("reader2");
     const reader2ID = getAgentID(getAgent(reader2));
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
@@ -779,7 +759,7 @@ test("Admins can set team read key and then use it to create private transaction
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     expectMap(childObject.getCurrentContent()).edit((editable) => {
@@ -817,13 +797,10 @@ test("Admins can set team read key and then use it to create private transaction
 test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key (high level)", () => {
     const { node, team, admin } = newTeamHighLevel();
 
-    const reader1 = newRandomAgentCredential("reader1");
+    const reader1 = node.createAgent("reader1");
     const reader1ID = getAgentID(getAgent(reader1));
-    const reader2 = newRandomAgentCredential("reader2");
+    const reader2 = node.createAgent("reader2");
     const reader2ID = getAgentID(getAgent(reader2));
-
-    node.addKnownAgent(getAgent(reader1));
-    node.addKnownAgent(getAgent(reader2));
 
     team.addMember(reader1ID, "reader");
 
@@ -834,23 +811,30 @@ test("Admins can set team read key and then use it to create private transaction
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const childContentAsReader1 = expectMap(childObject.coValue.testWithDifferentCredentials(
-        reader1,
-        newRandomSessionID(reader1ID)
-    ).getCurrentContent());
+    const childContentAsReader1 = expectMap(
+        childObject.coValue
+            .testWithDifferentCredentials(
+                reader1,
+                newRandomSessionID(reader1ID)
+            )
+            .getCurrentContent()
+    );
 
     expect(childContentAsReader1.get("foo")).toEqual("bar");
 
     team.addMember(reader2ID, "reader");
 
-    const childContentAsReader2 = expectMap(childObject.coValue.testWithDifferentCredentials(
-        reader2,
-        newRandomSessionID(reader2ID)
-    ).getCurrentContent());
+    const childContentAsReader2 = expectMap(
+        childObject.coValue
+            .testWithDifferentCredentials(
+                reader2,
+                newRandomSessionID(reader2ID)
+            )
+            .getCurrentContent()
+    );
 
     expect(childContentAsReader2.get("foo")).toEqual("bar");
 });
-
 
 test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, make another private transaction, and both can be read by the admin", () => {
     const { node, team, admin, adminID } = newTeam();
@@ -880,7 +864,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -960,7 +944,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     const teamContent = expectTeamContent(team.getCurrentContent());
@@ -994,7 +978,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
     childContent = expectMap(childObject.getCurrentContent());
     expect(childContent.get("foo")).toEqual("bar");
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
@@ -1074,10 +1058,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
-
-    node.addKnownAgent(getAgent(reader));
 
     team.addMember(readerID, "reader");
 
@@ -1086,15 +1068,15 @@ test("Admins can set team read key, make a private transaction in an owned objec
         expect(editable.get("foo2")).toEqual("bar2");
     });
 
-    const childContentAsReader = expectMap(childObject.coValue.testWithDifferentCredentials(
-        reader,
-        newRandomSessionID(readerID)
-    ).getCurrentContent());
+    const childContentAsReader = expectMap(
+        childObject.coValue
+            .testWithDifferentCredentials(reader, newRandomSessionID(readerID))
+            .getCurrentContent()
+    );
 
     expect(childContentAsReader.get("foo")).toEqual("bar");
     expect(childContentAsReader.get("foo2")).toEqual("bar2");
-})
-
+});
 
 test("Admins can set team read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions", () => {
     const { node, team, admin, adminID } = newTeam();
@@ -1103,14 +1085,14 @@ test("Admins can set team read rey, make a private transaction in an owned objec
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
-        publicNickname: "childObject"
+        publicNickname: "childObject",
     });
 
     const teamContent = expectTeamContent(team.getCurrentContent());
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
-    const reader2 = newRandomAgentCredential("reader2");
+    const reader2 = node.createAgent("reader2");
     const reader2ID = getAgentID(getAgent(reader));
 
     teamContent.edit((editable) => {
@@ -1228,7 +1210,6 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     let childObject = team.createMap();
 
-
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
         expect(editable.get("foo")).toEqual("bar");
@@ -1240,13 +1221,10 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     const secondReadKey = childObject.coValue.getCurrentReadKey();
 
-    const reader = newRandomAgentCredential("reader");
+    const reader = node.createAgent("reader");
     const readerID = getAgentID(getAgent(reader));
-    const reader2 = newRandomAgentCredential("reader2");
+    const reader2 = node.createAgent("reader2");
     const reader2ID = getAgentID(getAgent(reader2));
-
-    node.addKnownAgent(getAgent(reader));
-    node.addKnownAgent(getAgent(reader2));
 
     team.addMember(readerID, "reader");
     team.addMember(reader2ID, "reader");
@@ -1268,17 +1246,22 @@ test("Admins can set team read rey, make a private transaction in an owned objec
         expect(editable.get("foo3")).toEqual("bar3");
     });
 
-    const childContentAsReader2 = expectMap(childObject.coValue.testWithDifferentCredentials(
-        reader2,
-        newRandomSessionID(reader2ID)
-    ).getCurrentContent());
+    const childContentAsReader2 = expectMap(
+        childObject.coValue
+            .testWithDifferentCredentials(
+                reader2,
+                newRandomSessionID(reader2ID)
+            )
+            .getCurrentContent()
+    );
 
     expect(childContentAsReader2.get("foo")).toEqual("bar");
     expect(childContentAsReader2.get("foo2")).toEqual("bar2");
     expect(childContentAsReader2.get("foo3")).toEqual("bar3");
 
-    expect(() => childObject.coValue.testWithDifferentCredentials(
-        reader,
-        newRandomSessionID(readerID)
-    ).getCurrentContent()).toThrow(/readKey (.+?) not revealed for (.+?)/);
+    expect(() =>
+        childObject.coValue
+            .testWithDifferentCredentials(reader, newRandomSessionID(readerID))
+            .getCurrentContent()
+    ).toThrow(/readKey (.+?) not revealed for (.+?)/);
 });
