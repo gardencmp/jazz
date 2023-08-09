@@ -1,5 +1,4 @@
 import {
-    AgentID,
     getAgent,
     getAgentID,
     newRandomAgentCredential,
@@ -7,13 +6,15 @@ import {
 } from "./coValue";
 import { LocalNode } from "./node";
 import { Peer, PeerID, SyncMessage } from "./sync";
-import { MapOpPayload, expectMap } from "./contentType";
+import { expectMap } from "./contentType";
+import { MapOpPayload } from "./contentTypes/coMap";
 import { Team } from "./permissions";
 import {
     ReadableStream,
     WritableStream,
     TransformStream,
 } from "isomorphic-streams";
+import { AgentID } from "./ids";
 
 test(
     "Node replies with initial tx and header to empty subscribe",
@@ -73,6 +74,8 @@ test(
                 type: "comap",
                 ruleset: { type: "ownedByTeam", team: team.id },
                 meta: null,
+                createdAt: map.coValue.header.createdAt,
+                uniqueness: map.coValue.header.uniqueness,
                 publicNickname: "map",
             },
             newContent: {
@@ -608,8 +611,6 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const node = new LocalNode(admin, newRandomSessionID(adminID));
 
     const team = node.createTeam();
-
-    team.createMap();
 
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();

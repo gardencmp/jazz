@@ -5,6 +5,7 @@ import {
     newRandomAgentCredential,
     newRandomSessionID,
 } from "./coValue";
+import { createdNowUnique } from "./crypto";
 import { LocalNode } from "./node";
 
 test("Empty COJSON Map works", () => {
@@ -18,6 +19,7 @@ test("Empty COJSON Map works", () => {
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const content = coValue.getCurrentContent();
@@ -42,6 +44,7 @@ test("Can insert and delete Map entries in edit()", () => {
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const content = coValue.getCurrentContent();
@@ -74,6 +77,7 @@ test("Can get map entry values at different points in time", () => {
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const content = coValue.getCurrentContent();
@@ -113,6 +117,7 @@ test("Can get all historic values of key", () => {
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const content = coValue.getCurrentContent();
@@ -170,6 +175,7 @@ test("Can get last tx ID for a key", () => {
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const content = coValue.getCurrentContent();

@@ -7,7 +7,7 @@ import {
     newRandomSessionID,
 } from "./coValue";
 import { LocalNode } from "./node";
-import { sign } from "./crypto";
+import { createdNowUnique, sign, uniquenessForHeader } from "./crypto";
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
     const agentCredential = newRandomAgentCredential("agent1");
@@ -20,6 +20,7 @@ test("Can create coValue with new agent credentials and add transaction to it", 
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const transaction: Transaction = {
@@ -59,6 +60,7 @@ test("transactions with wrong signature are rejected", () => {
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const transaction: Transaction = {
@@ -97,6 +99,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
+        ...createdNowUnique()
     });
 
     const transaction: Transaction = {

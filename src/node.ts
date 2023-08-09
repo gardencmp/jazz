@@ -1,10 +1,7 @@
-import { newRandomKeySecret, seal } from "./crypto";
+import { createdNowUnique, newRandomKeySecret, seal } from "./crypto";
 import {
-    RawCoValueID,
     CoValue,
     AgentCredential,
-    AgentID,
-    SessionID,
     Agent,
     getAgent,
     getAgentID,
@@ -15,6 +12,8 @@ import {
 } from "./coValue";
 import { Team, expectTeamContent } from "./permissions";
 import { SyncManager } from "./sync";
+import { AgentID, RawCoValueID, SessionID } from "./ids";
+import { CoValueID, ContentType } from ".";
 
 export class LocalNode {
     coValues: { [key: RawCoValueID]: CoValueState } = {};
@@ -59,6 +58,10 @@ export class LocalNode {
             return Promise.resolve(entry.coValue);
         }
         return entry.done;
+    }
+
+    async load<T extends ContentType>(id: CoValueID<T>): Promise<T> {
+        return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
     expectCoValueLoaded(id: RawCoValueID, expectation?: string): CoValue {
@@ -112,6 +115,7 @@ export class LocalNode {
             type: "comap",
             ruleset: { type: "team", initialAdmin: this.agentID },
             meta: null,
+            ...createdNowUnique(),
             publicNickname: "team",
         });
 

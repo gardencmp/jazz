@@ -1,9 +1,10 @@
 import { Hash, Signature } from "./crypto";
-import { CoValueHeader, RawCoValueID, SessionID, Transaction } from "./coValue";
+import { CoValueHeader, Transaction } from "./coValue";
 import { CoValue } from "./coValue";
 import { LocalNode } from "./node";
 import { newLoadingState } from "./node";
 import { ReadableStream, WritableStream, WritableStreamDefaultWriter } from "isomorphic-streams";
+import { RawCoValueID, SessionID } from "./ids";
 
 export type CoValueKnownState = {
     coValueID: RawCoValueID;
@@ -77,31 +78,6 @@ export interface PeerState {
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStreamDefaultWriter<SyncMessage>;
     role: "peer" | "server" | "client";
-}
-
-export function weAreStrictlyAhead(
-    ourKnownState: CoValueKnownState,
-    theirKnownState: CoValueKnownState
-): boolean {
-    if (theirKnownState.header && !ourKnownState.header) {
-        return false;
-    }
-
-    const allSessions = new Set([
-        ...(Object.keys(ourKnownState.sessions) as SessionID[]),
-        ...(Object.keys(theirKnownState.sessions) as SessionID[]),
-    ]);
-
-    for (const sessionID of allSessions) {
-        const ourSession = ourKnownState.sessions[sessionID];
-        const theirSession = theirKnownState.sessions[sessionID];
-
-        if ((ourSession || 0) < (theirSession || 0)) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 export function combinedKnownStates(
@@ -480,12 +456,17 @@ export class SyncManager {
         for (const peer of Object.values(this.peers)) {
             const optimisticKnownState = peer.optimisticKnownStates[coValue.id];
 
-            const shouldSync =
-                optimisticKnownState ||
-                peer.role === "server";
-
-            if (shouldSync) {
+            if (optimisticKnownState) {
                 await this.tellUntoldKnownStateIncludingDependencies(
+                    coValue.id,
+                    peer
+                );
+                await this.sendNewContentIncludingDependencies(
+                    coValue.id,
+                    peer
+                );
+            } else if (peer.role === "server") {
+                await this.subscribeToIncludingDependencies(
                     coValue.id,
                     peer
                 );

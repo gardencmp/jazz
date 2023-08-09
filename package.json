@@ -1,8 +1,10 @@
 {
     "name": "cojson",
     "module": "src/index.ts",
+    "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
+    "version": "0.0.3",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",

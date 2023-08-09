@@ -1,4 +1,5 @@
-import { CoMap, ContentType, MapOpPayload } from "./contentType";
+import { ContentType } from "./contentType";
+import { CoMap, MapOpPayload } from "./contentTypes/coMap";
 import { JsonValue } from "./jsonValue";
 import {
     Encrypted,
@@ -7,23 +8,20 @@ import {
     RecipientID,
     SealedSet,
     SignatoryID,
-    encryptForTransaction,
+    createdNowUnique,
     newRandomKeySecret,
     seal,
     sealKeySecret,
 } from "./crypto";
 import {
     AgentCredential,
-    AgentID,
     CoValue,
-    RawCoValueID,
-    SessionID,
     Transaction,
-    TransactionID,
     TrustingTransaction,
     agentIDfromSessionID,
 } from "./coValue";
 import { LocalNode } from ".";
+import { AgentID, RawCoValueID, SessionID, TransactionID } from "./ids";
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AgentID; parentTeams?: RawCoValueID[] }
@@ -355,6 +353,7 @@ export class Team {
                     team: this.teamMap.id,
                 },
                 meta: meta || null,
+                ...createdNowUnique(),
                 publicNickname: "map",
             })
             .getCurrentContent() as CoMap<M, Meta>;

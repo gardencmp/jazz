@@ -5,7 +5,7 @@ import { base58, base64url } from "@scure/base";
 import { default as stableStringify } from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { RawCoValueID, SessionID, TransactionID } from "./coValue";
+import { RawCoValueID, TransactionID } from "./ids";
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;
@@ -22,6 +22,14 @@ export function newRandomSignatory(): SignatorySecret {
     return `signatorySecret_z${base58.encode(
         ed25519.utils.randomPrivateKey()
     )}`;
+}
+
+export function signatorySecretToBytes(secret: SignatorySecret): Uint8Array {
+    return base58.decode(secret.substring("signatorySecret_z".length));
+}
+
+export function signatorySecretFromBytes(bytes: Uint8Array): SignatorySecret {
+    return `signatorySecret_z${base58.encode(bytes)}`;
 }
 
 export function getSignatoryID(secret: SignatorySecret): SignatoryID {
@@ -54,6 +62,14 @@ export function verify(
 
 export function newRandomRecipient(): RecipientSecret {
     return `recipientSecret_z${base58.encode(x25519.utils.randomPrivateKey())}`;
+}
+
+export function recipientSecretToBytes(secret: RecipientSecret): Uint8Array {
+    return base58.decode(secret.substring("recipientSecret_z".length));
+}
+
+export function recipientSecretFromBytes(bytes: Uint8Array): RecipientSecret {
+    return `recipientSecret_z${base58.encode(bytes)}`;
 }
 
 export function getRecipientID(secret: RecipientSecret): RecipientID {
@@ -294,4 +310,16 @@ export function unsealKeySecret(
     };
 
     return decrypt(sealedInfo.encrypted, sealingSecret, nOnceMaterial);
+}
+
+export function uniquenessForHeader(): `z${string}` {
+    return `z${base58.encode(randomBytes(12))}`;
+}
+
+export function createdNowUnique(): {createdAt: `2${string}`, uniqueness: `z${string}`} {
+    const createdAt = (new Date()).toISOString() as `2${string}`;
+    return {
+        createdAt,
+        uniqueness: uniquenessForHeader(),
+    }
 }

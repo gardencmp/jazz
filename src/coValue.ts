@@ -1,5 +1,8 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { CoList, CoMap, ContentType, Static, CoStream } from "./contentType";
+import { ContentType } from "./contentType";
+import { Static } from "./contentTypes/static";
+import { CoStream } from "./contentTypes/coStream";
+import { CoMap } from "./contentTypes/coMap";
 import {
     Encrypted,
     Hash,
@@ -22,23 +25,30 @@ import {
     decryptForTransaction,
     KeyID,
     unsealKeySecret,
+    signatorySecretToBytes,
+    recipientSecretToBytes,
+    signatorySecretFromBytes,
+    recipientSecretFromBytes,
 } from "./crypto";
 import { JsonValue } from "./jsonValue";
 import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
+    Team,
     determineValidTransactions,
     expectTeamContent,
 } from "./permissions";
 import { LocalNode } from "./node";
 import { CoValueKnownState, NewContentMessage } from "./sync";
-
-export type RawCoValueID = `co_z${string}` | `co_${string}_z${string}`;
+import { AgentID, RawCoValueID, SessionID, TransactionID } from "./ids";
+import { CoList } from "./contentTypes/coList";
 
 export type CoValueHeader = {
     type: ContentType["type"];
     ruleset: RulesetDef;
     meta: JsonValue;
+    createdAt: `2${string}` | null;
+    uniqueness: `z${string}` | null;
     publicNickname?: string;
 };
 
@@ -52,8 +62,6 @@ function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
         return `co_z${hash.slice("shortHash_z".length)}`;
     }
 }
-
-export type SessionID = `${AgentID}_session_z${string}`;
 
 export function agentIDfromSessionID(sessionID: SessionID): AgentID {
     return sessionID.split("_session")[0] as AgentID;
@@ -94,14 +102,13 @@ export type DecryptedTransaction = {
     madeAt: number;
 };
 
-export type TransactionID = { sessionID: SessionID; txIndex: number };
-
 export class CoValue {
     id: RawCoValueID;
     node: LocalNode;
     header: CoValueHeader;
     sessions: { [key: SessionID]: SessionLog };
     content?: ContentType;
+    listeners: Set<(content?: ContentType) => void> = new Set();
 
     constructor(header: CoValueHeader, node: LocalNode) {
         this.id = coValueIDforHeader(header);
@@ -185,6 +192,8 @@ export class CoValue {
 
         const transactions = this.sessions[sessionID]?.transactions ?? [];
 
+        console.log("transactions before", this.id, transactions.length, this.getValidSortedTransactions().length);
+
         transactions.push(...newTransactions);
 
         this.sessions[sessionID] = {
@@ -196,9 +205,26 @@ export class CoValue {
 
         this.content = undefined;
 
-        const _ = this.getCurrentContent();
+        console.log("transactions after", this.id, transactions.length, this.getValidSortedTransactions().length);
+
+        const content = this.getCurrentContent();
+
+        for (const listener of this.listeners) {
+            console.log("Calling listener (update)", this.id, content.toJSON());
+            listener(content);
+        }
 
         return true;
+    }
+
+    subscribe(listener: (content?: ContentType) => void): () => void {
+        this.listeners.add(listener);
+        console.log("Calling listener (initial)", this.id, this.getCurrentContent().toJSON());
+        listener(this.getCurrentContent());
+
+        return () => {
+            this.listeners.delete(listener);
+        };
     }
 
     expectedNewHashAfter(
@@ -232,7 +258,9 @@ export class CoValue {
             const { secret: keySecret, id: keyID } = this.getCurrentReadKey();
 
             if (!keySecret) {
-                throw new Error("Can't make transaction without read key secret");
+                throw new Error(
+                    "Can't make transaction without read key secret"
+                );
             }
 
             transaction = {
@@ -300,8 +328,8 @@ export class CoValue {
     getValidSortedTransactions(): DecryptedTransaction[] {
         const validTransactions = determineValidTransactions(this);
 
-        const allTransactions: DecryptedTransaction[] = validTransactions.map(
-            ({ txID, tx }) => {
+        const allTransactions: DecryptedTransaction[] = validTransactions
+            .map(({ txID, tx }) => {
                 if (tx.privacy === "trusting") {
                     return {
                         txID,
@@ -324,7 +352,9 @@ export class CoValue {
                         );
 
                         if (!decrytedChanges) {
-                            console.error("Failed to decrypt transaction despite having key");
+                            console.error(
+                                "Failed to decrypt transaction despite having key"
+                            );
                             return undefined;
                         }
                         return {
@@ -334,8 +364,8 @@ export class CoValue {
                         };
                     }
                 }
-            }
-        ).filter((x): x is Exclude<typeof x, undefined> => !!x);
+            })
+            .filter((x): x is Exclude<typeof x, undefined> => !!x);
         allTransactions.sort(
             (a, b) =>
                 a.madeAt - b.madeAt ||
@@ -446,6 +476,21 @@ export class CoValue {
         }
     }
 
+    getTeam(): Team {
+        if (this.header.ruleset.type !== "ownedByTeam") {
+            throw new Error("Only values owned by teams have teams");
+        }
+
+        return new Team(
+            expectTeamContent(
+                this.node
+                    .expectCoValueLoaded(this.header.ruleset.team)
+                    .getCurrentContent()
+            ),
+            this.node
+        );
+    }
+
     getTx(txID: TransactionID): Transaction | undefined {
         return this.sessions[txID.sessionID]?.transactions[txID.txIndex];
     }
@@ -510,8 +555,6 @@ export class CoValue {
     }
 }
 
-export type AgentID = `co_agent${string}_z${string}`;
-
 export type Agent = {
     signatoryID: SignatoryID;
     recipientID: RecipientID;
@@ -535,6 +578,8 @@ export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
             initialRecipientID: agent.recipientID,
         },
         meta: null,
+        createdAt: null,
+        uniqueness: null,
         publicNickname:
             "agent" + (agent.publicNickname ? `-${agent.publicNickname}` : ""),
     };
@@ -551,11 +596,43 @@ export type AgentCredential = {
 };
 
 export function newRandomAgentCredential(
-    publicNickname: string
+    publicNickname?: string
 ): AgentCredential {
     const signatorySecret = newRandomSignatory();
     const recipientSecret = newRandomRecipient();
     return { signatorySecret, recipientSecret, publicNickname };
+}
+
+export function agentCredentialToBytes(cred: AgentCredential): Uint8Array {
+    if (cred.publicNickname) {
+        throw new Error("Can't convert agent credential with publicNickname");
+    }
+    const bytes = new Uint8Array(64);
+    const signatorySecretBytes = signatorySecretToBytes(cred.signatorySecret);
+    if (signatorySecretBytes.length !== 32) {
+        throw new Error("Invalid signatorySecret length");
+    }
+    bytes.set(signatorySecretBytes);
+    const recipientSecretBytes = recipientSecretToBytes(cred.recipientSecret);
+    if (recipientSecretBytes.length !== 32) {
+        throw new Error("Invalid recipientSecret length");
+    }
+    bytes.set(recipientSecretBytes, 32);
+
+    return bytes;
+}
+
+export function agentCredentialFromBytes(
+    bytes: Uint8Array
+): AgentCredential | undefined {
+    if (bytes.length !== 64) {
+        return undefined;
+    }
+
+    const signatorySecret = signatorySecretFromBytes(bytes.slice(0, 32));
+    const recipientSecret = recipientSecretFromBytes(bytes.slice(32));
+
+    return { signatorySecret, recipientSecret };
 }
 
 // type Role = "admin" | "writer" | "reader";

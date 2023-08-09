@@ -8,6 +8,7 @@ import { LocalNode } from "./node";
 import { expectMap } from "./contentType";
 import { expectTeamContent } from "./permissions";
 import {
+    createdNowUnique,
     getRecipientID,
     newRandomKeySecret,
     seal,
@@ -47,6 +48,7 @@ function newTeam() {
         type: "comap",
         ruleset: { type: "team", initialAdmin: adminID },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "team",
     });
 
@@ -343,6 +345,7 @@ test("Admins can write to an object that is owned by their team", () => {
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -386,6 +389,7 @@ test("Writers can write to an object that is owned by their team", () => {
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -447,6 +451,7 @@ test("Readers can not write to an object that is owned by their team", () => {
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -521,6 +526,7 @@ test("Admins can set team read key and then use it to create and read private tr
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -580,6 +586,7 @@ test("Admins can set team read key and then writers can use it to create and rea
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -660,6 +667,7 @@ test("Admins can set team read key and then use it to create private transaction
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -759,6 +767,7 @@ test("Admins can set team read key and then use it to create private transaction
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -864,6 +873,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -944,6 +954,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -1085,6 +1096,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
         type: "comap",
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
+        ...createdNowUnique(),
         publicNickname: "childObject",
     });
 
@@ -1266,4 +1278,24 @@ test("Admins can set team read rey, make a private transaction in an owned objec
                 .getCurrentContent()
         ).get("foo3")
     ).toBeUndefined();
+});
+
+test("Can create two owned objects in the same team and they will have different ids", () => {
+    const { node, team, admin, adminID } = newTeam();
+
+    const childObject1 = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByTeam", team: team.id },
+        meta: null,
+        ...createdNowUnique()
+    });
+
+    const childObject2 = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByTeam", team: team.id },
+        meta: null,
+        ...createdNowUnique()
+    });
+
+    expect(childObject1.id).not.toEqual(childObject2.id);
 });
