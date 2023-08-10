@@ -7,11 +7,11 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
-import { Checkbox } from "./components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { CoMap, CoValueID } from "cojson";
-import { Button } from "./components/ui/button";
-import { useJazz, useTelepathicState } from "./main";
+import { useJazz, useTelepathicState } from "jazz-react";
 
 type TaskContent = { done: boolean; text: string };
 type Task = CoMap<TaskContent, {}>;
@@ -39,6 +39,17 @@ function App() {
         <div className="flex flex-col h-full items-center justify-center gap-10">
             {listId && <TodoList listId={listId} />}
             <Button onClick={createList}>Create New List</Button>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const inputEl = e.currentTarget.elements.namedItem(
+                        "listId"
+                    ) as HTMLInputElement;
+                    setListId(inputEl.value as CoValueID<TodoList>);
+                }}
+            >
+                <Input placeholder="Load list (by ID)" name="listId" />
+            </form>
         </div>
     );
 }
@@ -66,7 +77,9 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
 
     return (
         <div className="max-w-full w-4xl">
-            <h1>{list?.get("title")}</h1>
+            <h1>
+                {list?.get("title")} ({list?.id})
+            </h1>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -76,7 +89,8 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
                 </TableHeader>
                 <TableBody>
                     {list &&
-                        list.keys()
+                        list
+                            .keys()
                             .filter((key): key is CoValueID<Task> =>
                                 key.startsWith("co_")
                             )
@@ -89,6 +103,7 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
                         </TableCell>
                         <TableCell>
                             <form
+                                className="flex flex-row items-center gap-5"
                                 onSubmit={(e) => {
                                     e.preventDefault();
                                     const textEl =
@@ -100,10 +115,13 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
                                 }}
                             >
                                 <Input
-                                    className="-mx-3 -my-2"
+                                    className="-ml-3 -my-2"
                                     name="text"
                                     placeholder="Add todo"
                                 />
+                                <Button asChild type="submit">
+                                    <Input type="submit" value="Add" />
+                                </Button>
                             </form>
                         </TableCell>
                     </TableRow>
@@ -129,7 +147,9 @@ function TodoRow({ taskId }: { taskId: CoValueID<Task> }) {
                     }}
                 />
             </TableCell>
-            <TableCell>{task?.get("text")}</TableCell>
+            <TableCell className={task?.get("done") ? "line-through" : ""}>
+                {task?.get("text")}
+            </TableCell>
         </TableRow>
     );
 }

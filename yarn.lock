@@ -705,10 +705,10 @@ clsx@2.0.0, clsx@^2.0.0:
   resolved "https://registry.yarnpkg.com/clsx/-/clsx-2.0.0.tgz#12658f3fd98fafe62075595a5c30e43d18f3d00b"
   integrity sha512-rQ1+kcj+ttHG0MKVGBUXwayCCF1oh39BF5COIpRzuCEv8Mwjv0XucrI2ExNTOn9IlLifGClWQcU9BrZORvtw6Q==
 
-cojson@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/cojson/-/cojson-0.0.2.tgz#6f2d0aee8ab0641b77abda40826f207ef596c12e"
-  integrity sha512-jHUPsS2wdkgt7FA4wo309hI++iFFQueWTJY0yOQCRL6J7iVdLnRDzprg1c9J+Mo0IKSj2zQar7yaR7ObCI8Evg==
+cojson@0.0.4, cojson@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/cojson/-/cojson-0.0.4.tgz#ea53569b4cb9473b6ae55602eed2dab068df0d1e"
+  integrity sha512-FgXD4teqtoBnjc+k+ac6fZKwJSne+Gu7u0KqMGqMfd+H/0zElCFGxhwKfXeLXksY7M6ICilbOY+XVAuqPmz2Yw==
   dependencies:
     "@noble/ciphers" "^0.1.3"
     "@noble/curves" "^1.1.0"
@@ -1170,9 +1170,25 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-"isomorphic-streams@https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae":
+"isomorphic-streams@git+https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae":
   version "1.0.3"
-  resolved "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+  resolved "git+https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+
+jazz-react-auth-local@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/jazz-react-auth-local/-/jazz-react-auth-local-0.0.2.tgz#dc641aff3834d857377dedfab5137c858fb17962"
+  integrity sha512-wOXqF2J5/+NR6c/0lKaybIZuczmP/cr6W8EdbHMiF4ERsJm7ZZ+ykQGfJjCk7aQCjXPZBJGezxfRyvj1bJQigQ==
+  dependencies:
+    jazz-react "^0.0.2"
+    typescript "^5.1.6"
+
+jazz-react@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/jazz-react/-/jazz-react-0.0.2.tgz#c6d9c4916123f0ce93f6a200b0b3e27e62ca7e1f"
+  integrity sha512-hGRS203BaKN4jt+x15kRKVwr0wQMDn82hjUofXhZx8r/BP7uu6qulqgllZQ/FFhmz5HhykLCdVItMfKm30DBKQ==
+  dependencies:
+    cojson "^0.0.4"
+    typescript "^5.1.6"
 
 jiti@^1.18.2:
   version "1.19.1"
@@ -1710,7 +1726,7 @@ type-fest@^0.20.2:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.20.2.tgz#1bf207f4b28f91583666cb5fbd327887301cd5f4"
   integrity sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ==
 
-typescript@^5.0.2:
+typescript@^5.0.2, typescript@^5.1.6:
   version "5.1.6"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.6.tgz#02f8ac202b6dad2c0dd5e0913745b47a37998274"
   integrity sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==
