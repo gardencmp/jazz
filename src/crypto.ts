@@ -2,7 +2,7 @@ import { ed25519, x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
 import { JsonValue } from "./jsonValue";
 import { base58, base64url } from "@scure/base";
-import { default as stableStringify } from "fast-json-stable-stringify";
+import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
 import { RawCoValueID, TransactionID } from "./ids";

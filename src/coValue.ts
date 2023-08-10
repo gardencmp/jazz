@@ -192,8 +192,6 @@ export class CoValue {
 
         const transactions = this.sessions[sessionID]?.transactions ?? [];
 
-        console.log("transactions before", this.id, transactions.length, this.getValidSortedTransactions().length);
-
         transactions.push(...newTransactions);
 
         this.sessions[sessionID] = {
@@ -205,12 +203,9 @@ export class CoValue {
 
         this.content = undefined;
 
-        console.log("transactions after", this.id, transactions.length, this.getValidSortedTransactions().length);
-
         const content = this.getCurrentContent();
 
         for (const listener of this.listeners) {
-            console.log("Calling listener (update)", this.id, content.toJSON());
             listener(content);
         }
 
@@ -219,7 +214,6 @@ export class CoValue {
 
     subscribe(listener: (content?: ContentType) => void): () => void {
         this.listeners.add(listener);
-        console.log("Calling listener (initial)", this.id, this.getCurrentContent().toJSON());
         listener(this.getCurrentContent());
 
         return () => {

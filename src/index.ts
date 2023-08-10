@@ -14,6 +14,7 @@ import type { AgentCredential } from "./coValue";
 import type { AgentID, SessionID } from "./ids";
 import type { CoValueID, ContentType } from "./contentType";
 import type { JsonValue } from "./jsonValue";
+import type { SyncMessage } from "./sync";
 
 type Value = JsonValue | ContentType;
 
@@ -36,4 +37,5 @@ export type {
     AgentCredential,
     SessionID,
     AgentID,
+    SyncMessage
 };
