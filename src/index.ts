@@ -22,7 +22,8 @@ export function useLocalAuth(onCredential: (credentials: AgentCredential) => voi
                     challenge: Uint8Array.from([0, 1, 2]),
                     rp: {
                         name: "TodoApp",
-                        id: "localhost",
+                        // TODO: something safer as default?
+                        id: window.location.hostname,
                     },
                     user: {
                         id: cojsonInternals.agentCredentialToBytes(credential),
@@ -54,7 +55,8 @@ export function useLocalAuth(onCredential: (credentials: AgentCredential) => voi
             const webAuthNCredential = await navigator.credentials.get({
                 publicKey: {
                     challenge: Uint8Array.from([0, 1, 2]),
-                    rpId: "localhost",
+                    // TODO: something safer as default?
+                    rpId: window.location.hostname,
                     allowCredentials: [],
                     timeout: 60000,
                 },
