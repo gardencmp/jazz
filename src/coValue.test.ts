@@ -1,13 +1,12 @@
 import {
-    CoValue,
     Transaction,
     getAgent,
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./coValue";
-import { LocalNode } from "./node";
-import { createdNowUnique, sign, uniquenessForHeader } from "./crypto";
+} from './coValue.js';
+import { LocalNode } from './node.js';
+import { createdNowUnique, sign } from './crypto.js';
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
     const agentCredential = newRandomAgentCredential("agent1");

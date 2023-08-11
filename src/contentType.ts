@@ -1,9 +1,9 @@
-import { JsonValue } from "./jsonValue";
-import { RawCoValueID } from "./ids";
-import { CoMap } from "./contentTypes/coMap";
-import { CoStream } from "./contentTypes/coStream";
-import { Static } from "./contentTypes/static";
-import { CoList } from "./contentTypes/coList";
+import { JsonValue } from './jsonValue.js';
+import { RawCoValueID } from './ids.js';
+import { CoMap } from './contentTypes/coMap.js';
+import { CoStream } from './contentTypes/coStream.js';
+import { Static } from './contentTypes/static.js';
+import { CoList } from './contentTypes/coList.js';
 
 export type CoValueID<T extends ContentType> = RawCoValueID & {
     readonly __type: T;

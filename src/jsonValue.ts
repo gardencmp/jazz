@@ -1,4 +1,4 @@
-import { CoValueID, ContentType } from "./contentType";
+import { CoValueID, ContentType } from './contentType.js';
 
 export type JsonAtom = string | number | boolean | null;
 export type JsonValue = JsonAtom | JsonArray | JsonObject | CoValueID<ContentType>;

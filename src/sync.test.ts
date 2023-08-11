@@ -3,18 +3,18 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./coValue";
-import { LocalNode } from "./node";
-import { Peer, PeerID, SyncMessage } from "./sync";
-import { expectMap } from "./contentType";
-import { MapOpPayload } from "./contentTypes/coMap";
-import { Team } from "./permissions";
+} from './coValue.js';
+import { LocalNode } from './node.js';
+import { Peer, PeerID, SyncMessage } from './sync.js';
+import { expectMap } from './contentType.js';
+import { MapOpPayload } from './contentTypes/coMap.js';
+import { Team } from './permissions.js';
 import {
     ReadableStream,
     WritableStream,
     TransformStream,
 } from "isomorphic-streams";
-import { AgentID } from "./ids";
+import { AgentID } from './ids.js';
 
 test(
     "Node replies with initial tx and header to empty subscribe",

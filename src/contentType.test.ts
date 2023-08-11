@@ -4,9 +4,9 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./coValue";
-import { createdNowUnique } from "./crypto";
-import { LocalNode } from "./node";
+} from './coValue.js';
+import { createdNowUnique } from "./crypto.js";
+import { LocalNode } from "./node.js";
 
 test("Empty COJSON Map works", () => {
     const agentCredential = newRandomAgentCredential("agent1");

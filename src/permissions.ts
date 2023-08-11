@@ -1,6 +1,6 @@
-import { ContentType } from "./contentType";
-import { CoMap, MapOpPayload } from "./contentTypes/coMap";
-import { JsonValue } from "./jsonValue";
+import { ContentType } from './contentType.js';
+import { CoMap, MapOpPayload } from './contentTypes/coMap.js';
+import { JsonValue } from './jsonValue.js';
 import {
     Encrypted,
     KeyID,
@@ -12,16 +12,16 @@ import {
     newRandomKeySecret,
     seal,
     sealKeySecret,
-} from "./crypto";
+} from './crypto.js';
 import {
     AgentCredential,
     CoValue,
     Transaction,
     TrustingTransaction,
     agentIDfromSessionID,
-} from "./coValue";
-import { LocalNode } from ".";
-import { AgentID, RawCoValueID, SessionID, TransactionID } from "./ids";
+} from './coValue.js';
+import { LocalNode } from "./node.js";
+import { AgentID, RawCoValueID, SessionID, TransactionID } from './ids.js';
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AgentID; parentTeams?: RawCoValueID[] }

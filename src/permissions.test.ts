@@ -3,17 +3,17 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./coValue";
-import { LocalNode } from "./node";
-import { expectMap } from "./contentType";
-import { expectTeamContent } from "./permissions";
+} from './coValue.js';
+import { LocalNode } from './node.js';
+import { expectMap } from './contentType.js';
+import { expectTeamContent } from './permissions.js';
 import {
     createdNowUnique,
     getRecipientID,
     newRandomKeySecret,
     seal,
     sealKeySecret,
-} from "./crypto";
+} from './crypto.js';
 
 function teamWithTwoAdmins() {
     const { team, admin, adminID, node } = newTeam();

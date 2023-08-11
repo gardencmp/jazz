@@ -1,10 +1,10 @@
-import { JsonObject, JsonValue } from "../jsonValue";
-import { CoValueID } from "../contentType";
-import { CoValue } from "../coValue";
+import { JsonObject, JsonValue } from '../jsonValue.js';
+import { CoValueID } from '../contentType.js';
+import { CoValue } from '../coValue.js';
 
 export class Static<T extends JsonValue> {
     id: CoValueID<Static<T>>;
-    type: "static" = "static";
+    type = "static" as const;
     coValue: CoValue;
 
     constructor(coValue: CoValue) {
@@ -16,7 +16,7 @@ export class Static<T extends JsonValue> {
         throw new Error("Method not implemented.");
     }
 
-    subscribe(listener: (coMap: Static<T>) => void): () => void {
+    subscribe(_listener: (coMap: Static<T>) => void): () => void {
         throw new Error("Method not implemented.");
     }
 }

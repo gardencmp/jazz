@@ -1,10 +1,10 @@
-import { Hash, Signature } from "./crypto";
-import { CoValueHeader, Transaction } from "./coValue";
-import { CoValue } from "./coValue";
-import { LocalNode } from "./node";
-import { newLoadingState } from "./node";
+import { Hash, Signature } from './crypto.js';
+import { CoValueHeader, Transaction } from './coValue.js';
+import { CoValue } from './coValue.js';
+import { LocalNode } from './node.js';
+import { newLoadingState } from './node.js';
 import { ReadableStream, WritableStream, WritableStreamDefaultWriter } from "isomorphic-streams";
-import { RawCoValueID, SessionID } from "./ids";
+import { RawCoValueID, SessionID } from './ids.js';
 
 export type CoValueKnownState = {
     coValueID: RawCoValueID;

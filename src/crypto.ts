@@ -1,11 +1,11 @@
 import { ed25519, x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
-import { JsonValue } from "./jsonValue";
+import { JsonValue } from './jsonValue.js';
 import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { RawCoValueID, TransactionID } from "./ids";
+import { RawCoValueID, TransactionID } from './ids.js';
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;

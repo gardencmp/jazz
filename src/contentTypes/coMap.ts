@@ -1,7 +1,7 @@
-import { JsonObject, JsonValue } from "../jsonValue";
-import { TransactionID } from "../ids";
-import { CoValueID } from "../contentType";
-import { CoValue } from "../coValue";
+import { JsonObject, JsonValue } from '../jsonValue.js';
+import { TransactionID } from '../ids.js';
+import { CoValueID } from '../contentType.js';
+import { CoValue } from '../coValue.js';
 
 type MapOp<K extends string, V extends JsonValue> = {
     txID: TransactionID;
@@ -31,7 +31,7 @@ export class CoMap<
 > {
     id: CoValueID<CoMap<MM, Meta>>;
     coValue: CoValue;
-    type: "comap" = "comap";
+    type = "comap" as const;
     ops: {
         [KK in K]?: MapOp<K, M[KK]>[];
     };
@@ -61,7 +61,7 @@ export class CoMap<
                     txID,
                     madeAt,
                     changeIdx,
-                    ...(change as any),
+                    ...(change as MapOpPayload<K, M[K]>),
                 });
             }
         }

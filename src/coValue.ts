@@ -1,8 +1,8 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { ContentType } from "./contentType";
-import { Static } from "./contentTypes/static";
-import { CoStream } from "./contentTypes/coStream";
-import { CoMap } from "./contentTypes/coMap";
+import { ContentType } from './contentType.js';
+import { Static } from './contentTypes/static.js';
+import { CoStream } from './contentTypes/coStream.js';
+import { CoMap } from './contentTypes/coMap.js';
 import {
     Encrypted,
     Hash,
@@ -29,19 +29,19 @@ import {
     recipientSecretToBytes,
     signatorySecretFromBytes,
     recipientSecretFromBytes,
-} from "./crypto";
-import { JsonValue } from "./jsonValue";
+} from './crypto.js';
+import { JsonValue } from './jsonValue.js';
 import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
     Team,
     determineValidTransactions,
     expectTeamContent,
-} from "./permissions";
-import { LocalNode } from "./node";
-import { CoValueKnownState, NewContentMessage } from "./sync";
-import { AgentID, RawCoValueID, SessionID, TransactionID } from "./ids";
-import { CoList } from "./contentTypes/coList";
+} from './permissions.js';
+import { LocalNode } from './node.js';
+import { CoValueKnownState, NewContentMessage } from './sync.js';
+import { AgentID, RawCoValueID, SessionID, TransactionID } from './ids.js';
+import { CoList } from './contentTypes/coList.js';
 
 export type CoValueHeader = {
     type: ContentType["type"];

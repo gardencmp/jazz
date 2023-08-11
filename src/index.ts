@@ -6,15 +6,15 @@ import {
     getAgentID,
     newRandomAgentCredential,
     newRandomSessionID,
-} from "./coValue";
-import { LocalNode } from "./node";
-import { CoMap } from "./contentTypes/coMap";
+} from './coValue.js';
+import { LocalNode } from './node.js';
+import { CoMap } from './contentTypes/coMap.js';
 
-import type { AgentCredential } from "./coValue";
-import type { AgentID, SessionID } from "./ids";
-import type { CoValueID, ContentType } from "./contentType";
-import type { JsonValue } from "./jsonValue";
-import type { SyncMessage } from "./sync";
+import type { AgentCredential } from './coValue.js';
+import type { AgentID, SessionID } from './ids.js';
+import type { CoValueID, ContentType } from './contentType.js';
+import type { JsonValue } from './jsonValue.js';
+import type { SyncMessage } from './sync.js';
 
 type Value = JsonValue | ContentType;
 

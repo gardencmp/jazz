@@ -1,10 +1,10 @@
-import { JsonObject, JsonValue } from "../jsonValue";
-import { CoValueID } from "../contentType";
-import { CoValue } from "../coValue";
+import { JsonObject, JsonValue } from '../jsonValue.js';
+import { CoValueID } from '../contentType.js';
+import { CoValue } from '../coValue.js';
 
 export class CoStream<T extends JsonValue, Meta extends JsonValue> {
     id: CoValueID<CoStream<T, Meta>>;
-    type: "costream" = "costream";
+    type = "costream" as const;
     coValue: CoValue;
 
     constructor(coValue: CoValue) {

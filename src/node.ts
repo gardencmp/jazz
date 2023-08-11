@@ -1,4 +1,4 @@
-import { createdNowUnique, newRandomKeySecret, seal } from "./crypto";
+import { createdNowUnique, newRandomKeySecret, seal } from './crypto.js';
 import {
     CoValue,
     AgentCredential,
@@ -7,13 +7,12 @@ import {
     getAgentID,
     getAgentCoValueHeader,
     CoValueHeader,
-    agentIDfromSessionID,
     newRandomAgentCredential,
-} from "./coValue";
-import { Team, expectTeamContent } from "./permissions";
-import { SyncManager } from "./sync";
-import { AgentID, RawCoValueID, SessionID } from "./ids";
-import { CoValueID, ContentType } from ".";
+} from './coValue.js';
+import { Team, expectTeamContent } from './permissions.js';
+import { SyncManager } from './sync.js';
+import { AgentID, RawCoValueID, SessionID } from './ids.js';
+import { CoValueID, ContentType } from './contentType.js';
 
 export class LocalNode {
     coValues: { [key: RawCoValueID]: CoValueState } = {};
