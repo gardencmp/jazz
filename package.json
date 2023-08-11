@@ -1,11 +1,11 @@
 {
     "name": "cojson",
-    "module": "dist/index.mjs",
-    "main": "dist/index.mjs",
+    "module": "dist/index.js",
+    "main": "dist/index.js",
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.0.8",
+    "version": "0.0.10",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
@@ -32,6 +32,24 @@
     },
     "jest": {
         "preset": "ts-jest",
-        "testEnvironment": "node"
+        "testEnvironment": "node",
+        "transform": {
+            "\\.[jt]sx?$": [
+                "ts-jest",
+                {
+                    "useESM": true
+                }
+            ]
+        },
+        "moduleNameMapper": {
+            "(.+)\\.js": "$1"
+        },
+        "extensionsToTreatAsEsm": [
+            ".ts"
+        ],
+        "modulePathIgnorePatterns": [
+            "/node_modules/",
+            "/dist/"
+        ]
     }
 }

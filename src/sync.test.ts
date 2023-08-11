@@ -980,6 +980,123 @@ test("Can sync a coValue with private transactions through a server to another c
     );
 });
 
+test("When a peer's incoming/readable stream closes, we remove the peer", async () => {
+    const admin = newRandomAgentCredential("admin");
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.sync.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "server",
+    });
+
+    const reader = outRx.getReader();
+    expect((await reader.read()).value).toMatchObject({
+        action: "subscribe",
+        coValueID: adminID,
+    });
+    expect((await reader.read()).value).toMatchObject({
+        action: "subscribe",
+        coValueID: team.teamMap.coValue.id,
+    });
+
+    const map = team.createMap();
+
+    const mapSubscribeMsg = await reader.read();
+
+    expect(mapSubscribeMsg.value).toEqual({
+        action: "subscribe",
+        ...map.coValue.knownState(),
+    } satisfies SyncMessage);
+
+    expect((await reader.read()).value).toMatchObject(admContEx(adminID));
+    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+
+    const mapContentMsg = await reader.read();
+
+    expect(mapContentMsg.value).toEqual({
+        action: "newContent",
+        coValueID: map.coValue.id,
+        header: map.coValue.header,
+        newContent: {},
+    } satisfies SyncMessage);
+
+    await inTx.abort();
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(node.sync.peers["test"]).toBeUndefined();
+});
+
+test("When a peer's outgoing/writable stream closes, we remove the peer", async () => {
+    const admin = newRandomAgentCredential("admin");
+    const adminID = getAgentID(getAgent(admin));
+
+    const node = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node.createTeam();
+
+    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [outRx, outTx] = newStreamPair<SyncMessage>();
+
+    node.sync.addPeer({
+        id: "test",
+        incoming: inRx,
+        outgoing: outTx,
+        role: "server",
+    });
+
+    const reader = outRx.getReader();
+    expect((await reader.read()).value).toMatchObject({
+        action: "subscribe",
+        coValueID: adminID,
+    });
+    expect((await reader.read()).value).toMatchObject({
+        action: "subscribe",
+        coValueID: team.teamMap.coValue.id,
+    });
+
+    const map = team.createMap();
+
+    const mapSubscribeMsg = await reader.read();
+
+    expect(mapSubscribeMsg.value).toEqual({
+        action: "subscribe",
+        ...map.coValue.knownState(),
+    } satisfies SyncMessage);
+
+    expect((await reader.read()).value).toMatchObject(admContEx(adminID));
+    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+
+    const mapContentMsg = await reader.read();
+
+    expect(mapContentMsg.value).toEqual({
+        action: "newContent",
+        coValueID: map.coValue.id,
+        header: map.coValue.header,
+        newContent: {},
+    } satisfies SyncMessage);
+
+    reader.releaseLock();
+    await outRx.cancel();
+
+    map.edit((editable) => {
+        editable.set("hello", "world", "trusting");
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(node.sync.peers["test"]).toBeUndefined();
+})
+
 function teamContentEx(team: Team) {
     return {
         action: "newContent",
@@ -1015,10 +1132,17 @@ function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
         resolveNextItemReady = resolve;
     });
 
+    let writerClosed = false;
+    let readerClosed = false;
+
     const readable = new ReadableStream<T>({
         async pull(controller) {
             let retriesLeft = 3;
             while (retriesLeft > 0) {
+                if (writerClosed) {
+                    controller.close();
+                    return;
+                }
                 retriesLeft--;
                 if (queue.length > 0) {
                     controller.enqueue(queue.shift()!);
@@ -1034,15 +1158,30 @@ function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
             }
             throw new Error("Should only use one retry to get next item in queue.")
         },
+
+        cancel(reason) {
+            console.log("Manually closing reader")
+            readerClosed = true;
+        },
     });
 
     const writable = new WritableStream<T>({
-        write(chunk) {
+        write(chunk, controller) {
+            if (readerClosed) {
+                console.log("Reader closed, not writing chunk", chunk);
+                throw new Error("Reader closed, not writing chunk");
+            }
             queue.push(chunk);
             if (queue.length === 1) {
                 // make sure that await write resolves before corresponding read
                 process.nextTick(() => resolveNextItemReady());
             }
+        },
+        abort(reason) {
+            console.log("Manually closing writer")
+            writerClosed = true;
+            resolveNextItemReady();
+            return Promise.resolve();
         },
     });
 

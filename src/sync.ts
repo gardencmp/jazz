@@ -1,10 +1,14 @@
-import { Hash, Signature } from './crypto.js';
-import { CoValueHeader, Transaction } from './coValue.js';
-import { CoValue } from './coValue.js';
-import { LocalNode } from './node.js';
-import { newLoadingState } from './node.js';
-import { ReadableStream, WritableStream, WritableStreamDefaultWriter } from "isomorphic-streams";
-import { RawCoValueID, SessionID } from './ids.js';
+import { Hash, Signature } from "./crypto.js";
+import { CoValueHeader, Transaction } from "./coValue.js";
+import { CoValue } from "./coValue.js";
+import { LocalNode } from "./node.js";
+import { newLoadingState } from "./node.js";
+import {
+    ReadableStream,
+    WritableStream,
+    WritableStreamDefaultWriter,
+} from "isomorphic-streams";
+import { RawCoValueID, SessionID } from "./ids.js";
 
 export type CoValueKnownState = {
     coValueID: RawCoValueID;
@@ -162,7 +166,7 @@ export class SyncManager {
 
         if (!peer.toldKnownState.has(coValueID)) {
             peer.toldKnownState.add(coValueID);
-            await peer.outgoing.write({
+            await this.trySendToPeer(peer, {
                 action: "subscribe",
                 ...coValue.knownState(),
             });
@@ -185,7 +189,7 @@ export class SyncManager {
         }
 
         if (!peer.toldKnownState.has(coValueID)) {
-            await peer.outgoing.write({
+            await this.trySendToPeer(peer, {
                 action: "tellKnownState",
                 asDependencyOf,
                 ...coValue.knownState(),
@@ -210,7 +214,7 @@ export class SyncManager {
         );
 
         if (newContent) {
-            await peer.outgoing.write(newContent);
+            await this.trySendToPeer(peer, newContent);
             peer.optimisticKnownStates[coValueID] = combinedKnownStates(
                 peer.optimisticKnownStates[coValueID] ||
                     emptyKnownState(coValueID),
@@ -264,9 +268,18 @@ export class SyncManager {
                     );
                 }
             }
+            console.log("Peer disconnected:", peer.id);
+            delete this.peers[peer.id];
         };
 
         void readIncoming();
+    }
+
+    trySendToPeer(peer: PeerState, msg: SyncMessage) {
+        return peer.outgoing.write(msg).catch((e) => {
+            console.error("Error writing to peer, disconnecting", e);
+            delete this.peers[peer.id];
+        });
     }
 
     async handleSubscribe(msg: SubscribeMessage, peer: PeerState) {
@@ -280,7 +293,7 @@ export class SyncManager {
             peer.optimisticKnownStates[msg.coValueID] = knownStateIn(msg);
             peer.toldKnownState.add(msg.coValueID);
 
-            await peer.outgoing.write({
+            await this.trySendToPeer(peer, {
                 action: "tellKnownState",
                 coValueID: msg.coValueID,
                 header: false,
@@ -304,7 +317,8 @@ export class SyncManager {
         let entry = this.local.coValues[msg.coValueID];
 
         peer.optimisticKnownStates[msg.coValueID] = combinedKnownStates(
-            peer.optimisticKnownStates[msg.coValueID] || emptyKnownState(msg.coValueID),
+            peer.optimisticKnownStates[msg.coValueID] ||
+                emptyKnownState(msg.coValueID),
             knownStateIn(msg)
         );
 
@@ -423,7 +437,7 @@ export class SyncManager {
         await this.syncCoValue(coValue);
 
         if (invalidStateAssumed) {
-            await peer.outgoing.write({
+            await this.trySendToPeer(peer, {
                 action: "wrongAssumedKnownState",
                 ...coValue.knownState(),
             });
@@ -444,7 +458,7 @@ export class SyncManager {
         const newContent = coValue.newContentSince(msg);
 
         if (newContent) {
-            await peer.outgoing.write(newContent);
+            await this.trySendToPeer(peer, newContent);
         }
     }
 
@@ -466,10 +480,7 @@ export class SyncManager {
                     peer
                 );
             } else if (peer.role === "server") {
-                await this.subscribeToIncludingDependencies(
-                    coValue.id,
-                    peer
-                );
+                await this.subscribeToIncludingDependencies(coValue.id, peer);
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,
                     peer
