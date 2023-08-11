@@ -24,9 +24,11 @@ export type AuthComponent = (props: {
 export function WithJazz({
     children,
     auth: Auth,
+    syncAddress = "wss://sync.jazz.tools"
 }: {
     children: React.ReactNode;
     auth: AuthComponent;
+    syncAddress?: string
 }) {
     const [node, setNode] = useState<LocalNode | undefined>();
     const sessionDone = useRef<() => void>();
@@ -52,7 +54,7 @@ export function WithJazz({
 
     useEffect(() => {
         if (node) {
-            const ws = new WebSocket("ws://localhost:4200");
+            const ws = new WebSocket(syncAddress);
 
             const incoming = websocketReadableStream<SyncMessage>(ws);
             const outgoing = websocketWritableStream<SyncMessage>(ws);
@@ -64,7 +66,7 @@ export function WithJazz({
                 role: "server"
             });
         }
-    }, [node]);
+    }, [node, syncAddress]);
 
     return node ? (
         <JazzContext.Provider value={{ localNode: node }}>
