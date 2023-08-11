@@ -158,7 +158,25 @@ export class SyncManager {
         coValueID: RawCoValueID,
         peer: PeerState
     ) {
-        const coValue = this.local.expectCoValueLoaded(coValueID);
+        const entry = this.local.coValues[coValueID];
+
+        if (!entry) {
+            throw new Error(
+                "Expected coValue entry on subscribe"
+            );
+        }
+
+        if (entry.state === "loading") {
+            await this.trySendToPeer(peer, {
+                action: "subscribe",
+                coValueID,
+                header: false,
+                sessions: {},
+            });
+            return;
+        }
+
+        const coValue = entry.coValue;
 
         for (const coValueID of coValue.getDependedOnCoValues()) {
             await this.subscribeToIncludingDependencies(coValueID, peer);
@@ -236,18 +254,13 @@ export class SyncManager {
 
         if (peer.role === "server") {
             const initialSync = async () => {
-                for (const entry of Object.values(this.local.coValues)) {
-                    if (entry.state === "loading") {
-                        continue;
-                    }
+                for (const id of Object.keys(
+                    this.local.coValues
+                ) as RawCoValueID[]) {
+                    await this.subscribeToIncludingDependencies(id, peerState);
 
-                    await this.subscribeToIncludingDependencies(
-                        entry.coValue.id,
-                        peerState
-                    );
-
-                    peerState.optimisticKnownStates[entry.coValue.id] = {
-                        coValueID: entry.coValue.id,
+                    peerState.optimisticKnownStates[id] = {
+                        coValueID: id,
                         header: false,
                         sessions: {},
                     };

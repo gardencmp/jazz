@@ -1097,6 +1097,38 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     expect(node.sync.peers["test"]).toBeUndefined();
 })
 
+test("If we start loading a coValue before connecting to a peer that has it, it will load it once we connect", async () => {
+    const admin = newRandomAgentCredential("admin");
+    const adminID = getAgentID(getAgent(admin));
+
+    const node1 = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const team = node1.createTeam();
+
+    const map = team.createMap();
+    map.edit((editable) => {
+        editable.set("hello", "world", "trusting");
+    });
+
+    const node2 = new LocalNode(admin, newRandomSessionID(adminID));
+
+    const [node1asPeer, node2asPeer] = connectedPeers("peer1", "peer2", {peer1role: 'server', peer2role: 'client', trace: true});
+
+    node1.sync.addPeer(node2asPeer);
+
+    const mapOnNode2Promise = node2.loadCoValue(map.coValue.id);
+
+    expect(node2.coValues[map.coValue.id]?.state).toEqual("loading");
+
+    node2.sync.addPeer(node1asPeer);
+
+    const mapOnNode2 = await mapOnNode2Promise;
+
+    expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
+        "world"
+    );
+})
+
 function teamContentEx(team: Team) {
     return {
         action: "newContent",
