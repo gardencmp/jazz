@@ -9,7 +9,7 @@ import {
     SyncMessage,
 } from "cojson";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ReadableStream, WritableStream } from 'isomorphic-streams';
+import { ReadableStream, WritableStream } from "isomorphic-streams";
 
 type JazzContext = {
     localNode: LocalNode;
@@ -24,11 +24,11 @@ export type AuthComponent = (props: {
 export function WithJazz({
     children,
     auth: Auth,
-    syncAddress = "wss://sync.jazz.tools"
+    syncAddress = "wss://sync.jazz.tools",
 }: {
     children: React.ReactNode;
     auth: AuthComponent;
-    syncAddress?: string
+    syncAddress?: string;
 }) {
     const [node, setNode] = useState<LocalNode | undefined>();
     const sessionDone = useRef<() => void>();
@@ -54,17 +54,50 @@ export function WithJazz({
 
     useEffect(() => {
         if (node) {
-            const ws = new WebSocket(syncAddress);
+            let shouldTryToReconnect = true;
+            let ws: WebSocket | undefined;
 
-            const incoming = websocketReadableStream<SyncMessage>(ws);
-            const outgoing = websocketWritableStream<SyncMessage>(ws);
+            (async function websocketReconnectLoop() {
+                while (shouldTryToReconnect) {
+                    ws = new WebSocket(syncAddress);
 
-            node.sync.addPeer({
-                id: "localhost@" + (new Date()).toISOString(),
-                incoming,
-                outgoing,
-                role: "server"
-            });
+                    const timeToReconnect = new Promise<void>((resolve) => {
+                        if (
+                            !ws ||
+                            ws.readyState === WebSocket.CLOSING ||
+                            ws.readyState === WebSocket.CLOSED
+                        )
+                            resolve();
+                        ws?.addEventListener(
+                            "close",
+                            () => {
+                                console.log(
+                                    "Connection closed, reconnecting in 5s"
+                                );
+                                setTimeout(resolve, 5000);
+                            },
+                            { once: true }
+                        );
+                    });
+
+                    const incoming = websocketReadableStream<SyncMessage>(ws);
+                    const outgoing = websocketWritableStream<SyncMessage>(ws);
+
+                    node.sync.addPeer({
+                        id: syncAddress + "@" + new Date().toISOString(),
+                        incoming,
+                        outgoing,
+                        role: "server",
+                    });
+
+                    await timeToReconnect;
+                }
+            })();
+
+            return () => {
+                shouldTryToReconnect = false;
+                ws?.close();
+            };
         }
     }, [node, syncAddress]);
 
@@ -183,55 +216,71 @@ function websocketReadableStream<T>(ws: WebSocket) {
     ws.binaryType = "arraybuffer";
 
     return new ReadableStream<T>({
-      start(controller) {
-        ws.onmessage = event => controller.enqueue(JSON.parse(event.data));
-        ws.onclose = () => controller.close();
-        ws.onerror = () => controller.error(new Error("The WebSocket errored!"));
-      },
+        start(controller) {
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if (msg.type === "ping") {
+                    console.debug(
+                        "Got ping from",
+                        msg.dc,
+                        "latency",
+                        Date.now() - msg.time,
+                        "ms"
+                    );
+                    return;
+                }
+                controller.enqueue(msg);
+            };
+            ws.onclose = () => controller.close();
+            ws.onerror = () =>
+                controller.error(new Error("The WebSocket errored!"));
+        },
 
-      cancel() {
-        ws.close();
-      }
+        cancel() {
+            ws.close();
+        },
     });
-  }
+}
 
-  function websocketWritableStream<T>(ws: WebSocket) {
-
+function websocketWritableStream<T>(ws: WebSocket) {
     return new WritableStream<T>({
-      start(controller) {
-        ws.onerror = () => {
-          controller.error(new Error("The WebSocket errored!"));
-          ws.onclose = null;
-        };
-        ws.onclose = () => controller.error(new Error("The server closed the connection unexpectedly!"));
-        return new Promise(resolve => ws.onopen = resolve);
-      },
+        start(controller) {
+            ws.onerror = () => {
+                controller.error(new Error("The WebSocket errored!"));
+                ws.onclose = null;
+            };
+            ws.onclose = () =>
+                controller.error(
+                    new Error("The server closed the connection unexpectedly!")
+                );
+            return new Promise((resolve) => (ws.onopen = resolve));
+        },
 
-      write(chunk) {
-        ws.send(JSON.stringify(chunk));
-        // Return immediately, since the web socket gives us no easy way to tell
-        // when the write completes.
-      },
+        write(chunk) {
+            ws.send(JSON.stringify(chunk));
+            // Return immediately, since the web socket gives us no easy way to tell
+            // when the write completes.
+        },
 
-      close() {
-        return closeWS(1000);
-      },
+        close() {
+            return closeWS(1000);
+        },
 
-      abort(reason) {
-        return closeWS(4000, reason && reason.message);
-      },
+        abort(reason) {
+            return closeWS(4000, reason && reason.message);
+        },
     });
 
     function closeWS(code: number, reasonString?: string) {
-      return new Promise<void>((resolve, reject) => {
-        ws.onclose = e => {
-          if (e.wasClean) {
-            resolve();
-          } else {
-            reject(new Error("The connection was not closed cleanly"));
-          }
-        };
-        ws.close(code, reasonString);
-      });
+        return new Promise<void>((resolve, reject) => {
+            ws.onclose = (e) => {
+                if (e.wasClean) {
+                    resolve();
+                } else {
+                    reject(new Error("The connection was not closed cleanly"));
+                }
+            };
+            ws.close(code, reasonString);
+        });
     }
-  }
+}

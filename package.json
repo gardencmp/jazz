@@ -1,6 +1,6 @@
 {
   "name": "jazz-react",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "MIT",
