@@ -6,8 +6,10 @@ import {
     AgentID,
     ContentType,
     CoValueID,
+    SyncMessage,
 } from "cojson";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ReadableStream, WritableStream } from 'isomorphic-streams';
 
 type JazzContext = {
     localNode: LocalNode;
@@ -47,6 +49,22 @@ export function WithJazz({
             sessionDone.current && sessionDone.current();
         };
     }, []);
+
+    useEffect(() => {
+        if (node) {
+            const ws = new WebSocket("ws://localhost:4200");
+
+            const incoming = websocketReadableStream<SyncMessage>(ws);
+            const outgoing = websocketWritableStream<SyncMessage>(ws);
+
+            node.sync.addPeer({
+                id: "localhost@" + (new Date()).toISOString(),
+                incoming,
+                outgoing,
+                role: "server"
+            });
+        }
+    }, [node]);
 
     return node ? (
         <JazzContext.Provider value={{ localNode: node }}>
@@ -158,3 +176,60 @@ export function useTelepathicState<T extends ContentType>(id: CoValueID<T>) {
 
     return state;
 }
+
+function websocketReadableStream<T>(ws: WebSocket) {
+    ws.binaryType = "arraybuffer";
+
+    return new ReadableStream<T>({
+      start(controller) {
+        ws.onmessage = event => controller.enqueue(JSON.parse(event.data));
+        ws.onclose = () => controller.close();
+        ws.onerror = () => controller.error(new Error("The WebSocket errored!"));
+      },
+
+      cancel() {
+        ws.close();
+      }
+    });
+  }
+
+  function websocketWritableStream<T>(ws: WebSocket) {
+
+    return new WritableStream<T>({
+      start(controller) {
+        ws.onerror = () => {
+          controller.error(new Error("The WebSocket errored!"));
+          ws.onclose = null;
+        };
+        ws.onclose = () => controller.error(new Error("The server closed the connection unexpectedly!"));
+        return new Promise(resolve => ws.onopen = resolve);
+      },
+
+      write(chunk) {
+        ws.send(JSON.stringify(chunk));
+        // Return immediately, since the web socket gives us no easy way to tell
+        // when the write completes.
+      },
+
+      close() {
+        return closeWS(1000);
+      },
+
+      abort(reason) {
+        return closeWS(4000, reason && reason.message);
+      },
+    });
+
+    function closeWS(code: number, reasonString?: string) {
+      return new Promise<void>((resolve, reject) => {
+        ws.onclose = e => {
+          if (e.wasClean) {
+            resolve();
+          } else {
+            reject(new Error("The connection was not closed cleanly"));
+          }
+        };
+        ws.close(code, reasonString);
+      });
+    }
+  }
