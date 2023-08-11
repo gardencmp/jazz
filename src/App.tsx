@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CoMap, CoValueID } from "cojson";
 import { useJazz, useTelepathicState } from "jazz-react";
 
@@ -20,7 +20,7 @@ type TodoListContent = { title: string; [taskId: CoValueID<Task>]: true };
 type TodoList = CoMap<TodoListContent, {}>;
 
 function App() {
-    const [listId, setListId] = useState<CoValueID<TodoList>>();
+    const [listId, setListId] = useState<CoValueID<TodoList>>(window.location.hash.slice(1) as CoValueID<TodoList>);
 
     const { localNode } = useJazz();
 
@@ -32,24 +32,24 @@ function App() {
             list.set("title", "My Todo List");
         });
 
-        setListId(list.id);
+        window.location.hash = list.id;
     };
+
+    useEffect(() => {
+        const listener = () => {
+            setListId(window.location.hash.slice(1) as CoValueID<TodoList>);
+        }
+        window.addEventListener("hashchange", listener);
+
+        return () => {
+            window.removeEventListener("hashchange", listener);
+        }
+    }, [])
 
     return (
         <div className="flex flex-col h-full items-center justify-center gap-10">
             {listId && <TodoList listId={listId} />}
             <Button onClick={createList}>Create New List</Button>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    const inputEl = e.currentTarget.elements.namedItem(
-                        "listId"
-                    ) as HTMLInputElement;
-                    setListId(inputEl.value as CoValueID<TodoList>);
-                }}
-            >
-                <Input placeholder="Load list (by ID)" name="listId" />
-            </form>
         </div>
     );
 }
@@ -118,6 +118,7 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
                                     className="-ml-3 -my-2"
                                     name="text"
                                     placeholder="Add todo"
+                                    autoComplete="off"
                                 />
                                 <Button asChild type="submit">
                                     <Input type="submit" value="Add" />
