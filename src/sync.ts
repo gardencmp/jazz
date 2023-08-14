@@ -25,26 +25,26 @@ export function emptyKnownState(id: RawCoID): CoValueKnownState {
 }
 
 export type SyncMessage =
-    | SubscribeMessage
-    | TellKnownStateMessage
+    | LoadMessage
+    | KnownStateMessage
     | NewContentMessage
-    | WrongAssumedKnownStateMessage
-    | UnsubscribeMessage;
+    | DoneMessage;
 
-export type SubscribeMessage = {
-    action: "subscribe";
+export type LoadMessage = {
+    action: "load";
 } & CoValueKnownState;
 
-export type TellKnownStateMessage = {
-    action: "tellKnownState";
+export type KnownStateMessage = {
+    action: "known";
     asDependencyOf?: RawCoID;
+    isCorrection?: boolean;
 } & CoValueKnownState;
 
 export type NewContentMessage = {
-    action: "newContent";
+    action: "content";
     id: RawCoID;
     header?: CoValueHeader;
-    newContent: {
+    new: {
         [sessionID: SessionID]: SessionNewContent;
     };
 };
@@ -56,13 +56,8 @@ export type SessionNewContent = {
     lastHash: Hash;
     lastSignature: Signature;
 };
-
-export type WrongAssumedKnownStateMessage = {
-    action: "wrongAssumedKnownState";
-} & CoValueKnownState;
-
-export type UnsubscribeMessage = {
-    action: "unsubscribe";
+export type DoneMessage = {
+    action: "done";
     id: RawCoID;
 };
 
@@ -121,7 +116,7 @@ export class SyncManager {
         for (const peer of Object.values(this.peers)) {
             peer.outgoing
                 .write({
-                    action: "subscribe",
+                    action: "load",
                     id: id,
                     header: false,
                     sessions: {},
@@ -135,15 +130,17 @@ export class SyncManager {
     async handleSyncMessage(msg: SyncMessage, peer: PeerState) {
         // TODO: validate
         switch (msg.action) {
-            case "subscribe":
-                return await this.handleSubscribe(msg, peer);
-            case "tellKnownState":
-                return await this.handleTellKnownState(msg, peer);
-            case "newContent":
+            case "load":
+                return await this.handleLoad(msg, peer);
+            case "known":
+                if (msg.isCorrection) {
+                    return await this.handleCorrection(msg, peer);
+                } else {
+                    return await this.handleKnownState(msg, peer);
+                }
+            case "content":
                 return await this.handleNewContent(msg, peer);
-            case "wrongAssumedKnownState":
-                return await this.handleWrongAssumedKnownState(msg, peer);
-            case "unsubscribe":
+            case "done":
                 return await this.handleUnsubscribe(msg);
             default:
                 throw new Error(
@@ -168,7 +165,7 @@ export class SyncManager {
 
         if (entry.state === "loading") {
             await this.trySendToPeer(peer, {
-                action: "subscribe",
+                action: "load",
                 id,
                 header: false,
                 sessions: {},
@@ -185,7 +182,7 @@ export class SyncManager {
         if (!peer.toldKnownState.has(id)) {
             peer.toldKnownState.add(id);
             await this.trySendToPeer(peer, {
-                action: "subscribe",
+                action: "load",
                 ...coValue.knownState(),
             });
         }
@@ -208,7 +205,7 @@ export class SyncManager {
 
         if (!peer.toldKnownState.has(id)) {
             await this.trySendToPeer(peer, {
-                action: "tellKnownState",
+                action: "known",
                 asDependencyOf,
                 ...coValue.knownState(),
             });
@@ -295,7 +292,7 @@ export class SyncManager {
         });
     }
 
-    async handleSubscribe(msg: SubscribeMessage, peer: PeerState) {
+    async handleLoad(msg: LoadMessage, peer: PeerState) {
         const entry = this.local.coValues[msg.id];
 
         if (!entry || entry.state === "loading") {
@@ -307,7 +304,7 @@ export class SyncManager {
             peer.toldKnownState.add(msg.id);
 
             await this.trySendToPeer(peer, {
-                action: "tellKnownState",
+                action: "known",
                 id: msg.id,
                 header: false,
                 sessions: {},
@@ -326,7 +323,7 @@ export class SyncManager {
         await this.sendNewContentIncludingDependencies(msg.id, peer);
     }
 
-    async handleTellKnownState(msg: TellKnownStateMessage, peer: PeerState) {
+    async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
         let entry = this.local.coValues[msg.id];
 
         peer.optimisticKnownStates[msg.id] = combinedKnownStates(
@@ -408,7 +405,7 @@ export class SyncManager {
         let invalidStateAssumed = false;
 
         for (const [sessionID, newContentForSession] of Object.entries(
-            msg.newContent
+            msg.new
         ) as [SessionID, SessionNewContent][]) {
             const ourKnownTxIdx =
                 coValue.sessions[sessionID]?.transactions.length;
@@ -451,14 +448,15 @@ export class SyncManager {
 
         if (invalidStateAssumed) {
             await this.trySendToPeer(peer, {
-                action: "wrongAssumedKnownState",
+                action: "known",
+                isCorrection: true,
                 ...coValue.knownState(),
             });
         }
     }
 
-    async handleWrongAssumedKnownState(
-        msg: WrongAssumedKnownStateMessage,
+    async handleCorrection(
+        msg: KnownStateMessage,
         peer: PeerState
     ) {
         const coValue = this.local.expectCoValueLoaded(msg.id);
@@ -475,7 +473,7 @@ export class SyncManager {
         }
     }
 
-    handleUnsubscribe(_msg: UnsubscribeMessage) {
+    handleUnsubscribe(_msg: DoneMessage) {
         throw new Error("Method not implemented.");
     }
 
@@ -505,9 +503,8 @@ export class SyncManager {
 
 function knownStateIn(
     msg:
-        | SubscribeMessage
-        | TellKnownStateMessage
-        | WrongAssumedKnownStateMessage
+        | LoadMessage
+        | KnownStateMessage
 ) {
     return {
         id: msg.id,

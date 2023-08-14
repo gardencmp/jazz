@@ -491,10 +491,10 @@ export class CoValue {
         knownState: CoValueKnownState | undefined
     ): NewContentMessage | undefined {
         const newContent: NewContentMessage = {
-            action: "newContent",
+            action: "content",
             id: this.id,
             header: knownState?.header ? undefined : this.header,
-            newContent: Object.fromEntries(
+            new: Object.fromEntries(
                 Object.entries(this.sessions)
                     .map(([sessionID, log]) => {
                         const newTransactions = log.transactions.slice(
@@ -528,7 +528,7 @@ export class CoValue {
 
         if (
             !newContent.header &&
-            Object.keys(newContent.newContent).length === 0
+            Object.keys(newContent.new).length === 0
         ) {
             return undefined;
         }
