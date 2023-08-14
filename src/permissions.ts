@@ -19,7 +19,7 @@ import {
     accountOrAgentIDfromSessionID,
 } from './coValue.js';
 import { LocalNode } from "./node.js";
-import { RawCoValueID, SessionID, TransactionID, isRawAgentID } from './ids.js';
+import { RawCoValueID, SessionID, TransactionID, isAgentID } from './ids.js';
 import { AccountIDOrAgentID, GeneralizedControlledAccount } from './account.js';
 
 export type PermissionsDef =
@@ -264,7 +264,7 @@ export class Team {
 
     rotateReadKey() {
         const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
-            if (key.startsWith("co_") || isRawAgentID(key)) {
+            if (key.startsWith("co_") || isAgentID(key)) {
                 const role = this.teamMap.get(key);
                 return (
                     role === "admin" || role === "writer" || role === "reader"

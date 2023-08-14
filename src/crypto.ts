@@ -5,7 +5,7 @@ import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { RawAgentID, RawCoValueID, TransactionID } from './ids.js';
+import { AgentID, RawCoValueID, TransactionID } from './ids.js';
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;
@@ -104,14 +104,14 @@ export function agentSecretFromBytes(bytes: Uint8Array): AgentSecret {
     return `${recipientSecret}/${signatorySecret}`;
 }
 
-export function getAgentID(secret: AgentSecret): RawAgentID {
+export function getAgentID(secret: AgentSecret): AgentID {
     const [recipientSecret, signatorySecret] = secret.split("/");
     return `${getRecipientID(
         recipientSecret as RecipientSecret
     )}/${getSignatoryID(signatorySecret as SignatorySecret)}`;
 }
 
-export function getAgentSignatoryID(agentId: RawAgentID): SignatoryID {
+export function getAgentSignatoryID(agentId: AgentID): SignatoryID {
     return agentId.split("/")[1] as SignatoryID;
 }
 
@@ -119,7 +119,7 @@ export function getAgentSignatorySecret(agentSecret: AgentSecret): SignatorySecr
     return agentSecret.split("/")[1] as SignatorySecret;
 }
 
-export function getAgentRecipientID(agentId: RawAgentID): RecipientID {
+export function getAgentRecipientID(agentId: AgentID): RecipientID {
     return agentId.split("/")[0] as RecipientID;
 }
 

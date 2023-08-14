@@ -10,7 +10,7 @@ import {
 import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
 import { Team, TeamContent, expectTeamContent } from "./permissions.js";
 import { SyncManager } from "./sync.js";
-import { RawAgentID, RawCoValueID, SessionID, isRawAgentID } from "./ids.js";
+import { AgentID, RawCoValueID, SessionID, isAgentID } from "./ids.js";
 import { CoValueID, ContentType } from "./contentType.js";
 import {
     Account,
@@ -117,8 +117,8 @@ export class LocalNode {
         );
     }
 
-    resolveAccount(id: AccountIDOrAgentID, expectation?: string): RawAgentID {
-        if (isRawAgentID(id)) {
+    resolveAccount(id: AccountIDOrAgentID, expectation?: string): AgentID {
+        if (isAgentID(id)) {
             return id;
         }
 

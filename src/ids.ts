@@ -4,9 +4,9 @@ export type RawCoValueID = `co_z${string}` | `co_${string}_z${string}`;
 
 export type TransactionID = { sessionID: SessionID; txIndex: number };
 
-export type RawAgentID = `recipient_z${string}/signatory_z${string}`;
+export type AgentID = `recipient_z${string}/signatory_z${string}`;
 
-export function isRawAgentID(id: string): id is RawAgentID {
+export function isAgentID(id: string): id is AgentID {
     return typeof id === "string" && id.startsWith("recipient_") && id.includes("/signatory_");
 }
 

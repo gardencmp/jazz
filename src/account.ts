@@ -1,15 +1,15 @@
 import { CoValueHeader } from './coValue.js';
 import { CoValueID } from './contentType.js';
 import { AgentSecret, RecipientID, RecipientSecret, SignatoryID, SignatorySecret, getAgentID, getAgentRecipientID, getAgentRecipientSecret, getAgentSignatoryID, getAgentSignatorySecret } from './crypto.js';
-import { RawAgentID } from './ids.js';
+import { AgentID } from './ids.js';
 import { CoMap, LocalNode } from './index.js';
 import { Team, TeamContent } from './permissions.js';
 
 export function accountHeaderForInitialAgentSecret(agentSecret: AgentSecret): CoValueHeader {
-    const rawAgentID = getAgentID(agentSecret);
+    const agent = getAgentID(agentSecret);
     return {
         type: "comap",
-        ruleset: {type: "team", initialAdmin: rawAgentID},
+        ruleset: {type: "team", initialAdmin: agent},
         meta: {
             type: "account"
         },
@@ -23,8 +23,8 @@ export class Account extends Team {
         return this.teamMap.id;
     }
 
-    getCurrentAgentID(): RawAgentID {
-        const agents = this.teamMap.keys().filter((k): k is RawAgentID => k.startsWith("recipient_"));
+    getCurrentAgentID(): AgentID {
+        const agents = this.teamMap.keys().filter((k): k is AgentID => k.startsWith("recipient_"));
 
         if (agents.length !== 1) {
             throw new Error("Expected exactly one agent in account, got " + agents.length);
@@ -38,7 +38,7 @@ export interface GeneralizedControlledAccount {
     id: AccountIDOrAgentID;
     agentSecret: AgentSecret;
 
-    currentAgentID: () => RawAgentID;
+    currentAgentID: () => AgentID;
     currentSignatoryID: () => SignatoryID;
     currentSignatorySecret: () => SignatorySecret;
     currentRecipientID: () => RecipientID;
@@ -54,7 +54,7 @@ export class ControlledAccount extends Account implements GeneralizedControlledA
         this.agentSecret = agentSecret;
     }
 
-    currentAgentID(): RawAgentID {
+    currentAgentID(): AgentID {
         return getAgentID(this.agentSecret);
     }
 
@@ -82,11 +82,11 @@ export class AnonymousControlledAccount implements GeneralizedControlledAccount 
         this.agentSecret = agentSecret;
     }
 
-    get id(): RawAgentID {
+    get id(): AgentID {
         return getAgentID(this.agentSecret);
     }
 
-    currentAgentID(): RawAgentID {
+    currentAgentID(): AgentID {
         return getAgentID(this.agentSecret);
     }
 
@@ -110,6 +110,6 @@ export class AnonymousControlledAccount implements GeneralizedControlledAccount 
 export type AccountMeta = {type: "account"};
 export type AccountID = CoValueID<CoMap<TeamContent, AccountMeta>>;
 
-export type AccountIDOrAgentID = RawAgentID | AccountID;
-export type AccountOrAgentID = RawAgentID | Account;
+export type AccountIDOrAgentID = AgentID | AccountID;
+export type AccountOrAgentID = AgentID | Account;
 export type AccountOrAgentSecret = AgentSecret | Account;
