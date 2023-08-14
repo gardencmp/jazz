@@ -1,8 +1,8 @@
-import { JsonObject, JsonValue } from '../jsonValue.js';
+import { JsonObject } from '../jsonValue.js';
 import { CoID } from '../contentType.js';
 import { CoValue } from '../coValue.js';
 
-export class Static<T extends JsonValue> {
+export class Static<T extends JsonObject> {
     id: CoID<Static<T>>;
     type = "static" as const;
     coValue: CoValue;

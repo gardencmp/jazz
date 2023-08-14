@@ -2,7 +2,7 @@ import { JsonObject, JsonValue } from '../jsonValue.js';
 import { CoID } from '../contentType.js';
 import { CoValue } from '../coValue.js';
 
-export class CoList<T extends JsonValue, Meta extends JsonValue> {
+export class CoList<T extends JsonValue, Meta extends JsonObject | null = null> {
     id: CoID<CoList<T, Meta>>;
     type = "colist" as const;
     coValue: CoValue;

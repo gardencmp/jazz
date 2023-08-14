@@ -48,7 +48,7 @@ export interface GeneralizedControlledAccount {
 export class ControlledAccount extends Account implements GeneralizedControlledAccount {
     agentSecret: AgentSecret;
 
-    constructor(agentSecret: AgentSecret, teamMap: CoMap<TeamContent, {}>, node: LocalNode) {
+    constructor(agentSecret: AgentSecret, teamMap: CoMap<TeamContent, AccountMeta>, node: LocalNode) {
         super(teamMap, node);
 
         this.agentSecret = agentSecret;

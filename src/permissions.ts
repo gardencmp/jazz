@@ -1,6 +1,6 @@
 import { CoID, ContentType } from "./contentType.js";
 import { CoMap, MapOpPayload } from "./contentTypes/coMap.js";
-import { JsonValue } from "./jsonValue.js";
+import { JsonObject, JsonValue } from "./jsonValue.js";
 import {
     Encrypted,
     KeyID,
@@ -216,24 +216,24 @@ export type TeamContent = {
 
 export function expectTeamContent(
     content: ContentType
-): CoMap<TeamContent, {}> {
+): CoMap<TeamContent, JsonObject | null> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    return content as CoMap<TeamContent, {}>;
+    return content as CoMap<TeamContent, JsonObject | null>;
 }
 
 export class Team {
-    teamMap: CoMap<TeamContent, {}>;
+    teamMap: CoMap<TeamContent, JsonObject | null>;
     node: LocalNode;
 
-    constructor(teamMap: CoMap<TeamContent, {}>, node: LocalNode) {
+    constructor(teamMap: CoMap<TeamContent, JsonObject | null>, node: LocalNode) {
         this.teamMap = teamMap;
         this.node = node;
     }
 
-    get id(): CoID<CoMap<TeamContent, {}>> {
+    get id(): CoID<CoMap<TeamContent, JsonObject | null>> {
         return this.teamMap.id;
     }
 
@@ -342,7 +342,7 @@ export class Team {
         this.rotateReadKey();
     }
 
-    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonValue>(
+    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null>(
         meta?: M
     ): CoMap<M, Meta> {
         return this.node
