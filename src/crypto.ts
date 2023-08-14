@@ -7,45 +7,45 @@ import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
 import { AgentID, RawCoValueID, TransactionID } from './ids.js';
 
-export type SignatorySecret = `signatorySecret_z${string}`;
-export type SignatoryID = `signatory_z${string}`;
+export type SignerSecret = `signerSecret_z${string}`;
+export type SignerID = `signer_z${string}`;
 export type Signature = `signature_z${string}`;
 
-export type RecipientSecret = `recipientSecret_z${string}`;
-export type RecipientID = `recipient_z${string}`;
+export type SealerSecret = `sealerSecret_z${string}`;
+export type SealerID = `sealer_z${string}`;
 export type Sealed<T> = `sealed_U${string}` & { __type: T };
 
-export type AgentSecret = `${RecipientSecret}/${SignatorySecret}`;
+export type AgentSecret = `${SealerSecret}/${SignerSecret}`;
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
-export function newRandomSignatory(): SignatorySecret {
-    return `signatorySecret_z${base58.encode(
+export function newRandomSigner(): SignerSecret {
+    return `signerSecret_z${base58.encode(
         ed25519.utils.randomPrivateKey()
     )}`;
 }
 
-export function signatorySecretToBytes(secret: SignatorySecret): Uint8Array {
-    return base58.decode(secret.substring("signatorySecret_z".length));
+export function signerSecretToBytes(secret: SignerSecret): Uint8Array {
+    return base58.decode(secret.substring("signerSecret_z".length));
 }
 
-export function signatorySecretFromBytes(bytes: Uint8Array): SignatorySecret {
-    return `signatorySecret_z${base58.encode(bytes)}`;
+export function signerSecretFromBytes(bytes: Uint8Array): SignerSecret {
+    return `signerSecret_z${base58.encode(bytes)}`;
 }
 
-export function getSignatoryID(secret: SignatorySecret): SignatoryID {
-    return `signatory_z${base58.encode(
+export function getSignerID(secret: SignerSecret): SignerID {
+    return `signer_z${base58.encode(
         ed25519.getPublicKey(
-            base58.decode(secret.substring("signatorySecret_z".length))
+            base58.decode(secret.substring("signerSecret_z".length))
         )
     )}`;
 }
 
-export function sign(secret: SignatorySecret, message: JsonValue): Signature {
+export function sign(secret: SignerSecret, message: JsonValue): Signature {
     const signature = ed25519.sign(
         textEncoder.encode(stableStringify(message)),
-        base58.decode(secret.substring("signatorySecret_z".length))
+        base58.decode(secret.substring("signerSecret_z".length))
     );
     return `signature_z${base58.encode(signature)}`;
 }
@@ -53,101 +53,101 @@ export function sign(secret: SignatorySecret, message: JsonValue): Signature {
 export function verify(
     signature: Signature,
     message: JsonValue,
-    id: SignatoryID
+    id: SignerID
 ): boolean {
     return ed25519.verify(
         base58.decode(signature.substring("signature_z".length)),
         textEncoder.encode(stableStringify(message)),
-        base58.decode(id.substring("signatory_z".length))
+        base58.decode(id.substring("signer_z".length))
     );
 }
 
-export function newRandomRecipient(): RecipientSecret {
-    return `recipientSecret_z${base58.encode(x25519.utils.randomPrivateKey())}`;
+export function newRandomSealer(): SealerSecret {
+    return `sealerSecret_z${base58.encode(x25519.utils.randomPrivateKey())}`;
 }
 
-export function recipientSecretToBytes(secret: RecipientSecret): Uint8Array {
-    return base58.decode(secret.substring("recipientSecret_z".length));
+export function sealerSecretToBytes(secret: SealerSecret): Uint8Array {
+    return base58.decode(secret.substring("sealerSecret_z".length));
 }
 
-export function recipientSecretFromBytes(bytes: Uint8Array): RecipientSecret {
-    return `recipientSecret_z${base58.encode(bytes)}`;
+export function sealerSecretFromBytes(bytes: Uint8Array): SealerSecret {
+    return `sealerSecret_z${base58.encode(bytes)}`;
 }
 
-export function getRecipientID(secret: RecipientSecret): RecipientID {
-    return `recipient_z${base58.encode(
+export function getSealerID(secret: SealerSecret): SealerID {
+    return `sealer_z${base58.encode(
         x25519.getPublicKey(
-            base58.decode(secret.substring("recipientSecret_z".length))
+            base58.decode(secret.substring("sealerSecret_z".length))
         )
     )}`;
 }
 
 export function newRandomAgentSecret(): AgentSecret {
-    return `${newRandomRecipient()}/${newRandomSignatory()}`;
+    return `${newRandomSealer()}/${newRandomSigner()}`;
 }
 
 export function agentSecretToBytes(secret: AgentSecret): Uint8Array {
-    const [recipientSecret, signatorySecret] = secret.split("/");
+    const [sealerSecret, signerSecret] = secret.split("/");
     return new Uint8Array([
-        ...recipientSecretToBytes(recipientSecret as RecipientSecret),
-        ...signatorySecretToBytes(signatorySecret as SignatorySecret),
+        ...sealerSecretToBytes(sealerSecret as SealerSecret),
+        ...signerSecretToBytes(signerSecret as SignerSecret),
     ]);
 }
 
 export function agentSecretFromBytes(bytes: Uint8Array): AgentSecret {
-    const recipientSecret = recipientSecretFromBytes(
+    const sealerSecret = sealerSecretFromBytes(
         bytes.slice(0, 32)
     );
-    const signatorySecret = signatorySecretFromBytes(
+    const signerSecret = signerSecretFromBytes(
         bytes.slice(32)
     );
-    return `${recipientSecret}/${signatorySecret}`;
+    return `${sealerSecret}/${signerSecret}`;
 }
 
 export function getAgentID(secret: AgentSecret): AgentID {
-    const [recipientSecret, signatorySecret] = secret.split("/");
-    return `${getRecipientID(
-        recipientSecret as RecipientSecret
-    )}/${getSignatoryID(signatorySecret as SignatorySecret)}`;
+    const [sealerSecret, signerSecret] = secret.split("/");
+    return `${getSealerID(
+        sealerSecret as SealerSecret
+    )}/${getSignerID(signerSecret as SignerSecret)}`;
 }
 
-export function getAgentSignatoryID(agentId: AgentID): SignatoryID {
-    return agentId.split("/")[1] as SignatoryID;
+export function getAgentSignerID(agentId: AgentID): SignerID {
+    return agentId.split("/")[1] as SignerID;
 }
 
-export function getAgentSignatorySecret(agentSecret: AgentSecret): SignatorySecret {
-    return agentSecret.split("/")[1] as SignatorySecret;
+export function getAgentSignerSecret(agentSecret: AgentSecret): SignerSecret {
+    return agentSecret.split("/")[1] as SignerSecret;
 }
 
-export function getAgentRecipientID(agentId: AgentID): RecipientID {
-    return agentId.split("/")[0] as RecipientID;
+export function getAgentSealerID(agentId: AgentID): SealerID {
+    return agentId.split("/")[0] as SealerID;
 }
 
-export function getAgentRecipientSecret(agentSecret: AgentSecret): RecipientSecret {
-    return agentSecret.split("/")[0] as RecipientSecret;
+export function getAgentSealerSecret(agentSecret: AgentSecret): SealerSecret {
+    return agentSecret.split("/")[0] as SealerSecret;
 }
 
 export function seal<T extends JsonValue>(
     message: T,
-    from: RecipientSecret,
-    to: RecipientID,
+    from: SealerSecret,
+    to: SealerID,
     nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
 ): Sealed<T> {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
-    const recipientPub = base58.decode(to.substring("recipient_z".length));
+    const sealerPub = base58.decode(to.substring("sealer_z".length));
 
     const senderPriv = base58.decode(
-        from.substring("recipientSecret_z".length)
+        from.substring("sealerSecret_z".length)
     );
 
     const plaintext = textEncoder.encode(stableStringify(message));
 
     const sharedSecret = x25519.getSharedSecret(
         senderPriv,
-        recipientPub
+        sealerPub
     );
 
     const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(
@@ -161,23 +161,23 @@ export function seal<T extends JsonValue>(
 
 export function unseal<T extends JsonValue>(
     sealed: Sealed<T>,
-    recipient: RecipientSecret,
-    from: RecipientID,
+    sealer: SealerSecret,
+    from: SealerID,
     nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
 ): T | undefined {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
-    const recipientPriv = base58.decode(
-        recipient.substring("recipientSecret_z".length)
+    const sealerPriv = base58.decode(
+        sealer.substring("sealerSecret_z".length)
     );
 
-    const senderPub = base58.decode(from.substring("recipient_z".length));
+    const senderPub = base58.decode(from.substring("sealer_z".length));
 
     const sealedBytes = base64url.decode(sealed.substring("sealed_U".length));
 
-    const sharedSecret = x25519.getSharedSecret(recipientPriv, senderPub);
+    const sharedSecret = x25519.getSharedSecret(sealerPriv, senderPub);
 
     const plaintext = xsalsa20_poly1305(sharedSecret, nOnce).decrypt(
         sealedBytes

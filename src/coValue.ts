@@ -17,8 +17,8 @@ import {
     decryptForTransaction,
     KeyID,
     decryptKeySecret,
-    getAgentSignatoryID,
-    getAgentRecipientID,
+    getAgentSignerID,
+    getAgentSealerID,
 } from "./crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
@@ -158,14 +158,14 @@ export class CoValue {
         newHash: Hash,
         newSignature: Signature
     ): boolean {
-        const signatoryID = getAgentSignatoryID(
+        const signerID = getAgentSignerID(
             this.node.resolveAccountAgent(
                 accountOrAgentIDfromSessionID(sessionID),
-                "Expected to know signatory of transaction"
+                "Expected to know signer of transaction"
             )
         );
 
-        if (!signatoryID) {
+        if (!signerID) {
             console.warn(
                 "Unknown agent",
                 accountOrAgentIDfromSessionID(sessionID)
@@ -183,12 +183,12 @@ export class CoValue {
             return false;
         }
 
-        if (!verify(newSignature, newHash, signatoryID)) {
+        if (!verify(newSignature, newHash, signerID)) {
             console.warn(
                 "Invalid signature",
                 newSignature,
                 newHash,
-                signatoryID
+                signerID
             );
             return false;
         }
@@ -284,7 +284,7 @@ export class CoValue {
         ]);
 
         const signature = sign(
-            this.node.account.currentSignatorySecret(),
+            this.node.account.currentSignerSecret(),
             expectedNewHash
         );
 
@@ -419,8 +419,8 @@ export class CoValue {
 
                 const secret = unseal(
                     readKeyEntry.value,
-                    this.node.account.currentRecipientSecret(),
-                    getAgentRecipientID(revealerAgent),
+                    this.node.account.currentSealerSecret(),
+                    getAgentSealerID(revealerAgent),
                     {
                         in: this.id,
                         tx: readKeyEntry.txID,

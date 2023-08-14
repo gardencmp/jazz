@@ -4,7 +4,7 @@ import { expectMap } from "./contentType.js";
 import { expectTeamContent } from "./permissions.js";
 import {
     createdNowUnique,
-    getRecipientID,
+    getSealerID,
     newRandomKeySecret,
     seal,
     encryptKeySecret,
@@ -423,8 +423,8 @@ test("Admins can set team read key and then use it to create and read private tr
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -491,8 +491,8 @@ test("Admins can set team read key and then writers can use it to create and rea
 
         const revelation1 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -503,8 +503,8 @@ test("Admins can set team read key and then writers can use it to create and rea
 
         const revelation2 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            writer.currentRecipientID(),
+            admin.currentSealerSecret(),
+            writer.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -583,8 +583,8 @@ test("Admins can set team read key and then use it to create private transaction
 
         const revelation1 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -595,8 +595,8 @@ test("Admins can set team read key and then use it to create private transaction
 
         const revelation2 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            reader.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -675,8 +675,8 @@ test("Admins can set team read key and then use it to create private transaction
 
         const revelation1 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -687,8 +687,8 @@ test("Admins can set team read key and then use it to create private transaction
 
         const revelation2 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            reader1.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader1.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -729,8 +729,8 @@ test("Admins can set team read key and then use it to create private transaction
     teamContent.edit((editable) => {
         const revelation3 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            reader2.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader2.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -798,8 +798,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -836,8 +836,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
         const revelation = seal(
             readKey2,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -907,8 +907,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
     teamContent.edit((editable) => {
         const revelation = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -939,8 +939,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
     teamContent.edit((editable) => {
         const revelation2 = seal(
             readKey2,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -951,8 +951,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
         const revelation3 = seal(
             readKey2,
-            admin.currentRecipientSecret(),
-            reader.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -1056,8 +1056,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     teamContent.edit((editable) => {
         const revelation1 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -1068,8 +1068,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
         const revelation2 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            reader.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -1080,8 +1080,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
         const revelation3 = seal(
             readKey,
-            admin.currentRecipientSecret(),
-            reader2.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader2.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -1133,8 +1133,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     teamContent.edit((editable) => {
         const newRevelation1 = seal(
             readKey2,
-            admin.currentRecipientSecret(),
-            admin.currentRecipientID(),
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
@@ -1149,8 +1149,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
         const newRevelation2 = seal(
             readKey2,
-            admin.currentRecipientSecret(),
-            reader2.currentRecipientID(),
+            admin.currentSealerSecret(),
+            reader2.currentSealerID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),

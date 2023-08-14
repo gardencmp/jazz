@@ -1,6 +1,6 @@
 import { CoValueHeader } from './coValue.js';
 import { CoValueID } from './contentType.js';
-import { AgentSecret, RecipientID, RecipientSecret, SignatoryID, SignatorySecret, getAgentID, getAgentRecipientID, getAgentRecipientSecret, getAgentSignatoryID, getAgentSignatorySecret } from './crypto.js';
+import { AgentSecret, SealerID, SealerSecret, SignerID, SignerSecret, getAgentID, getAgentSealerID, getAgentSealerSecret, getAgentSignerID, getAgentSignerSecret } from './crypto.js';
 import { AgentID } from './ids.js';
 import { CoMap, LocalNode } from './index.js';
 import { Team, TeamContent } from './permissions.js';
@@ -24,7 +24,7 @@ export class Account extends Team {
     }
 
     getCurrentAgentID(): AgentID {
-        const agents = this.teamMap.keys().filter((k): k is AgentID => k.startsWith("recipient_"));
+        const agents = this.teamMap.keys().filter((k): k is AgentID => k.startsWith("sealer_"));
 
         if (agents.length !== 1) {
             throw new Error("Expected exactly one agent in account, got " + agents.length);
@@ -39,10 +39,10 @@ export interface GeneralizedControlledAccount {
     agentSecret: AgentSecret;
 
     currentAgentID: () => AgentID;
-    currentSignatoryID: () => SignatoryID;
-    currentSignatorySecret: () => SignatorySecret;
-    currentRecipientID: () => RecipientID;
-    currentRecipientSecret: () => RecipientSecret;
+    currentSignerID: () => SignerID;
+    currentSignerSecret: () => SignerSecret;
+    currentSealerID: () => SealerID;
+    currentSealerSecret: () => SealerSecret;
 }
 
 export class ControlledAccount extends Account implements GeneralizedControlledAccount {
@@ -58,20 +58,20 @@ export class ControlledAccount extends Account implements GeneralizedControlledA
         return getAgentID(this.agentSecret);
     }
 
-    currentSignatoryID(): SignatoryID {
-        return getAgentSignatoryID(this.currentAgentID());
+    currentSignerID(): SignerID {
+        return getAgentSignerID(this.currentAgentID());
     }
 
-    currentSignatorySecret(): SignatorySecret {
-        return getAgentSignatorySecret(this.agentSecret);
+    currentSignerSecret(): SignerSecret {
+        return getAgentSignerSecret(this.agentSecret);
     }
 
-    currentRecipientID(): RecipientID {
-        return getAgentRecipientID(this.currentAgentID());
+    currentSealerID(): SealerID {
+        return getAgentSealerID(this.currentAgentID());
     }
 
-    currentRecipientSecret(): RecipientSecret {
-        return getAgentRecipientSecret(this.agentSecret);
+    currentSealerSecret(): SealerSecret {
+        return getAgentSealerSecret(this.agentSecret);
     }
 }
 
@@ -90,20 +90,20 @@ export class AnonymousControlledAccount implements GeneralizedControlledAccount 
         return getAgentID(this.agentSecret);
     }
 
-    currentSignatoryID(): SignatoryID {
-        return getAgentSignatoryID(this.currentAgentID());
+    currentSignerID(): SignerID {
+        return getAgentSignerID(this.currentAgentID());
     }
 
-    currentSignatorySecret(): SignatorySecret {
-        return getAgentSignatorySecret(this.agentSecret);
+    currentSignerSecret(): SignerSecret {
+        return getAgentSignerSecret(this.agentSecret);
     }
 
-    currentRecipientID(): RecipientID {
-        return getAgentRecipientID(this.currentAgentID());
+    currentSealerID(): SealerID {
+        return getAgentSealerID(this.currentAgentID());
     }
 
-    currentRecipientSecret(): RecipientSecret {
-        return getAgentRecipientSecret(this.agentSecret);
+    currentSealerSecret(): SealerSecret {
+        return getAgentSealerSecret(this.agentSecret);
     }
 }
 
