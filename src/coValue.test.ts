@@ -1,6 +1,6 @@
 import { Transaction } from "./coValue.js";
 import { LocalNode } from "./node.js";
-import { createdNowUnique, getAgentSignatorySecret, newRandomAgentSecret, sign } from "./crypto.js";
+import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "./crypto.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
@@ -34,7 +34,7 @@ test("Can create coValue with new agent credentials and add transaction to it", 
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(account.currentSignatorySecret(), expectedNewHash)
+            sign(account.currentSignerSecret(), expectedNewHash)
         )
     ).toBe(true);
 });
@@ -71,7 +71,7 @@ test("transactions with wrong signature are rejected", () => {
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(getAgentSignatorySecret(wrongAgent), expectedNewHash)
+            sign(getAgentSignerSecret(wrongAgent), expectedNewHash)
         )
     ).toBe(false);
 });
@@ -117,7 +117,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(account.currentSignatorySecret(), expectedNewHash)
+            sign(account.currentSignerSecret(), expectedNewHash)
         )
     ).toBe(false);
 });

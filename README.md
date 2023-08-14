@@ -20,7 +20,7 @@ THIS IS WORK IN PROGRESS
 - boolean
 - number
 - string
-  - stringly-encoded CoJSON identifiers & data (`CoValueID`, `AgentID`, `SessionID`, `SignatoryID`, `SignatorySecret`, `Signature`, `RecipientID`, `RecipientSecret`, `Sealed`, `Hash`, `ShortHash`, `KeySecret`, `KeyID`, `Encrypted`, `Role`)
+  - stringly-encoded CoJSON identifiers & data (`CoValueID`, `AgentID`, `SessionID`, `SignerID`, `SignerSecret`, `Signature`, `SealerID`, `SealerSecret`, `Sealed`, `Hash`, `ShortHash`, `KeySecret`, `KeyID`, `Encrypted`, `Role`)
 
 - array
 - object
@@ -29,7 +29,7 @@ THIS IS WORK IN PROGRESS
 - CoMap (`string` → `Immutable`, last-writer-wins per key)
   - Team (`AgentID` → `Role`)
 - CoList (`Immutable[]`, addressable positions, insertAfter semantics)
-  - Agent (`{signatoryID, recipientID}[]`)
+  - Agent (`{signerID, sealerID}[]`)
 - CoStream (independent per-session streams of `Immutable`s)
 - Static (single addressable `Immutable`)
 

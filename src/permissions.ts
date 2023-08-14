@@ -9,7 +9,7 @@ import {
     newRandomKeySecret,
     seal,
     encryptKeySecret,
-    getAgentRecipientID,
+    getAgentSealerID,
     Sealed,
 } from "./crypto.js";
 import {
@@ -260,8 +260,8 @@ export class Team {
                 `${currentReadKey.id}_for_${accountID}`,
                 seal(
                     currentReadKey.secret,
-                    this.teamMap.coValue.node.account.currentRecipientSecret(),
-                    getAgentRecipientID(agent),
+                    this.teamMap.coValue.node.account.currentSealerSecret(),
+                    getAgentSealerID(agent),
                     {
                         in: this.teamMap.coValue.id,
                         tx: this.teamMap.coValue.nextTransactionID(),
@@ -310,8 +310,8 @@ export class Team {
                     `${newReadKey.id}_for_${readerID}`,
                     seal(
                         newReadKey.secret,
-                        this.teamMap.coValue.node.account.currentRecipientSecret(),
-                        getAgentRecipientID(reader),
+                        this.teamMap.coValue.node.account.currentSealerSecret(),
+                        getAgentSealerID(reader),
                         {
                             in: this.teamMap.coValue.id,
                             tx: this.teamMap.coValue.nextTransactionID(),
@@ -379,5 +379,5 @@ export function isKeyForKeyField(field: string): field is `${KeyID}_for_${KeyID}
 }
 
 export function isKeyForAccountField(field: string): field is `${KeyID}_for_${AccountIDOrAgentID}` {
-    return field.startsWith("key_") && (field.includes("_for_recipient") || field.includes("_for_co"));
+    return field.startsWith("key_") && (field.includes("_for_sealer") || field.includes("_for_co"));
 }

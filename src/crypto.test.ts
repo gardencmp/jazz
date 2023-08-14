@@ -1,9 +1,9 @@
 import {
-    getRecipientID,
-    getSignatoryID,
+    getSealerID,
+    getSignerID,
     secureHash,
-    newRandomRecipient,
-    newRandomSignatory,
+    newRandomSealer,
+    newRandomSigner,
     seal,
     sign,
     unseal,
@@ -23,29 +23,29 @@ import stableStringify from "fast-json-stable-stringify";
 
 test("Signatures round-trip and use stable stringify", () => {
     const data = { b: "world", a: "hello" };
-    const signatory = newRandomSignatory();
-    const signature = sign(signatory, data);
+    const signer = newRandomSigner();
+    const signature = sign(signer, data);
 
     expect(signature).toMatch(/^signature_z/);
     expect(
-        verify(signature, { a: "hello", b: "world" }, getSignatoryID(signatory))
+        verify(signature, { a: "hello", b: "world" }, getSignerID(signer))
     ).toBe(true);
 });
 
 test("Invalid signatures don't verify", () => {
     const data = { b: "world", a: "hello" };
-    const signatory = newRandomSignatory();
-    const signatory2 = newRandomSignatory();
-    const wrongSignature = sign(signatory2, data);
+    const signer = newRandomSigner();
+    const signer2 = newRandomSigner();
+    const wrongSignature = sign(signer2, data);
 
-    expect(verify(wrongSignature, data, getSignatoryID(signatory))).toBe(false);
+    expect(verify(wrongSignature, data, getSignerID(signer))).toBe(false);
 });
 
 test("encrypting round-trips, but invalid receiver can't unseal", () => {
     const data = { b: "world", a: "hello" };
-    const sender = newRandomRecipient();
-    const recipient = newRandomRecipient();
-    const wrongRecipient = newRandomRecipient();
+    const sender = newRandomSealer();
+    const sealer = newRandomSealer();
+    const wrongSealer = newRandomSealer();
 
     const nOnceMaterial = {
         in: "co_zTEST",
@@ -55,31 +55,31 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
     const sealed = seal(
         data,
         sender,
-        getRecipientID(recipient),
+        getSealerID(sealer),
         nOnceMaterial
     );
 
     expect(
-        unseal(sealed, recipient, getRecipientID(sender), nOnceMaterial)
+        unseal(sealed, sealer, getSealerID(sender), nOnceMaterial)
     ).toEqual(data);
     expect(
-        () => unseal(sealed, wrongRecipient, getRecipientID(sender), nOnceMaterial)
+        () => unseal(sealed, wrongSealer, getSealerID(sender), nOnceMaterial)
     ).toThrow(/Wrong tag/);
 
-    // trying with wrong recipient secret, by hand
+    // trying with wrong sealer secret, by hand
     const nOnce = blake3(
         new TextEncoder().encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
-    const recipient3priv = base58.decode(
-        wrongRecipient.substring("recipientSecret_z".length)
+    const sealer3priv = base58.decode(
+        wrongSealer.substring("sealerSecret_z".length)
     );
     const senderPub = base58.decode(
-        getRecipientID(sender).substring("recipient_z".length)
+        getSealerID(sender).substring("sealer_z".length)
     );
     const sealedBytes = base64url.decode(
         sealed.substring("sealed_U".length)
     );
-    const sharedSecret = x25519.getSharedSecret(recipient3priv, senderPub);
+    const sharedSecret = x25519.getSharedSecret(sealer3priv, senderPub);
 
     expect(() => {
         const _ = xsalsa20_poly1305(sharedSecret, nOnce).decrypt(sealedBytes);

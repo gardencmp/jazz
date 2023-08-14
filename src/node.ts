@@ -1,8 +1,8 @@
 import {
     createdNowUnique,
     getAgentID,
-    getAgentRecipientID,
-    getAgentRecipientSecret,
+    getAgentSealerID,
+    getAgentSealerSecret,
     newRandomAgentSecret,
     newRandomKeySecret,
     seal,
@@ -101,8 +101,8 @@ export class LocalNode {
                 `${readKey.id}_for_${getAgentID(agentSecret)}`,
                 seal(
                     readKey.secret,
-                    getAgentRecipientSecret(agentSecret),
-                    getAgentRecipientID(getAgentID(agentSecret)),
+                    getAgentSealerSecret(agentSecret),
+                    getAgentSealerID(getAgentID(agentSecret)),
                     {
                         in: account.id,
                         tx: account.nextTransactionID(),
@@ -168,8 +168,8 @@ export class LocalNode {
                 `${readKey.id}_for_${this.account.id}`,
                 seal(
                     readKey.secret,
-                    this.account.currentRecipientSecret(),
-                    this.account.currentRecipientID(),
+                    this.account.currentSealerSecret(),
+                    this.account.currentSealerID(),
                     {
                         in: teamCoValue.id,
                         tx: teamCoValue.nextTransactionID(),
