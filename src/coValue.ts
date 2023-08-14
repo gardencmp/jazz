@@ -9,14 +9,14 @@ import {
     KeySecret,
     Signature,
     StreamingHash,
-    openAs,
+    unseal,
     shortHash,
     sign,
     verify,
     encryptForTransaction,
     decryptForTransaction,
     KeyID,
-    unsealKeySecret,
+    decryptKeySecret,
     getAgentSignatoryID,
     getAgentRecipientID,
 } from "./crypto.js";
@@ -27,6 +27,7 @@ import {
     Team,
     determineValidTransactions,
     expectTeamContent,
+    isKeyForKeyField,
 } from "./permissions.js";
 import { LocalNode } from "./node.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
@@ -158,7 +159,7 @@ export class CoValue {
         newSignature: Signature
     ): boolean {
         const signatoryID = getAgentSignatoryID(
-            this.node.resolveAccount(
+            this.node.resolveAccountAgent(
                 accountOrAgentIDfromSessionID(sessionID),
                 "Expected to know signatory of transaction"
             )
@@ -376,7 +377,7 @@ export class CoValue {
         if (this.header.ruleset.type === "team") {
             const content = expectTeamContent(this.getCurrentContent());
 
-            const currentKeyId = content.get("readKey")?.keyID;
+            const currentKeyId = content.get("readKey");
 
             if (!currentKeyId) {
                 throw new Error("No readKey set");
@@ -403,63 +404,63 @@ export class CoValue {
         if (this.header.ruleset.type === "team") {
             const content = expectTeamContent(this.getCurrentContent());
 
-            const readKeyHistory = content.getHistory("readKey");
+            // Try to find key revelation for us
 
-            // Try to find direct relevation of key for us
+            const readKeyEntry = content.getLastEntry(`${keyID}_for_${this.node.account.id}`);
 
-            for (const entry of readKeyHistory) {
-                if (entry.value?.keyID === keyID) {
-                    const revealer = accountOrAgentIDfromSessionID(
-                        entry.txID.sessionID
-                    );
-                    const revealerAgent = this.node.resolveAccount(
-                        revealer,
-                        "Expected to know revealer"
-                    );
+            if (readKeyEntry) {
+                const revealer = accountOrAgentIDfromSessionID(
+                    readKeyEntry.txID.sessionID
+                );
+                const revealerAgent = this.node.resolveAccountAgent(
+                    revealer,
+                    "Expected to know revealer"
+                );
 
-                    const secret = openAs(
-                        entry.value.revelation,
-                        this.node.account.currentRecipientSecret(),
-                        getAgentRecipientID(revealerAgent),
-                        {
-                            in: this.id,
-                            tx: entry.txID,
-                        }
-                    );
+                const secret = unseal(
+                    readKeyEntry.value,
+                    this.node.account.currentRecipientSecret(),
+                    getAgentRecipientID(revealerAgent),
+                    {
+                        in: this.id,
+                        tx: readKeyEntry.txID,
+                    }
+                );
 
-                    if (secret) return secret as KeySecret;
-                }
+                if (secret) return secret as KeySecret;
             }
 
             // Try to find indirect revelation through previousKeys
 
-            for (const entry of readKeyHistory) {
-                const encryptedPreviousKey = entry.value?.previousKeys?.[keyID];
-                if (entry.value && encryptedPreviousKey) {
-                    const sealingKeyID = entry.value.keyID;
-                    const sealingKeySecret = this.getReadKey(sealingKeyID);
+            for (const field of content.keys()) {
+                if (isKeyForKeyField(field) && field.startsWith(keyID)) {
+                    const encryptingKeyID = field.split("_for_")[1] as KeyID;
+                    const encryptingKeySecret = this.getReadKey(encryptingKeyID);
 
-                    if (!sealingKeySecret) {
+                    if (!encryptingKeySecret) {
                         continue;
                     }
 
-                    const secret = unsealKeySecret(
+                    const encryptedPreviousKey = content.get(field)!;
+
+                    const secret = decryptKeySecret(
                         {
-                            sealed: keyID,
-                            sealing: sealingKeyID,
+                            encryptedID: keyID,
+                            encryptingID: encryptingKeyID,
                             encrypted: encryptedPreviousKey,
                         },
-                        sealingKeySecret
+                        encryptingKeySecret
                     );
 
                     if (secret) {
                         return secret;
                     } else {
                         console.error(
-                            `Sealing ${sealingKeyID} key didn't unseal ${keyID}`
+                            `Encrypting ${encryptingKeyID} key didn't decrypt ${keyID}`
                         );
                     }
                 }
+
             }
 
             return undefined;
@@ -552,5 +553,3 @@ export class CoValue {
             : [];
     }
 }
-
-export { SessionID };

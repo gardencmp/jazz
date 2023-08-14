@@ -6,14 +6,14 @@ import {
     newRandomSignatory,
     seal,
     sign,
-    openAs,
+    unseal,
     verify,
     shortHash,
     newRandomKeySecret,
     encryptForTransaction,
     decryptForTransaction,
-    sealKeySecret,
-    unsealKeySecret,
+    encryptKeySecret,
+    decryptKeySecret,
 } from './crypto.js';
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
@@ -41,12 +41,11 @@ test("Invalid signatures don't verify", () => {
     expect(verify(wrongSignature, data, getSignatoryID(signatory))).toBe(false);
 });
 
-test("Sealing round-trips, but invalid receiver can't unseal", () => {
+test("encrypting round-trips, but invalid receiver can't unseal", () => {
     const data = { b: "world", a: "hello" };
     const sender = newRandomRecipient();
-    const recipient1 = newRandomRecipient();
-    const recipient2 = newRandomRecipient();
-    const recipient3 = newRandomRecipient();
+    const recipient = newRandomRecipient();
+    const wrongRecipient = newRandomRecipient();
 
     const nOnceMaterial = {
         in: "co_zTEST",
@@ -56,34 +55,29 @@ test("Sealing round-trips, but invalid receiver can't unseal", () => {
     const sealed = seal(
         data,
         sender,
-        new Set([getRecipientID(recipient1), getRecipientID(recipient2)]),
+        getRecipientID(recipient),
         nOnceMaterial
     );
 
-    expect(sealed[getRecipientID(recipient1)]).toMatch(/^sealed_U/);
-    expect(sealed[getRecipientID(recipient2)]).toMatch(/^sealed_U/);
     expect(
-        openAs(sealed, recipient1, getRecipientID(sender), nOnceMaterial)
+        unseal(sealed, recipient, getRecipientID(sender), nOnceMaterial)
     ).toEqual(data);
     expect(
-        openAs(sealed, recipient2, getRecipientID(sender), nOnceMaterial)
-    ).toEqual(data);
-    expect(
-        openAs(sealed, recipient3, getRecipientID(sender), nOnceMaterial)
-    ).toBeUndefined();
+        () => unseal(sealed, wrongRecipient, getRecipientID(sender), nOnceMaterial)
+    ).toThrow(/Wrong tag/);
 
     // trying with wrong recipient secret, by hand
     const nOnce = blake3(
         new TextEncoder().encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
     const recipient3priv = base58.decode(
-        recipient3.substring("recipientSecret_z".length)
+        wrongRecipient.substring("recipientSecret_z".length)
     );
     const senderPub = base58.decode(
         getRecipientID(sender).substring("recipient_z".length)
     );
     const sealedBytes = base64url.decode(
-        sealed[getRecipientID(recipient1)]!.substring("sealed_U".length)
+        sealed.substring("sealed_U".length)
     );
     const sharedSecret = x25519.getSharedSecret(recipient3priv, senderPub);
 
@@ -156,34 +150,34 @@ test("Encryption for transactions doesn't decrypt with a wrong key", () => {
 });
 
 test("Encryption of keySecrets round-trips", () => {
-    const toSeal = newRandomKeySecret();
-    const sealing = newRandomKeySecret();
+    const toEncrypt = newRandomKeySecret();
+    const encrypting = newRandomKeySecret();
 
     const keys = {
-        toSeal,
-        sealing,
+        toEncrypt,
+        encrypting,
     };
 
-    const sealed = sealKeySecret(keys);
+    const encrypted = encryptKeySecret(keys);
 
-    const unsealed = unsealKeySecret(sealed, sealing.secret);
+    const decrypted = decryptKeySecret(encrypted, encrypting.secret);
 
-    expect(unsealed).toEqual(toSeal.secret);
+    expect(decrypted).toEqual(toEncrypt.secret);
 });
 
-test("Encryption of keySecrets doesn't unseal with a wrong key", () => {
-    const toSeal = newRandomKeySecret();
-    const sealing = newRandomKeySecret();
-    const sealingWrong = newRandomKeySecret();
+test("Encryption of keySecrets doesn't decrypt with a wrong key", () => {
+    const toEncrypt = newRandomKeySecret();
+    const encrypting = newRandomKeySecret();
+    const encryptingWrong = newRandomKeySecret();
 
     const keys = {
-        toSeal,
-        sealing,
+        toEncrypt,
+        encrypting,
     };
 
-    const sealed = sealKeySecret(keys);
+    const encrypted = encryptKeySecret(keys);
 
-    const unsealed = unsealKeySecret(sealed, sealingWrong.secret);
+    const decrypted = decryptKeySecret(encrypted, encryptingWrong.secret);
 
-    expect(unsealed).toBeUndefined();
+    expect(decrypted).toBeUndefined();
 });

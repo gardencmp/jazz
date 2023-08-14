@@ -87,27 +87,31 @@ export class LocalNode {
 
         const account = this.createCoValue(
             accountHeaderForInitialAgentSecret(agentSecret)
-        ).testWithDifferentAccount(new AnonymousControlledAccount(agentSecret), newRandomSessionID(getAgentID(agentSecret)));
+        ).testWithDifferentAccount(
+            new AnonymousControlledAccount(agentSecret),
+            newRandomSessionID(getAgentID(agentSecret))
+        );
 
         expectTeamContent(account.getCurrentContent()).edit((editable) => {
             editable.set(getAgentID(agentSecret), "admin", "trusting");
 
             const readKey = newRandomKeySecret();
-            const revelation = seal(
-                readKey.secret,
-                getAgentRecipientSecret(agentSecret),
-                new Set([getAgentRecipientID(getAgentID(agentSecret))]),
-                {
-                    in: account.id,
-                    tx: account.nextTransactionID(),
-                }
-            );
 
             editable.set(
-                "readKey",
-                { keyID: readKey.id, revelation },
+                `${readKey.id}_for_${getAgentID(agentSecret)}`,
+                seal(
+                    readKey.secret,
+                    getAgentRecipientSecret(agentSecret),
+                    getAgentRecipientID(getAgentID(agentSecret)),
+                    {
+                        in: account.id,
+                        tx: account.nextTransactionID(),
+                    }
+                ),
                 "trusting"
             );
+
+            editable.set('readKey', readKey.id, "trusting");
         });
 
         return new ControlledAccount(
@@ -117,7 +121,7 @@ export class LocalNode {
         );
     }
 
-    resolveAccount(id: AccountIDOrAgentID, expectation?: string): AgentID {
+    resolveAccountAgent(id: AccountIDOrAgentID, expectation?: string): AgentID {
         if (isAgentID(id)) {
             return id;
         }
@@ -159,21 +163,22 @@ export class LocalNode {
             editable.set(this.account.id, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
-            const revelation = seal(
-                readKey.secret,
-                this.account.currentRecipientSecret(),
-                new Set([this.account.currentRecipientID()]),
-                {
-                    in: teamCoValue.id,
-                    tx: teamCoValue.nextTransactionID(),
-                }
-            );
 
             editable.set(
-                "readKey",
-                { keyID: readKey.id, revelation },
+                `${readKey.id}_for_${this.account.id}`,
+                seal(
+                    readKey.secret,
+                    this.account.currentRecipientSecret(),
+                    this.account.currentRecipientID(),
+                    {
+                        in: teamCoValue.id,
+                        tx: teamCoValue.nextTransactionID(),
+                    }
+                ),
                 "trusting"
             );
+
+            editable.set('readKey', readKey.id, "trusting");
         });
 
         return new Team(teamContent, this);

@@ -127,53 +127,40 @@ export function getAgentRecipientSecret(agentSecret: AgentSecret): RecipientSecr
     return agentSecret.split("/")[0] as RecipientSecret;
 }
 
-export type SealedSet<T> = {
-    [recipient: RecipientID]: Sealed<T>;
-};
-
 export function seal<T extends JsonValue>(
     message: T,
     from: RecipientSecret,
-    to: Set<RecipientID>,
+    to: RecipientID,
     nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
-): SealedSet<T> {
+): Sealed<T> {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
-    const recipientsSorted = Array.from(to).sort();
-    const recipientPubs = recipientsSorted.map((recipient) => {
-        return base58.decode(recipient.substring("recipient_z".length));
-    });
+    const recipientPub = base58.decode(to.substring("recipient_z".length));
+
     const senderPriv = base58.decode(
         from.substring("recipientSecret_z".length)
     );
 
     const plaintext = textEncoder.encode(stableStringify(message));
 
-    const sealedSet: SealedSet<T> = {};
+    const sharedSecret = x25519.getSharedSecret(
+        senderPriv,
+        recipientPub
+    );
 
-    for (let i = 0; i < recipientsSorted.length; i++) {
-        const recipient = recipientsSorted[i]!;
-        const sharedSecret = x25519.getSharedSecret(
-            senderPriv,
-            recipientPubs[i]!
-        );
+    const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(
+        plaintext
+    );
 
-        const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(
-            plaintext
-        );
-
-        sealedSet[recipient] = `sealed_U${base64url.encode(
-            sealedBytes
-        )}` as Sealed<T>;
-    }
-
-    return sealedSet;
+    return `sealed_U${base64url.encode(
+        sealedBytes
+    )}` as Sealed<T>
 }
 
-export function openAs<T extends JsonValue>(
-    sealedSet: SealedSet<T>,
+export function unseal<T extends JsonValue>(
+    sealed: Sealed<T>,
     recipient: RecipientSecret,
     from: RecipientID,
     nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
@@ -187,12 +174,6 @@ export function openAs<T extends JsonValue>(
     );
 
     const senderPub = base58.decode(from.substring("recipient_z".length));
-
-    const sealed = sealedSet[getRecipientID(recipient)];
-
-    if (!sealed) {
-        return undefined;
-    }
 
     const sealedBytes = base64url.decode(sealed.substring("sealed_U".length));
 
@@ -287,25 +268,25 @@ export function encryptForTransaction<T extends JsonValue>(
     return encrypt(value, keySecret, nOnceMaterial);
 }
 
-export function sealKeySecret(keys: {
-    toSeal: { id: KeyID; secret: KeySecret };
-    sealing: { id: KeyID; secret: KeySecret };
+export function encryptKeySecret(keys: {
+    toEncrypt: { id: KeyID; secret: KeySecret };
+    encrypting: { id: KeyID; secret: KeySecret };
 }): {
-    sealed: KeyID;
-    sealing: KeyID;
-    encrypted: Encrypted<KeySecret, { sealed: KeyID; sealing: KeyID }>;
+    encryptedID: KeyID;
+    encryptingID: KeyID;
+    encrypted: Encrypted<KeySecret, { encryptedID: KeyID; encryptingID: KeyID }>;
 } {
     const nOnceMaterial = {
-        sealed: keys.toSeal.id,
-        sealing: keys.sealing.id,
+        encryptedID: keys.toEncrypt.id,
+        encryptingID: keys.encrypting.id,
     };
 
     return {
-        sealed: keys.toSeal.id,
-        sealing: keys.sealing.id,
+        encryptedID: keys.toEncrypt.id,
+        encryptingID: keys.encrypting.id,
         encrypted: encrypt(
-            keys.toSeal.secret,
-            keys.sealing.secret,
+            keys.toEncrypt.secret,
+            keys.encrypting.secret,
             nOnceMaterial
         ),
     };
@@ -343,20 +324,20 @@ export function decryptForTransaction<T extends JsonValue>(
     return decrypt(encrypted, keySecret, nOnceMaterial);
 }
 
-export function unsealKeySecret(
-    sealedInfo: {
-        sealed: KeyID;
-        sealing: KeyID;
-        encrypted: Encrypted<KeySecret, { sealed: KeyID; sealing: KeyID }>;
+export function decryptKeySecret(
+    encryptedInfo: {
+        encryptedID: KeyID;
+        encryptingID: KeyID;
+        encrypted: Encrypted<KeySecret, { encryptedID: KeyID; encryptingID: KeyID }>;
     },
     sealingSecret: KeySecret
 ): KeySecret | undefined {
     const nOnceMaterial = {
-        sealed: sealedInfo.sealed,
-        sealing: sealedInfo.sealing,
+        encryptedID: encryptedInfo.encryptedID,
+        encryptingID: encryptedInfo.encryptingID,
     };
 
-    return decrypt(sealedInfo.encrypted, sealingSecret, nOnceMaterial);
+    return decrypt(encryptedInfo.encrypted, sealingSecret, nOnceMaterial);
 }
 
 export function uniquenessForHeader(): `z${string}` {

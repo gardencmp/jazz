@@ -1,8 +1,9 @@
 import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "./crypto.js";
-import { SessionID, newRandomSessionID } from "./coValue.js";
+import { newRandomSessionID } from "./coValue.js";
 import { LocalNode } from "./node.js";
 import { expectTeamContent } from "./permissions.js";
 import { AnonymousControlledAccount } from "./account.js";
+import { SessionID } from "./ids.js";
 
 export function randomAnonymousAccountAndSessionID(): [AnonymousControlledAccount, SessionID] {
     const agentSecret = newRandomAgentSecret();
