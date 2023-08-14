@@ -2,7 +2,7 @@ import { JsonObject, JsonValue } from '../jsonValue.js';
 import { CoID } from '../contentType.js';
 import { CoValue } from '../coValue.js';
 
-export class CoStream<T extends JsonValue, Meta extends JsonValue> {
+export class CoStream<T extends JsonValue, Meta extends JsonObject | null = null> {
     id: CoID<CoStream<T, Meta>>;
     type = "costream" as const;
     coValue: CoValue;

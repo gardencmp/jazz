@@ -20,24 +20,25 @@ export type MapOpPayload<K extends string, V extends JsonValue> = {
     key: K;
 };
 
+export type MapK<M extends { [key: string]: JsonValue; }> = keyof M & string;
+export type MapV<M extends { [key: string]: JsonValue; }> = M[MapK<M>];
+export type MapM<M extends { [key: string]: JsonValue; }> = {
+    [KK in MapK<M>]: M[KK];
+}
+
 export class CoMap<
     M extends { [key: string]: JsonValue; },
-    Meta extends JsonValue,
-    K extends string = keyof M & string,
-    V extends JsonValue = M[K],
-    MM extends { [key: string]: JsonValue; } = {
-        [KK in K]: M[KK];
-    }
+    Meta extends JsonObject | null = null,
 > {
-    id: CoID<CoMap<MM, Meta>>;
+    id: CoID<CoMap<MapM<M>, Meta>>;
     coValue: CoValue;
     type = "comap" as const;
     ops: {
-        [KK in K]?: MapOp<K, M[KK]>[];
+        [KK in MapK<M>]?: MapOp<KK, M[KK]>[];
     };
 
     constructor(coValue: CoValue) {
-        this.id = coValue.id as CoID<CoMap<MM, Meta>>;
+        this.id = coValue.id as CoID<CoMap<MapM<M>, Meta>>;
         this.coValue = coValue;
         this.ops = {};
 
@@ -51,7 +52,7 @@ export class CoMap<
             for (const [changeIdx, changeUntyped] of (
                 changes
             ).entries()) {
-                const change = changeUntyped as MapOpPayload<K, V>;
+                const change = changeUntyped as MapOpPayload<MapK<M>, MapV<M>>;
                 let entries = this.ops[change.key];
                 if (!entries) {
                     entries = [];
@@ -61,17 +62,17 @@ export class CoMap<
                     txID,
                     madeAt,
                     changeIdx,
-                    ...(change as MapOpPayload<K, M[K]>),
+                    ...(change as MapOpPayload<MapK<M>, MapV<M>>),
                 });
             }
         }
     }
 
-    keys(): K[] {
-        return Object.keys(this.ops) as K[];
+    keys(): MapK<M>[] {
+        return Object.keys(this.ops) as MapK<M>[];
     }
 
-    get<KK extends K>(key: KK): M[KK] | undefined {
+    get<K extends MapK<M>>(key: K): M[K] | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -86,7 +87,7 @@ export class CoMap<
         }
     }
 
-    getAtTime<KK extends K>(key: KK, time: number): M[KK] | undefined {
+    getAtTime<K extends MapK<M>>(key: K, time: number): M[K] | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -105,7 +106,7 @@ export class CoMap<
         }
     }
 
-    getLastTxID<KK extends K>(key: KK): TransactionID | undefined {
+    getLastTxID<K extends MapK<M>>(key: K): TransactionID | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -116,7 +117,7 @@ export class CoMap<
         return lastEntry.txID;
     }
 
-    getLastEntry<KK extends K>(key: KK): { at: number; txID: TransactionID; value: M[KK]; } | undefined {
+    getLastEntry<K extends MapK<M>>(key: K): { at: number; txID: TransactionID; value: M[K]; } | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -131,13 +132,13 @@ export class CoMap<
         }
     }
 
-    getHistory<KK extends K>(key: KK): { at: number; txID: TransactionID; value: M[KK] | undefined; }[] {
+    getHistory<K extends MapK<M>>(key: K): { at: number; txID: TransactionID; value: M[K] | undefined; }[] {
         const ops = this.ops[key];
         if (!ops) {
             return [];
         }
 
-        const history: { at: number; txID: TransactionID; value: M[KK] | undefined; }[] = [];
+        const history: { at: number; txID: TransactionID; value: M[K] | undefined; }[] = [];
 
         for (const op of ops) {
             if (op.op === "delete") {
@@ -178,14 +179,10 @@ export class CoMap<
 
 export class WriteableCoMap<
     M extends { [key: string]: JsonValue; },
-    Meta extends JsonValue,
-    K extends string = keyof M & string,
-    V extends JsonValue = M[K],
-    MM extends { [key: string]: JsonValue; } = {
-        [KK in K]: M[KK];
-    }
-> extends CoMap<M, Meta, K, V, MM> {
-    set<KK extends K>(key: KK, value: M[KK], privacy: "private" | "trusting" = "private"): void {
+    Meta extends JsonObject | null = null,
+
+> extends CoMap<M, Meta> {
+    set<K extends MapK<M>>(key: K, value: M[K], privacy: "private" | "trusting" = "private"): void {
         this.coValue.makeTransaction([
             {
                 op: "insert",
@@ -197,7 +194,7 @@ export class WriteableCoMap<
         this.fillOpsFromCoValue();
     }
 
-    delete(key: K, privacy: "private" | "trusting" = "private"): void {
+    delete(key: MapK<M>, privacy: "private" | "trusting" = "private"): void {
         this.coValue.makeTransaction([
             {
                 op: "delete",
