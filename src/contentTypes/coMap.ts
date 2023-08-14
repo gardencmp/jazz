@@ -116,6 +116,21 @@ export class CoMap<
         return lastEntry.txID;
     }
 
+    getLastEntry<KK extends K>(key: KK): { at: number; txID: TransactionID; value: M[KK]; } | undefined {
+        const ops = this.ops[key];
+        if (!ops) {
+            return undefined;
+        }
+
+        const lastEntry = ops[ops.length - 1]!;
+
+        if (lastEntry.op === "delete") {
+            return undefined;
+        } else {
+            return { at: lastEntry.madeAt, txID: lastEntry.txID, value: lastEntry.value };
+        }
+    }
+
     getHistory<KK extends K>(key: KK): { at: number; txID: TransactionID; value: M[KK] | undefined; }[] {
         const ops = this.ops[key];
         if (!ops) {

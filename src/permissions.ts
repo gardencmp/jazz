@@ -1,29 +1,29 @@
-import { CoValueID, ContentType } from './contentType.js';
-import { CoMap, MapOpPayload } from './contentTypes/coMap.js';
-import { JsonValue } from './jsonValue.js';
+import { CoValueID, ContentType } from "./contentType.js";
+import { CoMap, MapOpPayload } from "./contentTypes/coMap.js";
+import { JsonValue } from "./jsonValue.js";
 import {
     Encrypted,
     KeyID,
     KeySecret,
-    SealedSet,
     createdNowUnique,
     newRandomKeySecret,
     seal,
-    sealKeySecret,
-    getAgentRecipientID
-} from './crypto.js';
+    encryptKeySecret,
+    getAgentRecipientID,
+    Sealed,
+} from "./crypto.js";
 import {
     CoValue,
     Transaction,
     TrustingTransaction,
     accountOrAgentIDfromSessionID,
-} from './coValue.js';
+} from "./coValue.js";
 import { LocalNode } from "./node.js";
-import { RawCoValueID, SessionID, TransactionID, isAgentID } from './ids.js';
-import { AccountIDOrAgentID, GeneralizedControlledAccount } from './account.js';
+import { RawCoValueID, SessionID, TransactionID, isAgentID } from "./ids.js";
+import { AccountIDOrAgentID, GeneralizedControlledAccount } from "./account.js";
 
 export type PermissionsDef =
-    | { type: "team"; initialAdmin: AccountIDOrAgentID; }
+    | { type: "team"; initialAdmin: AccountIDOrAgentID }
     | { type: "ownedByTeam"; team: RawCoValueID }
     | { type: "unsafeAllowAll" };
 
@@ -94,6 +94,14 @@ export function determineValidTransactions(
                     continue;
                 }
 
+                validTransactions.push({ txID: { sessionID, txIndex }, tx });
+                continue;
+            } else if (isKeyForKeyField(change.key) || isKeyForAccountField(change.key)) {
+                if (memberState[transactor] !== "admin") {
+                    console.warn("Only admins can reveal keys");
+                    continue;
+                }
+
                 // TODO: check validity of agents who the key is revealed to?
 
                 validTransactions.push({ txID: { sessionID, txIndex }, tx });
@@ -146,11 +154,12 @@ export function determineValidTransactions(
 
         return validTransactions;
     } else if (coValue.header.ruleset.type === "ownedByTeam") {
-        const teamContent =
-            coValue.node.expectCoValueLoaded(
+        const teamContent = coValue.node
+            .expectCoValueLoaded(
                 coValue.header.ruleset.team,
                 "Determining valid transaction in owned object but its team wasn't loaded"
-            ).getCurrentContent();
+            )
+            .getCurrentContent();
 
         if (teamContent.type !== "comap") {
             throw new Error("Team must be a map");
@@ -158,7 +167,9 @@ export function determineValidTransactions(
 
         return Object.entries(coValue.sessions).flatMap(
             ([sessionID, sessionLog]) => {
-                const transactor = accountOrAgentIDfromSessionID(sessionID as SessionID);
+                const transactor = accountOrAgentIDfromSessionID(
+                    sessionID as SessionID
+                );
                 return sessionLog.transactions
                     .filter((tx) => {
                         const transactorRoleAtTxTime = teamContent.getAtTime(
@@ -187,24 +198,25 @@ export function determineValidTransactions(
             }
         );
     } else {
-        throw new Error("Unknown ruleset type " + (coValue.header.ruleset as any).type);
+        throw new Error(
+            "Unknown ruleset type " + (coValue.header.ruleset as any).type
+        );
     }
 }
 
-export type TeamContent = { [key: AccountIDOrAgentID]: Role } & {
-    readKey: {
-        keyID: KeyID;
-        revelation: SealedSet<KeySecret>;
-        previousKeys?: {
-            [key: KeyID]: Encrypted<
-                KeySecret,
-                { sealed: KeyID; sealing: KeyID }
-            >;
-        };
-    };
+export type TeamContent = {
+    [key: AccountIDOrAgentID]: Role;
+    readKey: KeyID;
+    [revelationFor: `${KeyID}_for_${AccountIDOrAgentID}`]: Sealed<KeySecret>;
+    [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
+        KeySecret,
+        { encryptedID: KeyID; encryptingID: KeyID }
+    >;
 };
 
-export function expectTeamContent(content: ContentType): CoMap<TeamContent, {}> {
+export function expectTeamContent(
+    content: ContentType
+): CoMap<TeamContent, {}> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
@@ -227,36 +239,34 @@ export class Team {
 
     addMember(accountID: AccountIDOrAgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
-            const agent = this.node.resolveAccount(accountID, "Expected to know agent to add them to team");
-
-            if (!agent) {
-                throw new Error("Unknown account/agent " + accountID);
-            }
-
-            map.set(accountID, role, "trusting");
-            if (map.get(accountID) !== role) {
-                throw new Error("Failed to set role");
-            }
-
             const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
 
             if (!currentReadKey.secret) {
                 throw new Error("Can't add member without read key secret");
             }
 
-            const revelation = seal(
-                currentReadKey.secret,
-                this.teamMap.coValue.node.account.currentRecipientSecret(),
-                new Set([getAgentRecipientID(agent)]),
-                {
-                    in: this.teamMap.coValue.id,
-                    tx: this.teamMap.coValue.nextTransactionID(),
-                }
+            const agent = this.node.resolveAccountAgent(
+                accountID,
+                "Expected to know agent to add them to team"
             );
 
+            map.set(accountID, role, "trusting");
+
+            if (map.get(accountID) !== role) {
+                throw new Error("Failed to set role");
+            }
+
             map.set(
-                "readKey",
-                { keyID: currentReadKey.id, revelation },
+                `${currentReadKey.id}_for_${accountID}`,
+                seal(
+                    currentReadKey.secret,
+                    this.teamMap.coValue.node.account.currentRecipientSecret(),
+                    getAgentRecipientID(agent),
+                    {
+                        in: this.teamMap.coValue.id,
+                        tx: this.teamMap.coValue.nextTransactionID(),
+                    }
+                ),
                 "trusting"
             );
         });
@@ -277,7 +287,9 @@ export class Team {
         const maybeCurrentReadKey = this.teamMap.coValue.getCurrentReadKey();
 
         if (!maybeCurrentReadKey.secret) {
-            throw new Error("Can't rotate read key secret we don't have access to");
+            throw new Error(
+                "Can't rotate read key secret we don't have access to"
+            );
         }
 
         const currentReadKey = {
@@ -287,41 +299,38 @@ export class Team {
 
         const newReadKey = newRandomKeySecret();
 
-        const newReadKeyRevelation = seal(
-            newReadKey.secret,
-            this.teamMap.coValue.node.account.currentRecipientSecret(),
-            new Set(
-                currentlyPermittedReaders.map(
-                    (reader) => {
-                        const readerAgent = this.node.resolveAccount(reader, "Expected to know currently permitted reader");
-                        if (!readerAgent) {
-                            throw new Error("Unknown agent " + reader);
-                        }
-                        return getAgentRecipientID(readerAgent)
-                    }
-                )
-            ),
-            {
-                in: this.teamMap.coValue.id,
-                tx: this.teamMap.coValue.nextTransactionID(),
-            }
-        );
-
         this.teamMap = this.teamMap.edit((map) => {
+            for (const readerID of currentlyPermittedReaders) {
+                const reader = this.node.resolveAccountAgent(
+                    readerID,
+                    "Expected to know currently permitted reader"
+                );
+
+                map.set(
+                    `${newReadKey.id}_for_${readerID}`,
+                    seal(
+                        newReadKey.secret,
+                        this.teamMap.coValue.node.account.currentRecipientSecret(),
+                        getAgentRecipientID(reader),
+                        {
+                            in: this.teamMap.coValue.id,
+                            tx: this.teamMap.coValue.nextTransactionID(),
+                        }
+                    ),
+                    "trusting"
+                );
+            }
+
             map.set(
-                "readKey",
-                {
-                    keyID: newReadKey.id,
-                    revelation: newReadKeyRevelation,
-                    previousKeys: {
-                        [currentReadKey.id]: sealKeySecret({
-                            sealing: newReadKey,
-                            toSeal: currentReadKey,
-                        }).encrypted,
-                    },
-                },
+                `${currentReadKey.id}_for_${newReadKey.id}`,
+                encryptKeySecret({
+                    encrypting: newReadKey,
+                    toEncrypt: currentReadKey,
+                }).encrypted,
                 "trusting"
             );
+
+            map.set("readKey", newReadKey.id, "trusting");
         });
     }
 
@@ -363,4 +372,12 @@ export class Team {
             this.node
         );
     }
+}
+
+export function isKeyForKeyField(field: string): field is `${KeyID}_for_${KeyID}` {
+    return field.startsWith("key_") && field.includes("_for_key");
+}
+
+export function isKeyForAccountField(field: string): field is `${KeyID}_for_${AccountIDOrAgentID}` {
+    return field.startsWith("key_") && (field.includes("_for_recipient") || field.includes("_for_co"));
 }

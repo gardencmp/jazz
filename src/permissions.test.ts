@@ -7,7 +7,7 @@ import {
     getRecipientID,
     newRandomKeySecret,
     seal,
-    sealKeySecret,
+    encryptKeySecret,
 } from "./crypto.js";
 import {
     newTeam,
@@ -424,17 +424,23 @@ test("Admins can set team read key and then use it to create and read private tr
         const revelation = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
-        expect(editable.get("readKey")).toEqual({
-            keyID: readKeyID,
-            revelation,
-        });
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+
+        expect(editable.get(`${readKeyID}_for_${admin.id}`)).toEqual(
+            revelation
+        );
+
+        editable.set("readKey", readKeyID, "trusting");
+
+        expect(editable.get("readKey")).toEqual(readKeyID);
+
         expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
@@ -483,16 +489,31 @@ test("Admins can set team read key and then writers can use it to create and rea
         editable.set(writer.id, "writer", "trusting");
         expect(editable.get(writer.id)).toEqual("writer");
 
-        const revelation = seal(
+        const revelation1 = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID(), writer.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
+
+        const revelation2 = seal(
+            readKey,
+            admin.currentRecipientSecret(),
+            writer.currentRecipientID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${writer.id}`, revelation2, "trusting");
+
+        editable.set("readKey", readKeyID, "trusting");
     });
 
     const childObject = node.createCoValue({
@@ -560,16 +581,31 @@ test("Admins can set team read key and then use it to create private transaction
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
 
-        const revelation = seal(
+        const revelation1 = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID(), reader.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
+
+        const revelation2 = seal(
+            readKey,
+            admin.currentRecipientSecret(),
+            reader.currentRecipientID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${reader.id}`, revelation2, "trusting");
+
+        editable.set("readKey", readKeyID, "trusting");
     });
 
     const childObject = node.createCoValue({
@@ -640,32 +676,28 @@ test("Admins can set team read key and then use it to create private transaction
         const revelation1 = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID(), reader1.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set(
-            "readKey",
-            { keyID: readKeyID, revelation: revelation1 },
-            "trusting"
-        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
 
         const revelation2 = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([reader2.currentRecipientID()]),
+            reader1.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set(
-            "readKey",
-            { keyID: readKeyID, revelation: revelation2 },
-            "trusting"
-        );
+
+        editable.set(`${readKeyID}_for_${reader1.id}`, revelation2, "trusting");
+
+        editable.set("readKey", readKeyID, "trusting");
     });
 
     const childObject = node.createCoValue({
@@ -693,6 +725,20 @@ test("Admins can set team read key and then use it to create private transaction
     );
 
     expect(childContentAsReader1.get("foo")).toEqual("bar");
+
+    teamContent.edit((editable) => {
+        const revelation3 = seal(
+            readKey,
+            admin.currentRecipientSecret(),
+            reader2.currentRecipientID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${reader2.id}`, revelation3, "trusting");
+    });
 
     const childObjectAsReader2 = childObject.testWithDifferentAccount(
         reader2,
@@ -753,17 +799,17 @@ test("Admins can set team read key, make a private transaction in an owned objec
         const revelation = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
-        expect(editable.get("readKey")).toEqual({
-            keyID: readKeyID,
-            revelation,
-        });
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+
+        editable.set("readKey", readKeyID, "trusting");
+        expect(editable.get("readKey")).toEqual(readKeyID);
         expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
@@ -791,18 +837,17 @@ test("Admins can set team read key, make a private transaction in an owned objec
         const revelation = seal(
             readKey2,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
 
-        editable.set("readKey", { keyID: readKeyID2, revelation }, "trusting");
-        expect(editable.get("readKey")).toEqual({
-            keyID: readKeyID2,
-            revelation,
-        });
+        editable.set(`${readKeyID2}_for_${admin.id}`, revelation, "trusting");
+
+        editable.set("readKey", readKeyID2, "trusting");
+        expect(editable.get("readKey")).toEqual(readKeyID2);
         expect(team.getCurrentReadKey().secret).toEqual(readKey2);
     });
 
@@ -863,17 +908,17 @@ test("Admins can set team read key, make a private transaction in an owned objec
         const revelation = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
-        expect(editable.get("readKey")).toEqual({
-            keyID: readKeyID,
-            revelation,
-        });
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+
+        editable.set("readKey", readKeyID, "trusting");
+        expect(editable.get("readKey")).toEqual(readKeyID);
         expect(team.getCurrentReadKey().secret).toEqual(readKey);
     });
 
@@ -892,34 +937,42 @@ test("Admins can set team read key, make a private transaction in an owned objec
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
     teamContent.edit((editable) => {
-        const revelation = seal(
+        const revelation2 = seal(
             readKey2,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID(), reader.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
 
-        editable.set(
-            "readKey",
+        editable.set(`${readKeyID2}_for_${admin.id}`, revelation2, "trusting");
+
+        const revelation3 = seal(
+            readKey2,
+            admin.currentRecipientSecret(),
+            reader.currentRecipientID(),
             {
-                keyID: readKeyID2,
-                revelation,
-                previousKeys: {
-                    [readKeyID]: sealKeySecret({
-                        toSeal: { id: readKeyID, secret: readKey },
-                        sealing: { id: readKeyID2, secret: readKey2 },
-                    }).encrypted,
-                },
-            },
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID2}_for_${reader.id}`, revelation3, "trusting");
+
+        editable.set(
+            `${readKeyID}_for_${readKeyID2}`,
+            encryptKeySecret({
+                toEncrypt: { id: readKeyID, secret: readKey },
+                encrypting: { id: readKeyID2, secret: readKey2 },
+            }).encrypted,
             "trusting"
         );
-        expect(editable.get("readKey")).toMatchObject({
-            keyID: readKeyID2,
-            revelation,
-        });
+
+        editable.set("readKey", readKeyID2, "trusting");
+
+        expect(editable.get("readKey")).toEqual(readKeyID2);
         expect(team.getCurrentReadKey().secret).toEqual(readKey2);
 
         editable.set(reader.id, "reader", "trusting");
@@ -1001,24 +1054,44 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     const reader2 = node.createAccount("reader2");
 
     teamContent.edit((editable) => {
-        const revelation = seal(
+        const revelation1 = seal(
             readKey,
             admin.currentRecipientSecret(),
-            new Set([
-                admin.currentRecipientID(),
-                reader.currentRecipientID(),
-                reader2.currentRecipientID(),
-            ]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID, revelation }, "trusting");
-        expect(editable.get("readKey")).toEqual({
-            keyID: readKeyID,
-            revelation,
-        });
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
+
+        const revelation2 = seal(
+            readKey,
+            admin.currentRecipientSecret(),
+            reader.currentRecipientID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${reader.id}`, revelation2, "trusting");
+
+        const revelation3 = seal(
+            readKey,
+            admin.currentRecipientSecret(),
+            reader2.currentRecipientID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${reader2.id}`, revelation3, "trusting");
+
+        editable.set("readKey", readKeyID, "trusting");
+        expect(editable.get("readKey")).toEqual(readKeyID);
         expect(team.getCurrentReadKey().secret).toEqual(readKey);
 
         editable.set(reader.id, "reader", "trusting");
@@ -1058,20 +1131,40 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
     teamContent.edit((editable) => {
-        const revelation = seal(
+        const newRevelation1 = seal(
             readKey2,
             admin.currentRecipientSecret(),
-            new Set([admin.currentRecipientID(), reader2.currentRecipientID()]),
+            admin.currentRecipientID(),
             {
                 in: team.id,
                 tx: team.nextTransactionID(),
             }
         );
-        editable.set("readKey", { keyID: readKeyID2, revelation }, "trusting");
-        expect(editable.get("readKey")).toEqual({
-            keyID: readKeyID2,
-            revelation,
-        });
+
+        editable.set(
+            `${readKeyID2}_for_${admin.id}`,
+            newRevelation1,
+            "trusting"
+        );
+
+        const newRevelation2 = seal(
+            readKey2,
+            admin.currentRecipientSecret(),
+            reader2.currentRecipientID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID2}_for_${reader2.id}`,
+            newRevelation2,
+            "trusting"
+        );
+
+        editable.set("readKey", readKeyID2, "trusting");
+        expect(editable.get("readKey")).toEqual(readKeyID2);
         expect(team.getCurrentReadKey().secret).toEqual(readKey2);
 
         editable.set(reader.id, "revoked", "trusting");
