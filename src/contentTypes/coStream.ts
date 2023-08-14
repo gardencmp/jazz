@@ -1,14 +1,14 @@
 import { JsonObject, JsonValue } from '../jsonValue.js';
-import { CoValueID } from '../contentType.js';
+import { CoID } from '../contentType.js';
 import { CoValue } from '../coValue.js';
 
 export class CoStream<T extends JsonValue, Meta extends JsonValue> {
-    id: CoValueID<CoStream<T, Meta>>;
+    id: CoID<CoStream<T, Meta>>;
     type = "costream" as const;
     coValue: CoValue;
 
     constructor(coValue: CoValue) {
-        this.id = coValue.id as CoValueID<CoStream<T, Meta>>;
+        this.id = coValue.id as CoID<CoStream<T, Meta>>;
         this.coValue = coValue;
     }
 

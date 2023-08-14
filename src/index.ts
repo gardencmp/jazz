@@ -4,7 +4,7 @@ import { CoMap } from "./contentTypes/coMap.js";
 import { agentSecretFromBytes, agentSecretToBytes } from "./crypto.js";
 
 import type { SessionID } from "./ids.js";
-import type { CoValueID, ContentType } from "./contentType.js";
+import type { CoID, ContentType } from "./contentType.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
@@ -23,7 +23,7 @@ export type {
     Value,
     JsonValue,
     ContentType,
-    CoValueID,
+    CoID,
     AgentSecret,
     SessionID,
     SyncMessage,

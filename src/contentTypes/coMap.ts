@@ -1,6 +1,6 @@
 import { JsonObject, JsonValue } from '../jsonValue.js';
 import { TransactionID } from '../ids.js';
-import { CoValueID } from '../contentType.js';
+import { CoID } from '../contentType.js';
 import { CoValue } from '../coValue.js';
 
 type MapOp<K extends string, V extends JsonValue> = {
@@ -29,7 +29,7 @@ export class CoMap<
         [KK in K]: M[KK];
     }
 > {
-    id: CoValueID<CoMap<MM, Meta>>;
+    id: CoID<CoMap<MM, Meta>>;
     coValue: CoValue;
     type = "comap" as const;
     ops: {
@@ -37,7 +37,7 @@ export class CoMap<
     };
 
     constructor(coValue: CoValue) {
-        this.id = coValue.id as CoValueID<CoMap<MM, Meta>>;
+        this.id = coValue.id as CoID<CoMap<MM, Meta>>;
         this.coValue = coValue;
         this.ops = {};
 

@@ -8,17 +8,17 @@ import {
     WritableStream,
     WritableStreamDefaultWriter,
 } from "isomorphic-streams";
-import { RawCoValueID, SessionID } from "./ids.js";
+import { RawCoID, SessionID } from "./ids.js";
 
 export type CoValueKnownState = {
-    coValueID: RawCoValueID;
+    id: RawCoID;
     header: boolean;
     sessions: { [sessionID: SessionID]: number };
 };
 
-export function emptyKnownState(coValueID: RawCoValueID): CoValueKnownState {
+export function emptyKnownState(id: RawCoID): CoValueKnownState {
     return {
-        coValueID,
+        id,
         header: false,
         sessions: {},
     };
@@ -37,12 +37,12 @@ export type SubscribeMessage = {
 
 export type TellKnownStateMessage = {
     action: "tellKnownState";
-    asDependencyOf?: RawCoValueID;
+    asDependencyOf?: RawCoID;
 } & CoValueKnownState;
 
 export type NewContentMessage = {
     action: "newContent";
-    coValueID: RawCoValueID;
+    id: RawCoID;
     header?: CoValueHeader;
     newContent: {
         [sessionID: SessionID]: SessionNewContent;
@@ -63,7 +63,7 @@ export type WrongAssumedKnownStateMessage = {
 
 export type UnsubscribeMessage = {
     action: "unsubscribe";
-    coValueID: RawCoValueID;
+    id: RawCoID;
 };
 
 export type PeerID = string;
@@ -77,8 +77,8 @@ export interface Peer {
 
 export interface PeerState {
     id: PeerID;
-    optimisticKnownStates: { [coValueID: RawCoValueID]: CoValueKnownState };
-    toldKnownState: Set<RawCoValueID>;
+    optimisticKnownStates: { [id: RawCoID]: CoValueKnownState };
+    toldKnownState: Set<RawCoID>;
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStreamDefaultWriter<SyncMessage>;
     role: "peer" | "server" | "client";
@@ -103,7 +103,7 @@ export function combinedKnownStates(
     }
 
     return {
-        coValueID: stateA.coValueID,
+        id: stateA.id,
         header: stateA.header || stateB.header,
         sessions: sessionStates,
     };
@@ -117,12 +117,12 @@ export class SyncManager {
         this.local = local;
     }
 
-    loadFromPeers(id: RawCoValueID) {
+    loadFromPeers(id: RawCoID) {
         for (const peer of Object.values(this.peers)) {
             peer.outgoing
                 .write({
                     action: "subscribe",
-                    coValueID: id,
+                    id: id,
                     header: false,
                     sessions: {},
                 })
@@ -155,10 +155,10 @@ export class SyncManager {
     }
 
     async subscribeToIncludingDependencies(
-        coValueID: RawCoValueID,
+        id: RawCoID,
         peer: PeerState
     ) {
-        const entry = this.local.coValues[coValueID];
+        const entry = this.local.coValues[id];
 
         if (!entry) {
             throw new Error(
@@ -169,7 +169,7 @@ export class SyncManager {
         if (entry.state === "loading") {
             await this.trySendToPeer(peer, {
                 action: "subscribe",
-                coValueID,
+                id,
                 header: false,
                 sessions: {},
             });
@@ -178,12 +178,12 @@ export class SyncManager {
 
         const coValue = entry.coValue;
 
-        for (const coValueID of coValue.getDependedOnCoValues()) {
-            await this.subscribeToIncludingDependencies(coValueID, peer);
+        for (const id of coValue.getDependedOnCoValues()) {
+            await this.subscribeToIncludingDependencies(id, peer);
         }
 
-        if (!peer.toldKnownState.has(coValueID)) {
-            peer.toldKnownState.add(coValueID);
+        if (!peer.toldKnownState.has(id)) {
+            peer.toldKnownState.add(id);
             await this.trySendToPeer(peer, {
                 action: "subscribe",
                 ...coValue.knownState(),
@@ -192,50 +192,50 @@ export class SyncManager {
     }
 
     async tellUntoldKnownStateIncludingDependencies(
-        coValueID: RawCoValueID,
+        id: RawCoID,
         peer: PeerState,
-        asDependencyOf?: RawCoValueID
+        asDependencyOf?: RawCoID
     ) {
-        const coValue = this.local.expectCoValueLoaded(coValueID);
+        const coValue = this.local.expectCoValueLoaded(id);
 
-        for (const dependentCoValueID of coValue.getDependedOnCoValues()) {
+        for (const dependentCoID of coValue.getDependedOnCoValues()) {
             await this.tellUntoldKnownStateIncludingDependencies(
-                dependentCoValueID,
+                dependentCoID,
                 peer,
-                asDependencyOf || coValueID
+                asDependencyOf || id
             );
         }
 
-        if (!peer.toldKnownState.has(coValueID)) {
+        if (!peer.toldKnownState.has(id)) {
             await this.trySendToPeer(peer, {
                 action: "tellKnownState",
                 asDependencyOf,
                 ...coValue.knownState(),
             });
 
-            peer.toldKnownState.add(coValueID);
+            peer.toldKnownState.add(id);
         }
     }
 
     async sendNewContentIncludingDependencies(
-        coValueID: RawCoValueID,
+        id: RawCoID,
         peer: PeerState
     ) {
-        const coValue = this.local.expectCoValueLoaded(coValueID);
+        const coValue = this.local.expectCoValueLoaded(id);
 
-        for (const coValueID of coValue.getDependedOnCoValues()) {
-            await this.sendNewContentIncludingDependencies(coValueID, peer);
+        for (const id of coValue.getDependedOnCoValues()) {
+            await this.sendNewContentIncludingDependencies(id, peer);
         }
 
         const newContent = coValue.newContentSince(
-            peer.optimisticKnownStates[coValueID]
+            peer.optimisticKnownStates[id]
         );
 
         if (newContent) {
             await this.trySendToPeer(peer, newContent);
-            peer.optimisticKnownStates[coValueID] = combinedKnownStates(
-                peer.optimisticKnownStates[coValueID] ||
-                    emptyKnownState(coValueID),
+            peer.optimisticKnownStates[id] = combinedKnownStates(
+                peer.optimisticKnownStates[id] ||
+                    emptyKnownState(id),
                 coValue.knownState()
             );
         }
@@ -256,11 +256,11 @@ export class SyncManager {
             const initialSync = async () => {
                 for (const id of Object.keys(
                     this.local.coValues
-                ) as RawCoValueID[]) {
+                ) as RawCoID[]) {
                     await this.subscribeToIncludingDependencies(id, peerState);
 
                     peerState.optimisticKnownStates[id] = {
-                        coValueID: id,
+                        id: id,
                         header: false,
                         sessions: {},
                     };
@@ -296,19 +296,19 @@ export class SyncManager {
     }
 
     async handleSubscribe(msg: SubscribeMessage, peer: PeerState) {
-        const entry = this.local.coValues[msg.coValueID];
+        const entry = this.local.coValues[msg.id];
 
         if (!entry || entry.state === "loading") {
             if (!entry) {
-                this.local.coValues[msg.coValueID] = newLoadingState();
+                this.local.coValues[msg.id] = newLoadingState();
             }
 
-            peer.optimisticKnownStates[msg.coValueID] = knownStateIn(msg);
-            peer.toldKnownState.add(msg.coValueID);
+            peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
+            peer.toldKnownState.add(msg.id);
 
             await this.trySendToPeer(peer, {
                 action: "tellKnownState",
-                coValueID: msg.coValueID,
+                id: msg.id,
                 header: false,
                 sessions: {},
             });
@@ -316,22 +316,22 @@ export class SyncManager {
             return;
         }
 
-        peer.optimisticKnownStates[msg.coValueID] = knownStateIn(msg);
+        peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
 
         await this.tellUntoldKnownStateIncludingDependencies(
-            msg.coValueID,
+            msg.id,
             peer
         );
 
-        await this.sendNewContentIncludingDependencies(msg.coValueID, peer);
+        await this.sendNewContentIncludingDependencies(msg.id, peer);
     }
 
     async handleTellKnownState(msg: TellKnownStateMessage, peer: PeerState) {
-        let entry = this.local.coValues[msg.coValueID];
+        let entry = this.local.coValues[msg.id];
 
-        peer.optimisticKnownStates[msg.coValueID] = combinedKnownStates(
-            peer.optimisticKnownStates[msg.coValueID] ||
-                emptyKnownState(msg.coValueID),
+        peer.optimisticKnownStates[msg.id] = combinedKnownStates(
+            peer.optimisticKnownStates[msg.id] ||
+                emptyKnownState(msg.id),
             knownStateIn(msg)
         );
 
@@ -340,7 +340,7 @@ export class SyncManager {
                 if (this.local.coValues[msg.asDependencyOf]) {
                     entry = newLoadingState();
 
-                    this.local.coValues[msg.coValueID] = entry;
+                    this.local.coValues[msg.id] = entry;
                 } else {
                     throw new Error(
                         "Expected coValue dependency entry to be created, missing subscribe?"
@@ -358,14 +358,14 @@ export class SyncManager {
         }
 
         await this.tellUntoldKnownStateIncludingDependencies(
-            msg.coValueID,
+            msg.id,
             peer
         );
-        await this.sendNewContentIncludingDependencies(msg.coValueID, peer);
+        await this.sendNewContentIncludingDependencies(msg.id, peer);
     }
 
     async handleNewContent(msg: NewContentMessage, peer: PeerState) {
-        let entry = this.local.coValues[msg.coValueID];
+        let entry = this.local.coValues[msg.id];
 
         if (!entry) {
             throw new Error(
@@ -376,7 +376,7 @@ export class SyncManager {
         let resolveAfterDone: ((coValue: CoValue) => void) | undefined;
 
         const peerOptimisticKnownState =
-            peer.optimisticKnownStates[msg.coValueID];
+            peer.optimisticKnownStates[msg.id];
 
         if (!peerOptimisticKnownState) {
             throw new Error(
@@ -400,7 +400,7 @@ export class SyncManager {
                 coValue: coValue,
             };
 
-            this.local.coValues[msg.coValueID] = entry;
+            this.local.coValues[msg.id] = entry;
         }
 
         const coValue = entry.coValue;
@@ -461,9 +461,9 @@ export class SyncManager {
         msg: WrongAssumedKnownStateMessage,
         peer: PeerState
     ) {
-        const coValue = this.local.expectCoValueLoaded(msg.coValueID);
+        const coValue = this.local.expectCoValueLoaded(msg.id);
 
-        peer.optimisticKnownStates[msg.coValueID] = combinedKnownStates(
+        peer.optimisticKnownStates[msg.id] = combinedKnownStates(
             msg,
             coValue.knownState()
         );
@@ -510,7 +510,7 @@ function knownStateIn(
         | WrongAssumedKnownStateMessage
 ) {
     return {
-        coValueID: msg.coValueID,
+        id: msg.id,
         header: msg.header,
         sessions: msg.sessions,
     };

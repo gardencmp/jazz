@@ -10,8 +10,8 @@ import {
 import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
 import { Team, TeamContent, expectTeamContent } from "./permissions.js";
 import { SyncManager } from "./sync.js";
-import { AgentID, RawCoValueID, SessionID, isAgentID } from "./ids.js";
-import { CoValueID, ContentType } from "./contentType.js";
+import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
+import { CoID, ContentType } from "./contentType.js";
 import {
     Account,
     AccountMeta,
@@ -24,7 +24,7 @@ import {
 import { CoMap } from "./index.js";
 
 export class LocalNode {
-    coValues: { [key: RawCoValueID]: CoValueState } = {};
+    coValues: { [key: RawCoID]: CoValueState } = {};
     account: GeneralizedControlledAccount;
     ownSessionID: SessionID;
     sync = new SyncManager(this);
@@ -46,7 +46,7 @@ export class LocalNode {
         return coValue;
     }
 
-    loadCoValue(id: RawCoValueID): Promise<CoValue> {
+    loadCoValue(id: RawCoID): Promise<CoValue> {
         let entry = this.coValues[id];
         if (!entry) {
             entry = newLoadingState();
@@ -61,11 +61,11 @@ export class LocalNode {
         return entry.done;
     }
 
-    async load<T extends ContentType>(id: CoValueID<T>): Promise<T> {
+    async load<T extends ContentType>(id: CoID<T>): Promise<T> {
         return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
-    expectCoValueLoaded(id: RawCoValueID, expectation?: string): CoValue {
+    expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
         const entry = this.coValues[id];
         if (!entry) {
             throw new Error(
