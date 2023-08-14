@@ -1,6 +1,6 @@
 import { AccountIDOrAgentID } from './account.js';
 
-export type RawCoValueID = `co_z${string}` | `co_${string}_z${string}`;
+export type RawCoValueID = `co_z${string}`;
 
 export type TransactionID = { sessionID: SessionID; txIndex: number };
 

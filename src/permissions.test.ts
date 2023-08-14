@@ -266,7 +266,6 @@ test("Admins can write to an object that is owned by their team", () => {
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -309,7 +308,6 @@ test("Writers can write to an object that is owned by their team", () => {
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     const childObjectAsWriter = childObject.testWithDifferentAccount(
@@ -369,7 +367,6 @@ test("Readers can not write to an object that is owned by their team", () => {
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     const childObjectAsReader = childObject.testWithDifferentAccount(
@@ -449,7 +446,6 @@ test("Admins can set team read key and then use it to create and read private tr
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -521,7 +517,6 @@ test("Admins can set team read key and then writers can use it to create and rea
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     const childObjectAsWriter = childObject.testWithDifferentAccount(
@@ -613,7 +608,6 @@ test("Admins can set team read key and then use it to create private transaction
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     expectMap(childObject.getCurrentContent()).edit((editable) => {
@@ -705,7 +699,6 @@ test("Admins can set team read key and then use it to create private transaction
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     expectMap(childObject.getCurrentContent()).edit((editable) => {
@@ -818,7 +811,6 @@ test("Admins can set team read key, make a private transaction in an owned objec
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -898,7 +890,6 @@ test("Admins can set team read key, make a private transaction in an owned objec
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     const teamContent = expectTeamContent(team.getCurrentContent());
@@ -1044,7 +1035,6 @@ test("Admins can set team read rey, make a private transaction in an owned objec
         ruleset: { type: "ownedByTeam", team: team.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "childObject",
     });
 
     const teamContent = expectTeamContent(team.getCurrentContent());

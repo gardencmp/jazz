@@ -154,7 +154,6 @@ export class LocalNode {
             ruleset: { type: "team", initialAdmin: this.account.id },
             meta: null,
             ...createdNowUnique(),
-            publicNickname: "team",
         });
 
         let teamContent = expectTeamContent(teamCoValue.getCurrentContent());

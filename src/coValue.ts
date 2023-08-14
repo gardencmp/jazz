@@ -45,18 +45,11 @@ export type CoValueHeader = {
     meta: JsonObject | null;
     createdAt: `2${string}` | null;
     uniqueness: `z${string}` | null;
-    publicNickname?: string;
 };
 
 export function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     const hash = shortHash(header);
-    if (header.publicNickname) {
-        return `co_${header.publicNickname}_z${hash.slice(
-            "shortHash_z".length
-        )}`;
-    } else {
-        return `co_z${hash.slice("shortHash_z".length)}`;
-    }
+    return `co_z${hash.slice("shortHash_z".length)}`;
 }
 
 export function accountOrAgentIDfromSessionID(

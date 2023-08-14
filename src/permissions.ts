@@ -354,7 +354,6 @@ export class Team {
                 },
                 meta: meta || null,
                 ...createdNowUnique(),
-                publicNickname: "map",
             })
             .getCurrentContent() as CoMap<M, Meta>;
     }

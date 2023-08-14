@@ -23,7 +23,6 @@ export function newTeam() {
         ruleset: { type: "team", initialAdmin: admin.id },
         meta: null,
         ...createdNowUnique(),
-        publicNickname: "team",
     });
 
     const teamContent = expectTeamContent(team.getCurrentContent());

@@ -49,7 +49,7 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
 
     const nOnceMaterial = {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 0 },
     } as const;
 
     const sealed = seal(
@@ -101,22 +101,22 @@ test("Encryption for transactions round-trips", () => {
 
     const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 1 },
     });
 
     const decrypted1 = decryptForTransaction(encrypted1, secret, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const decrypted2 =  decryptForTransaction(encrypted2, secret, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 1 },
     });
 
     expect([decrypted1, decrypted2]).toEqual([{ a: "hello" }, { b: "world" }]);
@@ -128,22 +128,22 @@ test("Encryption for transactions doesn't decrypt with a wrong key", () => {
 
     const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 1 },
     });
 
     const decrypted1 = decryptForTransaction(encrypted1, secret2, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 0 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 0 },
     });
 
     const decrypted2 =  decryptForTransaction(encrypted2, secret2, {
         in: "co_zTEST",
-        tx: { sessionID: "co_agent_zTEST_session_zTEST", txIndex: 1 },
+        tx: { sessionID: "co_zTEST_session_zTEST", txIndex: 1 },
     });
 
     expect([decrypted1, decrypted2]).toEqual([undefined, undefined]);

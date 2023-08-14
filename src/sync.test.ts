@@ -68,7 +68,6 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
             meta: null,
             createdAt: map.coValue.header.createdAt,
             uniqueness: map.coValue.header.uniqueness,
-            publicNickname: "map",
         },
         newContent: {
             [node.ownSessionID]: {
@@ -1062,7 +1061,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
 });
 
 test("If we start loading a coValue before connecting to a peer that has it, it will load it once we connect", async () => {
-   const [admin, session] = randomAnonymousAccountAndSessionID();
+    const [admin, session] = randomAnonymousAccountAndSessionID();
 
     const node1 = new LocalNode(admin, session);
 
