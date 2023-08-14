@@ -37,7 +37,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     const writer = inTx.getWriter();
 
     await writer.write({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
         header: false,
         sessions: {},
@@ -50,7 +50,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -60,7 +60,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     const newContentMsg = await reader.read();
 
     expect(newContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: {
             type: "comap",
@@ -69,7 +69,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
             createdAt: map.coValue.header.createdAt,
             uniqueness: map.coValue.header.uniqueness,
         },
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
@@ -120,7 +120,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const writer = inTx.getWriter();
 
     await writer.write({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
         header: true,
         sessions: {
@@ -135,7 +135,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -145,10 +145,10 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const mapNewContentMsg = await reader.read();
 
     expect(mapNewContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: undefined,
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 1,
                 newTransactions: [
@@ -198,7 +198,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const writer = inTx.getWriter();
 
     await writer.write({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
         header: false,
         sessions: {
@@ -213,7 +213,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -223,10 +223,10 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const mapNewContentHeaderOnlyMsg = await reader.read();
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {},
+        new: {},
     } satisfies SyncMessage);
 
     map.edit((editable) => {
@@ -236,9 +236,9 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const mapEditMsg1 = await reader.read();
 
     expect(mapEditMsg1.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
@@ -269,9 +269,9 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const mapEditMsg2 = await reader.read();
 
     expect(mapEditMsg2.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 1,
                 newTransactions: [
@@ -325,7 +325,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
     const writer = inTx.getWriter();
 
     await writer.write({
-        action: "tellKnownState",
+        action: "known",
         id: map.coValue.id,
         header: false,
         sessions: {
@@ -338,7 +338,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -348,10 +348,10 @@ test("Client replies with known new content to tellKnownState from server", asyn
     const mapNewContentMsg = await reader.read();
 
     expect(mapNewContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
@@ -397,7 +397,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     const writer = inTx.getWriter();
 
     await writer.write({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
         header: false,
         sessions: {
@@ -412,7 +412,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -422,10 +422,10 @@ test("No matter the optimistic known state, node respects invalid known state me
     const mapNewContentHeaderOnlyMsg = await reader.read();
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {},
+        new: {},
     } satisfies SyncMessage);
 
     map.edit((editable) => {
@@ -440,7 +440,8 @@ test("No matter the optimistic known state, node respects invalid known state me
     const _mapEditMsg2 = await reader.read();
 
     await writer.write({
-        action: "wrongAssumedKnownState",
+        action: "known",
+        isCorrection: true,
         id: map.coValue.id,
         header: true,
         sessions: {
@@ -451,10 +452,10 @@ test("No matter the optimistic known state, node respects invalid known state me
     const newContentAfterWrongAssumedState = await reader.read();
 
     expect(newContentAfterWrongAssumedState.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: undefined,
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 1,
                 newTransactions: [
@@ -528,18 +529,18 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
-    //     action: "subscribe",
+    //     action: "load",
     //     id: adminID,
     // });
     expect((await reader.read()).value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: team.teamMap.coValue.id,
     });
 
     const mapSubscribeMsg = await reader.read();
 
     expect(mapSubscribeMsg.value).toEqual({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
         header: true,
         sessions: {},
@@ -555,10 +556,10 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     const mapNewContentMsg = await reader.read();
 
     expect(mapNewContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {
+        new: {
             [node.ownSessionID]: {
                 after: 0,
                 newTransactions: [
@@ -601,11 +602,11 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
-    //     action: "subscribe",
+    //     action: "load",
     //     id: admin.id,
     // });
     expect((await reader.read()).value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: team.teamMap.coValue.id,
     });
 
@@ -614,7 +615,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const mapSubscribeMsg = await reader.read();
 
     expect(mapSubscribeMsg.value).toEqual({
-        action: "subscribe",
+        action: "load",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -624,10 +625,10 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const mapContentMsg = await reader.read();
 
     expect(mapContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {},
+        new: {},
     } satisfies SyncMessage);
 });
 
@@ -659,14 +660,14 @@ test("When we connect a new server peer, we try to sync all existing coValues to
     const teamSubscribeMessage = await reader.read();
 
     expect(teamSubscribeMessage.value).toEqual({
-        action: "subscribe",
+        action: "load",
         ...team.teamMap.coValue.knownState(),
     } satisfies SyncMessage);
 
     const secondMessage = await reader.read();
 
     expect(secondMessage.value).toEqual({
-        action: "subscribe",
+        action: "load",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 });
@@ -692,7 +693,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
     const writer = inTx.getWriter();
 
     await writer.write({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
         header: true,
         sessions: {
@@ -707,7 +708,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
     const mapTellKnownState = await reader.read();
 
     expect(mapTellKnownState.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 });
@@ -750,12 +751,12 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     const adminSubscribeMessage = await from1.read();
     expect(adminSubscribeMessage.value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: admin.id,
     });
     const teamSubscribeMsg = await from1.read();
     expect(teamSubscribeMsg.value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: team.teamMap.coValue.id,
     });
 
@@ -790,23 +791,23 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     const mapSubscriptionMsg = await from1.read();
     expect(mapSubscriptionMsg.value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: map.coValue.id,
     });
 
     const mapNewContentMsg = await from1.read();
     expect(mapNewContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {},
+        new: {},
     } satisfies SyncMessage);
 
     await to2.write(mapSubscriptionMsg.value!);
 
     const mapTellKnownStateMsg = await from2.read();
     expect(mapTellKnownStateMsg.value).toEqual({
-        action: "tellKnownState",
+        action: "known",
         id: map.coValue.id,
         header: false,
         sessions: {},
@@ -965,11 +966,11 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
-    //     action: "subscribe",
+    //     action: "load",
     //     id: admin.id,
     // });
     expect((await reader.read()).value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: team.teamMap.coValue.id,
     });
 
@@ -978,7 +979,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     const mapSubscribeMsg = await reader.read();
 
     expect(mapSubscribeMsg.value).toEqual({
-        action: "subscribe",
+        action: "load",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -988,10 +989,10 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     const mapContentMsg = await reader.read();
 
     expect(mapContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {},
+        new: {},
     } satisfies SyncMessage);
 
     await inTx.abort();
@@ -1019,11 +1020,11 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
-    //     action: "subscribe",
+    //     action: "load",
     //     id: admin.id,
     // });
     expect((await reader.read()).value).toMatchObject({
-        action: "subscribe",
+        action: "load",
         id: team.teamMap.coValue.id,
     });
 
@@ -1032,7 +1033,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     const mapSubscribeMsg = await reader.read();
 
     expect(mapSubscribeMsg.value).toEqual({
-        action: "subscribe",
+        action: "load",
         ...map.coValue.knownState(),
     } satisfies SyncMessage);
 
@@ -1042,10 +1043,10 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     const mapContentMsg = await reader.read();
 
     expect(mapContentMsg.value).toEqual({
-        action: "newContent",
+        action: "content",
         id: map.coValue.id,
         header: map.coValue.header,
-        newContent: {},
+        new: {},
     } satisfies SyncMessage);
 
     reader.releaseLock();
@@ -1097,28 +1098,28 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
 function teamContentEx(team: Team) {
     return {
-        action: "newContent",
+        action: "content",
         id: team.teamMap.coValue.id,
     };
 }
 
 function admContEx(adminID: AccountID) {
     return {
-        action: "newContent",
+        action: "content",
         id: adminID,
     };
 }
 
 function teamStateEx(team: Team) {
     return {
-        action: "tellKnownState",
+        action: "known",
         id: team.teamMap.coValue.id,
     };
 }
 
 function admStateEx(adminID: AccountID) {
     return {
-        action: "tellKnownState",
+        action: "known",
         id: adminID,
     };
 }
