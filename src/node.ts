@@ -1,38 +1,40 @@
-import { createdNowUnique, newRandomKeySecret, seal } from './crypto.js';
 import {
-    CoValue,
-    AgentCredential,
-    Agent,
-    getAgent,
+    createdNowUnique,
     getAgentID,
-    getAgentCoValueHeader,
-    CoValueHeader,
-    newRandomAgentCredential,
-} from './coValue.js';
-import { Team, expectTeamContent } from './permissions.js';
-import { SyncManager } from './sync.js';
-import { AgentID, RawCoValueID, SessionID } from './ids.js';
-import { CoValueID, ContentType } from './contentType.js';
+    getAgentRecipientID,
+    getAgentRecipientSecret,
+    newRandomAgentSecret,
+    newRandomKeySecret,
+    seal,
+} from "./crypto.js";
+import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
+import { Team, TeamContent, expectTeamContent } from "./permissions.js";
+import { SyncManager } from "./sync.js";
+import { RawAgentID, RawCoValueID, SessionID, isRawAgentID } from "./ids.js";
+import { CoValueID, ContentType } from "./contentType.js";
+import {
+    Account,
+    AccountMeta,
+    AccountIDOrAgentID,
+    accountHeaderForInitialAgentSecret,
+    GeneralizedControlledAccount,
+    ControlledAccount,
+    AnonymousControlledAccount,
+} from "./account.js";
+import { CoMap } from "./index.js";
 
 export class LocalNode {
     coValues: { [key: RawCoValueID]: CoValueState } = {};
-    agentCredential: AgentCredential;
-    agentID: AgentID;
+    account: GeneralizedControlledAccount;
     ownSessionID: SessionID;
     sync = new SyncManager(this);
 
-    constructor(agentCredential: AgentCredential, ownSessionID: SessionID) {
-        this.agentCredential = agentCredential;
-        const agent = getAgent(agentCredential);
-        const agentID = getAgentID(agent);
-        this.agentID = agentID;
+    constructor(
+        account: GeneralizedControlledAccount,
+        ownSessionID: SessionID
+    ) {
+        this.account = account;
         this.ownSessionID = ownSessionID;
-
-        const agentCoValue = new CoValue(getAgentCoValueHeader(agent), this);
-        this.coValues[agentCoValue.id] = {
-            state: "loaded",
-            coValue: agentCoValue,
-        };
     }
 
     createCoValue(header: CoValueHeader): CoValue {
@@ -80,39 +82,72 @@ export class LocalNode {
         return entry.coValue;
     }
 
-    createAgent(publicNickname: string): AgentCredential {
-        const agentCredential = newRandomAgentCredential(publicNickname);
+    createAccount(_publicNickname: string): ControlledAccount {
+        const agentSecret = newRandomAgentSecret();
 
-        this.createCoValue(getAgentCoValueHeader(getAgent(agentCredential)));
+        const account = this.createCoValue(
+            accountHeaderForInitialAgentSecret(agentSecret)
+        ).testWithDifferentAccount(new AnonymousControlledAccount(agentSecret), newRandomSessionID(getAgentID(agentSecret)));
 
-        return agentCredential;
+        expectTeamContent(account.getCurrentContent()).edit((editable) => {
+            editable.set(getAgentID(agentSecret), "admin", "trusting");
+
+            const readKey = newRandomKeySecret();
+            const revelation = seal(
+                readKey.secret,
+                getAgentRecipientSecret(agentSecret),
+                new Set([getAgentRecipientID(getAgentID(agentSecret))]),
+                {
+                    in: account.id,
+                    tx: account.nextTransactionID(),
+                }
+            );
+
+            editable.set(
+                "readKey",
+                { keyID: readKey.id, revelation },
+                "trusting"
+            );
+        });
+
+        return new ControlledAccount(
+            agentSecret,
+            account.getCurrentContent() as CoMap<TeamContent, AccountMeta>,
+            this
+        );
     }
 
-    expectAgentLoaded(id: AgentID, expectation?: string): Agent {
-        const coValue = this.expectCoValueLoaded(
-            id,
-            expectation
-        );
+    resolveAccount(id: AccountIDOrAgentID, expectation?: string): RawAgentID {
+        if (isRawAgentID(id)) {
+            return id;
+        }
 
-        if (coValue.header.type !== "comap" || coValue.header.ruleset.type !== "agent") {
+        const coValue = this.expectCoValueLoaded(id, expectation);
+
+        if (
+            coValue.header.type !== "comap" ||
+            coValue.header.ruleset.type !== "team" ||
+            !coValue.header.meta ||
+            !("type" in coValue.header.meta) ||
+            coValue.header.meta.type !== "account"
+        ) {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }CoValue ${id} is not an agent`
+                }CoValue ${id} is not an account`
             );
         }
 
-        return {
-            recipientID: coValue.header.ruleset.initialRecipientID,
-            signatoryID: coValue.header.ruleset.initialSignatoryID,
-            publicNickname: coValue.header.publicNickname?.replace("agent-", ""),
-        }
+        return new Account(
+            coValue.getCurrentContent() as CoMap<TeamContent, AccountMeta>,
+            this
+        ).getCurrentAgentID();
     }
 
     createTeam(): Team {
         const teamCoValue = this.createCoValue({
             type: "comap",
-            ruleset: { type: "team", initialAdmin: this.agentID },
+            ruleset: { type: "team", initialAdmin: this.account.id },
             meta: null,
             ...createdNowUnique(),
             publicNickname: "team",
@@ -121,13 +156,13 @@ export class LocalNode {
         let teamContent = expectTeamContent(teamCoValue.getCurrentContent());
 
         teamContent = teamContent.edit((editable) => {
-            editable.set(this.agentID, "admin", "trusting");
+            editable.set(this.account.id, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
             const revelation = seal(
                 readKey.secret,
-                this.agentCredential.recipientSecret,
-                new Set([getAgent(this.agentCredential).recipientID]),
+                this.account.currentRecipientSecret(),
+                new Set([this.account.currentRecipientID()]),
                 {
                     in: teamCoValue.id,
                     tx: teamCoValue.nextTransactionID(),
@@ -144,11 +179,11 @@ export class LocalNode {
         return new Team(teamContent, this);
     }
 
-    testWithDifferentCredentials(
-        agentCredential: AgentCredential,
+    testWithDifferentAccount(
+        account: GeneralizedControlledAccount,
         ownSessionID: SessionID
     ): LocalNode {
-        const newNode = new LocalNode(agentCredential, ownSessionID);
+        const newNode = new LocalNode(account, ownSessionID);
 
         newNode.coValues = Object.fromEntries(
             Object.entries(this.coValues)

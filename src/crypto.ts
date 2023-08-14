@@ -5,7 +5,7 @@ import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { RawCoValueID, TransactionID } from './ids.js';
+import { RawAgentID, RawCoValueID, TransactionID } from './ids.js';
 
 export type SignatorySecret = `signatorySecret_z${string}`;
 export type SignatoryID = `signatory_z${string}`;
@@ -14,6 +14,8 @@ export type Signature = `signature_z${string}`;
 export type RecipientSecret = `recipientSecret_z${string}`;
 export type RecipientID = `recipient_z${string}`;
 export type Sealed<T> = `sealed_U${string}` & { __type: T };
+
+export type AgentSecret = `${RecipientSecret}/${SignatorySecret}`;
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
@@ -78,6 +80,51 @@ export function getRecipientID(secret: RecipientSecret): RecipientID {
             base58.decode(secret.substring("recipientSecret_z".length))
         )
     )}`;
+}
+
+export function newRandomAgentSecret(): AgentSecret {
+    return `${newRandomRecipient()}/${newRandomSignatory()}`;
+}
+
+export function agentSecretToBytes(secret: AgentSecret): Uint8Array {
+    const [recipientSecret, signatorySecret] = secret.split("/");
+    return new Uint8Array([
+        ...recipientSecretToBytes(recipientSecret as RecipientSecret),
+        ...signatorySecretToBytes(signatorySecret as SignatorySecret),
+    ]);
+}
+
+export function agentSecretFromBytes(bytes: Uint8Array): AgentSecret {
+    const recipientSecret = recipientSecretFromBytes(
+        bytes.slice(0, 32)
+    );
+    const signatorySecret = signatorySecretFromBytes(
+        bytes.slice(32)
+    );
+    return `${recipientSecret}/${signatorySecret}`;
+}
+
+export function getAgentID(secret: AgentSecret): RawAgentID {
+    const [recipientSecret, signatorySecret] = secret.split("/");
+    return `${getRecipientID(
+        recipientSecret as RecipientSecret
+    )}/${getSignatoryID(signatorySecret as SignatorySecret)}`;
+}
+
+export function getAgentSignatoryID(agentId: RawAgentID): SignatoryID {
+    return agentId.split("/")[1] as SignatoryID;
+}
+
+export function getAgentSignatorySecret(agentSecret: AgentSecret): SignatorySecret {
+    return agentSecret.split("/")[1] as SignatorySecret;
+}
+
+export function getAgentRecipientID(agentId: RawAgentID): RecipientID {
+    return agentId.split("/")[0] as RecipientID;
+}
+
+export function getAgentRecipientSecret(agentSecret: AgentSecret): RecipientSecret {
+    return agentSecret.split("/")[0] as RecipientSecret;
 }
 
 export type SealedSet<T> = {

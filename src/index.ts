@@ -1,29 +1,19 @@
-import {
-    CoValue,
-    agentCredentialFromBytes,
-    agentCredentialToBytes,
-    getAgent,
-    getAgentID,
-    newRandomAgentCredential,
-    newRandomSessionID,
-} from './coValue.js';
-import { LocalNode } from './node.js';
-import { CoMap } from './contentTypes/coMap.js';
+import { CoValue, newRandomSessionID } from "./coValue.js";
+import { LocalNode } from "./node.js";
+import { CoMap } from "./contentTypes/coMap.js";
+import { agentSecretFromBytes, agentSecretToBytes } from "./crypto.js";
 
-import type { AgentCredential } from './coValue.js';
-import type { AgentID, SessionID } from './ids.js';
-import type { CoValueID, ContentType } from './contentType.js';
-import type { JsonValue } from './jsonValue.js';
-import type { SyncMessage } from './sync.js';
+import type { SessionID } from "./ids.js";
+import type { CoValueID, ContentType } from "./contentType.js";
+import type { JsonValue } from "./jsonValue.js";
+import type { SyncMessage } from "./sync.js";
+import type { AgentSecret } from "./crypto.js";
 
 type Value = JsonValue | ContentType;
 
 const internals = {
-    agentCredentialToBytes,
-    agentCredentialFromBytes,
-    getAgent,
-    getAgentID,
-    newRandomAgentCredential,
+    agentSecretFromBytes,
+    agentSecretToBytes,
     newRandomSessionID,
 };
 
@@ -34,8 +24,7 @@ export type {
     JsonValue,
     ContentType,
     CoValueID,
-    AgentCredential,
+    AgentSecret,
     SessionID,
-    AgentID,
-    SyncMessage
+    SyncMessage,
 };
