@@ -1,25 +1,16 @@
-import {
-    agentIDfromSessionID,
-    getAgent,
-    getAgentID,
-    newRandomAgentCredential,
-    newRandomSessionID,
-} from './coValue.js';
+import { accountOrAgentIDfromSessionID } from "./coValue.js";
 import { createdNowUnique } from "./crypto.js";
 import { LocalNode } from "./node.js";
+import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 test("Empty COJSON Map works", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -34,17 +25,13 @@ test("Empty COJSON Map works", () => {
 });
 
 test("Can insert and delete Map entries in edit()", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -67,17 +54,13 @@ test("Can insert and delete Map entries in edit()", () => {
 });
 
 test("Can get map entry values at different points in time", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -90,13 +73,13 @@ test("Can get map entry values at different points in time", () => {
 
     content.edit((editable) => {
         const beforeA = Date.now();
-        while(Date.now() < beforeA + 10){}
+        while (Date.now() < beforeA + 10) {}
         editable.set("hello", "A", "trusting");
         const beforeB = Date.now();
-        while(Date.now() < beforeB + 10){}
+        while (Date.now() < beforeB + 10) {}
         editable.set("hello", "B", "trusting");
         const beforeC = Date.now();
-        while(Date.now() < beforeC + 10){}
+        while (Date.now() < beforeC + 10) {}
         editable.set("hello", "C", "trusting");
         expect(editable.get("hello")).toEqual("C");
         expect(editable.getAtTime("hello", Date.now())).toEqual("C");
@@ -107,17 +90,13 @@ test("Can get map entry values at different points in time", () => {
 });
 
 test("Can get all historic values of key", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -137,9 +116,7 @@ test("Can get all historic values of key", () => {
         const txDel = editable.getLastTxID("hello");
         editable.set("hello", "C", "trusting");
         const txC = editable.getLastTxID("hello");
-        expect(
-            editable.getHistory("hello")
-        ).toEqual([
+        expect(editable.getHistory("hello")).toEqual([
             {
                 txID: txA,
                 value: "A",
@@ -165,17 +142,13 @@ test("Can get all historic values of key", () => {
 });
 
 test("Can get last tx ID for a key", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -190,8 +163,8 @@ test("Can get last tx ID for a key", () => {
         expect(editable.getLastTxID("hello")).toEqual(undefined);
         editable.set("hello", "A", "trusting");
         const sessionID = editable.getLastTxID("hello")?.sessionID;
-        expect(sessionID && agentIDfromSessionID(sessionID)).toEqual(
-            getAgentID(getAgent(agentCredential))
+        expect(sessionID && accountOrAgentIDfromSessionID(sessionID)).toEqual(
+            node.account.id
         );
         expect(editable.getLastTxID("hello")?.txIndex).toEqual(0);
         editable.set("hello", "B", "trusting");

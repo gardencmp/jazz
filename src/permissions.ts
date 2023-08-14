@@ -1,36 +1,30 @@
-import { ContentType } from './contentType.js';
+import { CoValueID, ContentType } from './contentType.js';
 import { CoMap, MapOpPayload } from './contentTypes/coMap.js';
 import { JsonValue } from './jsonValue.js';
 import {
     Encrypted,
     KeyID,
     KeySecret,
-    RecipientID,
     SealedSet,
-    SignatoryID,
     createdNowUnique,
     newRandomKeySecret,
     seal,
     sealKeySecret,
+    getAgentRecipientID
 } from './crypto.js';
 import {
-    AgentCredential,
     CoValue,
     Transaction,
     TrustingTransaction,
-    agentIDfromSessionID,
+    accountOrAgentIDfromSessionID,
 } from './coValue.js';
 import { LocalNode } from "./node.js";
-import { AgentID, RawCoValueID, SessionID, TransactionID } from './ids.js';
+import { RawCoValueID, SessionID, TransactionID, isAgentID } from './ids.js';
+import { AccountIDOrAgentID, GeneralizedControlledAccount } from './account.js';
 
 export type PermissionsDef =
-    | { type: "team"; initialAdmin: AgentID; parentTeams?: RawCoValueID[] }
+    | { type: "team"; initialAdmin: AccountIDOrAgentID; }
     | { type: "ownedByTeam"; team: RawCoValueID }
-    | {
-          type: "agent";
-          initialSignatoryID: SignatoryID;
-          initialRecipientID: RecipientID;
-      }
     | { type: "unsafeAllowAll" };
 
 export type Role = "reader" | "writer" | "admin" | "revoked";
@@ -68,7 +62,7 @@ export function determineValidTransactions(
             throw new Error("Team must have initialAdmin");
         }
 
-        const memberState: { [agent: AgentID]: Role } = {};
+        const memberState: { [agent: AccountIDOrAgentID]: Role } = {};
 
         const validTransactions: { txID: TransactionID; tx: Transaction }[] =
             [];
@@ -79,10 +73,10 @@ export function determineValidTransactions(
             tx,
         } of allTrustingTransactionsSorted) {
             // console.log("before", { memberState, validTransactions });
-            const transactor = agentIDfromSessionID(sessionID);
+            const transactor = accountOrAgentIDfromSessionID(sessionID);
 
             const change = tx.changes[0] as
-                | MapOpPayload<AgentID, Role>
+                | MapOpPayload<AccountIDOrAgentID, Role>
                 | MapOpPayload<"readKey", JsonValue>;
             if (tx.changes.length !== 1) {
                 console.warn("Team transaction must have exactly one change");
@@ -164,7 +158,7 @@ export function determineValidTransactions(
 
         return Object.entries(coValue.sessions).flatMap(
             ([sessionID, sessionLog]) => {
-                const transactor = agentIDfromSessionID(sessionID as SessionID);
+                const transactor = accountOrAgentIDfromSessionID(sessionID as SessionID);
                 return sessionLog.transactions
                     .filter((tx) => {
                         const transactorRoleAtTxTime = teamContent.getAtTime(
@@ -192,15 +186,12 @@ export function determineValidTransactions(
                 }));
             }
         );
-    } else if (coValue.header.ruleset.type === "agent") {
-        // TODO
-        return [];
     } else {
         throw new Error("Unknown ruleset type " + (coValue.header.ruleset as any).type);
     }
 }
 
-export type TeamContent = { [key: AgentID]: Role } & {
+export type TeamContent = { [key: AccountIDOrAgentID]: Role } & {
     readKey: {
         keyID: KeyID;
         revelation: SealedSet<KeySecret>;
@@ -230,20 +221,20 @@ export class Team {
         this.node = node;
     }
 
-    get id(): RawCoValueID {
+    get id(): CoValueID<CoMap<TeamContent, {}>> {
         return this.teamMap.id;
     }
 
-    addMember(agentID: AgentID, role: Role) {
+    addMember(accountID: AccountIDOrAgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
-            const agent = this.node.expectAgentLoaded(agentID, "Expected to know agent to add them to team");
+            const agent = this.node.resolveAccount(accountID, "Expected to know agent to add them to team");
 
             if (!agent) {
-                throw new Error("Unknown agent " + agentID);
+                throw new Error("Unknown account/agent " + accountID);
             }
 
-            map.set(agentID, role, "trusting");
-            if (map.get(agentID) !== role) {
+            map.set(accountID, role, "trusting");
+            if (map.get(accountID) !== role) {
                 throw new Error("Failed to set role");
             }
 
@@ -255,8 +246,8 @@ export class Team {
 
             const revelation = seal(
                 currentReadKey.secret,
-                this.teamMap.coValue.node.agentCredential.recipientSecret,
-                new Set([agent.recipientID]),
+                this.teamMap.coValue.node.account.currentRecipientSecret(),
+                new Set([getAgentRecipientID(agent)]),
                 {
                     in: this.teamMap.coValue.id,
                     tx: this.teamMap.coValue.nextTransactionID(),
@@ -273,7 +264,7 @@ export class Team {
 
     rotateReadKey() {
         const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
-            if (key.startsWith("co_agent")) {
+            if (key.startsWith("co_") || isAgentID(key)) {
                 const role = this.teamMap.get(key);
                 return (
                     role === "admin" || role === "writer" || role === "reader"
@@ -281,7 +272,7 @@ export class Team {
             } else {
                 return false;
             }
-        }) as AgentID[];
+        }) as AccountIDOrAgentID[];
 
         const maybeCurrentReadKey = this.teamMap.coValue.getCurrentReadKey();
 
@@ -298,15 +289,15 @@ export class Team {
 
         const newReadKeyRevelation = seal(
             newReadKey.secret,
-            this.teamMap.coValue.node.agentCredential.recipientSecret,
+            this.teamMap.coValue.node.account.currentRecipientSecret(),
             new Set(
                 currentlyPermittedReaders.map(
                     (reader) => {
-                        const readerAgent = this.node.expectAgentLoaded(reader, "Expected to know currently permitted reader");
+                        const readerAgent = this.node.resolveAccount(reader, "Expected to know currently permitted reader");
                         if (!readerAgent) {
                             throw new Error("Unknown agent " + reader);
                         }
-                        return readerAgent.recipientID
+                        return getAgentRecipientID(readerAgent)
                     }
                 )
             ),
@@ -334,9 +325,9 @@ export class Team {
         });
     }
 
-    removeMember(agentID: AgentID) {
+    removeMember(accountID: AccountIDOrAgentID) {
         this.teamMap = this.teamMap.edit((map) => {
-            map.set(agentID, "revoked", "trusting");
+            map.set(accountID, "revoked", "trusting");
         });
 
         this.rotateReadKey();
@@ -359,14 +350,14 @@ export class Team {
             .getCurrentContent() as CoMap<M, Meta>;
     }
 
-    testWithDifferentCredentials(
-        credential: AgentCredential,
+    testWithDifferentAccount(
+        account: GeneralizedControlledAccount,
         sessionId: SessionID
     ): Team {
         return new Team(
             expectTeamContent(
                 this.teamMap.coValue
-                    .testWithDifferentCredentials(credential, sessionId)
+                    .testWithDifferentAccount(account, sessionId)
                     .getCurrentContent()
             ),
             this.node

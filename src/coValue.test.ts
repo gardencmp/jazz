@@ -1,25 +1,17 @@
-import {
-    Transaction,
-    getAgent,
-    getAgentID,
-    newRandomAgentCredential,
-    newRandomSessionID,
-} from './coValue.js';
-import { LocalNode } from './node.js';
-import { createdNowUnique, sign } from './crypto.js';
+import { Transaction } from "./coValue.js";
+import { LocalNode } from "./node.js";
+import { createdNowUnique, getAgentSignatorySecret, newRandomAgentSecret, sign } from "./crypto.js";
+import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const [account, sessionID] = randomAnonymousAccountAndSessionID();
+    const node = new LocalNode(account, sessionID);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const transaction: Transaction = {
@@ -42,24 +34,21 @@ test("Can create coValue with new agent credentials and add transaction to it", 
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(agentCredential.signatorySecret, expectedNewHash)
+            sign(account.currentSignatorySecret(), expectedNewHash)
         )
     ).toBe(true);
 });
 
 test("transactions with wrong signature are rejected", () => {
-    const wrongAgent = newRandomAgentCredential("wrongAgent");
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const wrongAgent = newRandomAgentSecret();
+    const [agentSecret, sessionID] = randomAnonymousAccountAndSessionID();
+    const node = new LocalNode(agentSecret, sessionID);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const transaction: Transaction = {
@@ -82,23 +71,20 @@ test("transactions with wrong signature are rejected", () => {
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(wrongAgent.signatorySecret, expectedNewHash)
+            sign(getAgentSignatorySecret(wrongAgent), expectedNewHash)
         )
     ).toBe(false);
 });
 
 test("transactions with correctly signed, but wrong hash are rejected", () => {
-    const agentCredential = newRandomAgentCredential("agent1");
-    const node = new LocalNode(
-        agentCredential,
-        newRandomSessionID(getAgentID(getAgent(agentCredential)))
-    );
+    const [account, sessionID] = randomAnonymousAccountAndSessionID();
+    const node = new LocalNode(account, sessionID);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique()
+        ...createdNowUnique(),
     });
 
     const transaction: Transaction = {
@@ -131,7 +117,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
             node.ownSessionID,
             [transaction],
             expectedNewHash,
-            sign(agentCredential.signatorySecret, expectedNewHash)
+            sign(account.currentSignatorySecret(), expectedNewHash)
         )
     ).toBe(false);
 });

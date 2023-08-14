@@ -1,22 +1,14 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { ContentType } from './contentType.js';
-import { Static } from './contentTypes/static.js';
-import { CoStream } from './contentTypes/coStream.js';
-import { CoMap } from './contentTypes/coMap.js';
+import { ContentType } from "./contentType.js";
+import { Static } from "./contentTypes/static.js";
+import { CoStream } from "./contentTypes/coStream.js";
+import { CoMap } from "./contentTypes/coMap.js";
 import {
     Encrypted,
     Hash,
     KeySecret,
-    RecipientID,
-    RecipientSecret,
-    SignatoryID,
-    SignatorySecret,
     Signature,
     StreamingHash,
-    getRecipientID,
-    getSignatoryID,
-    newRandomRecipient,
-    newRandomSignatory,
     openAs,
     shortHash,
     sign,
@@ -25,34 +17,37 @@ import {
     decryptForTransaction,
     KeyID,
     unsealKeySecret,
-    signatorySecretToBytes,
-    recipientSecretToBytes,
-    signatorySecretFromBytes,
-    recipientSecretFromBytes,
-} from './crypto.js';
-import { JsonValue } from './jsonValue.js';
+    getAgentSignatoryID,
+    getAgentRecipientID,
+} from "./crypto.js";
+import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
     Team,
     determineValidTransactions,
     expectTeamContent,
-} from './permissions.js';
-import { LocalNode } from './node.js';
-import { CoValueKnownState, NewContentMessage } from './sync.js';
-import { AgentID, RawCoValueID, SessionID, TransactionID } from './ids.js';
-import { CoList } from './contentTypes/coList.js';
+} from "./permissions.js";
+import { LocalNode } from "./node.js";
+import { CoValueKnownState, NewContentMessage } from "./sync.js";
+import { RawCoValueID, SessionID, TransactionID } from "./ids.js";
+import { CoList } from "./contentTypes/coList.js";
+import {
+    AccountID,
+    AccountIDOrAgentID,
+    GeneralizedControlledAccount,
+} from "./account.js";
 
 export type CoValueHeader = {
     type: ContentType["type"];
     ruleset: RulesetDef;
-    meta: JsonValue;
+    meta: JsonObject | null;
     createdAt: `2${string}` | null;
     uniqueness: `z${string}` | null;
     publicNickname?: string;
 };
 
-function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
+export function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     const hash = shortHash(header);
     if (header.publicNickname) {
         return `co_${header.publicNickname}_z${hash.slice(
@@ -63,12 +58,14 @@ function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
     }
 }
 
-export function agentIDfromSessionID(sessionID: SessionID): AgentID {
-    return sessionID.split("_session")[0] as AgentID;
+export function accountOrAgentIDfromSessionID(
+    sessionID: SessionID
+): AccountIDOrAgentID {
+    return sessionID.split("_session")[0] as AccountIDOrAgentID;
 }
 
-export function newRandomSessionID(agentID: AgentID): SessionID {
-    return `${agentID}_session_z${base58.encode(randomBytes(8))}`;
+export function newRandomSessionID(accountID: AccountIDOrAgentID): SessionID {
+    return `${accountID}_session_z${base58.encode(randomBytes(8))}`;
 }
 
 type SessionLog = {
@@ -117,12 +114,12 @@ export class CoValue {
         this.node = node;
     }
 
-    testWithDifferentCredentials(
-        agentCredential: AgentCredential,
+    testWithDifferentAccount(
+        account: GeneralizedControlledAccount,
         ownSessionID: SessionID
     ): CoValue {
-        const newNode = this.node.testWithDifferentCredentials(
-            agentCredential,
+        const newNode = this.node.testWithDifferentAccount(
+            account,
             ownSessionID
         );
 
@@ -160,13 +157,18 @@ export class CoValue {
         newHash: Hash,
         newSignature: Signature
     ): boolean {
-        const signatoryID = this.node.expectAgentLoaded(
-            agentIDfromSessionID(sessionID),
-            "Expected to know signatory of transaction"
-        ).signatoryID;
+        const signatoryID = getAgentSignatoryID(
+            this.node.resolveAccount(
+                accountOrAgentIDfromSessionID(sessionID),
+                "Expected to know signatory of transaction"
+            )
+        );
 
         if (!signatoryID) {
-            console.warn("Unknown agent", agentIDfromSessionID(sessionID));
+            console.warn(
+                "Unknown agent",
+                accountOrAgentIDfromSessionID(sessionID)
+            );
             return false;
         }
 
@@ -281,7 +283,7 @@ export class CoValue {
         ]);
 
         const signature = sign(
-            this.node.agentCredential.signatorySecret,
+            this.node.account.currentSignatorySecret(),
             expectedNewHash
         );
 
@@ -407,16 +409,18 @@ export class CoValue {
 
             for (const entry of readKeyHistory) {
                 if (entry.value?.keyID === keyID) {
-                    const revealer = agentIDfromSessionID(entry.txID.sessionID);
-                    const revealerAgent = this.node.expectAgentLoaded(
+                    const revealer = accountOrAgentIDfromSessionID(
+                        entry.txID.sessionID
+                    );
+                    const revealerAgent = this.node.resolveAccount(
                         revealer,
                         "Expected to know revealer"
                     );
 
                     const secret = openAs(
                         entry.value.revelation,
-                        this.node.agentCredential.recipientSecret,
-                        revealerAgent.recipientID,
+                        this.node.account.currentRecipientSecret(),
+                        getAgentRecipientID(revealerAgent),
                         {
                             in: this.id,
                             tx: entry.txID,
@@ -542,93 +546,11 @@ export class CoValue {
         return this.header.ruleset.type === "team"
             ? expectTeamContent(this.getCurrentContent())
                   .keys()
-                  .filter((k): k is AgentID => k.startsWith("co_agent"))
+                  .filter((k): k is AccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByTeam"
             ? [this.header.ruleset.team]
             : [];
     }
 }
 
-export type Agent = {
-    signatoryID: SignatoryID;
-    recipientID: RecipientID;
-    publicNickname?: string;
-};
-
-export function getAgent(agentCredential: AgentCredential) {
-    return {
-        signatoryID: getSignatoryID(agentCredential.signatorySecret),
-        recipientID: getRecipientID(agentCredential.recipientSecret),
-        publicNickname: agentCredential.publicNickname,
-    };
-}
-
-export function getAgentCoValueHeader(agent: Agent): CoValueHeader {
-    return {
-        type: "comap",
-        ruleset: {
-            type: "agent",
-            initialSignatoryID: agent.signatoryID,
-            initialRecipientID: agent.recipientID,
-        },
-        meta: null,
-        createdAt: null,
-        uniqueness: null,
-        publicNickname:
-            "agent" + (agent.publicNickname ? `-${agent.publicNickname}` : ""),
-    };
-}
-
-export function getAgentID(agent: Agent): AgentID {
-    return coValueIDforHeader(getAgentCoValueHeader(agent)) as AgentID;
-}
-
-export type AgentCredential = {
-    signatorySecret: SignatorySecret;
-    recipientSecret: RecipientSecret;
-    publicNickname?: string;
-};
-
-export function newRandomAgentCredential(
-    publicNickname?: string
-): AgentCredential {
-    const signatorySecret = newRandomSignatory();
-    const recipientSecret = newRandomRecipient();
-    return { signatorySecret, recipientSecret, publicNickname };
-}
-
-export function agentCredentialToBytes(cred: AgentCredential): Uint8Array {
-    if (cred.publicNickname) {
-        throw new Error("Can't convert agent credential with publicNickname");
-    }
-    const bytes = new Uint8Array(64);
-    const signatorySecretBytes = signatorySecretToBytes(cred.signatorySecret);
-    if (signatorySecretBytes.length !== 32) {
-        throw new Error("Invalid signatorySecret length");
-    }
-    bytes.set(signatorySecretBytes);
-    const recipientSecretBytes = recipientSecretToBytes(cred.recipientSecret);
-    if (recipientSecretBytes.length !== 32) {
-        throw new Error("Invalid recipientSecret length");
-    }
-    bytes.set(recipientSecretBytes, 32);
-
-    return bytes;
-}
-
-export function agentCredentialFromBytes(
-    bytes: Uint8Array
-): AgentCredential | undefined {
-    if (bytes.length !== 64) {
-        return undefined;
-    }
-
-    const signatorySecret = signatorySecretFromBytes(bytes.slice(0, 32));
-    const recipientSecret = recipientSecretFromBytes(bytes.slice(32));
-
-    return { signatorySecret, recipientSecret };
-}
-
-// type Role = "admin" | "writer" | "reader";
-
-// type PermissionsDef = CJMap<AgentID, Role, {[agent: AgentID]: Role}>;
+export { SessionID };
