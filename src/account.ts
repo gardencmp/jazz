@@ -1,5 +1,5 @@
 import { CoValueHeader } from './coValue.js';
-import { CoValueID } from './contentType.js';
+import { CoID } from './contentType.js';
 import { AgentSecret, SealerID, SealerSecret, SignerID, SignerSecret, getAgentID, getAgentSealerID, getAgentSealerSecret, getAgentSignerID, getAgentSignerSecret } from './crypto.js';
 import { AgentID } from './ids.js';
 import { CoMap, LocalNode } from './index.js';
@@ -108,7 +108,7 @@ export class AnonymousControlledAccount implements GeneralizedControlledAccount 
 }
 
 export type AccountMeta = {type: "account"};
-export type AccountID = CoValueID<CoMap<TeamContent, AccountMeta>>;
+export type AccountID = CoID<CoMap<TeamContent, AccountMeta>>;
 
 export type AccountIDOrAgentID = AgentID | AccountID;
 export type AccountOrAgentID = AgentID | Account;

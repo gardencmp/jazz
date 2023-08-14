@@ -1,4 +1,4 @@
-import { CoValueID, ContentType } from "./contentType.js";
+import { CoID, ContentType } from "./contentType.js";
 import { CoMap, MapOpPayload } from "./contentTypes/coMap.js";
 import { JsonValue } from "./jsonValue.js";
 import {
@@ -19,12 +19,12 @@ import {
     accountOrAgentIDfromSessionID,
 } from "./coValue.js";
 import { LocalNode } from "./node.js";
-import { RawCoValueID, SessionID, TransactionID, isAgentID } from "./ids.js";
+import { RawCoID, SessionID, TransactionID, isAgentID } from "./ids.js";
 import { AccountIDOrAgentID, GeneralizedControlledAccount } from "./account.js";
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AccountIDOrAgentID }
-    | { type: "ownedByTeam"; team: RawCoValueID }
+    | { type: "ownedByTeam"; team: RawCoID }
     | { type: "unsafeAllowAll" };
 
 export type Role = "reader" | "writer" | "admin" | "revoked";
@@ -233,7 +233,7 @@ export class Team {
         this.node = node;
     }
 
-    get id(): CoValueID<CoMap<TeamContent, {}>> {
+    get id(): CoID<CoMap<TeamContent, {}>> {
         return this.teamMap.id;
     }
 

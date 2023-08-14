@@ -20,7 +20,7 @@ THIS IS WORK IN PROGRESS
 - boolean
 - number
 - string
-  - stringly-encoded CoJSON identifiers & data (`CoValueID`, `AgentID`, `SessionID`, `SignerID`, `SignerSecret`, `Signature`, `SealerID`, `SealerSecret`, `Sealed`, `Hash`, `ShortHash`, `KeySecret`, `KeyID`, `Encrypted`, `Role`)
+  - stringly-encoded CoJSON identifiers & data (`CoID`, `AgentID`, `SessionID`, `SignerID`, `SignerSecret`, `Signature`, `SealerID`, `SealerSecret`, `Sealed`, `Hash`, `ShortHash`, `KeySecret`, `KeyID`, `Encrypted`, `Role`)
 
 - array
 - object

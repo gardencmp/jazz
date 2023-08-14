@@ -38,7 +38,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     await writer.write({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: false,
         sessions: {},
     });
@@ -61,7 +61,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     expect(newContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: {
             type: "comap",
             ruleset: { type: "ownedByTeam", team: team.id },
@@ -121,7 +121,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     await writer.write({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: true,
         sessions: {
             [node.ownSessionID]: 1,
@@ -146,7 +146,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     expect(mapNewContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: undefined,
         newContent: {
             [node.ownSessionID]: {
@@ -199,7 +199,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     await writer.write({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: false,
         sessions: {
             [node.ownSessionID]: 0,
@@ -224,7 +224,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
@@ -237,7 +237,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapEditMsg1.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         newContent: {
             [node.ownSessionID]: {
                 after: 0,
@@ -270,7 +270,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapEditMsg2.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         newContent: {
             [node.ownSessionID]: {
                 after: 1,
@@ -326,7 +326,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     await writer.write({
         action: "tellKnownState",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: false,
         sessions: {
             [node.ownSessionID]: 0,
@@ -349,7 +349,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     expect(mapNewContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {
             [node.ownSessionID]: {
@@ -398,7 +398,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     await writer.write({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: false,
         sessions: {
             [node.ownSessionID]: 0,
@@ -423,7 +423,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
@@ -441,7 +441,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     await writer.write({
         action: "wrongAssumedKnownState",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: true,
         sessions: {
             [node.ownSessionID]: 1,
@@ -452,7 +452,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     expect(newContentAfterWrongAssumedState.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: undefined,
         newContent: {
             [node.ownSessionID]: {
@@ -529,18 +529,18 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
     //     action: "subscribe",
-    //     coValueID: adminID,
+    //     id: adminID,
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     });
 
     const mapSubscribeMsg = await reader.read();
 
     expect(mapSubscribeMsg.value).toEqual({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: true,
         sessions: {},
     } satisfies SyncMessage);
@@ -556,7 +556,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
 
     expect(mapNewContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {
             [node.ownSessionID]: {
@@ -602,11 +602,11 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
     //     action: "subscribe",
-    //     coValueID: admin.id,
+    //     id: admin.id,
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     });
 
     const map = team.createMap();
@@ -625,7 +625,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
 
     expect(mapContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
@@ -693,7 +693,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
 
     await writer.write({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: true,
         sessions: {
             [node.ownSessionID]: 1,
@@ -751,12 +751,12 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const adminSubscribeMessage = await from1.read();
     expect(adminSubscribeMessage.value).toMatchObject({
         action: "subscribe",
-        coValueID: admin.id,
+        id: admin.id,
     });
     const teamSubscribeMsg = await from1.read();
     expect(teamSubscribeMsg.value).toMatchObject({
         action: "subscribe",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     });
 
     await to2.write(adminSubscribeMessage.value!);
@@ -791,13 +791,13 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const mapSubscriptionMsg = await from1.read();
     expect(mapSubscriptionMsg.value).toMatchObject({
         action: "subscribe",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
     });
 
     const mapNewContentMsg = await from1.read();
     expect(mapNewContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
@@ -807,7 +807,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const mapTellKnownStateMsg = await from2.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "tellKnownState",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: false,
         sessions: {},
     } satisfies SyncMessage);
@@ -966,11 +966,11 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
     //     action: "subscribe",
-    //     coValueID: admin.id,
+    //     id: admin.id,
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     });
 
     const map = team.createMap();
@@ -989,7 +989,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
 
     expect(mapContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
@@ -1020,11 +1020,11 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     const reader = outRx.getReader();
     // expect((await reader.read()).value).toMatchObject({
     //     action: "subscribe",
-    //     coValueID: admin.id,
+    //     id: admin.id,
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "subscribe",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     });
 
     const map = team.createMap();
@@ -1043,7 +1043,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
 
     expect(mapContentMsg.value).toEqual({
         action: "newContent",
-        coValueID: map.coValue.id,
+        id: map.coValue.id,
         header: map.coValue.header,
         newContent: {},
     } satisfies SyncMessage);
@@ -1098,28 +1098,28 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 function teamContentEx(team: Team) {
     return {
         action: "newContent",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     };
 }
 
 function admContEx(adminID: AccountID) {
     return {
         action: "newContent",
-        coValueID: adminID,
+        id: adminID,
     };
 }
 
 function teamStateEx(team: Team) {
     return {
         action: "tellKnownState",
-        coValueID: team.teamMap.coValue.id,
+        id: team.teamMap.coValue.id,
     };
 }
 
 function admStateEx(adminID: AccountID) {
     return {
         action: "tellKnownState",
-        coValueID: adminID,
+        id: adminID,
     };
 }
 

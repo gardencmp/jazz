@@ -31,7 +31,7 @@ import {
 } from "./permissions.js";
 import { LocalNode } from "./node.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
-import { RawCoValueID, SessionID, TransactionID } from "./ids.js";
+import { RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./contentTypes/coList.js";
 import {
     AccountID,
@@ -47,7 +47,7 @@ export type CoValueHeader = {
     uniqueness: `z${string}` | null;
 };
 
-export function coValueIDforHeader(header: CoValueHeader): RawCoValueID {
+export function idforHeader(header: CoValueHeader): RawCoID {
     const hash = shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
 }
@@ -75,7 +75,7 @@ export type PrivateTransaction = {
     keyUsed: KeyID;
     encryptedChanges: Encrypted<
         JsonValue[],
-        { in: RawCoValueID; tx: TransactionID }
+        { in: RawCoID; tx: TransactionID }
     >;
 };
 
@@ -94,7 +94,7 @@ export type DecryptedTransaction = {
 };
 
 export class CoValue {
-    id: RawCoValueID;
+    id: RawCoID;
     node: LocalNode;
     header: CoValueHeader;
     sessions: { [key: SessionID]: SessionLog };
@@ -102,7 +102,7 @@ export class CoValue {
     listeners: Set<(content?: ContentType) => void> = new Set();
 
     constructor(header: CoValueHeader, node: LocalNode) {
-        this.id = coValueIDforHeader(header);
+        this.id = idforHeader(header);
         this.header = header;
         this.sessions = {};
         this.node = node;
@@ -122,7 +122,7 @@ export class CoValue {
 
     knownState(): CoValueKnownState {
         return {
-            coValueID: this.id,
+            id: this.id,
             header: true,
             sessions: Object.fromEntries(
                 Object.entries(this.sessions).map(([k, v]) => [
@@ -492,7 +492,7 @@ export class CoValue {
     ): NewContentMessage | undefined {
         const newContent: NewContentMessage = {
             action: "newContent",
-            coValueID: this.id,
+            id: this.id,
             header: knownState?.header ? undefined : this.header,
             newContent: Object.fromEntries(
                 Object.entries(this.sessions)
@@ -536,7 +536,7 @@ export class CoValue {
         return newContent;
     }
 
-    getDependedOnCoValues(): RawCoValueID[] {
+    getDependedOnCoValues(): RawCoID[] {
         return this.header.ruleset.type === "team"
             ? expectTeamContent(this.getCurrentContent())
                   .keys()

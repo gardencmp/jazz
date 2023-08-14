@@ -5,7 +5,7 @@ import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { AgentID, RawCoValueID, TransactionID } from './ids.js';
+import { AgentID, RawCoID, TransactionID } from './ids.js';
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;
@@ -131,7 +131,7 @@ export function seal<T extends JsonValue>(
     message: T,
     from: SealerSecret,
     to: SealerID,
-    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
+    nOnceMaterial: { in: RawCoID; tx: TransactionID }
 ): Sealed<T> {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
@@ -163,7 +163,7 @@ export function unseal<T extends JsonValue>(
     sealed: Sealed<T>,
     sealer: SealerSecret,
     from: SealerID,
-    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
+    nOnceMaterial: { in: RawCoID; tx: TransactionID }
 ): T | undefined {
     const nOnce = blake3(
         textEncoder.encode(stableStringify(nOnceMaterial))
@@ -263,8 +263,8 @@ function encrypt<T extends JsonValue, N extends JsonValue>(
 export function encryptForTransaction<T extends JsonValue>(
     value: T,
     keySecret: KeySecret,
-    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
-): Encrypted<T, { in: RawCoValueID; tx: TransactionID }> {
+    nOnceMaterial: { in: RawCoID; tx: TransactionID }
+): Encrypted<T, { in: RawCoID; tx: TransactionID }> {
     return encrypt(value, keySecret, nOnceMaterial);
 }
 
@@ -317,9 +317,9 @@ function decrypt<T extends JsonValue, N extends JsonValue>(
 }
 
 export function decryptForTransaction<T extends JsonValue>(
-    encrypted: Encrypted<T, { in: RawCoValueID; tx: TransactionID }>,
+    encrypted: Encrypted<T, { in: RawCoID; tx: TransactionID }>,
     keySecret: KeySecret,
-    nOnceMaterial: { in: RawCoValueID; tx: TransactionID }
+    nOnceMaterial: { in: RawCoID; tx: TransactionID }
 ): T | undefined {
     return decrypt(encrypted, keySecret, nOnceMaterial);
 }
