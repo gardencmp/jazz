@@ -52,8 +52,6 @@ export type NewContentMessage = {
 export type SessionNewContent = {
     after: number;
     newTransactions: Transaction[];
-    // TODO: is lastHash needed here?
-    lastHash: Hash;
     lastSignature: Signature;
 };
 export type DoneMessage = {
@@ -426,7 +424,7 @@ export class SyncManager {
             const success = coValue.tryAddTransactions(
                 sessionID,
                 newTransactions,
-                newContentForSession.lastHash,
+                undefined,
                 newContentForSession.lastSignature
             );
 

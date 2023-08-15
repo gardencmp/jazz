@@ -148,7 +148,7 @@ export class CoValue {
     tryAddTransactions(
         sessionID: SessionID,
         newTransactions: Transaction[],
-        newHash: Hash,
+        givenExpectedNewHash: Hash | undefined,
         newSignature: Signature
     ): boolean {
         const signerID = getAgentSignerID(
@@ -171,16 +171,16 @@ export class CoValue {
             newTransactions
         );
 
-        if (newHash !== expectedNewHash) {
-            console.warn("Invalid hash", { newHash, expectedNewHash });
+        if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
+            console.warn("Invalid hash", { expectedNewHash, givenExpectedNewHash });
             return false;
         }
 
-        if (!verify(newSignature, newHash, signerID)) {
+        if (!verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
                 "Invalid signature",
                 newSignature,
-                newHash,
+                expectedNewHash,
                 signerID
             );
             return false;
@@ -192,7 +192,7 @@ export class CoValue {
 
         this.sessions[sessionID] = {
             transactions,
-            lastHash: newHash,
+            lastHash: expectedNewHash,
             streamingHash: newStreamingHash,
             lastSignature: newSignature,
         };
@@ -517,7 +517,6 @@ export class CoValue {
                                         sessionID as SessionID
                                     ] || 0,
                                 newTransactions,
-                                lastHash: log.lastHash,
                                 lastSignature: log.lastSignature,
                             },
                         ];
