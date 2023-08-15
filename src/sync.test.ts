@@ -9,7 +9,12 @@ import {
     WritableStream,
     TransformStream,
 } from "isomorphic-streams";
-import { connectedPeers, newStreamPair, randomAnonymousAccountAndSessionID, shouldNotResolve } from "./testUtils.js";
+import {
+    connectedPeers,
+    newStreamPair,
+    randomAnonymousAccountAndSessionID,
+    shouldNotResolve,
+} from "./testUtils.js";
 import { AccountID } from "./account.js";
 
 test("Node replies with initial tx and header to empty subscribe", async () => {
@@ -86,7 +91,6 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -165,7 +169,6 @@ test("Node replies with only new tx to subscribe with some known state", async (
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -255,7 +258,6 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -288,7 +290,6 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -368,7 +369,6 @@ test("Client replies with known new content to tellKnownState from server", asyn
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -472,7 +472,6 @@ test("No matter the optimistic known state, node respects invalid known state me
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -576,7 +575,6 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                         ],
                     },
                 ],
-                lastHash: map.coValue.sessions[node.ownSessionID]!.lastHash!,
                 lastSignature:
                     map.coValue.sessions[node.ownSessionID]!.lastSignature!,
             },
@@ -1123,5 +1121,3 @@ function admStateEx(adminID: AccountID) {
         id: adminID,
     };
 }
-
-
