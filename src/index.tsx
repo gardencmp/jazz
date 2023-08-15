@@ -1,15 +1,18 @@
 import {
     LocalNode,
-    AgentCredential,
     internals as cojsonInternals,
     SessionID,
-    AgentID,
     ContentType,
-    CoValueID,
     SyncMessage,
+    AgentSecret,
 } from "cojson";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
+import { CoID } from "cojson";
+import { AgentID } from "cojson/src/ids";
+import { getAgentID } from "cojson/src/crypto";
+import { AnonymousControlledAccount } from "cojson/src/account";
+import { IDBStorage } from "jazz-storage-indexeddb";
 
 type JazzContext = {
     localNode: LocalNode;
@@ -18,7 +21,7 @@ type JazzContext = {
 const JazzContext = React.createContext<JazzContext | undefined>(undefined);
 
 export type AuthComponent = (props: {
-    onCredential: (credentials: AgentCredential) => void;
+    onCredential: (credentials: AgentSecret) => void;
 }) => React.ReactElement;
 
 export function WithJazz({
@@ -33,14 +36,14 @@ export function WithJazz({
     const [node, setNode] = useState<LocalNode | undefined>();
     const sessionDone = useRef<() => void>();
 
-    const onCredential = useCallback((credential: AgentCredential) => {
-        const agentID = cojsonInternals.getAgentID(
-            cojsonInternals.getAgent(credential)
+    const onCredential = useCallback((credential: AgentSecret) => {
+        const agentID = getAgentID(
+            credential
         );
         const sessionHandle = getSessionFor(agentID);
 
         sessionHandle.session.then((sessionID) =>
-            setNode(new LocalNode(credential, sessionID))
+            setNode(new LocalNode(new AnonymousControlledAccount(credential), sessionID))
         );
 
         sessionDone.current = sessionHandle.done;
@@ -54,6 +57,8 @@ export function WithJazz({
 
     useEffect(() => {
         if (node) {
+            IDBStorage.connectTo(node, {trace: true})
+
             let shouldTryToReconnect = true;
             let ws: WebSocket | undefined;
 
@@ -180,7 +185,7 @@ export function useJazz() {
     return context;
 }
 
-export function useTelepathicState<T extends ContentType>(id: CoValueID<T>) {
+export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
     const [state, setState] = useState<T>();
 
     const { localNode } = useJazz();
