@@ -10,11 +10,13 @@ import {
     TransformStream,
 } from "isomorphic-streams";
 import {
-    connectedPeers,
-    newStreamPair,
     randomAnonymousAccountAndSessionID,
     shouldNotResolve,
 } from "./testUtils.js";
+import {
+    connectedPeers,
+    newStreamPair
+} from "./streamUtils.js";
 import { AccountID } from "./account.js";
 
 test("Node replies with initial tx and header to empty subscribe", async () => {

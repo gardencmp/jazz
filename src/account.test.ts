@@ -1,6 +1,6 @@
 import { newRandomSessionID } from "./coValue.js";
 import { LocalNode } from "./node.js";
-import { connectedPeers } from "./testUtils.js";
+import { connectedPeers } from "./streamUtils.js";
 
 test("Can create a node while creating a new account with profile", async () => {
     const { node, accountID, accountSecret, sessionID } =

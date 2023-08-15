@@ -285,7 +285,7 @@ export class SyncManager {
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
         return peer.outgoing.write(msg).catch((e) => {
-            console.error("Error writing to peer, disconnecting", e);
+            console.error(new Error("Error writing to peer, disconnecting", {cause: e}));
             delete this.peers[peer.id];
         });
     }
