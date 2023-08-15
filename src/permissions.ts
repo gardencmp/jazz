@@ -20,7 +20,7 @@ import {
 } from "./coValue.js";
 import { LocalNode } from "./node.js";
 import { RawCoID, SessionID, TransactionID, isAgentID } from "./ids.js";
-import { AccountIDOrAgentID, GeneralizedControlledAccount } from "./account.js";
+import { AccountIDOrAgentID, GeneralizedControlledAccount, Profile } from "./account.js";
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AccountIDOrAgentID }
@@ -77,7 +77,8 @@ export function determineValidTransactions(
 
             const change = tx.changes[0] as
                 | MapOpPayload<AccountIDOrAgentID, Role>
-                | MapOpPayload<"readKey", JsonValue>;
+                | MapOpPayload<"readKey", JsonValue>
+                | MapOpPayload<"profile", CoID<Profile>>;
             if (tx.changes.length !== 1) {
                 console.warn("Team transaction must have exactly one change");
                 continue;
@@ -91,6 +92,14 @@ export function determineValidTransactions(
             if (change.key === "readKey") {
                 if (memberState[transactor] !== "admin") {
                     console.warn("Only admins can set readKeys");
+                    continue;
+                }
+
+                validTransactions.push({ txID: { sessionID, txIndex }, tx });
+                continue;
+            } else if (change.key === 'profile') {
+                if (memberState[transactor] !== "admin") {
+                    console.warn("Only admins can set profile");
                     continue;
                 }
 
@@ -205,6 +214,7 @@ export function determineValidTransactions(
 }
 
 export type TeamContent = {
+    profile: CoID<Profile> | null;
     [key: AccountIDOrAgentID]: Role;
     readKey: KeyID;
     [revelationFor: `${KeyID}_for_${AccountIDOrAgentID}`]: Sealed<KeySecret>;
@@ -343,7 +353,7 @@ export class Team {
     }
 
     createMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null>(
-        meta?: M
+        meta?: Meta
     ): CoMap<M, Meta> {
         return this.node
             .createCoValue({

@@ -1,7 +1,8 @@
 import { JsonObject, JsonValue } from '../jsonValue.js';
 import { TransactionID } from '../ids.js';
 import { CoID } from '../contentType.js';
-import { CoValue } from '../coValue.js';
+import { CoValue, accountOrAgentIDfromSessionID } from '../coValue.js';
+import { AccountID, isAccountID } from '../account.js';
 
 type MapOp<K extends string, V extends JsonValue> = {
     txID: TransactionID;
@@ -103,6 +104,19 @@ export class CoMap<
             return undefined;
         } else {
             return lastOpBeforeOrAtTime.value;
+        }
+    }
+
+    getLastEditor<K extends MapK<M>>(key: K): AccountID | undefined {
+        const tx  = this.getLastTxID(key);
+        if (!tx) {
+            return undefined;
+        }
+        const accountID = accountOrAgentIDfromSessionID(tx.sessionID);
+        if (isAccountID(accountID)) {
+            return accountID;
+        } else {
+            return undefined;
         }
     }
 

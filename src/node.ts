@@ -1,4 +1,5 @@
 import {
+    AgentSecret,
     createdNowUnique,
     getAgentID,
     getAgentSealerID,
@@ -20,6 +21,11 @@ import {
     GeneralizedControlledAccount,
     ControlledAccount,
     AnonymousControlledAccount,
+    AccountID,
+    Profile,
+    AccountContent,
+    ProfileContent,
+    ProfileMeta,
 } from "./account.js";
 import { CoMap } from "./index.js";
 
@@ -35,6 +41,33 @@ export class LocalNode {
     ) {
         this.account = account;
         this.ownSessionID = ownSessionID;
+    }
+
+    static withNewlyCreatedAccount(name: string): {
+        node: LocalNode;
+        account: AccountID;
+        accountSecret: AgentSecret;
+        sessionID: SessionID;
+    } {
+        const throwawayAgent = newRandomAgentSecret();
+        const setupNode = new LocalNode(
+            new AnonymousControlledAccount(throwawayAgent),
+            newRandomSessionID(getAgentID(throwawayAgent))
+        );
+
+        const account = setupNode.createAccount(name);
+
+        const nodeWithAccount = account.node.testWithDifferentAccount(
+            account,
+            newRandomSessionID(account.id)
+        );
+
+        return {
+            node: nodeWithAccount,
+            account: account.id,
+            accountSecret: account.agentSecret,
+            sessionID: nodeWithAccount.ownSessionID,
+        };
     }
 
     createCoValue(header: CoValueHeader): CoValue {
@@ -65,6 +98,16 @@ export class LocalNode {
         return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
+    async loadProfile(id: AccountID): Promise<Profile> {
+        const account = await this.load<CoMap<AccountContent>>(id);
+        const profileID = account.get("profile");
+
+        if (!profileID) {
+            throw new Error(`Account ${id} has no profile`);
+        }
+        return (await this.loadCoValue(profileID)).getCurrentContent() as Profile;
+    }
+
     expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
         const entry = this.coValues[id];
         if (!entry) {
@@ -82,7 +125,20 @@ export class LocalNode {
         return entry.coValue;
     }
 
-    createAccount(_publicNickname: string): ControlledAccount {
+    expectProfileLoaded(id: AccountID, expectation?: string): Profile {
+        const account = this.expectCoValueLoaded(id, expectation);
+        const profileID = expectTeamContent(account.getCurrentContent()).get("profile");
+        if (!profileID) {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }Account ${id} has no profile`
+            );
+        }
+        return this.expectCoValueLoaded(profileID, expectation).getCurrentContent() as Profile;
+    }
+
+    createAccount(name: string): ControlledAccount {
         const agentSecret = newRandomAgentSecret();
 
         const account = this.createCoValue(
@@ -92,7 +148,9 @@ export class LocalNode {
             newRandomSessionID(getAgentID(agentSecret))
         );
 
-        expectTeamContent(account.getCurrentContent()).edit((editable) => {
+        const accountAsTeam = new Team(expectTeamContent(account.getCurrentContent()), account.node);
+
+        accountAsTeam.teamMap.edit((editable) => {
             editable.set(getAgentID(agentSecret), "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -111,14 +169,26 @@ export class LocalNode {
                 "trusting"
             );
 
-            editable.set('readKey', readKey.id, "trusting");
+            editable.set("readKey", readKey.id, "trusting");
         });
 
-        return new ControlledAccount(
+        const controlledAccount = new ControlledAccount(
             agentSecret,
-            account.getCurrentContent() as CoMap<TeamContent, AccountMeta>,
-            this
+            account.getCurrentContent() as CoMap<AccountContent, AccountMeta>,
+            account.node
         );
+
+        const profile = accountAsTeam.createMap<ProfileContent, ProfileMeta>({ type: "profile" });
+
+        profile.edit((editable) => {
+            editable.set("name", name, "trusting");
+        });
+
+        accountAsTeam.teamMap.edit((editable) => {
+            editable.set("profile", profile.id, "trusting");
+        });
+
+        return controlledAccount;
     }
 
     resolveAccountAgent(id: AccountIDOrAgentID, expectation?: string): AgentID {
@@ -177,7 +247,7 @@ export class LocalNode {
                 "trusting"
             );
 
-            editable.set('readKey', readKey.id, "trusting");
+            editable.set("readKey", readKey.id, "trusting");
         });
 
         return new Team(teamContent, this);
