@@ -1,0 +1,17 @@
+{
+  "name": "jazz-react",
+  "version": "0.0.6",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
+  "license": "MIT",
+  "dependencies": {
+    "cojson": "^0.0.14",
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.19"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2"
+  }
+}
