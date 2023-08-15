@@ -10,7 +10,7 @@ import {
 } from "./crypto.js";
 import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
 import { Team, TeamContent, expectTeamContent } from "./permissions.js";
-import { SyncManager } from "./sync.js";
+import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID, ContentType } from "./contentType.js";
 import {
@@ -45,7 +45,7 @@ export class LocalNode {
 
     static withNewlyCreatedAccount(name: string): {
         node: LocalNode;
-        account: AccountID;
+        accountID: AccountID;
         accountSecret: AgentSecret;
         sessionID: SessionID;
     } {
@@ -64,10 +64,29 @@ export class LocalNode {
 
         return {
             node: nodeWithAccount,
-            account: account.id,
+            accountID: account.id,
             accountSecret: account.agentSecret,
             sessionID: nodeWithAccount.ownSessionID,
         };
+    }
+
+    static async withLoadedAccount(accountID: AccountID, accountSecret: AgentSecret, sessionID: SessionID, peersToLoadFrom: Peer[]): Promise<LocalNode> {
+        const loadingNode = new LocalNode(new AnonymousControlledAccount(accountSecret), newRandomSessionID(accountID));
+
+        const accountPromise = loadingNode.load(accountID);
+
+        for (const peer of peersToLoadFrom) {
+            loadingNode.sync.addPeer(peer);
+        }
+
+        const account = await accountPromise;
+
+        // since this is all synchronous, we can just swap out nodes for the SyncManager
+        const node = loadingNode.testWithDifferentAccount(new ControlledAccount(accountSecret, account, loadingNode), sessionID);
+        node.sync = loadingNode.sync;
+        node.sync.local = node;
+
+        return node;
     }
 
     createCoValue(header: CoValueHeader): CoValue {
