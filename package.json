@@ -1,8 +1,12 @@
 {
-    "name": "jazz-monorepo",
-    "private": true,
-    "workspaces": [
-        "packages/*",
-        "examples/*"
-    ]
+  "name": "jazz-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "^7.1.5"
+  }
 }
