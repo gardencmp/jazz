@@ -1,0 +1,8 @@
+{
+    "name": "jazz-monorepo",
+    "private": true,
+    "workspaces": [
+        "packages/*",
+        "examples/*"
+    ]
+}
