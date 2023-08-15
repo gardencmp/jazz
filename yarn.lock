@@ -2,14 +2,6 @@
 # yarn lockfile v1
 
 
-"@gcmp.io/jazz-react@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@gcmp.io/jazz-react/-/jazz-react-0.0.1.tgz#e4b9f5557ccb145ec1d212816001368f493ae099"
-  integrity sha512-4NiHeQie/QNy0gw16LrtF8d25Bvsh0HEufSvT+zXcs6Alr52/ClgQs26OXQgeyNvE4Nii73yWnI3boqbtyL3Hw==
-  dependencies:
-    cojson "^0.0.4"
-    typescript "^5.1.6"
-
 "@noble/ciphers@^0.1.3":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@noble/ciphers/-/ciphers-0.1.4.tgz#96327dca147829ed9eee0d96cfdf7c57915765f0"
@@ -51,10 +43,10 @@
   resolved "https://registry.yarnpkg.com/@types/scheduler/-/scheduler-0.16.3.tgz#cef09e3ec9af1d63d2a6cc5b383a737e24e6dcf5"
   integrity sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==
 
-cojson@^0.0.4:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/cojson/-/cojson-0.0.3.tgz#6612e3fa27ca691398cba3eac001e4d16661741a"
-  integrity sha512-5CzWxLdc7aKOqbBgy21ApFj7SIZxgQChc/rkvqiEtdfobSV2NIJnchpU39FdKLXjv8nxXHjoM5cg+mgJ92pWKA==
+cojson@^0.0.14:
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/cojson/-/cojson-0.0.14.tgz#e7b190ade1efc20d6f0fa12411d7208cdc0f19f7"
+  integrity sha512-TFenIGswEEhnZlCmq+B1NZPztjovZ72AjK1YkkZca54ZFbB1lAHdPt2hqqu/QBO24C9+6DtuoS2ixm6gbSBWCg==
   dependencies:
     "@noble/ciphers" "^0.1.3"
     "@noble/curves" "^1.1.0"
@@ -76,6 +68,14 @@ fast-json-stable-stringify@^2.1.0:
 "isomorphic-streams@git+https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae":
   version "1.0.3"
   resolved "git+https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+
+jazz-react@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/jazz-react/-/jazz-react-0.0.6.tgz#53b0245720b10ec31ac8deba45fd8a052b313b06"
+  integrity sha512-JlYTKUVPpuK3T7cLfk2YwHh3yH+2BPVSuWIQui35U52/gce+HmTMGolqFYGghWMVQtwclaZ0IoEbtuycPiADOQ==
+  dependencies:
+    cojson "^0.0.14"
+    typescript "^5.1.6"
 
 typescript@^5.1.6:
   version "5.1.6"

@@ -1,7 +1,7 @@
-import { AgentCredential, internals as cojsonInternals } from "cojson";
+import { newRandomAgentSecret, AgentSecret, agentSecretToBytes, agentSecretFromBytes} from "cojson/src/crypto";
 import React, { useCallback, useEffect, useState } from "react";
 
-export function useLocalAuth(onCredential: (credentials: AgentCredential) => void) {
+export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
     const [displayName, setDisplayName] = useState<string>("");
 
     useEffect(() => {
@@ -13,7 +13,7 @@ export function useLocalAuth(onCredential: (credentials: AgentCredential) => voi
 
     const signUp = useCallback(() => {
         (async function () {
-            const credential = cojsonInternals.newRandomAgentCredential();
+            const credential = newRandomAgentSecret();
 
             console.log(credential);
 
@@ -26,7 +26,7 @@ export function useLocalAuth(onCredential: (credentials: AgentCredential) => voi
                         id: window.location.hostname,
                     },
                     user: {
-                        id: cojsonInternals.agentCredentialToBytes(credential),
+                        id: agentSecretToBytes(credential),
                         name: displayName,
                         displayName: displayName,
                     },
@@ -42,7 +42,7 @@ export function useLocalAuth(onCredential: (credentials: AgentCredential) => voi
             console.log(
                 webAuthNCredential,
                 credential,
-                cojsonInternals.agentCredentialToBytes(credential)
+                agentSecretToBytes(credential)
             );
 
             sessionStorage.credential = JSON.stringify(credential);
@@ -66,7 +66,7 @@ export function useLocalAuth(onCredential: (credentials: AgentCredential) => voi
                 (webAuthNCredential as any).response.userHandle
             );
             const credential =
-                cojsonInternals.agentCredentialFromBytes(userIdBytes);
+                agentSecretFromBytes(userIdBytes);
 
             if (!credential) {
                 throw new Error("Invalid credential");
