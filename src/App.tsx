@@ -10,23 +10,23 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { CoMap, CoValueID } from "cojson";
+import { CoMap, CoID } from "cojson";
 import { useJazz, useTelepathicState } from "jazz-react";
 
 type TaskContent = { done: boolean; text: string };
-type Task = CoMap<TaskContent, {}>;
+type Task = CoMap<TaskContent>;
 
-type TodoListContent = { title: string; [taskId: CoValueID<Task>]: true };
-type TodoList = CoMap<TodoListContent, {}>;
+type TodoListContent = { title: string; [taskId: CoID<Task>]: true };
+type TodoList = CoMap<TodoListContent>;
 
 function App() {
-    const [listId, setListId] = useState<CoValueID<TodoList>>(window.location.hash.slice(1) as CoValueID<TodoList>);
+    const [listId, setListId] = useState<CoID<TodoList>>(window.location.hash.slice(1) as CoID<TodoList>);
 
     const { localNode } = useJazz();
 
     const createList = () => {
         const listTeam = localNode.createTeam();
-        const list = listTeam.createMap<TodoListContent, {}>();
+        const list = listTeam.createMap<TodoListContent, null>();
 
         list.edit((list) => {
             list.set("title", "My Todo List");
@@ -37,7 +37,7 @@ function App() {
 
     useEffect(() => {
         const listener = () => {
-            setListId(window.location.hash.slice(1) as CoValueID<TodoList>);
+            setListId(window.location.hash.slice(1) as CoID<TodoList>);
         }
         window.addEventListener("hashchange", listener);
 
@@ -54,7 +54,7 @@ function App() {
     );
 }
 
-export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
+export function TodoList({ listId }: { listId: CoID<TodoList> }) {
     const list = useTelepathicState(listId);
 
     const createTodo = (text: string) => {
@@ -91,7 +91,7 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
                     {list &&
                         list
                             .keys()
-                            .filter((key): key is CoValueID<Task> =>
+                            .filter((key): key is CoID<Task> =>
                                 key.startsWith("co_")
                             )
                             .map((taskId) => (
@@ -132,7 +132,7 @@ export function TodoList({ listId }: { listId: CoValueID<TodoList> }) {
     );
 }
 
-function TodoRow({ taskId }: { taskId: CoValueID<Task> }) {
+function TodoRow({ taskId }: { taskId: CoID<Task> }) {
     const task = useTelepathicState(taskId);
 
     return (
