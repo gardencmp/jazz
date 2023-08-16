@@ -26,7 +26,7 @@ export function connectedPeers(
                     chunk: SyncMessage,
                     controller: { enqueue: (msg: SyncMessage) => void; }
                 ) {
-                    trace && console.log(`${peer2id} -> ${peer1id}`, JSON.stringify(chunk, null, 2));
+                    trace && console.debug(`${peer2id} -> ${peer1id}`, JSON.stringify(chunk, null, 2));
                     controller.enqueue(chunk);
                 },
             })
@@ -40,7 +40,7 @@ export function connectedPeers(
                     chunk: SyncMessage,
                     controller: { enqueue: (msg: SyncMessage) => void; }
                 ) {
-                    trace && console.log(`${peer1id} -> ${peer2id}`, JSON.stringify(chunk, null, 2));
+                    trace && console.debug(`${peer1id} -> ${peer2id}`, JSON.stringify(chunk, null, 2));
                     controller.enqueue(chunk);
                 },
             })
