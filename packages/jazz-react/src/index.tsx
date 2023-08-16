@@ -37,13 +37,16 @@ export function WithJazz({
     const sessionDone = useRef<() => void>();
 
     const onCredential = useCallback((credential: AgentSecret) => {
-        const agentID = getAgentID(
-            credential
-        );
+        const agentID = getAgentID(credential);
         const sessionHandle = getSessionFor(agentID);
 
         sessionHandle.session.then((sessionID) =>
-            setNode(new LocalNode(new AnonymousControlledAccount(credential), sessionID))
+            setNode(
+                new LocalNode(
+                    new AnonymousControlledAccount(credential),
+                    sessionID
+                )
+            )
         );
 
         sessionDone.current = sessionHandle.done;
@@ -57,7 +60,7 @@ export function WithJazz({
 
     useEffect(() => {
         if (node) {
-            IDBStorage.connectTo(node, {trace: true})
+            IDBStorage.connectTo(node, { trace: true });
 
             let shouldTryToReconnect = true;
             let ws: WebSocket | undefined;
