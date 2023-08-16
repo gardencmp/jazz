@@ -16,12 +16,19 @@ import {
     LoadMessage,
     NewContentMessage,
 } from "cojson/src/sync";
-import { ReadableStream, WritableStream, ReadableStreamDefaultReader, WritableStreamDefaultWriter } from "isomorphic-streams";
+import {
+    ReadableStream,
+    WritableStream,
+    ReadableStreamDefaultReader,
+    WritableStreamDefaultWriter,
+} from "isomorphic-streams";
 
 type CoValueRow = {
     id: RawCoID;
     header: CoValueHeader;
 };
+
+type StoredCoValueRow = CoValueRow & { rowID: number };
 
 type SessionRow = {
     coValue: number;
@@ -33,7 +40,7 @@ type SessionRow = {
 type StoredSessionRow = SessionRow & { rowID: number };
 
 type TransactionRow = {
-    ses: SessionID;
+    ses: number;
     idx: number;
     tx: Transaction;
 };
@@ -43,7 +50,11 @@ export class IDBStorage {
     fromLocalNode!: ReadableStreamDefaultReader<SyncMessage>;
     toLocalNode: WritableStreamDefaultWriter<SyncMessage>;
 
-    constructor(db: IDBDatabase, fromLocalNode: ReadableStream<SyncMessage>, toLocalNode: WritableStream<SyncMessage>) {
+    constructor(
+        db: IDBDatabase,
+        fromLocalNode: ReadableStream<SyncMessage>,
+        toLocalNode: WritableStream<SyncMessage>
+    ) {
         this.db = db;
         this.fromLocalNode = fromLocalNode.getReader();
         this.toLocalNode = toLocalNode.getWriter();
@@ -60,15 +71,33 @@ export class IDBStorage {
         })();
     }
 
-    static async connectTo(localNode: LocalNode, {trace}: {trace?: boolean} = {}) {
-        const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers("local", "storage", {peer1role: "client", peer2role: "server", trace});
+    static async connectTo(
+        localNode: LocalNode,
+        {
+            trace,
+            localNodeName = "local",
+        }: { trace?: boolean; localNodeName?: string } | undefined = {
+            localNodeName: "local",
+        }
+    ) {
+        const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
+            localNodeName,
+            "storage",
+            { peer1role: "client", peer2role: "server", trace }
+        );
 
-        await IDBStorage.open(localNodeAsPeer.incoming, localNodeAsPeer.outgoing);
+        await IDBStorage.open(
+            localNodeAsPeer.incoming,
+            localNodeAsPeer.outgoing
+        );
 
         localNode.sync.addPeer(storageAsPeer);
     }
 
-    static async open(fromLocalNode: ReadableStream<SyncMessage>, toLocalNode: WritableStream<SyncMessage>) {
+    static async open(
+        fromLocalNode: ReadableStream<SyncMessage>,
+        toLocalNode: WritableStream<SyncMessage>
+    ) {
         const dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
             const request = indexedDB.open("jazz-storage", 1);
             request.onerror = () => {
@@ -85,17 +114,23 @@ export class IDBStorage {
                     keyPath: "rowID",
                 });
 
-                coValues.createIndex("id", "id", {
+                coValues.createIndex("coValuesById", "id", {
                     unique: true,
                 });
 
                 const sessions = db.createObjectStore("sessions", {
-                    keyPath: ["coValue", "sessionID"],
+                    autoIncrement: true,
+                    keyPath: "rowID",
                 });
 
-                sessions.createIndex("sessionID", "sessionID", {
-                    unique: true,
-                });
+                sessions.createIndex("sessionsByCoValue", "coValue");
+                sessions.createIndex(
+                    "uniqueSessions",
+                    ["coValue", "sessionID"],
+                    {
+                        unique: true,
+                    }
+                );
 
                 db.createObjectStore("transactions", {
                     keyPath: ["ses", "idx"],
@@ -123,148 +158,221 @@ export class IDBStorage {
         }
     }
 
-    async sendNewContentAfter(
-        theirKnown: CoValueKnownState
-    ) {
-            const tx = this.db.transaction(
-                ["coValues", "sessions", "transactions"],
-                "readonly"
-            );
-
-            tx.onerror = () => {
-                throw(new Error("Error in transaction", { cause: tx.error }));
-            };
-
-            const coValues = tx.objectStore("coValues");
-            const sessions = tx.objectStore("sessions");
-            const transactions = tx.objectStore("transactions");
-
-            const header = await new Promise<CoValueHeader | undefined>(
-                (resolve) => {
-                    if (theirKnown.header) {
-                        resolve(undefined);
-                    } else {
-                        const headerRequest = coValues.get(theirKnown.id);
-
-                        headerRequest.onsuccess = () => {
-                            resolve(
-                                (headerRequest.result as CoValueRow).header
-                            );
-                        };
-                    }
-                }
-            );
-
-            const allOurSessions = await new Promise<StoredSessionRow[]>(
-                (resolve) => {
-                    const allOurSessionsRequest = sessions
-                        .index("sessionID")
-                        .getAll(
-                            IDBKeyRange.bound(
-                                [theirKnown.id, "\u0000"],
-                                [theirKnown.id, "\uffff"]
-                            )
-                        );
-
-                    allOurSessionsRequest.onsuccess = () => {
-                        resolve(
-                            allOurSessionsRequest.result as StoredSessionRow[]
-                        );
-                    };
-                }
-            );
-
-            const ourKnown: CoValueKnownState = {
-                id: theirKnown.id,
-                header: !!header,
-                sessions: {},
-            };
-            let shouldTellOurKnown = (
-                Object.keys(theirKnown.sessions) as SessionID[]
-            ).some((sessionID) => {
-                return !allOurSessions.some(
-                    (row) => row.sessionID === sessionID
-                );
-            });
-
-            const newContent: NewContentMessage = {
-                action: "content",
-                id: theirKnown.id,
-                header,
-                new: {},
-            };
-
-            for (const sessionRow of allOurSessions) {
-                ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
-
-                if (
-                    sessionRow.lastIdx <
-                    (theirKnown.sessions[sessionRow.sessionID] || 0)
-                ) {
-                    shouldTellOurKnown = true;
-                } else if (
-                    sessionRow.lastIdx >
-                    (theirKnown.sessions[sessionRow.sessionID] || 0)
-                ) {
-                    const firstNewTxIdx =
-                        theirKnown.sessions[sessionRow.sessionID] || 0;
-
-                    const newTxInSession = await new Promise<TransactionRow[]>(
-                        (resolve) => {
-                            const newTxRequest = transactions.getAll(
-                                IDBKeyRange.bound(
-                                    [sessionRow.rowID, firstNewTxIdx],
-                                    [sessionRow.rowID, Infinity]
-                                )
-                            );
-
-                            newTxRequest.onsuccess = () => {
-                                resolve(
-                                    newTxRequest.result as TransactionRow[]
-                                );
-                            };
-                        }
-                    );
-
-                    newContent.new[sessionRow.sessionID] = {
-                        after: firstNewTxIdx,
-                        lastSignature: sessionRow.lastSignature,
-                        newTransactions: newTxInSession.map((row) => row.tx),
-                    };
-                }
-            }
-
-            if (shouldTellOurKnown) {
-                await this.toLocalNode.write({
-                    action: "known",
-                    ...ourKnown,
-                });
-            }
-
-            if (newContent.header || Object.keys(newContent.new).length > 0) {
-                await this.toLocalNode.write(newContent);
-            }
-    }
-
-    handleLoad(msg: LoadMessage) {
-        return this.sendNewContentAfter(msg);
-    }
-
-    handleContent(msg: NewContentMessage) {
+    async sendNewContentAfter(theirKnown: CoValueKnownState) {
         const tx = this.db.transaction(
             ["coValues", "sessions", "transactions"],
-            "readwrite"
+            "readonly"
         );
 
-        tx.onerror = () => {
-            throw(new Error("Error in transaction", { cause: tx.error }));
+        tx.onerror = (event) => {
+            throw new Error(
+                `Error in transaction (${
+                    (event.target as any).source?.name
+                }): ${(event.target as any).error}`,
+                { cause: (event.target as any).error }
+            );
         };
 
         const coValues = tx.objectStore("coValues");
         const sessions = tx.objectStore("sessions");
         const transactions = tx.objectStore("transactions");
 
+        const coValueRow = await promised<StoredCoValueRow | undefined>(
+            coValues.index("coValuesById").get(theirKnown.id)
+        );
 
+        const allOurSessions = coValueRow
+            ? await promised<StoredSessionRow[]>(
+                  sessions.index("sessionsByCoValue").getAll(coValueRow.rowID)
+              )
+            : [];
+
+        const ourKnown: CoValueKnownState = {
+            id: theirKnown.id,
+            header: !!coValueRow,
+            sessions: {},
+        };
+
+        const newContent: NewContentMessage = {
+            action: "content",
+            id: theirKnown.id,
+            header: theirKnown.header ? undefined : coValueRow?.header,
+            new: {},
+        };
+
+        for (const sessionRow of allOurSessions) {
+            ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
+
+            if (
+                sessionRow.lastIdx >
+                (theirKnown.sessions[sessionRow.sessionID] || 0)
+            ) {
+                const firstNewTxIdx =
+                    theirKnown.sessions[sessionRow.sessionID] || 0;
+
+                const newTxInSession = await promised<TransactionRow[]>(
+                    transactions.getAll(
+                        IDBKeyRange.bound(
+                            [sessionRow.rowID, firstNewTxIdx],
+                            [sessionRow.rowID, Infinity]
+                        )
+                    )
+                );
+
+                newContent.new[sessionRow.sessionID] = {
+                    after: firstNewTxIdx,
+                    lastSignature: sessionRow.lastSignature,
+                    newTransactions: newTxInSession.map((row) => row.tx),
+                };
+            }
+        }
+
+        await this.toLocalNode.write({
+            action: "known",
+            ...ourKnown,
+        });
+
+        if (newContent.header || Object.keys(newContent.new).length > 0) {
+            await this.toLocalNode.write(newContent);
+        }
+    }
+
+    handleLoad(msg: LoadMessage) {
+        return this.sendNewContentAfter(msg);
+    }
+
+    async handleContent(msg: NewContentMessage) {
+        const tx = this.db.transaction(
+            ["coValues", "sessions", "transactions"],
+            "readwrite"
+        );
+
+        tx.onerror = (event) => {
+            throw new Error(
+                `Error in transaction (${
+                    (event.target as any).source?.name
+                }): ${(event.target as any).error}`,
+                { cause: (event.target as any).error }
+            );
+        };
+
+        const coValues = tx.objectStore("coValues");
+        const sessions = tx.objectStore("sessions");
+        const transactions = tx.objectStore("transactions");
+
+        let storedCoValueRowID = (
+            await promised<StoredCoValueRow | undefined>(
+                coValues.index("coValuesById").get(msg.id)
+            )
+        )?.rowID;
+
+        if (storedCoValueRowID === undefined) {
+            const header = msg.header;
+            if (!header) {
+                console.error("Expected to be sent header first");
+                await this.toLocalNode.write({
+                    action: "known",
+                    id: msg.id,
+                    header: false,
+                    sessions: {},
+                    isCorrection: true,
+                });
+                return;
+            }
+
+            storedCoValueRowID = (await promised<IDBValidKey>(
+                coValues.put({
+                    id: msg.id,
+                    header: header,
+                } satisfies CoValueRow)
+            )) as number;
+        }
+
+        const allOurSessions = await new Promise<{
+            [sessionID: SessionID]: StoredSessionRow;
+        }>((resolve) => {
+            const allOurSessionsRequest = sessions
+                .index("sessionsByCoValue")
+                .getAll(storedCoValueRowID);
+
+            allOurSessionsRequest.onsuccess = () => {
+                resolve(
+                    Object.fromEntries(
+                        (
+                            allOurSessionsRequest.result as StoredSessionRow[]
+                        ).map((row) => [row.sessionID, row])
+                    )
+                );
+            };
+        });
+
+        const ourKnown: CoValueKnownState = {
+            id: msg.id,
+            header: true,
+            sessions: {},
+        };
+        let invalidAssumptions = false;
+
+        for (const sessionID of Object.keys(msg.new) as SessionID[]) {
+            const sessionRow = allOurSessions[sessionID];
+            if (sessionRow) {
+                ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
+            }
+
+            if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
+                invalidAssumptions = true;
+            } else {
+                const newTransactions =
+                    msg.new[sessionID]?.newTransactions || [];
+
+                const actuallyNewOffset =
+                    (sessionRow?.lastIdx || 0) -
+                    (msg.new[sessionID]?.after || 0);
+                const actuallyNewTransactions =
+                    newTransactions.slice(actuallyNewOffset);
+
+                let nextIdx = sessionRow?.lastIdx || 0;
+
+                const sessionUpdate = {
+                    coValue: storedCoValueRowID,
+                    sessionID: sessionID,
+                    lastIdx:
+                        (sessionRow?.lastIdx || 0) +
+                        actuallyNewTransactions.length,
+                    lastSignature: msg.new[sessionID]!.lastSignature,
+                };
+
+                const sessionRowID = (await promised(
+                    sessions.put(
+                        sessionRow?.rowID
+                            ? {
+                                  rowID: sessionRow.rowID,
+                                  ...sessionUpdate,
+                              }
+                            : sessionUpdate
+                    )
+                )) as number;
+
+                for (const newTransaction of actuallyNewTransactions) {
+                    nextIdx++;
+                    await promised(
+                        transactions.add({
+                            ses: sessionRowID,
+                            idx: nextIdx,
+                            tx: newTransaction,
+                        } satisfies TransactionRow)
+                    );
+                }
+            }
+        }
+
+        if (invalidAssumptions) {
+            await this.toLocalNode.write({
+                action: "known",
+                ...ourKnown,
+                isCorrection: invalidAssumptions,
+            });
+        }
     }
 
     handleKnown(msg: KnownStateMessage) {
@@ -274,3 +382,13 @@ export class IDBStorage {
     handleDone(msg: DoneMessage) {}
 }
 
+function promised<T>(request: IDBRequest<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
