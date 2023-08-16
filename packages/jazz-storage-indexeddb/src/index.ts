@@ -158,25 +158,19 @@ export class IDBStorage {
         }
     }
 
-    async sendNewContentAfter(theirKnown: CoValueKnownState) {
-        const tx = this.db.transaction(
-            ["coValues", "sessions", "transactions"],
-            "readonly"
-        );
-
-        tx.onerror = (event) => {
-            throw new Error(
-                `Error in transaction (${
-                    (event.target as any).source?.name
-                }): ${(event.target as any).error}`,
-                { cause: (event.target as any).error }
-            );
-        };
-
-        const coValues = tx.objectStore("coValues");
-        const sessions = tx.objectStore("sessions");
-        const transactions = tx.objectStore("transactions");
-
+    async sendNewContentAfter(
+        theirKnown: CoValueKnownState,
+        {
+            coValues,
+            sessions,
+            transactions,
+        }: {
+            coValues: IDBObjectStore;
+            sessions: IDBObjectStore;
+            transactions: IDBObjectStore;
+        },
+        asDependencyOf?: RawCoID
+    ) {
         const coValueRow = await promised<StoredCoValueRow | undefined>(
             coValues.index("coValuesById").get(theirKnown.id)
         );
@@ -227,9 +221,44 @@ export class IDBStorage {
             }
         }
 
+        const dependedOnCoValues =
+            coValueRow?.header.ruleset.type === "team"
+                ? Object.values(newContent.new).flatMap((sessionEntry) =>
+                      sessionEntry.newTransactions.flatMap((tx) => {
+                          if (tx.privacy !== "trusting") return [];
+                          return tx.changes
+                              .map(
+                                  (change) =>
+                                      change &&
+                                      typeof change === "object" &&
+                                      "op" in change &&
+                                      change.op === "set" &&
+                                      "key" in change &&
+                                      change.key
+                              )
+                              .filter(
+                                  (key): key is RawCoID =>
+                                      typeof key === "string" &&
+                                      key.startsWith("co_")
+                              );
+                      })
+                  )
+                : coValueRow?.header.ruleset.type === "ownedByTeam"
+                ? [coValueRow?.header.ruleset.team]
+                : [];
+
+        for (const dependedOnCoValue of dependedOnCoValues) {
+            await this.sendNewContentAfter(
+                { id: dependedOnCoValue, header: false, sessions: {} },
+                { coValues, sessions, transactions },
+                asDependencyOf || theirKnown.id
+            );
+        }
+
         await this.toLocalNode.write({
             action: "known",
             ...ourKnown,
+            asDependencyOf
         });
 
         if (newContent.header || Object.keys(newContent.new).length > 0) {
@@ -238,27 +267,12 @@ export class IDBStorage {
     }
 
     handleLoad(msg: LoadMessage) {
-        return this.sendNewContentAfter(msg);
+        return this.sendNewContentAfter(msg, this.inTransaction("readonly"));
     }
 
     async handleContent(msg: NewContentMessage) {
-        const tx = this.db.transaction(
-            ["coValues", "sessions", "transactions"],
-            "readwrite"
-        );
-
-        tx.onerror = (event) => {
-            throw new Error(
-                `Error in transaction (${
-                    (event.target as any).source?.name
-                }): ${(event.target as any).error}`,
-                { cause: (event.target as any).error }
-            );
-        };
-
-        const coValues = tx.objectStore("coValues");
-        const sessions = tx.objectStore("sessions");
-        const transactions = tx.objectStore("transactions");
+        const { coValues, sessions, transactions } =
+            this.inTransaction("readwrite");
 
         let storedCoValueRowID = (
             await promised<StoredCoValueRow | undefined>(
@@ -376,10 +390,35 @@ export class IDBStorage {
     }
 
     handleKnown(msg: KnownStateMessage) {
-        return this.sendNewContentAfter(msg);
+        return this.sendNewContentAfter(msg, this.inTransaction("readonly"));
     }
 
     handleDone(msg: DoneMessage) {}
+
+    inTransaction(mode: "readwrite" | "readonly"): {
+        coValues: IDBObjectStore;
+        sessions: IDBObjectStore;
+        transactions: IDBObjectStore;
+    } {
+        const tx = this.db.transaction(
+            ["coValues", "sessions", "transactions"],
+            mode
+        );
+
+        tx.onerror = (event) => {
+            throw new Error(
+                `Error in transaction (${
+                    (event.target as any).source?.name
+                }): ${(event.target as any).error}`,
+                { cause: (event.target as any).error }
+            );
+        };
+        const coValues = tx.objectStore("coValues");
+        const sessions = tx.objectStore("sessions");
+        const transactions = tx.objectStore("transactions");
+
+        return { coValues, sessions, transactions };
+    }
 }
 
 function promised<T>(request: IDBRequest<T>): Promise<T> {

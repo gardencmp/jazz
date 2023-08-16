@@ -38,6 +38,12 @@ test("Should be able to sync data to database and then load that from a new node
 
     const team = node1.createTeam();
 
+    const map = team.createMap();
+
+    map.edit((m) => {
+        m.set("hello", "world");
+    });
+
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const node2 = new LocalNode(
@@ -47,7 +53,7 @@ test("Should be able to sync data to database and then load that from a new node
 
     await IDBStorage.connectTo(node2, { trace: true, localNodeName: "node2" });
 
-    const team2 = await node2.load(team.id);
+    const map2 = await node2.load(map.id);
 
-    expect(team2).toBeDefined();
+    expect(map2.get("hello")).toBe("world");
 });
