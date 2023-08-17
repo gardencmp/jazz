@@ -4,8 +4,8 @@ import {
     CojsonInternalTypes,
     SessionID,
     SyncMessage,
+    Peer
 } from "cojson";
-import { Peer } from "cojson/src/sync";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
 import { IDBStorage } from "jazz-storage-indexeddb";
 

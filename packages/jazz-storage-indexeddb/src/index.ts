@@ -1,5 +1,4 @@
-import { cojsonInternals, SessionID, SyncMessage, Peer } from "cojson";
-import { CojsonInternalTypes } from "cojson";
+import { cojsonInternals, SessionID, SyncMessage, Peer, CojsonInternalTypes } from "cojson";
 import {
     ReadableStream,
     WritableStream,
@@ -390,7 +389,7 @@ export class IDBStorage {
         );
 
         tx.onerror = (event) => {
-            const target = event.target as {
+            const target = event.target as unknown as {
                 error: DOMException;
                 source?: { name: string };
             } | null;

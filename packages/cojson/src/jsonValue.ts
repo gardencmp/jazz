@@ -1,6 +1,6 @@
-import { CoID, ContentType } from './contentType.js';
+import { RawCoID } from './ids.js';
 
 export type JsonAtom = string | number | boolean | null;
-export type JsonValue = JsonAtom | JsonArray | JsonObject | CoID<ContentType>;
+export type JsonValue = JsonAtom | JsonArray | JsonObject | RawCoID;
 export type JsonArray = JsonValue[];
 export type JsonObject = { [key: string]: JsonValue; };
