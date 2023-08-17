@@ -21,7 +21,7 @@ export function SubmittableInput({
             }}
         >
             <Input
-                className="-ml-3 -my-2 flex-grow flex-3"
+                className="-ml-3 -my-2 flex-grow flex-3 text-base"
                 name="text"
                 placeholder={placeholder}
                 autoComplete="off" />
