@@ -1,22 +1,15 @@
 {
-    "name": "jazz-react-auth-local",
-    "version": "0.0.11",
+    "name": "jazz-browser-auth-local",
+    "version": "0.0.4",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "license": "MIT",
     "dependencies": {
-        "jazz-browser-auth-local": "^0.0.4",
-        "jazz-react": "^0.0.14",
+        "jazz-browser": "^0.0.4",
         "typescript": "^5.1.6"
     },
-    "devDependencies": {
-        "@types/react": "^18.2.19"
-    },
-    "peerDependencies": {
-        "react": "^17.0.2"
-    },
     "scripts": {
-        "lint": "eslint src/**/*.tsx",
+        "lint": "eslint src/**/*.ts",
         "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     }

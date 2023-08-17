@@ -1,19 +1,18 @@
 import { expect, test } from "vitest";
-import { LocalNode } from "cojson";
-import { getAgentID, newRandomAgentSecret } from "cojson/src/crypto";
-import { newRandomSessionID } from "cojson/src/coValue";
-import { AnonymousControlledAccount } from "cojson/src/account";
+import { AnonymousControlledAccount, LocalNode, cojsonInternals } from "cojson";
 import { IDBStorage } from ".";
 
 test.skip("Should be able to initialize and load from empty DB", async () => {
-    const agentSecret = newRandomAgentSecret();
+    const agentSecret = cojsonInternals.newRandomAgentSecret();
 
     const node = new LocalNode(
         new AnonymousControlledAccount(agentSecret),
-        newRandomSessionID(getAgentID(agentSecret))
+        cojsonInternals.newRandomSessionID(
+            cojsonInternals.getAgentID(agentSecret)
+        )
     );
 
-    await IDBStorage.connectTo(node, { trace: true });
+    node.sync.addPeer(await IDBStorage.asPeer({ trace: true }));
 
     console.log("yay!");
 
@@ -25,14 +24,18 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 });
 
 test("Should be able to sync data to database and then load that from a new node", async () => {
-    const agentSecret = newRandomAgentSecret();
+    const agentSecret = cojsonInternals.newRandomAgentSecret();
 
     const node1 = new LocalNode(
         new AnonymousControlledAccount(agentSecret),
-        newRandomSessionID(getAgentID(agentSecret))
+        cojsonInternals.newRandomSessionID(
+            cojsonInternals.getAgentID(agentSecret)
+        )
     );
 
-    await IDBStorage.connectTo(node1, { trace: true, localNodeName: "node1" });
+    node1.sync.addPeer(
+        await IDBStorage.asPeer({ trace: true, localNodeName: "node1" })
+    );
 
     console.log("yay!");
 
@@ -48,10 +51,14 @@ test("Should be able to sync data to database and then load that from a new node
 
     const node2 = new LocalNode(
         new AnonymousControlledAccount(agentSecret),
-        newRandomSessionID(getAgentID(agentSecret))
+        cojsonInternals.newRandomSessionID(
+            cojsonInternals.getAgentID(agentSecret)
+        )
     );
 
-    await IDBStorage.connectTo(node2, { trace: true, localNodeName: "node2" });
+    node2.sync.addPeer(
+        await IDBStorage.asPeer({ trace: true, localNodeName: "node2" })
+    );
 
     const map2 = await node2.load(map.id);
 

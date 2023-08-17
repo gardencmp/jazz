@@ -1,20 +1,15 @@
 {
-  "name": "jazz-storage-indexeddb",
-  "version": "0.0.8",
+  "name": "jazz-browser",
+  "version": "0.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
     "cojson": "^0.0.21",
+    "jazz-storage-indexeddb": "^0.0.8",
     "typescript": "^5.1.6"
   },
-  "devDependencies": {
-    "@vitest/browser": "^0.34.1",
-    "vitest": "^0.34.1",
-    "webdriverio": "^8.15.0"
-  },
   "scripts": {
-    "test": "vitest --browser chrome",
     "lint": "eslint src/**/*.ts",
     "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"

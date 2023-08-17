@@ -6,15 +6,26 @@ import {
     agentSecretToBytes,
     getAgentID,
     newRandomAgentSecret,
+    newRandomSecretSeed,
+    agentSecretFromSecretSeed,
+    secretSeedLength,
+    shortHashLength,
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
+import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, ContentType } from "./contentType.js";
 import type { JsonValue } from "./jsonValue.js";
-import type { SyncMessage } from "./sync.js";
+import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
+import type {
+    AccountID,
+    AccountContent,
+    ProfileContent,
+    Profile,
+} from "./account.js";
 
 type Value = JsonValue | ContentType;
 
@@ -25,13 +36,18 @@ export const cojsonInternals = {
     newRandomAgentSecret,
     connectedPeers,
     getAgentID,
+    rawCoIDtoBytes,
+    rawCoIDfromBytes,
+    newRandomSecretSeed,
+    agentSecretFromSecretSeed,
+    secretSeedLength,
+    shortHashLength,
 };
 
 export {
     LocalNode,
     CoValue,
     CoMap,
-    cojsonInternals as internals,
     AnonymousControlledAccount,
     ControlledAccount,
 };
@@ -45,8 +61,14 @@ export type {
     SessionID,
     SyncMessage,
     AgentID,
+    AccountID,
+    Peer,
+    AccountContent,
+    Profile,
+    ProfileContent,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CojsonInternalTypes {
     export type CoValueKnownState = import("./sync.js").CoValueKnownState;
     export type DoneMessage = import("./sync.js").DoneMessage;
@@ -57,4 +79,5 @@ export namespace CojsonInternalTypes {
     export type Transaction = import("./coValue.js").Transaction;
     export type Signature = import("./crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
+    export type AccountIDOrAgentID = import("./account.js").AccountIDOrAgentID;
 }

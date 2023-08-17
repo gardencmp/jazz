@@ -1,180 +1,73 @@
 import {
     LocalNode,
-    cojsonInternals,
-    SessionID,
     ContentType,
-    SyncMessage,
-    AgentSecret,
     CoID,
-    AnonymousControlledAccount,
-    AgentID
+    ProfileContent,
+    CoMap,
+    AccountID,
+    Profile,
 } from "cojson";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ReadableStream, WritableStream } from "isomorphic-streams";
-import { IDBStorage } from "jazz-storage-indexeddb";
+import React, { useEffect, useState } from "react";
+import { AuthProvider, createBrowserNode } from "jazz-browser";
 
 type JazzContext = {
     localNode: LocalNode;
+    logOut: () => void;
 };
 
 const JazzContext = React.createContext<JazzContext | undefined>(undefined);
 
-export type AuthComponent = (props: {
-    onCredential: (credentials: AgentSecret) => void;
-}) => React.ReactElement;
+export type ReactAuthHook = () => {
+    auth: AuthProvider;
+    AuthUI: React.ReactNode;
+    logOut?: () => void;
+};
 
 export function WithJazz({
     children,
-    auth: Auth,
-    syncAddress = "wss://sync.jazz.tools",
+    auth: authHook,
+    syncAddress,
 }: {
     children: React.ReactNode;
-    auth: AuthComponent;
+    auth: ReactAuthHook;
     syncAddress?: string;
 }) {
     const [node, setNode] = useState<LocalNode | undefined>();
-    const sessionDone = useRef<() => void>();
 
-    const onCredential = useCallback((credential: AgentSecret) => {
-        const agentID = cojsonInternals.getAgentID(credential);
-        const sessionHandle = getSessionFor(agentID);
-
-        void sessionHandle.session.then((sessionID) =>
-            setNode(
-                new LocalNode(
-                    new AnonymousControlledAccount(credential),
-                    sessionID
-                )
-            )
-        );
-
-        sessionDone.current = sessionHandle.done;
-    }, []);
+    const { auth, AuthUI, logOut } = authHook();
 
     useEffect(() => {
+        let done: (() => void) | undefined = undefined;
+
+        (async () => {
+            const nodeHandle = await createBrowserNode({
+                auth: auth,
+                syncAddress,
+            });
+
+            setNode(nodeHandle.node);
+
+            done = nodeHandle.done;
+        })().catch((e) => {
+            console.log("Failed to create browser node", e);
+        });
+
         return () => {
-            sessionDone.current && sessionDone.current();
+            done && done();
         };
-    }, []);
+    }, [auth, syncAddress]);
 
-    useEffect(() => {
-        if (node) {
-            void IDBStorage.connectTo(node, { trace: true });
-
-            let shouldTryToReconnect = true;
-            let ws: WebSocket | undefined;
-
-            void (async function websocketReconnectLoop() {
-                while (shouldTryToReconnect) {
-                    ws = new WebSocket(syncAddress);
-
-                    const timeToReconnect = new Promise<void>((resolve) => {
-                        if (
-                            !ws ||
-                            ws.readyState === WebSocket.CLOSING ||
-                            ws.readyState === WebSocket.CLOSED
-                        )
-                            resolve();
-                        ws?.addEventListener(
-                            "close",
-                            () => {
-                                console.log(
-                                    "Connection closed, reconnecting in 5s"
-                                );
-                                setTimeout(resolve, 5000);
-                            },
-                            { once: true }
-                        );
-                    });
-
-                    const incoming = websocketReadableStream<SyncMessage>(ws);
-                    const outgoing = websocketWritableStream<SyncMessage>(ws);
-
-                    node.sync.addPeer({
-                        id: syncAddress + "@" + new Date().toISOString(),
-                        incoming,
-                        outgoing,
-                        role: "server",
-                    });
-
-                    await timeToReconnect;
-                }
-            })();
-
-            return () => {
-                shouldTryToReconnect = false;
-                ws?.close();
-            };
-        }
-    }, [node, syncAddress]);
-
-    return node ? (
-        <JazzContext.Provider value={{ localNode: node }}>
-            <>{children}</>
-        </JazzContext.Provider>
-    ) : (
-        <Auth onCredential={onCredential} />
+    return (
+        <>
+            {node && logOut ? (
+                <JazzContext.Provider value={{ localNode: node, logOut }}>
+                    <>{children}</>
+                </JazzContext.Provider>
+            ) : (
+                AuthUI
+            )}
+        </>
     );
-}
-
-type SessionHandle = {
-    session: Promise<SessionID>;
-    done: () => void;
-};
-
-function getSessionFor(agentID: AgentID): SessionHandle {
-    let done!: () => void;
-    const donePromise = new Promise<void>((resolve) => {
-        done = resolve;
-    });
-
-    let resolveSession: (sessionID: SessionID) => void;
-    const sessionPromise = new Promise<SessionID>((resolve) => {
-        resolveSession = resolve;
-    });
-
-    void (async function () {
-        for (let idx = 0; idx < 100; idx++) {
-            // To work better around StrictMode
-            for (let retry = 0; retry < 2; retry++) {
-                console.log("Trying to get lock", agentID + "_" + idx);
-                const sessionFinishedOrNoLock = await navigator.locks.request(
-                    agentID + "_" + idx,
-                    { ifAvailable: true },
-                    async (lock) => {
-                        if (!lock) return "noLock";
-
-                        const sessionID =
-                            localStorage[agentID + "_" + idx] ||
-                            cojsonInternals.newRandomSessionID(agentID);
-                        localStorage[agentID + "_" + idx] = sessionID;
-
-                        console.log("Got lock", agentID + "_" + idx, sessionID);
-
-                        resolveSession(sessionID);
-
-                        await donePromise;
-                        console.log(
-                            "Done with lock",
-                            agentID + "_" + idx,
-                            sessionID
-                        );
-                        return "sessionFinished";
-                    }
-                );
-
-                if (sessionFinishedOrNoLock === "sessionFinished") {
-                    return;
-                }
-            }
-        }
-        throw new Error("Couldn't get lock on session after 100x2 tries");
-    })();
-
-    return {
-        session: sessionPromise,
-        done,
-    };
 }
 
 export function useJazz() {
@@ -187,30 +80,34 @@ export function useJazz() {
     return context;
 }
 
-export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
+export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
     const [state, setState] = useState<T>();
 
     const { localNode } = useJazz();
 
     useEffect(() => {
+        if (!id) return;
         let unsubscribe: (() => void) | undefined = undefined;
 
         let done = false;
 
-        localNode.load(id).then((state) => {
-            if (done) return;
-            unsubscribe = state.subscribe((newState) => {
-                console.log(
-                    "Got update",
-                    id,
-                    newState.toJSON(),
-                    newState.coValue.sessions
-                );
-                setState(newState as T);
+        localNode
+            .load(id)
+            .then((state) => {
+                if (done) return;
+                unsubscribe = state.subscribe((newState) => {
+                    // console.log(
+                    //     "Got update",
+                    //     id,
+                    //     newState.toJSON(),
+                    //     newState.coValue.sessions
+                    // );
+                    setState(newState as T);
+                });
+            })
+            .catch((e) => {
+                console.log("Failed to load", id, e);
             });
-        }).catch((e) => {
-            console.log("Failed to load", id, e);
-        });
 
         return () => {
             done = true;
@@ -221,75 +118,22 @@ export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
     return state;
 }
 
-function websocketReadableStream<T>(ws: WebSocket) {
-    ws.binaryType = "arraybuffer";
+export function useProfile<P extends ProfileContent = ProfileContent>({
+    accountID,
+}: {
+    accountID?: AccountID;
+}): (Profile & CoMap<P>) | undefined {
+    const [profileID, setProfileID] = useState<CoID<Profile & CoMap<P>>>();
 
-    return new ReadableStream<T>({
-        start(controller) {
-            ws.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-                if (msg.type === "ping") {
-                    console.debug(
-                        "Got ping from",
-                        msg.dc,
-                        "latency",
-                        Date.now() - msg.time,
-                        "ms"
-                    );
-                    return;
-                }
-                controller.enqueue(msg);
-            };
-            ws.onclose = () => controller.close();
-            ws.onerror = () =>
-                controller.error(new Error("The WebSocket errored!"));
-        },
+    const { localNode } = useJazz();
 
-        cancel() {
-            ws.close();
-        },
-    });
-}
+    useEffect(() => {
+        accountID &&
+            localNode
+                .loadProfile(accountID)
+                .then((profile) => setProfileID(profile.id as typeof profileID))
+                .catch((e) => console.log("Failed to load profile", e));
+    }, [localNode, accountID]);
 
-function websocketWritableStream<T>(ws: WebSocket) {
-    return new WritableStream<T>({
-        start(controller) {
-            ws.onerror = () => {
-                controller.error(new Error("The WebSocket errored!"));
-                ws.onclose = null;
-            };
-            ws.onclose = () =>
-                controller.error(
-                    new Error("The server closed the connection unexpectedly!")
-                );
-            return new Promise((resolve) => (ws.onopen = resolve));
-        },
-
-        write(chunk) {
-            ws.send(JSON.stringify(chunk));
-            // Return immediately, since the web socket gives us no easy way to tell
-            // when the write completes.
-        },
-
-        close() {
-            return closeWS(1000);
-        },
-
-        abort(reason) {
-            return closeWS(4000, reason && reason.message);
-        },
-    });
-
-    function closeWS(code: number, reasonString?: string) {
-        return new Promise<void>((resolve, reject) => {
-            ws.onclose = (e) => {
-                if (e.wasClean) {
-                    resolve();
-                } else {
-                    reject(new Error("The connection was not closed cleanly"));
-                }
-            };
-            ws.close(code, reasonString);
-        });
-    }
+    return useTelepathicState(profileID);
 }
