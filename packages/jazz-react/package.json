@@ -1,8 +1,8 @@
 {
   "name": "jazz-react",
   "version": "0.0.12",
-  "main": "src/index.tsx",
-  "types": "src/index.tsx",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
     "cojson": "^0.0.19",

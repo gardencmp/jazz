@@ -2,7 +2,7 @@
     "name": "cojson",
     "module": "dist/index.js",
     "main": "dist/index.js",
-    "types": "src/index.ts",
+    "types": "dist/index.d.ts",
     "type": "module",
     "license": "MIT",
     "version": "0.0.19",
