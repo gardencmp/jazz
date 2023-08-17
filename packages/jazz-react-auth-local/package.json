@@ -1,12 +1,12 @@
 {
     "name": "jazz-react-auth-local",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "license": "MIT",
     "dependencies": {
-        "jazz-browser-auth-local": "^0.0.3",
-        "jazz-react": "^0.0.13",
+        "jazz-browser-auth-local": "^0.0.4",
+        "jazz-react": "^0.0.14",
         "typescript": "^5.1.6"
     },
     "devDependencies": {
