@@ -1,11 +1,11 @@
 import { ed25519, x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
-import { JsonValue } from './jsonValue.js';
+import { JsonValue } from "./jsonValue.js";
 import { base58, base64url } from "@scure/base";
 import stableStringify from "fast-json-stable-stringify";
 import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
-import { AgentID, RawCoID, TransactionID } from './ids.js';
+import { AgentID, RawCoID, TransactionID } from "./ids.js";
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;
@@ -21,9 +21,7 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 export function newRandomSigner(): SignerSecret {
-    return `signerSecret_z${base58.encode(
-        ed25519.utils.randomPrivateKey()
-    )}`;
+    return `signerSecret_z${base58.encode(ed25519.utils.randomPrivateKey())}`;
 }
 
 export function signerSecretToBytes(secret: SignerSecret): Uint8Array {
@@ -95,20 +93,16 @@ export function agentSecretToBytes(secret: AgentSecret): Uint8Array {
 }
 
 export function agentSecretFromBytes(bytes: Uint8Array): AgentSecret {
-    const sealerSecret = sealerSecretFromBytes(
-        bytes.slice(0, 32)
-    );
-    const signerSecret = signerSecretFromBytes(
-        bytes.slice(32)
-    );
+    const sealerSecret = sealerSecretFromBytes(bytes.slice(0, 32));
+    const signerSecret = signerSecretFromBytes(bytes.slice(32));
     return `${sealerSecret}/${signerSecret}`;
 }
 
 export function getAgentID(secret: AgentSecret): AgentID {
     const [sealerSecret, signerSecret] = secret.split("/");
-    return `${getSealerID(
-        sealerSecret as SealerSecret
-    )}/${getSignerID(signerSecret as SignerSecret)}`;
+    return `${getSealerID(sealerSecret as SealerSecret)}/${getSignerID(
+        signerSecret as SignerSecret
+    )}`;
 }
 
 export function getAgentSignerID(agentId: AgentID): SignerID {
@@ -139,24 +133,17 @@ export function seal<T extends JsonValue>(
 
     const sealerPub = base58.decode(to.substring("sealer_z".length));
 
-    const senderPriv = base58.decode(
-        from.substring("sealerSecret_z".length)
-    );
+    const senderPriv = base58.decode(from.substring("sealerSecret_z".length));
 
     const plaintext = textEncoder.encode(stableStringify(message));
 
-    const sharedSecret = x25519.getSharedSecret(
-        senderPriv,
-        sealerPub
-    );
+    const sharedSecret = x25519.getSharedSecret(senderPriv, sealerPub);
 
     const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(
         plaintext
     );
 
-    return `sealed_U${base64url.encode(
-        sealedBytes
-    )}` as Sealed<T>
+    return `sealed_U${base64url.encode(sealedBytes)}` as Sealed<T>;
 }
 
 export function unseal<T extends JsonValue>(
@@ -169,9 +156,7 @@ export function unseal<T extends JsonValue>(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
-    const sealerPriv = base58.decode(
-        sealer.substring("sealerSecret_z".length)
-    );
+    const sealerPriv = base58.decode(sealer.substring("sealerSecret_z".length));
 
     const senderPub = base58.decode(from.substring("sealer_z".length));
 
@@ -221,10 +206,11 @@ export class StreamingHash {
 }
 
 export type ShortHash = `shortHash_z${string}`;
+export const shortHashLength = 19;
 
 export function shortHash(value: JsonValue): ShortHash {
     return `shortHash_z${base58.encode(
-        blake3(textEncoder.encode(stableStringify(value))).slice(0, 19)
+        blake3(textEncoder.encode(stableStringify(value))).slice(0, shortHashLength)
     )}`;
 }
 
@@ -274,7 +260,10 @@ export function encryptKeySecret(keys: {
 }): {
     encryptedID: KeyID;
     encryptingID: KeyID;
-    encrypted: Encrypted<KeySecret, { encryptedID: KeyID; encryptingID: KeyID }>;
+    encrypted: Encrypted<
+        KeySecret,
+        { encryptedID: KeyID; encryptingID: KeyID }
+    >;
 } {
     const nOnceMaterial = {
         encryptedID: keys.toEncrypt.id,
@@ -328,7 +317,10 @@ export function decryptKeySecret(
     encryptedInfo: {
         encryptedID: KeyID;
         encryptingID: KeyID;
-        encrypted: Encrypted<KeySecret, { encryptedID: KeyID; encryptingID: KeyID }>;
+        encrypted: Encrypted<
+            KeySecret,
+            { encryptedID: KeyID; encryptingID: KeyID }
+        >;
     },
     sealingSecret: KeySecret
 ): KeySecret | undefined {
@@ -344,10 +336,35 @@ export function uniquenessForHeader(): `z${string}` {
     return `z${base58.encode(randomBytes(12))}`;
 }
 
-export function createdNowUnique(): {createdAt: `2${string}`, uniqueness: `z${string}`} {
-    const createdAt = (new Date()).toISOString() as `2${string}`;
+export function createdNowUnique(): {
+    createdAt: `2${string}`;
+    uniqueness: `z${string}`;
+} {
+    const createdAt = new Date().toISOString() as `2${string}`;
     return {
         createdAt,
         uniqueness: uniquenessForHeader(),
+    };
+}
+
+export const secretSeedLength = 32;
+
+export function newRandomSecretSeed(): Uint8Array {
+    return randomBytes(secretSeedLength);
+}
+
+export function agentSecretFromSecretSeed(secretSeed: Uint8Array): AgentSecret {
+    if (secretSeed.length !== secretSeedLength) {
+        throw new Error(`Secret seed needs to be ${secretSeedLength} bytes long`);
     }
+
+    return `sealerSecret_z${base58.encode(
+        blake3(secretSeed, {
+            context: textEncoder.encode("seal"),
+        })
+    )}/signerSecret_z${base58.encode(
+        blake3(secretSeed, {
+            context: textEncoder.encode("sign"),
+        })
+    )}`;
 }

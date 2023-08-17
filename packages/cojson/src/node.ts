@@ -43,7 +43,7 @@ export class LocalNode {
         this.ownSessionID = ownSessionID;
     }
 
-    static withNewlyCreatedAccount(name: string): {
+    static withNewlyCreatedAccount(name: string, initialAgentSecret = newRandomAgentSecret()): {
         node: LocalNode;
         accountID: AccountID;
         accountSecret: AgentSecret;
@@ -55,7 +55,7 @@ export class LocalNode {
             newRandomSessionID(getAgentID(throwawayAgent))
         );
 
-        const account = setupNode.createAccount(name);
+        const account = setupNode.createAccount(name, initialAgentSecret);
 
         const nodeWithAccount = account.node.testWithDifferentAccount(
             account,
@@ -157,9 +157,7 @@ export class LocalNode {
         return this.expectCoValueLoaded(profileID, expectation).getCurrentContent() as Profile;
     }
 
-    createAccount(name: string): ControlledAccount {
-        const agentSecret = newRandomAgentSecret();
-
+    createAccount(name: string, agentSecret = newRandomAgentSecret()): ControlledAccount {
         const account = this.createCoValue(
             accountHeaderForInitialAgentSecret(agentSecret)
         ).testWithDifferentAccount(

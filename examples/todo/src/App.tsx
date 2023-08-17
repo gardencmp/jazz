@@ -9,8 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { CoMap, CoID } from "cojson";
+import { useCallback, useEffect, useState } from "react";
+import { CoMap, CoID, AccountID } from "cojson";
 import { useJazz, useTelepathicState } from "jazz-react";
 
 type TaskContent = { done: boolean; text: string };
@@ -20,36 +20,53 @@ type TodoListContent = { title: string; [taskId: CoID<Task>]: true };
 type TodoList = CoMap<TodoListContent>;
 
 function App() {
-    const [listId, setListId] = useState<CoID<TodoList>>(window.location.hash.slice(1) as CoID<TodoList>);
+    const [listId, setListId] = useState<CoID<TodoList>>(
+        window.location.hash.slice(1) as CoID<TodoList>
+    );
 
-    const { localNode } = useJazz();
+    const { localNode, logOut } = useJazz();
 
-    const createList = () => {
+    const createList = useCallback((title: string) => {
         const listTeam = localNode.createTeam();
         const list = listTeam.createMap<TodoListContent>();
 
         list.edit((list) => {
-            list.set("title", "My Todo List");
+            list.set("title", title);
         });
 
         window.location.hash = list.id;
-    };
+    }, []);
 
     useEffect(() => {
         const listener = () => {
             setListId(window.location.hash.slice(1) as CoID<TodoList>);
-        }
+        };
         window.addEventListener("hashchange", listener);
 
         return () => {
             window.removeEventListener("hashchange", listener);
-        }
-    }, [])
+        };
+    }, []);
 
     return (
         <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 md:pt-[30vh] pb-10">
-            {listId && <TodoList listId={listId} />}
-            <Button onClick={createList}>Create New List</Button>
+            {listId ? (
+                <TodoList listId={listId} />
+            ) : (
+                <SubmittableInput
+                    onSubmit={createList}
+                    label="Create New List"
+                    placeholder="New list title"
+                />
+            )}
+            <Button
+                onClick={() => {
+                    window.location.hash = "";
+                    logOut();
+                }}
+            >
+                Log Out
+            </Button>
         </div>
     );
 }
@@ -95,35 +112,18 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
                                 key.startsWith("co_")
                             )
                             .map((taskId) => (
-                                <TodoRow key={taskId} taskId={taskId} />
+                                <TaskRow key={taskId} taskId={taskId} />
                             ))}
                     <TableRow key="new">
                         <TableCell>
                             <Checkbox className="mt-1" disabled />
                         </TableCell>
                         <TableCell>
-                            <form
-                                className="flex flex-row items-center gap-5"
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const textEl =
-                                        e.currentTarget.elements.namedItem(
-                                            "text"
-                                        ) as HTMLInputElement;
-                                    createTodo(textEl.value);
-                                    textEl.value = "";
-                                }}
-                            >
-                                <Input
-                                    className="-ml-3 -my-2"
-                                    name="text"
-                                    placeholder="Add todo"
-                                    autoComplete="off"
-                                />
-                                <Button asChild type="submit">
-                                    <Input type="submit" value="Add" />
-                                </Button>
-                            </form>
+                            <SubmittableInput
+                                onSubmit={(taskText) => createTodo(taskText)}
+                                label="Add"
+                                placeholder="New task"
+                            />
                         </TableCell>
                     </TableRow>
                 </TableBody>
@@ -132,7 +132,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
     );
 }
 
-function TodoRow({ taskId }: { taskId: CoID<Task> }) {
+function TaskRow({ taskId }: { taskId: CoID<Task> }) {
     const task = useTelepathicState(taskId);
 
     return (
@@ -148,10 +148,66 @@ function TodoRow({ taskId }: { taskId: CoID<Task> }) {
                     }}
                 />
             </TableCell>
-            <TableCell className={task?.get("done") ? "line-through" : ""}>
-                {task?.get("text")}
+            <TableCell>
+                <div className="flex flex-row justify-between">
+                    <span className={task?.get("done") ? "line-through" : ""}>{task?.get("text")}</span>
+                    <NameBadge accountID={task?.getLastEditor("text")} />
+                </div>
             </TableCell>
         </TableRow>
+    );
+}
+
+function NameBadge({ accountID }: { accountID?: AccountID }) {
+    const [name, setName] = useState<string>();
+
+    const { localNode } = useJazz();
+
+    useEffect(() => {
+        accountID &&
+            localNode.loadProfile(accountID).then((profile) => {
+                setName(profile.get("name"));
+            });
+    }, [localNode, accountID]);
+
+    return (
+        <span className="rounded-full bg-neutral-200 py-0.5 px-2 text-xs text-neutral-500">
+            {name || "..."}
+        </span>
+    );
+}
+
+function SubmittableInput({
+    onSubmit,
+    label,
+    placeholder,
+}: {
+    onSubmit: (text: string) => void;
+    label: string;
+    placeholder: string;
+}) {
+    return (
+        <form
+            className="flex flex-row items-center gap-3"
+            onSubmit={(e) => {
+                e.preventDefault();
+                const textEl = e.currentTarget.elements.namedItem(
+                    "text"
+                ) as HTMLInputElement;
+                onSubmit(textEl.value);
+                textEl.value = "";
+            }}
+        >
+            <Input
+                className="-ml-3 -my-2 flex-grow flex-3"
+                name="text"
+                placeholder={placeholder}
+                autoComplete="off"
+            />
+            <Button asChild type="submit" className="flex-shrink flex-1">
+                <Input type="submit" value={label} />
+            </Button>
+        </form>
     );
 }
 

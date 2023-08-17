@@ -1,4 +1,4 @@
-import { LocalNode, cojsonInternals, SessionID, SyncMessage } from "cojson";
+import { LocalNode, cojsonInternals, SessionID, SyncMessage, Peer } from "cojson";
 import { CojsonInternalTypes } from "cojson";
 import {
     ReadableStream,
@@ -56,15 +56,14 @@ export class IDBStorage {
         })();
     }
 
-    static async connectTo(
-        localNode: LocalNode,
+    static async asPeer(
         {
             trace,
             localNodeName = "local",
         }: { trace?: boolean; localNodeName?: string } | undefined = {
             localNodeName: "local",
         }
-    ) {
+    ): Promise<Peer> {
         const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
             localNodeName,
             "storage",
@@ -76,7 +75,7 @@ export class IDBStorage {
             localNodeAsPeer.outgoing
         );
 
-        localNode.sync.addPeer(storageAsPeer);
+        return storageAsPeer;
     }
 
     static async open(

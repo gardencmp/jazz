@@ -13,7 +13,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
         newRandomSessionID(getAgentID(agentSecret))
     );
 
-    await IDBStorage.connectTo(node, { trace: true });
+    node.sync.addPeer(await IDBStorage.asPeer({ trace: true }));
 
     console.log("yay!");
 
@@ -32,7 +32,7 @@ test("Should be able to sync data to database and then load that from a new node
         newRandomSessionID(getAgentID(agentSecret))
     );
 
-    await IDBStorage.connectTo(node1, { trace: true, localNodeName: "node1" });
+    node1.sync.addPeer(await IDBStorage.asPeer({ trace: true, localNodeName: "node1" }));
 
     console.log("yay!");
 
@@ -51,7 +51,7 @@ test("Should be able to sync data to database and then load that from a new node
         newRandomSessionID(getAgentID(agentSecret))
     );
 
-    await IDBStorage.connectTo(node2, { trace: true, localNodeName: "node2" });
+    node2.sync.addPeer(await IDBStorage.asPeer({ trace: true, localNodeName: "node2" }));
 
     const map2 = await node2.load(map.id);
 
