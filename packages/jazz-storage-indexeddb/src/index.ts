@@ -1,4 +1,4 @@
-import { LocalNode, cojsonInternals, SessionID, SyncMessage, Peer } from "cojson";
+import { cojsonInternals, SessionID, SyncMessage, Peer } from "cojson";
 import { CojsonInternalTypes } from "cojson";
 import {
     ReadableStream,
