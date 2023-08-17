@@ -1,4 +1,12 @@
-import { LocalNode, ContentType, CoID } from "cojson";
+import {
+    LocalNode,
+    ContentType,
+    CoID,
+    ProfileContent,
+    CoMap,
+    AccountID,
+    Profile,
+} from "cojson";
 import React, { useEffect, useState } from "react";
 import { AuthProvider, createBrowserNode } from "jazz-browser";
 
@@ -72,12 +80,13 @@ export function useJazz() {
     return context;
 }
 
-export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
+export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
     const [state, setState] = useState<T>();
 
     const { localNode } = useJazz();
 
     useEffect(() => {
+        if (!id) return;
         let unsubscribe: (() => void) | undefined = undefined;
 
         let done = false;
@@ -87,12 +96,12 @@ export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
             .then((state) => {
                 if (done) return;
                 unsubscribe = state.subscribe((newState) => {
-                    console.log(
-                        "Got update",
-                        id,
-                        newState.toJSON(),
-                        newState.coValue.sessions
-                    );
+                    // console.log(
+                    //     "Got update",
+                    //     id,
+                    //     newState.toJSON(),
+                    //     newState.coValue.sessions
+                    // );
                     setState(newState as T);
                 });
             })
@@ -107,4 +116,24 @@ export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
     }, [localNode, id]);
 
     return state;
+}
+
+export function useProfile<P extends ProfileContent = ProfileContent>({
+    accountID,
+}: {
+    accountID?: AccountID;
+}): (Profile & CoMap<P>) | undefined {
+    const [profileID, setProfileID] = useState<CoID<Profile & CoMap<P>>>();
+
+    const { localNode } = useJazz();
+
+    useEffect(() => {
+        accountID &&
+            localNode
+                .loadProfile(accountID)
+                .then((profile) => setProfileID(profile.id as typeof profileID))
+                .catch((e) => console.log("Failed to load profile", e));
+    }, [localNode, accountID]);
+
+    return useTelepathicState(profileID);
 }

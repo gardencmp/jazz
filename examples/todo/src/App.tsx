@@ -6,17 +6,21 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { CoMap, CoID, AccountID } from "cojson";
-import { useJazz, useTelepathicState } from "jazz-react";
+import { useJazz, useProfile, useTelepathicState } from "jazz-react";
+import { SubmittableInput } from "./components/SubmittableInput";
 
 type TaskContent = { done: boolean; text: string };
 type Task = CoMap<TaskContent>;
 
-type TodoListContent = { title: string; [taskId: CoID<Task>]: true };
+type TodoListContent = {
+    title: string;
+    // other keys form a set of task IDs
+    [taskId: CoID<Task>]: true
+};
 type TodoList = CoMap<TodoListContent>;
 
 function App() {
@@ -74,7 +78,7 @@ function App() {
 export function TodoList({ listId }: { listId: CoID<TodoList> }) {
     const list = useTelepathicState(listId);
 
-    const createTodo = (text: string) => {
+    const createTask = (text: string) => {
         if (!list) return;
         let task = list.coValue.getTeam().createMap<TaskContent>();
 
@@ -120,7 +124,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
                         </TableCell>
                         <TableCell>
                             <SubmittableInput
-                                onSubmit={(taskText) => createTodo(taskText)}
+                                onSubmit={(taskText) => createTask(taskText)}
                                 label="Add"
                                 placeholder="New task"
                             />
@@ -150,7 +154,9 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
             </TableCell>
             <TableCell>
                 <div className="flex flex-row justify-between">
-                    <span className={task?.get("done") ? "line-through" : ""}>{task?.get("text")}</span>
+                    <span className={task?.get("done") ? "line-through" : ""}>
+                        {task?.get("text")}
+                    </span>
                     <NameBadge accountID={task?.getLastEditor("text")} />
                 </div>
             </TableCell>
@@ -159,55 +165,12 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
 }
 
 function NameBadge({ accountID }: { accountID?: AccountID }) {
-    const [name, setName] = useState<string>();
-
-    const { localNode } = useJazz();
-
-    useEffect(() => {
-        accountID &&
-            localNode.loadProfile(accountID).then((profile) => {
-                setName(profile.get("name"));
-            });
-    }, [localNode, accountID]);
+    const profile = useProfile({ accountID });
 
     return (
-        <span className="rounded-full bg-neutral-200 py-0.5 px-2 text-xs text-neutral-500">
-            {name || "..."}
+        <span className="rounded-full bg-neutral-200 dark:bg-neutral-600 py-0.5 px-2 text-xs text-neutral-500 dark:text-neutral-300">
+            {profile?.get("name") || "..."}
         </span>
-    );
-}
-
-function SubmittableInput({
-    onSubmit,
-    label,
-    placeholder,
-}: {
-    onSubmit: (text: string) => void;
-    label: string;
-    placeholder: string;
-}) {
-    return (
-        <form
-            className="flex flex-row items-center gap-3"
-            onSubmit={(e) => {
-                e.preventDefault();
-                const textEl = e.currentTarget.elements.namedItem(
-                    "text"
-                ) as HTMLInputElement;
-                onSubmit(textEl.value);
-                textEl.value = "";
-            }}
-        >
-            <Input
-                className="-ml-3 -my-2 flex-grow flex-3"
-                name="text"
-                placeholder={placeholder}
-                autoComplete="off"
-            />
-            <Button asChild type="submit" className="flex-shrink flex-1">
-                <Input type="submit" value={label} />
-            </Button>
-        </form>
     );
 }
 

@@ -20,7 +20,12 @@ import type { CoID, ContentType } from "./contentType.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type { AccountID } from "./account.js";
+import type {
+    AccountID,
+    AccountContent,
+    ProfileContent,
+    Profile,
+} from "./account.js";
 
 type Value = JsonValue | ContentType;
 
@@ -57,7 +62,10 @@ export type {
     SyncMessage,
     AgentID,
     AccountID,
-    Peer
+    Peer,
+    AccountContent,
+    Profile,
+    ProfileContent,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
