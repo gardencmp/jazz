@@ -11,7 +11,7 @@ export const PrettyAuthComponent: LocalAuthComponent = ({
     const [username, setUsername] = useState<string>("");
 
     return (
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center p-5">
             {loading ? (
                 <div>Loading...</div>
             ) : (
@@ -28,6 +28,7 @@ export const PrettyAuthComponent: LocalAuthComponent = ({
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             autoComplete="webauthn"
+                            className="text-base"
                         />
                         <Button asChild>
                             <Input

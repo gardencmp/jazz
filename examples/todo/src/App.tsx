@@ -53,7 +53,7 @@ function App() {
     }, []);
 
     return (
-        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 md:pt-[30vh] pb-10">
+        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 md:pt-[30vh] pb-10 px-5">
             {listId ? (
                 <TodoList listId={listId} />
             ) : (
