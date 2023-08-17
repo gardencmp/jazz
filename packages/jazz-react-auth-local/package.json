@@ -16,7 +16,7 @@
         "react": "^17.0.2"
     },
     "scripts": {
-        "lint": "eslint src/**/*.ts",
+        "lint": "eslint src/**/*.tsx",
         "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     }
