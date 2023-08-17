@@ -14,6 +14,9 @@
     "webdriverio": "^8.15.0"
   },
   "scripts": {
-    "test": "vitest --browser chrome"
+    "test": "vitest --browser chrome",
+    "lint": "eslint src/**/*.ts",
+    "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
   }
 }

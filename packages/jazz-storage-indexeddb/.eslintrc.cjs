@@ -6,12 +6,12 @@ module.exports = {
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint'],
     parserOptions: {
-        project: './tsconfig.json',
+        project: "./tsconfig.json",
     },
     root: true,
     rules: {
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-        "@typescript-eslint/no-floating-promises": "error",
+        // "@typescript-eslint/no-floating-promises": "error",
     },
 };

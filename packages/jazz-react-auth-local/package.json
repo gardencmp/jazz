@@ -1,17 +1,22 @@
 {
-  "name": "jazz-react-auth-local",
-  "version": "0.0.6",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "license": "MIT",
-  "dependencies": {
-    "jazz-react": "^0.0.9",
-    "typescript": "^5.1.6"
-  },
-  "devDependencies": {
-    "@types/react": "^18.2.19"
-  },
-  "peerDependencies": {
-    "react": "^17.0.2"
-  }
+    "name": "jazz-react-auth-local",
+    "version": "0.0.6",
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "license": "MIT",
+    "dependencies": {
+        "jazz-react": "^0.0.9",
+        "typescript": "^5.1.6"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.19"
+    },
+    "peerDependencies": {
+        "react": "^17.0.2"
+    },
+    "scripts": {
+        "lint": "eslint src/**/*.ts",
+        "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
+        "prepublishOnly": "npm run build"
+    }
 }
