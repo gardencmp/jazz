@@ -26,7 +26,7 @@ function App() {
 
     const createList = () => {
         const listTeam = localNode.createTeam();
-        const list = listTeam.createMap<TodoListContent, null>();
+        const list = listTeam.createMap<TodoListContent>();
 
         list.edit((list) => {
             list.set("title", "My Todo List");
@@ -47,7 +47,7 @@ function App() {
     }, [])
 
     return (
-        <div className="flex flex-col h-full items-center justify-center gap-10">
+        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 md:pt-[30vh] pb-10">
             {listId && <TodoList listId={listId} />}
             <Button onClick={createList}>Create New List</Button>
         </div>
@@ -59,7 +59,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
 
     const createTodo = (text: string) => {
         if (!list) return;
-        let task = list.coValue.getTeam().createMap<TaskContent, {}>();
+        let task = list.coValue.getTeam().createMap<TaskContent>();
 
         task = task.edit((task) => {
             task.set("text", text);

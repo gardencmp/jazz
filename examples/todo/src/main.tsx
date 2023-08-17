@@ -7,7 +7,7 @@ import { LocalAuth } from "./LocalAuth.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <WithJazz auth={LocalAuth}>
+        <WithJazz auth={LocalAuth} syncAddress={new URLSearchParams(window.location.search).get("sync") || undefined}>
             <App />
         </WithJazz>
     </React.StrictMode>

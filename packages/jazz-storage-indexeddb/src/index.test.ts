@@ -17,7 +17,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 
     console.log("yay!");
 
-    const team = node.createTeam();
+    const _team = node.createTeam();
 
     await new Promise((resolve) => setTimeout(resolve, 200));
 

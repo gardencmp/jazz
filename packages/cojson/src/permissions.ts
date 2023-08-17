@@ -352,7 +352,7 @@ export class Team {
         this.rotateReadKey();
     }
 
-    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null>(
+    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null = null>(
         meta?: Meta
     ): CoMap<M, Meta> {
         return this.node

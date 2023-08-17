@@ -1,5 +1,5 @@
-import { newRandomAgentSecret, AgentSecret, agentSecretToBytes, agentSecretFromBytes} from "cojson/src/crypto";
-import React, { useCallback, useEffect, useState } from "react";
+import { cojsonInternals, AgentSecret } from "cojson";
+import { useCallback, useEffect, useState } from "react";
 
 export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
     const [displayName, setDisplayName] = useState<string>("");
@@ -12,8 +12,8 @@ export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
     }, [onCredential]);
 
     const signUp = useCallback(() => {
-        (async function () {
-            const credential = newRandomAgentSecret();
+        void (async function () {
+            const credential = cojsonInternals.newRandomAgentSecret();
 
             console.log(credential);
 
@@ -26,7 +26,7 @@ export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
                         id: window.location.hostname,
                     },
                     user: {
-                        id: agentSecretToBytes(credential),
+                        id: cojsonInternals.agentSecretToBytes(credential),
                         name: displayName,
                         displayName: displayName,
                     },
@@ -42,7 +42,7 @@ export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
             console.log(
                 webAuthNCredential,
                 credential,
-                agentSecretToBytes(credential)
+                cojsonInternals.agentSecretToBytes(credential)
             );
 
             sessionStorage.credential = JSON.stringify(credential);
@@ -51,7 +51,7 @@ export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
     }, [displayName]);
 
     const signIn = useCallback(() => {
-        (async function () {
+        void (async function () {
             const webAuthNCredential = await navigator.credentials.get({
                 publicKey: {
                     challenge: Uint8Array.from([0, 1, 2]),
@@ -62,11 +62,19 @@ export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
                 },
             });
 
+            if (!webAuthNCredential) {
+                throw new Error("Couldn't log in");
+            }
+
             const userIdBytes = new Uint8Array(
-                (webAuthNCredential as any).response.userHandle
+                (
+                    webAuthNCredential as unknown as {
+                        response: { userHandle: ArrayBuffer };
+                    }
+                ).response.userHandle
             );
             const credential =
-                agentSecretFromBytes(userIdBytes);
+                cojsonInternals.agentSecretFromBytes(userIdBytes);
 
             if (!credential) {
                 throw new Error("Invalid credential");

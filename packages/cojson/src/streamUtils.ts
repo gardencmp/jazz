@@ -100,14 +100,14 @@ export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
             );
         },
 
-        cancel(reason) {
+        cancel(_reason) {
             console.log("Manually closing reader");
             readerClosed = true;
         },
     });
 
     const writable = new WritableStream<T>({
-        write(chunk, controller) {
+        write(chunk) {
             if (readerClosed) {
                 console.log("Reader closed, not writing chunk", chunk);
                 throw new Error("Reader closed, not writing chunk");
@@ -118,7 +118,7 @@ export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
                 setTimeout(() => resolveNextItemReady());
             }
         },
-        abort(reason) {
+        abort(_reason) {
             console.log("Manually closing writer");
             writerClosed = true;
             resolveNextItemReady();

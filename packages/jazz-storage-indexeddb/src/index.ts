@@ -1,21 +1,5 @@
-import {
-    LocalNode,
-    internals as cojsonInternals,
-    SessionID,
-    ContentType,
-    SyncMessage,
-    JsonValue,
-} from "cojson";
-import { CoValueHeader, Transaction } from "cojson/src/coValue";
-import { Signature } from "cojson/src/crypto";
-import { RawCoID } from "cojson/src/ids";
-import {
-    CoValueKnownState,
-    DoneMessage,
-    KnownStateMessage,
-    LoadMessage,
-    NewContentMessage,
-} from "cojson/src/sync";
+import { LocalNode, cojsonInternals, SessionID, SyncMessage } from "cojson";
+import { CojsonInternalTypes } from "cojson";
 import {
     ReadableStream,
     WritableStream,
@@ -24,8 +8,8 @@ import {
 } from "isomorphic-streams";
 
 type CoValueRow = {
-    id: RawCoID;
-    header: CoValueHeader;
+    id: CojsonInternalTypes.RawCoID;
+    header: CojsonInternalTypes.CoValueHeader;
 };
 
 type StoredCoValueRow = CoValueRow & { rowID: number };
@@ -34,7 +18,7 @@ type SessionRow = {
     coValue: number;
     sessionID: SessionID;
     lastIdx: number;
-    lastSignature: Signature;
+    lastSignature: CojsonInternalTypes.Signature;
 };
 
 type StoredSessionRow = SessionRow & { rowID: number };
@@ -42,7 +26,7 @@ type StoredSessionRow = SessionRow & { rowID: number };
 type TransactionRow = {
     ses: number;
     idx: number;
-    tx: Transaction;
+    tx: CojsonInternalTypes.Transaction;
 };
 
 export class IDBStorage {
@@ -60,13 +44,14 @@ export class IDBStorage {
         this.toLocalNode = toLocalNode.getWriter();
 
         (async () => {
-            while (true) {
-                const { done, value } = await this.fromLocalNode.read();
-                if (done) {
-                    break;
-                }
+            let done = false;
+            while (!done) {
+                const result = await this.fromLocalNode.read();
+                done = result.done;
 
-                this.handleSyncMessage(value);
+                if (result.value) {
+                    this.handleSyncMessage(result.value);
+                }
             }
         })();
     }
@@ -159,7 +144,7 @@ export class IDBStorage {
     }
 
     async sendNewContentAfter(
-        theirKnown: CoValueKnownState,
+        theirKnown: CojsonInternalTypes.CoValueKnownState,
         {
             coValues,
             sessions,
@@ -169,7 +154,7 @@ export class IDBStorage {
             sessions: IDBObjectStore;
             transactions: IDBObjectStore;
         },
-        asDependencyOf?: RawCoID
+        asDependencyOf?: CojsonInternalTypes.RawCoID
     ) {
         const coValueRow = await promised<StoredCoValueRow | undefined>(
             coValues.index("coValuesById").get(theirKnown.id)
@@ -181,13 +166,13 @@ export class IDBStorage {
               )
             : [];
 
-        const ourKnown: CoValueKnownState = {
+        const ourKnown: CojsonInternalTypes.CoValueKnownState = {
             id: theirKnown.id,
             header: !!coValueRow,
             sessions: {},
         };
 
-        const newContent: NewContentMessage = {
+        const newContent: CojsonInternalTypes.NewContentMessage = {
             action: "content",
             id: theirKnown.id,
             header: theirKnown.header ? undefined : coValueRow?.header,
@@ -237,7 +222,7 @@ export class IDBStorage {
                                       change.key
                               )
                               .filter(
-                                  (key): key is RawCoID =>
+                                  (key): key is CojsonInternalTypes.RawCoID =>
                                       typeof key === "string" &&
                                       key.startsWith("co_")
                               );
@@ -258,7 +243,7 @@ export class IDBStorage {
         await this.toLocalNode.write({
             action: "known",
             ...ourKnown,
-            asDependencyOf
+            asDependencyOf,
         });
 
         if (newContent.header || Object.keys(newContent.new).length > 0) {
@@ -266,11 +251,11 @@ export class IDBStorage {
         }
     }
 
-    handleLoad(msg: LoadMessage) {
+    handleLoad(msg: CojsonInternalTypes.LoadMessage) {
         return this.sendNewContentAfter(msg, this.inTransaction("readonly"));
     }
 
-    async handleContent(msg: NewContentMessage) {
+    async handleContent(msg: CojsonInternalTypes.NewContentMessage) {
         const { coValues, sessions, transactions } =
             this.inTransaction("readwrite");
 
@@ -320,7 +305,7 @@ export class IDBStorage {
             };
         });
 
-        const ourKnown: CoValueKnownState = {
+        const ourKnown: CojsonInternalTypes.CoValueKnownState = {
             id: msg.id,
             header: true,
             sessions: {},
@@ -389,11 +374,11 @@ export class IDBStorage {
         }
     }
 
-    handleKnown(msg: KnownStateMessage) {
+    handleKnown(msg: CojsonInternalTypes.KnownStateMessage) {
         return this.sendNewContentAfter(msg, this.inTransaction("readonly"));
     }
 
-    handleDone(msg: DoneMessage) {}
+    handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
 
     inTransaction(mode: "readwrite" | "readonly"): {
         coValues: IDBObjectStore;
@@ -406,11 +391,13 @@ export class IDBStorage {
         );
 
         tx.onerror = (event) => {
+            const target = event.target as {
+                error: DOMException;
+                source?: { name: string };
+            } | null;
             throw new Error(
-                `Error in transaction (${
-                    (event.target as any).source?.name
-                }): ${(event.target as any).error}`,
-                { cause: (event.target as any).error }
+                `Error in transaction (${target?.source?.name}): ${target?.error}`,
+                { cause: target?.error }
             );
         };
         const coValues = tx.objectStore("coValues");

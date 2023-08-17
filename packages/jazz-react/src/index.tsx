@@ -1,17 +1,16 @@
 import {
     LocalNode,
-    internals as cojsonInternals,
+    cojsonInternals,
     SessionID,
     ContentType,
     SyncMessage,
     AgentSecret,
+    CoID,
+    AnonymousControlledAccount,
+    AgentID
 } from "cojson";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
-import { CoID } from "cojson";
-import { AgentID } from "cojson/src/ids";
-import { getAgentID } from "cojson/src/crypto";
-import { AnonymousControlledAccount } from "cojson/src/account";
 import { IDBStorage } from "jazz-storage-indexeddb";
 
 type JazzContext = {
@@ -37,10 +36,10 @@ export function WithJazz({
     const sessionDone = useRef<() => void>();
 
     const onCredential = useCallback((credential: AgentSecret) => {
-        const agentID = getAgentID(credential);
+        const agentID = cojsonInternals.getAgentID(credential);
         const sessionHandle = getSessionFor(agentID);
 
-        sessionHandle.session.then((sessionID) =>
+        void sessionHandle.session.then((sessionID) =>
             setNode(
                 new LocalNode(
                     new AnonymousControlledAccount(credential),
@@ -60,12 +59,12 @@ export function WithJazz({
 
     useEffect(() => {
         if (node) {
-            IDBStorage.connectTo(node, { trace: true });
+            void IDBStorage.connectTo(node, { trace: true });
 
             let shouldTryToReconnect = true;
             let ws: WebSocket | undefined;
 
-            (async function websocketReconnectLoop() {
+            void (async function websocketReconnectLoop() {
                 while (shouldTryToReconnect) {
                     ws = new WebSocket(syncAddress);
 
@@ -134,7 +133,7 @@ function getSessionFor(agentID: AgentID): SessionHandle {
         resolveSession = resolve;
     });
 
-    (async function () {
+    void (async function () {
         for (let idx = 0; idx < 100; idx++) {
             // To work better around StrictMode
             for (let retry = 0; retry < 2; retry++) {
@@ -209,6 +208,8 @@ export function useTelepathicState<T extends ContentType>(id: CoID<T>) {
                 );
                 setState(newState as T);
             });
+        }).catch((e) => {
+            console.log("Failed to load", id, e);
         });
 
         return () => {

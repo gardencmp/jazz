@@ -1,11 +1,12 @@
 {
   "name": "jazz-react",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "MIT",
   "dependencies": {
-    "cojson": "^0.0.17",
+    "cojson": "^0.0.18",
+    "jazz-storage-indexeddb": "^0.0.5",
     "typescript": "^5.1.6"
   },
   "devDependencies": {
@@ -13,5 +14,10 @@
   },
   "peerDependencies": {
     "react": "^17.0.2"
+  },
+  "scripts": {
+    "lint": "eslint src/**/*.tsx",
+    "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
   }
 }
