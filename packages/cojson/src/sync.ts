@@ -1,4 +1,4 @@
-import { Hash, Signature } from "./crypto.js";
+import { Signature } from "./crypto.js";
 import { CoValueHeader, Transaction } from "./coValue.js";
 import { CoValue } from "./coValue.js";
 import { LocalNode } from "./node.js";

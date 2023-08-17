@@ -2,9 +2,7 @@ import {
     LocalNode,
     internals as cojsonInternals,
     SessionID,
-    ContentType,
     SyncMessage,
-    JsonValue,
 } from "cojson";
 import { CoValueHeader, Transaction } from "cojson/src/coValue";
 import { Signature } from "cojson/src/crypto";
@@ -393,7 +391,7 @@ export class IDBStorage {
         return this.sendNewContentAfter(msg, this.inTransaction("readonly"));
     }
 
-    handleDone(msg: DoneMessage) {}
+    handleDone(_msg: DoneMessage) {}
 
     inTransaction(mode: "readwrite" | "readonly"): {
         coValues: IDBObjectStore;

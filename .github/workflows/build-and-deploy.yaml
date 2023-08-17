@@ -1,0 +1,78 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: 'yarn'
+        cache-dependency-path: yarn.lock
+    - name: Yarn Build
+      run: |
+        yarn install --frozen-lockfile;
+        yarn build;
+      working-directory: ./examples/todo
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+      with:
+        key: docker-layer-caching-${{ github.workflow }}-{hash}
+        restore-keys: |
+          docker-layer-caching-${{ github.workflow }}-
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: gardencmp
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker Build & Push
+      run: |
+        export DOCKER_TAG=ghcr.io/gardencmp/jazz-example-todo:${{github.head_ref || github.ref_name}}-${{github.sha}}-$(date +%s) ;
+        docker build . --file Dockerfile --tag $DOCKER_TAG;
+        docker push $DOCKER_TAG;
+        echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
+      working-directory: ./examples/todo
+
+    - uses: gacts/install-nomad@v1
+    - name: Tailscale
+      uses: tailscale/github-action@v1
+      with:
+        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+    - name: Deploy on Nomad
+      run: |
+        if [ "${{github.ref_name}}" == "main" ]; then
+          export BRANCH_SUFFIX="";
+          export BRANCH_SUBDOMAIN="";
+        else
+          export BRANCH_SUFFIX=-${{github.head_ref || github.ref_name}};
+          export BRANCH_SUBDOMAIN=${{github.head_ref || github.ref_name}}.;
+        fi
+
+        export DOCKER_USER=gardencmp;
+        export DOCKER_PASSWORD=${{ secrets.DOCKER_PULL_PAT }};
+        export DOCKER_TAG=${{ env.DOCKER_TAG }};
+
+        for region in ${{ vars.DEPLOY_REGIONS }}
+        do
+          export REGION=$region;
+          envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN} ${REGION}' < job-template.nomad > job-instance.nomad;
+          cat job-instance.nomad;
+          NOMAD_ADDR='${{ secrets.NOMAD_ADDR }}' nomad job run job-instance.nomad;
+        done
+      working-directory: ./examples/todo

@@ -1,5 +1,5 @@
 import { newRandomAgentSecret, AgentSecret, agentSecretToBytes, agentSecretFromBytes} from "cojson/src/crypto";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useLocalAuth(onCredential: (credentials: AgentSecret) => void) {
     const [displayName, setDisplayName] = useState<string>("");
