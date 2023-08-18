@@ -20,14 +20,25 @@ import {
 } from "./coValue.js";
 import { LocalNode } from "./node.js";
 import { RawCoID, SessionID, TransactionID, isAgentID } from "./ids.js";
-import { AccountIDOrAgentID, GeneralizedControlledAccount, Profile } from "./account.js";
+import {
+    AccountIDOrAgentID,
+    GeneralizedControlledAccount,
+    Profile,
+} from "./account.js";
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AccountIDOrAgentID }
     | { type: "ownedByTeam"; team: RawCoID }
     | { type: "unsafeAllowAll" };
 
-export type Role = "reader" | "writer" | "admin" | "revoked";
+export type Role =
+    | "reader"
+    | "writer"
+    | "admin"
+    | "revoked"
+    | "adminInvite"
+    | "writerInvite"
+    | "readerInvite";
 
 export function determineValidTransactions(
     coValue: CoValue
@@ -97,7 +108,7 @@ export function determineValidTransactions(
 
                 validTransactions.push({ txID: { sessionID, txIndex }, tx });
                 continue;
-            } else if (change.key === 'profile') {
+            } else if (change.key === "profile") {
                 if (memberState[transactor] !== "admin") {
                     console.warn("Only admins can set profile");
                     continue;
@@ -105,8 +116,16 @@ export function determineValidTransactions(
 
                 validTransactions.push({ txID: { sessionID, txIndex }, tx });
                 continue;
-            } else if (isKeyForKeyField(change.key) || isKeyForAccountField(change.key)) {
-                if (memberState[transactor] !== "admin") {
+            } else if (
+                isKeyForKeyField(change.key) ||
+                isKeyForAccountField(change.key)
+            ) {
+                if (
+                    memberState[transactor] !== "admin" &&
+                    memberState[transactor] !== "adminInvite" &&
+                    memberState[transactor] !== "writerInvite" &&
+                    memberState[transactor] !== "readerInvite"
+                ) {
                     console.warn("Only admins can reveal keys");
                     continue;
                 }
@@ -124,7 +143,10 @@ export function determineValidTransactions(
                 change.value !== "admin" &&
                 change.value !== "writer" &&
                 change.value !== "reader" &&
-                change.value !== "revoked"
+                change.value !== "revoked" &&
+                change.value !== "adminInvite" &&
+                change.value !== "writerInvite" &&
+                change.value !== "readerInvite"
             ) {
                 console.warn("Team transaction must set a valid role");
                 continue;
@@ -138,19 +160,34 @@ export function determineValidTransactions(
                 change.value === "admin";
 
             if (!isFirstSelfAppointment) {
-                if (memberState[transactor] !== "admin") {
+                if (memberState[transactor] === "admin") {
+                    if (
+                        memberState[affectedMember] === "admin" &&
+                        affectedMember !== transactor &&
+                        assignedRole !== "admin"
+                    ) {
+                        console.warn("Admins can only demote themselves.");
+                        continue;
+                    }
+                } else if (memberState[transactor] === "adminInvite") {
+                    if (change.value !== "admin") {
+                        console.warn("AdminInvites can only create admins.");
+                        continue;
+                    }
+                } else if (memberState[transactor] === "writerInvite") {
+                    if (change.value !== "writer") {
+                        console.warn("WriterInvites can only create writers.");
+                        continue;
+                    }
+                } else if (memberState[transactor] === "readerInvite") {
+                    if (change.value !== "reader") {
+                        console.warn("ReaderInvites can only create reader.");
+                        continue;
+                    }
+                } else {
                     console.warn(
-                        "Team transaction must be made by current admin"
+                        "Team transaction must be made by current admin or invite"
                     );
-                    continue;
-                }
-
-                if (
-                    memberState[affectedMember] === "admin" &&
-                    affectedMember !== transactor &&
-                    assignedRole !== "admin"
-                ) {
-                    console.warn("Admins can only demote themselves.");
                     continue;
                 }
             }
@@ -238,7 +275,10 @@ export class Team {
     teamMap: CoMap<TeamContent, JsonObject | null>;
     node: LocalNode;
 
-    constructor(teamMap: CoMap<TeamContent, JsonObject | null>, node: LocalNode) {
+    constructor(
+        teamMap: CoMap<TeamContent, JsonObject | null>,
+        node: LocalNode
+    ) {
         this.teamMap = teamMap;
         this.node = node;
     }
@@ -352,9 +392,10 @@ export class Team {
         this.rotateReadKey();
     }
 
-    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null = null>(
-        meta?: Meta
-    ): CoMap<M, Meta> {
+    createMap<
+        M extends { [key: string]: JsonValue },
+        Meta extends JsonObject | null = null
+    >(meta?: Meta): CoMap<M, Meta> {
         return this.node
             .createCoValue({
                 type: "comap",
@@ -383,10 +424,17 @@ export class Team {
     }
 }
 
-export function isKeyForKeyField(field: string): field is `${KeyID}_for_${KeyID}` {
+export function isKeyForKeyField(
+    field: string
+): field is `${KeyID}_for_${KeyID}` {
     return field.startsWith("key_") && field.includes("_for_key");
 }
 
-export function isKeyForAccountField(field: string): field is `${KeyID}_for_${AccountIDOrAgentID}` {
-    return field.startsWith("key_") && (field.includes("_for_sealer") || field.includes("_for_co"));
+export function isKeyForAccountField(
+    field: string
+): field is `${KeyID}_for_${AccountIDOrAgentID}` {
+    return (
+        field.startsWith("key_") &&
+        (field.includes("_for_sealer") || field.includes("_for_co"))
+    );
 }

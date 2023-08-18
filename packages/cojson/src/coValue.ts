@@ -98,7 +98,7 @@ export class CoValue {
     node: LocalNode;
     header: CoValueHeader;
     sessions: { [key: SessionID]: SessionLog };
-    content?: ContentType;
+    _cachedContent?: ContentType;
     listeners: Set<(content?: ContentType) => void> = new Set();
 
     constructor(header: CoValueHeader, node: LocalNode) {
@@ -197,7 +197,7 @@ export class CoValue {
             lastSignature: newSignature,
         };
 
-        this.content = undefined;
+        this._cachedContent = undefined;
 
         const content = this.getCurrentContent();
 
@@ -296,23 +296,23 @@ export class CoValue {
     }
 
     getCurrentContent(): ContentType {
-        if (this.content) {
-            return this.content;
+        if (this._cachedContent) {
+            return this._cachedContent;
         }
 
         if (this.header.type === "comap") {
-            this.content = new CoMap(this);
+            this._cachedContent = new CoMap(this);
         } else if (this.header.type === "colist") {
-            this.content = new CoList(this);
+            this._cachedContent = new CoList(this);
         } else if (this.header.type === "costream") {
-            this.content = new CoStream(this);
+            this._cachedContent = new CoStream(this);
         } else if (this.header.type === "static") {
-            this.content = new Static(this);
+            this._cachedContent = new Static(this);
         } else {
             throw new Error(`Unknown coValue type ${this.header.type}`);
         }
 
-        return this.content;
+        return this._cachedContent;
     }
 
     getValidSortedTransactions(): DecryptedTransaction[] {
