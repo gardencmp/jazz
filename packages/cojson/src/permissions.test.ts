@@ -1,10 +1,8 @@
 import { newRandomSessionID } from "./coValue.js";
-import { LocalNode } from "./node.js";
 import { expectMap } from "./contentType.js";
-import { expectTeamContent } from "./permissions.js";
+import { Team, expectTeamContent } from "./team.js";
 import {
     createdNowUnique,
-    getSealerID,
     newRandomKeySecret,
     seal,
     encryptKeySecret,
@@ -1352,6 +1350,39 @@ test("Admins can create an adminInvite, which can add an admin", () => {
     });
 });
 
+test("Admins can create an adminInvite, which can add an admin (high-level)", async () => {
+    const { node, team, admin } = newTeamHighLevel();
+
+    const inviteSecret = team.createInvite("admin");
+
+    const invitedAdminSecret = newRandomAgentSecret();
+    const invitedAdminID = getAgentID(invitedAdminSecret);
+
+    const nodeAsInvitedAdmin = node.testWithDifferentAccount(
+        new AnonymousControlledAccount(invitedAdminSecret),
+        newRandomSessionID(invitedAdminID)
+    );
+
+    await nodeAsInvitedAdmin.acceptInvite(team.id, inviteSecret);
+
+    const thirdAdmin = newRandomAgentSecret();
+    const thirdAdminID = getAgentID(thirdAdmin);
+
+    const teamAsInvitedAdmin = new Team(
+        await nodeAsInvitedAdmin.load(team.id),
+        nodeAsInvitedAdmin
+    );
+
+    expect(teamAsInvitedAdmin.teamMap.get(invitedAdminID)).toEqual("admin");
+    expect(
+        teamAsInvitedAdmin.teamMap.coValue.getCurrentReadKey().secret
+    ).toBeDefined();
+
+    teamAsInvitedAdmin.addMember(thirdAdminID, "admin");
+
+    expect(teamAsInvitedAdmin.teamMap.get(thirdAdminID)).toEqual("admin");
+});
+
 test("Admins can create a writerInvite, which can add a writer", () => {
     const { node, team, admin } = newTeam();
 
@@ -1433,6 +1464,33 @@ test("Admins can create a writerInvite, which can add a writer", () => {
     });
 });
 
+test("Admins can create a writerInvite, which can add a writer (high-level)", async () => {
+    const { node, team, admin } = newTeamHighLevel();
+
+    const inviteSecret = team.createInvite("writer");
+
+    const invitedWriterSecret = newRandomAgentSecret();
+    const invitedWriterID = getAgentID(invitedWriterSecret);
+
+    const nodeAsInvitedWriter = node.testWithDifferentAccount(
+        new AnonymousControlledAccount(invitedWriterSecret),
+        newRandomSessionID(invitedWriterID)
+    );
+
+    await nodeAsInvitedWriter.acceptInvite(team.id, inviteSecret);
+
+    const teamAsInvitedWriter = new Team(
+        await nodeAsInvitedWriter.load(team.id),
+        nodeAsInvitedWriter
+    );
+
+    expect(teamAsInvitedWriter.teamMap.get(invitedWriterID)).toEqual("writer");
+    expect(
+        teamAsInvitedWriter.teamMap.coValue.getCurrentReadKey().secret
+    ).toBeDefined();
+});
+
+
 test("Admins can create a readerInvite, which can add a reader", () => {
     const { node, team, admin } = newTeam();
 
@@ -1512,6 +1570,32 @@ test("Admins can create a readerInvite, which can add a reader", () => {
             revelation
         );
     });
+});
+
+test("Admins can create a readerInvite, which can add a reader (high-level)", async () => {
+    const { node, team, admin } = newTeamHighLevel();
+
+    const inviteSecret = team.createInvite("reader");
+
+    const invitedReaderSecret = newRandomAgentSecret();
+    const invitedReaderID = getAgentID(invitedReaderSecret);
+
+    const nodeAsInvitedReader = node.testWithDifferentAccount(
+        new AnonymousControlledAccount(invitedReaderSecret),
+        newRandomSessionID(invitedReaderID)
+    );
+
+    await nodeAsInvitedReader.acceptInvite(team.id, inviteSecret);
+
+    const teamAsInvitedReader = new Team(
+        await nodeAsInvitedReader.load(team.id),
+        nodeAsInvitedReader
+    );
+
+    expect(teamAsInvitedReader.teamMap.get(invitedReaderID)).toEqual("reader");
+    expect(
+        teamAsInvitedReader.teamMap.coValue.getCurrentReadKey().secret
+    ).toBeDefined();
 });
 
 test("WriterInvites can not invite admins", () => {

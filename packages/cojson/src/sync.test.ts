@@ -3,7 +3,7 @@ import { LocalNode } from "./node.js";
 import { Peer, PeerID, SyncMessage } from "./sync.js";
 import { expectMap } from "./contentType.js";
 import { MapOpPayload } from "./contentTypes/coMap.js";
-import { Team } from "./permissions.js";
+import { Team } from "./team.js";
 import {
     ReadableStream,
     WritableStream,

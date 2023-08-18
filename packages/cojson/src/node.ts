@@ -1,5 +1,6 @@
 import {
     AgentSecret,
+    agentSecretFromSecretSeed,
     createdNowUnique,
     getAgentID,
     getAgentSealerID,
@@ -9,7 +10,13 @@ import {
     seal,
 } from "./crypto.js";
 import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
-import { Team, TeamContent, expectTeamContent } from "./permissions.js";
+import {
+    InviteSecret,
+    Team,
+    TeamContent,
+    expectTeamContent,
+    secretSeedFromInviteSecret,
+} from "./team.js";
 import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID, ContentType } from "./contentType.js";
@@ -43,7 +50,10 @@ export class LocalNode {
         this.ownSessionID = ownSessionID;
     }
 
-    static withNewlyCreatedAccount(name: string, initialAgentSecret = newRandomAgentSecret()): {
+    static withNewlyCreatedAccount(
+        name: string,
+        initialAgentSecret = newRandomAgentSecret()
+    ): {
         node: LocalNode;
         accountID: AccountID;
         accountSecret: AgentSecret;
@@ -70,8 +80,16 @@ export class LocalNode {
         };
     }
 
-    static async withLoadedAccount(accountID: AccountID, accountSecret: AgentSecret, sessionID: SessionID, peersToLoadFrom: Peer[]): Promise<LocalNode> {
-        const loadingNode = new LocalNode(new AnonymousControlledAccount(accountSecret), newRandomSessionID(accountID));
+    static async withLoadedAccount(
+        accountID: AccountID,
+        accountSecret: AgentSecret,
+        sessionID: SessionID,
+        peersToLoadFrom: Peer[]
+    ): Promise<LocalNode> {
+        const loadingNode = new LocalNode(
+            new AnonymousControlledAccount(accountSecret),
+            newRandomSessionID(accountID)
+        );
 
         const accountPromise = loadingNode.load(accountID);
 
@@ -82,7 +100,10 @@ export class LocalNode {
         const account = await accountPromise;
 
         // since this is all synchronous, we can just swap out nodes for the SyncManager
-        const node = loadingNode.testWithDifferentAccount(new ControlledAccount(accountSecret, account, loadingNode), sessionID);
+        const node = loadingNode.testWithDifferentAccount(
+            new ControlledAccount(accountSecret, account, loadingNode),
+            sessionID
+        );
         node.sync = loadingNode.sync;
         node.sync.local = node;
 
@@ -124,7 +145,67 @@ export class LocalNode {
         if (!profileID) {
             throw new Error(`Account ${id} has no profile`);
         }
-        return (await this.loadCoValue(profileID)).getCurrentContent() as Profile;
+        return (
+            await this.loadCoValue(profileID)
+        ).getCurrentContent() as Profile;
+    }
+
+    async acceptInvite<T extends ContentType>(
+        teamOrOwnedValueID: CoID<T>,
+        inviteSecret: InviteSecret
+    ): Promise<void> {
+        const teamOrOwnedValue = await this.load(teamOrOwnedValueID);
+
+        if (teamOrOwnedValue.coValue.header.ruleset.type === "ownedByTeam") {
+            return this.acceptInvite(
+                teamOrOwnedValue.coValue.header.ruleset.team as CoID<
+                    CoMap<TeamContent>
+                >,
+                inviteSecret
+            );
+        } else if (teamOrOwnedValue.coValue.header.ruleset.type !== "team") {
+            throw new Error("Can only accept invites to teams");
+        }
+
+        const team = new Team(expectTeamContent(teamOrOwnedValue), this);
+
+        const inviteAgentSecret = agentSecretFromSecretSeed(
+            secretSeedFromInviteSecret(inviteSecret)
+        );
+        const inviteAgentID = getAgentID(inviteAgentSecret);
+
+        const invitationRole = team.teamMap.get(inviteAgentID);
+
+        if (!invitationRole) {
+            throw new Error("No invitation found");
+        }
+
+        const existingRole = team.teamMap.get(this.account.id);
+
+        if (
+            existingRole === "admin" ||
+            (existingRole === "writer" && invitationRole === "reader")
+        ) {
+            console.debug("Not accepting invite that would downgrade role");
+            return;
+        }
+
+        const teamAsInvite = team.testWithDifferentAccount(
+            new AnonymousControlledAccount(inviteAgentSecret),
+            newRandomSessionID(inviteAgentID)
+        );
+
+        teamAsInvite.addMember(
+            this.account.id,
+            invitationRole === "adminInvite"
+                ? "admin"
+                : invitationRole === "writerInvite"
+                ? "writer"
+                : "reader"
+        );
+
+        team.teamMap.coValue.sessions = teamAsInvite.teamMap.coValue.sessions;
+        team.teamMap.coValue._cachedContent = undefined;
     }
 
     expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
@@ -146,7 +227,9 @@ export class LocalNode {
 
     expectProfileLoaded(id: AccountID, expectation?: string): Profile {
         const account = this.expectCoValueLoaded(id, expectation);
-        const profileID = expectTeamContent(account.getCurrentContent()).get("profile");
+        const profileID = expectTeamContent(account.getCurrentContent()).get(
+            "profile"
+        );
         if (!profileID) {
             throw new Error(
                 `${
@@ -154,10 +237,16 @@ export class LocalNode {
                 }Account ${id} has no profile`
             );
         }
-        return this.expectCoValueLoaded(profileID, expectation).getCurrentContent() as Profile;
+        return this.expectCoValueLoaded(
+            profileID,
+            expectation
+        ).getCurrentContent() as Profile;
     }
 
-    createAccount(name: string, agentSecret = newRandomAgentSecret()): ControlledAccount {
+    createAccount(
+        name: string,
+        agentSecret = newRandomAgentSecret()
+    ): ControlledAccount {
         const account = this.createCoValue(
             accountHeaderForInitialAgentSecret(agentSecret)
         ).testWithDifferentAccount(
@@ -165,7 +254,10 @@ export class LocalNode {
             newRandomSessionID(getAgentID(agentSecret))
         );
 
-        const accountAsTeam = new Team(expectTeamContent(account.getCurrentContent()), account.node);
+        const accountAsTeam = new Team(
+            expectTeamContent(account.getCurrentContent()),
+            account.node
+        );
 
         accountAsTeam.teamMap.edit((editable) => {
             editable.set(getAgentID(agentSecret), "admin", "trusting");
@@ -195,7 +287,9 @@ export class LocalNode {
             account.node
         );
 
-        const profile = accountAsTeam.createMap<ProfileContent, ProfileMeta>({ type: "profile" });
+        const profile = accountAsTeam.createMap<ProfileContent, ProfileMeta>({
+            type: "profile",
+        });
 
         profile.edit((editable) => {
             editable.set("name", name, "trusting");

@@ -24,11 +24,10 @@ import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
-    Team,
     determineValidTransactions,
-    expectTeamContent,
     isKeyForKeyField,
 } from "./permissions.js";
+import { Team, expectTeamContent } from "./team.js";
 import { LocalNode } from "./node.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { RawCoID, SessionID, TransactionID } from "./ids.js";
