@@ -183,7 +183,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
             <TableCell>
                 <div className="flex flex-row justify-between items-center gap-2">
                     <span className={task?.get("done") ? "line-through" : ""}>
-                        {task?.get("text")}
+                        {task?.get("text") || <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />}
                     </span>
                     <NameBadge accountID={task?.getLastEditor("text")} />
                 </div>
@@ -203,14 +203,14 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
     const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
 
     return (
-        <span
+        profile?.get("name") && <span
             className="rounded-full py-0.5 px-2 text-xs"
             style={{
                 color: theme == "light" ? darkColor : brightColor,
                 background: theme == "light" ? brightColor : darkColor,
             }}
         >
-            {profile?.get("name") || "..."}
+            {profile?.get("name")}
         </span>
     );
 }
