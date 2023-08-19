@@ -1,25 +1,22 @@
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
+
 import { CoMap, CoID, AccountID } from "cojson";
 import {
     consumeInviteLinkFromWindowLocation,
     useJazz,
     useProfile,
     useTelepathicState,
+    createInviteLink
 } from "jazz-react";
+
 import { SubmittableInput } from "./components/SubmittableInput";
-import { createInviteLink } from "jazz-react";
 import { useToast } from "./components/ui/use-toast";
 import { Skeleton } from "./components/ui/skeleton";
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import uniqolor from "uniqolor";
 
 type TaskContent = { done: boolean; text: string };
@@ -32,24 +29,10 @@ type TodoListContent = {
 };
 type TodoList = CoMap<TodoListContent>;
 
-function App() {
+export default function App() {
     const [listId, setListId] = useState<CoID<TodoList>>();
 
     const { localNode, logOut } = useJazz();
-
-    const createList = useCallback(
-        (title: string) => {
-            const listGroup = localNode.createGroup();
-            const list = listGroup.createMap<TodoListContent>();
-
-            list.edit((list) => {
-                list.set("title", title);
-            });
-
-            window.location.hash = list.id;
-        },
-        [localNode]
-    );
 
     useEffect(() => {
         const listener = async () => {
@@ -72,10 +55,24 @@ function App() {
         };
     }, [localNode]);
 
+    const createList = useCallback(
+        (title: string) => {
+            const listGroup = localNode.createGroup();
+            const list = listGroup.createMap<TodoListContent>();
+
+            list.edit((list) => {
+                list.set("title", title);
+            });
+
+            window.location.hash = list.id;
+        },
+        [localNode]
+    );
+
     return (
         <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
             {listId ? (
-                <TodoList listId={listId} />
+                <TodoListComponent listId={listId} />
             ) : (
                 <SubmittableInput
                     onSubmit={createList}
@@ -96,7 +93,7 @@ function App() {
     );
 }
 
-export function TodoList({ listId }: { listId: CoID<TodoList> }) {
+export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
     const list = useTelepathicState(listId);
 
     const createTask = (text: string) => {
@@ -246,5 +243,3 @@ function InviteButton({ list }: { list: TodoList }) {
         )
     );
 }
-
-export default App;
