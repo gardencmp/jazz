@@ -122,16 +122,16 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
         <div className="max-w-full w-4xl">
             <div className="flex justify-between items-center gap-4 mb-4">
                 <h1>
-                    {list ? (
+                    {list?.get("title") ? (
                         <>
                             {list.get("title")}{" "}
                             <span className="text-sm">({list.id})</span>
                         </>
                     ) : (
-                        <Skeleton className="w-[200px] h-[1em] rounded-full" />
+                        <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
                     )}
                 </h1>
-                <Button
+                {list && list.coValue.getTeam().myRole() === "admin" && <Button
                     size="sm"
                     className="py-0"
                     disabled={!list}
@@ -149,7 +149,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
                     }}
                 >
                     Invite
-                </Button>
+                </Button>}
             </div>
             <Table>
                 <TableHeader>

@@ -104,7 +104,7 @@ function getSessionHandleFor(
         for (let idx = 0; idx < 100; idx++) {
             // To work better around StrictMode
             for (let retry = 0; retry < 2; retry++) {
-                console.log("Trying to get lock", accountID + "_" + idx);
+                console.debug("Trying to get lock", accountID + "_" + idx);
                 const sessionFinishedOrNoLock = await navigator.locks.request(
                     accountID + "_" + idx,
                     { ifAvailable: true },
@@ -116,7 +116,7 @@ function getSessionHandleFor(
                             cojsonInternals.newRandomSessionID(accountID);
                         localStorage[accountID + "_" + idx] = sessionID;
 
-                        console.log(
+                        console.debug(
                             "Got lock",
                             accountID + "_" + idx,
                             sessionID
