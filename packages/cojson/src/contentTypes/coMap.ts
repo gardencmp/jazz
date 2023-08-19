@@ -12,12 +12,12 @@ type MapOp<K extends string, V extends JsonValue> = {
 // TODO: add after TransactionID[] for conflicts/ordering
 
 export type MapOpPayload<K extends string, V extends JsonValue> = {
-    op: "insert";
+    op: "set";
     key: K;
     value: V;
 } |
 {
-    op: "delete";
+    op: "del";
     key: K;
 };
 
@@ -81,7 +81,7 @@ export class CoMap<
 
         const lastEntry = ops[ops.length - 1]!;
 
-        if (lastEntry.op === "delete") {
+        if (lastEntry.op === "del") {
             return undefined;
         } else {
             return lastEntry.value;
@@ -100,7 +100,7 @@ export class CoMap<
             return undefined;
         }
 
-        if (lastOpBeforeOrAtTime.op === "delete") {
+        if (lastOpBeforeOrAtTime.op === "del") {
             return undefined;
         } else {
             return lastOpBeforeOrAtTime.value;
@@ -139,7 +139,7 @@ export class CoMap<
 
         const lastEntry = ops[ops.length - 1]!;
 
-        if (lastEntry.op === "delete") {
+        if (lastEntry.op === "del") {
             return undefined;
         } else {
             return { at: lastEntry.madeAt, txID: lastEntry.txID, value: lastEntry.value };
@@ -155,7 +155,7 @@ export class CoMap<
         const history: { at: number; txID: TransactionID; value: M[K] | undefined; }[] = [];
 
         for (const op of ops) {
-            if (op.op === "delete") {
+            if (op.op === "del") {
                 history.push({ at: op.madeAt, txID: op.txID, value: undefined });
             } else {
                 history.push({ at: op.madeAt, txID: op.txID, value: op.value });
@@ -199,7 +199,7 @@ export class WriteableCoMap<
     set<K extends MapK<M>>(key: K, value: M[K], privacy: "private" | "trusting" = "private"): void {
         this.coValue.makeTransaction([
             {
-                op: "insert",
+                op: "set",
                 key,
                 value,
             },
@@ -211,7 +211,7 @@ export class WriteableCoMap<
     delete(key: MapK<M>, privacy: "private" | "trusting" = "private"): void {
         this.coValue.makeTransaction([
             {
-                op: "delete",
+                op: "del",
                 key,
             },
         ], privacy);

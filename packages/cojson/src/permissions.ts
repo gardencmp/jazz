@@ -85,7 +85,7 @@ export function determineValidTransactions(
                 continue;
             }
 
-            if (change.op !== "insert") {
+            if (change.op !== "set") {
                 console.warn("Team transaction must set a role or readKey");
                 continue;
             }
@@ -145,7 +145,7 @@ export function determineValidTransactions(
             const isFirstSelfAppointment =
                 !memberState[transactor] &&
                 transactor === initialAdmin &&
-                change.op === "insert" &&
+                change.op === "set" &&
                 change.key === transactor &&
                 change.value === "admin";
 

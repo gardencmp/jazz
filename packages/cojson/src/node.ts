@@ -174,7 +174,15 @@ export class LocalNode {
         );
         const inviteAgentID = getAgentID(inviteAgentSecret);
 
-        const invitationRole = team.teamMap.get(inviteAgentID);
+        const invitationRole = await new Promise((resolve, reject) => {
+            team.teamMap.subscribe((teamMap) => {
+                const role = teamMap.get(inviteAgentID);
+                if (role) {
+                    resolve(role);
+                }
+            });
+            setTimeout(() => reject(new Error("Couldn't find invitation before timeout")), 1000);
+        });
 
         if (!invitationRole) {
             throw new Error("No invitation found");

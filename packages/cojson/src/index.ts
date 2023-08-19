@@ -14,6 +14,7 @@ import {
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
+import { Team, expectTeamContent } from "./team.js"
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, ContentType } from "./contentType.js";
@@ -26,6 +27,7 @@ import type {
     ProfileContent,
     Profile,
 } from "./account.js";
+import type { InviteSecret } from "./team.js";
 
 type Value = JsonValue | ContentType;
 
@@ -42,6 +44,7 @@ export const cojsonInternals = {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
+    expectTeamContent
 };
 
 export {
@@ -50,6 +53,7 @@ export {
     CoMap,
     AnonymousControlledAccount,
     ControlledAccount,
+    Team
 };
 
 export type {
@@ -66,6 +70,7 @@ export type {
     AccountContent,
     Profile,
     ProfileContent,
+    InviteSecret
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
