@@ -106,7 +106,6 @@ export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
                     //     "Got update",
                     //     id,
                     //     newState.toJSON(),
-                    //     newState.coValue.sessions
                     // );
                     setState(newState as T);
                 });

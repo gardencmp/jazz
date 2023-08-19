@@ -220,6 +220,10 @@ export class LocalNode {
 
         team.teamMap.coValue._sessions = teamAsInvite.teamMap.coValue.sessions;
         team.teamMap.coValue._cachedContent = undefined;
+
+        for (const teamListener of team.teamMap.coValue.listeners) {
+            teamListener(team.teamMap.coValue.getCurrentContent());
+        }
     }
 
     expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
