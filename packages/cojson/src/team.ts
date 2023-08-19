@@ -62,6 +62,14 @@ export class Team {
         return this.teamMap.id;
     }
 
+    roleOf(accountID: AccountIDOrAgentID): Role | undefined {
+        return this.teamMap.get(accountID);
+    }
+
+    myRole(): Role | undefined {
+        return this.roleOf(this.node.account.id);
+    }
+
     addMember(accountID: AccountIDOrAgentID, role: Role) {
         this.teamMap = this.teamMap.edit((map) => {
             const currentReadKey = this.teamMap.coValue.getCurrentReadKey();

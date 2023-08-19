@@ -181,7 +181,13 @@ export class LocalNode {
                     resolve(role);
                 }
             });
-            setTimeout(() => reject(new Error("Couldn't find invitation before timeout")), 1000);
+            setTimeout(
+                () =>
+                    reject(
+                        new Error("Couldn't find invitation before timeout")
+                    ),
+                1000
+            );
         });
 
         if (!invitationRole) {
@@ -212,8 +218,12 @@ export class LocalNode {
                 : "reader"
         );
 
-        team.teamMap.coValue.sessions = teamAsInvite.teamMap.coValue.sessions;
+        team.teamMap.coValue._sessions = teamAsInvite.teamMap.coValue.sessions;
         team.teamMap.coValue._cachedContent = undefined;
+
+        for (const teamListener of team.teamMap.coValue.listeners) {
+            teamListener(team.teamMap.coValue.getCurrentContent());
+        }
     }
 
     expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
@@ -307,6 +317,11 @@ export class LocalNode {
             editable.set("profile", profile.id, "trusting");
         });
 
+        const accountOnThisNode = this.expectCoValueLoaded(account.id);
+
+        accountOnThisNode._sessions = {...accountAsTeam.teamMap.coValue.sessions};
+        accountOnThisNode._cachedContent = undefined;
+
         return controlledAccount;
     }
 
@@ -378,24 +393,36 @@ export class LocalNode {
     ): LocalNode {
         const newNode = new LocalNode(account, ownSessionID);
 
-        newNode.coValues = Object.fromEntries(
-            Object.entries(this.coValues)
-                .map(([id, entry]) => {
-                    if (entry.state === "loading") {
-                        return undefined;
-                    }
+        const coValuesToCopy = Object.entries(this.coValues);
 
-                    const newCoValue = new CoValue(
-                        entry.coValue.header,
-                        newNode
-                    );
+        while (coValuesToCopy.length > 0) {
+            const [coValueID, entry] =
+                coValuesToCopy[coValuesToCopy.length - 1]!;
 
-                    newCoValue.sessions = entry.coValue.sessions;
+            if (entry.state === "loading") {
+                coValuesToCopy.pop();
+                continue;
+            } else {
+                const allDepsCopied = entry.coValue
+                    .getDependedOnCoValues()
+                    .every((dep) => newNode.coValues[dep]?.state === "loaded");
 
-                    return [id, { state: "loaded", coValue: newCoValue }];
-                })
-                .filter((x): x is Exclude<typeof x, undefined> => !!x)
-        );
+                if (!allDepsCopied) {
+                    // move to end of queue
+                    coValuesToCopy.unshift(coValuesToCopy.pop()!);
+                    continue;
+                }
+
+                const newCoValue = new CoValue(entry.coValue.header, newNode, {...entry.coValue.sessions});
+
+                newNode.coValues[coValueID as RawCoID] = {
+                    state: "loaded",
+                    coValue: newCoValue,
+                };
+
+                coValuesToCopy.pop();
+            }
+        }
 
         return newNode;
     }

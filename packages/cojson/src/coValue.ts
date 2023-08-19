@@ -96,15 +96,31 @@ export class CoValue {
     id: RawCoID;
     node: LocalNode;
     header: CoValueHeader;
-    sessions: { [key: SessionID]: SessionLog };
+    _sessions: { [key: SessionID]: SessionLog };
     _cachedContent?: ContentType;
     listeners: Set<(content?: ContentType) => void> = new Set();
 
-    constructor(header: CoValueHeader, node: LocalNode) {
+    constructor(header: CoValueHeader, node: LocalNode, internalInitSessions: { [key: SessionID]: SessionLog } = {}) {
         this.id = idforHeader(header);
         this.header = header;
-        this.sessions = {};
+        this._sessions = internalInitSessions;
         this.node = node;
+
+        if (header.ruleset.type == "ownedByTeam") {
+            this.node
+                .expectCoValueLoaded(header.ruleset.team)
+                .subscribe((_teamUpdate) => {
+                    this._cachedContent = undefined;
+                    const newContent = this.getCurrentContent();
+                    for (const listener of this.listeners) {
+                        listener(newContent);
+                    }
+                });
+        }
+    }
+
+    get sessions(): Readonly<{ [key: SessionID]: SessionLog }> {
+        return this._sessions;
     }
 
     testWithDifferentAccount(
@@ -171,7 +187,10 @@ export class CoValue {
         );
 
         if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
-            console.warn("Invalid hash", { expectedNewHash, givenExpectedNewHash });
+            console.warn("Invalid hash", {
+                expectedNewHash,
+                givenExpectedNewHash,
+            });
             return false;
         }
 
@@ -189,7 +208,7 @@ export class CoValue {
 
         transactions.push(...newTransactions);
 
-        this.sessions[sessionID] = {
+        this._sessions[sessionID] = {
             transactions,
             lastHash: expectedNewHash,
             streamingHash: newStreamingHash,
@@ -398,7 +417,9 @@ export class CoValue {
 
             // Try to find key revelation for us
 
-            const readKeyEntry = content.getLastEntry(`${keyID}_for_${this.node.account.id}`);
+            const readKeyEntry = content.getLastEntry(
+                `${keyID}_for_${this.node.account.id}`
+            );
 
             if (readKeyEntry) {
                 const revealer = accountOrAgentIDfromSessionID(
@@ -427,7 +448,8 @@ export class CoValue {
             for (const field of content.keys()) {
                 if (isKeyForKeyField(field) && field.startsWith(keyID)) {
                     const encryptingKeyID = field.split("_for_")[1] as KeyID;
-                    const encryptingKeySecret = this.getReadKey(encryptingKeyID);
+                    const encryptingKeySecret =
+                        this.getReadKey(encryptingKeyID);
 
                     if (!encryptingKeySecret) {
                         continue;
@@ -452,7 +474,6 @@ export class CoValue {
                         );
                     }
                 }
-
             }
 
             return undefined;
@@ -524,10 +545,7 @@ export class CoValue {
             ),
         };
 
-        if (
-            !newContent.header &&
-            Object.keys(newContent.new).length === 0
-        ) {
+        if (!newContent.header && Object.keys(newContent.new).length === 0) {
             return undefined;
         }
 

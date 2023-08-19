@@ -104,7 +104,7 @@ function getSessionHandleFor(
         for (let idx = 0; idx < 100; idx++) {
             // To work better around StrictMode
             for (let retry = 0; retry < 2; retry++) {
-                console.log("Trying to get lock", accountID + "_" + idx);
+                console.debug("Trying to get lock", accountID + "_" + idx);
                 const sessionFinishedOrNoLock = await navigator.locks.request(
                     accountID + "_" + idx,
                     { ifAvailable: true },
@@ -116,7 +116,7 @@ function getSessionHandleFor(
                             cojsonInternals.newRandomSessionID(accountID);
                         localStorage[accountID + "_" + idx] = sessionID;
 
-                        console.log(
+                        console.debug(
                             "Got lock",
                             accountID + "_" + idx,
                             sessionID
@@ -264,7 +264,7 @@ export function createInviteLink(
 
     const inviteSecret = team.createInvite(role);
 
-    return `${baseURL}#invitedTo=${value.id}&inviteSecret=${inviteSecret}`;
+    return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
 }
 
 export function parseInviteLink(inviteURL: string):
@@ -278,8 +278,7 @@ export function parseInviteLink(inviteURL: string):
         .split("&")[0]
         ?.replace(/^#invitedTo=/, "") as CoID<ContentType>;
     const inviteSecret = url.hash
-        .split("&")[1]
-        ?.replace(/^inviteSecret=/, "") as InviteSecret;
+        .split("&")[1] as InviteSecret;
     if (!valueID || !inviteSecret) {
         return undefined;
     }

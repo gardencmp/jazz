@@ -20,6 +20,7 @@ import { SubmittableInput } from "./components/SubmittableInput";
 import { createInviteLink } from "jazz-react";
 import { useToast } from "./components/ui/use-toast";
 import { Skeleton } from "./components/ui/skeleton";
+import uniqolor from "uniqolor";
 
 type TaskContent = { done: boolean; text: string };
 type Task = CoMap<TaskContent>;
@@ -72,7 +73,7 @@ function App() {
     }, [localNode]);
 
     return (
-        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 md:pt-[30vh] pb-10 px-5">
+        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
             {listId ? (
                 <TodoList listId={listId} />
             ) : (
@@ -100,56 +101,32 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
 
     const createTask = (text: string) => {
         if (!list) return;
-        let task = list.coValue.getTeam().createMap<TaskContent>();
+        const task = list.coValue.getTeam().createMap<TaskContent>();
 
-        task = task.edit((task) => {
+        task.edit((task) => {
             task.set("text", text);
             task.set("done", false);
         });
 
-        console.log("Created task", task.id, task.toJSON());
-
-        const listAfter = list.edit((list) => {
+        list.edit((list) => {
             list.set(task.id, true);
         });
-
-        console.log("Updated list", listAfter.toJSON());
     };
-
-    const { toast } = useToast();
 
     return (
         <div className="max-w-full w-4xl">
             <div className="flex justify-between items-center gap-4 mb-4">
                 <h1>
-                    {list ? (
+                    {list?.get("title") ? (
                         <>
                             {list.get("title")}{" "}
                             <span className="text-sm">({list.id})</span>
                         </>
                     ) : (
-                        <Skeleton className="w-[200px] h-[1em] rounded-full" />
+                        <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
                     )}
                 </h1>
-                <Button
-                    size="sm"
-                    className="py-0"
-                    disabled={!list}
-                    variant="outline"
-                    onClick={() => {
-                        if (list) {
-                            const inviteLink = createInviteLink(list, "writer");
-                            navigator.clipboard.writeText(inviteLink).then(() =>
-                                toast({
-                                    description:
-                                        "Copied invite link to clipboard!",
-                                })
-                            );
-                        }
-                    }}
-                >
-                    Invite
-                </Button>
+                {list && <InviteButton list={list} />}
             </div>
             <Table>
                 <TableHeader>
@@ -218,10 +195,55 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
 function NameBadge({ accountID }: { accountID?: AccountID }) {
     const profile = useProfile({ accountID });
 
+    const theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+
+    const brightColor = uniqolor(accountID || "", { lightness: 80 }).color;
+    const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
+
     return (
-        <span className="rounded-full bg-neutral-200 dark:bg-neutral-600 py-0.5 px-2 text-xs text-neutral-500 dark:text-neutral-300">
+        <span
+            className="rounded-full py-0.5 px-2 text-xs"
+            style={{
+                color: theme == "light" ? darkColor : brightColor,
+                background: theme == "light" ? brightColor : darkColor,
+            }}
+        >
             {profile?.get("name") || "..."}
         </span>
+    );
+}
+
+function InviteButton({ list }: { list: TodoList }) {
+    const [existingInviteLink, setExistingInviteLink] = useState<string>();
+    const { toast } = useToast();
+
+    return (
+        list.coValue.getTeam().myRole() === "admin" && (
+            <Button
+                size="sm"
+                className="py-0"
+                disabled={!list}
+                variant="outline"
+                onClick={() => {
+                    let inviteLink = existingInviteLink;
+                    if (list && !inviteLink) {
+                        inviteLink = createInviteLink(list, "writer");
+                        setExistingInviteLink(inviteLink);
+                    }
+                    if (inviteLink) {
+                        navigator.clipboard.writeText(inviteLink).then(() =>
+                            toast({
+                                description: "Copied invite link to clipboard!",
+                            })
+                        );
+                    }
+                }}
+            >
+                Invite
+            </Button>
+        )
     );
 }
 

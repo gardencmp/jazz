@@ -11,9 +11,10 @@ import { Toaster } from "./components/ui/toaster.tsx";
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
+            <div className="flex items-center gap-2 justify-center mt-5"><img src="jazz-logo.png" className="h-5"/> Jazz Todo List Example</div>
             <WithJazz
                 auth={LocalAuth({
-                    appName: "Todo List Example",
+                    appName: "Jazz Todo List Example",
                     Component: PrettyAuthComponent,
                 })}
                 syncAddress={

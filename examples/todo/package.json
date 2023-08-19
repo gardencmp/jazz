@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-todo",
   "private": true,
-  "version": "0.0.9",
+  "version": "0.0.11",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,13 +15,14 @@
     "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "jazz-react": "^0.0.15",
-    "jazz-react-auth-local": "^0.0.12",
+    "jazz-react": "^0.0.17",
+    "jazz-react-auth-local": "^0.0.14",
     "lucide-react": "^0.265.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^1.14.0",
-    "tailwindcss-animate": "^1.0.6"
+    "tailwindcss-animate": "^1.0.6",
+    "uniqolor": "^1.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
