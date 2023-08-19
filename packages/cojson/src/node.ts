@@ -174,7 +174,7 @@ export class LocalNode {
         );
         const inviteAgentID = getAgentID(inviteAgentSecret);
 
-        const invitationRole = await new Promise((resolve, reject) => {
+        const inviteRole = await new Promise((resolve, reject) => {
             group.groupMap.subscribe((groupMap) => {
                 const role = groupMap.get(inviteAgentID);
                 if (role) {
@@ -184,23 +184,25 @@ export class LocalNode {
             setTimeout(
                 () =>
                     reject(
-                        new Error("Couldn't find invitation before timeout")
+                        new Error("Couldn't find invite before timeout")
                     ),
                 1000
             );
         });
 
-        if (!invitationRole) {
-            throw new Error("No invitation found");
+        if (!inviteRole) {
+            throw new Error("No invite found");
         }
 
         const existingRole = group.groupMap.get(this.account.id);
 
         if (
             existingRole === "admin" ||
-            (existingRole === "writer" && invitationRole === "reader")
+            (existingRole === "writer" && inviteRole === "writerInvite") ||
+            (existingRole === "writer" && inviteRole === "reader") ||
+            (existingRole === "reader" && inviteRole === "readerInvite")
         ) {
-            console.debug("Not accepting invite that would downgrade role");
+            console.debug("Not accepting invite that would replace or downgrade role");
             return;
         }
 
@@ -211,9 +213,9 @@ export class LocalNode {
 
         groupAsInvite.addMember(
             this.account.id,
-            invitationRole === "adminInvite"
+            inviteRole === "adminInvite"
                 ? "admin"
-                : invitationRole === "writerInvite"
+                : inviteRole === "writerInvite"
                 ? "writer"
                 : "reader"
         );
