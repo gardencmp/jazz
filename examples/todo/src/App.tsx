@@ -181,7 +181,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
                 />
             </TableCell>
             <TableCell>
-                <div className="flex flex-row justify-between">
+                <div className="flex flex-row justify-between items-center gap-2">
                     <span className={task?.get("done") ? "line-through" : ""}>
                         {task?.get("text")}
                     </span>
