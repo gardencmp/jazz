@@ -17,8 +17,8 @@ import {
 } from "./account.js";
 
 export type PermissionsDef =
-    | { type: "team"; initialAdmin: AccountIDOrAgentID }
-    | { type: "ownedByTeam"; team: RawCoID }
+    | { type: "group"; initialAdmin: AccountIDOrAgentID }
+    | { type: "ownedByGroup"; group: RawCoID }
     | { type: "unsafeAllowAll" };
 
 export type Role =
@@ -33,7 +33,7 @@ export type Role =
 export function determineValidTransactions(
     coValue: CoValue
 ): { txID: TransactionID; tx: Transaction }[] {
-    if (coValue.header.ruleset.type === "team") {
+    if (coValue.header.ruleset.type === "group") {
         const allTrustingTransactionsSorted = Object.entries(
             coValue.sessions
         ).flatMap(([sessionID, sessionLog]) => {
@@ -43,7 +43,7 @@ export function determineValidTransactions(
                     if (tx.privacy === "trusting") {
                         return true;
                     } else {
-                        console.warn("Unexpected private transaction in Team");
+                        console.warn("Unexpected private transaction in Group");
                         return false;
                     }
                 }) as {
@@ -60,7 +60,7 @@ export function determineValidTransactions(
         const initialAdmin = coValue.header.ruleset.initialAdmin;
 
         if (!initialAdmin) {
-            throw new Error("Team must have initialAdmin");
+            throw new Error("Group must have initialAdmin");
         }
 
         const memberState: { [agent: AccountIDOrAgentID]: Role } = {};
@@ -81,12 +81,12 @@ export function determineValidTransactions(
                 | MapOpPayload<"readKey", JsonValue>
                 | MapOpPayload<"profile", CoID<Profile>>;
             if (tx.changes.length !== 1) {
-                console.warn("Team transaction must have exactly one change");
+                console.warn("Group transaction must have exactly one change");
                 continue;
             }
 
             if (change.op !== "set") {
-                console.warn("Team transaction must set a role or readKey");
+                console.warn("Group transaction must set a role or readKey");
                 continue;
             }
 
@@ -138,7 +138,7 @@ export function determineValidTransactions(
                 change.value !== "writerInvite" &&
                 change.value !== "readerInvite"
             ) {
-                console.warn("Team transaction must set a valid role");
+                console.warn("Group transaction must set a valid role");
                 continue;
             }
 
@@ -176,7 +176,7 @@ export function determineValidTransactions(
                     }
                 } else {
                     console.warn(
-                        "Team transaction must be made by current admin or invite"
+                        "Group transaction must be made by current admin or invite"
                     );
                     continue;
                 }
@@ -189,16 +189,16 @@ export function determineValidTransactions(
         }
 
         return validTransactions;
-    } else if (coValue.header.ruleset.type === "ownedByTeam") {
-        const teamContent = coValue.node
+    } else if (coValue.header.ruleset.type === "ownedByGroup") {
+        const groupContent = coValue.node
             .expectCoValueLoaded(
-                coValue.header.ruleset.team,
-                "Determining valid transaction in owned object but its team wasn't loaded"
+                coValue.header.ruleset.group,
+                "Determining valid transaction in owned object but its group wasn't loaded"
             )
             .getCurrentContent();
 
-        if (teamContent.type !== "comap") {
-            throw new Error("Team must be a map");
+        if (groupContent.type !== "comap") {
+            throw new Error("Group must be a map");
         }
 
         return Object.entries(coValue.sessions).flatMap(
@@ -208,7 +208,7 @@ export function determineValidTransactions(
                 );
                 return sessionLog.transactions
                     .filter((tx) => {
-                        const transactorRoleAtTxTime = teamContent.getAtTime(
+                        const transactorRoleAtTxTime = groupContent.getAtTime(
                             transactor,
                             tx.madeAt
                         );

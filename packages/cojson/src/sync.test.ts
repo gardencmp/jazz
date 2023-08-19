@@ -3,7 +3,7 @@ import { LocalNode } from "./node.js";
 import { Peer, PeerID, SyncMessage } from "./sync.js";
 import { expectMap } from "./contentType.js";
 import { MapOpPayload } from "./contentTypes/coMap.js";
-import { Team } from "./team.js";
+import { Group } from "./group.js";
 import {
     ReadableStream,
     WritableStream,
@@ -23,9 +23,9 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
@@ -53,7 +53,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     const reader = outRx.getReader();
 
     // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
@@ -62,7 +62,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const newContentMsg = await reader.read();
 
@@ -71,7 +71,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
         id: map.coValue.id,
         header: {
             type: "comap",
-            ruleset: { type: "ownedByTeam", team: team.id },
+            ruleset: { type: "ownedByGroup", group: group.id },
             meta: null,
             createdAt: map.coValue.header.createdAt,
             uniqueness: map.coValue.header.uniqueness,
@@ -104,9 +104,9 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
@@ -137,7 +137,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const reader = outRx.getReader();
 
     // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
@@ -146,7 +146,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapNewContentMsg = await reader.read();
 
@@ -186,9 +186,9 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -214,7 +214,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const reader = outRx.getReader();
 
     // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
@@ -223,7 +223,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapNewContentHeaderOnlyMsg = await reader.read();
 
@@ -303,9 +303,9 @@ test("Client replies with known new content to tellKnownState from server", asyn
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
@@ -323,7 +323,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     const reader = outRx.getReader();
 
-    // expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    // expect((await reader.read()).value).toMatchObject(groupStateEx(group));
 
     const writer = inTx.getWriter();
 
@@ -337,7 +337,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
     });
 
     // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
@@ -346,7 +346,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapNewContentMsg = await reader.read();
 
@@ -382,9 +382,9 @@ test("No matter the optimistic known state, node respects invalid known state me
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -410,7 +410,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     const reader = outRx.getReader();
 
     // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
@@ -419,7 +419,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapNewContentHeaderOnlyMsg = await reader.read();
 
@@ -485,9 +485,9 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -514,9 +514,9 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -535,7 +535,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     });
 
     const mapSubscribeMsg = await reader.read();
@@ -552,7 +552,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     });
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapNewContentMsg = await reader.read();
 
@@ -588,7 +588,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -607,10 +607,10 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     });
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const mapSubscribeMsg = await reader.read();
 
@@ -620,7 +620,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(adminID));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapContentMsg = await reader.read();
 
@@ -640,9 +640,9 @@ test("When we connect a new server peer, we try to sync all existing coValues to
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -657,11 +657,11 @@ test("When we connect a new server peer, we try to sync all existing coValues to
     const reader = outRx.getReader();
 
     // const _adminSubscribeMessage = await reader.read();
-    const teamSubscribeMessage = await reader.read();
+    const groupSubscribeMessage = await reader.read();
 
-    expect(teamSubscribeMessage.value).toEqual({
+    expect(groupSubscribeMessage.value).toEqual({
         action: "load",
-        ...team.teamMap.coValue.knownState(),
+        ...group.groupMap.coValue.knownState(),
     } satisfies SyncMessage);
 
     const secondMessage = await reader.read();
@@ -676,9 +676,9 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -704,7 +704,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
     const reader = outRx.getReader();
 
     // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamStateEx(team));
+    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
     const mapTellKnownState = await reader.read();
 
     expect(mapTellKnownState.value).toEqual({
@@ -719,7 +719,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     const node1 = new LocalNode(admin, session);
 
-    const team = node1.createTeam();
+    const group = node1.createGroup();
 
     const [inRx1, inTx1] = newStreamPair<SyncMessage>();
     const [outRx1, outTx1] = newStreamPair<SyncMessage>();
@@ -754,40 +754,40 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         action: "load",
         id: admin.id,
     });
-    const teamSubscribeMsg = await from1.read();
-    expect(teamSubscribeMsg.value).toMatchObject({
+    const groupSubscribeMsg = await from1.read();
+    expect(groupSubscribeMsg.value).toMatchObject({
         action: "load",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     });
 
     await to2.write(adminSubscribeMessage.value!);
-    await to2.write(teamSubscribeMsg.value!);
+    await to2.write(groupSubscribeMsg.value!);
 
     // const adminTellKnownStateMsg = await from2.read();
     // expect(adminTellKnownStateMsg.value).toMatchObject(admStateEx(admin.id));
 
-    const teamTellKnownStateMsg = await from2.read();
-    expect(teamTellKnownStateMsg.value).toMatchObject(teamStateEx(team));
+    const groupTellKnownStateMsg = await from2.read();
+    expect(groupTellKnownStateMsg.value).toMatchObject(groupStateEx(group));
 
     expect(
         node2.sync.peers["test1"]!.optimisticKnownStates[
-            team.teamMap.coValue.id
+            group.groupMap.coValue.id
         ]
     ).toBeDefined();
 
     // await to1.write(adminTellKnownStateMsg.value!);
-    await to1.write(teamTellKnownStateMsg.value!);
+    await to1.write(groupTellKnownStateMsg.value!);
 
     // const adminContentMsg = await from1.read();
     // expect(adminContentMsg.value).toMatchObject(admContEx(admin.id));
 
-    const teamContentMsg = await from1.read();
-    expect(teamContentMsg.value).toMatchObject(teamContentEx(team));
+    const groupContentMsg = await from1.read();
+    expect(groupContentMsg.value).toMatchObject(groupContentEx(group));
 
     // await to2.write(adminContentMsg.value!);
-    await to2.write(teamContentMsg.value!);
+    await to2.write(groupContentMsg.value!);
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const mapSubscriptionMsg = await from1.read();
     expect(mapSubscriptionMsg.value).toMatchObject({
@@ -840,9 +840,9 @@ test.skip("When loading a coValue on one node, the server node it is requested f
 
     const node1 = new LocalNode(admin, session);
 
-    const team = node1.createTeam();
+    const group = node1.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
     });
@@ -868,9 +868,9 @@ test("Can sync a coValue through a server to another client", async () => {
 
     const client1 = new LocalNode(admin, session);
 
-    const team = client1.createTeam();
+    const group = client1.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
     });
@@ -910,9 +910,9 @@ test("Can sync a coValue with private transactions through a server to another c
 
     const client1 = new LocalNode(admin, session);
 
-    const team = client1.createTeam();
+    const group = client1.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
     map.edit((editable) => {
         editable.set("hello", "world", "private");
     });
@@ -952,7 +952,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -971,10 +971,10 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     });
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const mapSubscribeMsg = await reader.read();
 
@@ -984,7 +984,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapContentMsg = await reader.read();
 
@@ -1006,7 +1006,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -1025,10 +1025,10 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     });
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     const mapSubscribeMsg = await reader.read();
 
@@ -1038,7 +1038,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(teamContentEx(team));
+    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
 
     const mapContentMsg = await reader.read();
 
@@ -1066,9 +1066,9 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
     const node1 = new LocalNode(admin, session);
 
-    const team = node1.createTeam();
+    const group = node1.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
     map.edit((editable) => {
         editable.set("hello", "world", "trusting");
     });
@@ -1096,10 +1096,10 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
     );
 });
 
-function teamContentEx(team: Team) {
+function groupContentEx(group: Group) {
     return {
         action: "content",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     };
 }
 
@@ -1110,10 +1110,10 @@ function admContEx(adminID: AccountID) {
     };
 }
 
-function teamStateEx(team: Team) {
+function groupStateEx(group: Group) {
     return {
         action: "known",
-        id: team.teamMap.coValue.id,
+        id: group.groupMap.coValue.id,
     };
 }
 

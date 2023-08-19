@@ -125,17 +125,17 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
     ).toBe(false);
 });
 
-test("New transactions in a team correctly update owned values, including subscriptions", async () => {
+test("New transactions in a group correctly update owned values, including subscriptions", async () => {
     const [account, sessionID] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(account, sessionID);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
     const timeBeforeEdit = Date.now();
 
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    let map = team.createMap();
+    let map = group.createMap();
 
     let mapAfterEdit = map.edit((map) => {
         map.set("hello", "world");
@@ -159,7 +159,7 @@ test("New transactions in a team correctly update owned values, including subscr
         ]
     } satisfies Transaction;
 
-    const { expectedNewHash } = team.teamMap.coValue.expectedNewHashAfter(sessionID, [
+    const { expectedNewHash } = group.groupMap.coValue.expectedNewHashAfter(sessionID, [
         resignationThatWeJustLearnedAbout,
     ]);
 
@@ -170,7 +170,7 @@ test("New transactions in a team correctly update owned values, including subscr
 
     expect(map.coValue.getValidSortedTransactions().length).toBe(1);
 
-    const manuallyAdddedTxSuccess = team.teamMap.coValue.tryAddTransactions(node.ownSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
+    const manuallyAdddedTxSuccess = group.groupMap.coValue.tryAddTransactions(node.ownSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
 
     expect(manuallyAdddedTxSuccess).toBe(true);
 

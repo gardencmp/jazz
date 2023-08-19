@@ -1,7 +1,7 @@
 import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "./crypto.js";
 import { newRandomSessionID } from "./coValue.js";
 import { LocalNode } from "./node.js";
-import { expectTeamContent } from "./team.js";
+import { expectGroupContent } from "./group.js";
 import { AnonymousControlledAccount } from "./account.js";
 import { SessionID } from "./ids.js";
 
@@ -13,69 +13,69 @@ export function randomAnonymousAccountAndSessionID(): [AnonymousControlledAccoun
     return [new AnonymousControlledAccount(agentSecret), sessionID];
 }
 
-export function newTeam() {
+export function newGroup() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
     const node = new LocalNode(admin, sessionID);
 
-    const team = node.createCoValue({
+    const group = node.createCoValue({
         type: "comap",
-        ruleset: { type: "team", initialAdmin: admin.id },
+        ruleset: { type: "group", initialAdmin: admin.id },
         meta: null,
         ...createdNowUnique(),
     });
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(admin.id, "admin", "trusting");
         expect(editable.get(admin.id)).toEqual("admin");
     });
 
-    return { node, team, admin };
+    return { node, group, admin };
 }
 
-export function teamWithTwoAdmins() {
-    const { team, admin, node } = newTeam();
+export function groupWithTwoAdmins() {
+    const { group, admin, node } = newGroup();
 
     const otherAdmin = node.createAccount("otherAdmin");
 
-    let content = expectTeamContent(team.getCurrentContent());
+    let content = expectGroupContent(group.getCurrentContent());
 
     content.edit((editable) => {
         editable.set(otherAdmin.id, "admin", "trusting");
         expect(editable.get(otherAdmin.id)).toEqual("admin");
     });
 
-    content = expectTeamContent(team.getCurrentContent());
+    content = expectGroupContent(group.getCurrentContent());
 
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
     expect(content.get(otherAdmin.id)).toEqual("admin");
-    return { team, admin, otherAdmin, node };
+    return { group, admin, otherAdmin, node };
 }
 
-export function newTeamHighLevel() {
+export function newGroupHighLevel() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
 
     const node = new LocalNode(admin, sessionID);
 
-    const team = node.createTeam();
+    const group = node.createGroup();
 
-    return { admin, node, team };
+    return { admin, node, group };
 }
 
-export function teamWithTwoAdminsHighLevel() {
-    const { admin, node, team } = newTeamHighLevel();
+export function groupWithTwoAdminsHighLevel() {
+    const { admin, node, group } = newGroupHighLevel();
 
     const otherAdmin = node.createAccount("otherAdmin");
 
-    team.addMember(otherAdmin.id, "admin");
+    group.addMember(otherAdmin.id, "admin");
 
-    return { admin, node, team, otherAdmin };
+    return { admin, node, group, otherAdmin };
 }
 
 export function shouldNotResolve<T>(

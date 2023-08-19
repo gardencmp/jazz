@@ -1,6 +1,6 @@
 import { newRandomSessionID } from "./coValue.js";
 import { expectMap } from "./contentType.js";
-import { Team, expectTeamContent } from "./team.js";
+import { Group, expectGroupContent } from "./group.js";
 import {
     createdNowUnique,
     newRandomKeySecret,
@@ -12,30 +12,30 @@ import {
     getAgentSealerID,
 } from "./crypto.js";
 import {
-    newTeam,
-    newTeamHighLevel,
-    teamWithTwoAdmins,
-    teamWithTwoAdminsHighLevel,
+    newGroup,
+    newGroupHighLevel,
+    groupWithTwoAdmins,
+    groupWithTwoAdminsHighLevel,
 } from "./testUtils.js";
 import { AnonymousControlledAccount } from "./index.js";
 
-test("Initial admin can add another admin to a team", () => {
-    teamWithTwoAdmins();
+test("Initial admin can add another admin to a group", () => {
+    groupWithTwoAdmins();
 });
 
-test("Initial admin can add another admin to a team (high level)", () => {
-    teamWithTwoAdminsHighLevel();
+test("Initial admin can add another admin to a group (high level)", () => {
+    groupWithTwoAdminsHighLevel();
 });
 
-test("Added admin can add a third admin to a team", () => {
-    const { team, otherAdmin, node } = teamWithTwoAdmins();
+test("Added admin can add a third admin to a group", () => {
+    const { group, otherAdmin, node } = groupWithTwoAdmins();
 
-    const teamAsOtherAdmin = team.testWithDifferentAccount(
+    const groupAsOtherAdmin = group.testWithDifferentAccount(
         otherAdmin,
         newRandomSessionID(otherAdmin.id)
     );
 
-    let otherContent = expectTeamContent(teamAsOtherAdmin.getCurrentContent());
+    let otherContent = expectGroupContent(groupAsOtherAdmin.getCurrentContent());
 
     expect(otherContent.get(otherAdmin.id)).toEqual("admin");
 
@@ -46,103 +46,103 @@ test("Added admin can add a third admin to a team", () => {
         expect(editable.get(thirdAdmin.id)).toEqual("admin");
     });
 
-    otherContent = expectTeamContent(teamAsOtherAdmin.getCurrentContent());
+    otherContent = expectGroupContent(groupAsOtherAdmin.getCurrentContent());
 
     expect(otherContent.get(thirdAdmin.id)).toEqual("admin");
 });
 
-test("Added adming can add a third admin to a team (high level)", () => {
-    const { team, otherAdmin, node } = teamWithTwoAdminsHighLevel();
+test("Added adming can add a third admin to a group (high level)", () => {
+    const { group, otherAdmin, node } = groupWithTwoAdminsHighLevel();
 
-    const teamAsOtherAdmin = team.testWithDifferentAccount(
+    const groupAsOtherAdmin = group.testWithDifferentAccount(
         otherAdmin,
         newRandomSessionID(otherAdmin.id)
     );
 
     const thirdAdmin = node.createAccount("thirdAdmin");
 
-    teamAsOtherAdmin.addMember(thirdAdmin.id, "admin");
+    groupAsOtherAdmin.addMember(thirdAdmin.id, "admin");
 
-    expect(teamAsOtherAdmin.teamMap.get(thirdAdmin.id)).toEqual("admin");
+    expect(groupAsOtherAdmin.groupMap.get(thirdAdmin.id)).toEqual("admin");
 });
 
-test("Admins can't demote other admins in a team", () => {
-    const { team, admin, otherAdmin } = teamWithTwoAdmins();
+test("Admins can't demote other admins in a group", () => {
+    const { group, admin, otherAdmin } = groupWithTwoAdmins();
 
-    let teamContent = expectTeamContent(team.getCurrentContent());
+    let groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(otherAdmin.id, "writer", "trusting");
         expect(editable.get(otherAdmin.id)).toEqual("admin");
     });
 
-    teamContent = expectTeamContent(team.getCurrentContent());
-    expect(teamContent.get(otherAdmin.id)).toEqual("admin");
+    groupContent = expectGroupContent(group.getCurrentContent());
+    expect(groupContent.get(otherAdmin.id)).toEqual("admin");
 
-    const teamAsOtherAdmin = team.testWithDifferentAccount(
+    const groupAsOtherAdmin = group.testWithDifferentAccount(
         otherAdmin,
         newRandomSessionID(otherAdmin.id)
     );
 
-    let teamContentAsOtherAdmin = expectTeamContent(
-        teamAsOtherAdmin.getCurrentContent()
+    let groupContentAsOtherAdmin = expectGroupContent(
+        groupAsOtherAdmin.getCurrentContent()
     );
 
-    teamContentAsOtherAdmin.edit((editable) => {
+    groupContentAsOtherAdmin.edit((editable) => {
         editable.set(admin.id, "writer", "trusting");
         expect(editable.get(admin.id)).toEqual("admin");
     });
 
-    teamContentAsOtherAdmin = expectTeamContent(
-        teamAsOtherAdmin.getCurrentContent()
+    groupContentAsOtherAdmin = expectGroupContent(
+        groupAsOtherAdmin.getCurrentContent()
     );
 
-    expect(teamContentAsOtherAdmin.get(admin.id)).toEqual("admin");
+    expect(groupContentAsOtherAdmin.get(admin.id)).toEqual("admin");
 });
 
-test("Admins can't demote other admins in a team (high level)", () => {
-    const { team, admin, otherAdmin } = teamWithTwoAdminsHighLevel();
+test("Admins can't demote other admins in a group (high level)", () => {
+    const { group, admin, otherAdmin } = groupWithTwoAdminsHighLevel();
 
-    const teamAsOtherAdmin = team.testWithDifferentAccount(
+    const groupAsOtherAdmin = group.testWithDifferentAccount(
         otherAdmin,
         newRandomSessionID(otherAdmin.id)
     );
 
-    expect(() => teamAsOtherAdmin.addMember(admin.id, "writer")).toThrow(
+    expect(() => groupAsOtherAdmin.addMember(admin.id, "writer")).toThrow(
         "Failed to set role"
     );
 
-    expect(teamAsOtherAdmin.teamMap.get(admin.id)).toEqual("admin");
+    expect(groupAsOtherAdmin.groupMap.get(admin.id)).toEqual("admin");
 });
 
-test("Admins an add writers to a team, who can't add admins, writers, or readers", () => {
-    const { team, node } = newTeam();
+test("Admins an add writers to a group, who can't add admins, writers, or readers", () => {
+    const { group, node } = newGroup();
     const writer = node.createAccount("writer");
 
-    let teamContent = expectTeamContent(team.getCurrentContent());
+    let groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(writer.id, "writer", "trusting");
         expect(editable.get(writer.id)).toEqual("writer");
     });
 
-    teamContent = expectTeamContent(team.getCurrentContent());
-    expect(teamContent.get(writer.id)).toEqual("writer");
+    groupContent = expectGroupContent(group.getCurrentContent());
+    expect(groupContent.get(writer.id)).toEqual("writer");
 
-    const teamAsWriter = team.testWithDifferentAccount(
+    const groupAsWriter = group.testWithDifferentAccount(
         writer,
         newRandomSessionID(writer.id)
     );
 
-    let teamContentAsWriter = expectTeamContent(
-        teamAsWriter.getCurrentContent()
+    let groupContentAsWriter = expectGroupContent(
+        groupAsWriter.getCurrentContent()
     );
 
-    expect(teamContentAsWriter.get(writer.id)).toEqual("writer");
+    expect(groupContentAsWriter.get(writer.id)).toEqual("writer");
 
     const otherAgent = node.createAccount("otherAgent");
 
-    teamContentAsWriter.edit((editable) => {
+    groupContentAsWriter.edit((editable) => {
         editable.set(otherAgent.id, "admin", "trusting");
         expect(editable.get(otherAgent.id)).toBeUndefined();
 
@@ -153,69 +153,69 @@ test("Admins an add writers to a team, who can't add admins, writers, or readers
         expect(editable.get(otherAgent.id)).toBeUndefined();
     });
 
-    teamContentAsWriter = expectTeamContent(teamAsWriter.getCurrentContent());
+    groupContentAsWriter = expectGroupContent(groupAsWriter.getCurrentContent());
 
-    expect(teamContentAsWriter.get(otherAgent.id)).toBeUndefined();
+    expect(groupContentAsWriter.get(otherAgent.id)).toBeUndefined();
 });
 
-test("Admins an add writers to a team, who can't add admins, writers, or readers (high level)", () => {
-    const { team, node } = newTeamHighLevel();
+test("Admins an add writers to a group, who can't add admins, writers, or readers (high level)", () => {
+    const { group, node } = newGroupHighLevel();
 
     const writer = node.createAccount("writer");
 
-    team.addMember(writer.id, "writer");
-    expect(team.teamMap.get(writer.id)).toEqual("writer");
+    group.addMember(writer.id, "writer");
+    expect(group.groupMap.get(writer.id)).toEqual("writer");
 
-    const teamAsWriter = team.testWithDifferentAccount(
+    const groupAsWriter = group.testWithDifferentAccount(
         writer,
         newRandomSessionID(writer.id)
     );
 
-    expect(teamAsWriter.teamMap.get(writer.id)).toEqual("writer");
+    expect(groupAsWriter.groupMap.get(writer.id)).toEqual("writer");
 
     const otherAgent = node.createAccount("otherAgent");
 
-    expect(() => teamAsWriter.addMember(otherAgent.id, "admin")).toThrow(
+    expect(() => groupAsWriter.addMember(otherAgent.id, "admin")).toThrow(
         "Failed to set role"
     );
-    expect(() => teamAsWriter.addMember(otherAgent.id, "writer")).toThrow(
+    expect(() => groupAsWriter.addMember(otherAgent.id, "writer")).toThrow(
         "Failed to set role"
     );
-    expect(() => teamAsWriter.addMember(otherAgent.id, "reader")).toThrow(
+    expect(() => groupAsWriter.addMember(otherAgent.id, "reader")).toThrow(
         "Failed to set role"
     );
 
-    expect(teamAsWriter.teamMap.get(otherAgent.id)).toBeUndefined();
+    expect(groupAsWriter.groupMap.get(otherAgent.id)).toBeUndefined();
 });
 
-test("Admins can add readers to a team, who can't add admins, writers, or readers", () => {
-    const { team, node } = newTeam();
+test("Admins can add readers to a group, who can't add admins, writers, or readers", () => {
+    const { group, node } = newGroup();
     const reader = node.createAccount("reader");
 
-    let teamContent = expectTeamContent(team.getCurrentContent());
+    let groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
     });
 
-    teamContent = expectTeamContent(team.getCurrentContent());
-    expect(teamContent.get(reader.id)).toEqual("reader");
+    groupContent = expectGroupContent(group.getCurrentContent());
+    expect(groupContent.get(reader.id)).toEqual("reader");
 
-    const teamAsReader = team.testWithDifferentAccount(
+    const groupAsReader = group.testWithDifferentAccount(
         reader,
         newRandomSessionID(reader.id)
     );
 
-    let teamContentAsReader = expectTeamContent(
-        teamAsReader.getCurrentContent()
+    let groupContentAsReader = expectGroupContent(
+        groupAsReader.getCurrentContent()
     );
 
-    expect(teamContentAsReader.get(reader.id)).toEqual("reader");
+    expect(groupContentAsReader.get(reader.id)).toEqual("reader");
 
     const otherAgent = node.createAccount("otherAgent");
 
-    teamContentAsReader.edit((editable) => {
+    groupContentAsReader.edit((editable) => {
         editable.set(otherAgent.id, "admin", "trusting");
         expect(editable.get(otherAgent.id)).toBeUndefined();
 
@@ -226,47 +226,47 @@ test("Admins can add readers to a team, who can't add admins, writers, or reader
         expect(editable.get(otherAgent.id)).toBeUndefined();
     });
 
-    teamContentAsReader = expectTeamContent(teamAsReader.getCurrentContent());
+    groupContentAsReader = expectGroupContent(groupAsReader.getCurrentContent());
 
-    expect(teamContentAsReader.get(otherAgent.id)).toBeUndefined();
+    expect(groupContentAsReader.get(otherAgent.id)).toBeUndefined();
 });
 
-test("Admins can add readers to a team, who can't add admins, writers, or readers (high level)", () => {
-    const { team, node } = newTeamHighLevel();
+test("Admins can add readers to a group, who can't add admins, writers, or readers (high level)", () => {
+    const { group, node } = newGroupHighLevel();
 
     const reader = node.createAccount("reader");
 
-    team.addMember(reader.id, "reader");
-    expect(team.teamMap.get(reader.id)).toEqual("reader");
+    group.addMember(reader.id, "reader");
+    expect(group.groupMap.get(reader.id)).toEqual("reader");
 
-    const teamAsReader = team.testWithDifferentAccount(
+    const groupAsReader = group.testWithDifferentAccount(
         reader,
         newRandomSessionID(reader.id)
     );
 
-    expect(teamAsReader.teamMap.get(reader.id)).toEqual("reader");
+    expect(groupAsReader.groupMap.get(reader.id)).toEqual("reader");
 
     const otherAgent = node.createAccount("otherAgent");
 
-    expect(() => teamAsReader.addMember(otherAgent.id, "admin")).toThrow(
+    expect(() => groupAsReader.addMember(otherAgent.id, "admin")).toThrow(
         "Failed to set role"
     );
-    expect(() => teamAsReader.addMember(otherAgent.id, "writer")).toThrow(
+    expect(() => groupAsReader.addMember(otherAgent.id, "writer")).toThrow(
         "Failed to set role"
     );
-    expect(() => teamAsReader.addMember(otherAgent.id, "reader")).toThrow(
+    expect(() => groupAsReader.addMember(otherAgent.id, "reader")).toThrow(
         "Failed to set role"
     );
 
-    expect(teamAsReader.teamMap.get(otherAgent.id)).toBeUndefined();
+    expect(groupAsReader.groupMap.get(otherAgent.id)).toBeUndefined();
 });
 
-test("Admins can write to an object that is owned by their team", () => {
-    const { node, team } = newTeam();
+test("Admins can write to an object that is owned by their group", () => {
+    const { node, group } = newGroup();
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -283,10 +283,10 @@ test("Admins can write to an object that is owned by their team", () => {
     expect(childContent.get("foo")).toEqual("bar");
 });
 
-test("Admins can write to an object that is owned by their team (high level)", () => {
-    const { node, team } = newTeamHighLevel();
+test("Admins can write to an object that is owned by their group (high level)", () => {
+    const { node, group } = newGroupHighLevel();
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "trusting");
@@ -296,19 +296,19 @@ test("Admins can write to an object that is owned by their team (high level)", (
     expect(childObject.get("foo")).toEqual("bar");
 });
 
-test("Writers can write to an object that is owned by their team", () => {
-    const { node, team } = newTeam();
+test("Writers can write to an object that is owned by their group", () => {
+    const { node, group } = newGroup();
 
     const writer = node.createAccount("writer");
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         editable.set(writer.id, "writer", "trusting");
         expect(editable.get(writer.id)).toEqual("writer");
     });
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -332,14 +332,14 @@ test("Writers can write to an object that is owned by their team", () => {
     expect(childContentAsWriter.get("foo")).toEqual("bar");
 });
 
-test("Writers can write to an object that is owned by their team (high level)", () => {
-    const { node, team } = newTeamHighLevel();
+test("Writers can write to an object that is owned by their group (high level)", () => {
+    const { node, group } = newGroupHighLevel();
 
     const writer = node.createAccount("writer");
 
-    team.addMember(writer.id, "writer");
+    group.addMember(writer.id, "writer");
 
-    const childObject = team.createMap();
+    const childObject = group.createMap();
 
     let childObjectAsWriter = expectMap(
         childObject.coValue
@@ -355,19 +355,19 @@ test("Writers can write to an object that is owned by their team (high level)", 
     expect(childObjectAsWriter.get("foo")).toEqual("bar");
 });
 
-test("Readers can not write to an object that is owned by their team", () => {
-    const { node, team } = newTeam();
+test("Readers can not write to an object that is owned by their group", () => {
+    const { node, group } = newGroup();
 
     const reader = node.createAccount("reader");
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
     });
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -391,14 +391,14 @@ test("Readers can not write to an object that is owned by their team", () => {
     expect(childContentAsReader.get("foo")).toBeUndefined();
 });
 
-test("Readers can not write to an object that is owned by their team (high level)", () => {
-    const { node, team } = newTeamHighLevel();
+test("Readers can not write to an object that is owned by their group (high level)", () => {
+    const { node, group } = newGroupHighLevel();
 
     const reader = node.createAccount("reader");
 
-    team.addMember(reader.id, "reader");
+    group.addMember(reader.id, "reader");
 
-    const childObject = team.createMap();
+    const childObject = group.createMap();
 
     let childObjectAsReader = expectMap(
         childObject.coValue
@@ -414,20 +414,20 @@ test("Readers can not write to an object that is owned by their team (high level
     expect(childObjectAsReader.get("foo")).toBeUndefined();
 });
 
-test("Admins can set team read key and then use it to create and read private transactions in owned objects", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read key and then use it to create and read private transactions in owned objects", () => {
+    const { node, group, admin } = newGroup();
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -441,12 +441,12 @@ test("Admins can set team read key and then use it to create and read private tr
 
         expect(editable.get("readKey")).toEqual(readKeyID);
 
-        expect(team.getCurrentReadKey().secret).toEqual(readKey);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey);
     });
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -462,10 +462,10 @@ test("Admins can set team read key and then use it to create and read private tr
     expect(childContent.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then use it to create and read private transactions in owned objects (high level)", () => {
-    const { node, team, admin } = newTeamHighLevel();
+test("Admins can set group read key and then use it to create and read private transactions in owned objects (high level)", () => {
+    const { node, group, admin } = newGroupHighLevel();
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -475,16 +475,16 @@ test("Admins can set team read key and then use it to create and read private tr
     expect(childObject.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then writers can use it to create and read private transactions in owned objects", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read key and then writers can use it to create and read private transactions in owned objects", () => {
+    const { node, group, admin } = newGroup();
 
     const writer = node.createAccount("writer");
 
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(writer.id, "writer", "trusting");
         expect(editable.get(writer.id)).toEqual("writer");
 
@@ -493,8 +493,8 @@ test("Admins can set team read key and then writers can use it to create and rea
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -505,8 +505,8 @@ test("Admins can set team read key and then writers can use it to create and rea
             admin.currentSealerSecret(),
             writer.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -517,7 +517,7 @@ test("Admins can set team read key and then writers can use it to create and rea
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -543,14 +543,14 @@ test("Admins can set team read key and then writers can use it to create and rea
     expect(childContentAsWriter.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then writers can use it to create and read private transactions in owned objects (high level)", () => {
-    const { node, team, admin } = newTeamHighLevel();
+test("Admins can set group read key and then writers can use it to create and read private transactions in owned objects (high level)", () => {
+    const { node, group, admin } = newGroupHighLevel();
 
     const writer = node.createAccount("writer");
 
-    team.addMember(writer.id, "writer");
+    group.addMember(writer.id, "writer");
 
-    const childObject = team.createMap();
+    const childObject = group.createMap();
 
     let childObjectAsWriter = expectMap(
         childObject.coValue
@@ -566,16 +566,16 @@ test("Admins can set team read key and then writers can use it to create and rea
     expect(childObjectAsWriter.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read", () => {
+    const { node, group, admin } = newGroup();
 
     const reader = node.createAccount("reader");
 
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
 
@@ -584,8 +584,8 @@ test("Admins can set team read key and then use it to create private transaction
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -596,8 +596,8 @@ test("Admins can set team read key and then use it to create private transaction
             admin.currentSealerSecret(),
             reader.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -608,7 +608,7 @@ test("Admins can set team read key and then use it to create private transaction
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -632,14 +632,14 @@ test("Admins can set team read key and then use it to create private transaction
     expect(childContentAsReader.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read (high level)", () => {
-    const { node, team, admin } = newTeamHighLevel();
+test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read (high level)", () => {
+    const { node, group, admin } = newGroupHighLevel();
 
     const reader = node.createAccount("reader");
 
-    team.addMember(reader.id, "reader");
+    group.addMember(reader.id, "reader");
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -655,8 +655,8 @@ test("Admins can set team read key and then use it to create private transaction
     expect(childContentAsReader.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key", () => {
+    const { node, group, admin } = newGroup();
 
     const reader1 = node.createAccount("reader1");
 
@@ -664,9 +664,9 @@ test("Admins can set team read key and then use it to create private transaction
 
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         editable.set(reader1.id, "reader", "trusting");
         expect(editable.get(reader1.id)).toEqual("reader");
 
@@ -675,8 +675,8 @@ test("Admins can set team read key and then use it to create private transaction
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -687,8 +687,8 @@ test("Admins can set team read key and then use it to create private transaction
             admin.currentSealerSecret(),
             reader1.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -699,7 +699,7 @@ test("Admins can set team read key and then use it to create private transaction
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -722,14 +722,14 @@ test("Admins can set team read key and then use it to create private transaction
 
     expect(childContentAsReader1.get("foo")).toEqual("bar");
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const revelation3 = seal(
             readKey,
             admin.currentSealerSecret(),
             reader2.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -750,16 +750,16 @@ test("Admins can set team read key and then use it to create private transaction
     expect(childContentAsReader2.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key (high level)", () => {
-    const { node, team, admin } = newTeamHighLevel();
+test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key (high level)", () => {
+    const { node, group, admin } = newGroupHighLevel();
 
     const reader1 = node.createAccount("reader1");
 
     const reader2 = node.createAccount("reader2");
 
-    team.addMember(reader1.id, "reader");
+    group.addMember(reader1.id, "reader");
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -774,7 +774,7 @@ test("Admins can set team read key and then use it to create private transaction
 
     expect(childContentAsReader1.get("foo")).toEqual("bar");
 
-    team.addMember(reader2.id, "reader");
+    group.addMember(reader2.id, "reader");
 
     const childContentAsReader2 = expectMap(
         childObject.coValue
@@ -785,20 +785,20 @@ test("Admins can set team read key and then use it to create private transaction
     expect(childContentAsReader2.get("foo")).toEqual("bar");
 });
 
-test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, make another private transaction, and both can be read by the admin", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read key, make a private transaction in an owned object, rotate the read key, make another private transaction, and both can be read by the admin", () => {
+    const { node, group, admin } = newGroup();
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -806,12 +806,12 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
         editable.set("readKey", readKeyID, "trusting");
         expect(editable.get("readKey")).toEqual(readKeyID);
-        expect(team.getCurrentReadKey().secret).toEqual(readKey);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey);
     });
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -826,7 +826,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
     childContent = expectMap(childObject.getCurrentContent());
     expect(childContent.get("foo")).toEqual("bar");
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
         const revelation = seal(
@@ -834,8 +834,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -843,7 +843,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
         editable.set("readKey", readKeyID2, "trusting");
         expect(editable.get("readKey")).toEqual(readKeyID2);
-        expect(team.getCurrentReadKey().secret).toEqual(readKey2);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey2);
     });
 
     childContent = expectMap(childObject.getCurrentContent());
@@ -858,10 +858,10 @@ test("Admins can set team read key, make a private transaction in an owned objec
     expect(childContent.get("foo2")).toEqual("bar2");
 });
 
-test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, make another private transaction, and both can be read by the admin (high level)", () => {
-    const { team } = newTeamHighLevel();
+test("Admins can set group read key, make a private transaction in an owned object, rotate the read key, make another private transaction, and both can be read by the admin (high level)", () => {
+    const { group } = newGroupHighLevel();
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     const firstReadKey = childObject.coValue.getCurrentReadKey();
 
@@ -872,7 +872,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     expect(childObject.get("foo")).toEqual("bar");
 
-    team.rotateReadKey();
+    group.rotateReadKey();
 
     expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
 
@@ -885,27 +885,27 @@ test("Admins can set team read key, make a private transaction in an owned objec
     expect(childObject.get("foo2")).toEqual("bar2");
 });
 
-test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, add a reader, make another private transaction in the owned object, and both can be read by the reader", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read key, make a private transaction in an owned object, rotate the read key, add a reader, make another private transaction in the owned object, and both can be read by the reader", () => {
+    const { node, group, admin } = newGroup();
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -913,7 +913,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
         editable.set("readKey", readKeyID, "trusting");
         expect(editable.get("readKey")).toEqual(readKeyID);
-        expect(team.getCurrentReadKey().secret).toEqual(readKey);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey);
     });
 
     let childContent = expectMap(childObject.getCurrentContent());
@@ -930,14 +930,14 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const revelation2 = seal(
             readKey2,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -948,8 +948,8 @@ test("Admins can set team read key, make a private transaction in an owned objec
             admin.currentSealerSecret(),
             reader.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -967,7 +967,7 @@ test("Admins can set team read key, make a private transaction in an owned objec
         editable.set("readKey", readKeyID2, "trusting");
 
         expect(editable.get("readKey")).toEqual(readKeyID2);
-        expect(team.getCurrentReadKey().secret).toEqual(readKey2);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey2);
 
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
@@ -993,10 +993,10 @@ test("Admins can set team read key, make a private transaction in an owned objec
     expect(childContentAsReader.get("foo2")).toEqual("bar2");
 });
 
-test("Admins can set team read key, make a private transaction in an owned object, rotate the read key, add a reader, make another private transaction in the owned object, and both can be read by the reader (high level)", () => {
-    const { node, team } = newTeamHighLevel();
+test("Admins can set group read key, make a private transaction in an owned object, rotate the read key, add a reader, make another private transaction in the owned object, and both can be read by the reader (high level)", () => {
+    const { node, group } = newGroupHighLevel();
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     const firstReadKey = childObject.coValue.getCurrentReadKey();
 
@@ -1007,13 +1007,13 @@ test("Admins can set team read key, make a private transaction in an owned objec
 
     expect(childObject.get("foo")).toEqual("bar");
 
-    team.rotateReadKey();
+    group.rotateReadKey();
 
     expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
 
     const reader = node.createAccount("reader");
 
-    team.addMember(reader.id, "reader");
+    group.addMember(reader.id, "reader");
 
     childObject = childObject.edit((editable) => {
         editable.set("foo2", "bar2", "private");
@@ -1030,30 +1030,30 @@ test("Admins can set team read key, make a private transaction in an owned objec
     expect(childContentAsReader.get("foo2")).toEqual("bar2");
 });
 
-test("Admins can set team read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions", () => {
-    const { node, team, admin } = newTeam();
+test("Admins can set group read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions", () => {
+    const { node, group, admin } = newGroup();
 
     const childObject = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
 
-    const teamContent = expectTeamContent(team.getCurrentContent());
+    const groupContent = expectGroupContent(group.getCurrentContent());
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
     const reader = node.createAccount("reader");
 
     const reader2 = node.createAccount("reader2");
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const revelation1 = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1064,8 +1064,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
             admin.currentSealerSecret(),
             reader.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1076,8 +1076,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
             admin.currentSealerSecret(),
             reader2.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1085,7 +1085,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
         editable.set("readKey", readKeyID, "trusting");
         expect(editable.get("readKey")).toEqual(readKeyID);
-        expect(team.getCurrentReadKey().secret).toEqual(readKey);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey);
 
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
@@ -1123,14 +1123,14 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
-    teamContent.edit((editable) => {
+    groupContent.edit((editable) => {
         const newRevelation1 = seal(
             readKey2,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1145,8 +1145,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
             admin.currentSealerSecret(),
             reader2.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1158,7 +1158,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
         editable.set("readKey", readKeyID2, "trusting");
         expect(editable.get("readKey")).toEqual(readKeyID2);
-        expect(team.getCurrentReadKey().secret).toEqual(readKey2);
+        expect(group.getCurrentReadKey().secret).toEqual(readKey2);
 
         editable.set(reader.id, "revoked", "trusting");
         // expect(editable.get(reader.id)).toEqual("revoked");
@@ -1190,10 +1190,10 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     ).toEqual("bar2");
 });
 
-test("Admins can set team read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", () => {
-    const { node, team } = newTeamHighLevel();
+test("Admins can set group read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", () => {
+    const { node, group } = newGroupHighLevel();
 
-    let childObject = team.createMap();
+    let childObject = group.createMap();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -1202,7 +1202,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     expect(childObject.get("foo")).toEqual("bar");
 
-    team.rotateReadKey();
+    group.rotateReadKey();
 
     const secondReadKey = childObject.coValue.getCurrentReadKey();
 
@@ -1210,8 +1210,8 @@ test("Admins can set team read rey, make a private transaction in an owned objec
 
     const reader2 = node.createAccount("reader2");
 
-    team.addMember(reader.id, "reader");
-    team.addMember(reader2.id, "reader");
+    group.addMember(reader.id, "reader");
+    group.addMember(reader2.id, "reader");
 
     childObject = childObject.edit((editable) => {
         editable.set("foo2", "bar2", "private");
@@ -1221,7 +1221,7 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     expect(childObject.get("foo")).toEqual("bar");
     expect(childObject.get("foo2")).toEqual("bar2");
 
-    team.removeMember(reader.id);
+    group.removeMember(reader.id);
 
     expect(childObject.coValue.getCurrentReadKey()).not.toEqual(secondReadKey);
 
@@ -1249,19 +1249,19 @@ test("Admins can set team read rey, make a private transaction in an owned objec
     ).toBeUndefined();
 });
 
-test("Can create two owned objects in the same team and they will have different ids", () => {
-    const { node, team } = newTeam();
+test("Can create two owned objects in the same group and they will have different ids", () => {
+    const { node, group } = newGroup();
 
     const childObject1 = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
 
     const childObject2 = node.createCoValue({
         type: "comap",
-        ruleset: { type: "ownedByTeam", team: team.id },
+        ruleset: { type: "ownedByGroup", group: group.id },
         meta: null,
         ...createdNowUnique(),
     });
@@ -1270,20 +1270,20 @@ test("Can create two owned objects in the same team and they will have different
 });
 
 test("Admins can create an adminInvite, which can add an admin", () => {
-    const { node, team, admin } = newTeam();
+    const { node, group, admin } = newGroup();
 
     const inviteSecret = newRandomAgentSecret();
     const inviteID = getAgentID(inviteSecret);
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1299,8 +1299,8 @@ test("Admins can create an adminInvite, which can add an admin", () => {
             admin.currentSealerSecret(),
             getAgentSealerID(inviteID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1311,7 +1311,7 @@ test("Admins can create an adminInvite, which can add an admin", () => {
         );
     });
 
-    const teamAsInvite = team.testWithDifferentAccount(
+    const groupAsInvite = group.testWithDifferentAccount(
         new AnonymousControlledAccount(inviteSecret),
         newRandomSessionID(inviteID)
     );
@@ -1319,12 +1319,12 @@ test("Admins can create an adminInvite, which can add an admin", () => {
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
 
-    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+    expectGroupContent(groupAsInvite.getCurrentContent()).edit((editable) => {
         editable.set(invitedAdminID, "admin", "trusting");
 
         expect(editable.get(invitedAdminID)).toEqual("admin");
 
-        const readKey = teamAsInvite.getCurrentReadKey();
+        const readKey = groupAsInvite.getCurrentReadKey();
 
         expect(readKey.secret).toBeDefined();
 
@@ -1333,8 +1333,8 @@ test("Admins can create an adminInvite, which can add an admin", () => {
             getAgentSealerSecret(invitedAdminSecret),
             getAgentSealerID(invitedAdminID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1351,9 +1351,9 @@ test("Admins can create an adminInvite, which can add an admin", () => {
 });
 
 test("Admins can create an adminInvite, which can add an admin (high-level)", async () => {
-    const { node, team, admin } = newTeamHighLevel();
+    const { node, group, admin } = newGroupHighLevel();
 
-    const inviteSecret = team.createInvite("admin");
+    const inviteSecret = group.createInvite("admin");
 
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
@@ -1363,41 +1363,41 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
         newRandomSessionID(invitedAdminID)
     );
 
-    await nodeAsInvitedAdmin.acceptInvite(team.id, inviteSecret);
+    await nodeAsInvitedAdmin.acceptInvite(group.id, inviteSecret);
 
     const thirdAdmin = newRandomAgentSecret();
     const thirdAdminID = getAgentID(thirdAdmin);
 
-    const teamAsInvitedAdmin = new Team(
-        await nodeAsInvitedAdmin.load(team.id),
+    const groupAsInvitedAdmin = new Group(
+        await nodeAsInvitedAdmin.load(group.id),
         nodeAsInvitedAdmin
     );
 
-    expect(teamAsInvitedAdmin.teamMap.get(invitedAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.groupMap.get(invitedAdminID)).toEqual("admin");
     expect(
-        teamAsInvitedAdmin.teamMap.coValue.getCurrentReadKey().secret
+        groupAsInvitedAdmin.groupMap.coValue.getCurrentReadKey().secret
     ).toBeDefined();
 
-    teamAsInvitedAdmin.addMember(thirdAdminID, "admin");
+    groupAsInvitedAdmin.addMember(thirdAdminID, "admin");
 
-    expect(teamAsInvitedAdmin.teamMap.get(thirdAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.groupMap.get(thirdAdminID)).toEqual("admin");
 });
 
 test("Admins can create a writerInvite, which can add a writer", () => {
-    const { node, team, admin } = newTeam();
+    const { node, group, admin } = newGroup();
 
     const inviteSecret = newRandomAgentSecret();
     const inviteID = getAgentID(inviteSecret);
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1413,8 +1413,8 @@ test("Admins can create a writerInvite, which can add a writer", () => {
             admin.currentSealerSecret(),
             getAgentSealerID(inviteID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1425,7 +1425,7 @@ test("Admins can create a writerInvite, which can add a writer", () => {
         );
     });
 
-    const teamAsInvite = team.testWithDifferentAccount(
+    const groupAsInvite = group.testWithDifferentAccount(
         new AnonymousControlledAccount(inviteSecret),
         newRandomSessionID(inviteID)
     );
@@ -1433,12 +1433,12 @@ test("Admins can create a writerInvite, which can add a writer", () => {
     const invitedWriterSecret = newRandomAgentSecret();
     const invitedWriterID = getAgentID(invitedWriterSecret);
 
-    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+    expectGroupContent(groupAsInvite.getCurrentContent()).edit((editable) => {
         editable.set(invitedWriterID, "writer", "trusting");
 
         expect(editable.get(invitedWriterID)).toEqual("writer");
 
-        const readKey = teamAsInvite.getCurrentReadKey();
+        const readKey = groupAsInvite.getCurrentReadKey();
 
         expect(readKey.secret).toBeDefined();
 
@@ -1447,8 +1447,8 @@ test("Admins can create a writerInvite, which can add a writer", () => {
             getAgentSealerSecret(invitedWriterSecret),
             getAgentSealerID(invitedWriterID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1465,9 +1465,9 @@ test("Admins can create a writerInvite, which can add a writer", () => {
 });
 
 test("Admins can create a writerInvite, which can add a writer (high-level)", async () => {
-    const { node, team, admin } = newTeamHighLevel();
+    const { node, group, admin } = newGroupHighLevel();
 
-    const inviteSecret = team.createInvite("writer");
+    const inviteSecret = group.createInvite("writer");
 
     const invitedWriterSecret = newRandomAgentSecret();
     const invitedWriterID = getAgentID(invitedWriterSecret);
@@ -1477,35 +1477,35 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
         newRandomSessionID(invitedWriterID)
     );
 
-    await nodeAsInvitedWriter.acceptInvite(team.id, inviteSecret);
+    await nodeAsInvitedWriter.acceptInvite(group.id, inviteSecret);
 
-    const teamAsInvitedWriter = new Team(
-        await nodeAsInvitedWriter.load(team.id),
+    const groupAsInvitedWriter = new Group(
+        await nodeAsInvitedWriter.load(group.id),
         nodeAsInvitedWriter
     );
 
-    expect(teamAsInvitedWriter.teamMap.get(invitedWriterID)).toEqual("writer");
+    expect(groupAsInvitedWriter.groupMap.get(invitedWriterID)).toEqual("writer");
     expect(
-        teamAsInvitedWriter.teamMap.coValue.getCurrentReadKey().secret
+        groupAsInvitedWriter.groupMap.coValue.getCurrentReadKey().secret
     ).toBeDefined();
 });
 
 
 test("Admins can create a readerInvite, which can add a reader", () => {
-    const { node, team, admin } = newTeam();
+    const { node, group, admin } = newGroup();
 
     const inviteSecret = newRandomAgentSecret();
     const inviteID = getAgentID(inviteSecret);
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1521,8 +1521,8 @@ test("Admins can create a readerInvite, which can add a reader", () => {
             admin.currentSealerSecret(),
             getAgentSealerID(inviteID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1533,7 +1533,7 @@ test("Admins can create a readerInvite, which can add a reader", () => {
         );
     });
 
-    const teamAsInvite = team.testWithDifferentAccount(
+    const groupAsInvite = group.testWithDifferentAccount(
         new AnonymousControlledAccount(inviteSecret),
         newRandomSessionID(inviteID)
     );
@@ -1541,12 +1541,12 @@ test("Admins can create a readerInvite, which can add a reader", () => {
     const invitedReaderSecret = newRandomAgentSecret();
     const invitedReaderID = getAgentID(invitedReaderSecret);
 
-    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+    expectGroupContent(groupAsInvite.getCurrentContent()).edit((editable) => {
         editable.set(invitedReaderID, "reader", "trusting");
 
         expect(editable.get(invitedReaderID)).toEqual("reader");
 
-        const readKey = teamAsInvite.getCurrentReadKey();
+        const readKey = groupAsInvite.getCurrentReadKey();
 
         expect(readKey.secret).toBeDefined();
 
@@ -1555,8 +1555,8 @@ test("Admins can create a readerInvite, which can add a reader", () => {
             getAgentSealerSecret(invitedReaderSecret),
             getAgentSealerID(invitedReaderID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1573,9 +1573,9 @@ test("Admins can create a readerInvite, which can add a reader", () => {
 });
 
 test("Admins can create a readerInvite, which can add a reader (high-level)", async () => {
-    const { node, team, admin } = newTeamHighLevel();
+    const { node, group, admin } = newGroupHighLevel();
 
-    const inviteSecret = team.createInvite("reader");
+    const inviteSecret = group.createInvite("reader");
 
     const invitedReaderSecret = newRandomAgentSecret();
     const invitedReaderID = getAgentID(invitedReaderSecret);
@@ -1585,34 +1585,34 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
         newRandomSessionID(invitedReaderID)
     );
 
-    await nodeAsInvitedReader.acceptInvite(team.id, inviteSecret);
+    await nodeAsInvitedReader.acceptInvite(group.id, inviteSecret);
 
-    const teamAsInvitedReader = new Team(
-        await nodeAsInvitedReader.load(team.id),
+    const groupAsInvitedReader = new Group(
+        await nodeAsInvitedReader.load(group.id),
         nodeAsInvitedReader
     );
 
-    expect(teamAsInvitedReader.teamMap.get(invitedReaderID)).toEqual("reader");
+    expect(groupAsInvitedReader.groupMap.get(invitedReaderID)).toEqual("reader");
     expect(
-        teamAsInvitedReader.teamMap.coValue.getCurrentReadKey().secret
+        groupAsInvitedReader.groupMap.coValue.getCurrentReadKey().secret
     ).toBeDefined();
 });
 
 test("WriterInvites can not invite admins", () => {
-    const { node, team, admin } = newTeam();
+    const { node, group, admin } = newGroup();
 
     const inviteSecret = newRandomAgentSecret();
     const inviteID = getAgentID(inviteSecret);
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1628,8 +1628,8 @@ test("WriterInvites can not invite admins", () => {
             admin.currentSealerSecret(),
             getAgentSealerID(inviteID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1640,7 +1640,7 @@ test("WriterInvites can not invite admins", () => {
         );
     });
 
-    const teamAsInvite = team.testWithDifferentAccount(
+    const groupAsInvite = group.testWithDifferentAccount(
         new AnonymousControlledAccount(inviteSecret),
         newRandomSessionID(inviteID)
     );
@@ -1648,27 +1648,27 @@ test("WriterInvites can not invite admins", () => {
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
 
-    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+    expectGroupContent(groupAsInvite.getCurrentContent()).edit((editable) => {
         editable.set(invitedAdminID, "admin", "trusting");
         expect(editable.get(invitedAdminID)).toBeUndefined();
     });
 });
 
 test("ReaderInvites can not invite admins", () => {
-    const { node, team, admin } = newTeam();
+    const { node, group, admin } = newGroup();
 
     const inviteSecret = newRandomAgentSecret();
     const inviteID = getAgentID(inviteSecret);
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1684,8 +1684,8 @@ test("ReaderInvites can not invite admins", () => {
             admin.currentSealerSecret(),
             getAgentSealerID(inviteID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1696,7 +1696,7 @@ test("ReaderInvites can not invite admins", () => {
         );
     });
 
-    const teamAsInvite = team.testWithDifferentAccount(
+    const groupAsInvite = group.testWithDifferentAccount(
         new AnonymousControlledAccount(inviteSecret),
         newRandomSessionID(inviteID)
     );
@@ -1704,27 +1704,27 @@ test("ReaderInvites can not invite admins", () => {
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
 
-    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+    expectGroupContent(groupAsInvite.getCurrentContent()).edit((editable) => {
         editable.set(invitedAdminID, "admin", "trusting");
         expect(editable.get(invitedAdminID)).toBeUndefined();
     });
 });
 
 test("ReaderInvites can not invite writers", () => {
-    const { node, team, admin } = newTeam();
+    const { node, group, admin } = newGroup();
 
     const inviteSecret = newRandomAgentSecret();
     const inviteID = getAgentID(inviteSecret);
 
-    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
         const revelation = seal(
             readKey,
             admin.currentSealerSecret(),
             admin.currentSealerID(),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1740,8 +1740,8 @@ test("ReaderInvites can not invite writers", () => {
             admin.currentSealerSecret(),
             getAgentSealerID(inviteID),
             {
-                in: team.id,
-                tx: team.nextTransactionID(),
+                in: group.id,
+                tx: group.nextTransactionID(),
             }
         );
 
@@ -1752,7 +1752,7 @@ test("ReaderInvites can not invite writers", () => {
         );
     });
 
-    const teamAsInvite = team.testWithDifferentAccount(
+    const groupAsInvite = group.testWithDifferentAccount(
         new AnonymousControlledAccount(inviteSecret),
         newRandomSessionID(inviteID)
     );
@@ -1760,7 +1760,7 @@ test("ReaderInvites can not invite writers", () => {
     const invitedWriterSecret = newRandomAgentSecret();
     const invitedWriterID = getAgentID(invitedWriterSecret);
 
-    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+    expectGroupContent(groupAsInvite.getCurrentContent()).edit((editable) => {
         editable.set(invitedWriterID, "writer", "trusting");
         expect(editable.get(invitedWriterID)).toBeUndefined();
     });

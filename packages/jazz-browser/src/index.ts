@@ -7,7 +7,7 @@ import {
     SyncMessage,
     Peer,
     ContentType,
-    Team,
+    Group,
     CoID,
 } from "cojson";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
@@ -247,22 +247,22 @@ export function createInviteLink(
     const node = coValue.node;
     let currentCoValue = coValue;
 
-    while (currentCoValue.header.ruleset.type === "ownedByTeam") {
+    while (currentCoValue.header.ruleset.type === "ownedByGroup") {
         currentCoValue = node.expectCoValueLoaded(
-            currentCoValue.header.ruleset.team
+            currentCoValue.header.ruleset.group
         );
     }
 
-    if (currentCoValue.header.ruleset.type !== "team") {
-        throw new Error("Can't create invite link for object without team");
+    if (currentCoValue.header.ruleset.type !== "group") {
+        throw new Error("Can't create invite link for object without group");
     }
 
-    const team = new Team(
-        cojsonInternals.expectTeamContent(currentCoValue.getCurrentContent()),
+    const group = new Group(
+        cojsonInternals.expectGroupContent(currentCoValue.getCurrentContent()),
         node
     );
 
-    const inviteSecret = team.createInvite(role);
+    const inviteSecret = group.createInvite(role);
 
     return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
 }

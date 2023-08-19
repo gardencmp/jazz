@@ -14,7 +14,7 @@ import {
 } from "./crypto.js";
 import { AgentID } from "./ids.js";
 import { CoMap, LocalNode } from "./index.js";
-import { Team, TeamContent } from "./team.js";
+import { Group, GroupContent } from "./group.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret
@@ -22,7 +22,7 @@ export function accountHeaderForInitialAgentSecret(
     const agent = getAgentID(agentSecret);
     return {
         type: "comap",
-        ruleset: { type: "team", initialAdmin: agent },
+        ruleset: { type: "group", initialAdmin: agent },
         meta: {
             type: "account",
         },
@@ -31,13 +31,13 @@ export function accountHeaderForInitialAgentSecret(
     };
 }
 
-export class Account extends Team {
+export class Account extends Group {
     get id(): AccountID {
-        return this.teamMap.id as AccountID;
+        return this.groupMap.id as AccountID;
     }
 
     getCurrentAgentID(): AgentID {
-        const agents = this.teamMap
+        const agents = this.groupMap
             .keys()
             .filter((k): k is AgentID => k.startsWith("sealer_"));
 
@@ -70,10 +70,10 @@ export class ControlledAccount
 
     constructor(
         agentSecret: AgentSecret,
-        teamMap: CoMap<AccountContent, AccountMeta>,
+        groupMap: CoMap<AccountContent, AccountMeta>,
         node: LocalNode
     ) {
-        super(teamMap, node);
+        super(groupMap, node);
 
         this.agentSecret = agentSecret;
     }
@@ -133,7 +133,7 @@ export class AnonymousControlledAccount
     }
 }
 
-export type AccountContent = TeamContent & { profile: CoID<Profile> };
+export type AccountContent = GroupContent & { profile: CoID<Profile> };
 export type AccountMeta = { type: "account" };
 export type AccountID = CoID<CoMap<AccountContent, AccountMeta>>;
 
