@@ -21,7 +21,6 @@ import { createInviteLink } from "jazz-react";
 import { useToast } from "./components/ui/use-toast";
 import { Skeleton } from "./components/ui/skeleton";
 import uniqolor from "uniqolor";
-import { useTheme } from "./components/themeProvider";
 
 type TaskContent = { done: boolean; text: string };
 type Task = CoMap<TaskContent>;
@@ -102,7 +101,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
 
     const createTask = (text: string) => {
         if (!list) return;
-        let task = list.coValue.getTeam().createMap<TaskContent>();
+        const task = list.coValue.getTeam().createMap<TaskContent>();
 
         task.edit((task) => {
             task.set("text", text);
