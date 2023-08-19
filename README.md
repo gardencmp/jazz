@@ -307,32 +307,32 @@ If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction
 If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
 
 ---
-### `CoValue` ContentType: `CoList` (coming soon)
+### `CoValue` ContentType: `CoList` (not yet implemented)
 
 ---
-### `CoValue` ContentType: `CoStram` (coming soon)
+### `CoValue` ContentType: `CoStram` (not yet implemented)
 
 ---
-### `CoValue` ContentType: `Static` (coming soon)
+### `CoValue` ContentType: `Static` (not yet implemented)
 ---
 
 ## `jazz-react`
 ---
 ### `<WithJazz>`
 
-TODO, see [`examples/todo`](./examples/todo/) for now
+Not yet documented, see [`examples/todo`](./examples/todo/) for now
 
 ---
 ### `useJazz()`
 
-TODO, see [`examples/todo`](./examples/todo/) for now
+Not yet documented, see [`examples/todo`](./examples/todo/) for now
 
 ---
 ### `useTelepathicData(coID)`
 
-TODO, see [`examples/todo`](./examples/todo/) for now
+Not yet documented, see [`examples/todo`](./examples/todo/) for now
 
 ---
 ### `useProfile(accountID)`
 
-TODO, see [`examples/todo`](./examples/todo/) for now
+Not yet documented, see [`examples/todo`](./examples/todo/) for now
