@@ -55,30 +55,41 @@ If you want to build something with Jazz, [join the Jazz Discord](https://discor
 
 ## Overview: Main Packages
 
-**`cojson`:** A library implementing abstractions and protocols for "Collaborative JSON". This will soon be standardized and forms the basis of permissioned telepathic data.
+**`cojson`**
 
-**`jazz-react`:** Provides you with everything you need to build react apps around CoJSON, including reactive hooks for telepathic data, local IndexedDB persistence, support for different auth providers and helpers for simple invite links for CoJSON groups.
+A library implementing abstractions and protocols for "Collaborative JSON". This will soon be standardized and forms the basis of permissioned telepathic data.
+
+**`jazz-react`**
+
+Provides you with everything you need to build react apps around CoJSON, including reactive hooks for telepathic data, local IndexedDB persistence, support for different auth providers and helpers for simple invite links for CoJSON groups.
 
 ### Supporting packages
 <small>
 
-**`cojson-simple-sync`:**
+**`cojson-simple-sync`**
+
 A generic CoJSON sync server you can run locally if you don't want to use Jazz Global Mesh (the default sync backend, at `wss://sync.jazz.tools`)
 
-**`jazz-browser`:** framework-agnostic primitives that allow you to use CoJSON in the browser. Used to implement `jazz-react`, will be used to implement bindings for other frameworks in the future.
+**`jazz-browser`**
+
+framework-agnostic primitives that allow you to use CoJSON in the browser. Used to implement `jazz-react`, will be used to implement bindings for other frameworks in the future.
 
 **`jazz-react-auth-local`** (and `jazz-browser-auth-local`): A simple auth provider that stores cryptographic keys on user devices using WebAuthentication/Passkeys. Lets you build Jazz apps completely without a backend, with end-to-end encryption by default.
 
-**`jazz-storage-indexeddb`**: Provides local, offline-capable persistence. Included and enabled in `jazz-react` by default.
+**`jazz-storage-indexeddb`**
+
+Provides local, offline-capable persistence. Included and enabled in `jazz-react` by default.
 </small>
 
 ## `CoJSON`
 
-CoJSON is the core implementation of permissioned telepathic data. It provides abstractions for Collaborative JSON values ("CoValues"), groups for permission management and a protocol for syncing between nodes.
+CoJSON is the core implementation of permissioned telepathic data. It provides abstractions for Collaborative JSON values ("`CoValues`"), groups for permission management and a protocol for syncing between nodes. Our goal is to standardise CoJSON soon and port it to other languages and platforms.
 
 ### `LocalNode`
 
-A `LocalNode` represents a local view of a set of loaded CoValues
+A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
+
+
 
 ### `Group`
 
