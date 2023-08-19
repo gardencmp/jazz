@@ -37,6 +37,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 This shows how to use the top-level component `<WithJazz/>`, which provides the rest of the app with a `LocalNode` (used through `useJazz` later), based on `LocalAuth` that uses Passkeys to store a user's account secret - no backend needed.
 
+Let's move on to the main app code.
+
 ---
 
 From `./src/App.tsx`
@@ -68,7 +70,7 @@ type TodoList = CoMap<TodoListContent>;
 // ...
 ```
 
-Here, we define our main data model of tasks and todo lists, using CoJSON's collaborative map type, `CoMap`. We reference CoMaps of individual tasks by using them as keys inside the `TodoList` CoMap - as a makeshift solution until `CoList` is implemented.
+First, we define our main data model of tasks and todo lists, using CoJSON's collaborative map type, `CoMap`. We reference CoMaps of individual tasks by using them as keys inside the `TodoList` CoMap - as a makeshift solution until `CoList` is implemented.
 
 ---
 
@@ -140,7 +142,7 @@ export default function App() {
 }
 ```
 
-This is the main App component, handling routing based on the CoValue ID (`CoID`) of our `TodoList`, stored in the URL hash - which can also contain invite links, which we intercept and use with `consumeInviteLinkFromWindowLocation`.
+`<App>` is the main app component, handling client-side routing based on the CoValue ID (`CoID`) of our `TodoList`, stored in the URL hash - which can also contain invite links, which we intercept and use with `consumeInviteLinkFromWindowLocation`.
 
 `createList` is the first time we see CoJSON in action: using our `localNode` (which we got from `useJazz`), we first create a group for a new todo list (which allows us to set permissions later). Then, within that group, we create a new `CoMap<TodoListContent>` with `listGroup.createMap()`.
 
@@ -222,7 +224,7 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
 }
 ```
 
-Here, we use `useTelepathicData()` for the first time, in this case to load the CoValue for our `TodoList` and to reactively subscribe to updates to its content - whether we create edits locally, load persisted data, or receive sync updates from other devices or participants!
+Here in `<TodoListComponent>`, we use `useTelepathicData()` for the first time, in this case to load the CoValue for our `TodoList` and to reactively subscribe to updates to its content - whether we create edits locally, load persisted data, or receive sync updates from other devices or participants!
 
 `createTask` is similar to `createList` we saw earlier, creating a new CoMap for a new task, and then adding it as a key to our `TodoList`.
 
@@ -262,7 +264,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
 }
 ```
 
-`TaskRow` uses `useTelepathicState()` as well, to granularly load and subscribe to changes for that particular task (the only thing we let the user change is the "done" status).
+`<TaskRow>` uses `useTelepathicState()` as well, to granularly load and subscribe to changes for that particular task (the only thing we let the user change is the "done" status).
 
 We also use a `<NameBadge>` helper component to render the name of the author of the task, which we get by using the collaboration feature `getLastEditor(key)` on our `Task` CoMap, which returns the accountID of the last account that changed a given key in the CoMap.
 
@@ -270,7 +272,7 @@ We also use a `<NameBadge>` helper component to render the name of the author of
 
 ```typescript
 function NameBadge({ accountID }: { accountID?: AccountID }) {
-    const profile = useProfile({ accountID });
+    const profile = useProfile(accountID);
 
     const theme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
@@ -287,13 +289,13 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
                 background: theme == "light" ? brightColor : darkColor,
             }}
         >
-            {profile?.get("name")}
+            {profile.get("name")}
         </span>
     );
 }
 ```
 
-`NameBadge` uses `useProfile`, which is a shorthand for loading an account's profile (which is always a `CoMap<{name: string}>`, but might have app-specific additional properties).
+`<NameBadge>` uses `useProfile(accountID)`, which is a shorthand for loading an account's profile (which is always a `CoMap<{name: string}>`, but might have app-specific additional properties).
 
 In our case, we just display the profile name (which, by the way, is set by the `LocalAuth` provider when we first create an account).
 
@@ -333,7 +335,7 @@ function InviteButton({ list }: { list: TodoList }) {
 }
 ```
 
-Last, we have a look at the `InviteButton` component, which we use inside `<TodoListComponent>`. It only becomes visible when the current user is an admin in the `TodoList`'s group. You can see how we can create an invite link using `createInviteLink(coValue, role)` that allows anyone who has it to join the group as a specified role (here, as a writer).
+Last, we have a look at the `<InviteButton>` component, which we use inside `<TodoListComponent>`. It only becomes visible when the current user is an admin in the `TodoList`'s group. You can see how we can create an invite link using `createInviteLink(coValue, role)` that allows anyone who has it to join the group as a specified role (here, as a writer).
 
 ---
 

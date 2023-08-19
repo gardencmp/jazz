@@ -190,7 +190,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
 }
 
 function NameBadge({ accountID }: { accountID?: AccountID }) {
-    const profile = useProfile({ accountID });
+    const profile = useProfile(accountID);
 
     const theme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
@@ -207,7 +207,7 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
                 background: theme == "light" ? brightColor : darkColor,
             }}
         >
-            {profile?.get("name")}
+            {profile.get("name")}
         </span>
     );
 }

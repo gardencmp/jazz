@@ -123,11 +123,9 @@ export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
     return state;
 }
 
-export function useProfile<P extends ProfileContent = ProfileContent>({
-    accountID,
-}: {
-    accountID?: AccountID;
-}): (Profile & CoMap<P>) | undefined {
+export function useProfile<P extends ProfileContent = ProfileContent>(
+    accountID?: AccountID
+): (Profile & CoMap<P>) | undefined {
     const [profileID, setProfileID] = useState<CoID<Profile & CoMap<P>>>();
 
     const { localNode } = useJazz();
