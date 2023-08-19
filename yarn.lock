@@ -7744,6 +7744,11 @@ unbzip2-stream@1.4.3:
     buffer "^5.2.1"
     through "^2.3.8"
 
+uniqolor@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/uniqolor/-/uniqolor-1.1.0.tgz#7519f81133cd54a1f4a59c33c81dbe04a3ad155d"
+  integrity sha512-j2XyokF24fsj+L5u6fbu4rM3RQc6VWJuAngYM2k0ZdG3yiVxt0smLkps2GmQIYqK8VkELGdM9vFU/HfOkK/zoQ==
+
 unique-filename@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/unique-filename/-/unique-filename-3.0.0.tgz#48ba7a5a16849f5080d26c760c86cf5cf05770ea"
