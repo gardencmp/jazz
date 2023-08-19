@@ -1,16 +1,8 @@
-import { CoID, ContentType } from "./contentType.js";
-import { CoMap, MapOpPayload } from "./contentTypes/coMap.js";
-import { JsonObject, JsonValue } from "./jsonValue.js";
+import { CoID } from "./contentType.js";
+import { MapOpPayload } from "./contentTypes/coMap.js";
+import { JsonValue } from "./jsonValue.js";
 import {
-    Encrypted,
     KeyID,
-    KeySecret,
-    createdNowUnique,
-    newRandomKeySecret,
-    seal,
-    encryptKeySecret,
-    getAgentSealerID,
-    Sealed,
 } from "./crypto.js";
 import {
     CoValue,
@@ -18,16 +10,25 @@ import {
     TrustingTransaction,
     accountOrAgentIDfromSessionID,
 } from "./coValue.js";
-import { LocalNode } from "./node.js";
-import { RawCoID, SessionID, TransactionID, isAgentID } from "./ids.js";
-import { AccountIDOrAgentID, GeneralizedControlledAccount, Profile } from "./account.js";
+import { RawCoID, SessionID, TransactionID } from "./ids.js";
+import {
+    AccountIDOrAgentID,
+    Profile,
+} from "./account.js";
 
 export type PermissionsDef =
     | { type: "team"; initialAdmin: AccountIDOrAgentID }
     | { type: "ownedByTeam"; team: RawCoID }
     | { type: "unsafeAllowAll" };
 
-export type Role = "reader" | "writer" | "admin" | "revoked";
+export type Role =
+    | "reader"
+    | "writer"
+    | "admin"
+    | "revoked"
+    | "adminInvite"
+    | "writerInvite"
+    | "readerInvite";
 
 export function determineValidTransactions(
     coValue: CoValue
@@ -84,7 +85,7 @@ export function determineValidTransactions(
                 continue;
             }
 
-            if (change.op !== "insert") {
+            if (change.op !== "set") {
                 console.warn("Team transaction must set a role or readKey");
                 continue;
             }
@@ -97,7 +98,7 @@ export function determineValidTransactions(
 
                 validTransactions.push({ txID: { sessionID, txIndex }, tx });
                 continue;
-            } else if (change.key === 'profile') {
+            } else if (change.key === "profile") {
                 if (memberState[transactor] !== "admin") {
                     console.warn("Only admins can set profile");
                     continue;
@@ -105,8 +106,16 @@ export function determineValidTransactions(
 
                 validTransactions.push({ txID: { sessionID, txIndex }, tx });
                 continue;
-            } else if (isKeyForKeyField(change.key) || isKeyForAccountField(change.key)) {
-                if (memberState[transactor] !== "admin") {
+            } else if (
+                isKeyForKeyField(change.key) ||
+                isKeyForAccountField(change.key)
+            ) {
+                if (
+                    memberState[transactor] !== "admin" &&
+                    memberState[transactor] !== "adminInvite" &&
+                    memberState[transactor] !== "writerInvite" &&
+                    memberState[transactor] !== "readerInvite"
+                ) {
                     console.warn("Only admins can reveal keys");
                     continue;
                 }
@@ -124,7 +133,10 @@ export function determineValidTransactions(
                 change.value !== "admin" &&
                 change.value !== "writer" &&
                 change.value !== "reader" &&
-                change.value !== "revoked"
+                change.value !== "revoked" &&
+                change.value !== "adminInvite" &&
+                change.value !== "writerInvite" &&
+                change.value !== "readerInvite"
             ) {
                 console.warn("Team transaction must set a valid role");
                 continue;
@@ -133,24 +145,39 @@ export function determineValidTransactions(
             const isFirstSelfAppointment =
                 !memberState[transactor] &&
                 transactor === initialAdmin &&
-                change.op === "insert" &&
+                change.op === "set" &&
                 change.key === transactor &&
                 change.value === "admin";
 
             if (!isFirstSelfAppointment) {
-                if (memberState[transactor] !== "admin") {
+                if (memberState[transactor] === "admin") {
+                    if (
+                        memberState[affectedMember] === "admin" &&
+                        affectedMember !== transactor &&
+                        assignedRole !== "admin"
+                    ) {
+                        console.warn("Admins can only demote themselves.");
+                        continue;
+                    }
+                } else if (memberState[transactor] === "adminInvite") {
+                    if (change.value !== "admin") {
+                        console.warn("AdminInvites can only create admins.");
+                        continue;
+                    }
+                } else if (memberState[transactor] === "writerInvite") {
+                    if (change.value !== "writer") {
+                        console.warn("WriterInvites can only create writers.");
+                        continue;
+                    }
+                } else if (memberState[transactor] === "readerInvite") {
+                    if (change.value !== "reader") {
+                        console.warn("ReaderInvites can only create reader.");
+                        continue;
+                    }
+                } else {
                     console.warn(
-                        "Team transaction must be made by current admin"
+                        "Team transaction must be made by current admin or invite"
                     );
-                    continue;
-                }
-
-                if (
-                    memberState[affectedMember] === "admin" &&
-                    affectedMember !== transactor &&
-                    assignedRole !== "admin"
-                ) {
-                    console.warn("Admins can only demote themselves.");
                     continue;
                 }
             }
@@ -213,180 +240,17 @@ export function determineValidTransactions(
     }
 }
 
-export type TeamContent = {
-    profile: CoID<Profile> | null;
-    [key: AccountIDOrAgentID]: Role;
-    readKey: KeyID;
-    [revelationFor: `${KeyID}_for_${AccountIDOrAgentID}`]: Sealed<KeySecret>;
-    [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
-        KeySecret,
-        { encryptedID: KeyID; encryptingID: KeyID }
-    >;
-};
-
-export function expectTeamContent(
-    content: ContentType
-): CoMap<TeamContent, JsonObject | null> {
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
-
-    return content as CoMap<TeamContent, JsonObject | null>;
-}
-
-export class Team {
-    teamMap: CoMap<TeamContent, JsonObject | null>;
-    node: LocalNode;
-
-    constructor(teamMap: CoMap<TeamContent, JsonObject | null>, node: LocalNode) {
-        this.teamMap = teamMap;
-        this.node = node;
-    }
-
-    get id(): CoID<CoMap<TeamContent, JsonObject | null>> {
-        return this.teamMap.id;
-    }
-
-    addMember(accountID: AccountIDOrAgentID, role: Role) {
-        this.teamMap = this.teamMap.edit((map) => {
-            const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
-
-            if (!currentReadKey.secret) {
-                throw new Error("Can't add member without read key secret");
-            }
-
-            const agent = this.node.resolveAccountAgent(
-                accountID,
-                "Expected to know agent to add them to team"
-            );
-
-            map.set(accountID, role, "trusting");
-
-            if (map.get(accountID) !== role) {
-                throw new Error("Failed to set role");
-            }
-
-            map.set(
-                `${currentReadKey.id}_for_${accountID}`,
-                seal(
-                    currentReadKey.secret,
-                    this.teamMap.coValue.node.account.currentSealerSecret(),
-                    getAgentSealerID(agent),
-                    {
-                        in: this.teamMap.coValue.id,
-                        tx: this.teamMap.coValue.nextTransactionID(),
-                    }
-                ),
-                "trusting"
-            );
-        });
-    }
-
-    rotateReadKey() {
-        const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
-            if (key.startsWith("co_") || isAgentID(key)) {
-                const role = this.teamMap.get(key);
-                return (
-                    role === "admin" || role === "writer" || role === "reader"
-                );
-            } else {
-                return false;
-            }
-        }) as AccountIDOrAgentID[];
-
-        const maybeCurrentReadKey = this.teamMap.coValue.getCurrentReadKey();
-
-        if (!maybeCurrentReadKey.secret) {
-            throw new Error(
-                "Can't rotate read key secret we don't have access to"
-            );
-        }
-
-        const currentReadKey = {
-            id: maybeCurrentReadKey.id,
-            secret: maybeCurrentReadKey.secret,
-        };
-
-        const newReadKey = newRandomKeySecret();
-
-        this.teamMap = this.teamMap.edit((map) => {
-            for (const readerID of currentlyPermittedReaders) {
-                const reader = this.node.resolveAccountAgent(
-                    readerID,
-                    "Expected to know currently permitted reader"
-                );
-
-                map.set(
-                    `${newReadKey.id}_for_${readerID}`,
-                    seal(
-                        newReadKey.secret,
-                        this.teamMap.coValue.node.account.currentSealerSecret(),
-                        getAgentSealerID(reader),
-                        {
-                            in: this.teamMap.coValue.id,
-                            tx: this.teamMap.coValue.nextTransactionID(),
-                        }
-                    ),
-                    "trusting"
-                );
-            }
-
-            map.set(
-                `${currentReadKey.id}_for_${newReadKey.id}`,
-                encryptKeySecret({
-                    encrypting: newReadKey,
-                    toEncrypt: currentReadKey,
-                }).encrypted,
-                "trusting"
-            );
-
-            map.set("readKey", newReadKey.id, "trusting");
-        });
-    }
-
-    removeMember(accountID: AccountIDOrAgentID) {
-        this.teamMap = this.teamMap.edit((map) => {
-            map.set(accountID, "revoked", "trusting");
-        });
-
-        this.rotateReadKey();
-    }
-
-    createMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null = null>(
-        meta?: Meta
-    ): CoMap<M, Meta> {
-        return this.node
-            .createCoValue({
-                type: "comap",
-                ruleset: {
-                    type: "ownedByTeam",
-                    team: this.teamMap.id,
-                },
-                meta: meta || null,
-                ...createdNowUnique(),
-            })
-            .getCurrentContent() as CoMap<M, Meta>;
-    }
-
-    testWithDifferentAccount(
-        account: GeneralizedControlledAccount,
-        sessionId: SessionID
-    ): Team {
-        return new Team(
-            expectTeamContent(
-                this.teamMap.coValue
-                    .testWithDifferentAccount(account, sessionId)
-                    .getCurrentContent()
-            ),
-            this.node
-        );
-    }
-}
-
-export function isKeyForKeyField(field: string): field is `${KeyID}_for_${KeyID}` {
+export function isKeyForKeyField(
+    field: string
+): field is `${KeyID}_for_${KeyID}` {
     return field.startsWith("key_") && field.includes("_for_key");
 }
 
-export function isKeyForAccountField(field: string): field is `${KeyID}_for_${AccountIDOrAgentID}` {
-    return field.startsWith("key_") && (field.includes("_for_sealer") || field.includes("_for_co"));
+export function isKeyForAccountField(
+    field: string
+): field is `${KeyID}_for_${AccountIDOrAgentID}` {
+    return (
+        field.startsWith("key_") &&
+        (field.includes("_for_sealer") || field.includes("_for_co"))
+    );
 }

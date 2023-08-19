@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-todo",
   "private": true,
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,10 +12,11 @@
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "jazz-react": "^0.0.14",
-    "jazz-react-auth-local": "^0.0.11",
+    "jazz-react": "^0.0.15",
+    "jazz-react-auth-local": "^0.0.12",
     "lucide-react": "^0.265.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

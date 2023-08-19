@@ -1,13 +1,15 @@
 import { newRandomSessionID } from "./coValue.js";
-import { LocalNode } from "./node.js";
 import { expectMap } from "./contentType.js";
-import { expectTeamContent } from "./permissions.js";
+import { Team, expectTeamContent } from "./team.js";
 import {
     createdNowUnique,
-    getSealerID,
     newRandomKeySecret,
     seal,
     encryptKeySecret,
+    newRandomAgentSecret,
+    getAgentID,
+    getAgentSealerSecret,
+    getAgentSealerID,
 } from "./crypto.js";
 import {
     newTeam,
@@ -15,6 +17,7 @@ import {
     teamWithTwoAdmins,
     teamWithTwoAdminsHighLevel,
 } from "./testUtils.js";
+import { AnonymousControlledAccount } from "./index.js";
 
 test("Initial admin can add another admin to a team", () => {
     teamWithTwoAdmins();
@@ -1264,4 +1267,501 @@ test("Can create two owned objects in the same team and they will have different
     });
 
     expect(childObject1.id).not.toEqual(childObject2.id);
+});
+
+test("Admins can create an adminInvite, which can add an admin", () => {
+    const { node, team, admin } = newTeam();
+
+    const inviteSecret = newRandomAgentSecret();
+    const inviteID = getAgentID(inviteSecret);
+
+    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+
+        editable.set(inviteID, "adminInvite", "trusting");
+
+        expect(editable.get(inviteID)).toEqual("adminInvite");
+
+        const revelationForInvite = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            getAgentSealerID(inviteID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID}_for_${inviteID}`,
+            revelationForInvite,
+            "trusting"
+        );
+    });
+
+    const teamAsInvite = team.testWithDifferentAccount(
+        new AnonymousControlledAccount(inviteSecret),
+        newRandomSessionID(inviteID)
+    );
+
+    const invitedAdminSecret = newRandomAgentSecret();
+    const invitedAdminID = getAgentID(invitedAdminSecret);
+
+    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+        editable.set(invitedAdminID, "admin", "trusting");
+
+        expect(editable.get(invitedAdminID)).toEqual("admin");
+
+        const readKey = teamAsInvite.getCurrentReadKey();
+
+        expect(readKey.secret).toBeDefined();
+
+        const revelation = seal(
+            readKey.secret!,
+            getAgentSealerSecret(invitedAdminSecret),
+            getAgentSealerID(invitedAdminID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKey.id}_for_${invitedAdminID}`,
+            revelation,
+            "trusting"
+        );
+
+        expect(editable.get(`${readKey.id}_for_${invitedAdminID}`)).toEqual(
+            revelation
+        );
+    });
+});
+
+test("Admins can create an adminInvite, which can add an admin (high-level)", async () => {
+    const { node, team, admin } = newTeamHighLevel();
+
+    const inviteSecret = team.createInvite("admin");
+
+    const invitedAdminSecret = newRandomAgentSecret();
+    const invitedAdminID = getAgentID(invitedAdminSecret);
+
+    const nodeAsInvitedAdmin = node.testWithDifferentAccount(
+        new AnonymousControlledAccount(invitedAdminSecret),
+        newRandomSessionID(invitedAdminID)
+    );
+
+    await nodeAsInvitedAdmin.acceptInvite(team.id, inviteSecret);
+
+    const thirdAdmin = newRandomAgentSecret();
+    const thirdAdminID = getAgentID(thirdAdmin);
+
+    const teamAsInvitedAdmin = new Team(
+        await nodeAsInvitedAdmin.load(team.id),
+        nodeAsInvitedAdmin
+    );
+
+    expect(teamAsInvitedAdmin.teamMap.get(invitedAdminID)).toEqual("admin");
+    expect(
+        teamAsInvitedAdmin.teamMap.coValue.getCurrentReadKey().secret
+    ).toBeDefined();
+
+    teamAsInvitedAdmin.addMember(thirdAdminID, "admin");
+
+    expect(teamAsInvitedAdmin.teamMap.get(thirdAdminID)).toEqual("admin");
+});
+
+test("Admins can create a writerInvite, which can add a writer", () => {
+    const { node, team, admin } = newTeam();
+
+    const inviteSecret = newRandomAgentSecret();
+    const inviteID = getAgentID(inviteSecret);
+
+    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+
+        editable.set(inviteID, "writerInvite", "trusting");
+
+        expect(editable.get(inviteID)).toEqual("writerInvite");
+
+        const revelationForInvite = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            getAgentSealerID(inviteID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID}_for_${inviteID}`,
+            revelationForInvite,
+            "trusting"
+        );
+    });
+
+    const teamAsInvite = team.testWithDifferentAccount(
+        new AnonymousControlledAccount(inviteSecret),
+        newRandomSessionID(inviteID)
+    );
+
+    const invitedWriterSecret = newRandomAgentSecret();
+    const invitedWriterID = getAgentID(invitedWriterSecret);
+
+    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+        editable.set(invitedWriterID, "writer", "trusting");
+
+        expect(editable.get(invitedWriterID)).toEqual("writer");
+
+        const readKey = teamAsInvite.getCurrentReadKey();
+
+        expect(readKey.secret).toBeDefined();
+
+        const revelation = seal(
+            readKey.secret!,
+            getAgentSealerSecret(invitedWriterSecret),
+            getAgentSealerID(invitedWriterID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKey.id}_for_${invitedWriterID}`,
+            revelation,
+            "trusting"
+        );
+
+        expect(editable.get(`${readKey.id}_for_${invitedWriterID}`)).toEqual(
+            revelation
+        );
+    });
+});
+
+test("Admins can create a writerInvite, which can add a writer (high-level)", async () => {
+    const { node, team, admin } = newTeamHighLevel();
+
+    const inviteSecret = team.createInvite("writer");
+
+    const invitedWriterSecret = newRandomAgentSecret();
+    const invitedWriterID = getAgentID(invitedWriterSecret);
+
+    const nodeAsInvitedWriter = node.testWithDifferentAccount(
+        new AnonymousControlledAccount(invitedWriterSecret),
+        newRandomSessionID(invitedWriterID)
+    );
+
+    await nodeAsInvitedWriter.acceptInvite(team.id, inviteSecret);
+
+    const teamAsInvitedWriter = new Team(
+        await nodeAsInvitedWriter.load(team.id),
+        nodeAsInvitedWriter
+    );
+
+    expect(teamAsInvitedWriter.teamMap.get(invitedWriterID)).toEqual("writer");
+    expect(
+        teamAsInvitedWriter.teamMap.coValue.getCurrentReadKey().secret
+    ).toBeDefined();
+});
+
+
+test("Admins can create a readerInvite, which can add a reader", () => {
+    const { node, team, admin } = newTeam();
+
+    const inviteSecret = newRandomAgentSecret();
+    const inviteID = getAgentID(inviteSecret);
+
+    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+
+        editable.set(inviteID, "readerInvite", "trusting");
+
+        expect(editable.get(inviteID)).toEqual("readerInvite");
+
+        const revelationForInvite = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            getAgentSealerID(inviteID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID}_for_${inviteID}`,
+            revelationForInvite,
+            "trusting"
+        );
+    });
+
+    const teamAsInvite = team.testWithDifferentAccount(
+        new AnonymousControlledAccount(inviteSecret),
+        newRandomSessionID(inviteID)
+    );
+
+    const invitedReaderSecret = newRandomAgentSecret();
+    const invitedReaderID = getAgentID(invitedReaderSecret);
+
+    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+        editable.set(invitedReaderID, "reader", "trusting");
+
+        expect(editable.get(invitedReaderID)).toEqual("reader");
+
+        const readKey = teamAsInvite.getCurrentReadKey();
+
+        expect(readKey.secret).toBeDefined();
+
+        const revelation = seal(
+            readKey.secret!,
+            getAgentSealerSecret(invitedReaderSecret),
+            getAgentSealerID(invitedReaderID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKey.id}_for_${invitedReaderID}`,
+            revelation,
+            "trusting"
+        );
+
+        expect(editable.get(`${readKey.id}_for_${invitedReaderID}`)).toEqual(
+            revelation
+        );
+    });
+});
+
+test("Admins can create a readerInvite, which can add a reader (high-level)", async () => {
+    const { node, team, admin } = newTeamHighLevel();
+
+    const inviteSecret = team.createInvite("reader");
+
+    const invitedReaderSecret = newRandomAgentSecret();
+    const invitedReaderID = getAgentID(invitedReaderSecret);
+
+    const nodeAsInvitedReader = node.testWithDifferentAccount(
+        new AnonymousControlledAccount(invitedReaderSecret),
+        newRandomSessionID(invitedReaderID)
+    );
+
+    await nodeAsInvitedReader.acceptInvite(team.id, inviteSecret);
+
+    const teamAsInvitedReader = new Team(
+        await nodeAsInvitedReader.load(team.id),
+        nodeAsInvitedReader
+    );
+
+    expect(teamAsInvitedReader.teamMap.get(invitedReaderID)).toEqual("reader");
+    expect(
+        teamAsInvitedReader.teamMap.coValue.getCurrentReadKey().secret
+    ).toBeDefined();
+});
+
+test("WriterInvites can not invite admins", () => {
+    const { node, team, admin } = newTeam();
+
+    const inviteSecret = newRandomAgentSecret();
+    const inviteID = getAgentID(inviteSecret);
+
+    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+
+        editable.set(inviteID, "writerInvite", "trusting");
+
+        expect(editable.get(inviteID)).toEqual("writerInvite");
+
+        const revelationForInvite = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            getAgentSealerID(inviteID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID}_for_${inviteID}`,
+            revelationForInvite,
+            "trusting"
+        );
+    });
+
+    const teamAsInvite = team.testWithDifferentAccount(
+        new AnonymousControlledAccount(inviteSecret),
+        newRandomSessionID(inviteID)
+    );
+
+    const invitedAdminSecret = newRandomAgentSecret();
+    const invitedAdminID = getAgentID(invitedAdminSecret);
+
+    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+        editable.set(invitedAdminID, "admin", "trusting");
+        expect(editable.get(invitedAdminID)).toBeUndefined();
+    });
+});
+
+test("ReaderInvites can not invite admins", () => {
+    const { node, team, admin } = newTeam();
+
+    const inviteSecret = newRandomAgentSecret();
+    const inviteID = getAgentID(inviteSecret);
+
+    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+
+        editable.set(inviteID, "readerInvite", "trusting");
+
+        expect(editable.get(inviteID)).toEqual("readerInvite");
+
+        const revelationForInvite = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            getAgentSealerID(inviteID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID}_for_${inviteID}`,
+            revelationForInvite,
+            "trusting"
+        );
+    });
+
+    const teamAsInvite = team.testWithDifferentAccount(
+        new AnonymousControlledAccount(inviteSecret),
+        newRandomSessionID(inviteID)
+    );
+
+    const invitedAdminSecret = newRandomAgentSecret();
+    const invitedAdminID = getAgentID(invitedAdminSecret);
+
+    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+        editable.set(invitedAdminID, "admin", "trusting");
+        expect(editable.get(invitedAdminID)).toBeUndefined();
+    });
+});
+
+test("ReaderInvites can not invite writers", () => {
+    const { node, team, admin } = newTeam();
+
+    const inviteSecret = newRandomAgentSecret();
+    const inviteID = getAgentID(inviteSecret);
+
+    expectTeamContent(team.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        const revelation = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            admin.currentSealerID(),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+
+        editable.set(inviteID, "readerInvite", "trusting");
+
+        expect(editable.get(inviteID)).toEqual("readerInvite");
+
+        const revelationForInvite = seal(
+            readKey,
+            admin.currentSealerSecret(),
+            getAgentSealerID(inviteID),
+            {
+                in: team.id,
+                tx: team.nextTransactionID(),
+            }
+        );
+
+        editable.set(
+            `${readKeyID}_for_${inviteID}`,
+            revelationForInvite,
+            "trusting"
+        );
+    });
+
+    const teamAsInvite = team.testWithDifferentAccount(
+        new AnonymousControlledAccount(inviteSecret),
+        newRandomSessionID(inviteID)
+    );
+
+    const invitedWriterSecret = newRandomAgentSecret();
+    const invitedWriterID = getAgentID(invitedWriterSecret);
+
+    expectTeamContent(teamAsInvite.getCurrentContent()).edit((editable) => {
+        editable.set(invitedWriterID, "writer", "trusting");
+        expect(editable.get(invitedWriterID)).toBeUndefined();
+    });
 });

@@ -3,7 +3,7 @@ import { LocalNode } from "./node.js";
 import { Peer, PeerID, SyncMessage } from "./sync.js";
 import { expectMap } from "./contentType.js";
 import { MapOpPayload } from "./contentTypes/coMap.js";
-import { Team } from "./permissions.js";
+import { Team } from "./team.js";
 import {
     ReadableStream,
     WritableStream,
@@ -86,7 +86,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                             .transactions[0]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
@@ -164,7 +164,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                             .transactions[1]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "goodbye",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
@@ -253,7 +253,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                             .transactions[0]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
@@ -285,7 +285,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                             .transactions[1]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "goodbye",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
@@ -364,7 +364,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                             .transactions[0]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
@@ -467,7 +467,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                             .transactions[1]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "goodbye",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
@@ -570,7 +570,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                             .transactions[0]!.madeAt,
                         changes: [
                             {
-                                op: "insert",
+                                op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
