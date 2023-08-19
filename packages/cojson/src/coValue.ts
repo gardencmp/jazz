@@ -92,6 +92,8 @@ export type DecryptedTransaction = {
     madeAt: number;
 };
 
+const readKeyCache = new WeakMap<CoValue, { [id: KeyID]: KeySecret }>();
+
 export class CoValue {
     id: RawCoID;
     node: LocalNode;
@@ -100,7 +102,11 @@ export class CoValue {
     _cachedContent?: ContentType;
     listeners: Set<(content?: ContentType) => void> = new Set();
 
-    constructor(header: CoValueHeader, node: LocalNode, internalInitSessions: { [key: SessionID]: SessionLog } = {}) {
+    constructor(
+        header: CoValueHeader,
+        node: LocalNode,
+        internalInitSessions: { [key: SessionID]: SessionLog } = {}
+    ) {
         this.id = idforHeader(header);
         this.header = header;
         this._sessions = internalInitSessions;
@@ -412,6 +418,9 @@ export class CoValue {
     }
 
     getReadKey(keyID: KeyID): KeySecret | undefined {
+        if (readKeyCache.get(this)?.[keyID]) {
+            return readKeyCache.get(this)?.[keyID];
+        }
         if (this.header.ruleset.type === "group") {
             const content = expectGroupContent(this.getCurrentContent());
 
@@ -440,7 +449,16 @@ export class CoValue {
                     }
                 );
 
-                if (secret) return secret as KeySecret;
+                if (secret) {
+                    let cache = readKeyCache.get(this);
+                    if (!cache) {
+                        cache = {};
+                        readKeyCache.set(this, cache);
+                    }
+                    cache[keyID] = secret;
+
+                    return secret as KeySecret;
+                }
             }
 
             // Try to find indirect revelation through previousKeys
@@ -467,7 +485,14 @@ export class CoValue {
                     );
 
                     if (secret) {
-                        return secret;
+                        let cache = readKeyCache.get(this);
+                        if (!cache) {
+                            cache = {};
+                            readKeyCache.set(this, cache);
+                        }
+                        cache[keyID] = secret;
+
+                        return secret as KeySecret;
                     } else {
                         console.error(
                             `Encrypting ${encryptingKeyID} key didn't decrypt ${keyID}`
