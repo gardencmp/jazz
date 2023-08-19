@@ -4,7 +4,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@types/ws": "^8.5.5",
@@ -16,7 +16,7 @@
         "typescript": "5.0.2"
     },
     "dependencies": {
-        "cojson": "^0.1.1",
+        "cojson": "^0.1.2",
         "ws": "^8.13.0"
     },
     "scripts": {

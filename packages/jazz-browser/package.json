@@ -1,12 +1,12 @@
 {
   "name": "jazz-browser",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "^0.1.1",
-    "jazz-storage-indexeddb": "^0.1.1",
+    "cojson": "^0.1.2",
+    "jazz-storage-indexeddb": "^0.1.2",
     "typescript": "^5.1.6"
   },
   "scripts": {
