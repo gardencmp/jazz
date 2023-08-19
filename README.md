@@ -1,35 +1,103 @@
 # Jazz - instant sync
 
+Homepage: [jazz.tools](https://jazz.tools) &mdash; [Discord](https://discord.gg/utDMjHYg42)
+
 Jazz is an open-source toolkit for *permissioned telepathic data.*
 
-- Ship faster & simplify your frontend, backend & devops
-- Get cross-device sync, real-time multiplayer & offline support for free
+- Ship faster & simplify your frontend and backend
+- Get cross-device sync, real-time collaboration & offline support for free
+
+[Jazz Global Mesh](https://jazz.tools/mesh) is serverless sync & storage for Jazz apps. (currently free!)
+
+
 
 ## What is Permissioned Telepathic Data?
 
 **Telepathic** means:
 
-- Read and write data from anywhere in your app, as if it was local
-- Always have that data synced, instantly
-  - to other devices of the same user, or to other users, collaborating
-  - to your backend, workers, etc. *(coming soon)*
+- **Read and write data as if it was local,** from anywhere in your app.
+- **Always have that data synced, instantly.** Across devices of the same user &mdash; or to other users (coming soon: to your backend, workers, etc.)
 
 **Permissioned** means:
 
-- Fine-grained, role-based permissions are *baked into* your data
-- They are enforced everywhere, locally (using cryptography instead of by a backend)
-- Roles can be changed dynamically, supporting changing teams, invite links and more
+- **Fine-grained, role-based permissions are *baked into* your data.**
+- **Permissions are enforced everywhere, locally.** (using cryptography instead of through an API)
+- Roles can be changed dynamically, supporting changing teams, invite links and more.
 
-Note: because it is quite a mouthful, we will refer to just *telepathic data* below, but we always mean *permissioned telepathic data*.
+## How to build an app with Jazz?
 
-### Why should you care?
+### Building a new app, completely with Jazz
 
-If you build your app with telepathic data you only have to do three things:
+It's still a bit early, but these are the rough steps:
 
-1. Define your data model
-2. Define your permission model
-3. Connect a user interface to telepathic data implementing 1. and 2.
+1. Define your data model with [CoJSON Values](#cojson).
+2. Implement permission logic using [CoJSON Groups](#group).
+3. Hook up a user interface with [jazz-react](#jazz-react).
 
-Things you **don't have to worry about anymore** are: building an API, handling local and backend state, handling user sessions, local persistence, offline support, multiplayer, most editing conflicts, cloud storage & backend persistence (if you use Jazz Global Mesh)
+The best example is currently the [Todo List app](#example-app-todo-list).
 
-##
+### Gradually adding Jazz to an existing app
+
+Coming soon: Jazz will support gradual adoption by integrating with your existing UI, auth and database.
+
+## Example App: Todo List
+
+The best example of Jazz is currently the Todo List app.
+
+- Live version: https://example-todo.jazz.tools
+- Source code: [`./examples/todo`](./examples/todo). See the README there for a walk-through and running instructions.
+
+# API Reference
+
+Note: Since it's early days, this is the only source of documentation so far.
+
+If you want to build something with Jazz, [join the Jazz Discord](https://discord.gg/utDMjHYg42) for encouragement and help!
+
+## Overview: Main Packages
+
+**`cojson`:** A library implementing abstractions and protocols for "Collaborative JSON". This will soon be standardized and forms the basis of permissioned telepathic data.
+
+**`jazz-react`:** Provides you with everything you need to build react apps around CoJSON, including reactive hooks for telepathic data, local IndexedDB persistence, support for different auth providers and helpers for simple invite links for CoJSON groups.
+
+### Supporting packages
+<small>
+
+**`cojson-simple-sync`:**
+A generic CoJSON sync server you can run locally if you don't want to use Jazz Global Mesh (the default sync backend, at `wss://sync.jazz.tools`)
+
+**`jazz-browser`:** framework-agnostic primitives that allow you to use CoJSON in the browser. Used to implement `jazz-react`, will be used to implement bindings for other frameworks in the future.
+
+**`jazz-react-auth-local`** (and `jazz-browser-auth-local`): A simple auth provider that stores cryptographic keys on user devices using WebAuthentication/Passkeys. Lets you build Jazz apps completely without a backend, with end-to-end encryption by default.
+
+**`jazz-storage-indexeddb`**: Provides local, offline-capable persistence. Included and enabled in `jazz-react` by default.
+</small>
+
+## `CoJSON`
+
+CoJSON is the core implementation of permissioned telepathic data. It provides abstractions for Collaborative JSON values ("CoValues"), groups for permission management and a protocol for syncing between nodes.
+
+### `LocalNode`
+
+A `LocalNode` represents a local view of a set of loaded CoValues
+
+### `Group`
+
+### `CoValue` & `ContentType`s
+
+#### `CoMap`
+
+#### `CoList` (coming soon)
+
+#### `CoStram` (coming soon)
+
+#### `Static` (coming soon)
+
+## `jazz-react`
+
+### `<WithJazz>`
+
+### `useJazz()`
+
+### `useTelepathicData(coID)`
+
+### `useProfile(accountID)`
