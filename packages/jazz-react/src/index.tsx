@@ -10,6 +10,12 @@ import {
 import React, { useEffect, useState } from "react";
 import { AuthProvider, createBrowserNode } from "jazz-browser";
 
+export {
+    createInviteLink,
+    parseInviteLink,
+    consumeInviteLinkFromWindowLocation,
+} from "jazz-browser";
+
 type JazzContext = {
     localNode: LocalNode;
     logOut: () => void;

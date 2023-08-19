@@ -2,11 +2,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export function SubmittableInput({
-    onSubmit, label, placeholder,
+    onSubmit,
+    label,
+    placeholder,
+    disabled,
 }: {
     onSubmit: (text: string) => void;
     label: string;
     placeholder: string;
+    disabled?: boolean;
 }) {
     return (
         <form
@@ -24,9 +28,11 @@ export function SubmittableInput({
                 className="-ml-3 -my-2 flex-grow flex-3 text-base"
                 name="text"
                 placeholder={placeholder}
-                autoComplete="off" />
-            <Button asChild type="submit" className="flex-shrink flex-1">
-                <Input type="submit" value={label} />
+                autoComplete="off"
+                disabled={disabled}
+            />
+            <Button asChild type="submit" className="flex-shrink flex-1 cursor-pointer">
+                <Input type="submit" value={label} disabled={disabled} />
             </Button>
         </form>
     );

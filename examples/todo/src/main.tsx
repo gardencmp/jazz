@@ -6,6 +6,7 @@ import { WithJazz } from "jazz-react";
 import { LocalAuth } from "jazz-react-auth-local";
 import { PrettyAuthComponent } from "./components/prettyAuth.tsx";
 import { ThemeProvider } from "./components/themeProvider.tsx";
+import { Toaster } from "./components/ui/toaster.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 }
             >
                 <App />
+                <Toaster />
             </WithJazz>
         </ThemeProvider>
     </React.StrictMode>

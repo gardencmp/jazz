@@ -10,8 +10,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { CoMap, CoID, AccountID } from "cojson";
-import { useJazz, useProfile, useTelepathicState } from "jazz-react";
+import {
+    consumeInviteLinkFromWindowLocation,
+    useJazz,
+    useProfile,
+    useTelepathicState,
+} from "jazz-react";
 import { SubmittableInput } from "./components/SubmittableInput";
+import { createInviteLink } from "jazz-react";
+import { useToast } from "./components/ui/use-toast";
+import { Skeleton } from "./components/ui/skeleton";
 
 type TaskContent = { done: boolean; text: string };
 type Task = CoMap<TaskContent>;
@@ -19,38 +27,49 @@ type Task = CoMap<TaskContent>;
 type TodoListContent = {
     title: string;
     // other keys form a set of task IDs
-    [taskId: CoID<Task>]: true
+    [taskId: CoID<Task>]: true;
 };
 type TodoList = CoMap<TodoListContent>;
 
 function App() {
-    const [listId, setListId] = useState<CoID<TodoList>>(
-        window.location.hash.slice(1) as CoID<TodoList>
-    );
+    const [listId, setListId] = useState<CoID<TodoList>>();
 
     const { localNode, logOut } = useJazz();
 
-    const createList = useCallback((title: string) => {
-        const listTeam = localNode.createTeam();
-        const list = listTeam.createMap<TodoListContent>();
+    const createList = useCallback(
+        (title: string) => {
+            const listTeam = localNode.createTeam();
+            const list = listTeam.createMap<TodoListContent>();
 
-        list.edit((list) => {
-            list.set("title", title);
-        });
+            list.edit((list) => {
+                list.set("title", title);
+            });
 
-        window.location.hash = list.id;
-    }, []);
+            window.location.hash = list.id;
+        },
+        [localNode]
+    );
 
     useEffect(() => {
-        const listener = () => {
+        const listener = async () => {
+            const acceptedInvitation =
+                await consumeInviteLinkFromWindowLocation(localNode);
+
+            if (acceptedInvitation) {
+                setListId(acceptedInvitation.valueID as CoID<TodoList>);
+                window.location.hash = acceptedInvitation.valueID;
+                return;
+            }
+
             setListId(window.location.hash.slice(1) as CoID<TodoList>);
         };
         window.addEventListener("hashchange", listener);
+        listener();
 
         return () => {
             window.removeEventListener("hashchange", listener);
         };
-    }, []);
+    }, [localNode]);
 
     return (
         <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 md:pt-[30vh] pb-10 px-5">
@@ -68,6 +87,7 @@ function App() {
                     window.location.hash = "";
                     logOut();
                 }}
+                variant="outline"
             >
                 Log Out
             </Button>
@@ -96,11 +116,41 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
         console.log("Updated list", listAfter.toJSON());
     };
 
+    const { toast } = useToast();
+
     return (
         <div className="max-w-full w-4xl">
-            <h1>
-                {list?.get("title")} ({list?.id})
-            </h1>
+            <div className="flex justify-between items-center gap-4 mb-4">
+                <h1>
+                    {list ? (
+                        <>
+                            {list.get("title")}{" "}
+                            <span className="text-sm">({list.id})</span>
+                        </>
+                    ) : (
+                        <Skeleton className="w-[200px] h-[1em] rounded-full" />
+                    )}
+                </h1>
+                <Button
+                    size="sm"
+                    className="py-0"
+                    disabled={!list}
+                    variant="outline"
+                    onClick={() => {
+                        if (list) {
+                            const inviteLink = createInviteLink(list, "writer");
+                            navigator.clipboard.writeText(inviteLink).then(() =>
+                                toast({
+                                    description:
+                                        "Copied invite link to clipboard!",
+                                })
+                            );
+                        }
+                    }}
+                >
+                    Invite
+                </Button>
+            </div>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -127,6 +177,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
                                 onSubmit={(taskText) => createTask(taskText)}
                                 label="Add"
                                 placeholder="New task"
+                                disabled={!list}
                             />
                         </TableCell>
                     </TableRow>

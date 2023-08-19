@@ -1,10 +1,14 @@
+import { InviteSecret } from "cojson";
 import {
     LocalNode,
     cojsonInternals,
     CojsonInternalTypes,
     SessionID,
     SyncMessage,
-    Peer
+    Peer,
+    ContentType,
+    Team,
+    CoID,
 } from "cojson";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
 import { IDBStorage } from "jazz-storage-indexeddb";
@@ -74,7 +78,9 @@ export interface AuthProvider {
     ): Promise<LocalNode>;
 }
 
-export type SessionProvider = (accountID: CojsonInternalTypes.AccountIDOrAgentID) => Promise<SessionID>;
+export type SessionProvider = (
+    accountID: CojsonInternalTypes.AccountIDOrAgentID
+) => Promise<SessionID>;
 
 export type SessionHandle = {
     session: Promise<SessionID>;
@@ -227,4 +233,82 @@ function websocketWritableStream<T>(ws: WebSocket) {
             ws.close(code, reasonString);
         });
     }
+}
+
+export function createInviteLink(
+    value: ContentType,
+    role: "reader" | "writer" | "admin",
+    // default to same address as window.location, but without hash
+    {
+        baseURL = window.location.href.replace(/#.*$/, ""),
+    }: { baseURL?: string } = {}
+): string {
+    const coValue = value.coValue;
+    const node = coValue.node;
+    let currentCoValue = coValue;
+
+    while (currentCoValue.header.ruleset.type === "ownedByTeam") {
+        currentCoValue = node.expectCoValueLoaded(
+            currentCoValue.header.ruleset.team
+        );
+    }
+
+    if (currentCoValue.header.ruleset.type !== "team") {
+        throw new Error("Can't create invite link for object without team");
+    }
+
+    const team = new Team(
+        cojsonInternals.expectTeamContent(currentCoValue.getCurrentContent()),
+        node
+    );
+
+    const inviteSecret = team.createInvite(role);
+
+    return `${baseURL}#invitedTo=${value.id}&inviteSecret=${inviteSecret}`;
+}
+
+export function parseInviteLink(inviteURL: string):
+    | {
+          valueID: CoID<ContentType>;
+          inviteSecret: InviteSecret;
+      }
+    | undefined {
+    const url = new URL(inviteURL);
+    const valueID = url.hash
+        .split("&")[0]
+        ?.replace(/^#invitedTo=/, "") as CoID<ContentType>;
+    const inviteSecret = url.hash
+        .split("&")[1]
+        ?.replace(/^inviteSecret=/, "") as InviteSecret;
+    if (!valueID || !inviteSecret) {
+        return undefined;
+    }
+    return { valueID, inviteSecret };
+}
+
+export function consumeInviteLinkFromWindowLocation(node: LocalNode): Promise<
+    | {
+          valueID: string;
+          inviteSecret: string;
+      }
+    | undefined
+> {
+    return new Promise((resolve, reject) => {
+        const result = parseInviteLink(window.location.href);
+
+        if (result) {
+            node.acceptInvite(result.valueID, result.inviteSecret)
+                .then(() => {
+                    resolve(result);
+                    window.history.replaceState(
+                        {},
+                        "",
+                        window.location.href.replace(/#.*$/, "")
+                    );
+                })
+                .catch(reject);
+        } else {
+            resolve(undefined);
+        }
+    });
 }
