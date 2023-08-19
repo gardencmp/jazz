@@ -19,14 +19,14 @@ test("Can create a node while creating a new account with profile", async () => 
     );
 });
 
-test("A node with an account can create teams and and objects within them", async () => {
+test("A node with an account can create groups and and objects within them", async () => {
     const { node, accountID } =
         LocalNode.withNewlyCreatedAccount("Hermes Puggington");
 
-    const team = await node.createTeam();
-    expect(team).not.toBeNull();
+    const group = await node.createGroup();
+    expect(group).not.toBeNull();
 
-    let map = team.createMap();
+    let map = group.createMap();
     map = map.edit((edit) => {
         edit.set("foo", "bar", "private");
         expect(edit.get("foo")).toEqual("bar");
@@ -41,10 +41,10 @@ test("Can create account with one node, and then load it on another", async () =
     const { node, accountID, accountSecret } =
         LocalNode.withNewlyCreatedAccount("Hermes Puggington");
 
-    const team = await node.createTeam();
-    expect(team).not.toBeNull();
+    const group = await node.createGroup();
+    expect(group).not.toBeNull();
 
-    let map = team.createMap();
+    let map = group.createMap();
     map = map.edit((edit) => {
         edit.set("foo", "bar", "private");
         expect(edit.get("foo")).toEqual("bar");

@@ -27,7 +27,7 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Team, expectTeamContent } from "./team.js";
+import { Group, expectGroupContent } from "./group.js";
 import { LocalNode } from "./node.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { RawCoID, SessionID, TransactionID } from "./ids.js";
@@ -106,10 +106,10 @@ export class CoValue {
         this._sessions = internalInitSessions;
         this.node = node;
 
-        if (header.ruleset.type == "ownedByTeam") {
+        if (header.ruleset.type == "ownedByGroup") {
             this.node
-                .expectCoValueLoaded(header.ruleset.team)
-                .subscribe((_teamUpdate) => {
+                .expectCoValueLoaded(header.ruleset.group)
+                .subscribe((_groupUpdate) => {
                     this._cachedContent = undefined;
                     const newContent = this.getCurrentContent();
                     for (const listener of this.listeners) {
@@ -385,8 +385,8 @@ export class CoValue {
     }
 
     getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {
-        if (this.header.ruleset.type === "team") {
-            const content = expectTeamContent(this.getCurrentContent());
+        if (this.header.ruleset.type === "group") {
+            const content = expectGroupContent(this.getCurrentContent());
 
             const currentKeyId = content.get("readKey");
 
@@ -400,20 +400,20 @@ export class CoValue {
                 secret: secret,
                 id: currentKeyId,
             };
-        } else if (this.header.ruleset.type === "ownedByTeam") {
+        } else if (this.header.ruleset.type === "ownedByGroup") {
             return this.node
-                .expectCoValueLoaded(this.header.ruleset.team)
+                .expectCoValueLoaded(this.header.ruleset.group)
                 .getCurrentReadKey();
         } else {
             throw new Error(
-                "Only teams or values owned by teams have read secrets"
+                "Only groups or values owned by groups have read secrets"
             );
         }
     }
 
     getReadKey(keyID: KeyID): KeySecret | undefined {
-        if (this.header.ruleset.type === "team") {
-            const content = expectTeamContent(this.getCurrentContent());
+        if (this.header.ruleset.type === "group") {
+            const content = expectGroupContent(this.getCurrentContent());
 
             // Try to find key revelation for us
 
@@ -477,26 +477,26 @@ export class CoValue {
             }
 
             return undefined;
-        } else if (this.header.ruleset.type === "ownedByTeam") {
+        } else if (this.header.ruleset.type === "ownedByGroup") {
             return this.node
-                .expectCoValueLoaded(this.header.ruleset.team)
+                .expectCoValueLoaded(this.header.ruleset.group)
                 .getReadKey(keyID);
         } else {
             throw new Error(
-                "Only teams or values owned by teams have read secrets"
+                "Only groups or values owned by groups have read secrets"
             );
         }
     }
 
-    getTeam(): Team {
-        if (this.header.ruleset.type !== "ownedByTeam") {
-            throw new Error("Only values owned by teams have teams");
+    getGroup(): Group {
+        if (this.header.ruleset.type !== "ownedByGroup") {
+            throw new Error("Only values owned by groups have groups");
         }
 
-        return new Team(
-            expectTeamContent(
+        return new Group(
+            expectGroupContent(
                 this.node
-                    .expectCoValueLoaded(this.header.ruleset.team)
+                    .expectCoValueLoaded(this.header.ruleset.group)
                     .getCurrentContent()
             ),
             this.node
@@ -553,12 +553,12 @@ export class CoValue {
     }
 
     getDependedOnCoValues(): RawCoID[] {
-        return this.header.ruleset.type === "team"
-            ? expectTeamContent(this.getCurrentContent())
+        return this.header.ruleset.type === "group"
+            ? expectGroupContent(this.getCurrentContent())
                   .keys()
                   .filter((k): k is AccountID => k.startsWith("co_"))
-            : this.header.ruleset.type === "ownedByTeam"
-            ? [this.header.ruleset.team]
+            : this.header.ruleset.type === "ownedByGroup"
+            ? [this.header.ruleset.group]
             : [];
     }
 }

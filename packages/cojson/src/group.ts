@@ -25,7 +25,7 @@ import {
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
 
-export type TeamContent = {
+export type GroupContent = {
     profile: CoID<Profile> | null;
     [key: AccountIDOrAgentID]: Role;
     readKey: KeyID;
@@ -36,34 +36,34 @@ export type TeamContent = {
     >;
 };
 
-export function expectTeamContent(
+export function expectGroupContent(
     content: ContentType
-): CoMap<TeamContent, JsonObject | null> {
+): CoMap<GroupContent, JsonObject | null> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    return content as CoMap<TeamContent, JsonObject | null>;
+    return content as CoMap<GroupContent, JsonObject | null>;
 }
 
-export class Team {
-    teamMap: CoMap<TeamContent, JsonObject | null>;
+export class Group {
+    groupMap: CoMap<GroupContent, JsonObject | null>;
     node: LocalNode;
 
     constructor(
-        teamMap: CoMap<TeamContent, JsonObject | null>,
+        groupMap: CoMap<GroupContent, JsonObject | null>,
         node: LocalNode
     ) {
-        this.teamMap = teamMap;
+        this.groupMap = groupMap;
         this.node = node;
     }
 
-    get id(): CoID<CoMap<TeamContent, JsonObject | null>> {
-        return this.teamMap.id;
+    get id(): CoID<CoMap<GroupContent, JsonObject | null>> {
+        return this.groupMap.id;
     }
 
     roleOf(accountID: AccountIDOrAgentID): Role | undefined {
-        return this.teamMap.get(accountID);
+        return this.groupMap.get(accountID);
     }
 
     myRole(): Role | undefined {
@@ -71,8 +71,8 @@ export class Team {
     }
 
     addMember(accountID: AccountIDOrAgentID, role: Role) {
-        this.teamMap = this.teamMap.edit((map) => {
-            const currentReadKey = this.teamMap.coValue.getCurrentReadKey();
+        this.groupMap = this.groupMap.edit((map) => {
+            const currentReadKey = this.groupMap.coValue.getCurrentReadKey();
 
             if (!currentReadKey.secret) {
                 throw new Error("Can't add member without read key secret");
@@ -80,7 +80,7 @@ export class Team {
 
             const agent = this.node.resolveAccountAgent(
                 accountID,
-                "Expected to know agent to add them to team"
+                "Expected to know agent to add them to group"
             );
 
             map.set(accountID, role, "trusting");
@@ -93,11 +93,11 @@ export class Team {
                 `${currentReadKey.id}_for_${accountID}`,
                 seal(
                     currentReadKey.secret,
-                    this.teamMap.coValue.node.account.currentSealerSecret(),
+                    this.groupMap.coValue.node.account.currentSealerSecret(),
                     getAgentSealerID(agent),
                     {
-                        in: this.teamMap.coValue.id,
-                        tx: this.teamMap.coValue.nextTransactionID(),
+                        in: this.groupMap.coValue.id,
+                        tx: this.groupMap.coValue.nextTransactionID(),
                     }
                 ),
                 "trusting"
@@ -117,9 +117,9 @@ export class Team {
     }
 
     rotateReadKey() {
-        const currentlyPermittedReaders = this.teamMap.keys().filter((key) => {
+        const currentlyPermittedReaders = this.groupMap.keys().filter((key) => {
             if (key.startsWith("co_") || isAgentID(key)) {
-                const role = this.teamMap.get(key);
+                const role = this.groupMap.get(key);
                 return (
                     role === "admin" || role === "writer" || role === "reader"
                 );
@@ -128,7 +128,7 @@ export class Team {
             }
         }) as AccountIDOrAgentID[];
 
-        const maybeCurrentReadKey = this.teamMap.coValue.getCurrentReadKey();
+        const maybeCurrentReadKey = this.groupMap.coValue.getCurrentReadKey();
 
         if (!maybeCurrentReadKey.secret) {
             throw new Error(
@@ -143,7 +143,7 @@ export class Team {
 
         const newReadKey = newRandomKeySecret();
 
-        this.teamMap = this.teamMap.edit((map) => {
+        this.groupMap = this.groupMap.edit((map) => {
             for (const readerID of currentlyPermittedReaders) {
                 const reader = this.node.resolveAccountAgent(
                     readerID,
@@ -154,11 +154,11 @@ export class Team {
                     `${newReadKey.id}_for_${readerID}`,
                     seal(
                         newReadKey.secret,
-                        this.teamMap.coValue.node.account.currentSealerSecret(),
+                        this.groupMap.coValue.node.account.currentSealerSecret(),
                         getAgentSealerID(reader),
                         {
-                            in: this.teamMap.coValue.id,
-                            tx: this.teamMap.coValue.nextTransactionID(),
+                            in: this.groupMap.coValue.id,
+                            tx: this.groupMap.coValue.nextTransactionID(),
                         }
                     ),
                     "trusting"
@@ -179,7 +179,7 @@ export class Team {
     }
 
     removeMember(accountID: AccountIDOrAgentID) {
-        this.teamMap = this.teamMap.edit((map) => {
+        this.groupMap = this.groupMap.edit((map) => {
             map.set(accountID, "revoked", "trusting");
         });
 
@@ -194,8 +194,8 @@ export class Team {
             .createCoValue({
                 type: "comap",
                 ruleset: {
-                    type: "ownedByTeam",
-                    team: this.teamMap.id,
+                    type: "ownedByGroup",
+                    group: this.groupMap.id,
                 },
                 meta: meta || null,
                 ...createdNowUnique(),
@@ -206,10 +206,10 @@ export class Team {
     testWithDifferentAccount(
         account: GeneralizedControlledAccount,
         sessionId: SessionID
-    ): Team {
-        return new Team(
-            expectTeamContent(
-                this.teamMap.coValue
+    ): Group {
+        return new Group(
+            expectGroupContent(
+                this.groupMap.coValue
                     .testWithDifferentAccount(account, sessionId)
                     .getCurrentContent()
             ),

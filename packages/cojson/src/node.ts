@@ -12,11 +12,11 @@ import {
 import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
 import {
     InviteSecret,
-    Team,
-    TeamContent,
-    expectTeamContent,
+    Group,
+    GroupContent,
+    expectGroupContent,
     secretSeedFromInviteSecret,
-} from "./team.js";
+} from "./group.js";
 import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID, ContentType } from "./contentType.js";
@@ -151,23 +151,23 @@ export class LocalNode {
     }
 
     async acceptInvite<T extends ContentType>(
-        teamOrOwnedValueID: CoID<T>,
+        groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
     ): Promise<void> {
-        const teamOrOwnedValue = await this.load(teamOrOwnedValueID);
+        const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
 
-        if (teamOrOwnedValue.coValue.header.ruleset.type === "ownedByTeam") {
+        if (groupOrOwnedValue.coValue.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
-                teamOrOwnedValue.coValue.header.ruleset.team as CoID<
-                    CoMap<TeamContent>
+                groupOrOwnedValue.coValue.header.ruleset.group as CoID<
+                    CoMap<GroupContent>
                 >,
                 inviteSecret
             );
-        } else if (teamOrOwnedValue.coValue.header.ruleset.type !== "team") {
-            throw new Error("Can only accept invites to teams");
+        } else if (groupOrOwnedValue.coValue.header.ruleset.type !== "group") {
+            throw new Error("Can only accept invites to groups");
         }
 
-        const team = new Team(expectTeamContent(teamOrOwnedValue), this);
+        const group = new Group(expectGroupContent(groupOrOwnedValue), this);
 
         const inviteAgentSecret = agentSecretFromSecretSeed(
             secretSeedFromInviteSecret(inviteSecret)
@@ -175,8 +175,8 @@ export class LocalNode {
         const inviteAgentID = getAgentID(inviteAgentSecret);
 
         const invitationRole = await new Promise((resolve, reject) => {
-            team.teamMap.subscribe((teamMap) => {
-                const role = teamMap.get(inviteAgentID);
+            group.groupMap.subscribe((groupMap) => {
+                const role = groupMap.get(inviteAgentID);
                 if (role) {
                     resolve(role);
                 }
@@ -194,7 +194,7 @@ export class LocalNode {
             throw new Error("No invitation found");
         }
 
-        const existingRole = team.teamMap.get(this.account.id);
+        const existingRole = group.groupMap.get(this.account.id);
 
         if (
             existingRole === "admin" ||
@@ -204,12 +204,12 @@ export class LocalNode {
             return;
         }
 
-        const teamAsInvite = team.testWithDifferentAccount(
+        const groupAsInvite = group.testWithDifferentAccount(
             new AnonymousControlledAccount(inviteAgentSecret),
             newRandomSessionID(inviteAgentID)
         );
 
-        teamAsInvite.addMember(
+        groupAsInvite.addMember(
             this.account.id,
             invitationRole === "adminInvite"
                 ? "admin"
@@ -218,11 +218,11 @@ export class LocalNode {
                 : "reader"
         );
 
-        team.teamMap.coValue._sessions = teamAsInvite.teamMap.coValue.sessions;
-        team.teamMap.coValue._cachedContent = undefined;
+        group.groupMap.coValue._sessions = groupAsInvite.groupMap.coValue.sessions;
+        group.groupMap.coValue._cachedContent = undefined;
 
-        for (const teamListener of team.teamMap.coValue.listeners) {
-            teamListener(team.teamMap.coValue.getCurrentContent());
+        for (const groupListener of group.groupMap.coValue.listeners) {
+            groupListener(group.groupMap.coValue.getCurrentContent());
         }
     }
 
@@ -245,7 +245,7 @@ export class LocalNode {
 
     expectProfileLoaded(id: AccountID, expectation?: string): Profile {
         const account = this.expectCoValueLoaded(id, expectation);
-        const profileID = expectTeamContent(account.getCurrentContent()).get(
+        const profileID = expectGroupContent(account.getCurrentContent()).get(
             "profile"
         );
         if (!profileID) {
@@ -272,12 +272,12 @@ export class LocalNode {
             newRandomSessionID(getAgentID(agentSecret))
         );
 
-        const accountAsTeam = new Team(
-            expectTeamContent(account.getCurrentContent()),
+        const accountAsGroup = new Group(
+            expectGroupContent(account.getCurrentContent()),
             account.node
         );
 
-        accountAsTeam.teamMap.edit((editable) => {
+        accountAsGroup.groupMap.edit((editable) => {
             editable.set(getAgentID(agentSecret), "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -305,7 +305,7 @@ export class LocalNode {
             account.node
         );
 
-        const profile = accountAsTeam.createMap<ProfileContent, ProfileMeta>({
+        const profile = accountAsGroup.createMap<ProfileContent, ProfileMeta>({
             type: "profile",
         });
 
@@ -313,13 +313,13 @@ export class LocalNode {
             editable.set("name", name, "trusting");
         });
 
-        accountAsTeam.teamMap.edit((editable) => {
+        accountAsGroup.groupMap.edit((editable) => {
             editable.set("profile", profile.id, "trusting");
         });
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
-        accountOnThisNode._sessions = {...accountAsTeam.teamMap.coValue.sessions};
+        accountOnThisNode._sessions = {...accountAsGroup.groupMap.coValue.sessions};
         accountOnThisNode._cachedContent = undefined;
 
         return controlledAccount;
@@ -334,7 +334,7 @@ export class LocalNode {
 
         if (
             coValue.header.type !== "comap" ||
-            coValue.header.ruleset.type !== "team" ||
+            coValue.header.ruleset.type !== "group" ||
             !coValue.header.meta ||
             !("type" in coValue.header.meta) ||
             coValue.header.meta.type !== "account"
@@ -347,22 +347,22 @@ export class LocalNode {
         }
 
         return new Account(
-            coValue.getCurrentContent() as CoMap<TeamContent, AccountMeta>,
+            coValue.getCurrentContent() as CoMap<GroupContent, AccountMeta>,
             this
         ).getCurrentAgentID();
     }
 
-    createTeam(): Team {
-        const teamCoValue = this.createCoValue({
+    createGroup(): Group {
+        const groupCoValue = this.createCoValue({
             type: "comap",
-            ruleset: { type: "team", initialAdmin: this.account.id },
+            ruleset: { type: "group", initialAdmin: this.account.id },
             meta: null,
             ...createdNowUnique(),
         });
 
-        let teamContent = expectTeamContent(teamCoValue.getCurrentContent());
+        let groupContent = expectGroupContent(groupCoValue.getCurrentContent());
 
-        teamContent = teamContent.edit((editable) => {
+        groupContent = groupContent.edit((editable) => {
             editable.set(this.account.id, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -374,8 +374,8 @@ export class LocalNode {
                     this.account.currentSealerSecret(),
                     this.account.currentSealerID(),
                     {
-                        in: teamCoValue.id,
-                        tx: teamCoValue.nextTransactionID(),
+                        in: groupCoValue.id,
+                        tx: groupCoValue.nextTransactionID(),
                     }
                 ),
                 "trusting"
@@ -384,7 +384,7 @@ export class LocalNode {
             editable.set("readKey", readKey.id, "trusting");
         });
 
-        return new Team(teamContent, this);
+        return new Group(groupContent, this);
     }
 
     testWithDifferentAccount(

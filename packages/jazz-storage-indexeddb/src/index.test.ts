@@ -16,7 +16,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 
     console.log("yay!");
 
-    const _team = node.createTeam();
+    const _group = node.createGroup();
 
     await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -39,9 +39,9 @@ test("Should be able to sync data to database and then load that from a new node
 
     console.log("yay!");
 
-    const team = node1.createTeam();
+    const group = node1.createGroup();
 
-    const map = team.createMap();
+    const map = group.createMap();
 
     map.edit((m) => {
         m.set("hello", "world");

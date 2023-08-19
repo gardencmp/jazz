@@ -39,8 +39,8 @@ function App() {
 
     const createList = useCallback(
         (title: string) => {
-            const listTeam = localNode.createTeam();
-            const list = listTeam.createMap<TodoListContent>();
+            const listGroup = localNode.createGroup();
+            const list = listGroup.createMap<TodoListContent>();
 
             list.edit((list) => {
                 list.set("title", title);
@@ -101,7 +101,7 @@ export function TodoList({ listId }: { listId: CoID<TodoList> }) {
 
     const createTask = (text: string) => {
         if (!list) return;
-        const task = list.coValue.getTeam().createMap<TaskContent>();
+        const task = list.coValue.getGroup().createMap<TaskContent>();
 
         task.edit((task) => {
             task.set("text", text);
@@ -220,7 +220,7 @@ function InviteButton({ list }: { list: TodoList }) {
     const { toast } = useToast();
 
     return (
-        list.coValue.getTeam().myRole() === "admin" && (
+        list.coValue.getGroup().myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"

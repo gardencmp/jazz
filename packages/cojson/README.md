@@ -27,7 +27,7 @@ THIS IS WORK IN PROGRESS
 
 ### `Collaborative` Values
 - CoMap (`string` → `Immutable`, last-writer-wins per key)
-  - Team (`AgentID` → `Role`)
+  - Group (`AgentID` → `Role`)
 - CoList (`Immutable[]`, addressable positions, insertAfter semantics)
   - Agent (`{signerID, sealerID}[]`)
 - CoStream (independent per-session streams of `Immutable`s)

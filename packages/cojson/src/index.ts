@@ -14,7 +14,7 @@ import {
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
-import { Team, expectTeamContent } from "./team.js"
+import { Group, expectGroupContent } from "./group.js"
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, ContentType } from "./contentType.js";
@@ -27,7 +27,7 @@ import type {
     ProfileContent,
     Profile,
 } from "./account.js";
-import type { InviteSecret } from "./team.js";
+import type { InviteSecret } from "./group.js";
 
 type Value = JsonValue | ContentType;
 
@@ -44,7 +44,7 @@ export const cojsonInternals = {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    expectTeamContent
+    expectGroupContent
 };
 
 export {
@@ -53,7 +53,7 @@ export {
     CoMap,
     AnonymousControlledAccount,
     ControlledAccount,
-    Team
+    Group
 };
 
 export type {

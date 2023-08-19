@@ -205,7 +205,7 @@ export class IDBStorage {
         }
 
         const dependedOnCoValues =
-            coValueRow?.header.ruleset.type === "team"
+            coValueRow?.header.ruleset.type === "group"
                 ? Object.values(newContent.new).flatMap((sessionEntry) =>
                       sessionEntry.newTransactions.flatMap((tx) => {
                           if (tx.privacy !== "trusting") return [];
@@ -226,8 +226,8 @@ export class IDBStorage {
                               );
                       })
                   )
-                : coValueRow?.header.ruleset.type === "ownedByTeam"
-                ? [coValueRow?.header.ruleset.team]
+                : coValueRow?.header.ruleset.type === "ownedByGroup"
+                ? [coValueRow?.header.ruleset.group]
                 : [];
 
         for (const dependedOnCoValue of dependedOnCoValues) {
