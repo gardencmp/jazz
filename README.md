@@ -2,7 +2,7 @@
 
 Homepage: [jazz.tools](https://jazz.tools) &mdash; [Discord](https://discord.gg/utDMjHYg42)
 
-Jazz is an open-source toolkit for *permissioned telepathic data.*
+Jazz is an open-source toolkit for *secure telepathic data.*
 
 - Ship faster & simplify your frontend and backend
 - Get cross-device sync, real-time collaboration & offline support for free
@@ -11,14 +11,14 @@ Jazz is an open-source toolkit for *permissioned telepathic data.*
 
 
 
-## What is Permissioned Telepathic Data?
+## What is Secure Telepathic Data?
 
 **Telepathic** means:
 
 - **Read and write data as if it was local,** from anywhere in your app.
 - **Always have that data synced, instantly.** Across devices of the same user &mdash; or to other users (coming soon: to your backend, workers, etc.)
 
-**Permissioned** means:
+**Secure** means:
 
 - **Fine-grained, role-based permissions are *baked into* your data.**
 - **Permissions are enforced everywhere, locally.** (using cryptography instead of through an API)
@@ -57,7 +57,7 @@ If you want to build something with Jazz, [join the Jazz Discord](https://discor
 
 **`cojson`**
 
-A library implementing abstractions and protocols for "Collaborative JSON". This will soon be standardized and forms the basis of permissioned telepathic data.
+A library implementing abstractions and protocols for "Collaborative JSON". This will soon be standardized and forms the basis of secure telepathic data.
 
 **`jazz-react`**
 
@@ -83,7 +83,7 @@ Provides local, offline-capable persistence. Included and enabled in `jazz-react
 
 ## `CoJSON`
 
-CoJSON is the core implementation of permissioned telepathic data. It provides abstractions for Collaborative JSON values ("`CoValues`"), groups for permission management and a protocol for syncing between nodes. Our goal is to standardise CoJSON soon and port it to other languages and platforms.
+CoJSON is the core implementation of secure telepathic data. It provides abstractions for Collaborative JSON values ("`CoValues`"), groups for permission management and a protocol for syncing between nodes. Our goal is to standardise CoJSON soon and port it to other languages and platforms.
 
 ---
 
