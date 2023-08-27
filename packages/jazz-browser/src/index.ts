@@ -42,7 +42,7 @@ export async function createBrowserNode({
         [await IDBStorage.asPeer({ trace: true }), firstWsPeer]
     );
 
-    void async function websocketReconnectLoop() {
+    async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
                 Object.keys(node.sync.peers).some((peerId) =>
@@ -60,7 +60,9 @@ export async function createBrowserNode({
                 );
             }
         }
-    };
+    }
+
+    void websocketReconnectLoop();
 
     return {
         node,
@@ -153,6 +155,8 @@ function websocketReadableStream<T>(ws: WebSocket) {
 
     return new ReadableStream<T>({
         start(controller) {
+            let pingTimeout: ReturnType<typeof setTimeout> | undefined;
+
             ws.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
                 if (msg.type === "ping") {
@@ -163,13 +167,25 @@ function websocketReadableStream<T>(ws: WebSocket) {
                         Date.now() - msg.time,
                         "ms"
                     );
+
+                    if (pingTimeout) {
+                        clearTimeout(pingTimeout);
+                    }
+
+                    pingTimeout = setTimeout(() => {
+                        console.debug("Ping timeout");
+                        controller.close();
+                        ws.close();
+                    }, 2500);
+
                     return;
                 }
                 controller.enqueue(msg);
             };
-            ws.onclose = () => controller.close();
-            ws.onerror = () =>
-                controller.error(new Error("The WebSocket errored!"));
+            ws.addEventListener("close", () => controller.close());
+            ws.addEventListener("error", () =>
+                controller.error(new Error("The WebSocket errored!"))
+            );
         },
 
         cancel() {
@@ -195,15 +211,15 @@ function createWebSocketPeer(syncAddress: string): Peer {
 function websocketWritableStream<T>(ws: WebSocket) {
     return new WritableStream<T>({
         start(controller) {
-            ws.onerror = () => {
+            ws.addEventListener("error", () => {
                 controller.error(new Error("The WebSocket errored!"));
-                ws.onclose = null;
-            };
-            ws.onclose = () =>
+            });
+            ws.addEventListener("close", () => {
                 controller.error(
                     new Error("The server closed the connection unexpectedly!")
                 );
-            return new Promise((resolve) => (ws.onopen = resolve));
+            });
+            return new Promise((resolve) => (ws.addEventListener("open", resolve)));
         },
 
         write(chunk) {
@@ -223,13 +239,19 @@ function websocketWritableStream<T>(ws: WebSocket) {
 
     function closeWS(code: number, reasonString?: string) {
         return new Promise<void>((resolve, reject) => {
-            ws.onclose = (e) => {
-                if (e.wasClean) {
-                    resolve();
-                } else {
-                    reject(new Error("The connection was not closed cleanly"));
-                }
-            };
+            ws.addEventListener(
+                "close",
+                (e) => {
+                    if (e.wasClean) {
+                        resolve();
+                    } else {
+                        reject(
+                            new Error("The connection was not closed cleanly")
+                        );
+                    }
+                },
+                { once: true }
+            );
             ws.close(code, reasonString);
         });
     }
@@ -277,8 +299,7 @@ export function parseInviteLink(inviteURL: string):
     const valueID = url.hash
         .split("&")[0]
         ?.replace(/^#invitedTo=/, "") as CoID<ContentType>;
-    const inviteSecret = url.hash
-        .split("&")[1] as InviteSecret;
+    const inviteSecret = url.hash.split("&")[1] as InviteSecret;
     if (!valueID || !inviteSecret) {
         return undefined;
     }
