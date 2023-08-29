@@ -18,6 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import uniqolor from "uniqolor";
+import QRCode from "qrcode";
 
 type TaskContent = { done: boolean; text: string };
 type Task = CoMap<TaskContent>;
@@ -223,16 +224,18 @@ function InviteButton({ list }: { list: TodoList }) {
                 className="py-0"
                 disabled={!list}
                 variant="outline"
-                onClick={() => {
+                onClick={async () => {
                     let inviteLink = existingInviteLink;
                     if (list && !inviteLink) {
                         inviteLink = createInviteLink(list, "writer");
                         setExistingInviteLink(inviteLink);
                     }
                     if (inviteLink) {
+                        const qr = await QRCode.toDataURL(inviteLink, { errorCorrectionLevel: 'L' });
                         navigator.clipboard.writeText(inviteLink).then(() =>
                             toast({
-                                description: "Copied invite link to clipboard!",
+                                title: "Copied invite link to clipboard!",
+                                description: <img src={qr} className="w-20 h-20"/>,
                             })
                         );
                     }
