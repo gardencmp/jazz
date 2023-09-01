@@ -3,7 +3,7 @@ job "example-todo$BRANCH_SUFFIX" {
   datacenters = ["$REGION"]
 
   group "static" {
-    // count = 3
+    count = 8
 
     network {
       port "http" {
@@ -14,13 +14,13 @@ job "example-todo$BRANCH_SUFFIX" {
     constraint {
       attribute = "${node.class}"
       operator  = "="
-      value     = "edge"
+      value     = "mesh"
     }
 
-    // spread {
-    //   attribute = "${node.datacenter}"
-    //   weight    = 100
-    // }
+    spread {
+      attribute = "${node.datacenter}"
+      weight    = 100
+    }
 
     task "server" {
       driver = "docker"
@@ -37,9 +37,7 @@ job "example-todo$BRANCH_SUFFIX" {
 
       service {
         tags = ["public"]
-        meta {
-          public_name = "${BRANCH_SUBDOMAIN}example-todo"
-        }
+        name = "example-todo$BRANCH_SUFFIX"
         port = "http"
         provider = "consul"
       }

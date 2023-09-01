@@ -71,11 +71,7 @@ jobs:
         export DOCKER_PASSWORD=${{ secrets.DOCKER_PULL_PAT }};
         export DOCKER_TAG=${{ env.DOCKER_TAG }};
 
-        for region in ${{ vars.DEPLOY_REGIONS }}
-        do
-          export REGION=$region;
-          envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN} ${REGION}' < job-template.nomad > job-instance.nomad;
-          cat job-instance.nomad;
-          NOMAD_ADDR='${{ secrets.NOMAD_ADDR }}' nomad job run job-instance.nomad;
-        done
+        envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN}' < job-template.nomad > job-instance.nomad;
+        cat job-instance.nomad;
+        NOMAD_ADDR='http://control1-london:4646' nomad job run job-instance.nomad;
       working-directory: ./examples/todo
