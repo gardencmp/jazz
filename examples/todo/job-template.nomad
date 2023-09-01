@@ -1,6 +1,6 @@
 job "example-todo$BRANCH_SUFFIX" {
-  region     = "$REGION"
-  datacenters = ["$REGION"]
+  region     = "global"
+  datacenters = ["*"]
 
   group "static" {
     count = 8
