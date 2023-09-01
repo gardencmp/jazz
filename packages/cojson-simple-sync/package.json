@@ -4,7 +4,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@types/ws": "^8.5.5",
