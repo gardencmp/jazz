@@ -16,6 +16,21 @@ const localNode = new LocalNode(
 );
 
 wss.on("connection", function connection(ws, req) {
+    const pinging = setInterval(() => {
+        ws.send(
+            JSON.stringify({
+                type: "ping",
+                time: Date.now(),
+                dc: "cojson-simple-sync",
+            })
+        );
+    }, 2000);
+
+    ws.on("close", () => {
+        clearInterval(pinging);
+    });
+
+
     const duplexStream = createWebSocketStream(ws, {
         decodeStrings: false,
         readableObjectMode: true,
