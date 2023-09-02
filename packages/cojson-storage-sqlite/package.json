@@ -1,0 +1,21 @@
+{
+  "name": "cojson-storage-sqlite",
+  "type": "module",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^8.5.2",
+    "cojson": "^0.1.3",
+    "typescript": "^5.1.6"
+  },
+  "scripts": {
+    "lint": "eslint src/**/*.ts",
+    "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.4"
+  }
+}

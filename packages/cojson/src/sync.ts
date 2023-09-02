@@ -295,7 +295,19 @@ export class SyncManager {
 
         if (!entry || entry.state === "loading") {
             if (!entry) {
-                this.local.coValues[msg.id] = newLoadingState();
+                await new Promise<void>((resolve) => {
+                    this.local
+                        .loadCoValue(msg.id)
+                        .then(() => resolve())
+                        .catch((e) => {
+                            console.error(
+                                "Error loading coValue in handleLoad",
+                                e
+                            );
+                            resolve();
+                        });
+                    setTimeout(resolve, 1000);
+                });
             }
 
             peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
