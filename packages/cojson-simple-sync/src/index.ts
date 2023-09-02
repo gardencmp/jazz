@@ -1,11 +1,12 @@
 import { AnonymousControlledAccount, LocalNode, cojsonInternals } from "cojson";
 import { WebSocketServer, createWebSocketStream } from "ws";
 import { Duplex } from "node:stream";
-import { TransformStream } from "node:stream/web"
+import { TransformStream } from "node:stream/web";
+import { SQLiteStorage } from "cojson-storage-sqlite";
 
 const wss = new WebSocketServer({ port: 4200 });
 
-console.log("COJSON sync server listening on port " + wss.options.port)
+console.log("COJSON sync server listening on port " + wss.options.port);
 
 const agentSecret = cojsonInternals.newRandomAgentSecret();
 const agentID = cojsonInternals.getAgentID(agentSecret);
@@ -14,6 +15,10 @@ const localNode = new LocalNode(
     new AnonymousControlledAccount(agentSecret),
     cojsonInternals.newRandomSessionID(agentID)
 );
+
+SQLiteStorage.asPeer({ filename: "./sync.db" })
+    .then((storage) => localNode.sync.addPeer(storage))
+    .catch((e) => console.error(e));
 
 wss.on("connection", function connection(ws, req) {
     const pinging = setInterval(() => {
@@ -30,7 +35,6 @@ wss.on("connection", function connection(ws, req) {
         clearInterval(pinging);
     });
 
-
     const duplexStream = createWebSocketStream(ws, {
         decodeStrings: false,
         readableObjectMode: true,
@@ -39,18 +43,19 @@ wss.on("connection", function connection(ws, req) {
         defaultEncoding: "utf-8",
     });
 
-    const { readable: incomingStrings, writable: outgoingStrings } = Duplex.toWeb(duplexStream);
+    const { readable: incomingStrings, writable: outgoingStrings } =
+        Duplex.toWeb(duplexStream);
 
     const toJSON = new TransformStream({
         transform: (chunk, controller) => {
             controller.enqueue(JSON.parse(chunk));
-        }
-    })
+        },
+    });
 
     const fromJSON = new TransformStream({
         transform: (chunk, controller) => {
             controller.enqueue(JSON.stringify(chunk));
-        }
+        },
     });
 
     const clientAddress =

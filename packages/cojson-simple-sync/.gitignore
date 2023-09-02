@@ -171,3 +171,4 @@ dist
 .DS_Store
 
 out
+sync.db*

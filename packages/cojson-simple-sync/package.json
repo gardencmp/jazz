@@ -17,6 +17,7 @@
     },
     "dependencies": {
         "cojson": "^0.1.3",
+        "cojson-storage-sqlite": "^0.1.0",
         "ws": "^8.13.0"
     },
     "scripts": {
