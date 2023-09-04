@@ -1,17 +1,21 @@
 {
-  "name": "jazz-browser",
-  "version": "0.1.4",
+  "name": "cojson-storage-sqlite",
+  "type": "module",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
+    "better-sqlite3": "^8.5.2",
     "cojson": "^0.1.4",
-    "jazz-storage-indexeddb": "^0.1.4",
     "typescript": "^5.1.6"
   },
   "scripts": {
     "lint": "eslint src/**/*.ts",
     "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.4"
   }
 }

@@ -169,6 +169,3 @@ dist
 .pnp.\*
 
 .DS_Store
-
-out
-sync.db*

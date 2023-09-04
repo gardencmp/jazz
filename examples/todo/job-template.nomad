@@ -22,6 +22,10 @@ job "example-todo$BRANCH_SUFFIX" {
       weight    = 100
     }
 
+    constraint {
+      distinct_hosts = true
+    }
+
     task "server" {
       driver = "docker"
 
