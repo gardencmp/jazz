@@ -338,17 +338,20 @@ export class SQLiteStorage {
                         lastSignature: msg.new[sessionID]!.lastSignature,
                     };
 
-                    const sessionRowID = this.db
+                    const upsertedSession = (this.db
                         .prepare<[number, string, number, string]>(
                             `INSERT INTO sessions (coValue, sessionID, lastIdx, lastSignature) VALUES (?, ?, ?, ?)
-                            ON CONFLICT(coValue, sessionID) DO UPDATE SET lastIdx=excluded.lastIdx, lastSignature=excluded.lastSignature`
+                            ON CONFLICT(coValue, sessionID) DO UPDATE SET lastIdx=excluded.lastIdx, lastSignature=excluded.lastSignature
+                            RETURNING rowID`
                         )
-                        .run(
+                        .get(
                             sessionUpdate.coValue,
                             sessionUpdate.sessionID,
                             sessionUpdate.lastIdx,
                             sessionUpdate.lastSignature
-                        ).lastInsertRowid as number;
+                        ) as {rowID: number});
+
+                    const sessionRowID = upsertedSession.rowID;
 
                     for (const newTransaction of actuallyNewTransactions) {
                         nextIdx++;
