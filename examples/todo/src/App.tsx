@@ -58,6 +58,7 @@ export default function App() {
 
     const createList = useCallback(
         (title: string) => {
+            if (!title) return;
             const listGroup = localNode.createGroup();
             const list = listGroup.createMap<TodoListContent>();
 
@@ -98,7 +99,7 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
     const list = useTelepathicState(listId);
 
     const createTask = (text: string) => {
-        if (!list) return;
+        if (!list || !text) return;
         const task = list.coValue.getGroup().createMap<TaskContent>();
 
         task.edit((task) => {
