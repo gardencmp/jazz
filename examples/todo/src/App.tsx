@@ -43,10 +43,10 @@ export default function App() {
     useEffect(() => {
         const listener = async () => {
             const acceptedInvitation =
-                await consumeInviteLinkFromWindowLocation(localNode);
+                await consumeInviteLinkFromWindowLocation<TodoList>(localNode);
 
             if (acceptedInvitation) {
-                setListId(acceptedInvitation.valueID as CoID<TodoList>);
+                setListId(acceptedInvitation.valueID);
                 window.location.hash = acceptedInvitation.valueID;
                 return;
             }
