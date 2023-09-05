@@ -2,7 +2,7 @@ import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoID } from "../contentType.js";
 import { CoValue, accountOrAgentIDfromSessionID } from "../coValue.js";
 import { SessionID, TransactionID } from "../ids.js";
-import { AccountID } from "../index.js";
+import { AccountID, Group } from "../index.js";
 import { isAccountID } from "../account.js";
 
 type OpID = TransactionID & { changeIdx: number };
@@ -77,6 +77,10 @@ export class CoList<
 
     get meta(): Meta {
         return this.coValue.header.meta as Meta;
+    }
+
+    get group(): Group {
+        return this.coValue.getGroup();
     }
 
     protected fillOpsFromCoValue() {

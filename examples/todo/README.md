@@ -163,7 +163,7 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
 
     const createTask = (text: string) => {
         if (!tasks || !text) return;
-        const task = tasks.coValue.getGroup().createMap<Task>();
+        const task = tasks.group.createMap<Task>();
 
         task.edit((task) => {
             task.set("text", text);
@@ -313,7 +313,7 @@ function InviteButton({ list }: { list: TodoList }) {
     const { toast } = useToast();
 
     return (
-        list.coValue.getGroup().myRole() === "admin" && (
+        list.group.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"
