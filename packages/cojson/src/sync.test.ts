@@ -77,12 +77,12 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
             uniqueness: map.coValue.header.uniqueness,
         },
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -94,7 +94,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -130,7 +130,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
         id: map.coValue.id,
         header: true,
         sessions: {
-            [node.ownSessionID]: 1,
+            [node.currentSessionID]: 1,
         },
     });
 
@@ -155,12 +155,12 @@ test("Node replies with only new tx to subscribe with some known state", async (
         id: map.coValue.id,
         header: undefined,
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 1,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
                         changes: [
                             {
@@ -172,7 +172,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -207,7 +207,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         id: map.coValue.id,
         header: false,
         sessions: {
-            [node.ownSessionID]: 0,
+            [node.currentSessionID]: 0,
         },
     });
 
@@ -244,12 +244,12 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         action: "content",
         id: map.coValue.id,
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -261,7 +261,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -276,12 +276,12 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         action: "content",
         id: map.coValue.id,
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 1,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
                         changes: [
                             {
@@ -293,7 +293,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -332,7 +332,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
         id: map.coValue.id,
         header: false,
         sessions: {
-            [node.ownSessionID]: 0,
+            [node.currentSessionID]: 0,
         },
     });
 
@@ -355,12 +355,12 @@ test("Client replies with known new content to tellKnownState from server", asyn
         id: map.coValue.id,
         header: map.coValue.header,
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -372,7 +372,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -403,7 +403,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: map.coValue.id,
         header: false,
         sessions: {
-            [node.ownSessionID]: 0,
+            [node.currentSessionID]: 0,
         },
     });
 
@@ -447,7 +447,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: map.coValue.id,
         header: true,
         sessions: {
-            [node.ownSessionID]: 1,
+            [node.currentSessionID]: 1,
         },
     } satisfies SyncMessage);
 
@@ -458,12 +458,12 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: map.coValue.id,
         header: undefined,
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 1,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
                         changes: [
                             {
@@ -475,7 +475,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -561,12 +561,12 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
         id: map.coValue.id,
         header: map.coValue.header,
         new: {
-            [node.ownSessionID]: {
+            [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.ownSessionID]!
+                        madeAt: map.coValue.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -578,7 +578,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.ownSessionID]!.lastSignature!,
+                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -697,7 +697,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
         id: map.coValue.id,
         header: true,
         sessions: {
-            [node.ownSessionID]: 1,
+            [node.currentSessionID]: 1,
         },
     });
 

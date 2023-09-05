@@ -23,7 +23,6 @@ import { CoID, ContentType } from "./contentType.js";
 import {
     Account,
     AccountMeta,
-    AccountIDOrAgentID,
     accountHeaderForInitialAgentSecret,
     GeneralizedControlledAccount,
     ControlledAccount,
@@ -40,16 +39,15 @@ export class LocalNode {
     coValues: { [key: RawCoID]: CoValueState } = {};
     /** @internal */
     account: GeneralizedControlledAccount;
-    /** @internal */
-    ownSessionID: SessionID;
+    currentSessionID: SessionID;
     sync = new SyncManager(this);
 
     constructor(
         account: GeneralizedControlledAccount,
-        ownSessionID: SessionID
+        currentSessionID: SessionID
     ) {
         this.account = account;
-        this.ownSessionID = ownSessionID;
+        this.currentSessionID = currentSessionID;
     }
 
     static withNewlyCreatedAccount(
@@ -78,7 +76,7 @@ export class LocalNode {
             node: nodeWithAccount,
             accountID: account.id,
             accountSecret: account.agentSecret,
-            sessionID: nodeWithAccount.ownSessionID,
+            sessionID: nodeWithAccount.currentSessionID,
         };
     }
 
@@ -215,7 +213,7 @@ export class LocalNode {
             newRandomSessionID(inviteAgentID)
         );
 
-        groupAsInvite.addMember(
+        groupAsInvite.addMemberInternal(
             this.account.id,
             inviteRole === "adminInvite"
                 ? "admin"
@@ -335,7 +333,7 @@ export class LocalNode {
     }
 
     /** @internal */
-    resolveAccountAgent(id: AccountIDOrAgentID, expectation?: string): AgentID {
+    resolveAccountAgent(id: AccountID | AgentID, expectation?: string): AgentID {
         if (isAgentID(id)) {
             return id;
         }
@@ -400,9 +398,9 @@ export class LocalNode {
     /** @internal */
     testWithDifferentAccount(
         account: GeneralizedControlledAccount,
-        ownSessionID: SessionID
+        currentSessionID: SessionID
     ): LocalNode {
-        const newNode = new LocalNode(account, ownSessionID);
+        const newNode = new LocalNode(account, currentSessionID);
 
         const coValuesToCopy = Object.entries(this.coValues);
 

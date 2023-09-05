@@ -86,5 +86,4 @@ export namespace CojsonInternalTypes {
     export type Transaction = import("./coValue.js").Transaction;
     export type Signature = import("./crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
-    export type AccountIDOrAgentID = import("./account.js").AccountIDOrAgentID;
 }

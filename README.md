@@ -164,7 +164,7 @@ Returns the role of the current account in the group.
 
 ```typescript
 addMember(
-  accountID: AccountIDOrAgentID,
+  accountID: AccountID,
   role:  "reader" | "writer" | "admin"
 )
 ```

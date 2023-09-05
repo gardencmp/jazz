@@ -1,4 +1,4 @@
-import { AccountIDOrAgentID } from './account.js';
+import { AccountID } from './account.js';
 import { base58 } from "@scure/base";
 import { shortHashLength } from './crypto.js';
 
@@ -23,4 +23,4 @@ export function isAgentID(id: string): id is AgentID {
     return typeof id === "string" && id.startsWith("sealer_") && id.includes("/signer_");
 }
 
-export type SessionID = `${AccountIDOrAgentID}_session_z${string}`;
+export type SessionID = `${AccountID | AgentID}_session_z${string}`;

@@ -2,7 +2,8 @@ import { InviteSecret } from "cojson";
 import {
     LocalNode,
     cojsonInternals,
-    CojsonInternalTypes,
+    AccountID,
+    AgentID,
     SessionID,
     SyncMessage,
     Peer,
@@ -81,7 +82,7 @@ export interface AuthProvider {
 }
 
 export type SessionProvider = (
-    accountID: CojsonInternalTypes.AccountIDOrAgentID
+    accountID: AccountID | AgentID
 ) => Promise<SessionID>;
 
 export type SessionHandle = {
@@ -90,7 +91,7 @@ export type SessionHandle = {
 };
 
 function getSessionHandleFor(
-    accountID: CojsonInternalTypes.AccountIDOrAgentID
+    accountID: AccountID | AgentID
 ): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
