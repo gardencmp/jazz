@@ -57,20 +57,19 @@ import {
 
 // ...
 
-type TaskContent = { done: boolean; text: string };
-type Task = CoMap<TaskContent>;
+type Task = CoMap<{ done: boolean; text: string }>;
 
-type TodoListContent = {
+type ListOfTasks = CoList<CoID<Task>>;
+
+type TodoList = CoMap<{
     title: string;
-    // other keys form a set of task IDs
-    [taskId: CoID<Task>]: true;
-};
-type TodoList = CoMap<TodoListContent>;
+    tasks: CoID<ListOfTasks>;
+}>;
 
 // ...
 ```
 
-First, we define our main data model of tasks and todo lists, using CoJSON's collaborative map type, `CoMap`. We reference CoMaps of individual tasks by using them as keys inside the `TodoList` CoMap - as a makeshift solution until `CoList` is implemented.
+First, we define our main data model of tasks and todo lists, using CoJSON's collaborative map and list types, `CoMap` & `CoList`.
 
 ---
 
@@ -105,11 +104,14 @@ export default function App() {
 
     const createList = useCallback(
         (title: string) => {
+            if (!title) return;
             const listGroup = localNode.createGroup();
-            const list = listGroup.createMap<TodoListContent>();
+            const list = listGroup.createMap<TodoList>();
+            const tasks = listGroup.createList<ListOfTasks>();
 
             list.edit((list) => {
                 list.set("title", title);
+                list.set("tasks", tasks.id);
             });
 
             window.location.hash = list.id;
@@ -157,18 +159,19 @@ If we have no `listId` set, the user can use the displayed creation input to cre
 ```typescript
 export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
     const list = useTelepathicState(listId);
+    const tasks = useTelepathicState(list?.get("tasks"));
 
     const createTask = (text: string) => {
-        if (!list) return;
-        const task = list.coValue.getGroup().createMap<TaskContent>();
+        if (!tasks || !text) return;
+        const task = tasks.coValue.getGroup().createMap<Task>();
 
         task.edit((task) => {
             task.set("text", text);
             task.set("done", false);
         });
 
-        list.edit((list) => {
-            list.set(task.id, true);
+        tasks.edit((tasks) => {
+            tasks.push(task.id);
         });
     };
 
@@ -195,12 +198,9 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {list &&
-                        list
-                            .keys()
-                            .filter((key): key is CoID<Task> =>
-                                key.startsWith("co_")
-                            )
+                    {tasks &&
+                        tasks
+                            .asArray()
                             .map((taskId) => (
                                 <TaskRow key={taskId} taskId={taskId} />
                             ))}
@@ -224,11 +224,11 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
 }
 ```
 
-Here in `<TodoListComponent>`, we use `useTelepathicData()` for the first time, in this case to load the CoValue for our `TodoList` and to reactively subscribe to updates to its content - whether we create edits locally, load persisted data, or receive sync updates from other devices or participants!
+Here in `<TodoListComponent>`, we use `useTelepathicData()` for the first time, in this case to load the CoValue for our `TodoList` as well as the `ListOfTasks` referenced in it. `useTelepathicData()` reactively subscribes to updates to a CoValue's content - whether we create edits locally, load persisted data, or receive sync updates from other devices or participants!
 
-`createTask` is similar to `createList` we saw earlier, creating a new CoMap for a new task, and then adding it as a key to our `TodoList`.
+`createTask` is similar to `createList` we saw earlier, creating a new CoMap for a new task, and then adding it as an item to our `TodoList`'s `ListOfTasks`.
 
-As you can see, we iterate over the keys of `TodoList` and for those that look like `CoID`s (they always start with `co_`), we render a `<TaskRow>`.
+As you can see, we iterate over the items of our `ListOfTasks` and render a `<TaskRow>` for each.
 
 Below all tasks, we render a simple input for adding a task.
 
@@ -254,7 +254,9 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
             <TableCell>
                 <div className="flex flex-row justify-between items-center gap-2">
                     <span className={task?.get("done") ? "line-through" : ""}>
-                        {task?.get("text") || <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />}
+                        {task?.get("text") || (
+                            <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
+                        )}
                     </span>
                     <NameBadge accountID={task?.getLastEditor("text")} />
                 </div>
@@ -282,15 +284,19 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
     const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
 
     return (
-        profile?.get("name") && <span
-            className="rounded-full py-0.5 px-2 text-xs"
-            style={{
-                color: theme == "light" ? darkColor : brightColor,
-                background: theme == "light" ? brightColor : darkColor,
-            }}
-        >
-            {profile.get("name")}
-        </span>
+        profile?.get("name") ? (
+            <span
+                className="rounded-full py-0.5 px-2 text-xs"
+                style={{
+                    color: theme == "light" ? darkColor : brightColor,
+                    background: theme == "light" ? brightColor : darkColor,
+                }}
+            >
+                {profile.get("name")}
+            </span>
+        ) : (
+            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
+        )
     );
 }
 ```
@@ -313,16 +319,22 @@ function InviteButton({ list }: { list: TodoList }) {
                 className="py-0"
                 disabled={!list}
                 variant="outline"
-                onClick={() => {
+                onClick={async () => {
                     let inviteLink = existingInviteLink;
                     if (list && !inviteLink) {
                         inviteLink = createInviteLink(list, "writer");
                         setExistingInviteLink(inviteLink);
                     }
                     if (inviteLink) {
+                        const qr = await QRCode.toDataURL(inviteLink, {
+                            errorCorrectionLevel: "L",
+                        });
                         navigator.clipboard.writeText(inviteLink).then(() =>
                             toast({
-                                description: "Copied invite link to clipboard!",
+                                title: "Copied invite link to clipboard!",
+                                description: (
+                                    <img src={qr} className="w-20 h-20" />
+                                ),
                             })
                         );
                     }
