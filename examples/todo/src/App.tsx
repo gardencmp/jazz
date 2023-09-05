@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { CoMap, CoID, AccountID } from "cojson";
+import { CoMap, CoID, AccountID, CoList, LocalNode, ContentType } from "cojson";
 import {
     consumeInviteLinkFromWindowLocation,
     useJazz,
@@ -9,9 +9,9 @@ import {
     createInviteLink,
 } from "jazz-react";
 
-import { SubmittableInput } from "./components/SubmittableInput";
-import { useToast } from "./components/ui/use-toast";
-import { Skeleton } from "./components/ui/skeleton";
+import { SubmittableInput } from "@/components/SubmittableInput";
+import { useToast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
@@ -24,7 +24,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import uniqolor from "uniqolor";
 import QRCode from "qrcode";
-import { CoList } from "cojson/dist/contentTypes/coList";
 
 type Task = CoMap<{ done: boolean; text: string }>;
 
@@ -36,30 +35,11 @@ type TodoList = CoMap<{
 }>;
 
 export default function App() {
-    const [listId, setListId] = useState<CoID<TodoList>>();
-
     const { localNode, logOut } = useJazz();
 
-    useEffect(() => {
-        const listener = async () => {
-            const acceptedInvitation =
-                await consumeInviteLinkFromWindowLocation<TodoList>(localNode);
-
-            if (acceptedInvitation) {
-                setListId(acceptedInvitation.valueID);
-                window.location.hash = acceptedInvitation.valueID;
-                return;
-            }
-
-            setListId(window.location.hash.slice(1) as CoID<TodoList>);
-        };
-        window.addEventListener("hashchange", listener);
-        listener();
-
-        return () => {
-            window.removeEventListener("hashchange", listener);
-        };
-    }, [localNode]);
+    // This just sets up minimal routing, skip unless you're interested
+    const [currentListId, navigateToListId] =
+        useSimpleHashRouterThatAcceptsInvites<TodoList>(localNode);
 
     const createList = useCallback(
         (title: string) => {
@@ -73,15 +53,15 @@ export default function App() {
                 list.set("tasks", tasks.id);
             });
 
-            window.location.hash = list.id;
+            navigateToListId(list.id);
         },
-        [localNode]
+        [localNode, navigateToListId]
     );
 
     return (
         <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-            {listId ? (
-                <TodoListComponent listId={listId} />
+            {currentListId ? (
+                <TodoListComponent listId={currentListId} />
             ) : (
                 <SubmittableInput
                     onSubmit={createList}
@@ -91,7 +71,7 @@ export default function App() {
             )}
             <Button
                 onClick={() => {
-                    window.location.hash = "";
+                    navigateToListId(undefined);
                     logOut();
                 }}
                 variant="outline"
@@ -256,4 +236,39 @@ function InviteButton({ list }: { list: TodoList }) {
             </Button>
         )
     );
+}
+
+function useSimpleHashRouterThatAcceptsInvites<C extends ContentType>(
+    localNode: LocalNode
+) {
+    const [currentValueId, setCurrentValueId] = useState<CoID<C>>();
+
+    useEffect(() => {
+        const listener = async () => {
+            const acceptedInvitation =
+                await consumeInviteLinkFromWindowLocation<C>(localNode);
+
+            if (acceptedInvitation) {
+                setCurrentValueId(acceptedInvitation.valueID);
+                window.location.hash = acceptedInvitation.valueID;
+                return;
+            }
+
+            setCurrentValueId(
+                (window.location.hash.slice(1) as CoID<C>) || undefined
+            );
+        };
+        window.addEventListener("hashchange", listener);
+        listener();
+
+        return () => {
+            window.removeEventListener("hashchange", listener);
+        };
+    }, [localNode]);
+
+    const navigateToValue = useCallback((id: CoID<C> | undefined) => {
+        window.location.hash = id || "";
+    }, []);
+
+    return [currentValueId, navigateToValue] as const;
 }
