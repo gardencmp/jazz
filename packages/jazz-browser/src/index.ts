@@ -182,10 +182,12 @@ function websocketReadableStream<T>(ws: WebSocket) {
                 }
                 controller.enqueue(msg);
             };
-            ws.addEventListener("close", () => controller.close());
-            ws.addEventListener("error", () =>
-                controller.error(new Error("The WebSocket errored!"))
-            );
+            const closeListener = () => controller.close();
+            ws.addEventListener("close", closeListener);
+            ws.addEventListener("error", () => {
+                controller.error(new Error("The WebSocket errored!"));
+                ws.removeEventListener("close", closeListener);
+            });
         },
 
         cancel() {
@@ -209,23 +211,37 @@ function createWebSocketPeer(syncAddress: string): Peer {
 }
 
 function websocketWritableStream<T>(ws: WebSocket) {
+    const initialQueue = [] as T[];
+    let isOpen = false;
+
     return new WritableStream<T>({
         start(controller) {
-            ws.addEventListener("error", () => {
-                controller.error(new Error("The WebSocket errored!"));
+            ws.addEventListener("error", (event) => {
+                controller.error(
+                    new Error("The WebSocket errored!" + JSON.stringify(event))
+                );
             });
             ws.addEventListener("close", () => {
                 controller.error(
                     new Error("The server closed the connection unexpectedly!")
                 );
             });
-            return new Promise((resolve) => (ws.addEventListener("open", resolve)));
+            ws.addEventListener("open", () => {
+                for (const item of initialQueue) {
+                    ws.send(JSON.stringify(item));
+                }
+                isOpen = true;
+            });
         },
 
-        write(chunk) {
-            ws.send(JSON.stringify(chunk));
-            // Return immediately, since the web socket gives us no easy way to tell
-            // when the write completes.
+        async write(chunk) {
+            if (isOpen) {
+                ws.send(JSON.stringify(chunk));
+                // Return immediately, since the web socket gives us no easy way to tell
+                // when the write completes.
+            } else {
+                initialQueue.push(chunk);
+            }
         },
 
         close() {
