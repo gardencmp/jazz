@@ -226,6 +226,14 @@ id: CoID<CoMap<M, Meta>>
 
 Returns the CoMap's (precisely typed) `CoID`
 
+#### `CoMap.meta`
+
+```typescript
+meta: Meta
+```
+
+Returns the CoMap's (precisely typed) static metadata
+
 #### `CoMap.keys()`
 
 ```typescript
@@ -314,10 +322,145 @@ If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction
 If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
 
 ---
-### `CoValue` ContentType: `CoList` (not yet implemented)
+### `CoValue` ContentType: `CoList`
+
+```typescript
+class CoList<
+    T extends JsonValue,
+    Meta extends JsonObject | null = null
+>
+```
+
+#### `CoList.id`
+
+```typescript
+id: CoID<CoList<T, Meta>>
+```
+
+Returns the CoList's (precisely typed) `CoID`
+
+#### `CoList.meta`
+
+```typescript
+meta: Meta
+```
+
+Returns the CoList's (precisely typed) static metadata
+
+### `CoList.asArray()`
+
+```typescript
+asArray(): T[]
+```
+
+Returns the current items in the CoList as an array.
+
+### `CoList.toJSON()`
+
+```typescript
+toJSON(): T[]
+```
+
+Returns the current items in the CoList as an array. (alias of asArray)
+
+#### `CoList.getLastEditor(idx)`
+
+```typescript
+getLastEditor(idx: number): AccountID | undefined
+```
+
+Returns the accountID of the last account to modify the value at the given index.
+
+#### `CoList.subscribe(listener)`
+
+```typescript
+subscribe(
+  listener: (coMap: CoList<T, Meta>) => void
+): () => void
+```
+Lets you subscribe to future updates to this CoList (whether made locally or by other users). Takes a listener function that will be called with the current state for each update. Returns an unsubscribe function.
+
+Used internally by `useTelepathicData()` for reactive updates on changes to a `CoList`.
+
+#### `CoList.edit(editable => {...})`
+
+```typescript
+edit(changer: (editable: WriteableCoList<T, Meta>) => void): CoList<T, Meta>
+```
+
+Lets you apply edits to a `CoList`, inside the changer callback, which receives a `WriteableCoList`. A `WritableCoList` has all the same methods as a `CoList`, but all edits made to it with `append`, `push`, `prepend` or `delete` are reflected in it immediately - so it behaves mutably, whereas a `CoList` is always immutable (you need to use `subscribe` to receive new versions of it).
+
+```typescript
+export class WriteableCoList<
+    T extends JsonValue,
+    Meta extends JsonObject | null = null,
+> extends CoList<T, Meta>
+```
+
+#### `WritableCoList.append(after, value)`
+
+```typescript
+append(
+  after: number,
+  value: T,
+  privacy: "private" | "trusting" = "private"
+): void
+```
+
+Appends a new item after index `after`.
+
+If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+#### `WritableCoList.prepend(after, value)`
+
+```typescript
+prepend(
+  before: number,
+  value: T,
+  privacy: "private" | "trusting" = "private"
+): void
+```
+
+Prepends a new item before index `before`.
+
+If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+#### `WritableCoList.push(value)`
+
+```typescript
+push(
+  value: T,
+  privacy: "private" | "trusting" = "private"
+): void
+```
+
+Pushes a new item to the end of the list.
+
+If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+#### `WritableCoList.delete(at)`
+
+```typescript
+delete(
+    at: number,
+    privacy: "private" | "trusting" = "private"
+): void
+```
+
+Deletes the item at index `at` from the list.
+
+If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
 
 ---
-### `CoValue` ContentType: `CoStram` (not yet implemented)
+### `CoValue` ContentType: `CoStream` (not yet implemented)
 
 ---
 ### `CoValue` ContentType: `Static` (not yet implemented)
