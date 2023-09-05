@@ -11,7 +11,7 @@ import App from "./App.tsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
+    // <React.StrictMode>
         <ThemeProvider>
             <div className="flex items-center gap-2 justify-center mt-5">
                 <img src="jazz-logo.png" className="h-5" /> Jazz Todo List
@@ -31,5 +31,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <Toaster />
             </WithJazz>
         </ThemeProvider>
-    </React.StrictMode>
+    // </React.StrictMode>
 );

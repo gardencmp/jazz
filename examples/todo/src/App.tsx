@@ -6,29 +6,34 @@ import {
     useJazz,
     useProfile,
     useTelepathicState,
-    createInviteLink
+    createInviteLink,
 } from "jazz-react";
 
 import { SubmittableInput } from "./components/SubmittableInput";
 import { useToast } from "./components/ui/use-toast";
 import { Skeleton } from "./components/ui/skeleton";
 import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import uniqolor from "uniqolor";
 import QRCode from "qrcode";
+import { CoList } from "cojson/dist/contentTypes/coList";
 
-type TaskContent = { done: boolean; text: string };
-type Task = CoMap<TaskContent>;
+type Task = CoMap<{ done: boolean; text: string }>;
 
-type TodoListContent = {
+type ListOfTasks = CoList<CoID<Task>>;
+
+type TodoList = CoMap<{
     title: string;
-    // other keys form a set of task IDs
-    [taskId: CoID<Task>]: true;
-};
-type TodoList = CoMap<TodoListContent>;
+    tasks: CoID<ListOfTasks>;
+}>;
 
 export default function App() {
     const [listId, setListId] = useState<CoID<TodoList>>();
@@ -60,10 +65,12 @@ export default function App() {
         (title: string) => {
             if (!title) return;
             const listGroup = localNode.createGroup();
-            const list = listGroup.createMap<TodoListContent>();
+            const list = listGroup.createMap<TodoList>();
+            const tasks = listGroup.createList<ListOfTasks>();
 
             list.edit((list) => {
                 list.set("title", title);
+                list.set("tasks", tasks.id);
             });
 
             window.location.hash = list.id;
@@ -97,18 +104,19 @@ export default function App() {
 
 export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
     const list = useTelepathicState(listId);
+    const tasks = useTelepathicState(list?.get("tasks"));
 
     const createTask = (text: string) => {
-        if (!list || !text) return;
-        const task = list.coValue.getGroup().createMap<TaskContent>();
+        if (!tasks || !text) return;
+        const task = tasks.coValue.getGroup().createMap<Task>();
 
         task.edit((task) => {
             task.set("text", text);
             task.set("done", false);
         });
 
-        list.edit((list) => {
-            list.set(task.id, true);
+        tasks.edit((tasks) => {
+            tasks.push(task.id);
         });
     };
 
@@ -135,12 +143,9 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {list &&
-                        list
-                            .keys()
-                            .filter((key): key is CoID<Task> =>
-                                key.startsWith("co_")
-                            )
+                    {tasks &&
+                        tasks
+                            .asArray()
                             .map((taskId) => (
                                 <TaskRow key={taskId} taskId={taskId} />
                             ))}
@@ -182,7 +187,9 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
             <TableCell>
                 <div className="flex flex-row justify-between items-center gap-2">
                     <span className={task?.get("done") ? "line-through" : ""}>
-                        {task?.get("text") || <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />}
+                        {task?.get("text") || (
+                            <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
+                        )}
                     </span>
                     <NameBadge accountID={task?.getLastEditor("text")} />
                 </div>
@@ -202,15 +209,19 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
     const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
 
     return (
-        profile?.get("name") && <span
-            className="rounded-full py-0.5 px-2 text-xs"
-            style={{
-                color: theme == "light" ? darkColor : brightColor,
-                background: theme == "light" ? brightColor : darkColor,
-            }}
-        >
-            {profile.get("name")}
-        </span>
+        profile?.get("name") ? (
+            <span
+                className="rounded-full py-0.5 px-2 text-xs"
+                style={{
+                    color: theme == "light" ? darkColor : brightColor,
+                    background: theme == "light" ? brightColor : darkColor,
+                }}
+            >
+                {profile.get("name")}
+            </span>
+        ) : (
+            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
+        )
     );
 }
 
@@ -232,11 +243,15 @@ function InviteButton({ list }: { list: TodoList }) {
                         setExistingInviteLink(inviteLink);
                     }
                     if (inviteLink) {
-                        const qr = await QRCode.toDataURL(inviteLink, { errorCorrectionLevel: 'L' });
+                        const qr = await QRCode.toDataURL(inviteLink, {
+                            errorCorrectionLevel: "L",
+                        });
                         navigator.clipboard.writeText(inviteLink).then(() =>
                             toast({
                                 title: "Copied invite link to clipboard!",
-                                description: <img src={qr} className="w-20 h-20"/>,
+                                description: (
+                                    <img src={qr} className="w-20 h-20" />
+                                ),
                             })
                         );
                     }

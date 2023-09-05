@@ -25,6 +25,7 @@ import type {
     AccountID,
     AccountContent,
     ProfileContent,
+    ProfileMeta,
     Profile,
 } from "./account.js";
 import type { InviteSecret } from "./group.js";
@@ -70,6 +71,7 @@ export type {
     AccountContent,
     Profile,
     ProfileContent,
+    ProfileMeta,
     InviteSecret
 };
 

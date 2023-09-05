@@ -258,6 +258,7 @@ export class SyncManager {
         const readIncoming = async () => {
             try {
                 for await (const msg of peerState.incoming) {
+                    console.log("Got msg from", peerState.id, msg);
                     try {
                         await this.handleSyncMessage(msg, peerState);
                     } catch (e) {
@@ -268,6 +269,7 @@ export class SyncManager {
                         );
                     }
                 }
+                console.log("DONE!!!");
             } catch (e) {
                 console.error(`Error reading from peer ${peer.id}`, e);
             }
@@ -280,13 +282,32 @@ export class SyncManager {
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
-        return peer.outgoing.write(msg).catch((e) => {
-            console.error(
-                new Error(`Error writing to peer ${peer.id}, disconnecting`, {
-                    cause: e,
+        return new Promise<void>((resolve) => {
+            const timeout = setTimeout(() => {
+                console.error(
+                    new Error(
+                        `Writing to peer ${peer.id} took >1s - this should never happen as write should resolve quickly or error`
+                    )
+                );
+                resolve();
+            }, 1000);
+            peer.outgoing
+                .write(msg)
+                .then(() => {
+                    clearTimeout(timeout);
+                    resolve();
                 })
-            );
-            delete this.peers[peer.id];
+                .catch((e) => {
+                    console.error(
+                        new Error(
+                            `Error writing to peer ${peer.id}, disconnecting`,
+                            {
+                                cause: e,
+                            }
+                        )
+                    );
+                    delete this.peers[peer.id];
+                });
         });
     }
 
