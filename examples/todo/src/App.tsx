@@ -143,12 +143,9 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {tasks &&
-                        tasks
-                            .asArray()
-                            .map((taskId) => (
-                                <TaskRow key={taskId} taskId={taskId} />
-                            ))}
+                    {tasks?.map((taskId) => (
+                        <TaskRow key={taskId} taskId={taskId} />
+                    ))}
                     <TableRow key="new">
                         <TableCell>
                             <Checkbox className="mt-1" disabled />
@@ -208,20 +205,18 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
     const brightColor = uniqolor(accountID || "", { lightness: 80 }).color;
     const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
 
-    return (
-        profile?.get("name") ? (
-            <span
-                className="rounded-full py-0.5 px-2 text-xs"
-                style={{
-                    color: theme == "light" ? darkColor : brightColor,
-                    background: theme == "light" ? brightColor : darkColor,
-                }}
-            >
-                {profile.get("name")}
-            </span>
-        ) : (
-            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
-        )
+    return profile?.get("name") ? (
+        <span
+            className="rounded-full py-0.5 px-2 text-xs"
+            style={{
+                color: theme == "light" ? darkColor : brightColor,
+                background: theme == "light" ? brightColor : darkColor,
+            }}
+        >
+            {profile.get("name")}
+        </span>
+    ) : (
+        <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
     );
 }
 

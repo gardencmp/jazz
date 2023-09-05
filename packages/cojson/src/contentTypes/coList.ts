@@ -255,6 +255,28 @@ export class CoList<
         return this.entries().map((entry) => entry.value);
     }
 
+    map<U>(mapper: (value: T, idx: number) => U): U[] {
+        return this.entries().map((entry, idx) => mapper(entry.value, idx));
+    }
+
+    filter<U extends T>(predicate: (value: T, idx: number) => value is U): U[]
+    filter(predicate: (value: T, idx: number) => boolean): T[] {
+        return this.entries()
+            .filter((entry, idx) => predicate(entry.value, idx))
+            .map((entry) => entry.value);
+    }
+
+    reduce<U>(
+        reducer: (accumulator: U, value: T, idx: number) => U,
+        initialValue: U
+    ): U {
+        return this.entries().reduce(
+            (accumulator, entry, idx) =>
+                reducer(accumulator, entry.value, idx),
+            initialValue
+        );
+    }
+
     edit(
         changer: (editable: WriteableCoList<T, Meta>) => void
     ): CoList<T, Meta> {
