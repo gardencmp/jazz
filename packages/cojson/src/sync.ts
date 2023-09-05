@@ -258,7 +258,6 @@ export class SyncManager {
         const readIncoming = async () => {
             try {
                 for await (const msg of peerState.incoming) {
-                    console.log("Got msg from", peerState.id, msg);
                     try {
                         await this.handleSyncMessage(msg, peerState);
                     } catch (e) {
