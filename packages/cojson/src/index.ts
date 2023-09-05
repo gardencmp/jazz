@@ -1,6 +1,7 @@
 import { CoValue, newRandomSessionID } from "./coValue.js";
 import { LocalNode } from "./node.js";
 import { CoMap } from "./contentTypes/coMap.js";
+import { CoList } from "./contentTypes/coList.js";
 import {
     agentSecretFromBytes,
     agentSecretToBytes,
@@ -52,6 +53,7 @@ export {
     LocalNode,
     CoValue,
     CoMap,
+    CoList,
     AnonymousControlledAccount,
     ControlledAccount,
     Group
