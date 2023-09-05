@@ -31,8 +31,7 @@ import {
     AccountID,
     Profile,
     AccountContent,
-    ProfileContent,
-    ProfileMeta,
+    AccountMap,
 } from "./account.js";
 import { CoMap } from "./index.js";
 
@@ -139,7 +138,7 @@ export class LocalNode {
     }
 
     async loadProfile(id: AccountID): Promise<Profile> {
-        const account = await this.load<CoMap<AccountContent>>(id);
+        const account = await this.load<AccountMap>(id);
         const profileID = account.get("profile");
 
         if (!profileID) {
@@ -307,7 +306,7 @@ export class LocalNode {
             account.node
         );
 
-        const profile = accountAsGroup.createMap<ProfileContent, ProfileMeta>({
+        const profile = accountAsGroup.createMap<Profile>({
             type: "profile",
         });
 

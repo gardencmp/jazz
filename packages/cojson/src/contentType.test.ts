@@ -3,7 +3,7 @@ import { createdNowUnique } from "./crypto.js";
 import { LocalNode } from "./node.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
-test("Empty COJSON Map works", () => {
+test("Empty CoMap works", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -24,7 +24,7 @@ test("Empty COJSON Map works", () => {
     expect(content.toJSON()).toEqual({});
 });
 
-test("Can insert and delete Map entries in edit()", () => {
+test("Can insert and delete CoMap entries in edit()", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -53,7 +53,7 @@ test("Can insert and delete Map entries in edit()", () => {
     });
 });
 
-test("Can get map entry values at different points in time", () => {
+test("Can get CoMap entry values at different points in time", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -89,7 +89,7 @@ test("Can get map entry values at different points in time", () => {
     });
 });
 
-test("Can get all historic values of key", () => {
+test("Can get all historic values of key in CoMap", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -141,7 +141,7 @@ test("Can get all historic values of key", () => {
     });
 });
 
-test("Can get last tx ID for a key", () => {
+test("Can get last tx ID for a key in CoMap", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -173,3 +173,112 @@ test("Can get last tx ID for a key", () => {
         expect(editable.getLastTxID("hello")?.txIndex).toEqual(2);
     });
 });
+
+test("Empty CoList works", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "colist",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "colist") {
+        throw new Error("Expected list");
+    }
+
+    expect(content.type).toEqual("colist");
+    expect(content.toJSON()).toEqual([]);
+});
+
+test("Can append, prepend and delete items to CoList", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "colist",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "colist") {
+        throw new Error("Expected list");
+    }
+
+    expect(content.type).toEqual("colist");
+
+    content.edit((editable) => {
+        editable.append(0, "hello", "trusting");
+        expect(editable.toJSON()).toEqual(["hello"]);
+        editable.append(0, "world", "trusting");
+        expect(editable.toJSON()).toEqual(["hello", "world"]);
+        editable.prepend(1, "beautiful", "trusting");
+        expect(editable.toJSON()).toEqual(["hello", "beautiful", "world"]);
+        editable.prepend(3, "hooray", "trusting");
+        expect(editable.toJSON()).toEqual([
+            "hello",
+            "beautiful",
+            "world",
+            "hooray",
+        ]);
+        editable.delete(2, "trusting");
+        expect(editable.toJSON()).toEqual(["hello", "beautiful", "hooray"]);
+    });
+});
+
+test("Push is equivalent to append after last item", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "colist",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "colist") {
+        throw new Error("Expected list");
+    }
+
+    expect(content.type).toEqual("colist");
+
+    content.edit((editable) => {
+        editable.append(0, "hello", "trusting");
+        expect(editable.toJSON()).toEqual(["hello"]);
+        editable.push("world", "trusting");
+        expect(editable.toJSON()).toEqual(["hello", "world"]);
+        editable.push("hooray", "trusting");
+        expect(editable.toJSON()).toEqual(["hello", "world", "hooray"]);
+    });
+});
+
+test("Can push into empty list", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "colist",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "colist") {
+        throw new Error("Expected list");
+    }
+
+    expect(content.type).toEqual("colist");
+
+    content.edit((editable) => {
+        editable.push("hello", "trusting");
+        expect(editable.toJSON()).toEqual(["hello"]);
+    });
+})

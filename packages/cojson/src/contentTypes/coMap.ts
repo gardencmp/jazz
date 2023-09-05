@@ -46,6 +46,10 @@ export class CoMap<
         this.fillOpsFromCoValue();
     }
 
+    get meta(): Meta {
+        return this.coValue.header.meta as Meta;
+    }
+
     protected fillOpsFromCoValue() {
         this.ops = {};
 

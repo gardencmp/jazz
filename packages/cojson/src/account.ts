@@ -135,7 +135,8 @@ export class AnonymousControlledAccount
 
 export type AccountContent = GroupContent & { profile: CoID<Profile> };
 export type AccountMeta = { type: "account" };
-export type AccountID = CoID<CoMap<AccountContent, AccountMeta>>;
+export type AccountMap = CoMap<AccountContent, AccountMeta>;
+export type AccountID = CoID<AccountMap>;
 
 export type AccountIDOrAgentID = AgentID | AccountID;
 export type AccountOrAgentID = AgentID | Account;

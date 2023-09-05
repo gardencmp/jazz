@@ -24,6 +24,7 @@ import {
 } from "./account.js";
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
+import { CoList } from "./contentTypes/coList.js";
 
 export type GroupContent = {
     profile: CoID<Profile> | null;
@@ -186,10 +187,9 @@ export class Group {
         this.rotateReadKey();
     }
 
-    createMap<
-        M extends { [key: string]: JsonValue },
-        Meta extends JsonObject | null = null
-    >(meta?: Meta): CoMap<M, Meta> {
+    createMap<M extends CoMap<{ [key: string]: JsonValue }, JsonObject | null>>(
+        meta?: M["meta"]
+    ): M {
         return this.node
             .createCoValue({
                 type: "comap",
@@ -200,7 +200,23 @@ export class Group {
                 meta: meta || null,
                 ...createdNowUnique(),
             })
-            .getCurrentContent() as CoMap<M, Meta>;
+            .getCurrentContent() as M;
+    }
+
+    createList<L extends CoList<JsonValue, JsonObject | null>>(
+        meta?: L["meta"]
+    ): L {
+        return this.node
+            .createCoValue({
+                type: "colist",
+                ruleset: {
+                    type: "ownedByGroup",
+                    group: this.groupMap.id,
+                },
+                meta: meta || null,
+                ...createdNowUnique(),
+            })
+            .getCurrentContent() as L;
     }
 
     testWithDifferentAccount(
