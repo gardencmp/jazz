@@ -40,7 +40,7 @@ export async function createBrowserNode({
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
-        [await IDBStorage.asPeer({ trace: true }), firstWsPeer]
+        [await IDBStorage.asPeer(), firstWsPeer]
     );
 
     async function websocketReconnectLoop() {
