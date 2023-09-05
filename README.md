@@ -189,15 +189,22 @@ Strips the specified member of all roles (preventing future writes) and rotates 
 
 #### `Group.createMap(meta?)`
 ```typescript
-createMap<
-    M extends { [key: string]: JsonValue },
-    Meta extends JsonObject | null = null
->(meta?: Meta): CoMap<M, Meta>
+createMap<M extends CoMap<{ [key: string]: JsonValue }, JsonObject | null>>(
+  meta?: M["meta"]
+): M
 ```
 
-Creates a new `CoMap` within this group, with the specified inner content type `M` and optional static metadata.
+Creates a new `CoMap` within this group, with the specified specialized `CoMap` type `M` and optional static metadata.
 
-#### `Group.createList(meta?)` (coming soon)
+#### `Group.createList(meta?)`
+```typescript
+createList<L extends CoList<JsonValue, JsonObject | null>>(
+  meta?: L["meta"]
+): L
+```
+
+Creates a new `CoList` within this group, with the specified specialized `CoList` type `L` and optional static metadata.
+
 #### `Group.createStream(meta?)` (coming soon)
 #### `Group.createStatic(meta)` (coming soon)
 
