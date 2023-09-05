@@ -234,7 +234,7 @@ export class CoList<
         }
     }
 
-    getLastEditor(idx: number): AccountID | undefined {
+    whoInserted(idx: number): AccountID | undefined {
         const entry = this.entries()[idx];
         if (!entry) {
             return undefined;

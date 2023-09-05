@@ -116,7 +116,7 @@ export class CoMap<
         }
     }
 
-    getLastEditor<K extends MapK<M>>(key: K): AccountID | undefined {
+    whoEdited<K extends MapK<M>>(key: K): AccountID | undefined {
         const tx  = this.getLastTxID(key);
         if (!tx) {
             return undefined;

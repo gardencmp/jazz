@@ -258,7 +258,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
                             <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
                         )}
                     </span>
-                    <NameBadge accountID={task?.getLastEditor("text")} />
+                    <NameBadge accountID={task?.whoEdited("text")} />
                 </div>
             </TableCell>
         </TableRow>
@@ -268,7 +268,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
 
 `<TaskRow>` uses `useTelepathicState()` as well, to granularly load and subscribe to changes for that particular task (the only thing we let the user change is the "done" status).
 
-We also use a `<NameBadge>` helper component to render the name of the author of the task, which we get by using the collaboration feature `getLastEditor(key)` on our `Task` CoMap, which returns the accountID of the last account that changed a given key in the CoMap.
+We also use a `<NameBadge>` helper component to render the name of the author of the task, which we get by using the collaboration feature `whoEdited(key)` on our `Task` CoMap, which returns the accountID of the last account that changed a given key in the CoMap.
 
 ---
 

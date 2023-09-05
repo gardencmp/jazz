@@ -248,10 +248,10 @@ get<K extends keyof M>(key: K): M[K] | undefined
 
 Returns the current value for the given key.
 
-#### `CoMap.getLastEditor(key)`
+#### `CoMap.whoEdited(key)`
 
 ```typescript
-getLastEditor<K extends keyof M>(key: K): AccountID | undefined
+whoEdited<K extends keyof M>(key: K): AccountID | undefined
 ```
 
 Returns the accountID of the last account to modify the value for the given key.
@@ -363,13 +363,13 @@ toJSON(): T[]
 
 Returns the current items in the CoList as an array. (alias of asArray)
 
-#### `CoList.getLastEditor(idx)`
+#### `CoList.whoInserted(idx)`
 
 ```typescript
-getLastEditor(idx: number): AccountID | undefined
+whoInserted(idx: number): AccountID | undefined
 ```
 
-Returns the accountID of the last account to modify the value at the given index.
+Returns the accountID of the account that inserted value at the given index.
 
 #### `CoList.subscribe(listener)`
 

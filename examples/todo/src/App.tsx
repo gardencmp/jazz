@@ -188,7 +188,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
                             <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
                         )}
                     </span>
-                    <NameBadge accountID={task?.getLastEditor("text")} />
+                    <NameBadge accountID={task?.whoEdited("text")} />
                 </div>
             </TableCell>
         </TableRow>
