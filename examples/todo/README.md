@@ -2,355 +2,63 @@
 
 Live version: https://example-todo.jazz.tools
 
-More comprehensive guide coming soon, but these are the most important bits, with explanations:
+## Installing & running the example locally
 
-From `./src/main.tsx`
+Start by checking out just the example app to a folder:
 
-```typescript
-// ...
-
-import { WithJazz } from "jazz-react";
-import { LocalAuth } from "jazz-react-auth-local";
-
-// ...
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <ThemeProvider>
-            <div className="flex items-center gap-2 justify-center mt-5">
-                <img src="jazz-logo.png" className="h-5" /> Jazz Todo List
-                Example
-            </div>
-            <WithJazz
-                auth={LocalAuth({
-                    appName: "Jazz Todo List Example",
-                    Component: PrettyAuthComponent,
-                })}
-            >
-                <App />
-            </WithJazz>
-        </ThemeProvider>
-    </React.StrictMode>
-);
-
+```bash
+npx degit gardencmp/jazz/examples/todo
 ```
 
-This shows how to use the top-level component `<WithJazz/>`, which provides the rest of the app with a `LocalNode` (used through `useJazz` later), based on `LocalAuth` that uses Passkeys to store a user's account secret - no backend needed.
+(This ensures that you have the example app without git history or our multi-package monorepo)
 
-Let's move on to the main app code.
+Install dependencies:
 
----
-
-From `./src/App.tsx`
-
-```typescript
-// ...
-
-import { CoMap, CoID, AccountID } from "cojson";
-import {
-   consumeInviteLinkFromWindowLocation,
-   useJazz,
-   useProfile,
-   useTelepathicState,
-   createInviteLink
-} from "jazz-react";
-
-// ...
-
-type Task = CoMap<{ done: boolean; text: string }>;
-
-type ListOfTasks = CoList<CoID<Task>>;
-
-type TodoList = CoMap<{
-    title: string;
-    tasks: CoID<ListOfTasks>;
-}>;
-
-// ...
+```bash
+npm install
 ```
 
-First, we define our main data model of tasks and todo lists, using CoJSON's collaborative map and list types, `CoMap` & `CoList`.
+Start the dev server:
 
----
-
-```typescript
-// ...
-
-export default function App() {
-    const [listId, setListId] = useState<CoID<TodoList>>();
-
-    const { localNode, logOut } = useJazz();
-
-    useEffect(() => {
-        const listener = async () => {
-            const acceptedInvitation =
-                await consumeInviteLinkFromWindowLocation(localNode);
-
-            if (acceptedInvitation) {
-                setListId(acceptedInvitation.valueID as CoID<TodoList>);
-                window.location.hash = acceptedInvitation.valueID;
-                return;
-            }
-
-            setListId(window.location.hash.slice(1) as CoID<TodoList>);
-        };
-        window.addEventListener("hashchange", listener);
-        listener();
-
-        return () => {
-            window.removeEventListener("hashchange", listener);
-        };
-    }, [localNode]);
-
-    const createList = useCallback(
-        (title: string) => {
-            if (!title) return;
-            const listGroup = localNode.createGroup();
-            const list = listGroup.createMap<TodoList>();
-            const tasks = listGroup.createList<ListOfTasks>();
-
-            list.edit((list) => {
-                list.set("title", title);
-                list.set("tasks", tasks.id);
-            });
-
-            window.location.hash = list.id;
-        },
-        [localNode]
-    );
-
-    return (
-        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-            {listId ? (
-                <TodoListComponent listId={listId} />
-            ) : (
-                <SubmittableInput
-                    onSubmit={createList}
-                    label="Create New List"
-                    placeholder="New list title"
-                />
-            )}
-            <Button
-                onClick={() => {
-                    window.location.hash = "";
-                    logOut();
-                }}
-                variant="outline"
-            >
-                Log Out
-            </Button>
-        </div>
-    );
-}
+```bash
+npm run dev
 ```
 
-`<App>` is the main app component, handling client-side routing based on the CoValue ID (`CoID`) of our `TodoList`, stored in the URL hash - which can also contain invite links, which we intercept and use with `consumeInviteLinkFromWindowLocation`.
+## Structure
 
-`createList` is the first time we see CoJSON in action: using our `localNode` (which we got from `useJazz`), we first create a group for a new todo list (which allows us to set permissions later). Then, within that group, we create a new `CoMap<TodoListContent>` with `listGroup.createMap()`.
+- [`src/basicComponents`](./src/basicComponents) contains simple components to build the UI, unrelated to Jazz (powered by [shadcn/ui](https://ui.shadcn.com))
+- [`src/components`](./src/components/) contains helper components that do contain Jazz-specific logic, but are not super relevant to understand the basics of Jazz and CoJSON
+- [`src/0_main.tsx`](./src/0_main.tsx), [`src/1_types.ts`](./src/1_types.ts), [`src/2_App.tsx`](./src/2_App.tsx), [`src/3_TodoTable.tsx`](./src/3_TodoTable.tsx), [`src/router.ts`](./src/router.ts) - the main files for this example, see the walkthrough below
 
-We immediately start editing the created `list`. Within the edit callback, we can use the `set` function, to collaboratively set the key `title` to the initial title provided to `createList`.
+## Walkthrough
 
-If we have a current `listId` set, we render `<TodoListComponent>` with it, which we'll see next.
+### Main parts
 
-If we have no `listId` set, the user can use the displayed creation input to create (and open) their first list.
+- The top-level provider `<WithJazz/>`: [`src/0_main.tsx`](./src/0_main.tsx)
 
----
+- Defining the data model with CoJSON: [`src/1_types.ts`](./src/1_types.ts)
 
-```typescript
-export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
-    const list = useTelepathicState(listId);
-    const tasks = useTelepathicState(list?.get("tasks"));
+- Creating todo projects & routing in `<App/>`: [`src/2_App.tsx`](./src/2_App.tsx)
 
-    const createTask = (text: string) => {
-        if (!tasks || !text) return;
-        const task = tasks.group.createMap<Task>();
+- Reactively rendering a todo project as a table, adding and editing tasks: [`src/3_TodoTable.tsx`](./src/3_TodoTable.tsx)
 
-        task.edit((task) => {
-            task.set("text", text);
-            task.set("done", false);
-        });
+### Helpers
 
-        tasks.edit((tasks) => {
-            tasks.push(task.id);
-        });
-    };
+- Getting user profiles in `<NameBadge/>`: [`src/components/NameBadge.tsx`](./src/components/NameBadge.tsx)
 
-    return (
-        <div className="max-w-full w-4xl">
-            <div className="flex justify-between items-center gap-4 mb-4">
-                <h1>
-                    {list?.get("title") ? (
-                        <>
-                            {list.get("title")}{" "}
-                            <span className="text-sm">({list.id})</span>
-                        </>
-                    ) : (
-                        <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
-                    )}
-                </h1>
-                {list && <InviteButton list={list} />}
-            </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[40px]">Done</TableHead>
-                        <TableHead>Task</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {tasks &&
-                        tasks
-                            .asArray()
-                            .map((taskId) => (
-                                <TaskRow key={taskId} taskId={taskId} />
-                            ))}
-                    <TableRow key="new">
-                        <TableCell>
-                            <Checkbox className="mt-1" disabled />
-                        </TableCell>
-                        <TableCell>
-                            <SubmittableInput
-                                onSubmit={(taskText) => createTask(taskText)}
-                                label="Add"
-                                placeholder="New task"
-                                disabled={!list}
-                            />
-                        </TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-        </div>
-    );
-}
-```
+- (not yet commented) Creating invite links/QR codes with `<InviteButton/>`: [`src/components/InviteButton.tsx`](./src/components/InviteButton.tsx)
 
-Here in `<TodoListComponent>`, we use `useTelepathicData()` for the first time, in this case to load the CoValue for our `TodoList` as well as the `ListOfTasks` referenced in it. `useTelepathicData()` reactively subscribes to updates to a CoValue's content - whether we create edits locally, load persisted data, or receive sync updates from other devices or participants!
-
-`createTask` is similar to `createList` we saw earlier, creating a new CoMap for a new task, and then adding it as an item to our `TodoList`'s `ListOfTasks`.
-
-As you can see, we iterate over the items of our `ListOfTasks` and render a `<TaskRow>` for each.
-
-Below all tasks, we render a simple input for adding a task.
-
----
-
-```typescript
-function TaskRow({ taskId }: { taskId: CoID<Task> }) {
-    const task = useTelepathicState(taskId);
-
-    return (
-        <TableRow>
-            <TableCell>
-                <Checkbox
-                    className="mt-1"
-                    checked={task?.get("done")}
-                    onCheckedChange={(checked) => {
-                        task?.edit((task) => {
-                            task.set("done", !!checked);
-                        });
-                    }}
-                />
-            </TableCell>
-            <TableCell>
-                <div className="flex flex-row justify-between items-center gap-2">
-                    <span className={task?.get("done") ? "line-through" : ""}>
-                        {task?.get("text") || (
-                            <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
-                        )}
-                    </span>
-                    <NameBadge accountID={task?.whoEdited("text")} />
-                </div>
-            </TableCell>
-        </TableRow>
-    );
-}
-```
-
-`<TaskRow>` uses `useTelepathicState()` as well, to granularly load and subscribe to changes for that particular task (the only thing we let the user change is the "done" status).
-
-We also use a `<NameBadge>` helper component to render the name of the author of the task, which we get by using the collaboration feature `whoEdited(key)` on our `Task` CoMap, which returns the accountID of the last account that changed a given key in the CoMap.
-
----
-
-```typescript
-function NameBadge({ accountID }: { accountID?: AccountID }) {
-    const profile = useProfile(accountID);
-
-    const theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-
-    const brightColor = uniqolor(accountID || "", { lightness: 80 }).color;
-    const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
-
-    return (
-        profile?.get("name") ? (
-            <span
-                className="rounded-full py-0.5 px-2 text-xs"
-                style={{
-                    color: theme == "light" ? darkColor : brightColor,
-                    background: theme == "light" ? brightColor : darkColor,
-                }}
-            >
-                {profile.get("name")}
-            </span>
-        ) : (
-            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
-        )
-    );
-}
-```
-
-`<NameBadge>` uses `useProfile(accountID)`, which is a shorthand for loading an account's profile (which is always a `CoMap<{name: string}>`, but might have app-specific additional properties).
-
-In our case, we just display the profile name (which, by the way, is set by the `LocalAuth` provider when we first create an account).
-
----
-
-```typescript
-function InviteButton({ list }: { list: TodoList }) {
-    const [existingInviteLink, setExistingInviteLink] = useState<string>();
-    const { toast } = useToast();
-
-    return (
-        list.group.myRole() === "admin" && (
-            <Button
-                size="sm"
-                className="py-0"
-                disabled={!list}
-                variant="outline"
-                onClick={async () => {
-                    let inviteLink = existingInviteLink;
-                    if (list && !inviteLink) {
-                        inviteLink = createInviteLink(list, "writer");
-                        setExistingInviteLink(inviteLink);
-                    }
-                    if (inviteLink) {
-                        const qr = await QRCode.toDataURL(inviteLink, {
-                            errorCorrectionLevel: "L",
-                        });
-                        navigator.clipboard.writeText(inviteLink).then(() =>
-                            toast({
-                                title: "Copied invite link to clipboard!",
-                                description: (
-                                    <img src={qr} className="w-20 h-20" />
-                                ),
-                            })
-                        );
-                    }
-                }}
-            >
-                Invite
-            </Button>
-        )
-    );
-}
-```
-
-Last, we have a look at the `<InviteButton>` component, which we use inside `<TodoListComponent>`. It only becomes visible when the current user is an admin in the `TodoList`'s group. You can see how we can create an invite link using `createInviteLink(coValue, role)` that allows anyone who has it to join the group as a specified role (here, as a writer).
-
----
+- (not yet commented) `location.hash`-based routing and accepting invite links with `useSimpleHashRouterThatAcceptsInvites()` in [`src/router.ts`](./src/router.ts)
 
 This is the whole Todo List app!
 
+## Questions / problems / feedback
+
 If you have feedback, let us know on [Discord](https://discord.gg/utDMjHYg42) or open an issue or PR to fix something that seems wrong.
+
+
+## Configuration: sync server
+
+By default, the example app uses [Jazz Global Mesh](https://jazz.tools/mesh) (`wss://sync.jazz.tools`) - so cross-device use, invites and collaboration should just work.
+
+You can also run a local sync server by running `npx cojson-simple-sync` and adding the query param `?sync=ws://localhost:4200` to the URL of the example app (for example: `http://localhost:5173/?sync=ws://localhost:4200`), or by setting the `sync` parameter of the `<WithJazz>` provider component in [./src/0_main.tsx](./src/0_main.tsx).
