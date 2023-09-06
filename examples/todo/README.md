@@ -8,7 +8,7 @@ Start by checking out just the example app to a folder:
 
 ```bash
 npx degit gardencmp/jazz/examples/todo jazz-example-todo
-cd jazz-example todo
+cd jazz-example-todo
 ```
 
 (This ensures that you have the example app without git history or our multi-package monorepo)
