@@ -18,12 +18,12 @@
     "clsx": "^2.0.0",
     "jazz-react": "^0.1.8",
     "jazz-react-auth-local": "^0.1.8",
-    "lucide-react": "^0.265.0",
+    "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^1.14.0",
-    "tailwindcss-animate": "^1.0.6",
+    "tailwindcss-animate": "^1.0.7",
     "uniqolor": "^1.1.0"
   },
   "devDependencies": {

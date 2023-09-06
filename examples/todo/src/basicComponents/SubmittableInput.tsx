@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/basicComponents/ui/input";
+import { Button } from "@/basicComponents/ui/button";
 
 export function SubmittableInput({
     onSubmit,
