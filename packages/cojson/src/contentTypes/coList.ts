@@ -2,7 +2,7 @@ import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoID } from "../contentType.js";
 import { CoValue, accountOrAgentIDfromSessionID } from "../coValue.js";
 import { SessionID, TransactionID } from "../ids.js";
-import { AccountID } from "../index.js";
+import { AccountID, Group } from "../index.js";
 import { isAccountID } from "../account.js";
 
 type OpID = TransactionID & { changeIdx: number };
@@ -77,6 +77,10 @@ export class CoList<
 
     get meta(): Meta {
         return this.coValue.header.meta as Meta;
+    }
+
+    get group(): Group {
+        return this.coValue.getGroup();
     }
 
     protected fillOpsFromCoValue() {
@@ -230,7 +234,7 @@ export class CoList<
         }
     }
 
-    getLastEditor(idx: number): AccountID | undefined {
+    whoInserted(idx: number): AccountID | undefined {
         const entry = this.entries()[idx];
         if (!entry) {
             return undefined;
@@ -249,6 +253,28 @@ export class CoList<
 
     asArray(): T[] {
         return this.entries().map((entry) => entry.value);
+    }
+
+    map<U>(mapper: (value: T, idx: number) => U): U[] {
+        return this.entries().map((entry, idx) => mapper(entry.value, idx));
+    }
+
+    filter<U extends T>(predicate: (value: T, idx: number) => value is U): U[]
+    filter(predicate: (value: T, idx: number) => boolean): T[] {
+        return this.entries()
+            .filter((entry, idx) => predicate(entry.value, idx))
+            .map((entry) => entry.value);
+    }
+
+    reduce<U>(
+        reducer: (accumulator: U, value: T, idx: number) => U,
+        initialValue: U
+    ): U {
+        return this.entries().reduce(
+            (accumulator, entry, idx) =>
+                reducer(accumulator, entry.value, idx),
+            initialValue
+        );
     }
 
     edit(

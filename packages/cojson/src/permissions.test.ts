@@ -108,7 +108,7 @@ test("Admins can't demote other admins in a group (high level)", () => {
         newRandomSessionID(otherAdmin.id)
     );
 
-    expect(() => groupAsOtherAdmin.addMember(admin.id, "writer")).toThrow(
+    expect(() => groupAsOtherAdmin.addMemberInternal(admin.id, "writer")).toThrow(
         "Failed to set role"
     );
 
@@ -1378,7 +1378,7 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
         groupAsInvitedAdmin.groupMap.coValue.getCurrentReadKey().secret
     ).toBeDefined();
 
-    groupAsInvitedAdmin.addMember(thirdAdminID, "admin");
+    groupAsInvitedAdmin.addMemberInternal(thirdAdminID, "admin");
 
     expect(groupAsInvitedAdmin.groupMap.get(thirdAdminID)).toEqual("admin");
 });

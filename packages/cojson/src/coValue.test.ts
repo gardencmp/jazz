@@ -28,13 +28,13 @@ test("Can create coValue with new agent credentials and add transaction to it", 
     };
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
-        node.ownSessionID,
+        node.currentSessionID,
         [transaction]
     );
 
     expect(
         coValue.tryAddTransactions(
-            node.ownSessionID,
+            node.currentSessionID,
             [transaction],
             expectedNewHash,
             sign(account.currentSignerSecret(), expectedNewHash)
@@ -65,13 +65,13 @@ test("transactions with wrong signature are rejected", () => {
     };
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
-        node.ownSessionID,
+        node.currentSessionID,
         [transaction]
     );
 
     expect(
         coValue.tryAddTransactions(
-            node.ownSessionID,
+            node.currentSessionID,
             [transaction],
             expectedNewHash,
             sign(getAgentSignerSecret(wrongAgent), expectedNewHash)
@@ -101,7 +101,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
     };
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
-        node.ownSessionID,
+        node.currentSessionID,
         [
             {
                 privacy: "trusting",
@@ -117,7 +117,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
 
     expect(
         coValue.tryAddTransactions(
-            node.ownSessionID,
+            node.currentSessionID,
             [transaction],
             expectedNewHash,
             sign(account.currentSignerSecret(), expectedNewHash)
@@ -170,7 +170,7 @@ test("New transactions in a group correctly update owned values, including subsc
 
     expect(map.coValue.getValidSortedTransactions().length).toBe(1);
 
-    const manuallyAdddedTxSuccess = group.groupMap.coValue.tryAddTransactions(node.ownSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
+    const manuallyAdddedTxSuccess = group.groupMap.coValue.tryAddTransactions(node.currentSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
 
     expect(manuallyAdddedTxSuccess).toBe(true);
 

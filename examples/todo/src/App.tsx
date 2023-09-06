@@ -43,10 +43,10 @@ export default function App() {
     useEffect(() => {
         const listener = async () => {
             const acceptedInvitation =
-                await consumeInviteLinkFromWindowLocation(localNode);
+                await consumeInviteLinkFromWindowLocation<TodoList>(localNode);
 
             if (acceptedInvitation) {
-                setListId(acceptedInvitation.valueID as CoID<TodoList>);
+                setListId(acceptedInvitation.valueID);
                 window.location.hash = acceptedInvitation.valueID;
                 return;
             }
@@ -108,7 +108,7 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
 
     const createTask = (text: string) => {
         if (!tasks || !text) return;
-        const task = tasks.coValue.getGroup().createMap<Task>();
+        const task = tasks.group.createMap<Task>();
 
         task.edit((task) => {
             task.set("text", text);
@@ -143,12 +143,9 @@ export function TodoListComponent({ listId }: { listId: CoID<TodoList> }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {tasks &&
-                        tasks
-                            .asArray()
-                            .map((taskId) => (
-                                <TaskRow key={taskId} taskId={taskId} />
-                            ))}
+                    {tasks?.map((taskId) => (
+                        <TaskRow key={taskId} taskId={taskId} />
+                    ))}
                     <TableRow key="new">
                         <TableCell>
                             <Checkbox className="mt-1" disabled />
@@ -191,7 +188,7 @@ function TaskRow({ taskId }: { taskId: CoID<Task> }) {
                             <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
                         )}
                     </span>
-                    <NameBadge accountID={task?.getLastEditor("text")} />
+                    <NameBadge accountID={task?.whoEdited("text")} />
                 </div>
             </TableCell>
         </TableRow>
@@ -208,20 +205,18 @@ function NameBadge({ accountID }: { accountID?: AccountID }) {
     const brightColor = uniqolor(accountID || "", { lightness: 80 }).color;
     const darkColor = uniqolor(accountID || "", { lightness: 20 }).color;
 
-    return (
-        profile?.get("name") ? (
-            <span
-                className="rounded-full py-0.5 px-2 text-xs"
-                style={{
-                    color: theme == "light" ? darkColor : brightColor,
-                    background: theme == "light" ? brightColor : darkColor,
-                }}
-            >
-                {profile.get("name")}
-            </span>
-        ) : (
-            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
-        )
+    return profile?.get("name") ? (
+        <span
+            className="rounded-full py-0.5 px-2 text-xs"
+            style={{
+                color: theme == "light" ? darkColor : brightColor,
+                background: theme == "light" ? brightColor : darkColor,
+            }}
+        >
+            {profile.get("name")}
+        </span>
+    ) : (
+        <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
     );
 }
 
@@ -230,7 +225,7 @@ function InviteButton({ list }: { list: TodoList }) {
     const { toast } = useToast();
 
     return (
-        list.coValue.getGroup().myRole() === "admin" && (
+        list.group.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"

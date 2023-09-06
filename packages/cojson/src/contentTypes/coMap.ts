@@ -3,6 +3,7 @@ import { TransactionID } from '../ids.js';
 import { CoID } from '../contentType.js';
 import { CoValue, accountOrAgentIDfromSessionID } from '../coValue.js';
 import { AccountID, isAccountID } from '../account.js';
+import { Group } from '../group.js';
 
 type MapOp<K extends string, V extends JsonValue> = {
     txID: TransactionID;
@@ -48,6 +49,10 @@ export class CoMap<
 
     get meta(): Meta {
         return this.coValue.header.meta as Meta;
+    }
+
+    get group(): Group {
+        return this.coValue.getGroup();
     }
 
     protected fillOpsFromCoValue() {
@@ -111,7 +116,7 @@ export class CoMap<
         }
     }
 
-    getLastEditor<K extends MapK<M>>(key: K): AccountID | undefined {
+    whoEdited<K extends MapK<M>>(key: K): AccountID | undefined {
         const tx  = this.getLastTxID(key);
         if (!tx) {
             return undefined;

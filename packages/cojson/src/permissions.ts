@@ -10,14 +10,14 @@ import {
     TrustingTransaction,
     accountOrAgentIDfromSessionID,
 } from "./coValue.js";
-import { RawCoID, SessionID, TransactionID } from "./ids.js";
+import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import {
-    AccountIDOrAgentID,
+    AccountID,
     Profile,
 } from "./account.js";
 
 export type PermissionsDef =
-    | { type: "group"; initialAdmin: AccountIDOrAgentID }
+    | { type: "group"; initialAdmin: AccountID | AgentID }
     | { type: "ownedByGroup"; group: RawCoID }
     | { type: "unsafeAllowAll" };
 
@@ -63,7 +63,7 @@ export function determineValidTransactions(
             throw new Error("Group must have initialAdmin");
         }
 
-        const memberState: { [agent: AccountIDOrAgentID]: Role } = {};
+        const memberState: { [agent: AccountID | AgentID]: Role } = {};
 
         const validTransactions: { txID: TransactionID; tx: Transaction }[] =
             [];
@@ -77,7 +77,7 @@ export function determineValidTransactions(
             const transactor = accountOrAgentIDfromSessionID(sessionID);
 
             const change = tx.changes[0] as
-                | MapOpPayload<AccountIDOrAgentID, Role>
+                | MapOpPayload<AccountID | AgentID, Role>
                 | MapOpPayload<"readKey", JsonValue>
                 | MapOpPayload<"profile", CoID<Profile>>;
             if (tx.changes.length !== 1) {
@@ -248,7 +248,7 @@ export function isKeyForKeyField(
 
 export function isKeyForAccountField(
     field: string
-): field is `${KeyID}_for_${AccountIDOrAgentID}` {
+): field is `${KeyID}_for_${AccountID | AgentID}` {
     return (
         field.startsWith("key_") &&
         (field.includes("_for_sealer") || field.includes("_for_co"))

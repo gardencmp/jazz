@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
+    "stripInternal": true
   },
   "include": ["./src/**/*"],
   "exclude": ["./src/**/*.test.*"],

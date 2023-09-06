@@ -30,11 +30,10 @@ import {
 import { Group, expectGroupContent } from "./group.js";
 import { LocalNode } from "./node.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
-import { RawCoID, SessionID, TransactionID } from "./ids.js";
+import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./contentTypes/coList.js";
 import {
     AccountID,
-    AccountIDOrAgentID,
     GeneralizedControlledAccount,
 } from "./account.js";
 
@@ -53,11 +52,11 @@ export function idforHeader(header: CoValueHeader): RawCoID {
 
 export function accountOrAgentIDfromSessionID(
     sessionID: SessionID
-): AccountIDOrAgentID {
-    return sessionID.split("_session")[0] as AccountIDOrAgentID;
+): AccountID | AgentID {
+    return sessionID.split("_session")[0] as AccountID | AgentID;
 }
 
-export function newRandomSessionID(accountID: AccountIDOrAgentID): SessionID {
+export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {
     return `${accountID}_session_z${base58.encode(randomBytes(8))}`;
 }
 
@@ -131,11 +130,11 @@ export class CoValue {
 
     testWithDifferentAccount(
         account: GeneralizedControlledAccount,
-        ownSessionID: SessionID
+        currentSessionID: SessionID
     ): CoValue {
         const newNode = this.node.testWithDifferentAccount(
             account,
-            ownSessionID
+            currentSessionID
         );
 
         return newNode.expectCoValueLoaded(this.id);
@@ -159,7 +158,7 @@ export class CoValue {
     }
 
     nextTransactionID(): TransactionID {
-        const sessionID = this.node.ownSessionID;
+        const sessionID = this.node.currentSessionID;
         return {
             sessionID,
             txIndex: this.sessions[sessionID]?.transactions.length || 0,
@@ -294,7 +293,7 @@ export class CoValue {
             };
         }
 
-        const sessionID = this.node.ownSessionID;
+        const sessionID = this.node.currentSessionID;
 
         const { expectedNewHash } = this.expectedNewHashAfter(sessionID, [
             transaction,

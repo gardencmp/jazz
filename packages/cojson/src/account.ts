@@ -52,7 +52,7 @@ export class Account extends Group {
 }
 
 export interface GeneralizedControlledAccount {
-    id: AccountIDOrAgentID;
+    id: AccountID | AgentID;
     agentSecret: AgentSecret;
 
     currentAgentID: () => AgentID;
@@ -138,11 +138,7 @@ export type AccountMeta = { type: "account" };
 export type AccountMap = CoMap<AccountContent, AccountMeta>;
 export type AccountID = CoID<AccountMap>;
 
-export type AccountIDOrAgentID = AgentID | AccountID;
-export type AccountOrAgentID = AgentID | Account;
-export type AccountOrAgentSecret = AgentSecret | Account;
-
-export function isAccountID(id: AccountIDOrAgentID): id is AccountID {
+export function isAccountID(id: AccountID | AgentID): id is AccountID {
     return id.startsWith("co_");
 }
 

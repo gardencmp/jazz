@@ -23,7 +23,6 @@ import { CoID, ContentType } from "./contentType.js";
 import {
     Account,
     AccountMeta,
-    AccountIDOrAgentID,
     accountHeaderForInitialAgentSecret,
     GeneralizedControlledAccount,
     ControlledAccount,
@@ -36,17 +35,19 @@ import {
 import { CoMap } from "./index.js";
 
 export class LocalNode {
+    /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
+    /** @internal */
     account: GeneralizedControlledAccount;
-    ownSessionID: SessionID;
+    currentSessionID: SessionID;
     sync = new SyncManager(this);
 
     constructor(
         account: GeneralizedControlledAccount,
-        ownSessionID: SessionID
+        currentSessionID: SessionID
     ) {
         this.account = account;
-        this.ownSessionID = ownSessionID;
+        this.currentSessionID = currentSessionID;
     }
 
     static withNewlyCreatedAccount(
@@ -75,7 +76,7 @@ export class LocalNode {
             node: nodeWithAccount,
             accountID: account.id,
             accountSecret: account.agentSecret,
-            sessionID: nodeWithAccount.ownSessionID,
+            sessionID: nodeWithAccount.currentSessionID,
         };
     }
 
@@ -109,6 +110,7 @@ export class LocalNode {
         return node;
     }
 
+    /** @internal */
     createCoValue(header: CoValueHeader): CoValue {
         const coValue = new CoValue(header, this);
         this.coValues[coValue.id] = { state: "loaded", coValue: coValue };
@@ -118,6 +120,7 @@ export class LocalNode {
         return coValue;
     }
 
+    /** @internal */
     loadCoValue(id: RawCoID): Promise<CoValue> {
         let entry = this.coValues[id];
         if (!entry) {
@@ -210,7 +213,7 @@ export class LocalNode {
             newRandomSessionID(inviteAgentID)
         );
 
-        groupAsInvite.addMember(
+        groupAsInvite.addMemberInternal(
             this.account.id,
             inviteRole === "adminInvite"
                 ? "admin"
@@ -227,6 +230,7 @@ export class LocalNode {
         }
     }
 
+    /** @internal */
     expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
         const entry = this.coValues[id];
         if (!entry) {
@@ -244,6 +248,7 @@ export class LocalNode {
         return entry.coValue;
     }
 
+    /** @internal */
     expectProfileLoaded(id: AccountID, expectation?: string): Profile {
         const account = this.expectCoValueLoaded(id, expectation);
         const profileID = expectGroupContent(account.getCurrentContent()).get(
@@ -262,6 +267,7 @@ export class LocalNode {
         ).getCurrentContent() as Profile;
     }
 
+    /** @internal */
     createAccount(
         name: string,
         agentSecret = newRandomAgentSecret()
@@ -326,7 +332,8 @@ export class LocalNode {
         return controlledAccount;
     }
 
-    resolveAccountAgent(id: AccountIDOrAgentID, expectation?: string): AgentID {
+    /** @internal */
+    resolveAccountAgent(id: AccountID | AgentID, expectation?: string): AgentID {
         if (isAgentID(id)) {
             return id;
         }
@@ -388,11 +395,12 @@ export class LocalNode {
         return new Group(groupContent, this);
     }
 
+    /** @internal */
     testWithDifferentAccount(
         account: GeneralizedControlledAccount,
-        ownSessionID: SessionID
+        currentSessionID: SessionID
     ): LocalNode {
-        const newNode = new LocalNode(account, ownSessionID);
+        const newNode = new LocalNode(account, currentSessionID);
 
         const coValuesToCopy = Object.entries(this.coValues);
 
@@ -429,6 +437,7 @@ export class LocalNode {
     }
 }
 
+/** @internal */
 type CoValueState =
     | {
           state: "loading";
@@ -437,6 +446,7 @@ type CoValueState =
       }
     | { state: "loaded"; coValue: CoValue };
 
+/** @internal */
 export function newLoadingState(): CoValueState {
     let resolve: (coValue: CoValue) => void;
 

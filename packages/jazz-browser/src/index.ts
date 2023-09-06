@@ -2,7 +2,8 @@ import { InviteSecret } from "cojson";
 import {
     LocalNode,
     cojsonInternals,
-    CojsonInternalTypes,
+    AccountID,
+    AgentID,
     SessionID,
     SyncMessage,
     Peer,
@@ -39,7 +40,7 @@ export async function createBrowserNode({
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
-        [await IDBStorage.asPeer({ trace: true }), firstWsPeer]
+        [await IDBStorage.asPeer(), firstWsPeer]
     );
 
     async function websocketReconnectLoop() {
@@ -81,7 +82,7 @@ export interface AuthProvider {
 }
 
 export type SessionProvider = (
-    accountID: CojsonInternalTypes.AccountIDOrAgentID
+    accountID: AccountID | AgentID
 ) => Promise<SessionID>;
 
 export type SessionHandle = {
@@ -90,7 +91,7 @@ export type SessionHandle = {
 };
 
 function getSessionHandleFor(
-    accountID: CojsonInternalTypes.AccountIDOrAgentID
+    accountID: AccountID | AgentID
 ): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
@@ -286,9 +287,7 @@ export function createInviteLink(
     let currentCoValue = coValue;
 
     while (currentCoValue.header.ruleset.type === "ownedByGroup") {
-        currentCoValue = node.expectCoValueLoaded(
-            currentCoValue.header.ruleset.group
-        );
+        currentCoValue = currentCoValue.getGroup().groupMap.coValue;
     }
 
     if (currentCoValue.header.ruleset.type !== "group") {
@@ -305,16 +304,16 @@ export function createInviteLink(
     return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
 }
 
-export function parseInviteLink(inviteURL: string):
+export function parseInviteLink<C extends ContentType>(inviteURL: string):
     | {
-          valueID: CoID<ContentType>;
+          valueID: CoID<C>;
           inviteSecret: InviteSecret;
       }
     | undefined {
     const url = new URL(inviteURL);
     const valueID = url.hash
         .split("&")[0]
-        ?.replace(/^#invitedTo=/, "") as CoID<ContentType>;
+        ?.replace(/^#invitedTo=/, "") as CoID<C>;
     const inviteSecret = url.hash.split("&")[1] as InviteSecret;
     if (!valueID || !inviteSecret) {
         return undefined;
@@ -322,15 +321,15 @@ export function parseInviteLink(inviteURL: string):
     return { valueID, inviteSecret };
 }
 
-export function consumeInviteLinkFromWindowLocation(node: LocalNode): Promise<
+export function consumeInviteLinkFromWindowLocation<C extends ContentType>(node: LocalNode): Promise<
     | {
-          valueID: string;
+          valueID: CoID<C>;
           inviteSecret: string;
       }
     | undefined
 > {
     return new Promise((resolve, reject) => {
-        const result = parseInviteLink(window.location.href);
+        const result = parseInviteLink<C>(window.location.href);
 
         if (result) {
             node.acceptInvite(result.valueID, result.inviteSecret)

@@ -16,9 +16,9 @@ import {
     getAgentID,
 } from "./crypto.js";
 import { LocalNode } from "./node.js";
-import { SessionID, isAgentID } from "./ids.js";
+import { AgentID, SessionID, isAgentID } from "./ids.js";
 import {
-    AccountIDOrAgentID,
+    AccountID,
     GeneralizedControlledAccount,
     Profile,
 } from "./account.js";
@@ -28,9 +28,9 @@ import { CoList } from "./contentTypes/coList.js";
 
 export type GroupContent = {
     profile: CoID<Profile> | null;
-    [key: AccountIDOrAgentID]: Role;
+    [key: AccountID | AgentID]: Role;
     readKey: KeyID;
-    [revelationFor: `${KeyID}_for_${AccountIDOrAgentID}`]: Sealed<KeySecret>;
+    [revelationFor: `${KeyID}_for_${AccountID | AgentID}`]: Sealed<KeySecret>;
     [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
         KeySecret,
         { encryptedID: KeyID; encryptingID: KeyID }
@@ -63,15 +63,25 @@ export class Group {
         return this.groupMap.id;
     }
 
-    roleOf(accountID: AccountIDOrAgentID): Role | undefined {
+    roleOf(accountID: AccountID): Role | undefined {
+        return this.roleOfInternal(accountID);
+    }
+
+    /** @internal */
+    roleOfInternal(accountID: AccountID | AgentID): Role | undefined {
         return this.groupMap.get(accountID);
     }
 
     myRole(): Role | undefined {
-        return this.roleOf(this.node.account.id);
+        return this.roleOfInternal(this.node.account.id);
     }
 
-    addMember(accountID: AccountIDOrAgentID, role: Role) {
+    addMember(accountID: AccountID, role: Role) {
+        this.addMemberInternal(accountID, role);
+    }
+
+    /** @internal */
+    addMemberInternal(accountID: AccountID | AgentID, role: Role) {
         this.groupMap = this.groupMap.edit((map) => {
             const currentReadKey = this.groupMap.coValue.getCurrentReadKey();
 
@@ -112,7 +122,7 @@ export class Group {
         const inviteSecret = agentSecretFromSecretSeed(secretSeed);
         const inviteID = getAgentID(inviteSecret);
 
-        this.addMember(inviteID, `${role}Invite` as Role);
+        this.addMemberInternal(inviteID, `${role}Invite` as Role);
 
         return inviteSecretFromSecretSeed(secretSeed);
     }
@@ -127,7 +137,7 @@ export class Group {
             } else {
                 return false;
             }
-        }) as AccountIDOrAgentID[];
+        }) as (AccountID | AgentID)[];
 
         const maybeCurrentReadKey = this.groupMap.coValue.getCurrentReadKey();
 
@@ -179,7 +189,12 @@ export class Group {
         });
     }
 
-    removeMember(accountID: AccountIDOrAgentID) {
+    removeMember(accountID: AccountID) {
+        this.removeMemberInternal(accountID);
+    }
+
+    /** @internal */
+    removeMemberInternal(accountID: AccountID | AgentID) {
         this.groupMap = this.groupMap.edit((map) => {
             map.set(accountID, "revoked", "trusting");
         });
@@ -219,6 +234,7 @@ export class Group {
             .getCurrentContent() as L;
     }
 
+    /** @internal */
     testWithDifferentAccount(
         account: GeneralizedControlledAccount,
         sessionId: SessionID

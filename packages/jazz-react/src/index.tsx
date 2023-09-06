@@ -125,7 +125,7 @@ export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
 }
 
 export function useProfile<
-    P extends { [key: string]: JsonValue } & ProfileContent = ProfileContent
+    P extends ({ [key: string]: JsonValue } & ProfileContent) = ProfileContent
 >(accountID?: AccountID): CoMap<P, ProfileMeta> | undefined {
     const [profileID, setProfileID] = useState<CoID<CoMap<P, ProfileMeta>>>();
 

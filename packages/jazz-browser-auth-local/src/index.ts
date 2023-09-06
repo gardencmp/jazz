@@ -147,7 +147,7 @@ async function signUp(
         accountSecret,
     } satisfies SessionStorageData);
 
-    node.ownSessionID = await getSessionFor(accountID);
+    node.currentSessionID = await getSessionFor(accountID);
 
     return node;
 }
