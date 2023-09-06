@@ -34,6 +34,17 @@ import {
 } from "./account.js";
 import { CoMap } from "./index.js";
 
+/** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
+
+A `LocalNode` can have peers that it syncs to, for example some form of local persistence, or a sync server, such as `sync.jazz.tools` (Jazz Global Mesh).
+
+@example
+You typically get hold of a `LocalNode` using `jazz-react`'s `useJazz()`:
+
+```typescript
+const { localNode } = useJazz();
+```
+*/
 export class LocalNode {
     /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};

@@ -62,6 +62,7 @@ export interface GeneralizedControlledAccount {
     currentSealerSecret: () => SealerSecret;
 }
 
+/** @hidden */
 export class ControlledAccount
     extends Account
     implements GeneralizedControlledAccount
@@ -99,6 +100,7 @@ export class ControlledAccount
     }
 }
 
+/** @hidden */
 export class AnonymousControlledAccount
     implements GeneralizedControlledAccount
 {

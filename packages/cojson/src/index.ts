@@ -15,7 +15,7 @@ import {
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
-import { Group, expectGroupContent } from "./group.js"
+import { Group, expectGroupContent } from "./group.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, ContentType } from "./contentType.js";
@@ -24,15 +24,13 @@ import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
 import type {
     AccountID,
-    AccountContent,
-    ProfileContent,
-    ProfileMeta,
     Profile,
 } from "./account.js";
 import type { InviteSecret } from "./group.js";
 
 type Value = JsonValue | ContentType;
 
+/** @hidden */
 export const cojsonInternals = {
     agentSecretFromBytes,
     agentSecretToBytes,
@@ -46,17 +44,17 @@ export const cojsonInternals = {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    expectGroupContent
+    expectGroupContent,
 };
 
 export {
     LocalNode,
-    CoValue,
+    Group,
     CoMap,
     CoList,
+    CoValue,
     AnonymousControlledAccount,
     ControlledAccount,
-    Group
 };
 
 export type {
@@ -64,17 +62,14 @@ export type {
     JsonValue,
     ContentType,
     CoID,
-    AgentSecret,
-    SessionID,
-    SyncMessage,
-    AgentID,
     AccountID,
-    Peer,
-    AccountContent,
     Profile,
-    ProfileContent,
-    ProfileMeta,
-    InviteSecret
+    SessionID,
+    Peer,
+    AgentID,
+    AgentSecret,
+    InviteSecret,
+    SyncMessage,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -88,4 +83,9 @@ export namespace CojsonInternalTypes {
     export type Transaction = import("./coValue.js").Transaction;
     export type Signature = import("./crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
+    export type AccountContent = import("./account.js").AccountContent;
+    export type ProfileContent = import("./account.js").ProfileContent;
+    export type ProfileMeta = import("./account.js").ProfileMeta;
+    export type SealerSecret = import("./crypto.js").SealerSecret;
+    export type SignerSecret = import("./crypto.js").SignerSecret;
 }
