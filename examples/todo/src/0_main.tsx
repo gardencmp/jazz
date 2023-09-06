@@ -18,17 +18,17 @@ import App from "./2_App.tsx";
 
 const appName = "Jazz Todo List Example";
 
+const auth = LocalAuth({
+    appName,
+    Component: PrettyAuthUI,
+});
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
 
-            <WithJazz
-                auth={LocalAuth({
-                    appName,
-                    Component: PrettyAuthUI,
-                })}
-            >
+            <WithJazz auth={auth}>
                 <App />
             </WithJazz>
         </ThemeProvider>
