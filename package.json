@@ -8,5 +8,10 @@
   "dependencies": {},
   "devDependencies": {
     "lerna": "^7.1.5"
+  },
+  "scripts": {
+    "build-all": "lerna run build",
+    "updated": "lerna updated --include-merged-tags",
+    "publish-all": "lerna publish --include-merged-tags"
   }
 }
