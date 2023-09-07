@@ -180,16 +180,24 @@ async function main() {
                 group.children
                     ?.map((memberId) => {
                         const member = child.children!.find(
-                            (child) => child.id === memberId
+                            (member) => member.id === memberId
                         )!;
 
                         if (member.kind === 2048 || member.kind === 512) {
-                            return documentConstructorOrMethod(member, child);
+                            if (member.signatures?.every(sig => sig.comment?.modifierTags?.includes("@internal"))) {
+                                return ""
+                            } else {
+                                return documentConstructorOrMethod(member, child);
+                            }
                         } else if (
                             member.kind === 1024 ||
                             member.kind === 262144
                         ) {
-                            return documentProperty(member, child);
+                            if (member.comment?.modifierTags?.includes("@internal")) {
+                                return ""
+                            } else {
+                                return documentProperty(member, child);
+                            }
                         } else {
                             return "Unknown member kind " + member.kind;
                         }
