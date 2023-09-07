@@ -1,12 +1,11 @@
 import {
     LocalNode,
-    ContentType,
+    CoValueImpl,
     CoID,
-    ProfileContent,
-    ProfileMeta,
     CoMap,
     AccountID,
     JsonValue,
+    CojsonInternalTypes,
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import { AuthProvider, createBrowserNode } from "jazz-browser";
@@ -90,7 +89,7 @@ export function useJazz() {
     return context;
 }
 
-export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
+export function useTelepathicState<T extends CoValueImpl>(id?: CoID<T>) {
     const [state, setState] = useState<T>();
 
     const { localNode } = useJazz();
@@ -128,9 +127,14 @@ export function useTelepathicState<T extends ContentType>(id?: CoID<T>) {
 }
 
 export function useProfile<
-    P extends { [key: string]: JsonValue } & ProfileContent = ProfileContent
->(accountID?: AccountID): CoMap<P, ProfileMeta> | undefined {
-    const [profileID, setProfileID] = useState<CoID<CoMap<P, ProfileMeta>>>();
+    P extends {
+        [key: string]: JsonValue;
+    } & CojsonInternalTypes.ProfileContent = CojsonInternalTypes.ProfileContent
+>(
+    accountID?: AccountID
+): CoMap<P, CojsonInternalTypes.ProfileMeta> | undefined {
+    const [profileID, setProfileID] =
+        useState<CoID<CoMap<P, CojsonInternalTypes.ProfileMeta>>>();
 
     const { localNode } = useJazz();
 

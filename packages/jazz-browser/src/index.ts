@@ -7,7 +7,7 @@ import {
     SessionID,
     SyncMessage,
     Peer,
-    ContentType,
+    CoValueImpl,
     Group,
     CoID,
 } from "cojson";
@@ -275,19 +275,19 @@ function websocketWritableStream<T>(ws: WebSocket) {
 }
 
 export function createInviteLink(
-    value: ContentType,
+    value: CoValueImpl,
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
         baseURL = window.location.href.replace(/#.*$/, ""),
     }: { baseURL?: string } = {}
 ): string {
-    const coValue = value.coValue;
-    const node = coValue.node;
-    let currentCoValue = coValue;
+    const coValueCore = value.core;
+    const node = coValueCore.node;
+    let currentCoValue = coValueCore;
 
     while (currentCoValue.header.ruleset.type === "ownedByGroup") {
-        currentCoValue = currentCoValue.getGroup().groupMap.coValue;
+        currentCoValue = currentCoValue.getGroup().underlyingMap.core;
     }
 
     if (currentCoValue.header.ruleset.type !== "group") {
@@ -304,7 +304,7 @@ export function createInviteLink(
     return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
 }
 
-export function parseInviteLink<C extends ContentType>(inviteURL: string):
+export function parseInviteLink<C extends CoValueImpl>(inviteURL: string):
     | {
           valueID: CoID<C>;
           inviteSecret: InviteSecret;
@@ -321,7 +321,7 @@ export function parseInviteLink<C extends ContentType>(inviteURL: string):
     return { valueID, inviteSecret };
 }
 
-export function consumeInviteLinkFromWindowLocation<C extends ContentType>(node: LocalNode): Promise<
+export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(node: LocalNode): Promise<
     | {
           valueID: CoID<C>;
           inviteSecret: string;

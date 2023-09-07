@@ -41,6 +41,34 @@ TODO: document
 ### Properties
 
 <details>
+<summary><code>localNode.coValues</code>  </summary>
+
+```typescript
+localNode.coValues: { [key: RawCoID]: CoValueState }
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.account</code>  </summary>
+
+```typescript
+localNode.account: GeneralizedControlledAccount
+```
+
+
+
+
+</details>
+
+
+
+<details>
 <summary><code>localNode.currentSessionID</code>  (undocumented)</summary>
 
 ```typescript
@@ -99,6 +127,38 @@ TODO: document
 
 
 <details>
+<summary><code>localNode.createCoValue(header)</code>  </summary>
+
+```typescript
+localNode.createCoValue(
+  header: CoValueHeader
+): CoValueCore
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.loadCoValue(id)</code>  </summary>
+
+```typescript
+localNode.loadCoValue(
+  id: TEMPLATE_LITERAL
+): Promise<CoValueCore>
+```
+
+
+
+
+</details>
+
+
+
+<details>
 <summary><code>localNode.load(id)</code>  </summary>
 
 ```typescript
@@ -149,12 +209,97 @@ TODO: document
 
 
 <details>
+<summary><code>localNode.expectCoValueLoaded(id, expectation)</code>  </summary>
+
+```typescript
+localNode.expectCoValueLoaded(
+  id: TEMPLATE_LITERAL,
+  expectation: string
+): CoValueCore
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.expectProfileLoaded(id, expectation)</code>  </summary>
+
+```typescript
+localNode.expectProfileLoaded(
+  id: AccountID,
+  expectation: string
+): Profile
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.createAccount(name, agentSecret?)</code>  </summary>
+
+```typescript
+localNode.createAccount(
+  name: string,
+  agentSecret?: AgentSecret = ...
+): ControlledAccount
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.resolveAccountAgent(id, expectation)</code>  </summary>
+
+```typescript
+localNode.resolveAccountAgent(
+  id: AgentID | AccountID,
+  expectation: string
+): AgentID
+```
+
+
+
+
+</details>
+
+
+
+<details>
 <summary><code>localNode.createGroup()</code>  </summary>
 
 ```typescript
 localNode.createGroup(): Group
 ```
 Creates a new group (with the current account as the group's first admin).
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.testWithDifferentAccount(account, currentSessionID)</code>  </summary>
+
+```typescript
+localNode.testWithDifferentAccount(
+  account: GeneralizedControlledAccount,
+  currentSessionID: SessionID
+): LocalNode
+```
+
 
 
 
@@ -192,6 +337,25 @@ Or, you can create a new group with a `LocalNode`:
  const localNode.createGroup();
  ```
 
+### Constructors
+
+<details>
+<summary><code>new Group(underlyingMap, node)</code>  </summary>
+
+```typescript
+new Group(
+  underlyingMap: CoMap<GroupContent, null | JsonObject>,
+  node: LocalNode
+): Group
+```
+
+
+
+
+</details>
+
+
+
 ### Properties
 
 <details>
@@ -201,6 +365,20 @@ Or, you can create a new group with a `LocalNode`:
 group.underlyingMap: CoMap<GroupContent, null | JsonObject>
 ```
 TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>group.node</code>  </summary>
+
+```typescript
+group.node: LocalNode
+```
+
+
+
 
 </details>
 
@@ -231,6 +409,22 @@ group.roleOf(
 ): undefined | Role
 ```
 Returns the current role of a given account.
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>group.roleOfInternal(accountID)</code>  </summary>
+
+```typescript
+group.roleOfInternal(
+  accountID: AgentID | AccountID
+): undefined | Role
+```
+
 
 
 
@@ -271,6 +465,37 @@ admin to be able to do so. Throws otherwise.
 
 
 <details>
+<summary><code>group.addMemberInternal(accountID, role)</code>  </summary>
+
+```typescript
+group.addMemberInternal(
+  accountID: AgentID | AccountID,
+  role: Role
+): void
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>group.rotateReadKey()</code>  </summary>
+
+```typescript
+group.rotateReadKey(): void
+```
+
+
+
+
+</details>
+
+
+
+<details>
 <summary><code>group.removeMember(accountID)</code>  </summary>
 
 ```typescript
@@ -281,6 +506,22 @@ group.removeMember(
 Strips the specified member of all roles (preventing future writes in
  the group and owned values) and rotates the read encryption key for that group
 (preventing reads of new content in the group and owned values)
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>group.removeMemberInternal(accountID)</code>  </summary>
+
+```typescript
+group.removeMemberInternal(
+  accountID: AgentID | AccountID
+): void
+```
+
 
 
 
@@ -338,6 +579,23 @@ Creates a new `CoList` within this group, with the specified specialized
 
 
 
+<details>
+<summary><code>group.testWithDifferentAccount(account, sessionId)</code>  </summary>
+
+```typescript
+group.testWithDifferentAccount(
+  account: GeneralizedControlledAccount,
+  sessionId: SessionID
+): Group
+```
+
+
+
+
+</details>
+
+
+
 ----
 
 ## `CoMap` (class in `cojson`)
@@ -346,6 +604,24 @@ Creates a new `CoList` within this group, with the specified specialized
 export class CoMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null> implements ReadableCoValue {...}
 ```
 A collaborative map with precise shape `M` and optional static metadata `Meta`
+
+
+
+### Constructors
+
+<details>
+<summary><code>new CoMap(core)</code>  </summary>
+
+```typescript
+new CoMap<M extends { [key: string]: JsonValue }, Meta extends null | JsonObject>(
+  core: CoValueCore
+): CoMap<M, Meta>
+```
+
+
+
+
+</details>
 
 
 
@@ -391,6 +667,20 @@ TODO: document
 
 
 
+<details>
+<summary><code>coMap.ops</code>  </summary>
+
+```typescript
+coMap.ops: COMPLEX_TYPE_mapped
+```
+
+
+
+
+</details>
+
+
+
 ### Accessors
 
 <details>
@@ -422,6 +712,20 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 
 ### Methods
+
+<details>
+<summary><code>coMap.fillOpsFromCoValue()</code>  </summary>
+
+```typescript
+coMap.fillOpsFromCoValue(): void
+```
+
+
+
+
+</details>
+
+
 
 <details>
 <summary><code>coMap.keys()</code>  (undocumented)</summary>
@@ -591,6 +895,24 @@ A collaborative map with precise shape `M` and optional static metadata `Meta`
 
 
 
+### Constructors
+
+<details>
+<summary><code>new WriteableCoMap(core)</code> (from <code>CoMap</code>)  </summary>
+
+```typescript
+new WriteableCoMap<M extends { [key: string]: JsonValue }, Meta extends null | JsonObject>(
+  core: CoValueCore
+): WriteableCoMap<M, Meta>
+```
+
+
+
+
+</details>
+
+
+
 ### Properties
 
 <details>
@@ -633,6 +955,20 @@ TODO: document
 
 
 
+<details>
+<summary><code>writeableCoMap.ops</code> (from <code>CoMap</code>)  </summary>
+
+```typescript
+writeableCoMap.ops: COMPLEX_TYPE_mapped
+```
+
+
+
+
+</details>
+
+
+
 ### Accessors
 
 <details>
@@ -664,6 +1000,22 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 
 ### Methods
+
+<details>
+<summary><code>writeableCoMap.edit(_changer)</code>  </summary>
+
+```typescript
+writeableCoMap.edit(
+  _changer: (editable: WriteableCoMap<M, Meta>) => void
+): CoMap<M, Meta>
+```
+
+
+
+
+</details>
+
+
 
 <details>
 <summary><code>writeableCoMap.set(key, value, privacy?)</code>  </summary>
@@ -701,6 +1053,20 @@ Deletes the value for the given key (setting it to undefined).
 If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
 
 If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoMap.fillOpsFromCoValue()</code> (from <code>CoMap</code>)  </summary>
+
+```typescript
+writeableCoMap.fillOpsFromCoValue(): void
+```
+
 
 
 
@@ -854,6 +1220,24 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null> impleme
 ```
 TODO: document
 
+### Constructors
+
+<details>
+<summary><code>new CoList(core)</code>  </summary>
+
+```typescript
+new CoList<T extends JsonValue, Meta extends null | JsonObject>(
+  core: CoValueCore
+): CoList<T, Meta>
+```
+
+
+
+
+</details>
+
+
+
 ### Properties
 
 <details>
@@ -896,6 +1280,62 @@ TODO: document
 
 
 
+<details>
+<summary><code>coList.afterStart</code>  </summary>
+
+```typescript
+coList.afterStart: OpID[]
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coList.beforeEnd</code>  </summary>
+
+```typescript
+coList.beforeEnd: OpID[]
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coList.insertions</code>  </summary>
+
+```typescript
+coList.insertions: { [sessionID: SessionID]: { [txIdx: number]: { [changeIdx: number]: InsertionEntry<T> } } }
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coList.deletionsByInsertion</code>  </summary>
+
+```typescript
+coList.deletionsByInsertion: { [deletedSessionID: SessionID]: { [deletedTxIdx: number]: { [deletedChangeIdx: number]: DeletionEntry[] } } }
+```
+
+
+
+
+</details>
+
+
+
 ### Accessors
 
 <details>
@@ -927,6 +1367,20 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 
 ### Methods
+
+<details>
+<summary><code>coList.fillOpsFromCoValue()</code>  </summary>
+
+```typescript
+coList.fillOpsFromCoValue(): void
+```
+
+
+
+
+</details>
+
+
 
 <details>
 <summary><code>coList.get(idx)</code>  </summary>
@@ -965,6 +1419,23 @@ Returns the current items in the CoList as an array.
 coList.entries(): {value: T, madeAt: number, opID: OpID}[]
 ```
 TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coList.fillArrayFromOpID(opID, arr)</code>  </summary>
+
+```typescript
+coList.fillArrayFromOpID(
+  opID: OpID,
+  arr: {value: T, madeAt: number, opID: OpID}[]
+): void
+```
+
+
+
 
 </details>
 
@@ -1094,6 +1565,24 @@ export class WriteableCoList<T extends JsonValue, Meta extends JsonObject | null
 ```
 TODO: document
 
+### Constructors
+
+<details>
+<summary><code>new WriteableCoList(core)</code> (from <code>CoList</code>)  </summary>
+
+```typescript
+new WriteableCoList<T extends JsonValue, Meta extends null | JsonObject>(
+  core: CoValueCore
+): WriteableCoList<T, Meta>
+```
+
+
+
+
+</details>
+
+
+
 ### Properties
 
 <details>
@@ -1136,6 +1625,62 @@ TODO: document
 
 
 
+<details>
+<summary><code>writeableCoList.afterStart</code> (from <code>CoList</code>)  </summary>
+
+```typescript
+writeableCoList.afterStart: OpID[]
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoList.beforeEnd</code> (from <code>CoList</code>)  </summary>
+
+```typescript
+writeableCoList.beforeEnd: OpID[]
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoList.insertions</code> (from <code>CoList</code>)  </summary>
+
+```typescript
+writeableCoList.insertions: { [sessionID: SessionID]: { [txIdx: number]: { [changeIdx: number]: InsertionEntry<T> } } }
+```
+
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoList.deletionsByInsertion</code> (from <code>CoList</code>)  </summary>
+
+```typescript
+writeableCoList.deletionsByInsertion: { [deletedSessionID: SessionID]: { [deletedTxIdx: number]: { [deletedChangeIdx: number]: DeletionEntry[] } } }
+```
+
+
+
+
+</details>
+
+
+
 ### Accessors
 
 <details>
@@ -1167,6 +1712,22 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 
 ### Methods
+
+<details>
+<summary><code>writeableCoList.edit(_changer)</code>  </summary>
+
+```typescript
+writeableCoList.edit(
+  _changer: (editable: WriteableCoList<T, Meta>) => void
+): CoList<T, Meta>
+```
+
+
+
+
+</details>
+
+
 
 <details>
 <summary><code>writeableCoList.append(after, value, privacy?)</code>  </summary>
@@ -1247,6 +1808,20 @@ Deletes the item at index `at` from the list.
 If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
 
 If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoList.fillOpsFromCoValue()</code> (from <code>CoList</code>)  </summary>
+
+```typescript
+writeableCoList.fillOpsFromCoValue(): void
+```
+
 
 
 
@@ -2176,7 +2751,7 @@ TODO: doc generator not implemented yet
 ## `useProfile(accountID)` (function in `jazz-react`)
 
 ```typescript
-export function useProfile(accountID: AccountID): CoMap<P, ProfileMeta> | undefined
+export function useProfile(accountID: AccountID): CoMap<P, CojsonInternalTypes.ProfileMeta> | undefined
 ```
 TODO: document
 
@@ -2291,7 +2866,7 @@ TODO: doc generator not implemented yet
 ## `createInviteLink(value, role, {baseURL?}?)` (function in `jazz-browser`)
 
 ```typescript
-export function createInviteLink(value: ContentType, role: "reader" | "writer" | "admin", {baseURL?: string}): string
+export function createInviteLink(value: CoValueImpl, role: "reader" | "writer" | "admin", {baseURL?: string}): string
 ```
 TODO: document
 
