@@ -1,133 +1,202 @@
 import { readFile, writeFile } from "fs/promises";
 import { Application, JSONOutput } from "typedoc";
 
+const manuallyIgnore = new Set(["CojsonInternalTypes"]);
+
 async function main() {
     // Application.bootstrap also exists, which will not load plugins
     // Also accepts an array of option readers if you want to disable
     // TypeDoc's tsconfig.json/package.json/typedoc.json option readers
-    const app = await Application.bootstrapWithPlugins({
-        entryPoints: ["packages/cojson/src/index.ts"],
-        tsconfig: "packages/cojson/tsconfig.json",
-        sort: ["required-first"],
-    });
+    const packageDocs = Object.entries({
+        cojson: "index.ts",
+        "jazz-react": "index.tsx",
+        "jazz-browser": "index.ts",
+    }).map(async ([packageName, entryPoint]) => {
+        const app = await Application.bootstrapWithPlugins({
+            entryPoints: [`packages/${packageName}/src/${entryPoint}`],
+            tsconfig: `packages/${packageName}/tsconfig.json`,
+            sort: ["required-first"],
+        });
 
-    const project = await app.convert();
+        const project = await app.convert();
 
-    if (project) {
-
+        if (!project) {
+            throw new Error("Failed to convert project" + packageName);
+        }
         // Alternatively generate JSON output
-        await app.generateJson(project, "./docsTmp/documentation.json");
+        await app.generateJson(project, `docsTmp/${packageName}.json`);
 
         const docs = JSON.parse(
-            await readFile("./docsTmp/documentation.json", "utf8")
+            await readFile(`docsTmp/${packageName}.json`, "utf8")
         ) as JSONOutput.ProjectReflection;
 
-        let docsMd = "";
-
-        for (let group of docs.groups || []) {
-            docsMd += `# ${group.title}\n\n`;
-
-            for (let childId of group.children || []) {
-                const child = docs.children!.find(
-                    (child) => child.id === childId
-                )!;
-
-                docsMd += `## ${child.name}\n\n`;
-
-                if (child.comment) {
-                    docsMd +=
-                        child.comment.summary
-                            .map((token) =>
-                                token.kind === "text" || token.kind === "code"
-                                    ? token.text
-                                    : ""
-                            )
-                            .join("") + "\n\n";
-
-                    docsMd +=
-                        child.comment.blockTags
-                            ?.map((blockTag) =>
-                                blockTag.tag === "@example"
-                                    ? "### Example:\n\n" +
-                                      blockTag.content
-                                          .map((token) =>
-                                              token.kind === "text" ||
-                                              token.kind === "code"
-                                                  ? token.text
-                                                  : ""
-                                          )
-                                          .join("")
-                                    : ""
-                            )
-                            .join("\n\n") + "\n\n";
-                } else {
-                    docsMd += "TODO: document\n\n";
-                }
-
-                if (child.kind === 128) {
-                    for (let group of child.groups || []) {
-                        docsMd += `### ${group.title}\n\n`;
-
-                        for (let memberId of group.children || []) {
-                            const member = child.children!.find(
-                                (child) => child.id === memberId
+        return (
+            `# ${packageName}\n\n` +
+            docs
+                .groups!.map((group) => {
+                    return group.children
+                        ?.map((childId) => {
+                            const child = docs.children!.find(
+                                (child) => child.id === childId
                             )!;
 
-                            if (member.kind === 2048 || member.kind === 512) {
-                                docsMd += `#### ${
-                                    member.flags.isStatic
-                                        ? `\`${child.name}.\``
-                                        : ""
-                                }**\`${
-                                    member.name === "constructor"
-                                        ? "new " + child.name
-                                        : member.name
-                                }(${(
-                                    member.signatures?.[0]?.parameters?.map(
-                                        (param) => param.name
-                                    ) || []
-                                ).join(", ")})\`**\n\n`;
-
-                                for (let signature of member.signatures || []) {
-                                    docsMd +=
-                                        "```typescript\n" +
-                                        `${
-                                            member.name === "constructor"
-                                                ? "new " + child.name
-                                                : (member.flags.isStatic
-                                                      ? child.name
-                                                      : child.name[0].toLowerCase() +
-                                                        child.name.slice(1)) +
-                                                  "." +
-                                                  member.name
-                                        }${
-                                            signature.typeParameter
-                                                ? `<${signature.typeParameter
-                                                      .map(renderTypeParam)
-                                                      .join(", ")}>`
-                                                : ""
-                                        }(${(
-                                            signature.parameters?.map(
-                                                (param) =>
-                                                    `${
-                                                        param.name
-                                                    }: ${renderType(
-                                                        param.type
-                                                    )}`
-                                            ) || []
-                                        ).join(", ")}): ${renderType(
-                                            signature.type
-                                        )}\n` +
-                                        "```\n";
-                                }
+                            if (manuallyIgnore.has(child.name)) {
+                                return "";
                             }
-                        }
-                    }
-                }
+
+                            return (
+                                `## \`${renderChildName(child)}\` (${group.title
+                                    .toLowerCase()
+                                    .replace("ces", "ce")
+                                    .replace(/es$/, "")
+                                    .replace(
+                                        "ns",
+                                        "n"
+                                    )} in \`${packageName}\`)\n\n` +
+                                renderChildType(child) +
+                                renderComment(child.comment) +
+                                (child.kind === 128 || child.kind === 256
+                                    ? child.groups
+                                          ?.map((group) =>
+                                              renderChildGroup(child, group)
+                                          )
+                                          .join("\n\n")
+                                    : "TODO: doc generator not implemented yet")
+                            );
+                        })
+                        .join("\n\n----\n\n");
+                })
+                .join("\n\n----\n\n")
+        );
+
+        function renderComment(comment?: JSONOutput.Comment): string {
+            if (comment) {
+                return (
+                    comment.summary
+                        .map((token) =>
+                            token.kind === "text" || token.kind === "code"
+                                ? token.text
+                                : ""
+                        )
+                        .join("") +
+                    "\n\n" +
+                    (comment.blockTags || [])
+                        .map((blockTag) =>
+                            blockTag.tag === "@example"
+                                ? "##### Example:\n\n" +
+                                  blockTag.content
+                                      .map((token) =>
+                                          token.kind === "text" ||
+                                          token.kind === "code"
+                                              ? token.text
+                                              : ""
+                                      )
+                                      .join("")
+                                : ""
+                        )
+                        .join("\n\n") +
+                    "\n\n"
+                );
+            } else {
+                return "TODO: document\n\n";
             }
         }
 
-        await writeFile("./DOCS.md", docsMd);
+        function renderChildName(child: JSONOutput.DeclarationReflection) {
+            if (child.signatures) {
+                if (
+                    child.signatures[0].type?.type === "reference" &&
+                    child.signatures[0].type.qualifiedName ===
+                        "React.JSX.Element"
+                ) {
+                    return `<${child.name}/>`;
+                } else {
+                    return (
+                        child.name +
+                        `(${(child.signatures[0].parameters || [])
+                            .map(renderParamSimple)
+                            .join(", ")})`
+                    );
+                }
+            } else {
+                return child.name;
+            }
+        }
+
+        function renderChildType(
+            child: JSONOutput.DeclarationReflection
+        ): string {
+            const isClass = child.kind === 128;
+            const isTypeDef = child.kind === 2097152;
+            const isInterface = child.kind === 256;
+            const isFunction = !!child.signatures;
+            return (
+                "```typescript\n" +
+                `export ${
+                    isClass
+                        ? "class"
+                        : isTypeDef
+                        ? "type"
+                        : isFunction
+                        ? "function"
+                        : isInterface
+                        ? "interface"
+                        : ""
+                } ${child.name}` +
+                (child.typeParameters
+                    ? "<" +
+                      child.typeParameters.map(renderTypeParam).join(", ") +
+                      ">"
+                    : "") +
+                (child.extendedTypes
+                    ? " extends " +
+                      child.extendedTypes.map(renderType).join(", ")
+                    : "") +
+                (child.implementedTypes
+                    ? " implements " +
+                      child.implementedTypes.map(renderType).join(", ")
+                    : "") +
+                (isClass || isInterface
+                    ? " {...}"
+                    : isTypeDef
+                    ? ` = ${renderType(child.type)}`
+                    : child.signatures
+                    ? `(${(child.signatures[0].parameters || [])
+                          .map(renderParam)
+                          .join(", ")}): ${renderType(
+                          child.signatures[0].type
+                      )}`
+                    : "") +
+                "\n```\n"
+            );
+        }
+
+        function renderChildGroup(
+            child: JSONOutput.DeclarationReflection,
+            group: JSONOutput.ReflectionGroup
+        ): string {
+            return (
+                `### ${group.title}\n\n` +
+                group.children
+                    ?.map((memberId) => {
+                        const member = child.children!.find(
+                            (child) => child.id === memberId
+                        )!;
+
+                        if (member.kind === 2048 || member.kind === 512) {
+                            return documentConstructorOrMethod(member, child);
+                        } else if (
+                            member.kind === 1024 ||
+                            member.kind === 262144
+                        ) {
+                            return documentProperty(member, child);
+                        } else {
+                            return "Unknown member kind " + member.kind;
+                        }
+                    })
+                    .join("\n\n")
+            );
+        }
 
         function renderType(t?: JSONOutput.SomeType): string {
             if (!t) return "";
@@ -144,6 +213,8 @@ async function main() {
                 return JSON.stringify(t.value);
             } else if (t.type === "union") {
                 return [...new Set(t.types.map(renderType))].join(" | ");
+            } else if (t.type === "intersection") {
+                return [...new Set(t.types.map(renderType))].join(" & ");
             } else if (t.type === "indexedAccess") {
                 return (
                     renderType(t.objectType) +
@@ -164,13 +235,25 @@ async function main() {
                         renderType(t.declaration.indexSignature?.type) +
                         " }"
                     );
-                } else {
+                } else if (t.declaration.children) {
                     return `{${t.declaration.children
-                        ?.map(
+                        .map(
                             (child) =>
-                                `${child.name}: ${renderType(child.type)}`
+                                `${child.name}${child.flags.isOptional ? "?" : ""}: ${renderType(child.type)}`
                         )
                         .join(", ")}}`;
+                } else if (t.declaration.signatures) {
+                    if (t.declaration.signatures.length > 1) {
+                        return "COMPLEX_TYPE_MULTIPLE_INLINE_SIGNATURES";
+                    } else {
+                        return `(${(
+                            t.declaration.signatures[0].parameters || []
+                        ).map(renderParam)}) => ${renderType(
+                            t.declaration.signatures[0].type
+                        )}`;
+                    }
+                } else {
+                    return "COMPLEX_TYPE_REFLECTION";
                 }
             } else if (t.type === "array") {
                 return renderType(t.elementType) + "[]";
@@ -233,7 +316,104 @@ async function main() {
             if (!t) return "";
             return t.name + (t.type ? " extends " + renderType(t.type) : "");
         }
-    }
+
+        function renderParam(param: JSONOutput.ParameterReflection) {
+            return param.name === "__namedParameters"
+                ? renderType(param.type)
+                : `${param.name}: ${renderType(param.type)}`;
+        }
+
+        function renderParamSimple(param: JSONOutput.ParameterReflection) {
+            return param.name === "__namedParameters" &&
+                param.type?.type === "reflection"
+                ? `{${param.type?.declaration.children
+                      ?.map(
+                          (child) =>
+                              child.name + (child.flags.isOptional ? "?" : "")
+                      )
+                      .join(", ")}}${param.defaultValue ? "?" : ""}`
+                : param.name + (param.defaultValue ? "?" : "");
+        }
+
+        function documentConstructorOrMethod(
+            member: JSONOutput.DeclarationReflection,
+            child: JSONOutput.DeclarationReflection
+        ) {
+            const stem =
+                member.name === "constructor"
+                    ? "new " + child.name
+                    : (member.flags.isStatic
+                          ? child.name
+                          : child.name[0].toLowerCase() + child.name.slice(1)) +
+                      "." +
+                      member.name;
+
+            return (
+                `<details>\n<summary><code>${stem}(${(
+                    member.signatures?.[0]?.parameters?.map(
+                        renderParamSimple
+                    ) || []
+                ).join(", ")})</code> ${
+                    member.signatures?.[0]?.comment ? "" : "(undocumented)"
+                }</summary>\n\n` +
+                member.signatures?.map((signature) => {
+                    return (
+                        "```typescript\n" +
+                        `${stem}${
+                            signature.typeParameter
+                                ? `<${signature.typeParameter
+                                      .map(renderTypeParam)
+                                      .join(", ")}>`
+                                : ""
+                        }(${
+                            (
+                                signature.parameters?.map(
+                                    (param) =>
+                                        `\n  ${param.name}${
+                                            param.defaultValue ? "?" : ""
+                                        }: ${renderType(param.type)}${
+                                            param.defaultValue
+                                                ? ` = ${param.defaultValue}`
+                                                : ""
+                                        }`
+                                ) || []
+                            ).join(",") +
+                            (signature.parameters?.length ? "\n" : "")
+                        }): ${renderType(signature.type)}\n` +
+                        "```\n" +
+                        renderComment(signature.comment)
+                    );
+                }) +
+                "</details>\n\n"
+            );
+        }
+
+        function documentProperty(
+            member: JSONOutput.DeclarationReflection,
+            child: JSONOutput.DeclarationReflection
+        ) {
+            const stem = member.flags.isStatic
+                ? child.name
+                : child.name[0].toLowerCase() + child.name.slice(1);
+            return (
+                `<details>\n<summary><code>${stem}.${member.name}</code> ${
+                    member.comment ? "" : "(undocumented)"
+                }</summary>\n\n` +
+                "```typescript\n" +
+                `${member.getSignature ? "get " : ""}${stem}.${member.name}${
+                    member.getSignature ? "()" : ""
+                }: ${renderType(member.type || member.getSignature?.type)}\n` +
+                "```\n" +
+                renderComment(member.comment) +
+                "</details>\n\n"
+            );
+        }
+    });
+
+    await writeFile(
+        "./DOCS.md",
+        (await Promise.all(packageDocs)).join("\n\n\n")
+    );
 }
 
 main().catch(console.error);

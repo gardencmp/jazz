@@ -1,7 +1,8 @@
-import { CoValue, newRandomSessionID } from "./coValue.js";
+import { CoValueCore, newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
-import { CoMap } from "./contentTypes/coMap.js";
-import { CoList } from "./contentTypes/coList.js";
+import type { ReadableCoValue } from "./coValue.js";
+import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
+import { CoList, WriteableCoList } from "./coValues/coList.js";
 import {
     agentSecretFromBytes,
     agentSecretToBytes,
@@ -18,17 +19,14 @@ import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
 import { Group, expectGroupContent } from "./group.js";
 
 import type { SessionID, AgentID } from "./ids.js";
-import type { CoID, ContentType } from "./contentType.js";
+import type { CoID, CoValueImpl } from "./coValue.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type {
-    AccountID,
-    Profile,
-} from "./account.js";
+import type { AccountID, Profile } from "./account.js";
 import type { InviteSecret } from "./group.js";
 
-type Value = JsonValue | ContentType;
+type Value = JsonValue | CoValueImpl;
 
 /** @hidden */
 export const cojsonInternals = {
@@ -51,8 +49,10 @@ export {
     LocalNode,
     Group,
     CoMap,
+    WriteableCoMap,
     CoList,
-    CoValue,
+    WriteableCoList,
+    CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,
 };
@@ -60,7 +60,8 @@ export {
 export type {
     Value,
     JsonValue,
-    ContentType,
+    ReadableCoValue as CoValue,
+    CoValueImpl,
     CoID,
     AccountID,
     Profile,
@@ -79,8 +80,8 @@ export namespace CojsonInternalTypes {
     export type KnownStateMessage = import("./sync.js").KnownStateMessage;
     export type LoadMessage = import("./sync.js").LoadMessage;
     export type NewContentMessage = import("./sync.js").NewContentMessage;
-    export type CoValueHeader = import("./coValue.js").CoValueHeader;
-    export type Transaction = import("./coValue.js").Transaction;
+    export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
+    export type Transaction = import("./coValueCore.js").Transaction;
     export type Signature = import("./crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
     export type AccountContent = import("./account.js").AccountContent;

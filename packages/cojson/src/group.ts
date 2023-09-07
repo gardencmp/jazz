@@ -1,5 +1,5 @@
-import { CoID, ContentType } from "./contentType.js";
-import { CoMap } from "./contentTypes/coMap.js";
+import { CoID, CoValueImpl } from "./coValue.js";
+import { CoMap } from "./coValues/coMap.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import {
     Encrypted,
@@ -17,14 +17,10 @@ import {
 } from "./crypto.js";
 import { LocalNode } from "./node.js";
 import { AgentID, SessionID, isAgentID } from "./ids.js";
-import {
-    AccountID,
-    GeneralizedControlledAccount,
-    Profile,
-} from "./account.js";
+import { AccountID, GeneralizedControlledAccount, Profile } from "./account.js";
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
-import { CoList } from "./contentTypes/coList.js";
+import { CoList } from "./coValues/coList.js";
 
 export type GroupContent = {
     profile: CoID<Profile> | null;
@@ -38,7 +34,7 @@ export type GroupContent = {
 };
 
 export function expectGroupContent(
-    content: ContentType
+    content: CoValueImpl
 ): CoMap<GroupContent, JsonObject | null> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -47,43 +43,71 @@ export function expectGroupContent(
     return content as CoMap<GroupContent, JsonObject | null>;
 }
 
+/** A `Group` is a scope for permissions of its members (`"reader" | "writer" | "admin"`), applying to objects owned by that group.
+ *
+ *  A `Group` object exposes methods for permission management and allows you to create new CoValues owned by that group.
+ *
+ *  (Internally, a `Group` is also just a `CoMap`, mapping member accounts to roles and containing some
+ *  state management for making cryptographic keys available to current members)
+ *
+ *  @example
+ *  You typically get a group from a CoValue that you already have loaded:
+ *
+ *  ```typescript
+ *  const group = coMap.group;
+ *  ```
+ *
+ *  @example
+ *  Or, you can create a new group with a `LocalNode`:
+ *
+ *  ```typescript
+ *  const localNode.createGroup();
+ *  ```
+ * */
 export class Group {
-    groupMap: CoMap<GroupContent, JsonObject | null>;
+    underlyingMap: CoMap<GroupContent, JsonObject | null>;
+    /** @internal */
     node: LocalNode;
 
+    /** @internal */
     constructor(
-        groupMap: CoMap<GroupContent, JsonObject | null>,
+        underlyingMap: CoMap<GroupContent, JsonObject | null>,
         node: LocalNode
     ) {
-        this.groupMap = groupMap;
+        this.underlyingMap = underlyingMap;
         this.node = node;
     }
 
+    /** Returns the `CoID` of the `Group`. */
     get id(): CoID<CoMap<GroupContent, JsonObject | null>> {
-        return this.groupMap.id;
+        return this.underlyingMap.id;
     }
 
+    /** Returns the current role of a given account. */
     roleOf(accountID: AccountID): Role | undefined {
         return this.roleOfInternal(accountID);
     }
 
     /** @internal */
     roleOfInternal(accountID: AccountID | AgentID): Role | undefined {
-        return this.groupMap.get(accountID);
+        return this.underlyingMap.get(accountID);
     }
 
+    /** Returns the role of the current account in the group. */
     myRole(): Role | undefined {
         return this.roleOfInternal(this.node.account.id);
     }
 
+    /** Directly grants a new member a role in the group. The current account must be an
+     * admin to be able to do so. Throws otherwise. */
     addMember(accountID: AccountID, role: Role) {
         this.addMemberInternal(accountID, role);
     }
 
     /** @internal */
     addMemberInternal(accountID: AccountID | AgentID, role: Role) {
-        this.groupMap = this.groupMap.edit((map) => {
-            const currentReadKey = this.groupMap.coValue.getCurrentReadKey();
+        this.underlyingMap = this.underlyingMap.edit((map) => {
+            const currentReadKey = this.underlyingMap.core.getCurrentReadKey();
 
             if (!currentReadKey.secret) {
                 throw new Error("Can't add member without read key secret");
@@ -104,11 +128,11 @@ export class Group {
                 `${currentReadKey.id}_for_${accountID}`,
                 seal(
                     currentReadKey.secret,
-                    this.groupMap.coValue.node.account.currentSealerSecret(),
+                    this.underlyingMap.core.node.account.currentSealerSecret(),
                     getAgentSealerID(agent),
                     {
-                        in: this.groupMap.coValue.id,
-                        tx: this.groupMap.coValue.nextTransactionID(),
+                        in: this.underlyingMap.core.id,
+                        tx: this.underlyingMap.core.nextTransactionID(),
                     }
                 ),
                 "trusting"
@@ -116,30 +140,24 @@ export class Group {
         });
     }
 
-    createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
-        const secretSeed = newRandomSecretSeed();
-
-        const inviteSecret = agentSecretFromSecretSeed(secretSeed);
-        const inviteID = getAgentID(inviteSecret);
-
-        this.addMemberInternal(inviteID, `${role}Invite` as Role);
-
-        return inviteSecretFromSecretSeed(secretSeed);
-    }
-
+    /** @internal */
     rotateReadKey() {
-        const currentlyPermittedReaders = this.groupMap.keys().filter((key) => {
-            if (key.startsWith("co_") || isAgentID(key)) {
-                const role = this.groupMap.get(key);
-                return (
-                    role === "admin" || role === "writer" || role === "reader"
-                );
-            } else {
-                return false;
-            }
-        }) as (AccountID | AgentID)[];
+        const currentlyPermittedReaders = this.underlyingMap
+            .keys()
+            .filter((key) => {
+                if (key.startsWith("co_") || isAgentID(key)) {
+                    const role = this.underlyingMap.get(key);
+                    return (
+                        role === "admin" ||
+                        role === "writer" ||
+                        role === "reader"
+                    );
+                } else {
+                    return false;
+                }
+            }) as (AccountID | AgentID)[];
 
-        const maybeCurrentReadKey = this.groupMap.coValue.getCurrentReadKey();
+        const maybeCurrentReadKey = this.underlyingMap.core.getCurrentReadKey();
 
         if (!maybeCurrentReadKey.secret) {
             throw new Error(
@@ -154,7 +172,7 @@ export class Group {
 
         const newReadKey = newRandomKeySecret();
 
-        this.groupMap = this.groupMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.edit((map) => {
             for (const readerID of currentlyPermittedReaders) {
                 const reader = this.node.resolveAccountAgent(
                     readerID,
@@ -165,11 +183,11 @@ export class Group {
                     `${newReadKey.id}_for_${readerID}`,
                     seal(
                         newReadKey.secret,
-                        this.groupMap.coValue.node.account.currentSealerSecret(),
+                        this.underlyingMap.core.node.account.currentSealerSecret(),
                         getAgentSealerID(reader),
                         {
-                            in: this.groupMap.coValue.id,
-                            tx: this.groupMap.coValue.nextTransactionID(),
+                            in: this.underlyingMap.core.id,
+                            tx: this.underlyingMap.core.nextTransactionID(),
                         }
                     ),
                     "trusting"
@@ -189,19 +207,36 @@ export class Group {
         });
     }
 
+    /** Strips the specified member of all roles (preventing future writes in
+     *  the group and owned values) and rotates the read encryption key for that group
+     * (preventing reads of new content in the group and owned values) */
     removeMember(accountID: AccountID) {
         this.removeMemberInternal(accountID);
     }
 
     /** @internal */
     removeMemberInternal(accountID: AccountID | AgentID) {
-        this.groupMap = this.groupMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.edit((map) => {
             map.set(accountID, "revoked", "trusting");
         });
 
         this.rotateReadKey();
     }
 
+    /** Creates an invite for new members to indirectly join the group, allowing them to grant themselves the specified role with the InviteSecret (a string starting with "inviteSecret_") - use `LocalNode.acceptInvite()` for this purpose. */
+    createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
+        const secretSeed = newRandomSecretSeed();
+
+        const inviteSecret = agentSecretFromSecretSeed(secretSeed);
+        const inviteID = getAgentID(inviteSecret);
+
+        this.addMemberInternal(inviteID, `${role}Invite` as Role);
+
+        return inviteSecretFromSecretSeed(secretSeed);
+    }
+
+    /** Creates a new `CoMap` within this group, with the specified specialized
+     *  `CoMap` type `M` and optional static metadata. */
     createMap<M extends CoMap<{ [key: string]: JsonValue }, JsonObject | null>>(
         meta?: M["meta"]
     ): M {
@@ -210,7 +245,7 @@ export class Group {
                 type: "comap",
                 ruleset: {
                     type: "ownedByGroup",
-                    group: this.groupMap.id,
+                    group: this.underlyingMap.id,
                 },
                 meta: meta || null,
                 ...createdNowUnique(),
@@ -218,6 +253,8 @@ export class Group {
             .getCurrentContent() as M;
     }
 
+    /** Creates a new `CoList` within this group, with the specified specialized
+     * `CoList` type `L` and optional static metadata. */
     createList<L extends CoList<JsonValue, JsonObject | null>>(
         meta?: L["meta"]
     ): L {
@@ -226,7 +263,7 @@ export class Group {
                 type: "colist",
                 ruleset: {
                     type: "ownedByGroup",
-                    group: this.groupMap.id,
+                    group: this.underlyingMap.id,
                 },
                 meta: meta || null,
                 ...createdNowUnique(),
@@ -241,7 +278,7 @@ export class Group {
     ): Group {
         return new Group(
             expectGroupContent(
-                this.groupMap.coValue
+                this.underlyingMap.core
                     .testWithDifferentAccount(account, sessionId)
                     .getCurrentContent()
             ),

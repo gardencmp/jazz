@@ -1,15 +1,15 @@
-import { CoID } from "./contentType.js";
-import { MapOpPayload } from "./contentTypes/coMap.js";
+import { CoID } from "./coValue.js";
+import { MapOpPayload } from "./coValues/coMap.js";
 import { JsonValue } from "./jsonValue.js";
 import {
     KeyID,
 } from "./crypto.js";
 import {
-    CoValue,
+    CoValueCore,
     Transaction,
     TrustingTransaction,
     accountOrAgentIDfromSessionID,
-} from "./coValue.js";
+} from "./coValueCore.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import {
     AccountID,
@@ -31,7 +31,7 @@ export type Role =
     | "readerInvite";
 
 export function determineValidTransactions(
-    coValue: CoValue
+    coValue: CoValueCore
 ): { txID: TransactionID; tx: Transaction }[] {
     if (coValue.header.ruleset.type === "group") {
         const allTrustingTransactionsSorted = Object.entries(

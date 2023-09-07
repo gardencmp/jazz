@@ -1,8 +1,8 @@
-import { newRandomSessionID } from "./coValue.js";
+import { newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import { Peer, PeerID, SyncMessage } from "./sync.js";
-import { expectMap } from "./contentType.js";
-import { MapOpPayload } from "./contentTypes/coMap.js";
+import { expectMap } from "./coValue.js";
+import { MapOpPayload } from "./coValues/coMap.js";
 import { Group } from "./group.js";
 import {
     ReadableStream,
@@ -45,7 +45,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     await writer.write({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
         header: false,
         sessions: {},
     });
@@ -58,7 +58,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "known",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -68,13 +68,13 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     expect(newContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
+        id: map.core.id,
         header: {
             type: "comap",
             ruleset: { type: "ownedByGroup", group: group.id },
             meta: null,
-            createdAt: map.coValue.header.createdAt,
-            uniqueness: map.coValue.header.uniqueness,
+            createdAt: map.core.header.createdAt,
+            uniqueness: map.core.header.uniqueness,
         },
         new: {
             [node.currentSessionID]: {
@@ -82,7 +82,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -94,7 +94,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -127,7 +127,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     await writer.write({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
         header: true,
         sessions: {
             [node.currentSessionID]: 1,
@@ -142,7 +142,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "known",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -152,7 +152,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     expect(mapNewContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
+        id: map.core.id,
         header: undefined,
         new: {
             [node.currentSessionID]: {
@@ -160,7 +160,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
                         changes: [
                             {
@@ -172,7 +172,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -204,7 +204,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     await writer.write({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
         header: false,
         sessions: {
             [node.currentSessionID]: 0,
@@ -219,7 +219,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "known",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -229,8 +229,8 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {},
     } satisfies SyncMessage);
 
@@ -242,14 +242,14 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapEditMsg1.value).toEqual({
         action: "content",
-        id: map.coValue.id,
+        id: map.core.id,
         new: {
             [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -261,7 +261,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -274,14 +274,14 @@ test("After subscribing, node sends own known state and new txs to peer", async 
 
     expect(mapEditMsg2.value).toEqual({
         action: "content",
-        id: map.coValue.id,
+        id: map.core.id,
         new: {
             [node.currentSessionID]: {
                 after: 1,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
                         changes: [
                             {
@@ -293,7 +293,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -329,7 +329,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     await writer.write({
         action: "known",
-        id: map.coValue.id,
+        id: map.core.id,
         header: false,
         sessions: {
             [node.currentSessionID]: 0,
@@ -342,7 +342,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "known",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -352,15 +352,15 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     expect(mapNewContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {
             [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -372,7 +372,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -400,7 +400,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     await writer.write({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
         header: false,
         sessions: {
             [node.currentSessionID]: 0,
@@ -415,7 +415,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     const mapTellKnownStateMsg = await reader.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "known",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -425,8 +425,8 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     expect(mapNewContentHeaderOnlyMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {},
     } satisfies SyncMessage);
 
@@ -444,7 +444,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     await writer.write({
         action: "known",
         isCorrection: true,
-        id: map.coValue.id,
+        id: map.core.id,
         header: true,
         sessions: {
             [node.currentSessionID]: 1,
@@ -455,7 +455,7 @@ test("No matter the optimistic known state, node respects invalid known state me
 
     expect(newContentAfterWrongAssumedState.value).toEqual({
         action: "content",
-        id: map.coValue.id,
+        id: map.core.id,
         header: undefined,
         new: {
             [node.currentSessionID]: {
@@ -463,7 +463,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
                         changes: [
                             {
@@ -475,7 +475,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -535,14 +535,14 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     });
 
     const mapSubscribeMsg = await reader.read();
 
     expect(mapSubscribeMsg.value).toEqual({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
         header: true,
         sessions: {},
     } satisfies SyncMessage);
@@ -558,15 +558,15 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
 
     expect(mapNewContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {
             [node.currentSessionID]: {
                 after: 0,
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.coValue.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
                         changes: [
                             {
@@ -578,7 +578,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                     },
                 ],
                 lastSignature:
-                    map.coValue.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessions[node.currentSessionID]!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -607,7 +607,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     });
 
     const map = group.createMap();
@@ -616,7 +616,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
 
     expect(mapSubscribeMsg.value).toEqual({
         action: "load",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(adminID));
@@ -626,8 +626,8 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
 
     expect(mapContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {},
     } satisfies SyncMessage);
 });
@@ -661,14 +661,14 @@ test("When we connect a new server peer, we try to sync all existing coValues to
 
     expect(groupSubscribeMessage.value).toEqual({
         action: "load",
-        ...group.groupMap.coValue.knownState(),
+        ...group.underlyingMap.core.knownState(),
     } satisfies SyncMessage);
 
     const secondMessage = await reader.read();
 
     expect(secondMessage.value).toEqual({
         action: "load",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 });
 
@@ -694,7 +694,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
 
     await writer.write({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
         header: true,
         sessions: {
             [node.currentSessionID]: 1,
@@ -709,7 +709,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
 
     expect(mapTellKnownState.value).toEqual({
         action: "known",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 });
 
@@ -757,7 +757,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const groupSubscribeMsg = await from1.read();
     expect(groupSubscribeMsg.value).toMatchObject({
         action: "load",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     });
 
     await to2.write(adminSubscribeMessage.value!);
@@ -771,7 +771,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     expect(
         node2.sync.peers["test1"]!.optimisticKnownStates[
-            group.groupMap.coValue.id
+            group.underlyingMap.core.id
         ]
     ).toBeDefined();
 
@@ -792,14 +792,14 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const mapSubscriptionMsg = await from1.read();
     expect(mapSubscriptionMsg.value).toMatchObject({
         action: "load",
-        id: map.coValue.id,
+        id: map.core.id,
     });
 
     const mapNewContentMsg = await from1.read();
     expect(mapNewContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {},
     } satisfies SyncMessage);
 
@@ -808,12 +808,12 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const mapTellKnownStateMsg = await from2.read();
     expect(mapTellKnownStateMsg.value).toEqual({
         action: "known",
-        id: map.coValue.id,
+        id: map.core.id,
         header: false,
         sessions: {},
     } satisfies SyncMessage);
 
-    expect(node2.coValues[map.coValue.id]?.state).toEqual("loading");
+    expect(node2.coValues[map.core.id]?.state).toEqual("loading");
 
     await to2.write(mapNewContentMsg.value!);
 
@@ -829,7 +829,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     expect(
         expectMap(
-            node2.expectCoValueLoaded(map.coValue.id).getCurrentContent()
+            node2.expectCoValueLoaded(map.core.id).getCurrentContent()
         ).get("hello")
     ).toEqual("world");
 });
@@ -854,11 +854,11 @@ test.skip("When loading a coValue on one node, the server node it is requested f
     node1.sync.addPeer(node2asPeer);
     node2.sync.addPeer(node1asPeer);
 
-    await node2.loadCoValue(map.coValue.id);
+    await node2.loadCoValue(map.core.id);
 
     expect(
         expectMap(
-            node2.expectCoValueLoaded(map.coValue.id).getCurrentContent()
+            node2.expectCoValueLoaded(map.core.id).getCurrentContent()
         ).get("hello")
     ).toEqual("world");
 });
@@ -898,7 +898,7 @@ test("Can sync a coValue through a server to another client", async () => {
     client2.sync.addPeer(serverAsOtherPeer);
     server.sync.addPeer(client2AsPeer);
 
-    const mapOnClient2 = await client2.loadCoValue(map.coValue.id);
+    const mapOnClient2 = await client2.loadCoValue(map.core.id);
 
     expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
         "world"
@@ -941,7 +941,7 @@ test("Can sync a coValue with private transactions through a server to another c
     client2.sync.addPeer(serverAsOtherPeer);
     server.sync.addPeer(client2AsPeer);
 
-    const mapOnClient2 = await client2.loadCoValue(map.coValue.id);
+    const mapOnClient2 = await client2.loadCoValue(map.core.id);
 
     expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
         "world"
@@ -971,7 +971,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     });
 
     const map = group.createMap();
@@ -980,7 +980,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
 
     expect(mapSubscribeMsg.value).toEqual({
         action: "load",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -990,8 +990,8 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
 
     expect(mapContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {},
     } satisfies SyncMessage);
 
@@ -1025,7 +1025,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     });
 
     const map = group.createMap();
@@ -1034,7 +1034,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
 
     expect(mapSubscribeMsg.value).toEqual({
         action: "load",
-        ...map.coValue.knownState(),
+        ...map.core.knownState(),
     } satisfies SyncMessage);
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
@@ -1044,8 +1044,8 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
 
     expect(mapContentMsg.value).toEqual({
         action: "content",
-        id: map.coValue.id,
-        header: map.coValue.header,
+        id: map.core.id,
+        header: map.core.header,
         new: {},
     } satisfies SyncMessage);
 
@@ -1083,9 +1083,9 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
     node1.sync.addPeer(node2asPeer);
 
-    const mapOnNode2Promise = node2.loadCoValue(map.coValue.id);
+    const mapOnNode2Promise = node2.loadCoValue(map.core.id);
 
-    expect(node2.coValues[map.coValue.id]?.state).toEqual("loading");
+    expect(node2.coValues[map.core.id]?.state).toEqual("loading");
 
     node2.sync.addPeer(node1asPeer);
 
@@ -1099,7 +1099,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 function groupContentEx(group: Group) {
     return {
         action: "content",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     };
 }
 
@@ -1113,7 +1113,7 @@ function admContEx(adminID: AccountID) {
 function groupStateEx(group: Group) {
     return {
         action: "known",
-        id: group.groupMap.coValue.id,
+        id: group.underlyingMap.core.id,
     };
 }
 

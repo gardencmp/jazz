@@ -1,5 +1,5 @@
 import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "./crypto.js";
-import { newRandomSessionID } from "./coValue.js";
+import { newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import { expectGroupContent } from "./group.js";
 import { AnonymousControlledAccount } from "./account.js";
