@@ -1,5 +1,5 @@
-import { CoValueHeader } from "./coValue.js";
-import { CoID } from "./contentType.js";
+import { CoValueHeader } from "./coValueCore.js";
+import { CoID } from "./coValue.js";
 import {
     AgentSecret,
     SealerID,
@@ -33,11 +33,11 @@ export function accountHeaderForInitialAgentSecret(
 
 export class Account extends Group {
     get id(): AccountID {
-        return this.groupMap.id as AccountID;
+        return this.underlyingMap.id as AccountID;
     }
 
     getCurrentAgentID(): AgentID {
-        const agents = this.groupMap
+        const agents = this.underlyingMap
             .keys()
             .filter((k): k is AgentID => k.startsWith("sealer_"));
 
@@ -62,6 +62,7 @@ export interface GeneralizedControlledAccount {
     currentSealerSecret: () => SealerSecret;
 }
 
+/** @hidden */
 export class ControlledAccount
     extends Account
     implements GeneralizedControlledAccount
@@ -99,6 +100,7 @@ export class ControlledAccount
     }
 }
 
+/** @hidden */
 export class AnonymousControlledAccount
     implements GeneralizedControlledAccount
 {

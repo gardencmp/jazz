@@ -1,4 +1,4 @@
-import { newRandomSessionID } from "./coValue.js";
+import { newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import { connectedPeers } from "./streamUtils.js";
 

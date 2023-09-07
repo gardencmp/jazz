@@ -1,12 +1,12 @@
 {
   "name": "jazz-react",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "^0.1.8",
-    "jazz-browser": "^0.1.8",
+    "cojson": "^0.1.9",
+    "jazz-browser": "^0.1.9",
     "typescript": "^5.1.6"
   },
   "devDependencies": {
@@ -19,5 +19,6 @@
     "lint": "eslint src/**/*.tsx",
     "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
-  }
+  },
+  "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

@@ -1,6 +1,6 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoID } from "../contentType.js";
-import { CoValue, accountOrAgentIDfromSessionID } from "../coValue.js";
+import { CoID, ReadableCoValue, WriteableCoValue } from "../coValue.js";
+import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { SessionID, TransactionID } from "../ids.js";
 import { AccountID, Group } from "../index.js";
 import { isAccountID } from "../account.js";
@@ -39,15 +39,17 @@ type DeletionEntry = {
     deletionID: OpID;
 } & DeletionOpPayload;
 
-export class CoList<
-    T extends JsonValue,
-    Meta extends JsonObject | null = null
-> {
+export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
+    implements ReadableCoValue
+{
     id: CoID<CoList<T, Meta>>;
     type = "colist" as const;
-    coValue: CoValue;
+    core: CoValueCore;
+    /** @internal */
     afterStart: OpID[];
+    /** @internal */
     beforeEnd: OpID[];
+    /** @internal */
     insertions: {
         [sessionID: SessionID]: {
             [txIdx: number]: {
@@ -55,6 +57,7 @@ export class CoList<
             };
         };
     };
+    /** @internal */
     deletionsByInsertion: {
         [deletedSessionID: SessionID]: {
             [deletedTxIdx: number]: {
@@ -63,9 +66,10 @@ export class CoList<
         };
     };
 
-    constructor(coValue: CoValue) {
-        this.id = coValue.id as CoID<CoList<T, Meta>>;
-        this.coValue = coValue;
+    /** @internal */
+    constructor(core: CoValueCore) {
+        this.id = core.id as CoID<CoList<T, Meta>>;
+        this.core = core;
         this.afterStart = [];
         this.beforeEnd = [];
         this.insertions = {};
@@ -74,15 +78,15 @@ export class CoList<
         this.fillOpsFromCoValue();
     }
 
-
     get meta(): Meta {
-        return this.coValue.header.meta as Meta;
+        return this.core.header.meta as Meta;
     }
 
     get group(): Group {
-        return this.coValue.getGroup();
+        return this.core.getGroup();
     }
 
+    /** @internal */
     protected fillOpsFromCoValue() {
         this.insertions = {};
         this.deletionsByInsertion = {};
@@ -93,7 +97,7 @@ export class CoList<
             txID,
             changes,
             madeAt,
-        } of this.coValue.getValidSortedTransactions()) {
+        } of this.core.getValidSortedTransactions()) {
             for (const [changeIdx, changeUntyped] of changes.entries()) {
                 const change = changeUntyped as ListOpPayload<T>;
 
@@ -195,6 +199,20 @@ export class CoList<
         }
     }
 
+    /** Get the item currently at `idx`. */
+    get(idx: number): T | undefined {
+        const entry = this.entries()[idx];
+        if (!entry) {
+            return undefined;
+        }
+        return entry.value;
+    }
+
+    /** Returns the current items in the CoList as an array. */
+    asArray(): T[] {
+        return this.entries().map((entry) => entry.value);
+    }
+
     entries(): { value: T; madeAt: number; opID: OpID }[] {
         const arr: { value: T; madeAt: number; opID: OpID }[] = [];
         for (const opID of this.afterStart) {
@@ -206,6 +224,7 @@ export class CoList<
         return arr;
     }
 
+    /** @internal */
     private fillArrayFromOpID(
         opID: OpID,
         arr: { value: T; madeAt: number; opID: OpID }[]
@@ -234,6 +253,7 @@ export class CoList<
         }
     }
 
+    /** Returns the accountID of the account that inserted value at the given index. */
     whoInserted(idx: number): AccountID | undefined {
         const entry = this.entries()[idx];
         if (!entry) {
@@ -247,19 +267,16 @@ export class CoList<
         }
     }
 
+    /** Returns the current items in the CoList as an array. (alias of `asArray`) */
     toJSON(): T[] {
         return this.asArray();
-    }
-
-    asArray(): T[] {
-        return this.entries().map((entry) => entry.value);
     }
 
     map<U>(mapper: (value: T, idx: number) => U): U[] {
         return this.entries().map((entry, idx) => mapper(entry.value, idx));
     }
 
-    filter<U extends T>(predicate: (value: T, idx: number) => value is U): U[]
+    filter<U extends T>(predicate: (value: T, idx: number) => value is U): U[];
     filter(predicate: (value: T, idx: number) => boolean): T[] {
         return this.entries()
             .filter((entry, idx) => predicate(entry.value, idx))
@@ -271,31 +288,45 @@ export class CoList<
         initialValue: U
     ): U {
         return this.entries().reduce(
-            (accumulator, entry, idx) =>
-                reducer(accumulator, entry.value, idx),
+            (accumulator, entry, idx) => reducer(accumulator, entry.value, idx),
             initialValue
         );
+    }
+
+    subscribe(listener: (coMap: CoList<T, Meta>) => void): () => void {
+        return this.core.subscribe((content) => {
+            listener(content as CoList<T, Meta>);
+        });
     }
 
     edit(
         changer: (editable: WriteableCoList<T, Meta>) => void
     ): CoList<T, Meta> {
-        const editable = new WriteableCoList<T, Meta>(this.coValue);
+        const editable = new WriteableCoList<T, Meta>(this.core);
         changer(editable);
-        return new CoList(this.coValue);
-    }
-
-    subscribe(listener: (coMap: CoList<T, Meta>) => void): () => void {
-        return this.coValue.subscribe((content) => {
-            listener(content as CoList<T, Meta>);
-        });
+        return new CoList(this.core);
     }
 }
 
 export class WriteableCoList<
-    T extends JsonValue,
-    Meta extends JsonObject | null = null
-> extends CoList<T, Meta> {
+        T extends JsonValue,
+        Meta extends JsonObject | null = null
+    >
+    extends CoList<T, Meta>
+    implements WriteableCoValue
+{
+    /** @internal */
+    edit(
+        _changer: (editable: WriteableCoList<T, Meta>) => void
+    ): CoList<T, Meta> {
+        throw new Error("Already editing.");
+    }
+
+    /** Appends a new item after index `after`.
+     *
+     * If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+     *
+     * If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
     append(
         after: number,
         value: T,
@@ -315,7 +346,7 @@ export class WriteableCoList<
             }
             opIDBefore = "start";
         }
-        this.coValue.makeTransaction(
+        this.core.makeTransaction(
             [
                 {
                     op: "app",
@@ -329,12 +360,28 @@ export class WriteableCoList<
         this.fillOpsFromCoValue();
     }
 
+    /** Pushes a new item to the end of the list.
+     *
+     * If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+     *
+     * If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
     push(value: T, privacy: "private" | "trusting" = "private"): void {
         // TODO: optimize
         const entries = this.entries();
-        this.append(entries.length > 0 ? entries.length - 1 : 0, value, privacy);
+        this.append(
+            entries.length > 0 ? entries.length - 1 : 0,
+            value,
+            privacy
+        );
     }
 
+    /**
+     * Prepends a new item before index `before`.
+     *
+     * If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+     *
+     * If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     */
     prepend(
         before: number,
         value: T,
@@ -358,7 +405,7 @@ export class WriteableCoList<
             }
             opIDAfter = "end";
         }
-        this.coValue.makeTransaction(
+        this.core.makeTransaction(
             [
                 {
                     op: "pre",
@@ -372,16 +419,18 @@ export class WriteableCoList<
         this.fillOpsFromCoValue();
     }
 
-    delete(
-        at: number,
-        privacy: "private" | "trusting" = "private"
-    ): void {
+    /** Deletes the item at index `at` from the list.
+     *
+     * If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
+     *
+     * If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+    delete(at: number, privacy: "private" | "trusting" = "private"): void {
         const entries = this.entries();
         const entry = entries[at];
         if (!entry) {
             throw new Error("Invalid index " + at);
         }
-        this.coValue.makeTransaction(
+        this.core.makeTransaction(
             [
                 {
                     op: "del",

@@ -9,8 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "stripInternal": true
+    "esModuleInterop": true
   },
   "include": ["./src/**/*"],
   "exclude": ["./src/**/*.test.*"],

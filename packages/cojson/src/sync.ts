@@ -1,6 +1,6 @@
 import { Signature } from "./crypto.js";
-import { CoValueHeader, Transaction } from "./coValue.js";
-import { CoValue } from "./coValue.js";
+import { CoValueHeader, Transaction } from "./coValueCore.js";
+import { CoValueCore } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import { newLoadingState } from "./node.js";
 import {
@@ -393,7 +393,7 @@ export class SyncManager {
             );
         }
 
-        let resolveAfterDone: ((coValue: CoValue) => void) | undefined;
+        let resolveAfterDone: ((coValue: CoValueCore) => void) | undefined;
 
         const peerOptimisticKnownState = peer.optimisticKnownStates[msg.id];
 
@@ -410,7 +410,7 @@ export class SyncManager {
 
             peerOptimisticKnownState.header = true;
 
-            const coValue = new CoValue(msg.header, this.local);
+            const coValue = new CoValueCore(msg.header, this.local);
 
             resolveAfterDone = entry.resolve;
 
@@ -496,7 +496,7 @@ export class SyncManager {
         throw new Error("Method not implemented.");
     }
 
-    async syncCoValue(coValue: CoValue) {
+    async syncCoValue(coValue: CoValueCore) {
         for (const peer of Object.values(this.peers)) {
             const optimisticKnownState = peer.optimisticKnownStates[coValue.id];
 

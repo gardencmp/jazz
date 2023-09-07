@@ -1,5 +1,5 @@
-import { newRandomSessionID } from "./coValue.js";
-import { expectMap } from "./contentType.js";
+import { newRandomSessionID } from "./coValueCore.js";
+import { expectMap } from "./coValue.js";
 import { Group, expectGroupContent } from "./group.js";
 import {
     createdNowUnique,
@@ -63,7 +63,7 @@ test("Added adming can add a third admin to a group (high level)", () => {
 
     groupAsOtherAdmin.addMember(thirdAdmin.id, "admin");
 
-    expect(groupAsOtherAdmin.groupMap.get(thirdAdmin.id)).toEqual("admin");
+    expect(groupAsOtherAdmin.underlyingMap.get(thirdAdmin.id)).toEqual("admin");
 });
 
 test("Admins can't demote other admins in a group", () => {
@@ -112,7 +112,7 @@ test("Admins can't demote other admins in a group (high level)", () => {
         "Failed to set role"
     );
 
-    expect(groupAsOtherAdmin.groupMap.get(admin.id)).toEqual("admin");
+    expect(groupAsOtherAdmin.underlyingMap.get(admin.id)).toEqual("admin");
 });
 
 test("Admins an add writers to a group, who can't add admins, writers, or readers", () => {
@@ -164,14 +164,14 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
     const writer = node.createAccount("writer");
 
     group.addMember(writer.id, "writer");
-    expect(group.groupMap.get(writer.id)).toEqual("writer");
+    expect(group.underlyingMap.get(writer.id)).toEqual("writer");
 
     const groupAsWriter = group.testWithDifferentAccount(
         writer,
         newRandomSessionID(writer.id)
     );
 
-    expect(groupAsWriter.groupMap.get(writer.id)).toEqual("writer");
+    expect(groupAsWriter.underlyingMap.get(writer.id)).toEqual("writer");
 
     const otherAgent = node.createAccount("otherAgent");
 
@@ -185,7 +185,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
         "Failed to set role"
     );
 
-    expect(groupAsWriter.groupMap.get(otherAgent.id)).toBeUndefined();
+    expect(groupAsWriter.underlyingMap.get(otherAgent.id)).toBeUndefined();
 });
 
 test("Admins can add readers to a group, who can't add admins, writers, or readers", () => {
@@ -237,14 +237,14 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
     const reader = node.createAccount("reader");
 
     group.addMember(reader.id, "reader");
-    expect(group.groupMap.get(reader.id)).toEqual("reader");
+    expect(group.underlyingMap.get(reader.id)).toEqual("reader");
 
     const groupAsReader = group.testWithDifferentAccount(
         reader,
         newRandomSessionID(reader.id)
     );
 
-    expect(groupAsReader.groupMap.get(reader.id)).toEqual("reader");
+    expect(groupAsReader.underlyingMap.get(reader.id)).toEqual("reader");
 
     const otherAgent = node.createAccount("otherAgent");
 
@@ -258,7 +258,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
         "Failed to set role"
     );
 
-    expect(groupAsReader.groupMap.get(otherAgent.id)).toBeUndefined();
+    expect(groupAsReader.underlyingMap.get(otherAgent.id)).toBeUndefined();
 });
 
 test("Admins can write to an object that is owned by their group", () => {
@@ -342,7 +342,7 @@ test("Writers can write to an object that is owned by their group (high level)",
     const childObject = group.createMap();
 
     let childObjectAsWriter = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
             .getCurrentContent()
     );
@@ -401,7 +401,7 @@ test("Readers can not write to an object that is owned by their group (high leve
     const childObject = group.createMap();
 
     let childObjectAsReader = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
             .getCurrentContent()
     );
@@ -553,7 +553,7 @@ test("Admins can set group read key and then writers can use it to create and re
     const childObject = group.createMap();
 
     let childObjectAsWriter = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
             .getCurrentContent()
     );
@@ -647,7 +647,7 @@ test("Admins can set group read key and then use it to create private transactio
     });
 
     const childContentAsReader = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
             .getCurrentContent()
     );
@@ -767,7 +767,7 @@ test("Admins can set group read key and then use it to create private transactio
     });
 
     const childContentAsReader1 = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(reader1, newRandomSessionID(reader1.id))
             .getCurrentContent()
     );
@@ -777,7 +777,7 @@ test("Admins can set group read key and then use it to create private transactio
     group.addMember(reader2.id, "reader");
 
     const childContentAsReader2 = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(reader2, newRandomSessionID(reader2.id))
             .getCurrentContent()
     );
@@ -863,7 +863,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     let childObject = group.createMap();
 
-    const firstReadKey = childObject.coValue.getCurrentReadKey();
+    const firstReadKey = childObject.core.getCurrentReadKey();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -874,7 +874,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     group.rotateReadKey();
 
-    expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
+    expect(childObject.core.getCurrentReadKey()).not.toEqual(firstReadKey);
 
     childObject = childObject.edit((editable) => {
         editable.set("foo2", "bar2", "private");
@@ -998,7 +998,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     let childObject = group.createMap();
 
-    const firstReadKey = childObject.coValue.getCurrentReadKey();
+    const firstReadKey = childObject.core.getCurrentReadKey();
 
     childObject = childObject.edit((editable) => {
         editable.set("foo", "bar", "private");
@@ -1009,7 +1009,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     group.rotateReadKey();
 
-    expect(childObject.coValue.getCurrentReadKey()).not.toEqual(firstReadKey);
+    expect(childObject.core.getCurrentReadKey()).not.toEqual(firstReadKey);
 
     const reader = node.createAccount("reader");
 
@@ -1021,7 +1021,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
     });
 
     const childContentAsReader = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
             .getCurrentContent()
     );
@@ -1204,7 +1204,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     group.rotateReadKey();
 
-    const secondReadKey = childObject.coValue.getCurrentReadKey();
+    const secondReadKey = childObject.core.getCurrentReadKey();
 
     const reader = node.createAccount("reader");
 
@@ -1223,7 +1223,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     group.removeMember(reader.id);
 
-    expect(childObject.coValue.getCurrentReadKey()).not.toEqual(secondReadKey);
+    expect(childObject.core.getCurrentReadKey()).not.toEqual(secondReadKey);
 
     childObject = childObject.edit((editable) => {
         editable.set("foo3", "bar3", "private");
@@ -1231,7 +1231,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     });
 
     const childContentAsReader2 = expectMap(
-        childObject.coValue
+        childObject.core
             .testWithDifferentAccount(reader2, newRandomSessionID(reader2.id))
             .getCurrentContent()
     );
@@ -1242,7 +1242,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     expect(
         expectMap(
-            childObject.coValue
+            childObject.core
                 .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
                 .getCurrentContent()
         ).get("foo3")
@@ -1373,14 +1373,14 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
         nodeAsInvitedAdmin
     );
 
-    expect(groupAsInvitedAdmin.groupMap.get(invitedAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.underlyingMap.get(invitedAdminID)).toEqual("admin");
     expect(
-        groupAsInvitedAdmin.groupMap.coValue.getCurrentReadKey().secret
+        groupAsInvitedAdmin.underlyingMap.core.getCurrentReadKey().secret
     ).toBeDefined();
 
     groupAsInvitedAdmin.addMemberInternal(thirdAdminID, "admin");
 
-    expect(groupAsInvitedAdmin.groupMap.get(thirdAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.underlyingMap.get(thirdAdminID)).toEqual("admin");
 });
 
 test("Admins can create a writerInvite, which can add a writer", () => {
@@ -1484,9 +1484,9 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
         nodeAsInvitedWriter
     );
 
-    expect(groupAsInvitedWriter.groupMap.get(invitedWriterID)).toEqual("writer");
+    expect(groupAsInvitedWriter.underlyingMap.get(invitedWriterID)).toEqual("writer");
     expect(
-        groupAsInvitedWriter.groupMap.coValue.getCurrentReadKey().secret
+        groupAsInvitedWriter.underlyingMap.core.getCurrentReadKey().secret
     ).toBeDefined();
 });
 
@@ -1592,9 +1592,9 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
         nodeAsInvitedReader
     );
 
-    expect(groupAsInvitedReader.groupMap.get(invitedReaderID)).toEqual("reader");
+    expect(groupAsInvitedReader.underlyingMap.get(invitedReaderID)).toEqual("reader");
     expect(
-        groupAsInvitedReader.groupMap.coValue.getCurrentReadKey().secret
+        groupAsInvitedReader.underlyingMap.core.getCurrentReadKey().secret
     ).toBeDefined();
 });
 

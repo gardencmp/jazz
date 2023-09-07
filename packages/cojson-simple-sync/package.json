@@ -4,7 +4,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.1.9",
+    "version": "0.1.10",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@types/ws": "^8.5.5",
@@ -16,8 +16,8 @@
         "typescript": "5.0.2"
     },
     "dependencies": {
-        "cojson": "^0.1.8",
-        "cojson-storage-sqlite": "^0.1.6",
+        "cojson": "^0.1.9",
+        "cojson-storage-sqlite": "^0.1.7",
         "ws": "^8.13.0"
     },
     "scripts": {
@@ -31,5 +31,6 @@
     "jest": {
         "preset": "ts-jest",
         "testEnvironment": "node"
-    }
+    },
+    "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

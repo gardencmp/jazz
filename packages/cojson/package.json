@@ -5,7 +5,7 @@
     "types": "dist/index.d.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
@@ -51,5 +51,6 @@
             "/node_modules/",
             "/dist/"
         ]
-    }
+    },
+    "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

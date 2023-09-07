@@ -1,7 +1,8 @@
-import { CoValue, newRandomSessionID } from "./coValue.js";
+import { CoValueCore, newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
-import { CoMap } from "./contentTypes/coMap.js";
-import { CoList } from "./contentTypes/coList.js";
+import type { CoValue, ReadableCoValue } from "./coValue.js";
+import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
+import { CoList, WriteableCoList } from "./coValues/coList.js";
 import {
     agentSecretFromBytes,
     agentSecretToBytes,
@@ -15,24 +16,19 @@ import {
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
-import { Group, expectGroupContent } from "./group.js"
+import { Group, expectGroupContent } from "./group.js";
 
 import type { SessionID, AgentID } from "./ids.js";
-import type { CoID, ContentType } from "./contentType.js";
+import type { CoID, CoValueImpl } from "./coValue.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type {
-    AccountID,
-    AccountContent,
-    ProfileContent,
-    ProfileMeta,
-    Profile,
-} from "./account.js";
+import type { AccountID, Profile } from "./account.js";
 import type { InviteSecret } from "./group.js";
 
-type Value = JsonValue | ContentType;
+type Value = JsonValue | CoValueImpl;
 
+/** @hidden */
 export const cojsonInternals = {
     agentSecretFromBytes,
     agentSecretToBytes,
@@ -46,35 +42,36 @@ export const cojsonInternals = {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    expectGroupContent
+    expectGroupContent,
 };
 
 export {
     LocalNode,
-    CoValue,
+    Group,
     CoMap,
+    WriteableCoMap,
     CoList,
+    WriteableCoList,
+    CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,
-    Group
 };
 
 export type {
     Value,
     JsonValue,
-    ContentType,
+    CoValue,
+    ReadableCoValue,
+    CoValueImpl,
     CoID,
-    AgentSecret,
-    SessionID,
-    SyncMessage,
-    AgentID,
     AccountID,
-    Peer,
-    AccountContent,
     Profile,
-    ProfileContent,
-    ProfileMeta,
-    InviteSecret
+    SessionID,
+    Peer,
+    AgentID,
+    AgentSecret,
+    InviteSecret,
+    SyncMessage,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -84,8 +81,13 @@ export namespace CojsonInternalTypes {
     export type KnownStateMessage = import("./sync.js").KnownStateMessage;
     export type LoadMessage = import("./sync.js").LoadMessage;
     export type NewContentMessage = import("./sync.js").NewContentMessage;
-    export type CoValueHeader = import("./coValue.js").CoValueHeader;
-    export type Transaction = import("./coValue.js").Transaction;
+    export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
+    export type Transaction = import("./coValueCore.js").Transaction;
     export type Signature = import("./crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
+    export type AccountContent = import("./account.js").AccountContent;
+    export type ProfileContent = import("./account.js").ProfileContent;
+    export type ProfileMeta = import("./account.js").ProfileMeta;
+    export type SealerSecret = import("./crypto.js").SealerSecret;
+    export type SignerSecret = import("./crypto.js").SignerSecret;
 }

@@ -9,7 +9,7 @@ import {
     newRandomKeySecret,
     seal,
 } from "./crypto.js";
-import { CoValue, CoValueHeader, newRandomSessionID } from "./coValue.js";
+import { CoValueCore, CoValueHeader, newRandomSessionID } from "./coValueCore.js";
 import {
     InviteSecret,
     Group,
@@ -19,7 +19,7 @@ import {
 } from "./group.js";
 import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
-import { CoID, ContentType } from "./contentType.js";
+import { CoID, CoValueImpl } from "./coValue.js";
 import {
     Account,
     AccountMeta,
@@ -34,6 +34,17 @@ import {
 } from "./account.js";
 import { CoMap } from "./index.js";
 
+/** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
+
+A `LocalNode` can have peers that it syncs to, for example some form of local persistence, or a sync server, such as `sync.jazz.tools` (Jazz Global Mesh).
+
+@example
+You typically get hold of a `LocalNode` using `jazz-react`'s `useJazz()`:
+
+```typescript
+const { localNode } = useJazz();
+```
+*/
 export class LocalNode {
     /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
@@ -111,8 +122,8 @@ export class LocalNode {
     }
 
     /** @internal */
-    createCoValue(header: CoValueHeader): CoValue {
-        const coValue = new CoValue(header, this);
+    createCoValue(header: CoValueHeader): CoValueCore {
+        const coValue = new CoValueCore(header, this);
         this.coValues[coValue.id] = { state: "loaded", coValue: coValue };
 
         void this.sync.syncCoValue(coValue);
@@ -121,7 +132,7 @@ export class LocalNode {
     }
 
     /** @internal */
-    loadCoValue(id: RawCoID): Promise<CoValue> {
+    loadCoValue(id: RawCoID): Promise<CoValueCore> {
         let entry = this.coValues[id];
         if (!entry) {
             entry = newLoadingState();
@@ -136,10 +147,19 @@ export class LocalNode {
         return entry.done;
     }
 
-    async load<T extends ContentType>(id: CoID<T>): Promise<T> {
+    /**
+     * Loads a CoValue's content, syncing from peers as necessary and resolving the returned
+     * promise once a first version has been loaded. See `coValue.subscribe()` and `node.useTelepathicData()`
+     * for listening to subsequent updates to the CoValue.
+     */
+    async load<T extends CoValueImpl>(id: CoID<T>): Promise<T> {
         return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
+    /**
+     * Loads a profile associated with an account. `Profile` is at least a `CoMap<{string: name}>`,
+     * but might contain other, app-specific properties.
+     */
     async loadProfile(id: AccountID): Promise<Profile> {
         const account = await this.load<AccountMap>(id);
         const profileID = account.get("profile");
@@ -152,20 +172,20 @@ export class LocalNode {
         ).getCurrentContent() as Profile;
     }
 
-    async acceptInvite<T extends ContentType>(
+    async acceptInvite<T extends CoValueImpl>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
     ): Promise<void> {
         const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
 
-        if (groupOrOwnedValue.coValue.header.ruleset.type === "ownedByGroup") {
+        if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
-                groupOrOwnedValue.coValue.header.ruleset.group as CoID<
+                groupOrOwnedValue.core.header.ruleset.group as CoID<
                     CoMap<GroupContent>
                 >,
                 inviteSecret
             );
-        } else if (groupOrOwnedValue.coValue.header.ruleset.type !== "group") {
+        } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
             throw new Error("Can only accept invites to groups");
         }
 
@@ -177,7 +197,7 @@ export class LocalNode {
         const inviteAgentID = getAgentID(inviteAgentSecret);
 
         const inviteRole = await new Promise((resolve, reject) => {
-            group.groupMap.subscribe((groupMap) => {
+            group.underlyingMap.subscribe((groupMap) => {
                 const role = groupMap.get(inviteAgentID);
                 if (role) {
                     resolve(role);
@@ -196,7 +216,7 @@ export class LocalNode {
             throw new Error("No invite found");
         }
 
-        const existingRole = group.groupMap.get(this.account.id);
+        const existingRole = group.underlyingMap.get(this.account.id);
 
         if (
             existingRole === "admin" ||
@@ -222,16 +242,16 @@ export class LocalNode {
                 : "reader"
         );
 
-        group.groupMap.coValue._sessions = groupAsInvite.groupMap.coValue.sessions;
-        group.groupMap.coValue._cachedContent = undefined;
+        group.underlyingMap.core._sessions = groupAsInvite.underlyingMap.core.sessions;
+        group.underlyingMap.core._cachedContent = undefined;
 
-        for (const groupListener of group.groupMap.coValue.listeners) {
-            groupListener(group.groupMap.coValue.getCurrentContent());
+        for (const groupListener of group.underlyingMap.core.listeners) {
+            groupListener(group.underlyingMap.core.getCurrentContent());
         }
     }
 
     /** @internal */
-    expectCoValueLoaded(id: RawCoID, expectation?: string): CoValue {
+    expectCoValueLoaded(id: RawCoID, expectation?: string): CoValueCore {
         const entry = this.coValues[id];
         if (!entry) {
             throw new Error(
@@ -284,7 +304,7 @@ export class LocalNode {
             account.node
         );
 
-        accountAsGroup.groupMap.edit((editable) => {
+        accountAsGroup.underlyingMap.edit((editable) => {
             editable.set(getAgentID(agentSecret), "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -320,13 +340,13 @@ export class LocalNode {
             editable.set("name", name, "trusting");
         });
 
-        accountAsGroup.groupMap.edit((editable) => {
+        accountAsGroup.underlyingMap.edit((editable) => {
             editable.set("profile", profile.id, "trusting");
         });
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
-        accountOnThisNode._sessions = {...accountAsGroup.groupMap.coValue.sessions};
+        accountOnThisNode._sessions = {...accountAsGroup.underlyingMap.core.sessions};
         accountOnThisNode._cachedContent = undefined;
 
         return controlledAccount;
@@ -360,6 +380,7 @@ export class LocalNode {
         ).getCurrentAgentID();
     }
 
+    /** Creates a new group (with the current account as the group's first admin). */
     createGroup(): Group {
         const groupCoValue = this.createCoValue({
             type: "comap",
@@ -422,7 +443,7 @@ export class LocalNode {
                     continue;
                 }
 
-                const newCoValue = new CoValue(entry.coValue.header, newNode, {...entry.coValue.sessions});
+                const newCoValue = new CoValueCore(entry.coValue.header, newNode, {...entry.coValue.sessions});
 
                 newNode.coValues[coValueID as RawCoID] = {
                     state: "loaded",
@@ -441,16 +462,16 @@ export class LocalNode {
 type CoValueState =
     | {
           state: "loading";
-          done: Promise<CoValue>;
-          resolve: (coValue: CoValue) => void;
+          done: Promise<CoValueCore>;
+          resolve: (coValue: CoValueCore) => void;
       }
-    | { state: "loaded"; coValue: CoValue };
+    | { state: "loaded"; coValue: CoValueCore };
 
 /** @internal */
 export function newLoadingState(): CoValueState {
-    let resolve: (coValue: CoValue) => void;
+    let resolve: (coValue: CoValueCore) => void;
 
-    const promise = new Promise<CoValue>((r) => {
+    const promise = new Promise<CoValueCore>((r) => {
         resolve = r;
     });
 
