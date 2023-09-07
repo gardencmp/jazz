@@ -1,6 +1,6 @@
 import { CoValueCore, newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
-import type { ReadableCoValue } from "./coValue.js";
+import type { CoValue, ReadableCoValue } from "./coValue.js";
 import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
 import { CoList, WriteableCoList } from "./coValues/coList.js";
 import {
@@ -60,7 +60,8 @@ export {
 export type {
     Value,
     JsonValue,
-    ReadableCoValue as CoValue,
+    CoValue,
+    ReadableCoValue,
     CoValueImpl,
     CoID,
     AccountID,

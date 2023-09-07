@@ -24,7 +24,7 @@ const { localNode } = useJazz();
 ### Constructors
 
 <details>
-<summary><code>new LocalNode(account, currentSessionID)</code> (undocumented)</summary>
+<summary><code>new LocalNode(account, currentSessionID)</code>  (undocumented)</summary>
 
 ```typescript
 new LocalNode(
@@ -41,7 +41,7 @@ TODO: document
 ### Properties
 
 <details>
-<summary><code>localNode.currentSessionID</code> (undocumented)</summary>
+<summary><code>localNode.currentSessionID</code>  (undocumented)</summary>
 
 ```typescript
 localNode.currentSessionID: SessionID
@@ -53,7 +53,7 @@ TODO: document
 
 
 <details>
-<summary><code>localNode.sync</code> (undocumented)</summary>
+<summary><code>localNode.sync</code>  (undocumented)</summary>
 
 ```typescript
 localNode.sync: SyncManager
@@ -67,7 +67,7 @@ TODO: document
 ### Methods
 
 <details>
-<summary><code>LocalNode.withNewlyCreatedAccount(name, initialAgentSecret?)</code> (undocumented)</summary>
+<summary><code>LocalNode.withNewlyCreatedAccount(name, initialAgentSecret?)</code>  (undocumented)</summary>
 
 ```typescript
 LocalNode.withNewlyCreatedAccount(
@@ -82,7 +82,7 @@ TODO: document
 
 
 <details>
-<summary><code>LocalNode.withLoadedAccount(accountID, accountSecret, sessionID, peersToLoadFrom)</code> (undocumented)</summary>
+<summary><code>LocalNode.withLoadedAccount(accountID, accountSecret, sessionID, peersToLoadFrom)</code>  (undocumented)</summary>
 
 ```typescript
 LocalNode.withLoadedAccount(
@@ -99,7 +99,7 @@ TODO: document
 
 
 <details>
-<summary><code>localNode.load(id)</code> </summary>
+<summary><code>localNode.load(id)</code>  </summary>
 
 ```typescript
 localNode.load<T extends CoValueImpl>(
@@ -117,7 +117,7 @@ for listening to subsequent updates to the CoValue.
 
 
 <details>
-<summary><code>localNode.loadProfile(id)</code> </summary>
+<summary><code>localNode.loadProfile(id)</code>  </summary>
 
 ```typescript
 localNode.loadProfile(
@@ -134,7 +134,7 @@ but might contain other, app-specific properties.
 
 
 <details>
-<summary><code>localNode.acceptInvite(groupOrOwnedValueID, inviteSecret)</code> (undocumented)</summary>
+<summary><code>localNode.acceptInvite(groupOrOwnedValueID, inviteSecret)</code>  (undocumented)</summary>
 
 ```typescript
 localNode.acceptInvite<T extends CoValueImpl>(
@@ -149,7 +149,7 @@ TODO: document
 
 
 <details>
-<summary><code>localNode.createGroup()</code> </summary>
+<summary><code>localNode.createGroup()</code>  </summary>
 
 ```typescript
 localNode.createGroup(): Group
@@ -195,7 +195,7 @@ Or, you can create a new group with a `LocalNode`:
 ### Properties
 
 <details>
-<summary><code>group.underlyingMap</code> (undocumented)</summary>
+<summary><code>group.underlyingMap</code>  (undocumented)</summary>
 
 ```typescript
 group.underlyingMap: CoMap<GroupContent, null | JsonObject>
@@ -209,7 +209,7 @@ TODO: document
 ### Accessors
 
 <details>
-<summary><code>group.id</code> (undocumented)</summary>
+<summary><code>group.id</code>  (undocumented)</summary>
 
 ```typescript
 get group.id(): CoID<CoMap<GroupContent, null | JsonObject>>
@@ -223,7 +223,7 @@ TODO: document
 ### Methods
 
 <details>
-<summary><code>group.roleOf(accountID)</code> </summary>
+<summary><code>group.roleOf(accountID)</code>  </summary>
 
 ```typescript
 group.roleOf(
@@ -239,7 +239,7 @@ Returns the current role of a given account.
 
 
 <details>
-<summary><code>group.myRole()</code> </summary>
+<summary><code>group.myRole()</code>  </summary>
 
 ```typescript
 group.myRole(): undefined | Role
@@ -253,7 +253,7 @@ Returns the role of the current account in the group.
 
 
 <details>
-<summary><code>group.addMember(accountID, role)</code> </summary>
+<summary><code>group.addMember(accountID, role)</code>  </summary>
 
 ```typescript
 group.addMember(
@@ -271,7 +271,7 @@ admin to be able to do so. Throws otherwise.
 
 
 <details>
-<summary><code>group.removeMember(accountID)</code> </summary>
+<summary><code>group.removeMember(accountID)</code>  </summary>
 
 ```typescript
 group.removeMember(
@@ -289,7 +289,7 @@ Strips the specified member of all roles (preventing future writes in
 
 
 <details>
-<summary><code>group.createInvite(role)</code> </summary>
+<summary><code>group.createInvite(role)</code>  </summary>
 
 ```typescript
 group.createInvite(
@@ -305,7 +305,7 @@ Creates an invite for new members to indirectly join the group, allowing them to
 
 
 <details>
-<summary><code>group.createMap(meta)</code> </summary>
+<summary><code>group.createMap(meta)</code>  </summary>
 
 ```typescript
 group.createMap<M extends CoMap<{ [key: string]: JsonValue }, null | JsonObject>>(
@@ -322,7 +322,7 @@ Creates a new `CoMap` within this group, with the specified specialized
 
 
 <details>
-<summary><code>group.createList(meta)</code> </summary>
+<summary><code>group.createList(meta)</code>  </summary>
 
 ```typescript
 group.createList<L extends CoList<JsonValue, null | JsonObject>>(
@@ -352,7 +352,7 @@ A collaborative map with precise shape `M` and optional static metadata `Meta`
 ### Properties
 
 <details>
-<summary><code>coMap.id</code> </summary>
+<summary><code>coMap.id</code>  </summary>
 
 ```typescript
 coMap.id: CoID<CoMap<MapM<M>, Meta>>
@@ -366,7 +366,7 @@ The `CoValue`'s (precisely typed) `CoID`
 
 
 <details>
-<summary><code>coMap.type</code> </summary>
+<summary><code>coMap.type</code>  </summary>
 
 ```typescript
 coMap.type: "comap"
@@ -380,7 +380,7 @@ Specifies which kind of `CoValue` this is
 
 
 <details>
-<summary><code>coMap.core</code> (undocumented)</summary>
+<summary><code>coMap.core</code>  (undocumented)</summary>
 
 ```typescript
 coMap.core: CoValueCore
@@ -394,7 +394,7 @@ TODO: document
 ### Accessors
 
 <details>
-<summary><code>coMap.meta</code> </summary>
+<summary><code>coMap.meta</code>  </summary>
 
 ```typescript
 get coMap.meta(): Meta
@@ -408,7 +408,7 @@ The `CoValue`'s (precisely typed) static metadata
 
 
 <details>
-<summary><code>coMap.group</code> </summary>
+<summary><code>coMap.group</code>  </summary>
 
 ```typescript
 get coMap.group(): Group
@@ -424,7 +424,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ### Methods
 
 <details>
-<summary><code>coMap.keys()</code> (undocumented)</summary>
+<summary><code>coMap.keys()</code>  (undocumented)</summary>
 
 ```typescript
 coMap.keys(): MapK<M>[]
@@ -436,7 +436,7 @@ TODO: document
 
 
 <details>
-<summary><code>coMap.get(key)</code> </summary>
+<summary><code>coMap.get(key)</code>  </summary>
 
 ```typescript
 coMap.get<K extends string>(
@@ -452,7 +452,7 @@ Returns the current value for the given key.
 
 
 <details>
-<summary><code>coMap.getAtTime(key, time)</code> (undocumented)</summary>
+<summary><code>coMap.getAtTime(key, time)</code>  (undocumented)</summary>
 
 ```typescript
 coMap.getAtTime<K extends string>(
@@ -467,7 +467,7 @@ TODO: document
 
 
 <details>
-<summary><code>coMap.whoEdited(key)</code> </summary>
+<summary><code>coMap.whoEdited(key)</code>  </summary>
 
 ```typescript
 coMap.whoEdited<K extends string>(
@@ -483,7 +483,7 @@ Returns the accountID of the last account to modify the value for the given key.
 
 
 <details>
-<summary><code>coMap.getLastTxID(key)</code> (undocumented)</summary>
+<summary><code>coMap.getLastTxID(key)</code>  (undocumented)</summary>
 
 ```typescript
 coMap.getLastTxID<K extends string>(
@@ -497,7 +497,7 @@ TODO: document
 
 
 <details>
-<summary><code>coMap.getLastEntry(key)</code> (undocumented)</summary>
+<summary><code>coMap.getLastEntry(key)</code>  (undocumented)</summary>
 
 ```typescript
 coMap.getLastEntry<K extends string>(
@@ -511,7 +511,7 @@ TODO: document
 
 
 <details>
-<summary><code>coMap.getHistory(key)</code> (undocumented)</summary>
+<summary><code>coMap.getHistory(key)</code>  (undocumented)</summary>
 
 ```typescript
 coMap.getHistory<K extends string>(
@@ -525,7 +525,7 @@ TODO: document
 
 
 <details>
-<summary><code>coMap.toJSON()</code> </summary>
+<summary><code>coMap.toJSON()</code>  </summary>
 
 ```typescript
 coMap.toJSON(): JsonObject
@@ -539,7 +539,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 
 <details>
-<summary><code>coMap.subscribe(listener)</code> </summary>
+<summary><code>coMap.subscribe(listener)</code>  </summary>
 
 ```typescript
 coMap.subscribe(
@@ -561,7 +561,7 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 
 
 <details>
-<summary><code>coMap.edit(changer)</code> </summary>
+<summary><code>coMap.edit(changer)</code>  </summary>
 
 ```typescript
 coMap.edit(
@@ -594,7 +594,7 @@ A collaborative map with precise shape `M` and optional static metadata `Meta`
 ### Properties
 
 <details>
-<summary><code>writeableCoMap.id</code> </summary>
+<summary><code>writeableCoMap.id</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 writeableCoMap.id: CoID<CoMap<MapM<M>, Meta>>
@@ -608,7 +608,7 @@ The `CoValue`'s (precisely typed) `CoID`
 
 
 <details>
-<summary><code>writeableCoMap.type</code> </summary>
+<summary><code>writeableCoMap.type</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 writeableCoMap.type: "comap"
@@ -622,7 +622,7 @@ Specifies which kind of `CoValue` this is
 
 
 <details>
-<summary><code>writeableCoMap.core</code> (undocumented)</summary>
+<summary><code>writeableCoMap.core</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoMap.core: CoValueCore
@@ -636,7 +636,7 @@ TODO: document
 ### Accessors
 
 <details>
-<summary><code>writeableCoMap.meta</code> </summary>
+<summary><code>writeableCoMap.meta</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 get writeableCoMap.meta(): Meta
@@ -650,7 +650,7 @@ The `CoValue`'s (precisely typed) static metadata
 
 
 <details>
-<summary><code>writeableCoMap.group</code> </summary>
+<summary><code>writeableCoMap.group</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 get writeableCoMap.group(): Group
@@ -666,7 +666,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ### Methods
 
 <details>
-<summary><code>writeableCoMap.set(key, value, privacy?)</code> </summary>
+<summary><code>writeableCoMap.set(key, value, privacy?)</code>  </summary>
 
 ```typescript
 writeableCoMap.set<K extends string>(
@@ -688,7 +688,7 @@ If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in 
 
 
 <details>
-<summary><code>writeableCoMap.delete(key, privacy?)</code> </summary>
+<summary><code>writeableCoMap.delete(key, privacy?)</code>  </summary>
 
 ```typescript
 writeableCoMap.delete(
@@ -709,7 +709,7 @@ If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, v
 
 
 <details>
-<summary><code>writeableCoMap.keys()</code> (undocumented)</summary>
+<summary><code>writeableCoMap.keys()</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoMap.keys(): MapK<M>[]
@@ -721,7 +721,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoMap.get(key)</code> </summary>
+<summary><code>writeableCoMap.get(key)</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 writeableCoMap.get<K extends string>(
@@ -737,7 +737,7 @@ Returns the current value for the given key.
 
 
 <details>
-<summary><code>writeableCoMap.getAtTime(key, time)</code> (undocumented)</summary>
+<summary><code>writeableCoMap.getAtTime(key, time)</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoMap.getAtTime<K extends string>(
@@ -752,7 +752,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoMap.whoEdited(key)</code> </summary>
+<summary><code>writeableCoMap.whoEdited(key)</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 writeableCoMap.whoEdited<K extends string>(
@@ -768,7 +768,7 @@ Returns the accountID of the last account to modify the value for the given key.
 
 
 <details>
-<summary><code>writeableCoMap.getLastTxID(key)</code> (undocumented)</summary>
+<summary><code>writeableCoMap.getLastTxID(key)</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoMap.getLastTxID<K extends string>(
@@ -782,7 +782,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoMap.getLastEntry(key)</code> (undocumented)</summary>
+<summary><code>writeableCoMap.getLastEntry(key)</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoMap.getLastEntry<K extends string>(
@@ -796,7 +796,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoMap.getHistory(key)</code> (undocumented)</summary>
+<summary><code>writeableCoMap.getHistory(key)</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoMap.getHistory<K extends string>(
@@ -810,7 +810,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoMap.toJSON()</code> </summary>
+<summary><code>writeableCoMap.toJSON()</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 writeableCoMap.toJSON(): JsonObject
@@ -824,7 +824,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 
 <details>
-<summary><code>writeableCoMap.subscribe(listener)</code> </summary>
+<summary><code>writeableCoMap.subscribe(listener)</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
 writeableCoMap.subscribe(
@@ -857,7 +857,7 @@ TODO: document
 ### Properties
 
 <details>
-<summary><code>coList.id</code> </summary>
+<summary><code>coList.id</code>  </summary>
 
 ```typescript
 coList.id: CoID<CoList<T, Meta>>
@@ -871,7 +871,7 @@ The `CoValue`'s (precisely typed) `CoID`
 
 
 <details>
-<summary><code>coList.type</code> </summary>
+<summary><code>coList.type</code>  </summary>
 
 ```typescript
 coList.type: "colist"
@@ -885,7 +885,7 @@ Specifies which kind of `CoValue` this is
 
 
 <details>
-<summary><code>coList.core</code> (undocumented)</summary>
+<summary><code>coList.core</code>  (undocumented)</summary>
 
 ```typescript
 coList.core: CoValueCore
@@ -899,7 +899,7 @@ TODO: document
 ### Accessors
 
 <details>
-<summary><code>coList.meta</code> </summary>
+<summary><code>coList.meta</code>  </summary>
 
 ```typescript
 get coList.meta(): Meta
@@ -913,7 +913,7 @@ The `CoValue`'s (precisely typed) static metadata
 
 
 <details>
-<summary><code>coList.group</code> </summary>
+<summary><code>coList.group</code>  </summary>
 
 ```typescript
 get coList.group(): Group
@@ -929,7 +929,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ### Methods
 
 <details>
-<summary><code>coList.get(idx)</code> </summary>
+<summary><code>coList.get(idx)</code>  </summary>
 
 ```typescript
 coList.get(
@@ -945,7 +945,7 @@ Get the item currently at `idx`.
 
 
 <details>
-<summary><code>coList.asArray()</code> </summary>
+<summary><code>coList.asArray()</code>  </summary>
 
 ```typescript
 coList.asArray(): T[]
@@ -959,7 +959,7 @@ Returns the current items in the CoList as an array.
 
 
 <details>
-<summary><code>coList.entries()</code> (undocumented)</summary>
+<summary><code>coList.entries()</code>  (undocumented)</summary>
 
 ```typescript
 coList.entries(): {value: T, madeAt: number, opID: OpID}[]
@@ -971,7 +971,7 @@ TODO: document
 
 
 <details>
-<summary><code>coList.whoInserted(idx)</code> </summary>
+<summary><code>coList.whoInserted(idx)</code>  </summary>
 
 ```typescript
 coList.whoInserted(
@@ -987,7 +987,7 @@ Returns the accountID of the account that inserted value at the given index.
 
 
 <details>
-<summary><code>coList.toJSON()</code> </summary>
+<summary><code>coList.toJSON()</code>  </summary>
 
 ```typescript
 coList.toJSON(): T[]
@@ -1001,7 +1001,7 @@ Returns the current items in the CoList as an array. (alias of `asArray`)
 
 
 <details>
-<summary><code>coList.map(mapper)</code> (undocumented)</summary>
+<summary><code>coList.map(mapper)</code>  (undocumented)</summary>
 
 ```typescript
 coList.map<U>(
@@ -1015,7 +1015,7 @@ TODO: document
 
 
 <details>
-<summary><code>coList.filter(predicate)</code> (undocumented)</summary>
+<summary><code>coList.filter(predicate)</code>  (undocumented)</summary>
 
 ```typescript
 coList.filter<U extends JsonValue>(
@@ -1029,7 +1029,7 @@ TODO: document
 
 
 <details>
-<summary><code>coList.reduce(reducer, initialValue)</code> (undocumented)</summary>
+<summary><code>coList.reduce(reducer, initialValue)</code>  (undocumented)</summary>
 
 ```typescript
 coList.reduce<U>(
@@ -1044,7 +1044,7 @@ TODO: document
 
 
 <details>
-<summary><code>coList.subscribe(listener)</code> </summary>
+<summary><code>coList.subscribe(listener)</code>  </summary>
 
 ```typescript
 coList.subscribe(
@@ -1066,7 +1066,7 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 
 
 <details>
-<summary><code>coList.edit(changer)</code> </summary>
+<summary><code>coList.edit(changer)</code>  </summary>
 
 ```typescript
 coList.edit(
@@ -1097,7 +1097,7 @@ TODO: document
 ### Properties
 
 <details>
-<summary><code>writeableCoList.id</code> </summary>
+<summary><code>writeableCoList.id</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.id: CoID<CoList<T, Meta>>
@@ -1111,7 +1111,7 @@ The `CoValue`'s (precisely typed) `CoID`
 
 
 <details>
-<summary><code>writeableCoList.type</code> </summary>
+<summary><code>writeableCoList.type</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.type: "colist"
@@ -1125,7 +1125,7 @@ Specifies which kind of `CoValue` this is
 
 
 <details>
-<summary><code>writeableCoList.core</code> (undocumented)</summary>
+<summary><code>writeableCoList.core</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoList.core: CoValueCore
@@ -1139,7 +1139,7 @@ TODO: document
 ### Accessors
 
 <details>
-<summary><code>writeableCoList.meta</code> </summary>
+<summary><code>writeableCoList.meta</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 get writeableCoList.meta(): Meta
@@ -1153,7 +1153,7 @@ The `CoValue`'s (precisely typed) static metadata
 
 
 <details>
-<summary><code>writeableCoList.group</code> </summary>
+<summary><code>writeableCoList.group</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 get writeableCoList.group(): Group
@@ -1169,7 +1169,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ### Methods
 
 <details>
-<summary><code>writeableCoList.append(after, value, privacy?)</code> </summary>
+<summary><code>writeableCoList.append(after, value, privacy?)</code>  </summary>
 
 ```typescript
 writeableCoList.append(
@@ -1191,7 +1191,7 @@ If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transac
 
 
 <details>
-<summary><code>writeableCoList.push(value, privacy?)</code> </summary>
+<summary><code>writeableCoList.push(value, privacy?)</code>  </summary>
 
 ```typescript
 writeableCoList.push(
@@ -1212,7 +1212,7 @@ If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transac
 
 
 <details>
-<summary><code>writeableCoList.prepend(before, value, privacy?)</code> </summary>
+<summary><code>writeableCoList.prepend(before, value, privacy?)</code>  </summary>
 
 ```typescript
 writeableCoList.prepend(
@@ -1234,7 +1234,7 @@ If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transac
 
 
 <details>
-<summary><code>writeableCoList.delete(at, privacy?)</code> </summary>
+<summary><code>writeableCoList.delete(at, privacy?)</code>  </summary>
 
 ```typescript
 writeableCoList.delete(
@@ -1255,7 +1255,7 @@ If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext i
 
 
 <details>
-<summary><code>writeableCoList.get(idx)</code> </summary>
+<summary><code>writeableCoList.get(idx)</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.get(
@@ -1271,7 +1271,7 @@ Get the item currently at `idx`.
 
 
 <details>
-<summary><code>writeableCoList.asArray()</code> </summary>
+<summary><code>writeableCoList.asArray()</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.asArray(): T[]
@@ -1285,7 +1285,7 @@ Returns the current items in the CoList as an array.
 
 
 <details>
-<summary><code>writeableCoList.entries()</code> (undocumented)</summary>
+<summary><code>writeableCoList.entries()</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoList.entries(): {value: T, madeAt: number, opID: OpID}[]
@@ -1297,7 +1297,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoList.whoInserted(idx)</code> </summary>
+<summary><code>writeableCoList.whoInserted(idx)</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.whoInserted(
@@ -1313,7 +1313,7 @@ Returns the accountID of the account that inserted value at the given index.
 
 
 <details>
-<summary><code>writeableCoList.toJSON()</code> </summary>
+<summary><code>writeableCoList.toJSON()</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.toJSON(): T[]
@@ -1327,7 +1327,7 @@ Returns the current items in the CoList as an array. (alias of `asArray`)
 
 
 <details>
-<summary><code>writeableCoList.map(mapper)</code> (undocumented)</summary>
+<summary><code>writeableCoList.map(mapper)</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoList.map<U>(
@@ -1341,7 +1341,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoList.filter(predicate)</code> (undocumented)</summary>
+<summary><code>writeableCoList.filter(predicate)</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoList.filter<U extends JsonValue>(
@@ -1355,7 +1355,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoList.reduce(reducer, initialValue)</code> (undocumented)</summary>
+<summary><code>writeableCoList.reduce(reducer, initialValue)</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
 writeableCoList.reduce<U>(
@@ -1370,7 +1370,7 @@ TODO: document
 
 
 <details>
-<summary><code>writeableCoList.subscribe(listener)</code> </summary>
+<summary><code>writeableCoList.subscribe(listener)</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
 writeableCoList.subscribe(
@@ -1403,7 +1403,7 @@ TODO: document
 ### Constructors
 
 <details>
-<summary><code>new CoValueCore(header, node, internalInitSessions?)</code> (undocumented)</summary>
+<summary><code>new CoValueCore(header, node, internalInitSessions?)</code>  (undocumented)</summary>
 
 ```typescript
 new CoValueCore(
@@ -1421,7 +1421,7 @@ TODO: document
 ### Properties
 
 <details>
-<summary><code>coValueCore.id</code> (undocumented)</summary>
+<summary><code>coValueCore.id</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.id: TEMPLATE_LITERAL
@@ -1433,7 +1433,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.node</code> (undocumented)</summary>
+<summary><code>coValueCore.node</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.node: LocalNode
@@ -1445,7 +1445,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.header</code> (undocumented)</summary>
+<summary><code>coValueCore.header</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.header: CoValueHeader
@@ -1457,7 +1457,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore._sessions</code> (undocumented)</summary>
+<summary><code>coValueCore._sessions</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore._sessions: { [key: SessionID]: SessionLog }
@@ -1469,7 +1469,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.listeners</code> (undocumented)</summary>
+<summary><code>coValueCore.listeners</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.listeners: Set<(content: CoValueImpl) => void>
@@ -1481,7 +1481,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore._cachedContent</code> (undocumented)</summary>
+<summary><code>coValueCore._cachedContent</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore._cachedContent: CoValueImpl
@@ -1495,7 +1495,7 @@ TODO: document
 ### Accessors
 
 <details>
-<summary><code>coValueCore.sessions</code> (undocumented)</summary>
+<summary><code>coValueCore.sessions</code>  (undocumented)</summary>
 
 ```typescript
 get coValueCore.sessions(): Readonly<{ [key: SessionID]: SessionLog }>
@@ -1507,7 +1507,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.meta</code> (undocumented)</summary>
+<summary><code>coValueCore.meta</code>  (undocumented)</summary>
 
 ```typescript
 get coValueCore.meta(): JsonValue
@@ -1521,7 +1521,7 @@ TODO: document
 ### Methods
 
 <details>
-<summary><code>coValueCore.testWithDifferentAccount(account, currentSessionID)</code> (undocumented)</summary>
+<summary><code>coValueCore.testWithDifferentAccount(account, currentSessionID)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.testWithDifferentAccount(
@@ -1536,7 +1536,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.knownState()</code> (undocumented)</summary>
+<summary><code>coValueCore.knownState()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.knownState(): CoValueKnownState
@@ -1548,7 +1548,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.nextTransactionID()</code> (undocumented)</summary>
+<summary><code>coValueCore.nextTransactionID()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.nextTransactionID(): TransactionID
@@ -1560,7 +1560,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.tryAddTransactions(sessionID, newTransactions, givenExpectedNewHash, newSignature)</code> (undocumented)</summary>
+<summary><code>coValueCore.tryAddTransactions(sessionID, newTransactions, givenExpectedNewHash, newSignature)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.tryAddTransactions(
@@ -1577,7 +1577,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.subscribe(listener)</code> (undocumented)</summary>
+<summary><code>coValueCore.subscribe(listener)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.subscribe(
@@ -1591,7 +1591,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.expectedNewHashAfter(sessionID, newTransactions)</code> (undocumented)</summary>
+<summary><code>coValueCore.expectedNewHashAfter(sessionID, newTransactions)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.expectedNewHashAfter(
@@ -1606,7 +1606,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.makeTransaction(changes, privacy)</code> (undocumented)</summary>
+<summary><code>coValueCore.makeTransaction(changes, privacy)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.makeTransaction(
@@ -1621,7 +1621,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getCurrentContent()</code> (undocumented)</summary>
+<summary><code>coValueCore.getCurrentContent()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getCurrentContent(): CoValueImpl
@@ -1633,7 +1633,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getValidSortedTransactions()</code> (undocumented)</summary>
+<summary><code>coValueCore.getValidSortedTransactions()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getValidSortedTransactions(): DecryptedTransaction[]
@@ -1645,7 +1645,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getCurrentReadKey()</code> (undocumented)</summary>
+<summary><code>coValueCore.getCurrentReadKey()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getCurrentReadKey(): {secret: undefined | TEMPLATE_LITERAL, id: TEMPLATE_LITERAL}
@@ -1657,7 +1657,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getReadKey(keyID)</code> (undocumented)</summary>
+<summary><code>coValueCore.getReadKey(keyID)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getReadKey(
@@ -1671,7 +1671,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getGroup()</code> (undocumented)</summary>
+<summary><code>coValueCore.getGroup()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getGroup(): Group
@@ -1683,7 +1683,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getTx(txID)</code> (undocumented)</summary>
+<summary><code>coValueCore.getTx(txID)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getTx(
@@ -1697,7 +1697,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.newContentSince(knownState)</code> (undocumented)</summary>
+<summary><code>coValueCore.newContentSince(knownState)</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.newContentSince(
@@ -1711,7 +1711,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValueCore.getDependedOnCoValues()</code> (undocumented)</summary>
+<summary><code>coValueCore.getDependedOnCoValues()</code>  (undocumented)</summary>
 
 ```typescript
 coValueCore.getDependedOnCoValues(): TEMPLATE_LITERAL[]
@@ -1727,14 +1727,14 @@ TODO: document
 ## `CoValue` (interface in `cojson`)
 
 ```typescript
-export interface CoValue extends CoValue {...}
+export interface CoValue {...}
 ```
 TODO: document
 
 ### Properties
 
 <details>
-<summary><code>coValue.id</code> </summary>
+<summary><code>coValue.id</code>  </summary>
 
 ```typescript
 coValue.id: CoID<CoValueImpl>
@@ -1748,7 +1748,7 @@ The `CoValue`'s (precisely typed) `CoID`
 
 
 <details>
-<summary><code>coValue.core</code> (undocumented)</summary>
+<summary><code>coValue.core</code>  (undocumented)</summary>
 
 ```typescript
 coValue.core: CoValueCore
@@ -1760,7 +1760,7 @@ TODO: document
 
 
 <details>
-<summary><code>coValue.type</code> </summary>
+<summary><code>coValue.type</code>  </summary>
 
 ```typescript
 coValue.type: "colist" | "comap" | "costream" | "static"
@@ -1774,7 +1774,7 @@ Specifies which kind of `CoValue` this is
 
 
 <details>
-<summary><code>coValue.meta</code> </summary>
+<summary><code>coValue.meta</code>  </summary>
 
 ```typescript
 coValue.meta: null | JsonObject
@@ -1788,7 +1788,7 @@ The `CoValue`'s (precisely typed) static metadata
 
 
 <details>
-<summary><code>coValue.group</code> </summary>
+<summary><code>coValue.group</code>  </summary>
 
 ```typescript
 coValue.group: Group
@@ -1801,11 +1801,106 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 
 
+### Methods
+
 <details>
-<summary><code>coValue.edit</code> (undocumented)</summary>
+<summary><code>coValue.toJSON()</code>  </summary>
 
 ```typescript
-coValue.edit: (changer: (editable: WriteableCoValue) => void) => CoValueImpl
+coValue.toJSON(): JsonValue
+```
+Returns an immutable JSON presentation of this `CoValue`
+
+
+
+</details>
+
+
+
+----
+
+## `ReadableCoValue` (interface in `cojson`)
+
+```typescript
+export interface ReadableCoValue extends CoValue {...}
+```
+TODO: document
+
+### Properties
+
+<details>
+<summary><code>readableCoValue.id</code> (from <code>CoValue</code>)  </summary>
+
+```typescript
+readableCoValue.id: CoID<CoValueImpl>
+```
+The `CoValue`'s (precisely typed) `CoID`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>readableCoValue.core</code> (from <code>CoValue</code>)  (undocumented)</summary>
+
+```typescript
+readableCoValue.core: CoValueCore
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>readableCoValue.type</code> (from <code>CoValue</code>)  </summary>
+
+```typescript
+readableCoValue.type: "colist" | "comap" | "costream" | "static"
+```
+Specifies which kind of `CoValue` this is
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>readableCoValue.meta</code> (from <code>CoValue</code>)  </summary>
+
+```typescript
+readableCoValue.meta: null | JsonObject
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>readableCoValue.group</code> (from <code>CoValue</code>)  </summary>
+
+```typescript
+readableCoValue.group: Group
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>readableCoValue.edit</code>  (undocumented)</summary>
+
+```typescript
+readableCoValue.edit: (changer: (editable: WriteableCoValue) => void) => CoValueImpl
 ```
 TODO: document
 
@@ -1816,10 +1911,10 @@ TODO: document
 ### Methods
 
 <details>
-<summary><code>coValue.subscribe(listener)</code> </summary>
+<summary><code>readableCoValue.subscribe(listener)</code>  </summary>
 
 ```typescript
-coValue.subscribe(
+readableCoValue.subscribe(
   listener: (coValue: CoValueImpl) => void
 ): () => void
 ```
@@ -1838,10 +1933,10 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 
 
 <details>
-<summary><code>coValue.toJSON()</code> </summary>
+<summary><code>readableCoValue.toJSON()</code> (from <code>CoValue</code>)  </summary>
 
 ```typescript
-coValue.toJSON(): JsonValue
+readableCoValue.toJSON(): JsonValue
 ```
 Returns an immutable JSON presentation of this `CoValue`
 
@@ -1863,7 +1958,7 @@ TODO: document
 ### Properties
 
 <details>
-<summary><code>peer.id</code> (undocumented)</summary>
+<summary><code>peer.id</code>  (undocumented)</summary>
 
 ```typescript
 peer.id: string
@@ -1875,7 +1970,7 @@ TODO: document
 
 
 <details>
-<summary><code>peer.incoming</code> (undocumented)</summary>
+<summary><code>peer.incoming</code>  (undocumented)</summary>
 
 ```typescript
 peer.incoming: ReadableStream<SyncMessage>
@@ -1887,7 +1982,7 @@ TODO: document
 
 
 <details>
-<summary><code>peer.outgoing</code> (undocumented)</summary>
+<summary><code>peer.outgoing</code>  (undocumented)</summary>
 
 ```typescript
 peer.outgoing: WritableStream<SyncMessage>
@@ -1899,7 +1994,7 @@ TODO: document
 
 
 <details>
-<summary><code>peer.role</code> (undocumented)</summary>
+<summary><code>peer.role</code>  (undocumented)</summary>
 
 ```typescript
 peer.role: "peer" | "server" | "client"
@@ -2133,7 +2228,7 @@ TODO: document
 ### Methods
 
 <details>
-<summary><code>authProvider.createNode(getSessionFor, initialPeers)</code> (undocumented)</summary>
+<summary><code>authProvider.createNode(getSessionFor, initialPeers)</code>  (undocumented)</summary>
 
 ```typescript
 authProvider.createNode(

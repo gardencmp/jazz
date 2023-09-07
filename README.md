@@ -70,7 +70,7 @@ Provides you with everything you need to build react apps around CoJSON, includi
 
 A generic CoJSON sync server you can run locally if you don't want to use Jazz Global Mesh (the default sync backend, at `wss://sync.jazz.tools`)
 
-**`jazz-browser`**
+**`jazz-browser`**  → [DOCS](./DOCS.md#jazz-browser)
 
 framework-agnostic primitives that allow you to use CoJSON in the browser. Used to implement `jazz-react`, will be used to implement bindings for other frameworks in the future.
 

@@ -239,7 +239,9 @@ async function main() {
                     return `{${t.declaration.children
                         .map(
                             (child) =>
-                                `${child.name}${child.flags.isOptional ? "?" : ""}: ${renderType(child.type)}`
+                                `${child.name}${
+                                    child.flags.isOptional ? "?" : ""
+                                }: ${renderType(child.type)}`
                         )
                         .join(", ")}}`;
                 } else if (t.declaration.signatures) {
@@ -354,6 +356,12 @@ async function main() {
                         renderParamSimple
                     ) || []
                 ).join(", ")})</code> ${
+                    member.inheritedFrom
+                        ? "(from <code>" +
+                          member.inheritedFrom.name.split(".")[0] +
+                          "</code>) "
+                        : ""
+                } ${
                     member.signatures?.[0]?.comment ? "" : "(undocumented)"
                 }</summary>\n\n` +
                 member.signatures?.map((signature) => {
@@ -397,6 +405,12 @@ async function main() {
                 : child.name[0].toLowerCase() + child.name.slice(1);
             return (
                 `<details>\n<summary><code>${stem}.${member.name}</code> ${
+                    member.inheritedFrom
+                        ? "(from <code>" +
+                          member.inheritedFrom.name.split(".")[0] +
+                          "</code>) "
+                        : ""
+                } ${
                     member.comment ? "" : "(undocumented)"
                 }</summary>\n\n` +
                 "```typescript\n" +
