@@ -2,8 +2,8 @@ import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoID, ReadableCoValue, WriteableCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { SessionID, TransactionID } from "../ids.js";
-import { AccountID, Group } from "../index.js";
-import { isAccountID } from "../account.js";
+import { Group } from "../group.js";
+import { AccountID, isAccountID } from "../account.js";
 
 type OpID = TransactionID & { changeIdx: number };
 

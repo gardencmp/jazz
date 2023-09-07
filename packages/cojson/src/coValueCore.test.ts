@@ -2,8 +2,7 @@ import { Transaction } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "./crypto.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
-import { CoMap, MapOpPayload } from "./coValues/coMap.js";
-import { AccountID } from "./index.js";
+import { MapOpPayload } from "./coValues/coMap.js";
 import { Role } from "./permissions.js";
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {

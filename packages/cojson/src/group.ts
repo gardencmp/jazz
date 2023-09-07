@@ -21,6 +21,7 @@ import { AccountID, GeneralizedControlledAccount, Profile } from "./account.js";
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
 import { CoList } from "./coValues/coList.js";
+import { BinaryCoStream, BinaryCoStreamMeta, CoStream } from "./coValues/coStream.js";
 
 export type GroupContent = {
     profile: CoID<Profile> | null;
@@ -269,6 +270,38 @@ export class Group {
                 ...createdNowUnique(),
             })
             .getCurrentContent() as L;
+    }
+
+    createStream<C extends CoStream<JsonValue, JsonObject | null>>(
+        meta?: C["meta"]
+    ): C {
+        return this.node
+            .createCoValue({
+                type: "costream",
+                ruleset: {
+                    type: "ownedByGroup",
+                    group: this.underlyingMap.id,
+                },
+                meta: meta || null,
+                ...createdNowUnique(),
+            })
+            .getCurrentContent() as C;
+    }
+
+    createBinaryStream<
+        C extends BinaryCoStream<BinaryCoStreamMeta>
+    >(meta: C["meta"] = { type: "binary" }): C {
+        return this.node
+            .createCoValue({
+                type: "costream",
+                ruleset: {
+                    type: "ownedByGroup",
+                    group: this.underlyingMap.id,
+                },
+                meta: meta,
+                ...createdNowUnique(),
+            })
+            .getCurrentContent() as C;
     }
 
     /** @internal */

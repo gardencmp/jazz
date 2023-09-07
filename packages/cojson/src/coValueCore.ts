@@ -1,7 +1,7 @@
 import { randomBytes } from "@noble/hashes/utils";
 import { CoValueImpl } from "./coValue.js";
 import { Static } from "./coValues/static.js";
-import { CoStream } from "./coValues/coStream.js";
+import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
 import { CoMap } from "./coValues/coMap.js";
 import {
     Encrypted,
@@ -328,7 +328,11 @@ export class CoValueCore {
         } else if (this.header.type === "colist") {
             this._cachedContent = new CoList(this);
         } else if (this.header.type === "costream") {
-            this._cachedContent = new CoStream(this);
+            if (this.header.meta && this.header.meta.type === "binary") {
+                this._cachedContent = new BinaryCoStream(this);
+            } else {
+                this._cachedContent = new CoStream(this);
+            }
         } else if (this.header.type === "static") {
             this._cachedContent = new Static(this);
         } else {

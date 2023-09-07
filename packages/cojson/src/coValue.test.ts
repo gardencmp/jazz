@@ -1,4 +1,5 @@
 import { accountOrAgentIDfromSessionID } from "./coValueCore.js";
+import { BinaryCoStream } from "./coValues/coStream.js";
 import { createdNowUnique } from "./crypto.js";
 import { LocalNode } from "./node.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
@@ -281,4 +282,106 @@ test("Can push into empty list", () => {
         editable.push("hello", "trusting");
         expect(editable.toJSON()).toEqual(["hello"]);
     });
-})
+});
+
+test("Empty CoStream works", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "costream",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "costream") {
+        throw new Error("Expected stream");
+    }
+
+    expect(content.type).toEqual("costream");
+    expect(content.toJSON()).toEqual({});
+    expect(content.getSingleStream()).toEqual(undefined);
+});
+
+test("Can push into CoStream", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "costream",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "costream") {
+        throw new Error("Expected stream");
+    }
+
+    content.edit((editable) => {
+        editable.push({ hello: "world" }, "trusting");
+        expect(editable.toJSON()).toEqual({
+            [node.currentSessionID]: [{ hello: "world" }],
+        });
+        editable.push({ foo: "bar" }, "trusting");
+        expect(editable.toJSON()).toEqual({
+            [node.currentSessionID]: [{ hello: "world" }, { foo: "bar" }],
+        });
+        expect(editable.getSingleStream()).toEqual([
+            { hello: "world" },
+            { foo: "bar" },
+        ]);
+    });
+});
+
+test("Empty BinaryCoStream works", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "costream",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: { type: "binary" },
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+        throw new Error("Expected binary stream");
+    }
+
+    expect(content.type).toEqual("costream");
+    expect(content.meta.type).toEqual("binary");
+    expect(content.toJSON()).toEqual({});
+    expect(content.getBinaryChunks()).toEqual(undefined);
+});
+
+test("Can push into BinaryCoStream", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "costream",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: { type: "binary" },
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+        throw new Error("Expected binary stream");
+    }
+
+    content.edit((editable) => {
+        editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
+        expect(editable.getBinaryChunks()).toEqual({
+            mimeType: "text/plain",
+            fileName: "test.txt",
+            chunks: [],
+            finished: false,
+        });
+    });
+});

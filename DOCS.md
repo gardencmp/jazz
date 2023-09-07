@@ -370,6 +370,34 @@ Creates a new `CoList` within this group, with the specified specialized
 
 
 
+<details>
+<summary><code>group.createStream(meta)</code>  (undocumented)</summary>
+
+```typescript
+group.createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+  meta: C["meta"]
+): C
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>group.createBinaryStream(meta?)</code>  (undocumented)</summary>
+
+```typescript
+group.createBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
+  meta?: C["meta"] = ...
+): C
+```
+TODO: document
+
+</details>
+
+
+
 
 
 ----
@@ -1477,6 +1505,779 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 
 ----
 
+## `CoStream` (class in `cojson`)
+
+```typescript
+export class CoStream<T extends JsonValue, Meta extends JsonObject | null> implements ReadableCoValue {...}
+```
+TODO: document
+
+### Constructors
+
+<details>
+<summary><code>new CoStream(core)</code>  (undocumented)</summary>
+
+```typescript
+new CoStream<T extends JsonValue, Meta extends null | JsonObject>(
+  core: CoValueCore
+): CoStream<T, Meta>
+```
+TODO: document
+
+</details>
+
+
+
+### Properties
+
+<details>
+<summary><code>coStream.id</code>  </summary>
+
+```typescript
+coStream.id: CoID<CoStream<T, Meta>>
+```
+The `CoValue`'s (precisely typed) `CoID`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.type</code>  </summary>
+
+```typescript
+coStream.type: "costream"
+```
+Specifies which kind of `CoValue` this is
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.core</code>  (undocumented)</summary>
+
+```typescript
+coStream.core: CoValueCore
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.items</code>  (undocumented)</summary>
+
+```typescript
+coStream.items: { [key: SessionID]: T[] }
+```
+TODO: document
+
+</details>
+
+
+
+### Accessors
+
+<details>
+<summary><code>coStream.meta</code>  </summary>
+
+```typescript
+get coStream.meta(): Meta
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.group</code>  </summary>
+
+```typescript
+get coStream.group(): Group
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+
+
+### Methods
+
+
+
+<details>
+<summary><code>coStream.getSingleStream()</code>  (undocumented)</summary>
+
+```typescript
+coStream.getSingleStream(): undefined | T[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.toJSON()</code>  </summary>
+
+```typescript
+coStream.toJSON(): { [key: SessionID]: T[] }
+```
+Returns an immutable JSON presentation of this `CoValue`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.subscribe(listener)</code>  </summary>
+
+```typescript
+coStream.subscribe(
+  listener: (coMap: CoStream<T, Meta>) => void
+): () => void
+```
+Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
+
+Takes a listener function that will be called with the current state for each update.
+
+Returns an unsubscribe function.
+
+Used internally by `useTelepathicData()` for reactive updates on changes to a `CoValue`.
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.edit(changer)</code>  </summary>
+
+```typescript
+coStream.edit(
+  changer: (editable: WriteableCoStream<T, Meta>) => void
+): CoStream<T, Meta>
+```
+Lets you apply edits to a `CoValue`, inside the changer callback, which receives a `WriteableCoValue`.
+
+ A `WritableCoValue` has all the same methods as a `CoValue`, but all edits made to it (with its additional mutator methods)
+ are reflected in it immediately - so it behaves mutably, whereas a `CoValue` is always immutable
+ (you need to use `subscribe` to receive new versions of it).
+
+
+
+</details>
+
+
+
+----
+
+## `WriteableCoStream` (class in `cojson`)
+
+```typescript
+export class WriteableCoStream<T extends JsonValue, Meta extends JsonObject | null> extends CoStream<T, Meta> implements WriteableCoValue {...}
+```
+TODO: document
+
+### Constructors
+
+<details>
+<summary><code>new WriteableCoStream(core)</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+new WriteableCoStream<T extends JsonValue, Meta extends null | JsonObject>(
+  core: CoValueCore
+): WriteableCoStream<T, Meta>
+```
+TODO: document
+
+</details>
+
+
+
+### Properties
+
+<details>
+<summary><code>writeableCoStream.id</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+writeableCoStream.id: CoID<CoStream<T, Meta>>
+```
+The `CoValue`'s (precisely typed) `CoID`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.type</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+writeableCoStream.type: "costream"
+```
+Specifies which kind of `CoValue` this is
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.core</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableCoStream.core: CoValueCore
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.items</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableCoStream.items: { [key: SessionID]: T[] }
+```
+TODO: document
+
+</details>
+
+
+
+### Accessors
+
+<details>
+<summary><code>writeableCoStream.meta</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+get writeableCoStream.meta(): Meta
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.group</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+get writeableCoStream.group(): Group
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+
+
+### Methods
+
+
+
+<details>
+<summary><code>writeableCoStream.push(item, privacy?)</code>  (undocumented)</summary>
+
+```typescript
+writeableCoStream.push(
+  item: T,
+  privacy?: "private" | "trusting" = "private"
+): void
+```
+TODO: document
+
+</details>
+
+
+
+
+
+<details>
+<summary><code>writeableCoStream.getSingleStream()</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableCoStream.getSingleStream(): undefined | T[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.toJSON()</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+writeableCoStream.toJSON(): { [key: SessionID]: T[] }
+```
+Returns an immutable JSON presentation of this `CoValue`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.subscribe(listener)</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+writeableCoStream.subscribe(
+  listener: (coMap: CoStream<T, Meta>) => void
+): () => void
+```
+Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
+
+Takes a listener function that will be called with the current state for each update.
+
+Returns an unsubscribe function.
+
+Used internally by `useTelepathicData()` for reactive updates on changes to a `CoValue`.
+
+
+
+</details>
+
+
+
+----
+
+## `BinaryCoStream` (class in `cojson`)
+
+```typescript
+export class BinaryCoStream<Meta extends BinaryCoStreamMeta> extends CoStream<BinaryStreamItem, Meta> implements ReadableCoValue {...}
+```
+TODO: document
+
+### Constructors
+
+<details>
+<summary><code>new BinaryCoStream(core)</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+new BinaryCoStream<Meta extends BinaryCoStreamMeta>(
+  core: CoValueCore
+): BinaryCoStream<Meta>
+```
+TODO: document
+
+</details>
+
+
+
+### Properties
+
+<details>
+<summary><code>binaryCoStream.id</code>  </summary>
+
+```typescript
+binaryCoStream.id: CoID<BinaryCoStream<Meta>>
+```
+The `CoValue`'s (precisely typed) `CoID`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.type</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+binaryCoStream.type: "costream"
+```
+Specifies which kind of `CoValue` this is
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.core</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+binaryCoStream.core: CoValueCore
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.items</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+binaryCoStream.items: { [key: SessionID]: T[] }
+```
+TODO: document
+
+</details>
+
+
+
+### Accessors
+
+<details>
+<summary><code>binaryCoStream.meta</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+get binaryCoStream.meta(): Meta
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.group</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+get binaryCoStream.group(): Group
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+
+
+### Methods
+
+<details>
+<summary><code>binaryCoStream.getBinaryChunks()</code>  (undocumented)</summary>
+
+```typescript
+binaryCoStream.getBinaryChunks(): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.edit(changer)</code>  </summary>
+
+```typescript
+binaryCoStream.edit(
+  changer: (editable: WriteableBinaryCoStream<Meta>) => void
+): BinaryCoStream<Meta>
+```
+Lets you apply edits to a `CoValue`, inside the changer callback, which receives a `WriteableCoValue`.
+
+ A `WritableCoValue` has all the same methods as a `CoValue`, but all edits made to it (with its additional mutator methods)
+ are reflected in it immediately - so it behaves mutably, whereas a `CoValue` is always immutable
+ (you need to use `subscribe` to receive new versions of it).
+
+
+
+</details>
+
+
+
+
+
+<details>
+<summary><code>binaryCoStream.getSingleStream()</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+binaryCoStream.getSingleStream(): undefined | BinaryStreamItem[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.toJSON()</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+binaryCoStream.toJSON(): { [key: SessionID]: T[] }
+```
+Returns an immutable JSON presentation of this `CoValue`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.subscribe(listener)</code> (from <code>CoStream</code>)  </summary>
+
+```typescript
+binaryCoStream.subscribe(
+  listener: (coMap: CoStream<BinaryStreamItem, Meta>) => void
+): () => void
+```
+Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
+
+Takes a listener function that will be called with the current state for each update.
+
+Returns an unsubscribe function.
+
+Used internally by `useTelepathicData()` for reactive updates on changes to a `CoValue`.
+
+
+
+</details>
+
+
+
+----
+
+## `WriteableBinaryCoStream` (class in `cojson`)
+
+```typescript
+export class WriteableBinaryCoStream<Meta extends BinaryCoStreamMeta> extends BinaryCoStream<Meta> implements WriteableCoValue {...}
+```
+TODO: document
+
+### Constructors
+
+<details>
+<summary><code>new WriteableBinaryCoStream(core)</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+new WriteableBinaryCoStream<Meta extends BinaryCoStreamMeta>(
+  core: CoValueCore
+): WriteableBinaryCoStream<Meta>
+```
+TODO: document
+
+</details>
+
+
+
+### Properties
+
+<details>
+<summary><code>writeableBinaryCoStream.id</code> (from <code>BinaryCoStream</code>)  </summary>
+
+```typescript
+writeableBinaryCoStream.id: CoID<BinaryCoStream<Meta>>
+```
+The `CoValue`'s (precisely typed) `CoID`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.type</code> (from <code>BinaryCoStream</code>)  </summary>
+
+```typescript
+writeableBinaryCoStream.type: "costream"
+```
+Specifies which kind of `CoValue` this is
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.core</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.core: CoValueCore
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.items</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.items: { [key: SessionID]: T[] }
+```
+TODO: document
+
+</details>
+
+
+
+### Accessors
+
+<details>
+<summary><code>writeableBinaryCoStream.meta</code> (from <code>BinaryCoStream</code>)  </summary>
+
+```typescript
+get writeableBinaryCoStream.meta(): Meta
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.group</code> (from <code>BinaryCoStream</code>)  </summary>
+
+```typescript
+get writeableBinaryCoStream.group(): Group
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+
+
+### Methods
+
+
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.startBinaryStream(settings, privacy?)</code>  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.startBinaryStream(
+  settings: BinaryChunkInfo,
+  privacy?: "private" | "trusting" = "private"
+): void
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.pushBinaryStreamChunk(chunk, privacy?)</code>  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.pushBinaryStreamChunk(
+  chunk: Uint8Array,
+  privacy?: "private" | "trusting" = "private"
+): void
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.endBinaryStream(privacy?)</code>  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.endBinaryStream(
+  privacy?: "private" | "trusting" = "private"
+): void
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.getBinaryChunks()</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.getBinaryChunks(): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
+```
+TODO: document
+
+</details>
+
+
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.getSingleStream()</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.getSingleStream(): undefined | BinaryStreamItem[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.toJSON()</code> (from <code>BinaryCoStream</code>)  </summary>
+
+```typescript
+writeableBinaryCoStream.toJSON(): { [key: SessionID]: T[] }
+```
+Returns an immutable JSON presentation of this `CoValue`
+
+
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.subscribe(listener)</code> (from <code>BinaryCoStream</code>)  </summary>
+
+```typescript
+writeableBinaryCoStream.subscribe(
+  listener: (coMap: CoStream<BinaryStreamItem, Meta>) => void
+): () => void
+```
+Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
+
+Takes a listener function that will be called with the current state for each update.
+
+Returns an unsubscribe function.
+
+Used internally by `useTelepathicData()` for reactive updates on changes to a `CoValue`.
+
+
+
+</details>
+
+
+
+----
+
 ## `CoValueCore` (class in `cojson`)
 
 ```typescript
@@ -1847,7 +2648,7 @@ TODO: document
 <summary><code>coValue.type</code>  </summary>
 
 ```typescript
-coValue.type: "colist" | "comap" | "costream" | "static"
+coValue.type: "comap" | "colist" | "costream" | "static"
 ```
 Specifies which kind of `CoValue` this is
 
@@ -1942,7 +2743,7 @@ TODO: document
 <summary><code>readableCoValue.type</code> (from <code>CoValue</code>)  </summary>
 
 ```typescript
-readableCoValue.type: "colist" | "comap" | "costream" | "static"
+readableCoValue.type: "comap" | "colist" | "costream" | "static"
 ```
 Specifies which kind of `CoValue` this is
 
@@ -2116,7 +2917,7 @@ TODO: doc generator not implemented yet
 ## `CoValueImpl` (type alias in `cojson`)
 
 ```typescript
-export type CoValueImpl = CoMap<{ [key: string]: JsonValue }, JsonObject | null> | CoList<JsonValue, JsonObject | null> | CoStream<JsonValue, JsonObject | null> | Static<JsonObject>
+export type CoValueImpl = CoMap<{ [key: string]: JsonValue }, JsonObject | null> | CoList<JsonValue, JsonObject | null> | CoStream<JsonValue, JsonObject | null> | BinaryCoStream<BinaryCoStreamMeta> | Static<JsonObject>
 ```
 TODO: document
 
@@ -2161,6 +2962,28 @@ TODO: doc generator not implemented yet
 
 ```typescript
 export type SessionID = SessionID
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `BinaryChunkInfo` (type alias in `cojson`)
+
+```typescript
+export type BinaryChunkInfo = {mimeType: string, fileName?: string, totalSizeBytes?: number}
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `BinaryCoStreamMeta` (type alias in `cojson`)
+
+```typescript
+export type BinaryCoStreamMeta = JsonObject & {type: "binary"}
 ```
 TODO: document
 
@@ -2261,6 +3084,28 @@ TODO: doc generator not implemented yet
 
 ```typescript
 export function useProfile(accountID: AccountID): CoMap<P, CojsonInternalTypes.ProfileMeta> | undefined
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `useBinaryStream(streamID, allowUnfinished)` (function in `jazz-react`)
+
+```typescript
+export function useBinaryStream(streamID: CoID<C>, allowUnfinished: boolean): {blob: Blob, blobURL: string} | undefined
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `useCreateBinaryStreamHandler(onCreated, inGroup, meta)` (function in `jazz-react`)
+
+```typescript
+export function useCreateBinaryStreamHandler(onCreated: (createdStream: C) => void, inGroup: Group, meta: C["meta"]): (event: ChangeEvent) => void
 ```
 TODO: document
 
@@ -2398,6 +3243,28 @@ TODO: doc generator not implemented yet
 
 ```typescript
 export function consumeInviteLinkFromWindowLocation(node: LocalNode): Promise<{valueID: CoID<C>, inviteSecret: string} | undefined>
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `createBinaryStreamFromBlob(blob, inGroup, meta?)` (function in `jazz-browser`)
+
+```typescript
+export function createBinaryStreamFromBlob(blob: Blob | File, inGroup: Group, meta: C["meta"]): Promise<C>
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `readBlobFromBinaryStream(streamId, node, allowUnfinished)` (function in `jazz-browser`)
+
+```typescript
+export function readBlobFromBinaryStream(streamId: CoID<C>, node: LocalNode, allowUnfinished: boolean): Promise<Blob | undefined>
 ```
 TODO: document
 

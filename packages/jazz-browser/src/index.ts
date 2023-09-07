@@ -1,4 +1,5 @@
-import { InviteSecret } from "cojson";
+import { BinaryCoStream, InviteSecret } from "cojson";
+import { BinaryCoStreamMeta } from "cojson";
 import {
     LocalNode,
     cojsonInternals,
@@ -346,4 +347,56 @@ export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(node:
             resolve(undefined);
         }
     });
+}
+
+export async function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group, meta: C["meta"] = {type: "binary"}): Promise<C> {
+    const stream = inGroup.createBinaryStream(meta);
+
+    const reader = new FileReader();
+    const done = new Promise<void>((resolve) => {
+
+        reader.onload = () => {
+            const data = new Uint8Array(reader.result as ArrayBuffer);
+            stream.edit(stream => {
+                stream.startBinaryStream({
+                    mimeType: blob.type,
+                    totalSizeBytes: blob.size,
+                    fileName: blob instanceof File ? blob.name : undefined,
+                });
+                const chunkSize = 100 * 1024;
+
+                for (let idx = 0; idx < data.length; idx += chunkSize) {
+                    stream.pushBinaryStreamChunk(data.slice(idx, idx + chunkSize));
+                }
+
+                stream.endBinaryStream();
+            });
+            resolve();
+        };
+    });
+    reader.readAsArrayBuffer(blob);
+
+    await done;
+
+    return stream;
+}
+
+export async function readBlobFromBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(streamId: CoID<C>, node: LocalNode, allowUnfinished?: boolean): Promise<Blob | undefined> {
+    const stream = await node.load<C>(streamId);
+
+    if (!stream) {
+        return undefined;
+    }
+
+    const chunks = stream.getBinaryChunks();
+
+    if (!chunks) {
+        return undefined;
+    }
+
+    if (!allowUnfinished && !chunks.finished) {
+        return undefined;
+    }
+
+    return new Blob(chunks.chunks, { type: chunks.mimeType });
 }

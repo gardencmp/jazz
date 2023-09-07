@@ -4,6 +4,12 @@ import type { CoValue, ReadableCoValue } from "./coValue.js";
 import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
 import { CoList, WriteableCoList } from "./coValues/coList.js";
 import {
+    CoStream,
+    WriteableCoStream,
+    BinaryCoStream,
+    WriteableBinaryCoStream,
+} from "./coValues/coStream.js";
+import {
     agentSecretFromBytes,
     agentSecretToBytes,
     getAgentID,
@@ -20,6 +26,7 @@ import { Group, expectGroupContent } from "./group.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, CoValueImpl } from "./coValue.js";
+import type { BinaryChunkInfo, BinaryCoStreamMeta } from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
@@ -52,6 +59,10 @@ export {
     WriteableCoMap,
     CoList,
     WriteableCoList,
+    CoStream,
+    WriteableCoStream,
+    BinaryCoStream,
+    WriteableBinaryCoStream,
     CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,
@@ -68,6 +79,8 @@ export type {
     Profile,
     SessionID,
     Peer,
+    BinaryChunkInfo,
+    BinaryCoStreamMeta,
     AgentID,
     AgentSecret,
     InviteSecret,

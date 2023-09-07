@@ -6,9 +6,17 @@ import {
     AccountID,
     JsonValue,
     CojsonInternalTypes,
+    BinaryCoStream,
+    BinaryCoStreamMeta,
+    Group,
 } from "cojson";
-import React, { useEffect, useState } from "react";
-import { AuthProvider, createBrowserNode } from "jazz-browser";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import {
+    AuthProvider,
+    createBinaryStreamFromBlob,
+    createBrowserNode,
+} from "jazz-browser";
+import { readBlobFromBinaryStream } from "jazz-browser";
 
 export {
     createInviteLink,
@@ -147,4 +155,48 @@ export function useProfile<
     }, [localNode, accountID]);
 
     return useTelepathicState(profileID);
+}
+
+export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
+    streamID: CoID<C>,
+    allowUnfinished?: boolean
+): { blob: Blob; blobURL: string } | undefined {
+    const { localNode } = useJazz();
+
+    const stream = useTelepathicState(streamID);
+
+    const [blob, setBlob] = useState<
+        { blob: Blob; blobURL: string } | undefined
+    >();
+
+    useEffect(() => {
+        if (!stream) return;
+        readBlobFromBinaryStream(stream.id, localNode, allowUnfinished).then(
+            (blob) =>
+                setBlob(blob && {
+                    blob,
+                    blobURL: URL.createObjectURL(blob),
+                })
+        );
+    }, [stream, localNode]);
+
+    return blob;
+}
+
+export function useCreateBinaryStreamHandler<
+    C extends BinaryCoStream<BinaryCoStreamMeta>
+>(
+    onCreated: (createdStream: C) => void,
+    inGroup: Group,
+    meta: C["meta"]
+): (event: ChangeEvent) => void {
+    return async (event) => {
+        const file = (event.target as HTMLInputElement).files?.[0];
+
+        if (!file) return;
+
+        const stream = await createBinaryStreamFromBlob(file, inGroup, meta);
+
+        onCreated(stream);
+    };
 }

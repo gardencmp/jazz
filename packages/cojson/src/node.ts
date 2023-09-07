@@ -32,7 +32,7 @@ import {
     AccountContent,
     AccountMap,
 } from "./account.js";
-import { CoMap } from "./index.js";
+import { CoMap } from "./coValues/coMap.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
