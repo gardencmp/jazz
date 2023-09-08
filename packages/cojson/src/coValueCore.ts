@@ -100,6 +100,7 @@ export class CoValueCore {
     _sessions: { [key: SessionID]: SessionLog };
     _cachedContent?: CoValueImpl;
     listeners: Set<(content?: CoValueImpl) => void> = new Set();
+    _decryptionCache: {[key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined} = {}
 
     constructor(
         header: CoValueHeader,
@@ -222,10 +223,11 @@ export class CoValueCore {
 
         this._cachedContent = undefined;
 
-        const content = this.getCurrentContent();
-
-        for (const listener of this.listeners) {
-            listener(content);
+        if (this.listeners.size > 0) {
+            const content = this.getCurrentContent();
+            for (const listener of this.listeners) {
+                listener(content);
+            }
         }
 
         return true;
@@ -359,14 +361,19 @@ export class CoValueCore {
                     if (!readKey) {
                         return undefined;
                     } else {
-                        const decrytedChanges = decryptForTransaction(
-                            tx.encryptedChanges,
-                            readKey,
-                            {
-                                in: this.id,
-                                tx: txID,
-                            }
-                        );
+                        let decrytedChanges = this._decryptionCache[tx.encryptedChanges];
+
+                        if (!decrytedChanges) {
+                            decrytedChanges = decryptForTransaction(
+                                tx.encryptedChanges,
+                                readKey,
+                                {
+                                    in: this.id,
+                                    tx: txID,
+                                }
+                            );
+                            this._decryptionCache[tx.encryptedChanges] = decrytedChanges;
+                        }
 
                         if (!decrytedChanges) {
                             console.error(

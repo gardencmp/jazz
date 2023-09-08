@@ -23,6 +23,7 @@ import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
 import { Group, expectGroupContent } from "./group.js";
+import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, CoValueImpl } from "./coValue.js";
@@ -50,6 +51,8 @@ export const cojsonInternals = {
     secretSeedLength,
     shortHashLength,
     expectGroupContent,
+    base64URLtoBytes,
+    bytesToBase64url
 };
 
 export {

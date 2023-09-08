@@ -158,7 +158,7 @@ export function useProfile<
 }
 
 export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
-    streamID: CoID<C>,
+    streamID?: CoID<C>,
     allowUnfinished?: boolean
 ): { blob: Blob; blobURL: string } | undefined {
     const { localNode } = useJazz();
@@ -186,12 +186,12 @@ export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
     return blob;
 }
 
-export function useCreateBinaryStreamHandler<
+export function createBinaryStreamHandler<
     C extends BinaryCoStream<BinaryCoStreamMeta>
 >(
     onCreated: (createdStream: C) => void,
     inGroup: Group,
-    meta: C["meta"]
+    meta: C["meta"] = {type: "binary"}
 ): (event: ChangeEvent) => void {
     return (event) => {
         const file = (event.target as HTMLInputElement).files?.[0];

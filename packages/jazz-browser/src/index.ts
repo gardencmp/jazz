@@ -350,14 +350,14 @@ export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(node:
 }
 
 export async function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group, meta: C["meta"] = {type: "binary"}): Promise<C> {
-    const stream = inGroup.createBinaryStream(meta);
+    let stream = inGroup.createBinaryStream(meta);
 
     const reader = new FileReader();
     const done = new Promise<void>((resolve) => {
 
         reader.onload = () => {
             const data = new Uint8Array(reader.result as ArrayBuffer);
-            stream.edit(stream => {
+            stream = stream.edit(stream => {
                 stream.startBinaryStream({
                     mimeType: blob.type,
                     totalSizeBytes: blob.size,
@@ -370,7 +370,7 @@ export async function createBinaryStreamFromBlob<C extends BinaryCoStream<Binary
                 }
 
                 stream.endBinaryStream();
-            });
+            }) as C; // TODO: fix this
             resolve();
         };
     });

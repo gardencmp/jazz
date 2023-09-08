@@ -3,7 +3,7 @@ import { CoID, ReadableCoValue, WriteableCoValue } from "../coValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { Group } from "../group.js";
 import { SessionID } from "../ids.js";
-import { base64url } from "@scure/base";
+import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
 
 export type BinaryChunkInfo = {
     mimeType: string;
@@ -47,6 +47,7 @@ export class CoStream<
         this.id = core.id as CoID<CoStream<T, Meta>>;
         this.core = core;
         this.items = {};
+        this.fillFromCoValue();
     }
 
     get meta(): Meta {
@@ -150,7 +151,7 @@ export class BinaryCoStream<
                 return undefined;
             }
 
-            chunks.push(base64url.decode(item.chunk.slice(1)));
+            chunks.push(base64URLtoBytes(item.chunk.slice(1)));
         }
 
         return {
@@ -232,7 +233,7 @@ export class WriteableBinaryCoStream<
         this.push(
             {
                 type: "chunk",
-                chunk: `U${base64url.encode(chunk)}`,
+                chunk: `U${bytesToBase64url(chunk)}`,
             } satisfies BinaryStreamChunk,
             privacy
         );
