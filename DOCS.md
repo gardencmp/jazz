@@ -2474,6 +2474,23 @@ TODO: document
 
 
 <details>
+<summary><code>coValueCore.tryAddTransactionsAsync(sessionID, newTransactions, givenExpectedNewHash, newSignature)</code>  (undocumented)</summary>
+
+```typescript
+coValueCore.tryAddTransactionsAsync(
+  sessionID: SessionID,
+  newTransactions: Transaction[],
+  givenExpectedNewHash: undefined | TEMPLATE_LITERAL,
+  newSignature: TEMPLATE_LITERAL
+): Promise<boolean>
+```
+TODO: document
+
+</details>
+
+
+
+<details>
 <summary><code>coValueCore.subscribe(listener)</code>  (undocumented)</summary>
 
 ```typescript
@@ -2495,6 +2512,21 @@ coValueCore.expectedNewHashAfter(
   sessionID: SessionID,
   newTransactions: Transaction[]
 ): {expectedNewHash: TEMPLATE_LITERAL, newStreamingHash: StreamingHash}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coValueCore.expectedNewHashAfterAsync(sessionID, newTransactions)</code>  (undocumented)</summary>
+
+```typescript
+coValueCore.expectedNewHashAfterAsync(
+  sessionID: SessionID,
+  newTransactions: Transaction[]
+): Promise<{expectedNewHash: TEMPLATE_LITERAL, newStreamingHash: StreamingHash}>
 ```
 TODO: document
 
@@ -3040,6 +3072,17 @@ TODO: doc generator not implemented yet
 
 ```typescript
 export type SyncMessage = LoadMessage | KnownStateMessage | NewContentMessage | DoneMessage
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `cojsonReady` (variabl in `cojson`)
+
+```typescript
+export  cojsonReady
 ```
 TODO: document
 
