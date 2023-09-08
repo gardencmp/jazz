@@ -2366,6 +2366,18 @@ TODO: document
 
 
 <details>
+<summary><code>coValueCore._decryptionCache</code>  (undocumented)</summary>
+
+```typescript
+coValueCore._decryptionCache: { [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined }
+```
+TODO: document
+
+</details>
+
+
+
+<details>
 <summary><code>coValueCore._cachedContent</code>  (undocumented)</summary>
 
 ```typescript
@@ -3102,10 +3114,10 @@ TODO: doc generator not implemented yet
 
 ----
 
-## `useCreateBinaryStreamHandler(onCreated, inGroup, meta)` (function in `jazz-react`)
+## `createBinaryStreamHandler(onCreated, inGroup, meta?)` (function in `jazz-react`)
 
 ```typescript
-export function useCreateBinaryStreamHandler(onCreated: (createdStream: C) => void, inGroup: Group, meta: C["meta"]): (event: ChangeEvent) => void
+export function createBinaryStreamHandler(onCreated: (createdStream: C) => void, inGroup: Group, meta: C["meta"]): (event: ChangeEvent) => void
 ```
 TODO: document
 
