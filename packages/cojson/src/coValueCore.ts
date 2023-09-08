@@ -187,10 +187,16 @@ export class CoValueCore {
             return false;
         }
 
+        // const beforeHash = performance.now();
         const { expectedNewHash, newStreamingHash } = this.expectedNewHashAfter(
             sessionID,
             newTransactions
         );
+        // const afterHash = performance.now();
+        // console.log(
+        //     "Hashing took",
+        //     afterHash - beforeHash
+        // );
 
         if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
             console.warn("Invalid hash", {
@@ -200,6 +206,7 @@ export class CoValueCore {
             return false;
         }
 
+        // const beforeVerify = performance.now();
         if (!verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
                 "Invalid signature",
@@ -209,6 +216,105 @@ export class CoValueCore {
             );
             return false;
         }
+        // const afterVerify = performance.now();
+        // console.log(
+        //     "Verify took",
+        //     afterVerify - beforeVerify
+        // );
+
+        const transactions = this.sessions[sessionID]?.transactions ?? [];
+
+        transactions.push(...newTransactions);
+
+        this._sessions[sessionID] = {
+            transactions,
+            lastHash: expectedNewHash,
+            streamingHash: newStreamingHash,
+            lastSignature: newSignature,
+        };
+
+        this._cachedContent = undefined;
+
+        if (this.listeners.size > 0) {
+            const content = this.getCurrentContent();
+            for (const listener of this.listeners) {
+                listener(content);
+            }
+        }
+
+        return true;
+    }
+
+    async tryAddTransactionsAsync(
+        sessionID: SessionID,
+        newTransactions: Transaction[],
+        givenExpectedNewHash: Hash | undefined,
+        newSignature: Signature
+    ): Promise<boolean> {
+        const signerID = getAgentSignerID(
+            this.node.resolveAccountAgent(
+                accountOrAgentIDfromSessionID(sessionID),
+                "Expected to know signer of transaction"
+            )
+        );
+
+        if (!signerID) {
+            console.warn(
+                "Unknown agent",
+                accountOrAgentIDfromSessionID(sessionID)
+            );
+            return false;
+        }
+
+        const nTxBefore = this.sessions[sessionID]?.transactions.length ?? 0;
+
+        // const beforeHash = performance.now();
+        const { expectedNewHash, newStreamingHash } = await this.expectedNewHashAfterAsync(
+            sessionID,
+            newTransactions
+        );
+        // const afterHash = performance.now();
+        // console.log(
+        //     "Hashing took",
+        //     afterHash - beforeHash
+        // );
+
+        const nTxAfter = this.sessions[sessionID]?.transactions.length ?? 0;
+
+        if (nTxAfter !== nTxBefore) {
+            const newTransactionLengthBefore = newTransactions.length;
+            newTransactions = newTransactions.slice((nTxAfter - nTxBefore));
+            console.warn("Transactions changed while async hashing", {
+                nTxBefore,
+                nTxAfter,
+                newTransactionLengthBefore,
+                remainingNewTransactions: newTransactions.length,
+            });
+        }
+
+        if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
+            console.warn("Invalid hash", {
+                expectedNewHash,
+                givenExpectedNewHash,
+            });
+            return false;
+        }
+
+        // const beforeVerify = performance.now();
+        if (!verify(newSignature, expectedNewHash, signerID)) {
+            console.warn(
+                "Invalid signature",
+                newSignature,
+                expectedNewHash,
+                signerID
+            );
+            return false;
+        }
+        // const afterVerify = performance.now();
+        // console.log(
+        //     "Verify took",
+        //     afterVerify - beforeVerify
+        // );
 
         const transactions = this.sessions[sessionID]?.transactions ?? [];
 
@@ -261,6 +367,32 @@ export class CoValueCore {
         };
     }
 
+    async expectedNewHashAfterAsync(
+        sessionID: SessionID,
+        newTransactions: Transaction[]
+    ): Promise<{ expectedNewHash: Hash; newStreamingHash: StreamingHash }> {
+        const streamingHash =
+            this.sessions[sessionID]?.streamingHash.clone() ??
+            new StreamingHash();
+        let before = performance.now();
+        for (const transaction of newTransactions) {
+            streamingHash.update(transaction)
+            const after = performance.now();
+            if (after - before > 1) {
+                console.log("Hashing blocked for", after - before);
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                before = performance.now();
+            }
+        }
+
+        const newStreamingHash = streamingHash.clone();
+
+        return {
+            expectedNewHash: streamingHash.digest(),
+            newStreamingHash,
+        };
+    }
+
     makeTransaction(
         changes: JsonValue[],
         privacy: "private" | "trusting"
@@ -278,14 +410,18 @@ export class CoValueCore {
                 );
             }
 
+            const encrypted = encryptForTransaction(changes, keySecret, {
+                in: this.id,
+                tx: this.nextTransactionID(),
+            });
+
+            this._decryptionCache[encrypted] = changes;
+
             transaction = {
                 privacy: "private",
                 madeAt,
                 keyUsed: keyID,
-                encryptedChanges: encryptForTransaction(changes, keySecret, {
-                    in: this.id,
-                    tx: this.nextTransactionID(),
-                }),
+                encryptedChanges: encrypted,
             };
         } else {
             transaction = {

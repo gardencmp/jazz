@@ -18,6 +18,7 @@ import {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
+    cryptoReady
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
@@ -69,6 +70,7 @@ export {
     CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,
+    cryptoReady as cojsonReady,
 };
 
 export type {

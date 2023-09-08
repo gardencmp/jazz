@@ -4,6 +4,11 @@ import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } fr
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { Role } from "./permissions.js";
+import { cojsonReady } from "./index.js";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
     const [account, sessionID] = randomAnonymousAccountAndSessionID();

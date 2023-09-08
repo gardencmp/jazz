@@ -25,6 +25,7 @@ export function base64URLtoBytes(base64: string) {
 }
 
 export function bytesToBase64url(bytes: Uint8Array) {
+    // const before = performance.now();
     const m = bytes.length;
     const k = m % 3;
     const n = Math.floor(m / 3) * 4 + (k && k + 1);
@@ -43,16 +44,25 @@ export function bytesToBase64url(bytes: Uint8Array) {
     let base64 = decoder.decode(new Uint8Array(encoded.buffer, 0, n));
     if (k === 1) base64 += "==";
     if (k === 2) base64 += "=";
+    // const after = performance.now();
+    // console.log(
+    //     "bytesToBase64url bandwidth in MB/s for length",
+    //     (1000 * bytes.length / (after - before)) / (1024 * 1024),
+    //     bytes.length
+    // );
     return base64;
 }
 
 const alphabet =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-const lookup = Object.fromEntries(
-    Array.from(alphabet).map((a, i) => [a.charCodeAt(0), i])
-);
+
+const lookup = new Uint8Array(128);
+for (const [i, a] of Array.from(alphabet).entries()) {
+    lookup[a.charCodeAt(0)] = i;
+}
 lookup["=".charCodeAt(0)] = 0;
 
-const encodeLookup = Object.fromEntries(
-    Array.from(alphabet).map((a, i) => [i, a.charCodeAt(0)])
-);
+const encodeLookup = new Uint8Array(64);
+for (const [i, a] of Array.from(alphabet).entries()) {
+    encodeLookup[i] = a.charCodeAt(0);
+}

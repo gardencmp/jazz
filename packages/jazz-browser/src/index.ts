@@ -1,5 +1,6 @@
 import { BinaryCoStream, InviteSecret } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
+import { cojsonReady } from "cojson";
 import {
     LocalNode,
     cojsonInternals,
@@ -30,6 +31,7 @@ export async function createBrowserNode({
     syncAddress?: string;
     reconnectionTimeout?: number;
 }): Promise<BrowserNodeHandle> {
+    await cojsonReady;
     let sessionDone: () => void;
 
     const firstWsPeer = createWebSocketPeer(syncAddress);
@@ -91,9 +93,7 @@ export type SessionHandle = {
     done: () => void;
 };
 
-function getSessionHandleFor(
-    accountID: AccountID | AgentID
-): SessionHandle {
+function getSessionHandleFor(accountID: AccountID | AgentID): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
         done = resolve;
@@ -176,15 +176,25 @@ function websocketReadableStream<T>(ws: WebSocket) {
 
                     pingTimeout = setTimeout(() => {
                         console.debug("Ping timeout");
-                        controller.close();
-                        ws.close();
+                        try {
+                            controller.close();
+                            ws.close();
+                        } catch (e) {
+                            console.error(
+                                "Error while trying to close ws on ping timeout",
+                                e
+                            );
+                        }
                     }, 2500);
 
                     return;
                 }
                 controller.enqueue(msg);
             };
-            const closeListener = () => controller.close();
+            const closeListener = () => {
+                controller.close();
+                clearTimeout(pingTimeout);
+            };
             ws.addEventListener("close", closeListener);
             ws.addEventListener("error", () => {
                 controller.error(new Error("The WebSocket errored!"));
@@ -305,7 +315,9 @@ export function createInviteLink(
     return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
 }
 
-export function parseInviteLink<C extends CoValueImpl>(inviteURL: string):
+export function parseInviteLink<C extends CoValueImpl>(
+    inviteURL: string
+):
     | {
           valueID: CoID<C>;
           inviteSecret: InviteSecret;
@@ -322,7 +334,9 @@ export function parseInviteLink<C extends CoValueImpl>(inviteURL: string):
     return { valueID, inviteSecret };
 }
 
-export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(node: LocalNode): Promise<
+export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(
+    node: LocalNode
+): Promise<
     | {
           valueID: CoID<C>;
           inviteSecret: string;
@@ -349,26 +363,37 @@ export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(node:
     });
 }
 
-export async function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group, meta: C["meta"] = {type: "binary"}): Promise<C> {
+export async function createBinaryStreamFromBlob<
+    C extends BinaryCoStream<BinaryCoStreamMeta>
+>(
+    blob: Blob | File,
+    inGroup: Group,
+    meta: C["meta"] = { type: "binary" }
+): Promise<C> {
     let stream = inGroup.createBinaryStream(meta);
 
     const reader = new FileReader();
     const done = new Promise<void>((resolve) => {
-
-        reader.onload = () => {
+        reader.onload = async () => {
             const data = new Uint8Array(reader.result as ArrayBuffer);
-            stream = stream.edit(stream => {
+            stream = stream.edit((stream) => {
                 stream.startBinaryStream({
                     mimeType: blob.type,
                     totalSizeBytes: blob.size,
                     fileName: blob instanceof File ? blob.name : undefined,
                 });
-                const chunkSize = 100 * 1024;
+            }) as C;// TODO: fix this
+                const chunkSize = 256 * 1024;
 
                 for (let idx = 0; idx < data.length; idx += chunkSize) {
-                    stream.pushBinaryStreamChunk(data.slice(idx, idx + chunkSize));
+                    stream = stream.edit((stream) => {
+                        stream.pushBinaryStreamChunk(
+                            data.slice(idx, idx + chunkSize)
+                        );
+                    }) as C; // TODO: fix this
+                    await new Promise((resolve) => setTimeout(resolve, 0));
                 }
-
+            stream = stream.edit((stream) => {
                 stream.endBinaryStream();
             }) as C; // TODO: fix this
             resolve();
@@ -381,7 +406,13 @@ export async function createBinaryStreamFromBlob<C extends BinaryCoStream<Binary
     return stream;
 }
 
-export async function readBlobFromBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(streamId: CoID<C>, node: LocalNode, allowUnfinished?: boolean): Promise<Blob | undefined> {
+export async function readBlobFromBinaryStream<
+    C extends BinaryCoStream<BinaryCoStreamMeta>
+>(
+    streamId: CoID<C>,
+    node: LocalNode,
+    allowUnfinished?: boolean
+): Promise<Blob | undefined> {
     const stream = await node.load<C>(streamId);
 
     if (!stream) {

@@ -1,5 +1,9 @@
-import { LocalNode, CoMap, CoList, CoStream, BinaryCoStream } from "./index";
+import { LocalNode, CoMap, CoList, CoStream, BinaryCoStream, cojsonReady } from "./index";
 import { randomAnonymousAccountAndSessionID } from "./testUtils";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Can create a CoMap in a group", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());

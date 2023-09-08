@@ -2,11 +2,38 @@ import { ed25519, x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
 import { JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
-import stableStringify from "fast-json-stable-stringify";
-import { blake3 } from "@noble/hashes/blake3";
 import { randomBytes } from "@noble/ciphers/webcrypto/utils";
 import { AgentID, RawCoID, TransactionID } from "./ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
+
+import { createBLAKE3 } from 'hash-wasm';
+import { stableStringify } from "./fastJsonStableStringify.js";
+
+let blake3Instance: Awaited<ReturnType<typeof createBLAKE3>>;
+let blake3HashOnce: (data: Uint8Array) => Uint8Array;
+let blake3HashOnceWithContext: (data: Uint8Array, {context}: {context: Uint8Array}) => Uint8Array;
+let blake3incrementalUpdateSLOW_WITH_DEVTOOLS: (state: Uint8Array, data: Uint8Array) => Uint8Array;
+let blake3digestForState: (state: Uint8Array) => Uint8Array;
+
+export const cryptoReady = new Promise<void>((resolve) => {
+    createBLAKE3().then(bl3 => {
+        blake3Instance = bl3;
+        blake3HashOnce = (data) => {
+            return bl3.init().update(data).digest('binary');
+        }
+        blake3HashOnceWithContext = (data, {context}) => {
+            return bl3.init().update(context).update(data).digest('binary');
+        }
+        blake3incrementalUpdateSLOW_WITH_DEVTOOLS = (state, data) => {
+            bl3.load(state).update(data);
+            return bl3.save();
+        }
+        blake3digestForState = (state) => {
+            return bl3.load(state).digest('binary');
+        }
+        resolve();
+    })
+});
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;
@@ -128,7 +155,7 @@ export function seal<T extends JsonValue>(
     to: SealerID,
     nOnceMaterial: { in: RawCoID; tx: TransactionID }
 ): Sealed<T> {
-    const nOnce = blake3(
+    const nOnce = blake3HashOnce(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
@@ -153,7 +180,7 @@ export function unseal<T extends JsonValue>(
     from: SealerID,
     nOnceMaterial: { in: RawCoID; tx: TransactionID }
 ): T | undefined {
-    const nOnce = blake3(
+    const nOnce = blake3HashOnce(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
@@ -181,28 +208,32 @@ export type Hash = `hash_z${string}`;
 
 export function secureHash(value: JsonValue): Hash {
     return `hash_z${base58.encode(
-        blake3(textEncoder.encode(stableStringify(value)))
+        blake3HashOnce(textEncoder.encode(stableStringify(value)))
     )}`;
 }
 
 export class StreamingHash {
-    state: ReturnType<typeof blake3.create>;
+    state: Uint8Array;
 
-    constructor(fromClone?: ReturnType<typeof blake3.create>) {
-        this.state = fromClone || blake3.create({});
+    constructor(fromClone?: Uint8Array) {
+        this.state = fromClone || blake3Instance.init().save();
     }
 
     update(value: JsonValue) {
-        this.state.update(textEncoder.encode(stableStringify(value)));
+        const encoded = textEncoder.encode(stableStringify(value))
+        // const before = performance.now();
+        this.state = blake3incrementalUpdateSLOW_WITH_DEVTOOLS(this.state, encoded);
+        // const after = performance.now();
+        // console.log(`Hashing throughput in MB/s`, 1000 * (encoded.length / (after - before)) / (1024 * 1024));
     }
 
     digest(): Hash {
-        const hash = this.state.digest();
+        const hash = blake3digestForState(this.state);
         return `hash_z${base58.encode(hash)}`;
     }
 
     clone(): StreamingHash {
-        return new StreamingHash(this.state.clone());
+        return new StreamingHash(new Uint8Array(this.state));
     }
 }
 
@@ -211,7 +242,7 @@ export const shortHashLength = 19;
 
 export function shortHash(value: JsonValue): ShortHash {
     return `shortHash_z${base58.encode(
-        blake3(textEncoder.encode(stableStringify(value))).slice(
+        blake3HashOnce(textEncoder.encode(stableStringify(value))).slice(
             0,
             shortHashLength
         )
@@ -241,7 +272,7 @@ function encrypt<T extends JsonValue, N extends JsonValue>(
     const keySecretBytes = base58.decode(
         keySecret.substring("keySecret_z".length)
     );
-    const nOnce = blake3(
+    const nOnce = blake3HashOnce(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
@@ -293,7 +324,7 @@ function decrypt<T extends JsonValue, N extends JsonValue>(
     const keySecretBytes = base58.decode(
         keySecret.substring("keySecret_z".length)
     );
-    const nOnce = blake3(
+    const nOnce = blake3HashOnce(
         textEncoder.encode(stableStringify(nOnceMaterial))
     ).slice(0, 24);
 
@@ -365,11 +396,11 @@ export function agentSecretFromSecretSeed(secretSeed: Uint8Array): AgentSecret {
     }
 
     return `sealerSecret_z${base58.encode(
-        blake3(secretSeed, {
+        blake3HashOnceWithContext(secretSeed, {
             context: textEncoder.encode("seal"),
         })
     )}/signerSecret_z${base58.encode(
-        blake3(secretSeed, {
+        blake3HashOnceWithContext(secretSeed, {
             context: textEncoder.encode("sign"),
         })
     )}`;

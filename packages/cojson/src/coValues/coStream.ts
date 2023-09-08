@@ -17,7 +17,7 @@ export type BinaryStreamStart = {
 
 export type BinaryStreamChunk = {
     type: "chunk";
-    chunk: `U${string}`;
+    chunk: `binary_U${string}`;
 };
 
 export type BinaryStreamEnd = {
@@ -111,6 +111,8 @@ export class CoStream<
     }
 }
 
+const binary_U_prefixLength = 8; // "binary_U".length;
+
 export class BinaryCoStream<
         Meta extends BinaryCoStreamMeta = { type: "binary" }
     >
@@ -122,6 +124,7 @@ export class BinaryCoStream<
     getBinaryChunks():
         | (BinaryChunkInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
+        const before = performance.now();
         const items = this.getSingleStream();
 
         if (!items) return;
@@ -135,15 +138,13 @@ export class BinaryCoStream<
 
         const chunks: Uint8Array[] = [];
 
+        let finished = false;
+        let totalLength = 0;
+
         for (const item of items.slice(1)) {
             if (item.type === "end") {
-                return {
-                    mimeType: start.mimeType,
-                    fileName: start.fileName,
-                    totalSizeBytes: start.totalSizeBytes,
-                    chunks,
-                    finished: true,
-                };
+                finished = true;
+                break;
             }
 
             if (item.type !== "chunk") {
@@ -151,15 +152,25 @@ export class BinaryCoStream<
                 return undefined;
             }
 
-            chunks.push(base64URLtoBytes(item.chunk.slice(1)));
+            const chunk = base64URLtoBytes(
+                item.chunk.slice(binary_U_prefixLength)
+            );
+            totalLength += chunk.length;
+            chunks.push(chunk);
         }
+
+        const after = performance.now();
+        console.log(
+            "getBinaryChunks bandwidth in MB/s",
+            (1000 * totalLength) / (after - before) / (1024 * 1024)
+        );
 
         return {
             mimeType: start.mimeType,
             fileName: start.fileName,
             totalSizeBytes: start.totalSizeBytes,
             chunks,
-            finished: false,
+            finished,
         };
     }
 
@@ -206,10 +217,7 @@ export class WriteableBinaryCoStream<
     }
 
     /** @internal */
-    push(
-        item: BinaryStreamItem,
-        privacy: "private" | "trusting" = "private"
-    ) {
+    push(item: BinaryStreamItem, privacy: "private" | "trusting" = "private") {
         WriteableCoStream.prototype.push.call(this, item, privacy);
     }
 
@@ -230,12 +238,18 @@ export class WriteableBinaryCoStream<
         chunk: Uint8Array,
         privacy: "private" | "trusting" = "private"
     ) {
+        const before = performance.now();
         this.push(
             {
                 type: "chunk",
-                chunk: `U${bytesToBase64url(chunk)}`,
+                chunk: `binary_U${bytesToBase64url(chunk)}`,
             } satisfies BinaryStreamChunk,
             privacy
+        );
+        const after = performance.now();
+        console.log(
+            "pushBinaryStreamChunk bandwidth in MB/s",
+            (1000 * chunk.length) / (after - before) / (1024 * 1024)
         );
     }
 

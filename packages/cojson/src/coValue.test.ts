@@ -1,8 +1,13 @@
 import { accountOrAgentIDfromSessionID } from "./coValueCore.js";
 import { BinaryCoStream } from "./coValues/coStream.js";
 import { createdNowUnique } from "./crypto.js";
+import { cojsonReady } from "./index.js";
 import { LocalNode } from "./node.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Empty CoMap works", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
@@ -382,6 +387,29 @@ test("Can push into BinaryCoStream", () => {
             fileName: "test.txt",
             chunks: [],
             finished: false,
+        });
+        editable.pushBinaryStreamChunk(new Uint8Array([1, 2, 3]), "trusting");
+        expect(editable.getBinaryChunks()).toEqual({
+            mimeType: "text/plain",
+            fileName: "test.txt",
+            chunks: [new Uint8Array([1, 2, 3])],
+            finished: false,
+        });
+        editable.pushBinaryStreamChunk(new Uint8Array([4, 5, 6]), "trusting");
+
+        expect(editable.getBinaryChunks()).toEqual({
+            mimeType: "text/plain",
+            fileName: "test.txt",
+            chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
+            finished: false,
+        });
+
+        editable.endBinaryStream("trusting");
+        expect(editable.getBinaryChunks()).toEqual({
+            mimeType: "text/plain",
+            fileName: "test.txt",
+            chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
+            finished: true,
         });
     });
 });

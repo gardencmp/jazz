@@ -1,14 +1,9 @@
 import { newRandomSessionID } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
-import { Peer, PeerID, SyncMessage } from "./sync.js";
+import { SyncMessage } from "./sync.js";
 import { expectMap } from "./coValue.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { Group } from "./group.js";
-import {
-    ReadableStream,
-    WritableStream,
-    TransformStream,
-} from "isomorphic-streams";
 import {
     randomAnonymousAccountAndSessionID,
     shouldNotResolve,
@@ -18,6 +13,11 @@ import {
     newStreamPair
 } from "./streamUtils.js";
 import { AccountID } from "./account.js";
+import { cojsonReady } from "./index.js";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Node replies with initial tx and header to empty subscribe", async () => {
     const [admin, session] = randomAnonymousAccountAndSessionID();
