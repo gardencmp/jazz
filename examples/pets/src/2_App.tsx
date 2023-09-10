@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import { useJazz } from "jazz-react";
 
 import { PetPost } from "./1_types";
@@ -7,8 +5,8 @@ import { PetPost } from "./1_types";
 import { Button } from "./basicComponents";
 
 import { useSimpleHashRouterThatAcceptsInvites } from "./router";
-import { PetPostUI } from "./4_PetPostUI";
-import { CreatePetPostForm } from "./4_CreatePetPostForm";
+import { RatePetPostUI } from "./4_RatePetPostUI";
+import { CreatePetPostForm } from "./3_CreatePetPostForm";
 
 /** Walkthrough: Creating pet posts & routing in `<App/>`
  *
@@ -30,7 +28,7 @@ export default function App() {
     return (
         <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
             {currentPetPostID ? (
-                <PetPostUI petPostID={currentPetPostID} />
+                <RatePetPostUI petPostID={currentPetPostID} />
             ) : (
                 <CreatePetPostForm onCreate={navigateToPetPostID} />
             )}
@@ -47,4 +45,4 @@ export default function App() {
     );
 }
 
-/** Walkthrough: continue with ./3_TodoTable.tsx */
+/** Walkthrough: continue with ./3_CreatePetPostForm.tsx */

@@ -19,7 +19,7 @@ const reactionEmojiMap: { [reaction in ReactionType]: string } = {
     chonkers: "🐘",
 };
 
-export function PetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
+export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
     const petPost = useTelepathicState(petPostID);
     const petReactions = useTelepathicState(petPost?.get("reactions"));
     const petImage = useBinaryStream(petPost?.get("image"));
