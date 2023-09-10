@@ -94,17 +94,22 @@ export class CoStream<
     }
 
     getLastItemsPerAccount(): {[account: AccountID]: T | undefined} {
-        const result: {[account: AccountID]: T | undefined} = {};
+        const result: {[account: AccountID]: {item: T, madeAt: number} | undefined} = {};
 
         for (const [sessionID, items] of Object.entries(this.items)) {
             const account = accountOrAgentIDfromSessionID(sessionID as SessionID);
             if (!isAccountID(account)) continue;
             if (items.length > 0) {
-                result[account] = items[items.length - 1]!.item;
+                const lastItemOfSession = items[items.length - 1]!;
+                if (!result[account] || lastItemOfSession.madeAt > result[account]!.madeAt) {
+                    result[account] = lastItemOfSession;
+                }
             }
         }
 
-        return result;
+        return Object.fromEntries(Object.entries(result).map(([account, item]) =>
+            [account, item?.item]
+        ));
     }
 
     getLastItemFrom(account: AccountID): T | undefined {
