@@ -1,9 +1,11 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoID, ReadableCoValue, WriteableCoValue } from "../coValue.js";
-import { CoValueCore } from "../coValueCore.js";
+import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { Group } from "../group.js";
 import { SessionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
+import { AccountID } from "../index.js";
+import { isAccountID } from "../account.js";
 
 export type BinaryChunkInfo = {
     mimeType: string;
@@ -40,7 +42,7 @@ export class CoStream<
     type = "costream" as const;
     core: CoValueCore;
     items: {
-        [key: SessionID]: T[];
+        [key: SessionID]: {item: T, madeAt: number}[];
     };
 
     constructor(core: CoValueCore) {
@@ -64,6 +66,7 @@ export class CoStream<
 
         for (const {
             txID,
+            madeAt,
             changes,
         } of this.core.getValidSortedTransactions()) {
             for (const changeUntyped of changes) {
@@ -73,7 +76,7 @@ export class CoStream<
                     entries = [];
                     this.items[txID.sessionID] = entries;
                 }
-                entries.push(change);
+                entries.push({item: change, madeAt});
             }
         }
     }
@@ -87,13 +90,52 @@ export class CoStream<
             );
         }
 
-        return Object.values(this.items)[0];
+        return Object.values(this.items)[0]?.map(item => item.item);
+    }
+
+    getLastItemsPerAccount(): {[account: AccountID]: T | undefined} {
+        const result: {[account: AccountID]: T | undefined} = {};
+
+        for (const [sessionID, items] of Object.entries(this.items)) {
+            const account = accountOrAgentIDfromSessionID(sessionID as SessionID);
+            if (!isAccountID(account)) continue;
+            if (items.length > 0) {
+                result[account] = items[items.length - 1]!.item;
+            }
+        }
+
+        return result;
+    }
+
+    getLastItemFrom(account: AccountID): T | undefined {
+        let lastItem: {item: T, madeAt: number} | undefined;
+
+        for (const [sessionID, items] of Object.entries(this.items)) {
+            if (sessionID.startsWith(account)) {
+                if (items.length > 0) {
+                    const lastItemOfSession = items[items.length - 1]!;
+                    if (!lastItem || lastItemOfSession.madeAt > lastItem.madeAt) {
+                        lastItem = lastItemOfSession;
+                    }
+                }
+            }
+        }
+
+        return lastItem?.item;
+    }
+
+    getLastItemFromMe(): T | undefined {
+        const myAccountID = this.core.node.account.id;
+        if (!isAccountID(myAccountID)) return undefined;
+        return this.getLastItemFrom(myAccountID);
     }
 
     toJSON(): {
         [key: SessionID]: T[];
     } {
-        return this.items;
+        return Object.fromEntries(Object.entries(this.items).map(([sessionID, items]) =>
+            [sessionID, items.map(item => item.item)]
+        ));
     }
 
     subscribe(listener: (coMap: CoStream<T, Meta>) => void): () => void {

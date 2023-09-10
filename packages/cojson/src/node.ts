@@ -208,7 +208,7 @@ export class LocalNode {
                     reject(
                         new Error("Couldn't find invite before timeout")
                     ),
-                1000
+                2000
             );
         });
 

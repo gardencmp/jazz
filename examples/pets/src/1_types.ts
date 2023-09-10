@@ -13,14 +13,16 @@ export type PetPost = CoMap<{
     reactions: CoID<PetReactions>;
 }>;
 
-export type ReactionType =
-    | "aww"
-    | "love"
-    | "haha"
-    | "wow"
-    | "tiny"
-    | "chonkers"
-    | "good";
+export const REACTION_TYPES = [
+    "aww",
+    "love",
+    "haha",
+    "wow",
+    "tiny",
+    "chonkers",
+] as const;
+
+export type ReactionType = (typeof REACTION_TYPES)[number];
 
 export type PetReactions = CoStream<ReactionType>;
 

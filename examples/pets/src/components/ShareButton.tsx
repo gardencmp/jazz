@@ -1,27 +1,27 @@
 import { useState } from "react";
 
-import { TodoProject } from "../1_types";
+import { PetPost } from "../1_types";
 
 import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
 
-export function InviteButton({ list }: { list?: TodoProject }) {
+export function ShareButton({ petPost }: { petPost?: PetPost }) {
     const [existingInviteLink, setExistingInviteLink] = useState<string>();
     const { toast } = useToast();
 
     return (
-        list?.group.myRole() === "admin" && (
+        petPost?.group.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"
-                disabled={!list}
+                disabled={!petPost}
                 variant="outline"
                 onClick={async () => {
                     let inviteLink = existingInviteLink;
-                    if (list && !inviteLink) {
-                        inviteLink = createInviteLink(list, "writer");
+                    if (petPost && !inviteLink) {
+                        inviteLink = createInviteLink(petPost, "writer");
                         setExistingInviteLink(inviteLink);
                     }
                     if (inviteLink) {
@@ -39,7 +39,7 @@ export function InviteButton({ list }: { list?: TodoProject }) {
                     }
                 }}
             >
-                Invite
+                Share
             </Button>
         )
     );

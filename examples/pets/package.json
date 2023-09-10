@@ -24,8 +24,7 @@
     "react-dom": "^18.2.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
-    "uniqolor": "^1.1.0",
-    "use-debounce": "^9.0.4"
+    "uniqolor": "^1.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

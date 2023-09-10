@@ -269,7 +269,6 @@ export class SyncManager {
                         );
                     }
                 }
-                console.log("DONE!!!");
             } catch (e) {
                 console.error(`Error reading from peer ${peer.id}`, e);
             }
