@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,40 +17,52 @@ jobs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 16
         cache: 'yarn'
         cache-dependency-path: yarn.lock
+
+    - name: Yarn Build
+      run: |
+        yarn install --frozen-lockfile;
+        yarn build;
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: gardencmp
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Nuke Workspace
       run: |
         rm package.json yarn.lock;
+
     - name: Yarn Build
       run: |
         yarn install --frozen-lockfile;
         yarn build;
       working-directory: ./examples/todo
 
-    - uses: satackey/action-docker-layer-caching@v0.0.11
-      continue-on-error: true
-      with:
-        key: docker-layer-caching-${{ github.workflow }}-{hash}
-        restore-keys: |
-          docker-layer-caching-${{ github.workflow }}-
-
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: gardencmp
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Docker Build & Push
-      run: |
-        export DOCKER_TAG=ghcr.io/gardencmp/jazz-example-todo:${{github.head_ref || github.ref_name}}-${{github.sha}}-$(date +%s) ;
-        docker build . --file Dockerfile --tag $DOCKER_TAG;
-        docker push $DOCKER_TAG;
-        echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
-      working-directory: ./examples/todo
+      uses: docker/build-push-action@v4
+      with:
+        context: ./examples/todo
+        push: true
+        tags: ghcr.io/gardencmp/${{github.event.repository.name}}-example-todo:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
     - uses: gacts/install-nomad@v1
     - name: Tailscale
       uses: tailscale/github-action@v1
@@ -69,7 +81,7 @@ jobs:
 
         export DOCKER_USER=gardencmp;
         export DOCKER_PASSWORD=${{ secrets.DOCKER_PULL_PAT }};
-        export DOCKER_TAG=${{ env.DOCKER_TAG }};
+        export DOCKER_TAG=ghcr.io/gardencmp/${{github.event.repository.name}}-example-todo:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}};
 
         envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN}' < job-template.nomad > job-instance.nomad;
         cat job-instance.nomad;
