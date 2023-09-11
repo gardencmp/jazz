@@ -1,4 +1,4 @@
-job "example-todo$BRANCH_SUFFIX" {
+job "example-pets$BRANCH_SUFFIX" {
   region     = "global"
   datacenters = ["*"]
 
@@ -41,7 +41,7 @@ job "example-todo$BRANCH_SUFFIX" {
 
       service {
         tags = ["public"]
-        name = "example-todo$BRANCH_SUFFIX"
+        name = "example-pets$BRANCH_SUFFIX"
         port = "http"
         provider = "consul"
       }
