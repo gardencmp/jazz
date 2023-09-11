@@ -5,7 +5,7 @@
     "types": "dist/index.d.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
@@ -19,9 +19,8 @@
     "dependencies": {
         "@noble/ciphers": "^0.1.3",
         "@noble/curves": "^1.1.0",
-        "@noble/hashes": "^1.3.1",
         "@scure/base": "^1.1.1",
-        "fast-json-stable-stringify": "https://github.com/tirithen/fast-json-stable-stringify#7a3dcf2",
+        "hash-wasm": "^4.9.0",
         "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
     },
     "scripts": {

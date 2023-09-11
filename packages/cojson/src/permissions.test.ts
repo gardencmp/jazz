@@ -17,7 +17,11 @@ import {
     groupWithTwoAdmins,
     groupWithTwoAdminsHighLevel,
 } from "./testUtils.js";
-import { AnonymousControlledAccount } from "./index.js";
+import { AnonymousControlledAccount, cojsonReady } from "./index.js";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Initial admin can add another admin to a group", () => {
     groupWithTwoAdmins();

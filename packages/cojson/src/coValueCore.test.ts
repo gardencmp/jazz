@@ -2,9 +2,14 @@ import { Transaction } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "./crypto.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
-import { CoMap, MapOpPayload } from "./coValues/coMap.js";
-import { AccountID } from "./index.js";
+import { MapOpPayload } from "./coValues/coMap.js";
 import { Role } from "./permissions.js";
+import { cojsonReady } from "./index.js";
+import { stableStringify } from "./jsonStringify.js";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
     const [account, sessionID] = randomAnonymousAccountAndSessionID();
@@ -20,11 +25,11 @@ test("Can create coValue with new agent credentials and add transaction to it", 
     const transaction: Transaction = {
         privacy: "trusting",
         madeAt: Date.now(),
-        changes: [
+        changes: stableStringify([
             {
                 hello: "world",
             },
-        ],
+        ]),
     };
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
@@ -57,11 +62,11 @@ test("transactions with wrong signature are rejected", () => {
     const transaction: Transaction = {
         privacy: "trusting",
         madeAt: Date.now(),
-        changes: [
+        changes: stableStringify([
             {
                 hello: "world",
             },
-        ],
+        ]),
     };
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
@@ -93,11 +98,11 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
     const transaction: Transaction = {
         privacy: "trusting",
         madeAt: Date.now(),
-        changes: [
+        changes: stableStringify([
             {
                 hello: "world",
             },
-        ],
+        ]),
     };
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
@@ -106,11 +111,11 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
             {
                 privacy: "trusting",
                 madeAt: Date.now(),
-                changes: [
+                changes: stableStringify([
                     {
                         hello: "wrong",
                     },
-                ],
+                ]),
             },
         ]
     );
@@ -150,13 +155,13 @@ test("New transactions in a group correctly update owned values, including subsc
     const resignationThatWeJustLearnedAbout = {
         privacy: "trusting",
         madeAt: timeBeforeEdit,
-        changes: [
+        changes: stableStringify([
             {
                 op: "set",
                 key: account.id,
                 value: "revoked"
             } satisfies MapOpPayload<typeof account.id, Role>
-        ]
+        ])
     } satisfies Transaction;
 
     const { expectedNewHash } = group.underlyingMap.core.expectedNewHashAfter(sessionID, [

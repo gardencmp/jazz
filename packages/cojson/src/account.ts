@@ -13,7 +13,8 @@ import {
     getAgentSignerSecret,
 } from "./crypto.js";
 import { AgentID } from "./ids.js";
-import { CoMap, LocalNode } from "./index.js";
+import { CoMap } from "./coValues/coMap.js";
+import { LocalNode } from "./node.js";
 import { Group, GroupContent } from "./group.js";
 
 export function accountHeaderForInitialAgentSecret(

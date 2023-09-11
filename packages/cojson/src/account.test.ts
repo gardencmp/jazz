@@ -1,6 +1,11 @@
 import { newRandomSessionID } from "./coValueCore.js";
+import { cojsonReady } from "./index.js";
 import { LocalNode } from "./node.js";
 import { connectedPeers } from "./streamUtils.js";
+
+beforeEach(async () => {
+    await cojsonReady;
+});
 
 test("Can create a node while creating a new account with profile", async () => {
     const { node, accountID, accountSecret, sessionID } =

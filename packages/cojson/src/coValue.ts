@@ -1,10 +1,11 @@
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { RawCoID } from "./ids.js";
 import { CoMap } from "./coValues/coMap.js";
-import { CoStream } from "./coValues/coStream.js";
+import { BinaryCoStream, BinaryCoStreamMeta, CoStream } from "./coValues/coStream.js";
 import { Static } from "./coValues/static.js";
 import { CoList } from "./coValues/coList.js";
-import { CoValueCore, Group } from "./index.js";
+import { CoValueCore } from "./coValueCore.js";
+import { Group } from "./group.js";
 
 export type CoID<T extends CoValueImpl> = RawCoID & {
     readonly __type: T;
@@ -46,9 +47,10 @@ export interface CoValue {
 export interface WriteableCoValue extends CoValue {}
 
 export type CoValueImpl =
-    | CoMap<{ [key: string]: JsonValue }, JsonObject | null>
+    | CoMap<{ [key: string]: JsonValue | undefined; }, JsonObject | null>
     | CoList<JsonValue, JsonObject | null>
     | CoStream<JsonValue, JsonObject | null>
+    | BinaryCoStream<BinaryCoStreamMeta>
     | Static<JsonObject>;
 
 export function expectMap(

@@ -217,7 +217,9 @@ export class SQLiteStorage {
                 ? Object.values(newContent.new).flatMap((sessionEntry) =>
                       sessionEntry.newTransactions.flatMap((tx) => {
                           if (tx.privacy !== "trusting") return [];
-                          return tx.changes
+                          // TODO: avoid parsing here?
+                          return cojsonInternals
+                              .parseJSON(tx.changes)
                               .map(
                                   (change) =>
                                       change &&
@@ -338,7 +340,7 @@ export class SQLiteStorage {
                         lastSignature: msg.new[sessionID]!.lastSignature,
                     };
 
-                    const upsertedSession = (this.db
+                    const upsertedSession = this.db
                         .prepare<[number, string, number, string]>(
                             `INSERT INTO sessions (coValue, sessionID, lastIdx, lastSignature) VALUES (?, ?, ?, ?)
                             ON CONFLICT(coValue, sessionID) DO UPDATE SET lastIdx=excluded.lastIdx, lastSignature=excluded.lastSignature
@@ -349,7 +351,7 @@ export class SQLiteStorage {
                             sessionUpdate.sessionID,
                             sessionUpdate.lastIdx,
                             sessionUpdate.lastSignature
-                        ) as {rowID: number});
+                        ) as { rowID: number };
 
                     const sessionRowID = upsertedSession.rowID;
 

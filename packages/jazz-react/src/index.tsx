@@ -6,9 +6,12 @@ import {
     AccountID,
     JsonValue,
     CojsonInternalTypes,
+    BinaryCoStream,
+    BinaryCoStreamMeta,
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import { AuthProvider, createBrowserNode } from "jazz-browser";
+import { readBlobFromBinaryStream } from "jazz-browser";
 
 export {
     createInviteLink,
@@ -147,4 +150,39 @@ export function useProfile<
     }, [localNode, accountID]);
 
     return useTelepathicState(profileID);
+}
+
+export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
+    streamID?: CoID<C>,
+    allowUnfinished?: boolean
+): { blob: Blob; blobURL: string } | undefined {
+    const { localNode } = useJazz();
+
+    const stream = useTelepathicState(streamID);
+
+    const [blob, setBlob] = useState<
+        { blob: Blob; blobURL: string } | undefined
+    >();
+
+    useEffect(() => {
+        if (!stream) return;
+        readBlobFromBinaryStream(stream.id, localNode, allowUnfinished)
+            .then((blob) =>
+                setBlob(
+                    blob && {
+                        blob,
+                        blobURL: URL.createObjectURL(blob),
+                    }
+                )
+            )
+            .catch((e) => console.error("Failed to read binary stream", e));
+    }, [stream, localNode]);
+
+    useEffect(() => {
+        return () => {
+            blob && URL.revokeObjectURL(blob.blobURL);
+        };
+    }, [blob?.blobURL]);
+
+    return blob;
 }

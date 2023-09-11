@@ -9,6 +9,7 @@ import {
     WritableStreamDefaultWriter,
 } from "isomorphic-streams";
 import { RawCoID, SessionID } from "./ids.js";
+import { stableStringify } from "./jsonStringify.js";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -268,7 +269,6 @@ export class SyncManager {
                         );
                     }
                 }
-                console.log("DONE!!!");
             } catch (e) {
                 console.error(`Error reading from peer ${peer.id}`, e);
             }
@@ -445,12 +445,26 @@ export class SyncManager {
             const newTransactions =
                 newContentForSession.newTransactions.slice(alreadyKnownOffset);
 
-            const success = coValue.tryAddTransactions(
+            const before = performance.now();
+            const success = await coValue.tryAddTransactionsAsync(
                 sessionID,
                 newTransactions,
                 undefined,
                 newContentForSession.lastSignature
             );
+            const after = performance.now();
+            if (after - before > 10) {
+                const totalTxLength = newTransactions.map(t => stableStringify(t)!.length).reduce((a, b) => a + b, 0);
+                console.log(
+                    "Adding incoming transactions took",
+                    after - before,
+                    "ms",
+                    totalTxLength,
+                    "bytes = ",
+                    "bandwidth: MB/s",
+                    (1000 * totalTxLength / (after - before)) / (1024 * 1024)
+                );
+            }
 
             if (!success) {
                 console.error("Failed to add transactions", newTransactions);

@@ -1,4 +1,10 @@
-import { cojsonInternals, SessionID, SyncMessage, Peer, CojsonInternalTypes } from "cojson";
+import {
+    cojsonInternals,
+    SessionID,
+    SyncMessage,
+    Peer,
+    CojsonInternalTypes,
+} from "cojson";
 import {
     ReadableStream,
     WritableStream,
@@ -209,7 +215,9 @@ export class IDBStorage {
                 ? Object.values(newContent.new).flatMap((sessionEntry) =>
                       sessionEntry.newTransactions.flatMap((tx) => {
                           if (tx.privacy !== "trusting") return [];
-                          return tx.changes
+                          // TODO: avoid parse here?
+                          return cojsonInternals
+                              .parseJSON(tx.changes)
                               .map(
                                   (change) =>
                                       change &&
