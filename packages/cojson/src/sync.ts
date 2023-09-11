@@ -215,14 +215,32 @@ export class SyncManager {
             await this.sendNewContentIncludingDependencies(id, peer);
         }
 
-        const newContent = coValue.newContentSince(
+        const newContentPieces = coValue.newContentSince(
             peer.optimisticKnownStates[id]
         );
 
-        if (newContent) {
-            await this.trySendToPeer(peer, newContent);
+        if (newContentPieces) {
+            const optimisticKnownStateBefore =
+                peer.optimisticKnownStates[id] || emptyKnownState(id);
+
+            const sendPieces = async () => {
+                for (const [i, piece] of newContentPieces.entries()) {
+                    console.log(
+                        `Sending content piece ${i + 1}/${newContentPieces.length}`,
+                        // Object.values(piece.new).map((s) => s.newTransactions)
+                    );
+                    await this.trySendToPeer(peer, piece);
+                }
+            }
+
+            sendPieces().catch((e) => {
+                console.error("Error sending new content piece, retrying", e);
+                peer.optimisticKnownStates[id] = optimisticKnownStateBefore;
+                return this.sendNewContentIncludingDependencies(id, peer);
+            });
+
             peer.optimisticKnownStates[id] = combinedKnownStates(
-                peer.optimisticKnownStates[id] || emptyKnownState(id),
+                optimisticKnownStateBefore,
                 coValue.knownState()
             );
         }
@@ -454,7 +472,9 @@ export class SyncManager {
             );
             const after = performance.now();
             if (after - before > 10) {
-                const totalTxLength = newTransactions.map(t => stableStringify(t)!.length).reduce((a, b) => a + b, 0);
+                const totalTxLength = newTransactions
+                    .map((t) => stableStringify(t)!.length)
+                    .reduce((a, b) => a + b, 0);
                 console.log(
                     "Adding incoming transactions took",
                     after - before,
@@ -462,7 +482,7 @@ export class SyncManager {
                     totalTxLength,
                     "bytes = ",
                     "bandwidth: MB/s",
-                    (1000 * totalTxLength / (after - before)) / (1024 * 1024)
+                    (1000 * totalTxLength) / (after - before) / (1024 * 1024)
                 );
             }
 
@@ -492,18 +512,9 @@ export class SyncManager {
     }
 
     async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
-        const coValue = this.local.expectCoValueLoaded(msg.id);
+        peer.optimisticKnownStates[msg.id] = msg;
 
-        peer.optimisticKnownStates[msg.id] = combinedKnownStates(
-            msg,
-            coValue.knownState()
-        );
-
-        const newContent = coValue.newContentSince(msg);
-
-        if (newContent) {
-            await this.trySendToPeer(peer, newContent);
-        }
+        return this.sendNewContentIncludingDependencies(msg.id, peer);
     }
 
     handleUnsubscribe(_msg: DoneMessage) {

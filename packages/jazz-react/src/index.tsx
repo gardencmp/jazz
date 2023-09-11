@@ -47,6 +47,7 @@ export function WithJazz({
 
     useEffect(() => {
         let done: (() => void) | undefined = undefined;
+        let stop = false;
 
         (async () => {
             const nodeHandle = await createBrowserNode({
@@ -57,6 +58,11 @@ export function WithJazz({
                     undefined,
             });
 
+            if (stop) {
+                nodeHandle.done();
+                return;
+            }
+
             setNode(nodeHandle.node);
 
             done = nodeHandle.done;
@@ -65,6 +71,7 @@ export function WithJazz({
         });
 
         return () => {
+            stop = true;
             done && done();
         };
     }, [auth, syncAddress]);

@@ -72,6 +72,10 @@ export async function createBrowserNode({
         node,
         done: () => {
             shouldTryToReconnect = false;
+            console.log("Cleaning up node")
+            for (const peer of Object.values(node.sync.peers)) {
+                peer.outgoing.close().catch(e => console.error("Error while closing peer", e));
+            }
             sessionDone?.();
         },
     };

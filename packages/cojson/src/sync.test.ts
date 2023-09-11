@@ -436,8 +436,9 @@ test("No matter the optimistic known state, node respects invalid known state me
         editable.set("goodbye", "world", "trusting");
     });
 
-    const _mapEditMsg1 = await reader.read();
-    const _mapEditMsg2 = await reader.read();
+    const _mapEditMsgs = await reader.read();
+
+    console.log("Sending correction");
 
     await writer.write({
         action: "known",

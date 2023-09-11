@@ -33,10 +33,7 @@ import { LocalNode } from "./node.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";
-import {
-    AccountID,
-    GeneralizedControlledAccount,
-} from "./account.js";
+import { AccountID, GeneralizedControlledAccount } from "./account.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 
 export type CoValueHeader = {
@@ -66,6 +63,7 @@ type SessionLog = {
     transactions: Transaction[];
     lastHash?: Hash;
     streamingHash: StreamingHash;
+    signatureAfter: { [txIdx: number]: Signature | undefined };
     lastSignature: Signature;
 };
 
@@ -78,7 +76,6 @@ export type PrivateTransaction = {
         { in: RawCoID; tx: TransactionID }
     >;
 };
-
 
 export type TrustingTransaction = {
     privacy: "trusting";
@@ -103,7 +100,11 @@ export class CoValueCore {
     _sessions: { [key: SessionID]: SessionLog };
     _cachedContent?: CoValueImpl;
     listeners: Set<(content?: CoValueImpl) => void> = new Set();
-    _decryptionCache: {[key: Encrypted<JsonValue[], JsonValue>]: Stringified<JsonValue[]> | undefined} = {}
+    _decryptionCache: {
+        [key: Encrypted<JsonValue[], JsonValue>]:
+            | Stringified<JsonValue[]>
+            | undefined;
+    } = {};
 
     constructor(
         header: CoValueHeader,
@@ -225,25 +226,13 @@ export class CoValueCore {
         //     afterVerify - beforeVerify
         // );
 
-        const transactions = this.sessions[sessionID]?.transactions ?? [];
-
-        transactions.push(...newTransactions);
-
-        this._sessions[sessionID] = {
-            transactions,
-            lastHash: expectedNewHash,
-            streamingHash: newStreamingHash,
-            lastSignature: newSignature,
-        };
-
-        this._cachedContent = undefined;
-
-        if (this.listeners.size > 0) {
-            const content = this.getCurrentContent();
-            for (const listener of this.listeners) {
-                listener(content);
-            }
-        }
+        this.doAddTransactions(
+            sessionID,
+            newTransactions,
+            newSignature,
+            expectedNewHash,
+            newStreamingHash
+        );
 
         return true;
     }
@@ -272,10 +261,8 @@ export class CoValueCore {
         const nTxBefore = this.sessions[sessionID]?.transactions.length ?? 0;
 
         // const beforeHash = performance.now();
-        const { expectedNewHash, newStreamingHash } = await this.expectedNewHashAfterAsync(
-            sessionID,
-            newTransactions
-        );
+        const { expectedNewHash, newStreamingHash } =
+            await this.expectedNewHashAfterAsync(sessionID, newTransactions);
         // const afterHash = performance.now();
         // console.log(
         //     "Hashing took",
@@ -286,7 +273,7 @@ export class CoValueCore {
 
         if (nTxAfter !== nTxBefore) {
             const newTransactionLengthBefore = newTransactions.length;
-            newTransactions = newTransactions.slice((nTxAfter - nTxBefore));
+            newTransactions = newTransactions.slice(nTxAfter - nTxBefore);
             console.warn("Transactions changed while async hashing", {
                 nTxBefore,
                 nTxAfter,
@@ -319,15 +306,61 @@ export class CoValueCore {
         //     afterVerify - beforeVerify
         // );
 
-        const transactions = this.sessions[sessionID]?.transactions ?? [];
+        this.doAddTransactions(
+            sessionID,
+            newTransactions,
+            newSignature,
+            expectedNewHash,
+            newStreamingHash
+        );
 
+        return true;
+    }
+
+    private doAddTransactions(
+        sessionID: SessionID,
+        newTransactions: Transaction[],
+        newSignature: Signature,
+        expectedNewHash: Hash,
+        newStreamingHash: StreamingHash
+    ) {
+        const transactions = this.sessions[sessionID]?.transactions ?? [];
         transactions.push(...newTransactions);
+
+        const signatureAfter = this.sessions[sessionID]?.signatureAfter ?? {};
+
+        const lastInbetweenSignatureIdx = Object.keys(signatureAfter).reduce(
+            (max, idx) => (parseInt(idx) > max ? parseInt(idx) : max),
+            -1
+        );
+
+        const sizeOfTxsSinceLastInbetweenSignature = transactions
+            .slice(lastInbetweenSignatureIdx + 1)
+            .reduce(
+                (sum, tx) =>
+                    sum +
+                    (tx.privacy === "private"
+                        ? tx.encryptedChanges.length
+                        : tx.changes.length),
+                0
+            );
+
+        if (sizeOfTxsSinceLastInbetweenSignature > 100 * 1024) {
+            console.log(
+                "Saving inbetween signature for tx ",
+                sessionID,
+                transactions.length - 1,
+                sizeOfTxsSinceLastInbetweenSignature
+            );
+            signatureAfter[transactions.length - 1] = newSignature;
+        }
 
         this._sessions[sessionID] = {
             transactions,
             lastHash: expectedNewHash,
             streamingHash: newStreamingHash,
             lastSignature: newSignature,
+            signatureAfter: signatureAfter,
         };
 
         this._cachedContent = undefined;
@@ -338,8 +371,6 @@ export class CoValueCore {
                 listener(content);
             }
         }
-
-        return true;
     }
 
     subscribe(listener: (content?: CoValueImpl) => void): () => void {
@@ -379,7 +410,7 @@ export class CoValueCore {
             new StreamingHash();
         let before = performance.now();
         for (const transaction of newTransactions) {
-            streamingHash.update(transaction)
+            streamingHash.update(transaction);
             const after = performance.now();
             if (after - before > 1) {
                 console.log("Hashing blocked for", after - before);
@@ -500,7 +531,8 @@ export class CoValueCore {
                     if (!readKey) {
                         return undefined;
                     } else {
-                        let decrytedChanges = this._decryptionCache[tx.encryptedChanges];
+                        let decrytedChanges =
+                            this._decryptionCache[tx.encryptedChanges];
 
                         if (!decrytedChanges) {
                             decrytedChanges = decryptRawForTransaction(
@@ -511,7 +543,8 @@ export class CoValueCore {
                                     tx: txID,
                                 }
                             );
-                            this._decryptionCache[tx.encryptedChanges] = decrytedChanges;
+                            this._decryptionCache[tx.encryptedChanges] =
+                                decrytedChanges;
                         }
 
                         if (!decrytedChanges) {
@@ -683,47 +716,61 @@ export class CoValueCore {
 
     newContentSince(
         knownState: CoValueKnownState | undefined
-    ): NewContentMessage | undefined {
-        const newContent: NewContentMessage = {
+    ): NewContentMessage[] | undefined {
+        let currentPiece: NewContentMessage = {
             action: "content",
             id: this.id,
             header: knownState?.header ? undefined : this.header,
-            new: Object.fromEntries(
-                Object.entries(this.sessions)
-                    .map(([sessionID, log]) => {
-                        const newTransactions = log.transactions.slice(
-                            knownState?.sessions[sessionID as SessionID] || 0
-                        );
-
-                        if (
-                            newTransactions.length === 0 ||
-                            !log.lastHash ||
-                            !log.lastSignature
-                        ) {
-                            return undefined;
-                        }
-
-                        return [
-                            sessionID,
-                            {
-                                after:
-                                    knownState?.sessions[
-                                        sessionID as SessionID
-                                    ] || 0,
-                                newTransactions,
-                                lastSignature: log.lastSignature,
-                            },
-                        ];
-                    })
-                    .filter((x): x is Exclude<typeof x, undefined> => !!x)
-            ),
+            new: {}
         };
 
-        if (!newContent.header && Object.keys(newContent.new).length === 0) {
+        const pieces = [currentPiece];
+
+        const sentState: CoValueKnownState['sessions'] = {
+            ...knownState?.sessions
+        };
+
+        let newTxsWereAdded = true;
+        while (newTxsWereAdded) {
+            let pieceSize = 0;
+            newTxsWereAdded = false;
+
+            for (const [sessionID, log] of Object.entries(this.sessions) as [SessionID, SessionLog][]) {
+                const nextKnownSignatureIdx = Object.keys(log.signatureAfter).map(parseInt).sort().find(idx => idx > (sentState[sessionID] ?? -1));
+
+                const txsToAdd = log.transactions.slice(sentState[sessionID] ?? 0, nextKnownSignatureIdx === undefined ? undefined : nextKnownSignatureIdx);
+                if (txsToAdd.length === 0) continue;
+
+                newTxsWereAdded = true;
+
+                pieceSize += txsToAdd.reduce((sum, tx) => sum + (tx.privacy === "private" ? tx.encryptedChanges.length : tx.changes.length), 0);
+
+                currentPiece.new[sessionID] = {
+                    after: sentState[sessionID] ?? 0,
+                    newTransactions: txsToAdd,
+                    lastSignature: nextKnownSignatureIdx === undefined ? log.lastSignature! : log.signatureAfter[nextKnownSignatureIdx]!
+                }
+
+                sentState[sessionID] = (sentState[sessionID] || 0) + txsToAdd.length;
+
+                if (pieceSize > 100 * 1024) {
+                    currentPiece = {
+                        action: "content",
+                        id: this.id,
+                        header: undefined,
+                        new: {}
+                    };
+                    pieces.push(currentPiece);
+                    pieceSize = 0;
+                }
+            }
+        }
+
+        if (pieces.length === 1 && Object.keys(pieces[0]!.new).length === 0 && !pieces[0]!.header) {
             return undefined;
         }
 
-        return newContent;
+        return pieces;
     }
 
     getDependedOnCoValues(): RawCoID[] {
