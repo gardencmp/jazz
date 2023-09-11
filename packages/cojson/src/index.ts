@@ -34,6 +34,7 @@ import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
 import type { AccountID, Profile } from "./account.js";
 import type { InviteSecret } from "./group.js";
+import type * as Media from "./media.js";
 
 type Value = JsonValue | CoValueImpl;
 
@@ -90,6 +91,7 @@ export type {
     AgentSecret,
     InviteSecret,
     SyncMessage,
+    Media
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

@@ -238,7 +238,7 @@ export class Group {
 
     /** Creates a new `CoMap` within this group, with the specified specialized
      *  `CoMap` type `M` and optional static metadata. */
-    createMap<M extends CoMap<{ [key: string]: JsonValue }, JsonObject | null>>(
+    createMap<M extends CoMap<{ [key: string]: JsonValue | undefined; }, JsonObject | null>>(
         meta?: M["meta"]
     ): M {
         return this.node

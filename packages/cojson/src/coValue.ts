@@ -47,7 +47,7 @@ export interface CoValue {
 export interface WriteableCoValue extends CoValue {}
 
 export type CoValueImpl =
-    | CoMap<{ [key: string]: JsonValue }, JsonObject | null>
+    | CoMap<{ [key: string]: JsonValue | undefined; }, JsonObject | null>
     | CoList<JsonValue, JsonObject | null>
     | CoStream<JsonValue, JsonObject | null>
     | BinaryCoStream<BinaryCoStreamMeta>

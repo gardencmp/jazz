@@ -5,14 +5,14 @@ import { CoValueCore, accountOrAgentIDfromSessionID } from '../coValueCore.js';
 import { AccountID, isAccountID } from '../account.js';
 import { Group } from '../group.js';
 
-type MapOp<K extends string, V extends JsonValue> = {
+type MapOp<K extends string, V extends JsonValue | undefined> = {
     txID: TransactionID;
     madeAt: number;
     changeIdx: number;
 } & MapOpPayload<K, V>;
 // TODO: add after TransactionID[] for conflicts/ordering
 
-export type MapOpPayload<K extends string, V extends JsonValue> = {
+export type MapOpPayload<K extends string, V extends JsonValue | undefined> = {
     op: "set";
     key: K;
     value: V;
@@ -22,18 +22,16 @@ export type MapOpPayload<K extends string, V extends JsonValue> = {
     key: K;
 };
 
-export type MapK<M extends { [key: string]: JsonValue; }> = keyof M & string;
-export type MapV<M extends { [key: string]: JsonValue; }> = M[MapK<M>];
-export type MapM<M extends { [key: string]: JsonValue; }> = {
-    [KK in MapK<M>]: M[KK];
-}
+export type MapK<M extends { [key: string]: JsonValue | undefined; }> = keyof M & string;
+export type MapV<M extends { [key: string]: JsonValue | undefined; }> = M[MapK<M>];
+
 
 /** A collaborative map with precise shape `M` and optional static metadata `Meta` */
 export class CoMap<
-    M extends { [key: string]: JsonValue; },
+    M extends { [key: string]: JsonValue | undefined; },
     Meta extends JsonObject | null = null,
 > implements ReadableCoValue {
-    id: CoID<CoMap<MapM<M>, Meta>>;
+    id: CoID<CoMap<M, Meta>>;
     type = "comap" as const;
     core: CoValueCore;
     /** @internal */
@@ -43,7 +41,7 @@ export class CoMap<
 
     /** @internal */
     constructor(core: CoValueCore) {
-        this.id = core.id as CoID<CoMap<MapM<M>, Meta>>;
+        this.id = core.id as CoID<CoMap<M, Meta>>;
         this.core = core;
         this.ops = {};
 
@@ -207,7 +205,7 @@ export class CoMap<
 }
 
 export class WriteableCoMap<
-    M extends { [key: string]: JsonValue; },
+    M extends { [key: string]: JsonValue | undefined; },
     Meta extends JsonObject | null = null,
 > extends CoMap<M, Meta> implements WriteableCoValue {
     /** @internal */

@@ -183,23 +183,11 @@ export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
             .catch((e) => console.error("Failed to read binary stream", e));
     }, [stream, localNode]);
 
+    useEffect(() => {
+        return () => {
+            blob && URL.revokeObjectURL(blob.blobURL);
+        }
+    }, [blob?.blobURL])
+
     return blob;
-}
-
-export function createBinaryStreamHandler<
-    C extends BinaryCoStream<BinaryCoStreamMeta>
->(
-    onCreated: (createdStream: C) => void,
-    inGroup: Group,
-    meta: C["meta"] = {type: "binary"}
-): (event: ChangeEvent) => void {
-    return (event) => {
-        const file = (event.target as HTMLInputElement).files?.[0];
-
-        if (!file) return;
-
-        createBinaryStreamFromBlob(file, inGroup, meta)
-            .then(onCreated)
-            .catch((e) => console.error("Failed to create binary stream", e));
-    };
 }

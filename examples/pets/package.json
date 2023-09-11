@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "jazz-react": "^0.1.14",
+    "jazz-react-media-images": "^0.1.0",
     "jazz-react-auth-local": "^0.1.14",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",

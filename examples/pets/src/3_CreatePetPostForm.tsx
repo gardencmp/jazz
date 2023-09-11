@@ -1,16 +1,18 @@
-import { useCallback, useState } from "react";
+import { ChangeEvent, useCallback, useState } from "react";
 
-import { BinaryCoStream, CoID } from "cojson";
+import { BinaryCoStream, CoID, Media } from "cojson";
 import {
     useBinaryStream,
     useJazz,
     useTelepathicState,
     createBinaryStreamHandler,
 } from "jazz-react";
+import { createImage } from "jazz-browser-media-images";
 
 import { PetPost, PetReactions } from "./1_types";
 
 import { Input, Button } from "./basicComponents";
+import { useLoadImage } from "jazz-react-media-images";
 
 /** Walkthrough: TODO
  */
@@ -50,17 +52,23 @@ export function CreatePetPostForm({
         [localNode, newPetPost]
     );
 
-    const onImageCreated = useCallback(
-        (image: BinaryCoStream) => {
-            if (!newPetPost) throw new Error("Never get here");
+    const onImageSelected = useCallback(
+        async (event: ChangeEvent<HTMLInputElement>) => {
+            if (!newPetPost || !event.target.files) return;
+
+            const imageDefinition = await createImage(
+                event.target.files[0],
+                newPetPost.group
+            );
+
             newPetPost.edit((petPost) => {
-                petPost.set("image", image.id);
+                petPost.set("image", imageDefinition.id);
             });
         },
         [newPetPost]
     );
 
-    const petImage = useBinaryStream(newPetPost?.get("image"));
+    const petImage = useLoadImage(newPetPost?.get("image"));
 
     return (
         <div className="flex flex-col gap-10">
@@ -74,18 +82,15 @@ export function CreatePetPostForm({
             />
 
             {petImage ? (
-                <img className="max-w-xs rounded" src={petImage.blobURL} />
+                <img
+                    className="w-80 max-w-full rounded"
+                    src={petImage.highestResSrc || petImage.placeholderDataURL}
+                />
             ) : (
                 <Input
                     type="file"
                     disabled={!newPetPost?.get("name")}
-                    onChange={
-                        newPetPost &&
-                        createBinaryStreamHandler(
-                            onImageCreated,
-                            newPetPost.group
-                        )
-                    }
+                    onChange={onImageSelected}
                 />
             )}
 
@@ -100,4 +105,10 @@ export function CreatePetPostForm({
             )}
         </div>
     );
+}
+
+function DebugImage({ id }: { id?: CoID<BinaryCoStream> }) {
+    const image = useBinaryStream(id);
+
+    return <img src={image?.blobURL} />;
 }

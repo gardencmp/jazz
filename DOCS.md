@@ -4,6 +4,17 @@
 
 ----
 
+## `Media` (namespace in `cojson`)
+
+```typescript
+export  Media
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
 ## `LocalNode` (class in `cojson`)
 
 ```typescript
@@ -340,7 +351,7 @@ Creates an invite for new members to indirectly join the group, allowing them to
 <summary><code>group.createMap(meta)</code>  </summary>
 
 ```typescript
-group.createMap<M extends CoMap<{ [key: string]: JsonValue }, null | JsonObject>>(
+group.createMap<M extends CoMap<{ [key: string]: JsonValue | undefined }, null | JsonObject>>(
   meta: M["meta"]
 ): M
 ```
@@ -405,7 +416,7 @@ TODO: document
 ## `CoMap` (class in `cojson`)
 
 ```typescript
-export class CoMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null> implements ReadableCoValue {...}
+export class CoMap<M extends { [key: string]: JsonValue | undefined }, Meta extends JsonObject | null> implements ReadableCoValue {...}
 ```
 A collaborative map with precise shape `M` and optional static metadata `Meta`
 
@@ -421,7 +432,7 @@ A collaborative map with precise shape `M` and optional static metadata `Meta`
 <summary><code>coMap.id</code>  </summary>
 
 ```typescript
-coMap.id: CoID<CoMap<MapM<M>, Meta>>
+coMap.id: CoID<CoMap<M, Meta>>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -655,7 +666,7 @@ Lets you apply edits to a `CoValue`, inside the changer callback, which receives
 ## `WriteableCoMap` (class in `cojson`)
 
 ```typescript
-export class WriteableCoMap<M extends { [key: string]: JsonValue }, Meta extends JsonObject | null> extends CoMap<M, Meta> implements WriteableCoValue {...}
+export class WriteableCoMap<M extends { [key: string]: JsonValue | undefined }, Meta extends JsonObject | null> extends CoMap<M, Meta> implements WriteableCoValue {...}
 ```
 A collaborative map with precise shape `M` and optional static metadata `Meta`
 
@@ -671,7 +682,7 @@ A collaborative map with precise shape `M` and optional static metadata `Meta`
 <summary><code>writeableCoMap.id</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
-writeableCoMap.id: CoID<CoMap<MapM<M>, Meta>>
+writeableCoMap.id: CoID<CoMap<M, Meta>>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -1574,7 +1585,7 @@ TODO: document
 <summary><code>coStream.items</code>  (undocumented)</summary>
 
 ```typescript
-coStream.items: { [key: SessionID]: T[] }
+coStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
 ```
 TODO: document
 
@@ -1621,6 +1632,44 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 ```typescript
 coStream.getSingleStream(): undefined | T[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.getLastItemsPerAccount()</code>  (undocumented)</summary>
+
+```typescript
+coStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.getLastItemFrom(account)</code>  (undocumented)</summary>
+
+```typescript
+coStream.getLastItemFrom(
+  account: AccountID
+): undefined | T
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>coStream.getLastItemFromMe()</code>  (undocumented)</summary>
+
+```typescript
+coStream.getLastItemFromMe(): undefined | T
 ```
 TODO: document
 
@@ -1755,7 +1804,7 @@ TODO: document
 <summary><code>writeableCoStream.items</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoStream.items: { [key: SessionID]: T[] }
+writeableCoStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
 ```
 TODO: document
 
@@ -1819,6 +1868,44 @@ TODO: document
 
 ```typescript
 writeableCoStream.getSingleStream(): undefined | T[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.getLastItemsPerAccount()</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableCoStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.getLastItemFrom(account)</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableCoStream.getLastItemFrom(
+  account: AccountID
+): undefined | T
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableCoStream.getLastItemFromMe()</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableCoStream.getLastItemFromMe(): undefined | T
 ```
 TODO: document
 
@@ -1933,7 +2020,7 @@ TODO: document
 <summary><code>binaryCoStream.items</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-binaryCoStream.items: { [key: SessionID]: T[] }
+binaryCoStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
 ```
 TODO: document
 
@@ -2012,6 +2099,44 @@ Lets you apply edits to a `CoValue`, inside the changer callback, which receives
 
 ```typescript
 binaryCoStream.getSingleStream(): undefined | BinaryStreamItem[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.getLastItemsPerAccount()</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+binaryCoStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.getLastItemFrom(account)</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+binaryCoStream.getLastItemFrom(
+  account: AccountID
+): undefined | BinaryStreamItem
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>binaryCoStream.getLastItemFromMe()</code> (from <code>CoStream</code>)  (undocumented)</summary>
+
+```typescript
+binaryCoStream.getLastItemFromMe(): undefined | BinaryStreamItem
 ```
 TODO: document
 
@@ -2126,7 +2251,7 @@ TODO: document
 <summary><code>writeableBinaryCoStream.items</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableBinaryCoStream.items: { [key: SessionID]: T[] }
+writeableBinaryCoStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
 ```
 TODO: document
 
@@ -2233,6 +2358,44 @@ TODO: document
 
 ```typescript
 writeableBinaryCoStream.getSingleStream(): undefined | BinaryStreamItem[]
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.getLastItemsPerAccount()</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.getLastItemFrom(account)</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.getLastItemFrom(
+  account: AccountID
+): undefined | BinaryStreamItem
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>writeableBinaryCoStream.getLastItemFromMe()</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+
+```typescript
+writeableBinaryCoStream.getLastItemFromMe(): undefined | BinaryStreamItem
 ```
 TODO: document
 
@@ -2961,7 +3124,7 @@ TODO: doc generator not implemented yet
 ## `CoValueImpl` (type alias in `cojson`)
 
 ```typescript
-export type CoValueImpl = CoMap<{ [key: string]: JsonValue }, JsonObject | null> | CoList<JsonValue, JsonObject | null> | CoStream<JsonValue, JsonObject | null> | BinaryCoStream<BinaryCoStreamMeta> | Static<JsonObject>
+export type CoValueImpl = CoMap<{ [key: string]: JsonValue | undefined }, JsonObject | null> | CoList<JsonValue, JsonObject | null> | CoStream<JsonValue, JsonObject | null> | BinaryCoStream<BinaryCoStreamMeta> | Static<JsonObject>
 ```
 TODO: document
 
@@ -3150,17 +3313,6 @@ TODO: doc generator not implemented yet
 
 ```typescript
 export function useBinaryStream(streamID: CoID<C>, allowUnfinished: boolean): {blob: Blob, blobURL: string} | undefined
-```
-TODO: document
-
-TODO: doc generator not implemented yet
-
-----
-
-## `createBinaryStreamHandler(onCreated, inGroup, meta?)` (function in `jazz-react`)
-
-```typescript
-export function createBinaryStreamHandler(onCreated: (createdStream: C) => void, inGroup: Group, meta: C["meta"]): (event: ChangeEvent) => void
 ```
 TODO: document
 

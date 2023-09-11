@@ -1,0 +1,21 @@
+{
+  "name": "jazz-browser-media-images",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "dependencies": {
+    "cojson": "^0.1.12",
+    "image-blob-reduce": "^4.1.0",
+    "jazz-browser": "^0.1.12",
+    "typescript": "^5.1.6"
+  },
+  "scripts": {
+    "lint": "eslint src/**/*.ts",
+    "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/image-blob-reduce": "^4.1.1"
+  }
+}

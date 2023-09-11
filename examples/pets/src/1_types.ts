@@ -1,4 +1,4 @@
-import { CoMap, CoID, BinaryCoStream, CoStream } from "cojson";
+import { CoMap, CoID, CoStream, Media } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -9,7 +9,7 @@ import { CoMap, CoID, BinaryCoStream, CoStream } from "cojson";
 
 export type PetPost = CoMap<{
     name: string;
-    image: CoID<BinaryCoStream>;
+    image: CoID<Media.ImageDefinition>;
     reactions: CoID<PetReactions>;
 }>;
 

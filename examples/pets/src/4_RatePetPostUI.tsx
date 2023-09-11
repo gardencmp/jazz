@@ -1,11 +1,12 @@
 import { AccountID, CoID } from "cojson";
-import { useBinaryStream, useTelepathicState } from "jazz-react";
+import { useTelepathicState } from "jazz-react";
 
 import { PetPost, PetReactions, ReactionType, REACTION_TYPES } from "./1_types";
 
 import { ShareButton } from "./components/ShareButton";
 import { NameBadge } from "./components/NameBadge";
 import { Button } from "./basicComponents";
+import { useLoadImage } from "jazz-react-media-images";
 
 /** Walkthrough: TODO
  */
@@ -22,7 +23,7 @@ const reactionEmojiMap: { [reaction in ReactionType]: string } = {
 export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
     const petPost = useTelepathicState(petPostID);
     const petReactions = useTelepathicState(petPost?.get("reactions"));
-    const petImage = useBinaryStream(petPost?.get("image"));
+    const petImage = useLoadImage(petPost?.get("image"));
 
     return (
         <div className="flex flex-col gap-8">
@@ -32,7 +33,10 @@ export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
             </div>
 
             {petImage && (
-                <img className="max-w-xs rounded" src={petImage.blobURL} />
+                <img
+                    className="w-80 max-w-full rounded"
+                    src={petImage.highestResSrc || petImage.placeholderDataURL}
+                />
             )}
 
             <div className="flex justify-between max-w-xs flex-wrap">
