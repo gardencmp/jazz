@@ -1,12 +1,7 @@
 import { ChangeEvent, useCallback, useState } from "react";
 
-import { BinaryCoStream, CoID, Media } from "cojson";
-import {
-    useBinaryStream,
-    useJazz,
-    useTelepathicState,
-    createBinaryStreamHandler,
-} from "jazz-react";
+import { CoID } from "cojson";
+import { useJazz, useTelepathicState } from "jazz-react";
 import { createImage } from "jazz-browser-media-images";
 
 import { PetPost, PetReactions } from "./1_types";
@@ -105,10 +100,4 @@ export function CreatePetPostForm({
             )}
         </div>
     );
-}
-
-function DebugImage({ id }: { id?: CoID<BinaryCoStream> }) {
-    const image = useBinaryStream(id);
-
-    return <img src={image?.blobURL} />;
 }
