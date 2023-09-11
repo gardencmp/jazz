@@ -1,14 +1,14 @@
-# Jazz Todo List Example
+# Jazz Rate-My-Pet List Example
 
-Live version: https://example-todo.jazz.tools
+Live version: https://example-pets.jazz.tools
 
 ## Installing & running the example locally
 
 Start by checking out just the example app to a folder:
 
 ```bash
-npx degit gardencmp/jazz/examples/todo jazz-example-todo
-cd jazz-example-todo
+npx degit gardencmp/jazz/examples/pets jazz-example-pets
+cd jazz-example-pets
 ```
 
 (This ensures that you have the example app without git history or our multi-package monorepo)
@@ -27,31 +27,17 @@ npm run dev
 
 ## Structure
 
-- [`src/basicComponents`](./src/basicComponents) contains simple components to build the UI, unrelated to Jazz (powered by [shadcn/ui](https://ui.shadcn.com))
-- [`src/components`](./src/components/) contains helper components that do contain Jazz-specific logic, but are not super relevant to understand the basics of Jazz and CoJSON
-- [`src/0_main.tsx`](./src/0_main.tsx), [`src/1_types.ts`](./src/1_types.ts), [`src/2_App.tsx`](./src/2_App.tsx), [`src/3_TodoTable.tsx`](./src/3_TodoTable.tsx), [`src/router.ts`](./src/router.ts) - the main files for this example, see the walkthrough below
+TODO
 
 ## Walkthrough
 
 ### Main parts
 
-- The top-level provider `<WithJazz/>`: [`src/0_main.tsx`](./src/0_main.tsx)
-
-- Defining the data model with CoJSON: [`src/1_types.ts`](./src/1_types.ts)
-
-- Creating todo projects & routing in `<App/>`: [`src/2_App.tsx`](./src/2_App.tsx)
-
-- Reactively rendering a todo project as a table, adding and editing tasks: [`src/3_TodoTable.tsx`](./src/3_TodoTable.tsx)
+TODO
 
 ### Helpers
 
-- Getting user profiles in `<NameBadge/>`: [`src/components/NameBadge.tsx`](./src/components/NameBadge.tsx)
-
-- (not yet commented) Creating invite links/QR codes with `<InviteButton/>`: [`src/components/InviteButton.tsx`](./src/components/InviteButton.tsx)
-
-- (not yet commented) `location.hash`-based routing and accepting invite links with `useSimpleHashRouterThatAcceptsInvites()` in [`src/router.ts`](./src/router.ts)
-
-This is the whole Todo List app!
+TODO
 
 ## Questions / problems / feedback
 
