@@ -42,14 +42,14 @@ jobs:
       run: |
         yarn install --frozen-lockfile;
         yarn build;
-      working-directory: ./examples/{{ matrix.example }}
+      working-directory: ./examples/${{ matrix.example }}
 
     - name: Docker Build & Push
       uses: docker/build-push-action@v4
       with:
-        context: ./examples/{{ matrix.example }}
+        context: ./examples/${{ matrix.example }}
         push: true
-        tags: ghcr.io/gardencmp/${{github.event.repository.name}}-example-{{ matrix.example }}:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
+        tags: ghcr.io/gardencmp/${{github.event.repository.name}}-example-${{ matrix.example }}:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -79,9 +79,9 @@ jobs:
 
         export DOCKER_USER=gardencmp;
         export DOCKER_PASSWORD=${{ secrets.DOCKER_PULL_PAT }};
-        export DOCKER_TAG=ghcr.io/gardencmp/${{github.event.repository.name}}-example-{{ matrix.example }}:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}};
+        export DOCKER_TAG=ghcr.io/gardencmp/${{github.event.repository.name}}-example-${{ matrix.example }}:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}};
 
         envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN}' < job-template.nomad > job-instance.nomad;
         cat job-instance.nomad;
         NOMAD_ADDR='http://control1v2-london:4646' nomad job run job-instance.nomad;
-      working-directory: ./examples/{{ matrix.example }}
+      working-directory: ./examples/${{ matrix.example }}
