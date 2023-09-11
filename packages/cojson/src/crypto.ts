@@ -7,7 +7,7 @@ import { AgentID, RawCoID, TransactionID } from "./ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 
 import { createBLAKE3 } from 'hash-wasm';
-import { stableStringify } from "./fastJsonStableStringify.js";
+import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 
 let blake3Instance: Awaited<ReturnType<typeof createBLAKE3>>;
 let blake3HashOnce: (data: Uint8Array) => Uint8Array;
@@ -316,11 +316,11 @@ export function encryptKeySecret(keys: {
     };
 }
 
-function decrypt<T extends JsonValue, N extends JsonValue>(
+function decryptRaw<T extends JsonValue, N extends JsonValue>(
     encrypted: Encrypted<T, N>,
     keySecret: KeySecret,
     nOnceMaterial: N
-): T | undefined {
+): Stringified<T> {
     const keySecretBytes = base58.decode(
         keySecret.substring("keySecret_z".length)
     );
@@ -333,11 +333,29 @@ function decrypt<T extends JsonValue, N extends JsonValue>(
     );
     const plaintext = xsalsa20(keySecretBytes, nOnce, ciphertext);
 
+        return textDecoder.decode(plaintext) as Stringified<T>;
+
+}
+
+function decrypt<T extends JsonValue, N extends JsonValue>(
+    encrypted: Encrypted<T, N>,
+    keySecret: KeySecret,
+    nOnceMaterial: N
+): T | undefined {
     try {
-        return JSON.parse(textDecoder.decode(plaintext));
+        return parseJSON(decryptRaw(encrypted, keySecret, nOnceMaterial));
     } catch (e) {
+        console.error("Decryption error", e)
         return undefined;
     }
+}
+
+export function decryptRawForTransaction<T extends JsonValue>(
+    encrypted: Encrypted<T, { in: RawCoID; tx: TransactionID }>,
+    keySecret: KeySecret,
+    nOnceMaterial: { in: RawCoID; tx: TransactionID }
+): Stringified<T> | undefined {
+    return decryptRaw(encrypted, keySecret, nOnceMaterial);
 }
 
 export function decryptForTransaction<T extends JsonValue>(

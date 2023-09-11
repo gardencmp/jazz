@@ -19,6 +19,7 @@ import {
     decryptKeySecret,
     getAgentSignerID,
     getAgentSealerID,
+    decryptRawForTransaction,
 } from "./crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
@@ -36,6 +37,7 @@ import {
     AccountID,
     GeneralizedControlledAccount,
 } from "./account.js";
+import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 
 export type CoValueHeader = {
     type: CoValueImpl["type"];
@@ -77,17 +79,18 @@ export type PrivateTransaction = {
     >;
 };
 
+
 export type TrustingTransaction = {
     privacy: "trusting";
     madeAt: number;
-    changes: JsonValue[];
+    changes: Stringified<JsonValue[]>;
 };
 
 export type Transaction = PrivateTransaction | TrustingTransaction;
 
 export type DecryptedTransaction = {
     txID: TransactionID;
-    changes: JsonValue[];
+    changes: Stringified<JsonValue[]>;
     madeAt: number;
 };
 
@@ -100,7 +103,7 @@ export class CoValueCore {
     _sessions: { [key: SessionID]: SessionLog };
     _cachedContent?: CoValueImpl;
     listeners: Set<(content?: CoValueImpl) => void> = new Set();
-    _decryptionCache: {[key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined} = {}
+    _decryptionCache: {[key: Encrypted<JsonValue[], JsonValue>]: Stringified<JsonValue[]> | undefined} = {}
 
     constructor(
         header: CoValueHeader,
@@ -415,7 +418,7 @@ export class CoValueCore {
                 tx: this.nextTransactionID(),
             });
 
-            this._decryptionCache[encrypted] = changes;
+            this._decryptionCache[encrypted] = stableStringify(changes);
 
             transaction = {
                 privacy: "private",
@@ -427,7 +430,7 @@ export class CoValueCore {
             transaction = {
                 privacy: "trusting",
                 madeAt,
-                changes,
+                changes: stableStringify(changes),
             };
         }
 
@@ -500,7 +503,7 @@ export class CoValueCore {
                         let decrytedChanges = this._decryptionCache[tx.encryptedChanges];
 
                         if (!decrytedChanges) {
-                            decrytedChanges = decryptForTransaction(
+                            decrytedChanges = decryptRawForTransaction(
                                 tx.encryptedChanges,
                                 readKey,
                                 {

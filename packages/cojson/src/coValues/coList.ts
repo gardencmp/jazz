@@ -4,6 +4,7 @@ import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { SessionID, TransactionID } from "../ids.js";
 import { Group } from "../group.js";
 import { AccountID, isAccountID } from "../account.js";
+import { parseJSON } from "../jsonStringify.js";
 
 type OpID = TransactionID & { changeIdx: number };
 
@@ -98,7 +99,7 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
             changes,
             madeAt,
         } of this.core.getValidSortedTransactions()) {
-            for (const [changeIdx, changeUntyped] of changes.entries()) {
+            for (const [changeIdx, changeUntyped] of parseJSON(changes).entries()) {
                 const change = changeUntyped as ListOpPayload<T>;
 
                 if (change.op === "pre" || change.op === "app") {

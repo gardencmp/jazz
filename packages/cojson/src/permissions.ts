@@ -15,6 +15,7 @@ import {
     AccountID,
     Profile,
 } from "./account.js";
+import { parseJSON } from "./jsonStringify.js";
 
 export type PermissionsDef =
     | { type: "group"; initialAdmin: AccountID | AgentID }
@@ -76,11 +77,13 @@ export function determineValidTransactions(
             // console.log("before", { memberState, validTransactions });
             const transactor = accountOrAgentIDfromSessionID(sessionID);
 
-            const change = tx.changes[0] as
+            const changes = parseJSON(tx.changes)
+
+            const change = changes[0] as
                 | MapOpPayload<AccountID | AgentID, Role>
                 | MapOpPayload<"readKey", JsonValue>
                 | MapOpPayload<"profile", CoID<Profile>>;
-            if (tx.changes.length !== 1) {
+            if (changes.length !== 1) {
                 console.warn("Group transaction must have exactly one change");
                 continue;
             }

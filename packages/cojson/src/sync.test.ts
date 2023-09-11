@@ -8,12 +8,10 @@ import {
     randomAnonymousAccountAndSessionID,
     shouldNotResolve,
 } from "./testUtils.js";
-import {
-    connectedPeers,
-    newStreamPair
-} from "./streamUtils.js";
+import { connectedPeers, newStreamPair } from "./streamUtils.js";
 import { AccountID } from "./account.js";
 import { cojsonReady } from "./index.js";
+import { stableStringify } from "./jsonStringify.js";
 
 beforeEach(async () => {
     await cojsonReady;
@@ -84,13 +82,13 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:
@@ -162,13 +160,13 @@ test("Node replies with only new tx to subscribe with some known state", async (
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "goodbye",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:
@@ -251,13 +249,13 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:
@@ -283,13 +281,13 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "goodbye",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:
@@ -362,13 +360,13 @@ test("Client replies with known new content to tellKnownState from server", asyn
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:
@@ -465,13 +463,13 @@ test("No matter the optimistic known state, node respects invalid known state me
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[1]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "goodbye",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:
@@ -568,13 +566,13 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                         privacy: "trusting" as const,
                         madeAt: map.core.sessions[node.currentSessionID]!
                             .transactions[0]!.madeAt,
-                        changes: [
+                        changes: stableStringify([
                             {
                                 op: "set",
                                 key: "hello",
                                 value: "world",
                             } satisfies MapOpPayload<string, string>,
-                        ],
+                        ]),
                     },
                 ],
                 lastSignature:

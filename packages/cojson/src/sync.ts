@@ -9,7 +9,7 @@ import {
     WritableStreamDefaultWriter,
 } from "isomorphic-streams";
 import { RawCoID, SessionID } from "./ids.js";
-import { stableStringify } from "./fastJsonStableStringify.js";
+import { stableStringify } from "./jsonStringify.js";
 
 export type CoValueKnownState = {
     id: RawCoID;

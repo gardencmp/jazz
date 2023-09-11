@@ -128,7 +128,7 @@ async function signUp(
             },
             user: {
                 id: webAuthNCredentialPayload,
-                name: username + `(${new Date().toLocaleString()})`,
+                name: username + ` (${new Date().toLocaleString()})`,
                 displayName: username,
             },
             pubKeyCredParams: [{ alg: -7, type: "public-key" }],

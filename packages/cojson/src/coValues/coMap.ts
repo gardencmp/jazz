@@ -4,6 +4,7 @@ import { CoID, ReadableCoValue, WriteableCoValue } from '../coValue.js';
 import { CoValueCore, accountOrAgentIDfromSessionID } from '../coValueCore.js';
 import { AccountID, isAccountID } from '../account.js';
 import { Group } from '../group.js';
+import { parseJSON } from '../jsonStringify.js';
 
 type MapOp<K extends string, V extends JsonValue | undefined> = {
     txID: TransactionID;
@@ -62,7 +63,7 @@ export class CoMap<
 
         for (const { txID, changes, madeAt } of this.core.getValidSortedTransactions()) {
             for (const [changeIdx, changeUntyped] of (
-                changes
+                parseJSON(changes)
             ).entries()) {
                 const change = changeUntyped as MapOpPayload<MapK<M>, MapV<M>>;
                 let entries = this.ops[change.key];

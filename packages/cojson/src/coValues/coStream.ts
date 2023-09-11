@@ -6,6 +6,7 @@ import { SessionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
 import { AccountID } from "../index.js";
 import { isAccountID } from "../account.js";
+import { parseJSON } from "../jsonStringify.js";
 
 export type BinaryChunkInfo = {
     mimeType: string;
@@ -69,7 +70,7 @@ export class CoStream<
             madeAt,
             changes,
         } of this.core.getValidSortedTransactions()) {
-            for (const changeUntyped of changes) {
+            for (const changeUntyped of parseJSON(changes)) {
                 const change = changeUntyped as T;
                 let entries = this.items[txID.sessionID];
                 if (!entries) {

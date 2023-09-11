@@ -8,14 +8,9 @@ import {
     CojsonInternalTypes,
     BinaryCoStream,
     BinaryCoStreamMeta,
-    Group,
 } from "cojson";
-import React, { ChangeEvent, useEffect, useState } from "react";
-import {
-    AuthProvider,
-    createBinaryStreamFromBlob,
-    createBrowserNode,
-} from "jazz-browser";
+import React, { useEffect, useState } from "react";
+import { AuthProvider, createBrowserNode } from "jazz-browser";
 import { readBlobFromBinaryStream } from "jazz-browser";
 
 export {
@@ -186,8 +181,8 @@ export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
     useEffect(() => {
         return () => {
             blob && URL.revokeObjectURL(blob.blobURL);
-        }
-    }, [blob?.blobURL])
+        };
+    }, [blob?.blobURL]);
 
     return blob;
 }

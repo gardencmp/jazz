@@ -25,6 +25,7 @@ import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
 import { Group, expectGroupContent } from "./group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
+import { parseJSON } from "./jsonStringify.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, CoValueImpl } from "./coValue.js";
@@ -54,7 +55,8 @@ export const cojsonInternals = {
     shortHashLength,
     expectGroupContent,
     base64URLtoBytes,
-    bytesToBase64url
+    bytesToBase64url,
+    parseJSON
 };
 
 export {
