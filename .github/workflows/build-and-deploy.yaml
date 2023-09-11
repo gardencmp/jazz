@@ -21,11 +21,6 @@ jobs:
         cache: 'yarn'
         cache-dependency-path: yarn.lock
 
-    - name: Yarn Build
-      run: |
-        yarn install --frozen-lockfile;
-        yarn build;
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
