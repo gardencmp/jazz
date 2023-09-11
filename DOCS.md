@@ -2532,7 +2532,7 @@ TODO: document
 <summary><code>coValueCore._decryptionCache</code>  (undocumented)</summary>
 
 ```typescript
-coValueCore._decryptionCache: { [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined }
+coValueCore._decryptionCache: { [key: Encrypted<JsonValue[], JsonValue>]: Stringified<JsonValue[]> | undefined }
 ```
 TODO: document
 
