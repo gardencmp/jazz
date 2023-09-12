@@ -144,7 +144,7 @@ export class SQLiteStorage {
             console.log("Migration 0 -> 1: Basic schema - done");
         }
 
-        if (oldVersion === 1) {
+        if (oldVersion <= 1) {
             // fix embarrassing off-by-one error for transaction indices
             console.log("Migration 1 -> 2: Fix off-by-one error for transaction indices");
 
