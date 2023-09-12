@@ -285,7 +285,11 @@ export class SyncManager {
                     } catch (e) {
                         console.error(
                             `Error reading from peer ${peer.id}, handling msg`,
-                            JSON.stringify(msg),
+                            JSON.stringify(msg, (k, v) =>
+                                k === "changes" || k === "encryptedChanges"
+                                    ? v.slice(0, 20) + "..."
+                                    : v
+                            ),
                             e
                         );
                     }
@@ -498,7 +502,11 @@ export class SyncManager {
             }
 
             if (!success) {
-                console.error("Failed to add transactions", msg.id, newTransactions);
+                console.error(
+                    "Failed to add transactions",
+                    msg.id,
+                    newTransactions
+                );
                 continue;
             }
 
