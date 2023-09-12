@@ -1,4 +1,4 @@
-import { CoMap, CoList, CoID } from "cojson";
+import { CoMap, CoList } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -7,8 +7,8 @@ import { CoMap, CoList, CoID } from "cojson";
  *
  *  CoMap values and CoLists items can be:
  *  - arbitrary immutable JSON
- *  - references to other CoValues by their CoID
- *    - CoIDs are strings that look like `co_zXPuWmH1D1cKdMpDW6CMzWb3LpY`
+ *  - references to other CoValues by their ID
+ *    - CoValue IDs (CoIDs) are strings that look like `co_zXPuWmH1D1cKdMpDW6CMzWb3LpY`
  *    - In TypeScript, CoIDs take a generic parameter for the type of the
  *      referenced CoValue, e.g. `CoID<Task>` - to make the references precise
  **/
@@ -17,12 +17,12 @@ import { CoMap, CoList, CoID } from "cojson";
 export type Task = CoMap<{ done: boolean; text: string; }>;
 
 /** A collaborative, ordered list of task references */
-export type ListOfTasks = CoList<CoID<Task>>;
+export type ListOfTasks = CoList<Task["id"]>;
 
 /** Our top level object: a project with a title, referencing a list of tasks */
 export type TodoProject = CoMap<{
     title: string;
-    tasks: CoID<ListOfTasks>;
+    tasks: ListOfTasks["id"];
 }>;
 
 /** Walkthrough: Continue with ./2_App.tsx */
