@@ -11,11 +11,19 @@ async function main() {
         cojson: "index.ts",
         "jazz-react": "index.tsx",
         "jazz-browser": "index.ts",
+        "jazz-browser-media-images": "index.ts",
+        "jazz-react-media-images": "index.tsx",
     }).map(async ([packageName, entryPoint]) => {
         const app = await Application.bootstrapWithPlugins({
             entryPoints: [`packages/${packageName}/src/${entryPoint}`],
             tsconfig: `packages/${packageName}/tsconfig.json`,
             sort: ["required-first"],
+            groupOrder: [
+                "Functions",
+                "Classes",
+                "TypeAliases",
+                "Namespaces"
+            ]
         });
 
         const project = await app.convert();
@@ -61,7 +69,14 @@ async function main() {
                                               renderChildGroup(child, group)
                                           )
                                           .join("\n\n")
-                                    : "TODO: doc generator not implemented yet")
+                                    : child.kind === 4
+                                    ? child.groups
+                                          ?.map((group) =>
+                                              renderChildGroup(child, group)
+                                          )
+                                          .join("\n\n")
+                                    : "TODO: doc generator not implemented yet " +
+                                      child.kind)
                             );
                         })
                         .join("\n\n----\n\n");
@@ -129,6 +144,7 @@ async function main() {
             const isClass = child.kind === 128;
             const isTypeDef = child.kind === 2097152;
             const isInterface = child.kind === 256;
+            const isNamespace = child.kind === 4;
             const isFunction = !!child.signatures;
             return (
                 "```typescript\n" +
@@ -141,6 +157,8 @@ async function main() {
                         ? "function"
                         : isInterface
                         ? "interface"
+                        : isNamespace
+                        ? "namespace"
                         : ""
                 } ${child.name}` +
                 (child.typeParameters
@@ -156,7 +174,7 @@ async function main() {
                     ? " implements " +
                       child.implementedTypes.map(renderType).join(", ")
                     : "") +
-                (isClass || isInterface
+                (isClass || isInterface || isNamespace
                     ? " {...}"
                     : isTypeDef
                     ? ` = ${renderType(child.type)}`
@@ -184,19 +202,42 @@ async function main() {
                         )!;
 
                         if (member.kind === 2048 || member.kind === 512) {
-                            if (member.signatures?.every(sig => sig.comment?.modifierTags?.includes("@internal"))) {
-                                return ""
+                            if (
+                                member.signatures?.every((sig) =>
+                                    sig.comment?.modifierTags?.includes(
+                                        "@internal"
+                                    )
+                                )
+                            ) {
+                                return "";
                             } else {
-                                return documentConstructorOrMethod(member, child);
+                                return documentConstructorOrMethod(
+                                    member,
+                                    child
+                                );
                             }
                         } else if (
                             member.kind === 1024 ||
                             member.kind === 262144
                         ) {
-                            if (member.comment?.modifierTags?.includes("@internal")) {
-                                return ""
+                            if (
+                                member.comment?.modifierTags?.includes(
+                                    "@internal"
+                                )
+                            ) {
+                                return "";
                             } else {
                                 return documentProperty(member, child);
+                            }
+                        } else if (member.kind === 2097152) {
+                            if (
+                                member.comment?.modifierTags?.includes(
+                                    "@internal"
+                                )
+                            ) {
+                                return "";
+                            } else {
+                                return documentProperty({...member, flags: {isStatic: true}}, child);
                             }
                         } else {
                             return "Unknown member kind " + member.kind;
@@ -233,7 +274,14 @@ async function main() {
             } else if (t.type === "reflection") {
                 if (t.declaration.indexSignature) {
                     return (
-                        "{ [" +
+                        `{ ${t.declaration.children?t.declaration.children
+                            .map(
+                                (child) =>
+                                    `${child.name}${
+                                        child.flags.isOptional ? "?" : ""
+                                    }: ${renderType(child.type)}`
+                            )
+                            .join(", ") + ", " : ""}[` +
                         t.declaration.indexSignature?.parameters?.[0].name +
                         ": " +
                         renderType(
@@ -267,6 +315,8 @@ async function main() {
                 }
             } else if (t.type === "array") {
                 return renderType(t.elementType) + "[]";
+            } else if (t.type === "tuple") {
+                return `[${t.elements?.map(renderType).join(", ")}]`;
             } else if (t.type === "templateLiteral") {
                 const matchingNamedType = docs.children?.find(
                     (child) =>
@@ -296,7 +346,7 @@ async function main() {
                             return "AgentID";
                         }
                     } else {
-                        return "TEMPLATE_LITERAL";
+                        return "`" + t.head + t.tail.map(bit => "${" + renderType(bit[0]) + "}" + bit[1]).join("") + "`";
                     }
                 }
             } else {
@@ -418,9 +468,7 @@ async function main() {
                           member.inheritedFrom.name.split(".")[0] +
                           "</code>) "
                         : ""
-                } ${
-                    member.comment ? "" : "(undocumented)"
-                }</summary>\n\n` +
+                } ${member.comment ? "" : "(undocumented)"}</summary>\n\n` +
                 "```typescript\n" +
                 `${member.getSignature ? "get " : ""}${stem}.${member.name}${
                     member.getSignature ? "()" : ""

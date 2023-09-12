@@ -79,4 +79,13 @@ framework-agnostic primitives that allow you to use CoJSON in the browser. Used 
 **`jazz-storage-indexeddb`**
 
 Provides local, offline-capable persistence. Included and enabled in `jazz-react` by default.
+
+**`jazz-react-media-images`**  → [DOCS](./DOCS.md#jazz-react-media-images)
+
+TODO: document
+
+**`jazz-browser-media-images`**  → [DOCS](./DOCS.md#jazz-browser-media-images)
+
+TODO: document
+
 </small>

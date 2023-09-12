@@ -2,7 +2,7 @@ import { CoID, Media } from "cojson";
 import { loadImage, LoadingImageInfo } from "jazz-browser-media-images";
 import { useJazz } from "jazz-react";
 import { useEffect, useState } from "react";
-export { createImage } from "jazz-browser-media-images";
+export { createImage, LoadingImageInfo } from "jazz-browser-media-images";
 
 export function useLoadImage(
     imageID?: CoID<Media.ImageDefinition>
