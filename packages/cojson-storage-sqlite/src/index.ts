@@ -98,41 +98,67 @@ export class SQLiteStorage {
         const db = Database(filename);
         db.pragma("journal_mode = WAL");
 
-        db.prepare(
-            `CREATE TABLE IF NOT EXISTS transactions (
-                ses INTEGER,
-                idx INTEGER,
-                tx TEXT NOT NULL ,
-                PRIMARY KEY (ses, idx)
-            ) WITHOUT ROWID;`
-        ).run();
+        const oldVersion = (db.pragma("user_version") as [{user_version: number}])[0].user_version as number;
 
-        db.prepare(
-            `CREATE TABLE IF NOT EXISTS sessions (
-                rowID INTEGER PRIMARY KEY,
-                coValue INTEGER NOT NULL,
-                sessionID TEXT NOT NULL,
-                lastIdx INTEGER,
-                lastSignature TEXT,
-                UNIQUE (sessionID, coValue)
-            );`
-        ).run();
+        console.log("DB version", oldVersion);
 
-        db.prepare(
-            `CREATE INDEX IF NOT EXISTS sessionsByCoValue ON sessions (coValue);`
-        ).run();
+        if (oldVersion === 0) {
+            console.log("Migration 0 -> 1: Basic schema");
+            db.prepare(
+                `CREATE TABLE IF NOT EXISTS transactions (
+                    ses INTEGER,
+                    idx INTEGER,
+                    tx TEXT NOT NULL ,
+                    PRIMARY KEY (ses, idx)
+                ) WITHOUT ROWID;`
+            ).run();
 
-        db.prepare(
-            `CREATE TABLE IF NOT EXISTS coValues (
-                rowID INTEGER PRIMARY KEY,
-                id TEXT NOT NULL UNIQUE,
-                header TEXT NOT NULL UNIQUE
-            );`
-        ).run();
+            db.prepare(
+                `CREATE TABLE IF NOT EXISTS sessions (
+                    rowID INTEGER PRIMARY KEY,
+                    coValue INTEGER NOT NULL,
+                    sessionID TEXT NOT NULL,
+                    lastIdx INTEGER,
+                    lastSignature TEXT,
+                    UNIQUE (sessionID, coValue)
+                );`
+            ).run();
 
-        db.prepare(
-            `CREATE INDEX IF NOT EXISTS coValuesByID ON coValues (id);`
-        ).run();
+            db.prepare(
+                `CREATE INDEX IF NOT EXISTS sessionsByCoValue ON sessions (coValue);`
+            ).run();
+
+            db.prepare(
+                `CREATE TABLE IF NOT EXISTS coValues (
+                    rowID INTEGER PRIMARY KEY,
+                    id TEXT NOT NULL UNIQUE,
+                    header TEXT NOT NULL UNIQUE
+                );`
+            ).run();
+
+            db.prepare(
+                `CREATE INDEX IF NOT EXISTS coValuesByID ON coValues (id);`
+            ).run();
+
+            db.pragma("user_version = 1");
+            console.log("Migration 0 -> 1: Basic schema - done");
+        }
+
+        if (oldVersion === 1) {
+            // fix embarrassing off-by-one error for transaction indices
+            console.log("Migration 1 -> 2: Fix off-by-one error for transaction indices");
+
+            const txs = db.prepare(`SELECT * FROM transactions`).all() as TransactionRow[];
+
+            for (const tx of txs) {
+                db.prepare(`DELETE FROM transactions WHERE ses = ? AND idx = ?`).run(tx.ses, tx.idx);
+                tx.idx -= 1;
+                db.prepare(`INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`).run(tx.ses, tx.idx, tx.tx);
+            }
+
+            db.pragma("user_version = 2");
+            console.log("Migration 1 -> 2: Fix off-by-one error for transaction indices - done");
+        }
 
         return new SQLiteStorage(db, fromLocalNode, toLocalNode);
     }
@@ -198,7 +224,7 @@ export class SQLiteStorage {
 
                 const newTxInSession = this.db
                     .prepare<[number, number]>(
-                        `SELECT * FROM transactions WHERE ses = ? AND idx > ?`
+                        `SELECT * FROM transactions WHERE ses = ? AND idx >= ?`
                     )
                     .all(sessionRow.rowID, firstNewTxIdx) as TransactionRow[];
 
@@ -356,16 +382,16 @@ export class SQLiteStorage {
                     const sessionRowID = upsertedSession.rowID;
 
                     for (const newTransaction of actuallyNewTransactions) {
-                        nextIdx++;
                         this.db
-                            .prepare<[number, number, string]>(
-                                `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
+                        .prepare<[number, number, string]>(
+                            `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
                             )
                             .run(
                                 sessionRowID,
                                 nextIdx,
                                 JSON.stringify(newTransaction)
-                            );
+                                );
+                        nextIdx++;
                     }
                 }
             }
