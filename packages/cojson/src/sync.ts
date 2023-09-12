@@ -498,7 +498,7 @@ export class SyncManager {
             }
 
             if (!success) {
-                console.error("Failed to add transactions", newTransactions);
+                console.error("Failed to add transactions", msg.id, newTransactions);
                 continue;
             }
 

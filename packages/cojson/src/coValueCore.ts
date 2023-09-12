@@ -214,7 +214,8 @@ export class CoValueCore {
         // const beforeVerify = performance.now();
         if (!verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
-                "Invalid signature",
+                "Invalid signature in",
+                this.id,
                 newSignature,
                 expectedNewHash,
                 signerID
@@ -294,7 +295,8 @@ export class CoValueCore {
         // const beforeVerify = performance.now();
         if (!verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
-                "Invalid signature",
+                "Invalid signature in",
+                this.id,
                 newSignature,
                 expectedNewHash,
                 signerID
