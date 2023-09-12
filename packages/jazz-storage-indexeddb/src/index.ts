@@ -97,7 +97,7 @@ export class IDBStorage {
         toLocalNode: WritableStream<SyncMessage>
     ) {
         const dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-            const request = indexedDB.open("jazz-storage", 3);
+            const request = indexedDB.open("jazz-storage", 4);
             request.onerror = () => {
                 reject(request.error);
             };
@@ -139,7 +139,7 @@ export class IDBStorage {
                         keyPath: ["ses", "idx"],
                     });
                 }
-                if (ev.oldVersion !== 0 && ev.oldVersion === 2) {
+                if (ev.oldVersion !== 0 && ev.oldVersion <= 3) {
                     // fix embarrassing off-by-one error for transaction indices
                     console.log("Migration: fixing off-by-one error");
                     const transaction = (ev.target as unknown as {transaction: IDBTransaction}).transaction;
