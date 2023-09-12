@@ -102,16 +102,22 @@ export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
         },
     });
 
+    let lastWritePromise = Promise.resolve();
+
     const writable = new WritableStream<T>({
         async write(chunk) {
             const enqueue = await enqueuePromise;
             if (readerClosed) {
                 throw new Error("Reader closed");
             } else {
-                // make sure write resolves before corresponding read
-                setTimeout(() => {
-                    enqueue(chunk);
-                })
+                // make sure write resolves before corresponding read, but make sure writes are still in order
+                await lastWritePromise;
+                lastWritePromise = new Promise((resolve) => {
+                    setTimeout(() => {
+                        enqueue(chunk);
+                        resolve();
+                    })
+                });
             }
         },
         async abort(reason) {

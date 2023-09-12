@@ -14,7 +14,6 @@ import {
     sign,
     verify,
     encryptForTransaction,
-    decryptForTransaction,
     KeyID,
     decryptKeySecret,
     getAgentSignerID,
@@ -34,7 +33,9 @@ import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";
 import { AccountID, GeneralizedControlledAccount } from "./account.js";
-import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
+import { Stringified, stableStringify } from "./jsonStringify.js";
+
+export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
 export type CoValueHeader = {
     type: CoValueImpl["type"];
@@ -346,12 +347,12 @@ export class CoValueCore {
             );
 
         if (sizeOfTxsSinceLastInbetweenSignature > 100 * 1024) {
-            console.log(
-                "Saving inbetween signature for tx ",
-                sessionID,
-                transactions.length - 1,
-                sizeOfTxsSinceLastInbetweenSignature
-            );
+            // console.log(
+            //     "Saving inbetween signature for tx ",
+            //     sessionID,
+            //     transactions.length - 1,
+            //     sizeOfTxsSinceLastInbetweenSignature
+            // );
             signatureAfter[transactions.length - 1] = newSignature;
         }
 
@@ -413,7 +414,7 @@ export class CoValueCore {
             streamingHash.update(transaction);
             const after = performance.now();
             if (after - before > 1) {
-                console.log("Hashing blocked for", after - before);
+                // console.log("Hashing blocked for", after - before);
                 await new Promise((resolve) => setTimeout(resolve, 0));
                 before = performance.now();
             }
@@ -721,56 +722,90 @@ export class CoValueCore {
             action: "content",
             id: this.id,
             header: knownState?.header ? undefined : this.header,
-            new: {}
+            new: {},
         };
 
         const pieces = [currentPiece];
 
-        const sentState: CoValueKnownState['sessions'] = {
-            ...knownState?.sessions
+        const sentState: CoValueKnownState["sessions"] = {
+            ...knownState?.sessions,
         };
 
         let newTxsWereAdded = true;
+        let pieceSize = 0;
         while (newTxsWereAdded) {
-            let pieceSize = 0;
             newTxsWereAdded = false;
 
-            for (const [sessionID, log] of Object.entries(this.sessions) as [SessionID, SessionLog][]) {
-                const nextKnownSignatureIdx = Object.keys(log.signatureAfter).map(parseInt).sort().find(idx => idx > (sentState[sessionID] ?? -1));
+            for (const [sessionID, log] of Object.entries(this.sessions) as [
+                SessionID,
+                SessionLog
+            ][]) {
+                const nextKnownSignatureIdx = Object.keys(log.signatureAfter)
+                    .map(Number)
+                    .sort((a, b) => a - b)
+                    .find((idx) => idx >= (sentState[sessionID] ?? -1));
 
-                const txsToAdd = log.transactions.slice(sentState[sessionID] ?? 0, nextKnownSignatureIdx === undefined ? undefined : nextKnownSignatureIdx);
+                const txsToAdd = log.transactions.slice(
+                    sentState[sessionID] ?? 0,
+                    nextKnownSignatureIdx === undefined
+                        ? undefined
+                        : nextKnownSignatureIdx + 1
+                );
+
                 if (txsToAdd.length === 0) continue;
 
                 newTxsWereAdded = true;
 
-                pieceSize += txsToAdd.reduce((sum, tx) => sum + (tx.privacy === "private" ? tx.encryptedChanges.length : tx.changes.length), 0);
+                const oldPieceSize = pieceSize;
+                pieceSize += txsToAdd.reduce(
+                    (sum, tx) =>
+                        sum +
+                        (tx.privacy === "private"
+                            ? tx.encryptedChanges.length
+                            : tx.changes.length),
+                    0
+                );
 
-                currentPiece.new[sessionID] = {
-                    after: sentState[sessionID] ?? 0,
-                    newTransactions: txsToAdd,
-                    lastSignature: nextKnownSignatureIdx === undefined ? log.lastSignature! : log.signatureAfter[nextKnownSignatureIdx]!
-                }
-
-                sentState[sessionID] = (sentState[sessionID] || 0) + txsToAdd.length;
-
-                if (pieceSize > 100 * 1024) {
+                if (pieceSize >= MAX_RECOMMENDED_TX_SIZE) {
                     currentPiece = {
                         action: "content",
                         id: this.id,
                         header: undefined,
-                        new: {}
+                        new: {},
                     };
                     pieces.push(currentPiece);
-                    pieceSize = 0;
+                    pieceSize = pieceSize - oldPieceSize;
                 }
+
+                let sessionEntry = currentPiece.new[sessionID];
+                if (!sessionEntry) {
+                    sessionEntry = {
+                        after: sentState[sessionID] ?? 0,
+                        newTransactions: [],
+                        lastSignature: "WILL_BE_REPLACED" as Signature
+                    };
+                    currentPiece.new[sessionID] = sessionEntry;
+                }
+
+                sessionEntry.newTransactions.push(...txsToAdd);
+                sessionEntry.lastSignature = nextKnownSignatureIdx === undefined
+                ? log.lastSignature!
+                : log.signatureAfter[nextKnownSignatureIdx]!
+
+                sentState[sessionID] =
+                    (sentState[sessionID] || 0) + txsToAdd.length;
             }
         }
 
-        if (pieces.length === 1 && Object.keys(pieces[0]!.new).length === 0 && !pieces[0]!.header) {
+        const piecesWithContent = pieces.filter(
+            (piece) => Object.keys(piece.new).length > 0 || piece.header
+        );
+
+        if (piecesWithContent.length === 0) {
             return undefined;
         }
 
-        return pieces;
+        return piecesWithContent;
     }
 
     getDependedOnCoValues(): RawCoID[] {

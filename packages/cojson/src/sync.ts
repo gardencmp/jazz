@@ -225,13 +225,13 @@ export class SyncManager {
 
             const sendPieces = async () => {
                 for (const [i, piece] of newContentPieces.entries()) {
-                    console.log(
-                        `Sending content piece ${i + 1}/${newContentPieces.length}`,
-                        // Object.values(piece.new).map((s) => s.newTransactions)
-                    );
+                    // console.log(
+                    //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${newContentPieces.length} header: ${!!piece.header}`,
+                    //     // Object.values(piece.new).map((s) => s.newTransactions)
+                    // );
                     await this.trySendToPeer(peer, piece);
                 }
-            }
+            };
 
             sendPieces().catch((e) => {
                 console.error("Error sending new content piece, retrying", e);
@@ -463,6 +463,10 @@ export class SyncManager {
             const newTransactions =
                 newContentForSession.newTransactions.slice(alreadyKnownOffset);
 
+            if (newTransactions.length === 0) {
+                continue;
+            }
+
             const before = performance.now();
             const success = await coValue.tryAddTransactionsAsync(
                 sessionID,
@@ -473,16 +477,16 @@ export class SyncManager {
             const after = performance.now();
             if (after - before > 10) {
                 const totalTxLength = newTransactions
-                    .map((t) => stableStringify(t)!.length)
+                    .map((t) => t.privacy === "private" ? t.encryptedChanges.length : t.changes.length)
                     .reduce((a, b) => a + b, 0);
                 console.log(
-                    "Adding incoming transactions took",
-                    after - before,
-                    "ms",
-                    totalTxLength,
-                    "bytes = ",
-                    "bandwidth: MB/s",
-                    (1000 * totalTxLength) / (after - before) / (1024 * 1024)
+                    `Adding incoming transactions took ${(
+                        after - before
+                    ).toFixed(2)}ms for ${totalTxLength} bytes = bandwidth: ${(
+                        (1000 * totalTxLength) /
+                        (after - before) /
+                        (1024 * 1024)
+                    ).toFixed(2)} MB/s`
                 );
             }
 

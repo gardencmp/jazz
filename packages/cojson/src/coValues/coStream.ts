@@ -169,10 +169,10 @@ export class BinaryCoStream<
 {
     id!: CoID<BinaryCoStream<Meta>>;
 
-    getBinaryChunks():
+    getBinaryChunks(allowUnfinished?: boolean):
         | (BinaryChunkInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
-        const before = performance.now();
+        // const before = performance.now();
         const items = this.getSingleStream();
 
         if (!items) return;
@@ -184,10 +184,14 @@ export class BinaryCoStream<
             return;
         }
 
+        const end = items[items.length - 1];
+
+        if (end?.type !== "end" && !allowUnfinished) return;
+
         const chunks: Uint8Array[] = [];
 
         let finished = false;
-        let totalLength = 0;
+        // let totalLength = 0;
 
         for (const item of items.slice(1)) {
             if (item.type === "end") {
@@ -203,15 +207,15 @@ export class BinaryCoStream<
             const chunk = base64URLtoBytes(
                 item.chunk.slice(binary_U_prefixLength)
             );
-            totalLength += chunk.length;
+            // totalLength += chunk.length;
             chunks.push(chunk);
         }
 
-        const after = performance.now();
-        console.log(
-            "getBinaryChunks bandwidth in MB/s",
-            (1000 * totalLength) / (after - before) / (1024 * 1024)
-        );
+        // const after = performance.now();
+        // console.log(
+        //     "getBinaryChunks bandwidth in MB/s",
+        //     (1000 * totalLength) / (after - before) / (1024 * 1024)
+        // );
 
         return {
             mimeType: start.mimeType,
@@ -286,7 +290,7 @@ export class WriteableBinaryCoStream<
         chunk: Uint8Array,
         privacy: "private" | "trusting" = "private"
     ) {
-        const before = performance.now();
+        // const before = performance.now();
         this.push(
             {
                 type: "chunk",
@@ -294,11 +298,11 @@ export class WriteableBinaryCoStream<
             } satisfies BinaryStreamChunk,
             privacy
         );
-        const after = performance.now();
-        console.log(
-            "pushBinaryStreamChunk bandwidth in MB/s",
-            (1000 * chunk.length) / (after - before) / (1024 * 1024)
-        );
+        // const after = performance.now();
+        // console.log(
+        //     "pushBinaryStreamChunk bandwidth in MB/s",
+        //     (1000 * chunk.length) / (after - before) / (1024 * 1024)
+        // );
     }
 
     endBinaryStream(privacy: "private" | "trusting" = "private") {

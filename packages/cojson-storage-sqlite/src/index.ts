@@ -60,7 +60,7 @@ export class SQLiteStorage {
                 done = result.done;
 
                 if (result.value) {
-                    this.handleSyncMessage(result.value);
+                    await this.handleSyncMessage(result.value);
                 }
             }
         })();

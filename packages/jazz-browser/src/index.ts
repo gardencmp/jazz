@@ -1,5 +1,6 @@
 import { BinaryCoStream, InviteSecret } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
+import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
 import {
     LocalNode,
@@ -387,7 +388,7 @@ export async function createBinaryStreamFromBlob<
                     fileName: blob instanceof File ? blob.name : undefined,
                 });
             }) as C;// TODO: fix this
-                const chunkSize = 256 * 1024;
+                const chunkSize = MAX_RECOMMENDED_TX_SIZE;
 
                 for (let idx = 0; idx < data.length; idx += chunkSize) {
                     stream = stream.edit((stream) => {
@@ -423,13 +424,9 @@ export async function readBlobFromBinaryStream<
         return undefined;
     }
 
-    const chunks = stream.getBinaryChunks();
+    const chunks = stream.getBinaryChunks(allowUnfinished);
 
     if (!chunks) {
-        return undefined;
-    }
-
-    if (!allowUnfinished && !chunks.finished) {
         return undefined;
     }
 
