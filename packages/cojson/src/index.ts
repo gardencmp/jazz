@@ -1,4 +1,4 @@
-import { CoValueCore, newRandomSessionID } from "./coValueCore.js";
+import { CoValueCore, newRandomSessionID, MAX_RECOMMENDED_TX_SIZE } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import type { CoValue, ReadableCoValue } from "./coValue.js";
 import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
@@ -74,6 +74,7 @@ export {
     AnonymousControlledAccount,
     ControlledAccount,
     cryptoReady as cojsonReady,
+    MAX_RECOMMENDED_TX_SIZE
 };
 
 export type {

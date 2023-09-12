@@ -1,7 +1,7 @@
 import { accountOrAgentIDfromSessionID } from "./coValueCore.js";
 import { BinaryCoStream } from "./coValues/coStream.js";
 import { createdNowUnique } from "./crypto.js";
-import { cojsonReady } from "./index.js";
+import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "./index.js";
 import { LocalNode } from "./node.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
@@ -382,14 +382,14 @@ test("Can push into BinaryCoStream", () => {
 
     content.edit((editable) => {
         editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
-        expect(editable.getBinaryChunks()).toEqual({
+        expect(editable.getBinaryChunks(true)).toEqual({
             mimeType: "text/plain",
             fileName: "test.txt",
             chunks: [],
             finished: false,
         });
         editable.pushBinaryStreamChunk(new Uint8Array([1, 2, 3]), "trusting");
-        expect(editable.getBinaryChunks()).toEqual({
+        expect(editable.getBinaryChunks(true)).toEqual({
             mimeType: "text/plain",
             fileName: "test.txt",
             chunks: [new Uint8Array([1, 2, 3])],
@@ -397,7 +397,7 @@ test("Can push into BinaryCoStream", () => {
         });
         editable.pushBinaryStreamChunk(new Uint8Array([4, 5, 6]), "trusting");
 
-        expect(editable.getBinaryChunks()).toEqual({
+        expect(editable.getBinaryChunks(true)).toEqual({
             mimeType: "text/plain",
             fileName: "test.txt",
             chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
@@ -413,3 +413,112 @@ test("Can push into BinaryCoStream", () => {
         });
     });
 });
+
+test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE), we store an inbetween signature every time we reach MAX_RECOMMENDED_TX_SIZE and split up newContentSince accordingly", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "costream",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: { type: "binary" },
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+        throw new Error("Expected binary stream");
+    }
+
+    content.edit((editable) => {
+        editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
+    });
+
+    for (let i = 0; i < 10; i++) {
+        const chunk = new Uint8Array(MAX_RECOMMENDED_TX_SIZE/3 + 100);
+
+        content.edit((editable) => {
+            editable.pushBinaryStreamChunk(chunk, "trusting");
+        });
+    }
+
+    content.edit((editable) => {
+        editable.endBinaryStream("trusting");
+    });
+
+    const sessionEntry = coValue._sessions[node.currentSessionID]!;
+    expect(sessionEntry.transactions.length).toEqual(12);
+    expect(sessionEntry.signatureAfter[0]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[1]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[2]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[3]).toBeDefined();
+    expect(sessionEntry.signatureAfter[4]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[5]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[6]).toBeDefined();
+    expect(sessionEntry.signatureAfter[7]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[8]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[9]).toBeDefined();
+    expect(sessionEntry.signatureAfter[10]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[11]).not.toBeDefined();
+
+    const newContent = coValue.newContentSince({id: coValue.id, header: false, sessions: {}})!;
+
+    expect(newContent.length).toEqual(5)
+    expect(newContent[0]!.header).toBeDefined();
+    expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[3]);
+    expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[6]);
+    expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[9]);
+    expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.lastSignature);
+});
+
+test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we store an inbetween signature after every large transaction and split up newContentSince accordingly", () => {
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+
+    const coValue = node.createCoValue({
+        type: "costream",
+        ruleset: { type: "unsafeAllowAll" },
+        meta: { type: "binary" },
+        ...createdNowUnique(),
+    });
+
+    const content = coValue.getCurrentContent();
+
+    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+        throw new Error("Expected binary stream");
+    }
+
+    content.edit((editable) => {
+        editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
+    });
+
+    const chunk = new Uint8Array(MAX_RECOMMENDED_TX_SIZE + 100);
+
+    for (let i = 0; i < 3; i++) {
+        content.edit((editable) => {
+            editable.pushBinaryStreamChunk(chunk, "trusting");
+        });
+    }
+
+    content.edit((editable) => {
+        editable.endBinaryStream("trusting");
+    });
+
+    const sessionEntry = coValue._sessions[node.currentSessionID]!;
+    expect(sessionEntry.transactions.length).toEqual(5);
+    expect(sessionEntry.signatureAfter[0]).not.toBeDefined();
+    expect(sessionEntry.signatureAfter[1]).toBeDefined();
+    expect(sessionEntry.signatureAfter[2]).toBeDefined();
+    expect(sessionEntry.signatureAfter[3]).toBeDefined();
+    expect(sessionEntry.signatureAfter[4]).not.toBeDefined();
+
+    const newContent = coValue.newContentSince({id: coValue.id, header: false, sessions: {}})!;
+
+    expect(newContent.length).toEqual(5)
+    expect(newContent[0]!.header).toBeDefined();
+    expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[1]);
+    expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[2]);
+    expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[3]);
+    expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.lastSignature);
+});
+
+

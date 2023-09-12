@@ -215,14 +215,32 @@ export class SyncManager {
             await this.sendNewContentIncludingDependencies(id, peer);
         }
 
-        const newContent = coValue.newContentSince(
+        const newContentPieces = coValue.newContentSince(
             peer.optimisticKnownStates[id]
         );
 
-        if (newContent) {
-            await this.trySendToPeer(peer, newContent);
+        if (newContentPieces) {
+            const optimisticKnownStateBefore =
+                peer.optimisticKnownStates[id] || emptyKnownState(id);
+
+            const sendPieces = async () => {
+                for (const [i, piece] of newContentPieces.entries()) {
+                    // console.log(
+                    //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${newContentPieces.length} header: ${!!piece.header}`,
+                    //     // Object.values(piece.new).map((s) => s.newTransactions)
+                    // );
+                    await this.trySendToPeer(peer, piece);
+                }
+            };
+
+            sendPieces().catch((e) => {
+                console.error("Error sending new content piece, retrying", e);
+                peer.optimisticKnownStates[id] = optimisticKnownStateBefore;
+                return this.sendNewContentIncludingDependencies(id, peer);
+            });
+
             peer.optimisticKnownStates[id] = combinedKnownStates(
-                peer.optimisticKnownStates[id] || emptyKnownState(id),
+                optimisticKnownStateBefore,
                 coValue.knownState()
             );
         }
@@ -261,10 +279,17 @@ export class SyncManager {
                 for await (const msg of peerState.incoming) {
                     try {
                         await this.handleSyncMessage(msg, peerState);
+                        await new Promise<void>((resolve) => {
+                            setTimeout(resolve, 0);
+                        });
                     } catch (e) {
                         console.error(
                             `Error reading from peer ${peer.id}, handling msg`,
-                            JSON.stringify(msg),
+                            JSON.stringify(msg, (k, v) =>
+                                k === "changes" || k === "encryptedChanges"
+                                    ? v.slice(0, 20) + "..."
+                                    : v
+                            ),
                             e
                         );
                     }
@@ -445,6 +470,10 @@ export class SyncManager {
             const newTransactions =
                 newContentForSession.newTransactions.slice(alreadyKnownOffset);
 
+            if (newTransactions.length === 0) {
+                continue;
+            }
+
             const before = performance.now();
             const success = await coValue.tryAddTransactionsAsync(
                 sessionID,
@@ -454,20 +483,30 @@ export class SyncManager {
             );
             const after = performance.now();
             if (after - before > 10) {
-                const totalTxLength = newTransactions.map(t => stableStringify(t)!.length).reduce((a, b) => a + b, 0);
+                const totalTxLength = newTransactions
+                    .map((t) =>
+                        t.privacy === "private"
+                            ? t.encryptedChanges.length
+                            : t.changes.length
+                    )
+                    .reduce((a, b) => a + b, 0);
                 console.log(
-                    "Adding incoming transactions took",
-                    after - before,
-                    "ms",
-                    totalTxLength,
-                    "bytes = ",
-                    "bandwidth: MB/s",
-                    (1000 * totalTxLength / (after - before)) / (1024 * 1024)
+                    `Adding incoming transactions took ${(
+                        after - before
+                    ).toFixed(2)}ms for ${totalTxLength} bytes = bandwidth: ${(
+                        (1000 * totalTxLength) /
+                        (after - before) /
+                        (1024 * 1024)
+                    ).toFixed(2)} MB/s`
                 );
             }
 
             if (!success) {
-                console.error("Failed to add transactions", newTransactions);
+                console.error(
+                    "Failed to add transactions",
+                    msg.id,
+                    newTransactions
+                );
                 continue;
             }
 
@@ -492,18 +531,9 @@ export class SyncManager {
     }
 
     async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
-        const coValue = this.local.expectCoValueLoaded(msg.id);
+        peer.optimisticKnownStates[msg.id] = msg;
 
-        peer.optimisticKnownStates[msg.id] = combinedKnownStates(
-            msg,
-            coValue.knownState()
-        );
-
-        const newContent = coValue.newContentSince(msg);
-
-        if (newContent) {
-            await this.trySendToPeer(peer, newContent);
-        }
+        return this.sendNewContentIncludingDependencies(msg.id, peer);
     }
 
     handleUnsubscribe(_msg: DoneMessage) {

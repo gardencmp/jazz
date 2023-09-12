@@ -141,7 +141,8 @@ export function loadImage(
     const resState: {
         [res: `${number}x${number}`]:
             | { state: "queued" }
-            | { state: "loading" }
+            | { state: "waiting" }
+            | { state: "loading"; doneOrFailed: Promise<void> }
             | { state: "loaded"; blobURL: string }
             | { state: "revoked" }
             | { state: "failed" }
@@ -170,7 +171,8 @@ export function loadImage(
                 const placeholderDataURL =
                     imageDefinition.get("placeholderDataURL");
 
-                const resolutions = imageDefinition.keys()
+                const resolutions = imageDefinition
+                    .keys()
                     .filter(
                         (key): key is `${number}x${number}` =>
                             !!key.match(/\d+x\d+/)
@@ -182,48 +184,126 @@ export function loadImage(
                     });
 
                 const startLoading = async () => {
-
                     const notYetQueuedOrLoading = resolutions.filter(
                         (res) => !resState[res]
-                        );
+                    );
 
-                    console.log("Loading iteration", resolutions, resState, notYetQueuedOrLoading);
+                    // console.log(
+                    //     "Loading iteration",
+                    //     resolutions,
+                    //     resState,
+                    //     notYetQueuedOrLoading
+                    // );
 
                     for (const res of notYetQueuedOrLoading) {
-                            resState[res] = { state: "queued" };
+                        resState[res] = { state: "queued" };
                     }
 
                     for (const res of notYetQueuedOrLoading) {
                         if (stopped) return;
-                        resState[res] = { state: "loading" };
+                        resState[res] = { state: "waiting" };
 
                         const binaryStreamId = imageDefinition.get(res)!;
-                        console.log("Loading image res", imageID, res, binaryStreamId);
+                        // console.log(
+                        //     "Loading image res",
+                        //     imageID,
+                        //     res,
+                        //     binaryStreamId
+                        // );
 
-                        const blob = await readBlobFromBinaryStream(
-                            binaryStreamId,
-                            localNode
+                        const binaryStream = await localNode.load(
+                            binaryStreamId
                         );
 
                         if (stopped) return;
-                        if (!blob) {
+                        if (!binaryStream) {
                             resState[res] = { state: "failed" };
-                            console.log("Loading image res failed", imageID, res, binaryStreamId);
-                            continue;
+                            console.error(
+                                "Loading image res failed",
+                                imageID,
+                                res,
+                                binaryStreamId
+                            );
+                            return;
                         }
 
-                        const blobURL = URL.createObjectURL(blob);
-                        resState[res] = { state: "loaded", blobURL };
+                        await new Promise<void>((resolveFullyLoaded) => {
+                            const unsubFromStream = binaryStream.subscribe(
+                                async (_) => {
+                                    if (stopped) return;
+                                    const currentState = resState[res];
+                                    if (currentState?.state === "loading") {
+                                        await currentState.doneOrFailed;
+                                        // console.log(
+                                        //     "Retrying image res after previous attempt",
+                                        //     imageID,
+                                        //     res,
+                                        //     binaryStreamId
+                                        // );
+                                    }
+                                    if (resState[res]?.state === "loaded") {
+                                        return;
+                                    }
 
-                        console.log("Loaded image res", imageID, res, binaryStreamId);
+                                    const doneOrFailed = new Promise<void>(
+                                        // eslint-disable-next-line no-async-promise-executor
+                                        async (resolveDoneOrFailed) => {
+                                            const blob =
+                                                await readBlobFromBinaryStream(
+                                                    binaryStreamId,
+                                                    localNode
+                                                );
 
-                        progressiveCallback({
-                            originalSize,
-                            placeholderDataURL,
-                            highestResSrc: blobURL,
+                                            if (stopped) return;
+                                            if (!blob) {
+                                                // console.log(
+                                                //     "Image res not available yet",
+                                                //     imageID,
+                                                //     res,
+                                                //     binaryStreamId
+                                                // );
+                                                resolveDoneOrFailed();
+                                                return;
+                                            }
+
+                                            const blobURL =
+                                                URL.createObjectURL(blob);
+                                            resState[res] = {
+                                                state: "loaded",
+                                                blobURL,
+                                            };
+
+                                            // console.log(
+                                            //     "Loaded image res",
+                                            //     imageID,
+                                            //     res,
+                                            //     binaryStreamId
+                                            // );
+
+                                            progressiveCallback({
+                                                originalSize,
+                                                placeholderDataURL,
+                                                highestResSrc: blobURL,
+                                            });
+
+                                            unsubFromStream();
+                                            resolveDoneOrFailed();
+
+                                            await new Promise((resolve) =>
+                                                setTimeout(resolve, 0)
+                                            );
+
+                                            resolveFullyLoaded();
+                                        }
+                                    );
+
+                                    resState[res] = {
+                                        state: "loading",
+                                        doneOrFailed,
+                                    };
+                                }
+                            );
                         });
-
-                        await new Promise((resolve) => setTimeout(resolve, 0));
                     }
                 };
 

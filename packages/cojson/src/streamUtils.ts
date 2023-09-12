@@ -34,7 +34,14 @@ export function connectedPeers(
                     trace &&
                         console.debug(
                             `${peer2id} -> ${peer1id}`,
-                            JSON.stringify(chunk, null, 2)
+                            JSON.stringify(
+                                chunk,
+                                (k, v) =>
+                                    (k === "changes" || k === "encryptedChanges")
+                                        ? v.slice(0, 20) + "..."
+                                        : v,
+                                2
+                            )
                         );
                     controller.enqueue(chunk);
                 },
@@ -52,7 +59,14 @@ export function connectedPeers(
                     trace &&
                         console.debug(
                             `${peer1id} -> ${peer2id}`,
-                            JSON.stringify(chunk, null, 2)
+                            JSON.stringify(
+                                chunk,
+                                (k, v) =>
+                                    (k === "changes" || k === "encryptedChanges")
+                                        ? v.slice(0, 20) + "..."
+                                        : v,
+                                2
+                            )
                         );
                     controller.enqueue(chunk);
                 },
@@ -102,16 +116,22 @@ export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
         },
     });
 
+    let lastWritePromise = Promise.resolve();
+
     const writable = new WritableStream<T>({
         async write(chunk) {
             const enqueue = await enqueuePromise;
             if (readerClosed) {
                 throw new Error("Reader closed");
             } else {
-                // make sure write resolves before corresponding read
-                setTimeout(() => {
-                    enqueue(chunk);
-                })
+                // make sure write resolves before corresponding read, but make sure writes are still in order
+                await lastWritePromise;
+                lastWritePromise = new Promise((resolve) => {
+                    setTimeout(() => {
+                        enqueue(chunk);
+                        resolve();
+                    });
+                });
             }
         },
         async abort(reason) {
