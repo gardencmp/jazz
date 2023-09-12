@@ -2061,10 +2061,12 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ### Methods
 
 <details>
-<summary><code>binaryCoStream.getBinaryChunks()</code>  (undocumented)</summary>
+<summary><code>binaryCoStream.getBinaryChunks(allowUnfinished)</code>  (undocumented)</summary>
 
 ```typescript
-binaryCoStream.getBinaryChunks(): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
+binaryCoStream.getBinaryChunks(
+  allowUnfinished: boolean
+): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
 ```
 TODO: document
 
@@ -2340,10 +2342,12 @@ TODO: document
 
 
 <details>
-<summary><code>writeableBinaryCoStream.getBinaryChunks()</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
+<summary><code>writeableBinaryCoStream.getBinaryChunks(allowUnfinished)</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableBinaryCoStream.getBinaryChunks(): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
+writeableBinaryCoStream.getBinaryChunks(
+  allowUnfinished: boolean
+): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
 ```
 TODO: document
 
@@ -2654,6 +2658,24 @@ TODO: document
 
 
 <details>
+<summary><code>coValueCore.doAddTransactions(sessionID, newTransactions, newSignature, expectedNewHash, newStreamingHash)</code>  (undocumented)</summary>
+
+```typescript
+coValueCore.doAddTransactions(
+  sessionID: SessionID,
+  newTransactions: Transaction[],
+  newSignature: TEMPLATE_LITERAL,
+  expectedNewHash: TEMPLATE_LITERAL,
+  newStreamingHash: StreamingHash
+): void
+```
+TODO: document
+
+</details>
+
+
+
+<details>
 <summary><code>coValueCore.subscribe(listener)</code>  (undocumented)</summary>
 
 ```typescript
@@ -2794,7 +2816,7 @@ TODO: document
 ```typescript
 coValueCore.newContentSince(
   knownState: undefined | CoValueKnownState
-): undefined | NewContentMessage
+): undefined | NewContentMessage[]
 ```
 TODO: document
 
@@ -3246,6 +3268,17 @@ TODO: doc generator not implemented yet
 
 ```typescript
 export  cojsonReady
+```
+TODO: document
+
+TODO: doc generator not implemented yet
+
+----
+
+## `MAX_RECOMMENDED_TX_SIZE` (variabl in `cojson`)
+
+```typescript
+export  MAX_RECOMMENDED_TX_SIZE
 ```
 TODO: document
 
