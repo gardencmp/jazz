@@ -6,7 +6,6 @@ import {
     CojsonInternalTypes,
     MAX_RECOMMENDED_TX_SIZE,
 } from "cojson";
-import { Signature } from "cojson/dist/crypto";
 import {
     ReadableStream,
     WritableStream,
@@ -236,11 +235,11 @@ export class IDBStorage {
                     )
                 );
 
-                console.log(
-                    theirKnown.id,
-                    "signaturesAndIdxs",
-                    JSON.stringify(signaturesAndIdxs)
-                );
+                // console.log(
+                //     theirKnown.id,
+                //     "signaturesAndIdxs",
+                //     JSON.stringify(signaturesAndIdxs)
+                // );
 
                 const newTxInSession = await promised<TransactionRow[]>(
                     transactions.getAll(
@@ -253,11 +252,11 @@ export class IDBStorage {
 
                 let idx = firstNewTxIdx;
 
-                console.log(
-                    theirKnown.id,
-                    "newTxInSession",
-                    newTxInSession.length
-                );
+                // console.log(
+                //     theirKnown.id,
+                //     "newTxInSession",
+                //     newTxInSession.length
+                // );
 
                 for (const tx of newTxInSession) {
                     let sessionEntry =
@@ -267,7 +266,7 @@ export class IDBStorage {
                     if (!sessionEntry) {
                         sessionEntry = {
                             after: idx,
-                            lastSignature: "WILL_BE_REPLACED" as Signature,
+                            lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
                             newTransactions: [],
                         };
                         newContentPieces[newContentPieces.length - 1]!.new[
@@ -350,7 +349,7 @@ export class IDBStorage {
             (piece) => piece.header || Object.keys(piece.new).length > 0
         );
 
-        console.log(theirKnown.id, nonEmptyNewContentPieces);
+        // console.log(theirKnown.id, nonEmptyNewContentPieces);
 
         for (const piece of nonEmptyNewContentPieces) {
             await this.toLocalNode.write(piece);

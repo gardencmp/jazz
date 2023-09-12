@@ -4,8 +4,7 @@ import {
     Peer,
     CojsonInternalTypes,
     SessionID,
-    // CojsonInternalTypes,
-    // SessionID,
+    MAX_RECOMMENDED_TX_SIZE,
 } from "cojson";
 import {
     ReadableStream,
@@ -15,7 +14,6 @@ import {
 } from "isomorphic-streams";
 
 import Database, { Database as DatabaseT } from "better-sqlite3";
-import { RawCoID } from "cojson/dist/ids";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;
@@ -29,6 +27,7 @@ type SessionRow = {
     sessionID: SessionID;
     lastIdx: number;
     lastSignature: CojsonInternalTypes.Signature;
+    bytesSinceLastSignature?: number;
 };
 
 type StoredSessionRow = SessionRow & { rowID: number };
@@ -37,6 +36,12 @@ type TransactionRow = {
     ses: number;
     idx: number;
     tx: string;
+};
+
+type SignatureAfterRow = {
+    ses: number;
+    idx: number;
+    signature: CojsonInternalTypes.Signature;
 };
 
 export class SQLiteStorage {
@@ -98,7 +103,9 @@ export class SQLiteStorage {
         const db = Database(filename);
         db.pragma("journal_mode = WAL");
 
-        const oldVersion = (db.pragma("user_version") as [{user_version: number}])[0].user_version as number;
+        const oldVersion = (
+            db.pragma("user_version") as [{ user_version: number }]
+        )[0].user_version as number;
 
         console.log("DB version", oldVersion);
 
@@ -108,7 +115,7 @@ export class SQLiteStorage {
                 `CREATE TABLE IF NOT EXISTS transactions (
                     ses INTEGER,
                     idx INTEGER,
-                    tx TEXT NOT NULL ,
+                    tx TEXT NOT NULL,
                     PRIMARY KEY (ses, idx)
                 ) WITHOUT ROWID;`
             ).run();
@@ -146,18 +153,48 @@ export class SQLiteStorage {
 
         if (oldVersion <= 1) {
             // fix embarrassing off-by-one error for transaction indices
-            console.log("Migration 1 -> 2: Fix off-by-one error for transaction indices");
+            console.log(
+                "Migration 1 -> 2: Fix off-by-one error for transaction indices"
+            );
 
-            const txs = db.prepare(`SELECT * FROM transactions`).all() as TransactionRow[];
+            const txs = db
+                .prepare(`SELECT * FROM transactions`)
+                .all() as TransactionRow[];
 
             for (const tx of txs) {
-                db.prepare(`DELETE FROM transactions WHERE ses = ? AND idx = ?`).run(tx.ses, tx.idx);
+                db.prepare(
+                    `DELETE FROM transactions WHERE ses = ? AND idx = ?`
+                ).run(tx.ses, tx.idx);
                 tx.idx -= 1;
-                db.prepare(`INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`).run(tx.ses, tx.idx, tx.tx);
+                db.prepare(
+                    `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
+                ).run(tx.ses, tx.idx, tx.tx);
             }
 
             db.pragma("user_version = 2");
-            console.log("Migration 1 -> 2: Fix off-by-one error for transaction indices - done");
+            console.log(
+                "Migration 1 -> 2: Fix off-by-one error for transaction indices - done"
+            );
+        }
+
+        if (oldVersion <= 2) {
+            console.log("Migration 2 -> 3: Add signatureAfter");
+
+            db.prepare(
+                `CREATE TABLE IF NOT EXISTS signatureAfter (
+                    ses INTEGER,
+                    idx INTEGER,
+                    signature TEXT NOT NULL,
+                    PRIMARY KEY (ses, idx)
+                ) WITHOUT ROWID;`
+            ).run();
+
+            db.prepare(
+                `ALTER TABLE sessions ADD COLUMN bytesSinceLastSignature INTEGER;`
+            ).run();
+
+            db.pragma("user_version = 3");
+            console.log("Migration 2 -> 3: Add signatureAfter - done");
         }
 
         return new SQLiteStorage(db, fromLocalNode, toLocalNode);
@@ -205,12 +242,14 @@ export class SQLiteStorage {
             | CojsonInternalTypes.CoValueHeader
             | undefined;
 
-        const newContent: CojsonInternalTypes.NewContentMessage = {
-            action: "content",
-            id: theirKnown.id,
-            header: theirKnown.header ? undefined : parsedHeader,
-            new: {},
-        };
+            const newContentPieces: CojsonInternalTypes.NewContentMessage[] = [
+                {
+                    action: "content",
+                    id: theirKnown.id,
+                    header: theirKnown.header ? undefined : parsedHeader,
+                    new: {},
+                },
+            ];
 
         for (const sessionRow of allOurSessions) {
             ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
@@ -222,25 +261,77 @@ export class SQLiteStorage {
                 const firstNewTxIdx =
                     theirKnown.sessions[sessionRow.sessionID] || 0;
 
+                const signaturesAndIdxs = this.db
+                    .prepare<[number, number]>(
+                        `SELECT * FROM signatureAfter WHERE ses = ? AND idx >= ?`
+                    )
+                    .all(sessionRow.rowID, firstNewTxIdx) as SignatureAfterRow[];
+
+                // console.log(
+                //     theirKnown.id,
+                //     "signaturesAndIdxs",
+                //     JSON.stringify(signaturesAndIdxs)
+                // );
+
                 const newTxInSession = this.db
                     .prepare<[number, number]>(
                         `SELECT * FROM transactions WHERE ses = ? AND idx >= ?`
                     )
                     .all(sessionRow.rowID, firstNewTxIdx) as TransactionRow[];
 
-                newContent.new[sessionRow.sessionID] = {
-                    after: firstNewTxIdx,
-                    lastSignature: sessionRow.lastSignature,
-                    newTransactions: newTxInSession.map((row) =>
-                        JSON.parse(row.tx)
-                    ),
-                };
+                let idx = firstNewTxIdx;
+
+                // console.log(
+                //     theirKnown.id,
+                //     "newTxInSession",
+                //     newTxInSession.length
+                // );
+
+                for (const tx of newTxInSession) {
+                    let sessionEntry =
+                        newContentPieces[newContentPieces.length - 1]!.new[
+                            sessionRow.sessionID
+                        ];
+                    if (!sessionEntry) {
+                        sessionEntry = {
+                            after: idx,
+                            lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
+                            newTransactions: [],
+                        };
+                        newContentPieces[newContentPieces.length - 1]!.new[
+                            sessionRow.sessionID
+                        ] = sessionEntry;
+                    }
+
+                    sessionEntry.newTransactions.push(JSON.parse(tx.tx));
+
+                    if (
+                        signaturesAndIdxs[0] &&
+                        idx === signaturesAndIdxs[0].idx
+                    ) {
+                        sessionEntry.lastSignature =
+                            signaturesAndIdxs[0].signature;
+                        signaturesAndIdxs.shift();
+                        newContentPieces.push({
+                            action: "content",
+                            id: theirKnown.id,
+                            new: {},
+                        });
+                    } else if (
+                        idx ===
+                        firstNewTxIdx + newTxInSession.length - 1
+                    ) {
+                        sessionEntry.lastSignature = sessionRow.lastSignature;
+                    }
+                    idx += 1;
+                }
             }
         }
 
         const dependedOnCoValues =
             parsedHeader?.ruleset.type === "group"
-                ? Object.values(newContent.new).flatMap((sessionEntry) =>
+                ? newContentPieces
+                .flatMap((piece) => Object.values(piece.new)).flatMap((sessionEntry) =>
                       sessionEntry.newTransactions.flatMap((tx) => {
                           if (tx.privacy !== "trusting") return [];
                           // TODO: avoid parsing here?
@@ -279,8 +370,15 @@ export class SQLiteStorage {
             asDependencyOf,
         });
 
-        if (newContent.header || Object.keys(newContent.new).length > 0) {
-            await this.toLocalNode.write(newContent);
+        const nonEmptyNewContentPieces = newContentPieces.filter(
+            (piece) => piece.header || Object.keys(piece.new).length > 0
+        );
+
+        // console.log(theirKnown.id, nonEmptyNewContentPieces);
+
+        for (const piece of nonEmptyNewContentPieces) {
+            await this.toLocalNode.write(piece);
+            await new Promise((resolve) => setTimeout(resolve, 0));
         }
     }
 
@@ -291,7 +389,9 @@ export class SQLiteStorage {
     async handleContent(msg: CojsonInternalTypes.NewContentMessage) {
         let storedCoValueRowID = (
             this.db
-                .prepare<RawCoID>(`SELECT rowID FROM coValues WHERE id = ?`)
+                .prepare<CojsonInternalTypes.RawCoID>(
+                    `SELECT rowID FROM coValues WHERE id = ?`
+                )
                 .get(msg.id) as StoredCoValueRow | undefined
         )?.rowID;
 
@@ -310,7 +410,7 @@ export class SQLiteStorage {
             }
 
             storedCoValueRowID = this.db
-                .prepare<[RawCoID, string]>(
+                .prepare<[CojsonInternalTypes.RawCoID, string]>(
                     `INSERT INTO coValues (id, header) VALUES (?, ?)`
                 )
                 .run(msg.id, JSON.stringify(header)).lastInsertRowid as number;
@@ -352,45 +452,81 @@ export class SQLiteStorage {
                     const actuallyNewOffset =
                         (sessionRow?.lastIdx || 0) -
                         (msg.new[sessionID]?.after || 0);
+
                     const actuallyNewTransactions =
                         newTransactions.slice(actuallyNewOffset);
+
+                    let newBytesSinceLastSignature =
+                        (sessionRow?.bytesSinceLastSignature || 0) +
+                        actuallyNewTransactions.reduce(
+                            (sum, tx) =>
+                                sum +
+                                (tx.privacy === "private"
+                                    ? tx.encryptedChanges.length
+                                    : tx.changes.length),
+                            0
+                        );
+
+                    const newLastIdx =
+                        (sessionRow?.lastIdx || 0) +
+                        actuallyNewTransactions.length;
+
+                    let shouldWriteSignature = false;
+
+                    if (newBytesSinceLastSignature > MAX_RECOMMENDED_TX_SIZE) {
+                        shouldWriteSignature = true;
+                        newBytesSinceLastSignature = 0;
+                    }
 
                     let nextIdx = sessionRow?.lastIdx || 0;
 
                     const sessionUpdate = {
                         coValue: storedCoValueRowID!,
                         sessionID: sessionID,
-                        lastIdx:
-                            (sessionRow?.lastIdx || 0) +
-                            actuallyNewTransactions.length,
+                        lastIdx: newLastIdx,
                         lastSignature: msg.new[sessionID]!.lastSignature,
+                        bytesSinceLastSignature: newBytesSinceLastSignature,
                     };
 
                     const upsertedSession = this.db
-                        .prepare<[number, string, number, string]>(
-                            `INSERT INTO sessions (coValue, sessionID, lastIdx, lastSignature) VALUES (?, ?, ?, ?)
-                            ON CONFLICT(coValue, sessionID) DO UPDATE SET lastIdx=excluded.lastIdx, lastSignature=excluded.lastSignature
+                        .prepare<[number, string, number, string, number]>(
+                            `INSERT INTO sessions (coValue, sessionID, lastIdx, lastSignature, bytesSinceLastSignature) VALUES (?, ?, ?, ?, ?)
+                            ON CONFLICT(coValue, sessionID) DO UPDATE SET lastIdx=excluded.lastIdx, lastSignature=excluded.lastSignature, bytesSinceLastSignature=excluded.bytesSinceLastSignature
                             RETURNING rowID`
                         )
                         .get(
                             sessionUpdate.coValue,
                             sessionUpdate.sessionID,
                             sessionUpdate.lastIdx,
-                            sessionUpdate.lastSignature
+                            sessionUpdate.lastSignature,
+                            sessionUpdate.bytesSinceLastSignature,
                         ) as { rowID: number };
 
                     const sessionRowID = upsertedSession.rowID;
 
+                    if (shouldWriteSignature) {
+                        this.db
+                            .prepare<[number, number, string]>(
+                                `INSERT INTO signatureAfter (ses, idx, signature) VALUES (?, ?, ?)`
+                            )
+                            .run(
+                                sessionRowID,
+                                // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
+                                newLastIdx - 1,
+                                msg.new[sessionID]!.lastSignature
+                            );
+                    }
+
                     for (const newTransaction of actuallyNewTransactions) {
                         this.db
-                        .prepare<[number, number, string]>(
-                            `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
+                            .prepare<[number, number, string]>(
+                                `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
                             )
                             .run(
                                 sessionRowID,
                                 nextIdx,
                                 JSON.stringify(newTransaction)
-                                );
+                            );
                         nextIdx++;
                     }
                 }
