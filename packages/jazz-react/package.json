@@ -1,12 +1,12 @@
 {
   "name": "jazz-react",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
     "cojson": "^0.2.2",
-    "jazz-browser": "^0.2.3",
+    "jazz-browser": "^0.2.4",
     "typescript": "^5.1.6"
   },
   "devDependencies": {
