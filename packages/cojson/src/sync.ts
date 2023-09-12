@@ -279,6 +279,9 @@ export class SyncManager {
                 for await (const msg of peerState.incoming) {
                     try {
                         await this.handleSyncMessage(msg, peerState);
+                        await new Promise<void>((resolve) => {
+                            setTimeout(resolve, 0);
+                        });
                     } catch (e) {
                         console.error(
                             `Error reading from peer ${peer.id}, handling msg`,
@@ -477,7 +480,11 @@ export class SyncManager {
             const after = performance.now();
             if (after - before > 10) {
                 const totalTxLength = newTransactions
-                    .map((t) => t.privacy === "private" ? t.encryptedChanges.length : t.changes.length)
+                    .map((t) =>
+                        t.privacy === "private"
+                            ? t.encryptedChanges.length
+                            : t.changes.length
+                    )
                     .reduce((a, b) => a + b, 0);
                 console.log(
                     `Adding incoming transactions took ${(
