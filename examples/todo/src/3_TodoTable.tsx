@@ -49,7 +49,7 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
             });
 
             projectTasks.edit((projectTasks) => {
-                projectTasks.push(task.id);
+                projectTasks.push(task);
             });
         },
         [projectTasks]

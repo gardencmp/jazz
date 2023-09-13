@@ -1,7 +1,7 @@
 import { AccountID, CoID } from "cojson";
 import { useTelepathicState } from "jazz-react";
 
-import { PetPost, PetReactions, ReactionType, REACTION_TYPES } from "./1_types";
+import { PetPost, ReactionType, REACTION_TYPES, PetReactions } from "./1_types";
 
 import { ShareButton } from "./components/ShareButton";
 import { NameBadge } from "./components/NameBadge";

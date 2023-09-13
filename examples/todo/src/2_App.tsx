@@ -2,12 +2,13 @@ import { useCallback } from "react";
 
 import { useJazz } from "jazz-react";
 
-import { TodoProject, ListOfTasks } from "./1_types";
+import { Task, TodoProject } from "./1_types";
 
 import { SubmittableInput, Button } from "./basicComponents";
 
 import { useSimpleHashRouterThatAcceptsInvites } from "./router";
 import { TodoTable } from "./3_TodoTable";
+import { CoList } from "cojson";
 
 /** Walkthrough: Creating todo projects & routing in `<App/>`
  *
@@ -35,15 +36,14 @@ export default function App() {
             // of its members, which will apply to all CoValues owned by that group.
             const projectGroup = localNode.createGroup();
 
-            // Then we create an empty todo project and list of tasks within that group.
+            // Then we create an empty todo project
             const project = projectGroup.createMap<TodoProject>();
-            const tasks = projectGroup.createList<ListOfTasks>();
 
             // We edit the todo project to initialise it.
             // Inside the `.edit` callback we can mutate a CoValue
             project.edit((project) => {
                 project.set("title", title);
-                project.set("tasks", tasks.id);
+                project.set("tasks", projectGroup.createList<CoList<Task>>(null));
             });
 
             navigateToProjectId(project.id);

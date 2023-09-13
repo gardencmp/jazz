@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoID, ReadableCoValue, WriteableCoValue } from "../coValue.js";
+import { CoID, CoValueImpl, ReadableCoValue, WriteableCoValue, isCoValueImpl } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { SessionID, TransactionID } from "../ids.js";
 import { Group } from "../group.js";
@@ -8,15 +8,15 @@ import { parseJSON } from "../jsonStringify.js";
 
 type OpID = TransactionID & { changeIdx: number };
 
-type InsertionOpPayload<T extends JsonValue> =
+type InsertionOpPayload<T extends JsonValue | CoValueImpl> =
     | {
           op: "pre";
-          value: T;
+          value: T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>;
           before: OpID | "end";
       }
     | {
           op: "app";
-          value: T;
+          value: T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>;
           after: OpID | "start";
       };
 
@@ -25,11 +25,11 @@ type DeletionOpPayload = {
     insertion: OpID;
 };
 
-export type ListOpPayload<T extends JsonValue> =
+export type ListOpPayload<T extends JsonValue | CoValueImpl> =
     | InsertionOpPayload<T>
     | DeletionOpPayload;
 
-type InsertionEntry<T extends JsonValue> = {
+type InsertionEntry<T extends JsonValue| CoValueImpl> = {
     madeAt: number;
     predecessors: OpID[];
     successors: OpID[];
@@ -40,7 +40,7 @@ type DeletionEntry = {
     deletionID: OpID;
 } & DeletionOpPayload;
 
-export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
+export class CoList<T extends JsonValue| CoValueImpl, Meta extends JsonObject | null = null>
     implements ReadableCoValue
 {
     id: CoID<CoList<T, Meta>>;
@@ -201,7 +201,7 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
     }
 
     /** Get the item currently at `idx`. */
-    get(idx: number): T | undefined {
+    get(idx: number): (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>) | undefined {
         const entry = this.entries()[idx];
         if (!entry) {
             return undefined;
@@ -210,12 +210,12 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
     }
 
     /** Returns the current items in the CoList as an array. */
-    asArray(): T[] {
+    asArray(): (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>)[] {
         return this.entries().map((entry) => entry.value);
     }
 
-    entries(): { value: T; madeAt: number; opID: OpID }[] {
-        const arr: { value: T; madeAt: number; opID: OpID }[] = [];
+    entries(): { value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>); madeAt: number; opID: OpID }[] {
+        const arr: { value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>); madeAt: number; opID: OpID }[] = [];
         for (const opID of this.afterStart) {
             this.fillArrayFromOpID(opID, arr);
         }
@@ -228,7 +228,7 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
     /** @internal */
     private fillArrayFromOpID(
         opID: OpID,
-        arr: { value: T; madeAt: number; opID: OpID }[]
+        arr: { value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>); madeAt: number; opID: OpID }[]
     ) {
         const entry =
             this.insertions[opID.sessionID]?.[opID.txIndex]?.[opID.changeIdx];
@@ -269,23 +269,23 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
     }
 
     /** Returns the current items in the CoList as an array. (alias of `asArray`) */
-    toJSON(): T[] {
+    toJSON(): (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>)[] {
         return this.asArray();
     }
 
-    map<U>(mapper: (value: T, idx: number) => U): U[] {
+    map<U>(mapper: (value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>), idx: number) => U): U[] {
         return this.entries().map((entry, idx) => mapper(entry.value, idx));
     }
 
-    filter<U extends T>(predicate: (value: T, idx: number) => value is U): U[];
-    filter(predicate: (value: T, idx: number) => boolean): T[] {
+    filter<U extends (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>)>(predicate: (value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>), idx: number) => value is U): U[];
+    filter(predicate: (value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>), idx: number) => boolean): (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>)[] {
         return this.entries()
             .filter((entry, idx) => predicate(entry.value, idx))
             .map((entry) => entry.value);
     }
 
     reduce<U>(
-        reducer: (accumulator: U, value: T, idx: number) => U,
+        reducer: (accumulator: U, value: (T extends CoValueImpl ? CoID<T> : Exclude<T, CoValueImpl>), idx: number) => U,
         initialValue: U
     ): U {
         return this.entries().reduce(
@@ -310,7 +310,7 @@ export class CoList<T extends JsonValue, Meta extends JsonObject | null = null>
 }
 
 export class WriteableCoList<
-        T extends JsonValue,
+        T extends JsonValue | CoValueImpl,
         Meta extends JsonObject | null = null
     >
     extends CoList<T, Meta>
@@ -330,7 +330,7 @@ export class WriteableCoList<
      * If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
     append(
         after: number,
-        value: T,
+        value: T extends CoValueImpl ? T | CoID<T> : T,
         privacy: "private" | "trusting" = "private"
     ): void {
         const entries = this.entries();
@@ -351,7 +351,7 @@ export class WriteableCoList<
             [
                 {
                     op: "app",
-                    value,
+                    value: isCoValueImpl(value) ? value.id : value,
                     after: opIDBefore,
                 },
             ],
@@ -366,7 +366,7 @@ export class WriteableCoList<
      * If `privacy` is `"private"` **(default)**, both `value` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
      * If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
-    push(value: T, privacy: "private" | "trusting" = "private"): void {
+    push(value: T extends CoValueImpl ? T | CoID<T> : T, privacy: "private" | "trusting" = "private"): void {
         // TODO: optimize
         const entries = this.entries();
         this.append(
@@ -385,7 +385,7 @@ export class WriteableCoList<
      */
     prepend(
         before: number,
-        value: T,
+        value: T extends CoValueImpl ? T | CoID<T> : T,
         privacy: "private" | "trusting" = "private"
     ): void {
         const entries = this.entries();
@@ -410,7 +410,7 @@ export class WriteableCoList<
             [
                 {
                     op: "pre",
-                    value,
+                    value: isCoValueImpl(value) ? value.id : value,
                     before: opIDAfter,
                 },
             ],

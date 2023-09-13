@@ -238,7 +238,7 @@ export class Group {
 
     /** Creates a new `CoMap` within this group, with the specified specialized
      *  `CoMap` type `M` and optional static metadata. */
-    createMap<M extends CoMap<{ [key: string]: JsonValue | undefined; }, JsonObject | null>>(
+    createMap<M extends CoMap<{ [key: string]: JsonValue | CoValueImpl | undefined; }, JsonObject | null>>(
         meta?: M["meta"]
     ): M {
         return this.node
@@ -256,7 +256,7 @@ export class Group {
 
     /** Creates a new `CoList` within this group, with the specified specialized
      * `CoList` type `L` and optional static metadata. */
-    createList<L extends CoList<JsonValue, JsonObject | null>>(
+    createList<L extends CoList<JsonValue | CoValueImpl, JsonObject | null>>(
         meta?: L["meta"]
     ): L {
         return this.node

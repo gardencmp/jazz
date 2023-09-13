@@ -31,10 +31,12 @@ export function CreatePetPostForm({
             if (!petPost) {
                 const petPostGroup = localNode.createGroup();
                 petPost = petPostGroup.createMap<PetPost>();
-                const petReactions = petPostGroup.createStream<PetReactions>();
 
                 petPost = petPost.edit((petPost) => {
-                    petPost.set("reactions", petReactions.id);
+                    petPost.set(
+                        "reactions",
+                        petPostGroup.createStream<PetReactions>()
+                    );
                 });
 
                 setNewPostId(petPost.id);
