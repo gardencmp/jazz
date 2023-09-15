@@ -1,27 +1,28 @@
 import { useState } from "react";
 
-import { PetPost } from "../1_types";
+import { MapSpace } from "../1_types";
 
 import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
+import { Queried } from "cojson";
 
-export function ShareButton({ petPost }: { petPost?: PetPost }) {
+export function ShareButton({ mapSpace }: { mapSpace?: Queried<MapSpace> }) {
     const [existingInviteLink, setExistingInviteLink] = useState<string>();
     const { toast } = useToast();
 
     return (
-        petPost?.group.myRole() === "admin" && (
+        mapSpace?.group.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"
-                disabled={!petPost}
+                disabled={!mapSpace}
                 variant="outline"
                 onClick={async () => {
                     let inviteLink = existingInviteLink;
-                    if (petPost && !inviteLink) {
-                        inviteLink = createInviteLink(petPost, "writer");
+                    if (mapSpace && !inviteLink) {
+                        inviteLink = createInviteLink(mapSpace, "writer");
                         setExistingInviteLink(inviteLink);
                     }
                     if (inviteLink) {

@@ -1,4 +1,4 @@
-import { CoMap, CoID, CoStream, Media, CoList } from "cojson";
+import { CoMap, CoStream, Media, CoList } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -9,17 +9,17 @@ import { CoMap, CoID, CoStream, Media, CoList } from "cojson";
 
 export type MapSpace = CoMap<{
     name: string;
-    positions: Positions["id"];
-    notes: MapNotes["id"];
+    positions: PeoplePositions;
+    notes: MapNotes;
 }>;
 
-export type Positions = CoStream<[number, number]>;
+export type PeoplePositions = CoStream<{latitude: number, longitude: number, accuracy: number}>;
 
-export type MapNotes = CoList<MapNote["id"]>;
+export type MapNotes = CoList<MapNote>;
 
 export type MapNote = CoMap<{
     message?: string;
-    image?: Media.ImageDefinition["id"];
+    image?: Media.ImageDefinition;
 }>;
 
 /** Walkthrough: Continue with ./2_App.tsx */

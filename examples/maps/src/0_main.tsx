@@ -16,7 +16,7 @@ import App from "./2_App.tsx";
  *  based on `LocalAuth` that uses PassKeys (aka WebAuthn) to store a user's account secret
  *  - no backend needed. */
 
-const appName = "Jazz Rate My Pet Example";
+const appName = "Jazz Map Space Example";
 
 const auth = LocalAuth({
     appName,

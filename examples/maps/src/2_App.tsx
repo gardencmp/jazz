@@ -1,6 +1,6 @@
 import { useJazz } from "jazz-react";
 
-import { MapNotes, MapSpace, Positions } from "./1_types";
+import { MapNotes, MapSpace, PeoplePositions } from "./1_types";
 
 import { Button, SubmittableInput } from "./basicComponents";
 
@@ -32,7 +32,7 @@ export default function App() {
                 <SubmittableInput placeholder="New Map Space Name" label="Create new Map Space" onSubmit={name => {
                     const group = localNode.createGroup();
                     const mapSpace = group.createMap<MapSpace>();
-                    const positions = group.createStream<Positions>();
+                    const positions = group.createStream<PeoplePositions>();
                     const notes = group.createList<MapNotes>();
 
                     mapSpace.edit(mapSpace => {
