@@ -40,7 +40,7 @@ export function MapView({ mapID }: { mapID: MapSpace["id"] }) {
                         zoom: 10,
 
                     }}
-                    style={{ width: 600, height: 400 }}
+                    style={{ width: "100%", height: "70vw" }}
                     mapStyle="mapbox://styles/mapbox/streets-v9"
                 >
                     <Source
