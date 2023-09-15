@@ -1,11 +1,11 @@
-import { useTelepathicQuery, useTelepathicState } from "jazz-react";
+import { useTelepathicQuery } from "jazz-react";
 
 import { MapSpace } from "./1_types";
 
 import { ShareButton } from "./components/ShareButton";
 import Map, { CircleLayer, Layer, Source } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "./basicComponents";
 import uniqolor from "uniqolor";
 
