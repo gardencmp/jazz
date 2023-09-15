@@ -1,4 +1,4 @@
-import { CoMap, CoID, CoStream, Media } from "cojson";
+import { CoMap, CoStream, Media } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -9,8 +9,8 @@ import { CoMap, CoID, CoStream, Media } from "cojson";
 
 export type PetPost = CoMap<{
     name: string;
-    image: CoID<Media.ImageDefinition>;
-    reactions: CoID<PetReactions>;
+    image: Media.ImageDefinition;
+    reactions: PetReactions;
 }>;
 
 export const REACTION_TYPES = [

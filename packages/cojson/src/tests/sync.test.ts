@@ -1,17 +1,17 @@
-import { newRandomSessionID } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
-import { SyncMessage } from "./sync.js";
-import { expectMap } from "./coValue.js";
-import { MapOpPayload } from "./coValues/coMap.js";
-import { Group } from "./group.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { LocalNode } from "../node.js";
+import { SyncMessage } from "../sync.js";
+import { expectMap } from "../coValue.js";
+import { MapOpPayload } from "../coValues/coMap.js";
+import { Group } from "../group.js";
 import {
     randomAnonymousAccountAndSessionID,
     shouldNotResolve,
 } from "./testUtils.js";
-import { connectedPeers, newStreamPair } from "./streamUtils.js";
-import { AccountID } from "./account.js";
-import { cojsonReady } from "./index.js";
-import { stableStringify } from "./jsonStringify.js";
+import { connectedPeers, newStreamPair } from "../streamUtils.js";
+import { AccountID } from "../account.js";
+import { cojsonReady } from "../index.js";
+import { stableStringify } from "../jsonStringify.js";
 
 beforeEach(async () => {
     await cojsonReady;

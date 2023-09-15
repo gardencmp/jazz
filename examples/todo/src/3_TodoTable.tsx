@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
-import { CoID } from "cojson";
-import { useTelepathicState } from "jazz-react";
+import { CoID, Queried } from "cojson";
+import { useTelepathicQuery } from "jazz-react";
 
 import { TodoProject, Task } from "./1_types";
 
@@ -18,7 +18,7 @@ import {
 } from "./basicComponents";
 
 import { InviteButton } from "./components/InviteButton";
-import { NameBadge } from "./components/NameBadge";
+import uniqolor from "uniqolor";
 
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
@@ -32,27 +32,24 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
     // `useTelepathicData()` reactively subscribes to updates to a CoValue's
     // content - whether we create edits locally, load persisted data, or receive
     // sync updates from other devices or participants!
-    const project = useTelepathicState(projectId);
-    const projectTasks = useTelepathicState(project?.get("tasks"));
+    const project = useTelepathicQuery(projectId);
 
     // `createTask` is similar to `createProject` we saw earlier, creating a new CoMap
     // for a new task (in the same group as the list of tasks/the project), and then
     // adding it as an item to the project's list of tasks.
     const createTask = useCallback(
         (text: string) => {
-            if (!projectTasks || !text) return;
-            const task = projectTasks.group.createMap<Task>();
-
-            task.edit((task) => {
-                task.set("text", text);
-                task.set("done", false);
+            if (!project?.tasks || !text) return;
+            const task = project?.group.createMap<Task>({
+                text,
+                done: false,
             });
 
-            projectTasks.edit((projectTasks) => {
-                projectTasks.push(task.id);
+            project?.tasks.edit((tasks) => {
+                tasks.push(task);
             });
         },
-        [projectTasks]
+        [project?.tasks, project?.group]
     );
 
     return (
@@ -60,11 +57,11 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
             <div className="flex justify-between items-center gap-4 mb-4">
                 <h1>
                     {
-                        // This is how we can access properties from the project,
+                        // This is how we can access properties from the project query,
                         // accounting for the fact that it might not be loaded yet
-                        project?.get("title") ? (
+                        project?.title ? (
                             <>
-                                {project.get("title")}{" "}
+                                {project.title}{" "}
                                 <span className="text-sm">({project.id})</span>
                             </>
                         ) : (
@@ -72,7 +69,7 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
                         )
                     }
                 </h1>
-                <InviteButton list={project} />
+                <InviteButton value={project} />
             </div>
             <Table>
                 <TableHeader>
@@ -82,14 +79,9 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {
-                        // Here, we iterate over the items of our `ListOfTasks`
-                        // and render a `<TaskRow>` for each.
-
-                        projectTasks?.map((taskId: CoID<Task>) => (
-                            <TaskRow key={taskId} taskId={taskId} />
-                        ))
-                    }
+                    {project?.tasks?.map(
+                        (task) => task && <TaskRow key={task.id} task={task} />
+                    )}
                     <NewTaskInputRow
                         createTask={createTask}
                         disabled={!project}
@@ -100,17 +92,13 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
     );
 }
 
-export function TaskRow({ taskId }: { taskId: CoID<Task> }) {
-    // `<TaskRow/>` uses `useTelepathicState()` as well, to granularly load and
-    // subscribe to changes for that particular task.
-    const task = useTelepathicState(taskId);
-
+export function TaskRow({ task }: { task: Queried<Task> | undefined }) {
     return (
         <TableRow>
             <TableCell>
                 <Checkbox
                     className="mt-1"
-                    checked={task?.get("done")}
+                    checked={task?.done}
                     onCheckedChange={(checked) => {
                         // (the only thing we let the user change is the "done" status)
                         task?.edit((task) => {
@@ -121,16 +109,23 @@ export function TaskRow({ taskId }: { taskId: CoID<Task> }) {
             </TableCell>
             <TableCell>
                 <div className="flex flex-row justify-between items-center gap-2">
-                    <span className={task?.get("done") ? "line-through" : ""}>
-                        {task?.get("text") || (
-                            <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
-                        )}
-                    </span>
-                    {/* We also use a `<NameBadge/>` helper component to render the name
-                        of the author of the task. We get the author by using the collaboration
-                        feature `whoEdited(key)` on our `Task` CoMap, which returns the accountID
-                        of the last account that changed a given key in the CoMap. */}
-                    <NameBadge accountID={task?.whoEdited("text")} />
+                    {task?.text ? (
+                        <span className={task?.done ? "line-through" : ""}>
+                            {task.text}
+                        </span>
+                    ) : (
+                        <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
+                    )}
+                    {task?.edits.text?.by?.profile?.name ? (
+                        <span
+                            className="rounded-full py-0.5 px-2 text-xs"
+                            style={uniqueColoring(task.edits.text.by.id)}
+                        >
+                            {task.edits.text.by.profile.name}
+                        </span>
+                    ) : (
+                        <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
+                    )}
                 </div>
             </TableCell>
         </TableRow>
@@ -159,4 +154,13 @@ function NewTaskInputRow({
             </TableCell>
         </TableRow>
     );
+}
+
+function uniqueColoring(seed: string) {
+    const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    return {
+        color: uniqolor(seed, { lightness: darkMode ? 80 : 20 }).color,
+        background: uniqolor(seed, { lightness: darkMode ? 20 : 80 }).color,
+    };
 }

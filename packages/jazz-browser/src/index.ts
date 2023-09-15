@@ -1,4 +1,4 @@
-import { BinaryCoStream, InviteSecret } from "cojson";
+import { BinaryCoStream, CoValue, InviteSecret, Queried } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
@@ -10,7 +10,6 @@ import {
     SessionID,
     SyncMessage,
     Peer,
-    CoValueImpl,
     Group,
     CoID,
 } from "cojson";
@@ -73,9 +72,11 @@ export async function createBrowserNode({
         node,
         done: () => {
             shouldTryToReconnect = false;
-            console.log("Cleaning up node")
+            console.log("Cleaning up node");
             for (const peer of Object.values(node.sync.peers)) {
-                peer.outgoing.close().catch(e => console.error("Error while closing peer", e));
+                peer.outgoing
+                    .close()
+                    .catch((e) => console.error("Error while closing peer", e));
             }
             sessionDone?.();
         },
@@ -290,8 +291,8 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
-export function createInviteLink(
-    value: CoValueImpl,
+export function createInviteLink<T extends CoValue | Queried<CoValue>>(
+    value: T | Queried<T>,
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
@@ -320,7 +321,7 @@ export function createInviteLink(
     return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
 }
 
-export function parseInviteLink<C extends CoValueImpl>(
+export function parseInviteLink<C extends CoValue>(
     inviteURL: string
 ):
     | {
@@ -339,7 +340,7 @@ export function parseInviteLink<C extends CoValueImpl>(
     return { valueID, inviteSecret };
 }
 
-export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(
+export function consumeInviteLinkFromWindowLocation<C extends CoValue>(
     node: LocalNode
 ): Promise<
     | {
@@ -387,17 +388,17 @@ export async function createBinaryStreamFromBlob<
                     totalSizeBytes: blob.size,
                     fileName: blob instanceof File ? blob.name : undefined,
                 });
-            }) as C;// TODO: fix this
-                const chunkSize = MAX_RECOMMENDED_TX_SIZE;
+            }) as C; // TODO: fix this
+            const chunkSize = MAX_RECOMMENDED_TX_SIZE;
 
-                for (let idx = 0; idx < data.length; idx += chunkSize) {
-                    stream = stream.edit((stream) => {
-                        stream.pushBinaryStreamChunk(
-                            data.slice(idx, idx + chunkSize)
-                        );
-                    }) as C; // TODO: fix this
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                }
+            for (let idx = 0; idx < data.length; idx += chunkSize) {
+                stream = stream.edit((stream) => {
+                    stream.pushBinaryStreamChunk(
+                        data.slice(idx, idx + chunkSize)
+                    );
+                }) as C; // TODO: fix this
+                await new Promise((resolve) => setTimeout(resolve, 0));
+            }
             stream = stream.edit((stream) => {
                 stream.endBinaryStream();
             }) as C; // TODO: fix this

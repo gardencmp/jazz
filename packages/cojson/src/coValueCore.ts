@@ -1,5 +1,5 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { CoValueImpl } from "./coValue.js";
+import { AnyCoValue } from "./coValue.js";
 import { Static } from "./coValues/static.js";
 import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
 import { CoMap } from "./coValues/coMap.js";
@@ -38,7 +38,7 @@ import { Stringified, stableStringify } from "./jsonStringify.js";
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
 export type CoValueHeader = {
-    type: CoValueImpl["type"];
+    type: AnyCoValue["type"];
     ruleset: RulesetDef;
     meta: JsonObject | null;
     createdAt: `2${string}` | null;
@@ -99,8 +99,8 @@ export class CoValueCore {
     node: LocalNode;
     header: CoValueHeader;
     _sessions: { [key: SessionID]: SessionLog };
-    _cachedContent?: CoValueImpl;
-    listeners: Set<(content?: CoValueImpl) => void> = new Set();
+    _cachedContent?: AnyCoValue;
+    listeners: Set<(content?: AnyCoValue) => void> = new Set();
     _decryptionCache: {
         [key: Encrypted<JsonValue[], JsonValue>]:
             | Stringified<JsonValue[]>
@@ -376,7 +376,7 @@ export class CoValueCore {
         }
     }
 
-    subscribe(listener: (content?: CoValueImpl) => void): () => void {
+    subscribe(listener: (content?: AnyCoValue) => void): () => void {
         this.listeners.add(listener);
         listener(this.getCurrentContent());
 
@@ -493,7 +493,7 @@ export class CoValueCore {
         return success;
     }
 
-    getCurrentContent(): CoValueImpl {
+    getCurrentContent(): AnyCoValue {
         if (this._cachedContent) {
             return this._cachedContent;
         }

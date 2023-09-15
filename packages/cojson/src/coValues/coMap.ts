@@ -1,48 +1,49 @@
-import { JsonObject, JsonValue } from '../jsonValue.js';
-import { TransactionID } from '../ids.js';
-import { CoID, ReadableCoValue, WriteableCoValue } from '../coValue.js';
-import { CoValueCore, accountOrAgentIDfromSessionID } from '../coValueCore.js';
-import { AccountID, isAccountID } from '../account.js';
-import { Group } from '../group.js';
-import { parseJSON } from '../jsonStringify.js';
+import { JsonObject, JsonValue } from "../jsonValue.js";
+import { TransactionID } from "../ids.js";
+import { CoID, CoValue, isCoValue } from "../coValue.js";
+import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { AccountID, isAccountID } from "../account.js";
+import { Group } from "../group.js";
+import { parseJSON } from "../jsonStringify.js";
 
-type MapOp<K extends string, V extends JsonValue | undefined> = {
+type MapOp<K extends string, V extends JsonValue | CoValue | undefined> = {
     txID: TransactionID;
     madeAt: number;
     changeIdx: number;
 } & MapOpPayload<K, V>;
 // TODO: add after TransactionID[] for conflicts/ordering
 
-export type MapOpPayload<K extends string, V extends JsonValue | undefined> = {
-    op: "set";
-    key: K;
-    value: V;
-} |
-{
-    op: "del";
-    key: K;
-};
-
-export type MapK<M extends { [key: string]: JsonValue | undefined; }> = keyof M & string;
-export type MapV<M extends { [key: string]: JsonValue | undefined; }> = M[MapK<M>];
-
+export type MapOpPayload<
+    K extends string,
+    V extends JsonValue | CoValue | undefined
+> =
+    | {
+          op: "set";
+          key: K;
+          value: V extends CoValue ? CoID<V> : Exclude<V, CoValue>;
+      }
+    | {
+          op: "del";
+          key: K;
+      };
 
 /** A collaborative map with precise shape `M` and optional static metadata `Meta` */
 export class CoMap<
-    M extends { [key: string]: JsonValue | undefined; },
-    Meta extends JsonObject | null = null,
-> implements ReadableCoValue {
-    id: CoID<CoMap<M, Meta>>;
+    M extends { [key: string]: JsonValue | CoValue | undefined },
+    Meta extends JsonObject | null = null
+> implements CoValue
+{
+    id: CoID<this>;
     type = "comap" as const;
     core: CoValueCore;
     /** @internal */
     ops: {
-        [KK in MapK<M>]?: MapOp<KK, M[KK]>[];
+        [Key in keyof M & string]?: MapOp<Key, M[Key]>[];
     };
 
     /** @internal */
     constructor(core: CoValueCore) {
-        this.id = core.id as CoID<CoMap<M, Meta>>;
+        this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
 
@@ -61,11 +62,18 @@ export class CoMap<
     protected fillOpsFromCoValue() {
         this.ops = {};
 
-        for (const { txID, changes, madeAt } of this.core.getValidSortedTransactions()) {
-            for (const [changeIdx, changeUntyped] of (
-                parseJSON(changes)
+        for (const {
+            txID,
+            changes,
+            madeAt,
+        } of this.core.getValidSortedTransactions()) {
+            for (const [changeIdx, changeUntyped] of parseJSON(
+                changes
             ).entries()) {
-                const change = changeUntyped as MapOpPayload<MapK<M>, MapV<M>>;
+                const change = changeUntyped as MapOpPayload<
+                    keyof M & string,
+                    M[keyof M & string]
+                >;
                 let entries = this.ops[change.key];
                 if (!entries) {
                     entries = [];
@@ -75,18 +83,25 @@ export class CoMap<
                     txID,
                     madeAt,
                     changeIdx,
-                    ...(change as MapOpPayload<MapK<M>, MapV<M>>),
+                    ...(change as MapOpPayload<
+                        keyof M & string,
+                        M[keyof M & string]
+                    >),
                 });
             }
         }
     }
 
-    keys(): MapK<M>[] {
-        return Object.keys(this.ops) as MapK<M>[];
+    keys(): (keyof M & string)[] {
+        return Object.keys(this.ops) as (keyof M & string)[];
     }
 
     /** Returns the current value for the given key. */
-    get<K extends MapK<M>>(key: K): M[K] | undefined {
+    get<K extends keyof M & string>(
+        key: K
+    ):
+        | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
+        | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -101,7 +116,12 @@ export class CoMap<
         }
     }
 
-    getAtTime<K extends MapK<M>>(key: K, time: number): M[K] | undefined {
+    getAtTime<K extends keyof M & string>(
+        key: K,
+        time: number
+    ):
+        | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
+        | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -121,8 +141,8 @@ export class CoMap<
     }
 
     /** Returns the accountID of the last account to modify the value for the given key. */
-    whoEdited<K extends MapK<M>>(key: K): AccountID | undefined {
-        const tx  = this.getLastTxID(key);
+    whoEdited<K extends keyof M & string>(key: K): AccountID | undefined {
+        const tx = this.getLastTxID(key);
         if (!tx) {
             return undefined;
         }
@@ -134,7 +154,7 @@ export class CoMap<
         }
     }
 
-    getLastTxID<K extends MapK<M>>(key: K): TransactionID | undefined {
+    getLastTxID<K extends keyof M & string>(key: K): TransactionID | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -145,7 +165,15 @@ export class CoMap<
         return lastEntry.txID;
     }
 
-    getLastEntry<K extends MapK<M>>(key: K): { at: number; txID: TransactionID; value: M[K]; } | undefined {
+    getLastEntry<K extends keyof M & string>(
+        key: K
+    ):
+        | {
+              at: number;
+              txID: TransactionID;
+              value: M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>;
+          }
+        | undefined {
         const ops = this.ops[key];
         if (!ops) {
             return undefined;
@@ -156,21 +184,43 @@ export class CoMap<
         if (lastEntry.op === "del") {
             return undefined;
         } else {
-            return { at: lastEntry.madeAt, txID: lastEntry.txID, value: lastEntry.value };
+            return {
+                at: lastEntry.madeAt,
+                txID: lastEntry.txID,
+                value: lastEntry.value,
+            };
         }
     }
 
-    getHistory<K extends MapK<M>>(key: K): { at: number; txID: TransactionID; value: M[K] | undefined; }[] {
+    getHistory<K extends keyof M & string>(
+        key: K
+    ): {
+        at: number;
+        txID: TransactionID;
+        value:
+            | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
+            | undefined;
+    }[] {
         const ops = this.ops[key];
         if (!ops) {
             return [];
         }
 
-        const history: { at: number; txID: TransactionID; value: M[K] | undefined; }[] = [];
+        const history: {
+            at: number;
+            txID: TransactionID;
+            value:
+                | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
+                | undefined;
+        }[] = [];
 
         for (const op of ops) {
             if (op.op === "del") {
-                history.push({ at: op.madeAt, txID: op.txID, value: undefined });
+                history.push({
+                    at: op.madeAt,
+                    txID: op.txID,
+                    value: undefined,
+                });
             } else {
                 history.push({ at: op.madeAt, txID: op.txID, value: op.value });
             }
@@ -192,25 +242,28 @@ export class CoMap<
         return json;
     }
 
-    subscribe(listener: (coMap: CoMap<M, Meta>) => void): () => void {
+    subscribe(listener: (coMap: this) => void): () => void {
         return this.core.subscribe((content) => {
-            listener(content as CoMap<M, Meta>);
+            listener(content as this);
         });
     }
 
-    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
+    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): this {
         const editable = new WriteableCoMap<M, Meta>(this.core);
         changer(editable);
-        return new CoMap(this.core);
+        return new CoMap(this.core) as this;
     }
 }
 
 export class WriteableCoMap<
-    M extends { [key: string]: JsonValue | undefined; },
-    Meta extends JsonObject | null = null,
-> extends CoMap<M, Meta> implements WriteableCoValue {
+        M extends { [key: string]: JsonValue | CoValue | undefined },
+        Meta extends JsonObject | null = null
+    >
+    extends CoMap<M, Meta>
+    implements CoValue
+{
     /** @internal */
-    edit(_changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
+    edit(_changer: (editable: WriteableCoMap<M, Meta>) => void): this {
         throw new Error("Already editing.");
     }
 
@@ -219,14 +272,21 @@ export class WriteableCoMap<
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
      * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
-    set<K extends MapK<M>>(key: K, value: M[K], privacy: "private" | "trusting" = "private"): void {
-        this.core.makeTransaction([
-            {
-                op: "set",
-                key,
-                value,
-            },
-        ], privacy);
+    set<K extends keyof M & string>(
+        key: K,
+        value: M[K] extends CoValue ? M[K] | CoID<M[K]> : M[K],
+        privacy: "private" | "trusting" = "private"
+    ): void {
+        this.core.makeTransaction(
+            [
+                {
+                    op: "set",
+                    key,
+                    value: isCoValue(value) ? value.id : value,
+                },
+            ],
+            privacy
+        );
 
         this.fillOpsFromCoValue();
     }
@@ -236,13 +296,19 @@ export class WriteableCoMap<
      * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
      * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
-    delete(key: MapK<M>, privacy: "private" | "trusting" = "private"): void {
-        this.core.makeTransaction([
-            {
-                op: "del",
-                key,
-            },
-        ], privacy);
+    delete(
+        key: keyof M & string,
+        privacy: "private" | "trusting" = "private"
+    ): void {
+        this.core.makeTransaction(
+            [
+                {
+                    op: "del",
+                    key,
+                },
+            ],
+            privacy
+        );
 
         this.fillOpsFromCoValue();
     }

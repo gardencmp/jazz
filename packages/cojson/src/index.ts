@@ -1,6 +1,6 @@
 import { CoValueCore, newRandomSessionID, MAX_RECOMMENDED_TX_SIZE } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
-import type { CoValue, ReadableCoValue } from "./coValue.js";
+import type { CoValue } from "./coValue.js";
 import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
 import { CoList, WriteableCoList } from "./coValues/coList.js";
 import {
@@ -28,16 +28,17 @@ import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
 
 import type { SessionID, AgentID } from "./ids.js";
-import type { CoID, CoValueImpl } from "./coValue.js";
-import type { BinaryChunkInfo, BinaryCoStreamMeta } from "./coValues/coStream.js";
+import type { CoID, AnyCoValue } from "./coValue.js";
+import type { Queried } from "./queries.js";
+import type { BinaryStreamInfo, BinaryCoStreamMeta } from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type { AccountID, Profile } from "./account.js";
+import type { AccountID, Account, Profile } from "./account.js";
 import type { InviteSecret } from "./group.js";
 import type * as Media from "./media.js";
 
-type Value = JsonValue | CoValueImpl;
+type Value = JsonValue | AnyCoValue;
 
 /** @hidden */
 export const cojsonInternals = {
@@ -81,14 +82,15 @@ export type {
     Value,
     JsonValue,
     CoValue,
-    ReadableCoValue,
-    CoValueImpl,
+    AnyCoValue,
     CoID,
+    Queried,
     AccountID,
+    Account,
     Profile,
     SessionID,
     Peer,
-    BinaryChunkInfo,
+    BinaryStreamInfo,
     BinaryCoStreamMeta,
     AgentID,
     AgentSecret,

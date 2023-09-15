@@ -9,6 +9,7 @@ module.exports = {
     parserOptions: {
         project: "./tsconfig.json",
     },
+    ignorePatterns: [".eslint.cjs", "**/tests/*"],
     root: true,
     rules: {
         "no-unused-vars": "off",

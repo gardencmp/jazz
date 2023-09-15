@@ -1,9 +1,11 @@
-import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "./crypto.js";
-import { newRandomSessionID } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
-import { expectGroupContent } from "./group.js";
-import { AnonymousControlledAccount } from "./account.js";
-import { SessionID } from "./ids.js";
+import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { LocalNode } from "../node.js";
+import { expectGroupContent } from "../group.js";
+import { AnonymousControlledAccount } from "../account.js";
+import { SessionID } from "../ids.js";
+// @ts-ignore
+import { expect } from "bun:test";
 
 export function randomAnonymousAccountAndSessionID(): [AnonymousControlledAccount, SessionID] {
     const agentSecret = newRandomAgentSecret();

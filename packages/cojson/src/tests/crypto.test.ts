@@ -14,14 +14,14 @@ import {
     decryptForTransaction,
     encryptKeySecret,
     decryptKeySecret,
-} from './crypto.js';
+} from '../crypto.js';
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";
 import { blake3 } from "@noble/hashes/blake3";
 import stableStringify from "fast-json-stable-stringify";
-import { SessionID } from './ids.js';
-import { cojsonReady } from './index.js';
+import { SessionID } from '../ids.js';
+import { cojsonReady } from '../index.js';
 
 beforeEach(async () => {
     await cojsonReady;

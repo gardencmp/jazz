@@ -1,6 +1,5 @@
 import {
     LocalNode,
-    CoValueImpl,
     CoID,
     CoMap,
     AccountID,
@@ -8,6 +7,8 @@ import {
     CojsonInternalTypes,
     BinaryCoStream,
     BinaryCoStreamMeta,
+    Queried,
+    CoValue
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import { AuthProvider, createBrowserNode } from "jazz-browser";
@@ -99,7 +100,7 @@ export function useJazz() {
     return context;
 }
 
-export function useTelepathicState<T extends CoValueImpl>(id?: CoID<T>) {
+export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
     const [state, setState] = useState<T>();
 
     const { localNode } = useJazz();
@@ -134,6 +135,22 @@ export function useTelepathicState<T extends CoValueImpl>(id?: CoID<T>) {
     }, [localNode, id]);
 
     return state;
+}
+
+export function useTelepathicQuery<T extends CoValue>(
+    id?: CoID<T>
+): Queried<T> | undefined {
+    const { localNode } = useJazz();
+
+    const [result, setResult] = useState<Queried<T> | undefined>();
+
+    useEffect(() => {
+        if (!id) return;
+        const unsubscribe = localNode.query(id, setResult);
+        return unsubscribe;
+    }, [id, localNode]);
+
+    return result;
 }
 
 export function useProfile<

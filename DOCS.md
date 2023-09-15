@@ -76,7 +76,7 @@ TODO: document
 <summary><code>localNode.load(id)</code>  </summary>
 
 ```typescript
-localNode.load<T extends CoValueImpl>(
+localNode.load<T extends CoValue>(
   id: CoID<T>
 ): Promise<T>
 ```
@@ -85,6 +85,36 @@ promise once a first version has been loaded. See `coValue.subscribe()` and `nod
 for listening to subsequent updates to the CoValue.
 
 
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.subscribe(id, callback)</code>  (undocumented)</summary>
+
+```typescript
+localNode.subscribe<T extends CoValue>(
+  id: CoID<T>,
+  callback: (update: T) => void
+): () => void
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><code>localNode.query(id, callback)</code>  (undocumented)</summary>
+
+```typescript
+localNode.query<T extends CoValue>(
+  id: CoID<T>,
+  callback: (update: undefined | Queried<T>) => void
+): () => void
+```
+TODO: document
 
 </details>
 
@@ -111,7 +141,7 @@ but might contain other, app-specific properties.
 <summary><code>localNode.acceptInvite(groupOrOwnedValueID, inviteSecret)</code>  (undocumented)</summary>
 
 ```typescript
-localNode.acceptInvite<T extends CoValueImpl>(
+localNode.acceptInvite<T extends CoValue>(
   groupOrOwnedValueID: CoID<T>,
   inviteSecret: InviteSecret
 ): Promise<void>
@@ -317,10 +347,11 @@ Creates an invite for new members to indirectly join the group, allowing them to
 
 
 <details>
-<summary><code>group.createMap(meta)</code>  </summary>
+<summary><code>group.createMap(init, meta)</code>  </summary>
 
 ```typescript
-group.createMap<M extends CoMap<{ [key: string]: JsonValue | undefined }, null | JsonObject>>(
+group.createMap<M extends CoMap<{ [key: string]: JsonValue | AnyCoValue | undefined }, null | JsonObject>>(
+  init: COMPLEX_TYPE_conditional,
   meta: M["meta"]
 ): M
 ```
@@ -334,10 +365,11 @@ Creates a new `CoMap` within this group, with the specified specialized
 
 
 <details>
-<summary><code>group.createList(meta)</code>  </summary>
+<summary><code>group.createList(init, meta)</code>  </summary>
 
 ```typescript
-group.createList<L extends CoList<JsonValue, null | JsonObject>>(
+group.createList<L extends CoList<JsonValue | CoValue, null | JsonObject>>(
+  init: COMPLEX_TYPE_conditional,
   meta: L["meta"]
 ): L
 ```
@@ -354,7 +386,7 @@ Creates a new `CoList` within this group, with the specified specialized
 <summary><code>group.createStream(meta)</code>  (undocumented)</summary>
 
 ```typescript
-group.createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+group.createStream<C extends CoStream<JsonValue | CoValue, null | JsonObject>>(
   meta: C["meta"]
 ): C
 ```
@@ -401,7 +433,7 @@ TODO: document
 ## `CoMap` (class in `cojson`)
 
 ```typescript
-export class CoMap<M extends { [key: string]: JsonValue | undefined }, Meta extends JsonObject | null> implements ReadableCoValue {...}
+export class CoMap<M extends { [key: string]: JsonValue | CoValue | undefined }, Meta extends JsonObject | null> implements CoValue {...}
 ```
 A collaborative map with precise shape `M` and optional static metadata `Meta`
 
@@ -449,7 +481,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 <summary><code>coMap.keys()</code>  (undocumented)</summary>
 
 ```typescript
-coMap.keys(): MapK<M>[]
+coMap.keys(): COMPLEX_TYPE_typeOperator & string[]
 ```
 TODO: document
 
@@ -463,7 +495,7 @@ TODO: document
 ```typescript
 coMap.get<K extends string>(
   key: K
-): undefined | M[K]
+): undefined | COMPLEX_TYPE_conditional
 ```
 Returns the current value for the given key.
 
@@ -480,7 +512,7 @@ Returns the current value for the given key.
 coMap.getAtTime<K extends string>(
   key: K,
   time: number
-): undefined | M[K]
+): undefined | COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -524,7 +556,7 @@ TODO: document
 ```typescript
 coMap.getLastEntry<K extends string>(
   key: K
-): undefined | {at: number, txID: TransactionID, value: M[K]}
+): undefined | {at: number, txID: TransactionID, value: COMPLEX_TYPE_conditional}
 ```
 TODO: document
 
@@ -538,7 +570,7 @@ TODO: document
 ```typescript
 coMap.getHistory<K extends string>(
   key: K
-): {at: number, txID: TransactionID, value: undefined | M[K]}[]
+): {at: number, txID: TransactionID, value: undefined | COMPLEX_TYPE_conditional}[]
 ```
 TODO: document
 
@@ -651,7 +683,7 @@ TODO: document
 ## `WriteableCoMap` (class in `cojson`)
 
 ```typescript
-export class WriteableCoMap<M extends { [key: string]: JsonValue | undefined }, Meta extends JsonObject | null> extends CoMap<M, Meta> implements WriteableCoValue {...}
+export class WriteableCoMap<M extends { [key: string]: JsonValue | CoValue | undefined }, Meta extends JsonObject | null> extends CoMap<M, Meta> implements CoValue {...}
 ```
 A collaborative map with precise shape `M` and optional static metadata `Meta`
 
@@ -701,7 +733,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ```typescript
 writeableCoMap.set<K extends string>(
   key: K,
-  value: M[K],
+  value: COMPLEX_TYPE_conditional,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -722,7 +754,7 @@ If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in 
 
 ```typescript
 writeableCoMap.delete(
-  key: MapK<M>,
+  key: COMPLEX_TYPE_typeOperator & string,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -744,7 +776,7 @@ If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, v
 <summary><code>writeableCoMap.keys()</code> (from <code>CoMap</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoMap.keys(): MapK<M>[]
+writeableCoMap.keys(): COMPLEX_TYPE_typeOperator & string[]
 ```
 TODO: document
 
@@ -758,7 +790,7 @@ TODO: document
 ```typescript
 writeableCoMap.get<K extends string>(
   key: K
-): undefined | M[K]
+): undefined | COMPLEX_TYPE_conditional
 ```
 Returns the current value for the given key.
 
@@ -775,7 +807,7 @@ Returns the current value for the given key.
 writeableCoMap.getAtTime<K extends string>(
   key: K,
   time: number
-): undefined | M[K]
+): undefined | COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -819,7 +851,7 @@ TODO: document
 ```typescript
 writeableCoMap.getLastEntry<K extends string>(
   key: K
-): undefined | {at: number, txID: TransactionID, value: M[K]}
+): undefined | {at: number, txID: TransactionID, value: COMPLEX_TYPE_conditional}
 ```
 TODO: document
 
@@ -833,7 +865,7 @@ TODO: document
 ```typescript
 writeableCoMap.getHistory<K extends string>(
   key: K
-): {at: number, txID: TransactionID, value: undefined | M[K]}[]
+): {at: number, txID: TransactionID, value: undefined | COMPLEX_TYPE_conditional}[]
 ```
 TODO: document
 
@@ -860,7 +892,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 ```typescript
 writeableCoMap.subscribe(
-  listener: (coMap: CoMap<M, Meta>) => void
+  listener: (coMap: WriteableCoMap<M, Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -883,7 +915,7 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 <summary><code>writeableCoMap.id</code> (from <code>CoMap</code>)  </summary>
 
 ```typescript
-writeableCoMap.id: CoID<CoMap<M, Meta>>
+writeableCoMap.id: CoID<WriteableCoMap<M, Meta>>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -926,7 +958,7 @@ TODO: document
 ## `CoList` (class in `cojson`)
 
 ```typescript
-export class CoList<T extends JsonValue, Meta extends JsonObject | null> implements ReadableCoValue {...}
+export class CoList<T extends JsonValue | CoValue, Meta extends JsonObject | null> implements CoValue {...}
 ```
 TODO: document
 
@@ -974,7 +1006,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ```typescript
 coList.get(
   idx: number
-): undefined | T
+): undefined | COMPLEX_TYPE_conditional
 ```
 Get the item currently at `idx`.
 
@@ -988,7 +1020,7 @@ Get the item currently at `idx`.
 <summary><code>coList.asArray()</code>  </summary>
 
 ```typescript
-coList.asArray(): T[]
+coList.asArray(): COMPLEX_TYPE_conditional[]
 ```
 Returns the current items in the CoList as an array.
 
@@ -1002,7 +1034,7 @@ Returns the current items in the CoList as an array.
 <summary><code>coList.entries()</code>  (undocumented)</summary>
 
 ```typescript
-coList.entries(): {value: T, madeAt: number, opID: OpID}[]
+coList.entries(): {value: COMPLEX_TYPE_conditional, madeAt: number, opID: OpID}[]
 ```
 TODO: document
 
@@ -1032,7 +1064,7 @@ Returns the accountID of the account that inserted value at the given index.
 <summary><code>coList.toJSON()</code>  </summary>
 
 ```typescript
-coList.toJSON(): T[]
+coList.toJSON(): COMPLEX_TYPE_conditional[]
 ```
 Returns the current items in the CoList as an array. (alias of `asArray`)
 
@@ -1047,7 +1079,7 @@ Returns the current items in the CoList as an array. (alias of `asArray`)
 
 ```typescript
 coList.map<U>(
-  mapper: (value: T,idx: number) => U
+  mapper: (value: COMPLEX_TYPE_conditional,idx: number) => U
 ): U[]
 ```
 TODO: document
@@ -1060,8 +1092,8 @@ TODO: document
 <summary><code>coList.filter(predicate)</code>  (undocumented)</summary>
 
 ```typescript
-coList.filter<U extends JsonValue>(
-  predicate: (value: T,idx: number) => COMPLEX_TYPE_predicate
+coList.filter<U extends JsonValue | CoID<CoValue>>(
+  predicate: (value: COMPLEX_TYPE_conditional,idx: number) => COMPLEX_TYPE_predicate
 ): U[]
 ```
 TODO: document
@@ -1075,7 +1107,7 @@ TODO: document
 
 ```typescript
 coList.reduce<U>(
-  reducer: (accumulator: U,value: T,idx: number) => U,
+  reducer: (accumulator: U,value: COMPLEX_TYPE_conditional,idx: number) => U,
   initialValue: U
 ): U
 ```
@@ -1090,7 +1122,7 @@ TODO: document
 
 ```typescript
 coList.subscribe(
-  listener: (coMap: CoList<T, Meta>) => void
+  listener: (coList: CoList<T, Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -1182,7 +1214,7 @@ TODO: document
 ## `WriteableCoList` (class in `cojson`)
 
 ```typescript
-export class WriteableCoList<T extends JsonValue, Meta extends JsonObject | null> extends CoList<T, Meta> implements WriteableCoValue {...}
+export class WriteableCoList<T extends JsonValue | CoValue, Meta extends JsonObject | null> extends CoList<T, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -1230,7 +1262,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ```typescript
 writeableCoList.append(
   after: number,
-  value: T,
+  value: COMPLEX_TYPE_conditional,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -1251,7 +1283,7 @@ If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transac
 
 ```typescript
 writeableCoList.push(
-  value: T,
+  value: COMPLEX_TYPE_conditional,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -1273,7 +1305,7 @@ If `privacy` is `"trusting"`, both `value` is stored in plaintext in the transac
 ```typescript
 writeableCoList.prepend(
   before: number,
-  value: T,
+  value: COMPLEX_TYPE_conditional,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -1318,7 +1350,7 @@ If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext i
 ```typescript
 writeableCoList.get(
   idx: number
-): undefined | T
+): undefined | COMPLEX_TYPE_conditional
 ```
 Get the item currently at `idx`.
 
@@ -1332,7 +1364,7 @@ Get the item currently at `idx`.
 <summary><code>writeableCoList.asArray()</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
-writeableCoList.asArray(): T[]
+writeableCoList.asArray(): COMPLEX_TYPE_conditional[]
 ```
 Returns the current items in the CoList as an array.
 
@@ -1346,7 +1378,7 @@ Returns the current items in the CoList as an array.
 <summary><code>writeableCoList.entries()</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoList.entries(): {value: T, madeAt: number, opID: OpID}[]
+writeableCoList.entries(): {value: COMPLEX_TYPE_conditional, madeAt: number, opID: OpID}[]
 ```
 TODO: document
 
@@ -1374,7 +1406,7 @@ Returns the accountID of the account that inserted value at the given index.
 <summary><code>writeableCoList.toJSON()</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
-writeableCoList.toJSON(): T[]
+writeableCoList.toJSON(): COMPLEX_TYPE_conditional[]
 ```
 Returns the current items in the CoList as an array. (alias of `asArray`)
 
@@ -1389,7 +1421,7 @@ Returns the current items in the CoList as an array. (alias of `asArray`)
 
 ```typescript
 writeableCoList.map<U>(
-  mapper: (value: T,idx: number) => U
+  mapper: (value: COMPLEX_TYPE_conditional,idx: number) => U
 ): U[]
 ```
 TODO: document
@@ -1402,8 +1434,8 @@ TODO: document
 <summary><code>writeableCoList.filter(predicate)</code> (from <code>CoList</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoList.filter<U extends JsonValue>(
-  predicate: (value: T,idx: number) => COMPLEX_TYPE_predicate
+writeableCoList.filter<U extends JsonValue | CoID<CoValue>>(
+  predicate: (value: COMPLEX_TYPE_conditional,idx: number) => COMPLEX_TYPE_predicate
 ): U[]
 ```
 TODO: document
@@ -1417,7 +1449,7 @@ TODO: document
 
 ```typescript
 writeableCoList.reduce<U>(
-  reducer: (accumulator: U,value: T,idx: number) => U,
+  reducer: (accumulator: U,value: COMPLEX_TYPE_conditional,idx: number) => U,
   initialValue: U
 ): U
 ```
@@ -1432,7 +1464,7 @@ TODO: document
 
 ```typescript
 writeableCoList.subscribe(
-  listener: (coMap: CoList<T, Meta>) => void
+  listener: (coList: WriteableCoList<T, Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -1455,7 +1487,7 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 <summary><code>writeableCoList.id</code> (from <code>CoList</code>)  </summary>
 
 ```typescript
-writeableCoList.id: CoID<CoList<T, Meta>>
+writeableCoList.id: CoID<WriteableCoList<T, Meta>>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -1504,7 +1536,7 @@ TODO: document
 ## `CoStream` (class in `cojson`)
 
 ```typescript
-export class CoStream<T extends JsonValue, Meta extends JsonObject | null> implements ReadableCoValue {...}
+export class CoStream<T extends JsonValue | CoValue, Meta extends JsonObject | null> implements CoValue {...}
 ```
 TODO: document
 
@@ -1544,7 +1576,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 <summary><code>new CoStream(core)</code>  (undocumented)</summary>
 
 ```typescript
-new CoStream<T extends JsonValue, Meta extends null | JsonObject>(
+new CoStream<T extends JsonValue | CoValue, Meta extends null | JsonObject>(
   core: CoValueCore
 ): CoStream<T, Meta>
 ```
@@ -1562,7 +1594,7 @@ TODO: document
 <summary><code>coStream.getSingleStream()</code>  (undocumented)</summary>
 
 ```typescript
-coStream.getSingleStream(): undefined | T[]
+coStream.getSingleStream(): undefined | COMPLEX_TYPE_conditional[]
 ```
 TODO: document
 
@@ -1574,7 +1606,7 @@ TODO: document
 <summary><code>coStream.getLastItemsPerAccount()</code>  (undocumented)</summary>
 
 ```typescript
-coStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+coStream.getLastItemsPerAccount(): { [account: AccountID]: COMPLEX_TYPE_conditional | undefined }
 ```
 TODO: document
 
@@ -1588,7 +1620,7 @@ TODO: document
 ```typescript
 coStream.getLastItemFrom(
   account: AccountID
-): undefined | T
+): undefined | COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -1600,7 +1632,7 @@ TODO: document
 <summary><code>coStream.getLastItemFromMe()</code>  (undocumented)</summary>
 
 ```typescript
-coStream.getLastItemFromMe(): undefined | T
+coStream.getLastItemFromMe(): undefined | COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -1612,7 +1644,7 @@ TODO: document
 <summary><code>coStream.toJSON()</code>  </summary>
 
 ```typescript
-coStream.toJSON(): { [key: SessionID]: T[] }
+coStream.toJSON(): { [key: SessionID]: COMPLEX_TYPE_conditional[] }
 ```
 Returns an immutable JSON presentation of this `CoValue`
 
@@ -1627,7 +1659,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 ```typescript
 coStream.subscribe(
-  listener: (coMap: CoStream<T, Meta>) => void
+  listener: (coStream: CoStream<T, Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -1710,7 +1742,7 @@ TODO: document
 <summary><code>coStream.items</code>  (undocumented)</summary>
 
 ```typescript
-coStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
+coStream.items: { [key: SessionID]: CoStreamItem<T>[] }
 ```
 TODO: document
 
@@ -1723,7 +1755,7 @@ TODO: document
 ## `WriteableCoStream` (class in `cojson`)
 
 ```typescript
-export class WriteableCoStream<T extends JsonValue, Meta extends JsonObject | null> extends CoStream<T, Meta> implements WriteableCoValue {...}
+export class WriteableCoStream<T extends JsonValue | CoValue, Meta extends JsonObject | null> extends CoStream<T, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -1763,7 +1795,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 <summary><code>new WriteableCoStream(core)</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-new WriteableCoStream<T extends JsonValue, Meta extends null | JsonObject>(
+new WriteableCoStream<T extends JsonValue | CoValue, Meta extends null | JsonObject>(
   core: CoValueCore
 ): WriteableCoStream<T, Meta>
 ```
@@ -1782,7 +1814,7 @@ TODO: document
 
 ```typescript
 writeableCoStream.push(
-  item: T,
+  item: COMPLEX_TYPE_conditional,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -1798,7 +1830,7 @@ TODO: document
 <summary><code>writeableCoStream.getSingleStream()</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoStream.getSingleStream(): undefined | T[]
+writeableCoStream.getSingleStream(): undefined | COMPLEX_TYPE_conditional[]
 ```
 TODO: document
 
@@ -1810,7 +1842,7 @@ TODO: document
 <summary><code>writeableCoStream.getLastItemsPerAccount()</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+writeableCoStream.getLastItemsPerAccount(): { [account: AccountID]: COMPLEX_TYPE_conditional | undefined }
 ```
 TODO: document
 
@@ -1824,7 +1856,7 @@ TODO: document
 ```typescript
 writeableCoStream.getLastItemFrom(
   account: AccountID
-): undefined | T
+): undefined | COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -1836,7 +1868,7 @@ TODO: document
 <summary><code>writeableCoStream.getLastItemFromMe()</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoStream.getLastItemFromMe(): undefined | T
+writeableCoStream.getLastItemFromMe(): undefined | COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -1848,7 +1880,7 @@ TODO: document
 <summary><code>writeableCoStream.toJSON()</code> (from <code>CoStream</code>)  </summary>
 
 ```typescript
-writeableCoStream.toJSON(): { [key: SessionID]: T[] }
+writeableCoStream.toJSON(): { [key: SessionID]: COMPLEX_TYPE_conditional[] }
 ```
 Returns an immutable JSON presentation of this `CoValue`
 
@@ -1863,7 +1895,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 ```typescript
 writeableCoStream.subscribe(
-  listener: (coMap: CoStream<T, Meta>) => void
+  listener: (coStream: WriteableCoStream<T, Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -1886,7 +1918,7 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 <summary><code>writeableCoStream.id</code> (from <code>CoStream</code>)  </summary>
 
 ```typescript
-writeableCoStream.id: CoID<CoStream<T, Meta>>
+writeableCoStream.id: CoID<WriteableCoStream<T, Meta>>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -1926,7 +1958,7 @@ TODO: document
 <summary><code>writeableCoStream.items</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableCoStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
+writeableCoStream.items: { [key: SessionID]: CoStreamItem<T>[] }
 ```
 TODO: document
 
@@ -1939,7 +1971,7 @@ TODO: document
 ## `BinaryCoStream` (class in `cojson`)
 
 ```typescript
-export class BinaryCoStream<Meta extends BinaryCoStreamMeta> extends CoStream<BinaryStreamItem, Meta> implements ReadableCoValue {...}
+export class BinaryCoStream<Meta extends BinaryCoStreamMeta> extends CoStream<BinaryStreamItem, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -1997,7 +2029,7 @@ TODO: document
 ```typescript
 binaryCoStream.getBinaryChunks(
   allowUnfinished: boolean
-): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
+): undefined | BinaryStreamInfo & {chunks: Uint8Array[], finished: boolean}
 ```
 TODO: document
 
@@ -2043,7 +2075,7 @@ TODO: document
 <summary><code>binaryCoStream.getLastItemsPerAccount()</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-binaryCoStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+binaryCoStream.getLastItemsPerAccount(): { [account: AccountID]: COMPLEX_TYPE_conditional | undefined }
 ```
 TODO: document
 
@@ -2081,7 +2113,7 @@ TODO: document
 <summary><code>binaryCoStream.toJSON()</code> (from <code>CoStream</code>)  </summary>
 
 ```typescript
-binaryCoStream.toJSON(): { [key: SessionID]: T[] }
+binaryCoStream.toJSON(): { [key: SessionID]: COMPLEX_TYPE_conditional[] }
 ```
 Returns an immutable JSON presentation of this `CoValue`
 
@@ -2096,7 +2128,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 ```typescript
 binaryCoStream.subscribe(
-  listener: (coMap: CoStream<BinaryStreamItem, Meta>) => void
+  listener: (coStream: BinaryCoStream<Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -2159,7 +2191,7 @@ TODO: document
 <summary><code>binaryCoStream.items</code> (from <code>CoStream</code>)  (undocumented)</summary>
 
 ```typescript
-binaryCoStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
+binaryCoStream.items: { [key: SessionID]: CoStreamItem<T>[] }
 ```
 TODO: document
 
@@ -2172,7 +2204,7 @@ TODO: document
 ## `WriteableBinaryCoStream` (class in `cojson`)
 
 ```typescript
-export class WriteableBinaryCoStream<Meta extends BinaryCoStreamMeta> extends BinaryCoStream<Meta> implements WriteableCoValue {...}
+export class WriteableBinaryCoStream<Meta extends BinaryCoStreamMeta> extends BinaryCoStream<Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -2233,7 +2265,7 @@ TODO: document
 
 ```typescript
 writeableBinaryCoStream.startBinaryStream(
-  settings: BinaryChunkInfo,
+  settings: BinaryStreamInfo,
   privacy?: "private" | "trusting" = "private"
 ): void
 ```
@@ -2278,7 +2310,7 @@ TODO: document
 ```typescript
 writeableBinaryCoStream.getBinaryChunks(
   allowUnfinished: boolean
-): undefined | BinaryChunkInfo & {chunks: Uint8Array[], finished: boolean}
+): undefined | BinaryStreamInfo & {chunks: Uint8Array[], finished: boolean}
 ```
 TODO: document
 
@@ -2304,7 +2336,7 @@ TODO: document
 <summary><code>writeableBinaryCoStream.getLastItemsPerAccount()</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableBinaryCoStream.getLastItemsPerAccount(): { [account: AccountID]: T | undefined }
+writeableBinaryCoStream.getLastItemsPerAccount(): { [account: AccountID]: COMPLEX_TYPE_conditional | undefined }
 ```
 TODO: document
 
@@ -2342,7 +2374,7 @@ TODO: document
 <summary><code>writeableBinaryCoStream.toJSON()</code> (from <code>BinaryCoStream</code>)  </summary>
 
 ```typescript
-writeableBinaryCoStream.toJSON(): { [key: SessionID]: T[] }
+writeableBinaryCoStream.toJSON(): { [key: SessionID]: COMPLEX_TYPE_conditional[] }
 ```
 Returns an immutable JSON presentation of this `CoValue`
 
@@ -2357,7 +2389,7 @@ Returns an immutable JSON presentation of this `CoValue`
 
 ```typescript
 writeableBinaryCoStream.subscribe(
-  listener: (coMap: CoStream<BinaryStreamItem, Meta>) => void
+  listener: (coStream: WriteableBinaryCoStream<Meta>) => void
 ): () => void
 ```
 Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
@@ -2380,7 +2412,7 @@ Used internally by `useTelepathicData()` for reactive updates on changes to a `C
 <summary><code>writeableBinaryCoStream.id</code> (from <code>BinaryCoStream</code>)  </summary>
 
 ```typescript
-writeableBinaryCoStream.id: CoID<BinaryCoStream<Meta>>
+writeableBinaryCoStream.id: CoID<WriteableBinaryCoStream<Meta>>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -2420,7 +2452,7 @@ TODO: document
 <summary><code>writeableBinaryCoStream.items</code> (from <code>BinaryCoStream</code>)  (undocumented)</summary>
 
 ```typescript
-writeableBinaryCoStream.items: { [key: SessionID]: {item: T, madeAt: number}[] }
+writeableBinaryCoStream.items: { [key: SessionID]: CoStreamItem<T>[] }
 ```
 TODO: document
 
@@ -2579,7 +2611,7 @@ TODO: document
 
 ```typescript
 coValueCore.subscribe(
-  listener: (content: CoValueImpl) => void
+  listener: (content: AnyCoValue) => void
 ): () => void
 ```
 TODO: document
@@ -2637,7 +2669,7 @@ TODO: document
 <summary><code>coValueCore.getCurrentContent()</code>  (undocumented)</summary>
 
 ```typescript
-coValueCore.getCurrentContent(): CoValueImpl
+coValueCore.getCurrentContent(): AnyCoValue
 ```
 TODO: document
 
@@ -2789,7 +2821,7 @@ TODO: document
 <summary><code>coValueCore.listeners</code>  (undocumented)</summary>
 
 ```typescript
-coValueCore.listeners: Set<(content: CoValueImpl) => void>
+coValueCore.listeners: Set<(content: AnyCoValue) => void>
 ```
 TODO: document
 
@@ -2813,7 +2845,7 @@ TODO: document
 <summary><code>coValueCore._cachedContent</code>  (undocumented)</summary>
 
 ```typescript
-coValueCore._cachedContent: CoValueImpl
+coValueCore._cachedContent: AnyCoValue
 ```
 TODO: document
 
@@ -2840,7 +2872,7 @@ TODO: document
 <summary><code>Media.ImageDefinition</code>  (undocumented)</summary>
 
 ```typescript
-Media.ImageDefinition: CoMap<{ originalSize: [number, number], placeholderDataURL?: string, [res: `${number}x${number}`]: CoID<BinaryCoStream> }>
+Media.ImageDefinition: CoMap<{ originalSize: [number, number], placeholderDataURL?: string, [res: `${number}x${number}`]: BinaryCoStream }>
 ```
 TODO: document
 
@@ -2873,13 +2905,35 @@ Returns an immutable JSON presentation of this `CoValue`
 
 
 
+<details>
+<summary><code>coValue.subscribe(listener)</code>  </summary>
+
+```typescript
+coValue.subscribe(
+  listener: (coValue: CoValue) => void
+): () => void
+```
+Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
+
+Takes a listener function that will be called with the current state for each update.
+
+Returns an unsubscribe function.
+
+Used internally by `useTelepathicData()` for reactive updates on changes to a `CoValue`.
+
+
+
+</details>
+
+
+
 ### Properties
 
 <details>
 <summary><code>coValue.id</code>  </summary>
 
 ```typescript
-coValue.id: CoID<CoValueImpl>
+coValue.id: CoID<CoValue>
 ```
 The `CoValue`'s (precisely typed) `CoID`
 
@@ -2905,7 +2959,7 @@ TODO: document
 <summary><code>coValue.type</code>  </summary>
 
 ```typescript
-coValue.type: "comap" | "colist" | "costream" | "static"
+coValue.type: string
 ```
 Specifies which kind of `CoValue` this is
 
@@ -2943,128 +2997,11 @@ The `Group` this `CoValue` belongs to (determining permissions)
 
 
 
-----
-
-## `ReadableCoValue` (interface in `cojson`)
-
-```typescript
-export interface ReadableCoValue extends CoValue {...}
-```
-TODO: document
-
-### Methods
-
 <details>
-<summary><code>readableCoValue.subscribe(listener)</code>  </summary>
+<summary><code>coValue.edit</code>  (undocumented)</summary>
 
 ```typescript
-readableCoValue.subscribe(
-  listener: (coValue: CoValueImpl) => void
-): () => void
-```
-Lets you subscribe to future updates to this CoValue (whether made locally or by other users).
-
-Takes a listener function that will be called with the current state for each update.
-
-Returns an unsubscribe function.
-
-Used internally by `useTelepathicData()` for reactive updates on changes to a `CoValue`.
-
-
-
-</details>
-
-
-
-<details>
-<summary><code>readableCoValue.toJSON()</code> (from <code>CoValue</code>)  </summary>
-
-```typescript
-readableCoValue.toJSON(): JsonValue
-```
-Returns an immutable JSON presentation of this `CoValue`
-
-
-
-</details>
-
-
-
-### Properties
-
-<details>
-<summary><code>readableCoValue.id</code> (from <code>CoValue</code>)  </summary>
-
-```typescript
-readableCoValue.id: CoID<CoValueImpl>
-```
-The `CoValue`'s (precisely typed) `CoID`
-
-
-
-</details>
-
-
-
-<details>
-<summary><code>readableCoValue.core</code> (from <code>CoValue</code>)  (undocumented)</summary>
-
-```typescript
-readableCoValue.core: CoValueCore
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><code>readableCoValue.type</code> (from <code>CoValue</code>)  </summary>
-
-```typescript
-readableCoValue.type: "comap" | "colist" | "costream" | "static"
-```
-Specifies which kind of `CoValue` this is
-
-
-
-</details>
-
-
-
-<details>
-<summary><code>readableCoValue.meta</code> (from <code>CoValue</code>)  </summary>
-
-```typescript
-readableCoValue.meta: null | JsonObject
-```
-The `CoValue`'s (precisely typed) static metadata
-
-
-
-</details>
-
-
-
-<details>
-<summary><code>readableCoValue.group</code> (from <code>CoValue</code>)  </summary>
-
-```typescript
-readableCoValue.group: Group
-```
-The `Group` this `CoValue` belongs to (determining permissions)
-
-
-
-</details>
-
-
-
-<details>
-<summary><code>readableCoValue.edit</code>  (undocumented)</summary>
-
-```typescript
-readableCoValue.edit: (changer: (editable: WriteableCoValue) => void) => CoValueImpl
+coValue.edit: (changer: (editable: CoValue) => void) => CoValue
 ```
 TODO: document
 
@@ -3136,7 +3073,7 @@ TODO: document
 ## `Value` (type alias in `cojson`)
 
 ```typescript
-export type Value = JsonValue | CoValueImpl
+export type Value = JsonValue | AnyCoValue
 ```
 TODO: document
 
@@ -3155,10 +3092,10 @@ TODO: doc generator not implemented yet 2097152
 
 ----
 
-## `CoValueImpl` (type alias in `cojson`)
+## `AnyCoValue` (type alias in `cojson`)
 
 ```typescript
-export type CoValueImpl = CoMap<{ [key: string]: JsonValue | undefined }, JsonObject | null> | CoList<JsonValue, JsonObject | null> | CoStream<JsonValue, JsonObject | null> | BinaryCoStream<BinaryCoStreamMeta> | Static<JsonObject>
+export type AnyCoValue = AnyCoMap | AnyCoList | AnyCoStream | AnyBinaryCoStream | AnyStatic
 ```
 TODO: document
 
@@ -3169,7 +3106,18 @@ TODO: doc generator not implemented yet 2097152
 ## `CoID` (type alias in `cojson`)
 
 ```typescript
-export type CoID<T extends CoValueImpl> = RawCoID & {__type: T}
+export type CoID<T extends CoValue> = RawCoID & {__type: T}
+```
+TODO: document
+
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Queried` (type alias in `cojson`)
+
+```typescript
+export type Queried<T extends CoValue> = COMPLEX_TYPE_conditional
 ```
 TODO: document
 
@@ -3180,7 +3128,18 @@ TODO: doc generator not implemented yet 2097152
 ## `AccountID` (type alias in `cojson`)
 
 ```typescript
-export type AccountID = CoID<AccountMap>
+export type AccountID = CoID<Account>
+```
+TODO: document
+
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Account` (type alias in `cojson`)
+
+```typescript
+export type Account = CoMap<AccountContent, AccountMeta>
 ```
 TODO: document
 
@@ -3210,10 +3169,10 @@ TODO: doc generator not implemented yet 2097152
 
 ----
 
-## `BinaryChunkInfo` (type alias in `cojson`)
+## `BinaryStreamInfo` (type alias in `cojson`)
 
 ```typescript
-export type BinaryChunkInfo = {mimeType: string, fileName?: string, totalSizeBytes?: number}
+export type BinaryStreamInfo = {mimeType: string, fileName?: string, totalSizeBytes?: number}
 ```
 TODO: document
 
@@ -3332,6 +3291,17 @@ TODO: doc generator not implemented yet 64
 
 ----
 
+## `useTelepathicQuery(id)` (function in `jazz-react`)
+
+```typescript
+export function useTelepathicQuery(id: CoID<T>): Queried<T> | undefined
+```
+TODO: document
+
+TODO: doc generator not implemented yet 64
+
+----
+
 ## `useProfile(accountID)` (function in `jazz-react`)
 
 ```typescript
@@ -3357,7 +3327,7 @@ TODO: doc generator not implemented yet 64
 ## `createInviteLink(value, role, {baseURL?})` (function in `jazz-react`)
 
 ```typescript
-export function createInviteLink(value: CoValueImpl, role: "reader" | "writer" | "admin", {baseURL?: string}): string
+export function createInviteLink(value: T | Queried<T>, role: "reader" | "writer" | "admin", {baseURL?: string}): string
 ```
 TODO: document
 
@@ -3413,7 +3383,7 @@ TODO: doc generator not implemented yet 64
 ## `createInviteLink(value, role, {baseURL?}?)` (function in `jazz-browser`)
 
 ```typescript
-export function createInviteLink(value: CoValueImpl, role: "reader" | "writer" | "admin", {baseURL?: string}): string
+export function createInviteLink(value: T | Queried<T>, role: "reader" | "writer" | "admin", {baseURL?: string}): string
 ```
 TODO: document
 
@@ -3536,10 +3506,10 @@ TODO: doc generator not implemented yet 64
 
 ----
 
-## `loadImage(imageID, localNode, progressiveCallback)` (function in `jazz-browser-media-images`)
+## `loadImage(image, localNode, progressiveCallback)` (function in `jazz-browser-media-images`)
 
 ```typescript
-export function loadImage(imageID: CoID<ImageDefinition>, localNode: LocalNode, progressiveCallback: (update: LoadingImageInfo) => void): () => void
+export function loadImage(image: ImageDefinition | CoID<ImageDefinition> | Readonly<{originalSize: [number, number], placeholderDataURL?: string}> & Readonly<{id: CoID<ImageDefinition>, type: "comap", edits: Readonly<{originalSize: Readonly<{at: Date, by?: Readonly<{id: AccountID, profile?: Readonly<{id: CoID<Profile>, name?: string}>, isMe?: boolean}>}>, placeholderDataURL: Readonly<{at: Date, by?: Readonly<{id: AccountID, profile?: Readonly<{id: CoID<Profile>, name?: string}>, isMe?: boolean}>}>}>, meta: null, group: Group, core: CoValueCore, edit: (changer: (editable: WriteableCoMap<{ originalSize: [number, number], placeholderDataURL?: string, [res: `${number}x${number}`]: BinaryCoStream }, null>) => void) => ImageDefinition}>, localNode: LocalNode, progressiveCallback: (update: LoadingImageInfo) => void): () => void
 ```
 TODO: document
 
@@ -3562,7 +3532,7 @@ TODO: doc generator not implemented yet 2097152
 ## `useLoadImage(imageID)` (function in `jazz-react-media-images`)
 
 ```typescript
-export function useLoadImage(imageID: CoID<ImageDefinition>): LoadingImageInfo | undefined
+export function useLoadImage(imageID: ImageDefinition | CoID<ImageDefinition> | Readonly<{originalSize: [number, number], placeholderDataURL?: string}> & Readonly<{id: CoID<ImageDefinition>, type: "comap", edits: Readonly<{originalSize: Readonly<{at: Date, by?: Readonly<{id: AccountID, profile?: Readonly<{id: CoID<Profile>, name?: string}>, isMe?: boolean}>}>, placeholderDataURL: Readonly<{at: Date, by?: Readonly<{id: AccountID, profile?: Readonly<{id: CoID<Profile>, name?: string}>, isMe?: boolean}>}>}>, meta: null, group: Group, core: CoValueCore, edit: (changer: (editable: WriteableCoMap<{ originalSize: [number, number], placeholderDataURL?: string, [res: `${number}x${number}`]: BinaryCoStream }, null>) => void) => ImageDefinition}>): LoadingImageInfo | undefined
 ```
 TODO: document
 

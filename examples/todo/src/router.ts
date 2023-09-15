@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { CoID, LocalNode, CoValueImpl } from "cojson";
+import { CoID, LocalNode, CoValue } from "cojson";
 import { consumeInviteLinkFromWindowLocation } from "jazz-react";
 
-export function useSimpleHashRouterThatAcceptsInvites<C extends CoValueImpl>(
+export function useSimpleHashRouterThatAcceptsInvites<C extends CoValue>(
     localNode: LocalNode
 ) {
     const [currentValueId, setCurrentValueId] = useState<CoID<C>>();
