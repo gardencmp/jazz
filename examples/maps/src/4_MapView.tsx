@@ -25,7 +25,7 @@ export function MapView({ mapID }: { mapID: MapSpace["id"] }) {
             </div>
             {consent ? (
                 <Map
-                    mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
+                    mapboxAccessToken={"pk.eyJ1IjoiYW5zZWxtLWVpY2tob2ZmIiwiYSI6ImNsbWt0dDFsYjA1NGEyanBnYW5jcXNyYXoifQ.zuAMEYGHdPyvvOeWgNwj5A"}
                     initialViewState={{
                         ...(mapSpace?.positions?.me?.last
                             ? {
