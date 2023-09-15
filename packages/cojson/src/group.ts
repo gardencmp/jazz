@@ -1,4 +1,4 @@
-import { CoID, CoValueImpl } from "./coValue.js";
+import { CoID, CoValue, AnyCoValue } from "./coValue.js";
 import { CoMap } from "./coValues/coMap.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import {
@@ -21,7 +21,11 @@ import { AccountID, GeneralizedControlledAccount, Profile } from "./account.js";
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
 import { CoList } from "./coValues/coList.js";
-import { BinaryCoStream, BinaryCoStreamMeta, CoStream } from "./coValues/coStream.js";
+import {
+    BinaryCoStream,
+    BinaryCoStreamMeta,
+    CoStream,
+} from "./coValues/coStream.js";
 
 export type GroupContent = {
     profile: CoID<Profile> | null;
@@ -35,7 +39,7 @@ export type GroupContent = {
 };
 
 export function expectGroupContent(
-    content: CoValueImpl
+    content: CoValue
 ): CoMap<GroupContent, JsonObject | null> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -238,10 +242,22 @@ export class Group {
 
     /** Creates a new `CoMap` within this group, with the specified specialized
      *  `CoMap` type `M` and optional static metadata. */
-    createMap<M extends CoMap<{ [key: string]: JsonValue | CoValueImpl | undefined; }, JsonObject | null>>(
+    createMap<
+        M extends CoMap<
+            { [key: string]: JsonValue | AnyCoValue | undefined },
+            JsonObject | null
+        >
+    >(
+        init?: M extends CoMap<infer M, infer _Meta>
+            ? {
+                  [K in keyof M]: M[K] extends AnyCoValue
+                      ? M[K] | CoID<M[K]>
+                      : M[K];
+              }
+            : never,
         meta?: M["meta"]
     ): M {
-        return this.node
+        let map = this.node
             .createCoValue({
                 type: "comap",
                 ruleset: {
@@ -252,14 +268,27 @@ export class Group {
                 ...createdNowUnique(),
             })
             .getCurrentContent() as M;
+
+        if (init) {
+            map = map.edit((editable) => {
+                for (const [key, value] of Object.entries(init)) {
+                    editable.set(key, value);
+                }
+            });
+        }
+
+        return map;
     }
 
     /** Creates a new `CoList` within this group, with the specified specialized
      * `CoList` type `L` and optional static metadata. */
-    createList<L extends CoList<JsonValue | CoValueImpl, JsonObject | null>>(
+    createList<L extends CoList<JsonValue | CoValue, JsonObject | null>>(
+        init?: L extends CoList<infer I, infer _Meta>
+            ? (I extends CoValue ? CoID<I> | I : I)[]
+            : never,
         meta?: L["meta"]
     ): L {
-        return this.node
+        let list = this.node
             .createCoValue({
                 type: "colist",
                 ruleset: {
@@ -270,9 +299,19 @@ export class Group {
                 ...createdNowUnique(),
             })
             .getCurrentContent() as L;
+
+        if (init) {
+            list = list.edit((editable) => {
+                for (const item of init) {
+                    editable.push(item);
+                }
+            });
+        }
+
+        return list;
     }
 
-    createStream<C extends CoStream<JsonValue, JsonObject | null>>(
+    createStream<C extends CoStream<JsonValue | CoValue, JsonObject | null>>(
         meta?: C["meta"]
     ): C {
         return this.node
@@ -288,9 +327,9 @@ export class Group {
             .getCurrentContent() as C;
     }
 
-    createBinaryStream<
-        C extends BinaryCoStream<BinaryCoStreamMeta>
-    >(meta: C["meta"] = { type: "binary" }): C {
+    createBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
+        meta: C["meta"] = { type: "binary" }
+    ): C {
         return this.node
             .createCoValue({
                 type: "costream",

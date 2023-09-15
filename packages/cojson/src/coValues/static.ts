@@ -1,15 +1,15 @@
 import { JsonObject } from '../jsonValue.js';
-import { CoID, ReadableCoValue } from '../coValue.js';
+import { CoID, CoValue } from '../coValue.js';
 import { CoValueCore } from '../coValueCore.js';
 import { Group } from '../index.js';
 
-export class Static<T extends JsonObject> implements ReadableCoValue{
-    id: CoID<Static<T>>;
+export class Static<T extends JsonObject> implements CoValue{
+    id: CoID<this>;
     type = "static" as const;
     core: CoValueCore;
 
     constructor(core: CoValueCore) {
-        this.id = core.id as CoID<Static<T>>;
+        this.id = core.id as CoID<this>;
         this.core = core;
     }
 
@@ -25,7 +25,7 @@ export class Static<T extends JsonObject> implements ReadableCoValue{
         throw new Error("Method not implemented.");
     }
 
-    subscribe(_listener: (coMap: Static<T>) => void): () => void {
+    subscribe(_listener: (st: this) => void): () => void {
         throw new Error("Method not implemented.");
     }
 }

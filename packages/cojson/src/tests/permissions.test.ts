@@ -1,6 +1,6 @@
-import { newRandomSessionID } from "./coValueCore.js";
-import { expectMap } from "./coValue.js";
-import { Group, expectGroupContent } from "./group.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { expectMap } from "../coValue.js";
+import { Group, expectGroupContent } from "../group.js";
 import {
     createdNowUnique,
     newRandomKeySecret,
@@ -10,14 +10,14 @@ import {
     getAgentID,
     getAgentSealerSecret,
     getAgentSealerID,
-} from "./crypto.js";
+} from "../crypto.js";
 import {
     newGroup,
     newGroupHighLevel,
     groupWithTwoAdmins,
     groupWithTwoAdminsHighLevel,
 } from "./testUtils.js";
-import { AnonymousControlledAccount, cojsonReady } from "./index.js";
+import { AnonymousControlledAccount, cojsonReady } from "../index.js";
 
 beforeEach(async () => {
     await cojsonReady;

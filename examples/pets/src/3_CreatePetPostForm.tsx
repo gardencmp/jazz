@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useState } from "react";
 
-import { CoID } from "cojson";
-import { useJazz, useTelepathicState } from "jazz-react";
+import { CoID, CoMap, Media } from "cojson";
+import { useJazz, useTelepathicQuery } from "jazz-react";
 import { createImage } from "jazz-browser-media-images";
 
 import { PetPost, PetReactions } from "./1_types";
@@ -12,6 +12,12 @@ import { useLoadImage } from "jazz-react-media-images";
 /** Walkthrough: TODO
  */
 
+type PartialPetPost = CoMap<{
+    name: string;
+    image?: Media.ImageDefinition;
+    reactions: PetReactions;
+}>
+
 export function CreatePetPostForm({
     onCreate,
 }: {
@@ -19,32 +25,27 @@ export function CreatePetPostForm({
 }) {
     const { localNode } = useJazz();
 
-    const [newPostId, setNewPostId] = useState<CoID<PetPost> | undefined>(
+    const [newPostId, setNewPostId] = useState<CoID<PartialPetPost> | undefined>(
         undefined
     );
 
-    const newPetPost = useTelepathicState(newPostId);
+    const newPetPost = useTelepathicQuery(newPostId);
 
     const onChangeName = useCallback(
         (name: string) => {
-            let petPost = newPetPost;
-            if (!petPost) {
+            if (newPetPost) {
+                newPetPost.edit((petPost) => {
+                    petPost.set("name", name);
+                });
+            } else {
                 const petPostGroup = localNode.createGroup();
-                petPost = petPostGroup.createMap<PetPost>();
-
-                petPost = petPost.edit((petPost) => {
-                    petPost.set(
-                        "reactions",
-                        petPostGroup.createStream<PetReactions>()
-                    );
+                const petPost = petPostGroup.createMap<PartialPetPost>({
+                    name,
+                    reactions: petPostGroup.createStream<PetReactions>(),
                 });
 
                 setNewPostId(petPost.id);
             }
-
-            petPost.edit((petPost) => {
-                petPost.set("name", name);
-            });
         },
         [localNode, newPetPost]
     );
@@ -53,19 +54,19 @@ export function CreatePetPostForm({
         async (event: ChangeEvent<HTMLInputElement>) => {
             if (!newPetPost || !event.target.files) return;
 
-            const imageDefinition = await createImage(
+            const image = await createImage(
                 event.target.files[0],
                 newPetPost.group
             );
 
             newPetPost.edit((petPost) => {
-                petPost.set("image", imageDefinition.id);
+                petPost.set("image", image);
             });
         },
         [newPetPost]
     );
 
-    const petImage = useLoadImage(newPetPost?.get("image"));
+    const petImage = useLoadImage(newPetPost?.image?.id);
 
     return (
         <div className="flex flex-col gap-10">
@@ -75,7 +76,7 @@ export function CreatePetPostForm({
                 placeholder="Pet Name"
                 className="text-3xl py-6"
                 onChange={(event) => onChangeName(event.target.value)}
-                value={newPetPost?.get("name") || ""}
+                value={newPetPost?.name || ""}
             />
 
             {petImage ? (
@@ -86,15 +87,15 @@ export function CreatePetPostForm({
             ) : (
                 <Input
                     type="file"
-                    disabled={!newPetPost?.get("name")}
+                    disabled={!newPetPost?.name}
                     onChange={onImageSelected}
                 />
             )}
 
-            {newPetPost?.get("name") && newPetPost?.get("image") && (
+            {newPetPost?.name && newPetPost?.image && (
                 <Button
                     onClick={() => {
-                        onCreate(newPetPost.id);
+                        onCreate(newPetPost.id as CoID<PetPost>);
                     }}
                 >
                     Submit Post

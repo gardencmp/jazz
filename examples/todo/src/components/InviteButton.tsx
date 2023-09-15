@@ -1,27 +1,26 @@
 import { useState } from "react";
 
-import { TodoProject } from "../1_types";
-
 import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
+import { CoValue, Queried } from "cojson";
 
-export function InviteButton({ list }: { list?: TodoProject }) {
+export function InviteButton<T extends CoValue>({ value }: { value: T | Queried<T> | undefined }) {
     const [existingInviteLink, setExistingInviteLink] = useState<string>();
     const { toast } = useToast();
 
     return (
-        list?.group.myRole() === "admin" && (
+        value?.group?.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"
-                disabled={!list}
+                disabled={!value.group || !value.id}
                 variant="outline"
                 onClick={async () => {
                     let inviteLink = existingInviteLink;
-                    if (list && !inviteLink) {
-                        inviteLink = createInviteLink(list, "writer");
+                    if (value.group && value.id && !inviteLink) {
+                        inviteLink = createInviteLink(value, "writer");
                         setExistingInviteLink(inviteLink);
                     }
                     if (inviteLink) {

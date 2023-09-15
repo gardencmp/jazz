@@ -1,7 +1,7 @@
-import { newRandomSessionID } from "./coValueCore.js";
-import { cojsonReady } from "./index.js";
-import { LocalNode } from "./node.js";
-import { connectedPeers } from "./streamUtils.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { cojsonReady } from "../index.js";
+import { LocalNode } from "../node.js";
+import { connectedPeers } from "../streamUtils.js";
 
 beforeEach(async () => {
     await cojsonReady;

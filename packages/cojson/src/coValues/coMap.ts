@@ -1,18 +1,12 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { TransactionID } from "../ids.js";
-import {
-    CoID,
-    CoValueImpl,
-    ReadableCoValue,
-    WriteableCoValue,
-    isCoValueImpl,
-} from "../coValue.js";
+import { CoID, CoValue, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { AccountID, isAccountID } from "../account.js";
 import { Group } from "../group.js";
 import { parseJSON } from "../jsonStringify.js";
 
-type MapOp<K extends string, V extends JsonValue | CoValueImpl | undefined> = {
+type MapOp<K extends string, V extends JsonValue | CoValue | undefined> = {
     txID: TransactionID;
     madeAt: number;
     changeIdx: number;
@@ -21,12 +15,12 @@ type MapOp<K extends string, V extends JsonValue | CoValueImpl | undefined> = {
 
 export type MapOpPayload<
     K extends string,
-    V extends JsonValue | CoValueImpl | undefined
+    V extends JsonValue | CoValue | undefined
 > =
     | {
           op: "set";
           key: K;
-          value: V extends CoValueImpl ? CoID<V> : Exclude<V, CoValueImpl>;
+          value: V extends CoValue ? CoID<V> : Exclude<V, CoValue>;
       }
     | {
           op: "del";
@@ -35,11 +29,11 @@ export type MapOpPayload<
 
 /** A collaborative map with precise shape `M` and optional static metadata `Meta` */
 export class CoMap<
-    M extends { [key: string]: JsonValue | CoValueImpl | undefined },
+    M extends { [key: string]: JsonValue | CoValue | undefined },
     Meta extends JsonObject | null = null
-> implements ReadableCoValue
+> implements CoValue
 {
-    id: CoID<CoMap<M, Meta>>;
+    id: CoID<this>;
     type = "comap" as const;
     core: CoValueCore;
     /** @internal */
@@ -49,7 +43,7 @@ export class CoMap<
 
     /** @internal */
     constructor(core: CoValueCore) {
-        this.id = core.id as CoID<CoMap<M, Meta>>;
+        this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
 
@@ -106,7 +100,7 @@ export class CoMap<
     get<K extends keyof M & string>(
         key: K
     ):
-        | (M[K] extends CoValueImpl ? CoID<M[K]> : Exclude<M[K], CoValueImpl>)
+        | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
         | undefined {
         const ops = this.ops[key];
         if (!ops) {
@@ -126,7 +120,7 @@ export class CoMap<
         key: K,
         time: number
     ):
-        | (M[K] extends CoValueImpl ? CoID<M[K]> : Exclude<M[K], CoValueImpl>)
+        | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
         | undefined {
         const ops = this.ops[key];
         if (!ops) {
@@ -177,9 +171,7 @@ export class CoMap<
         | {
               at: number;
               txID: TransactionID;
-              value: M[K] extends CoValueImpl
-                  ? CoID<M[K]>
-                  : Exclude<M[K], CoValueImpl>;
+              value: M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>;
           }
         | undefined {
         const ops = this.ops[key];
@@ -206,9 +198,7 @@ export class CoMap<
         at: number;
         txID: TransactionID;
         value:
-            | (M[K] extends CoValueImpl
-                  ? CoID<M[K]>
-                  : Exclude<M[K], CoValueImpl>)
+            | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
             | undefined;
     }[] {
         const ops = this.ops[key];
@@ -220,9 +210,7 @@ export class CoMap<
             at: number;
             txID: TransactionID;
             value:
-                | (M[K] extends CoValueImpl
-                      ? CoID<M[K]>
-                      : Exclude<M[K], CoValueImpl>)
+                | (M[K] extends CoValue ? CoID<M[K]> : Exclude<M[K], CoValue>)
                 | undefined;
         }[] = [];
 
@@ -254,30 +242,28 @@ export class CoMap<
         return json;
     }
 
-    subscribe(listener: (coMap: CoMap<M, Meta>) => void): () => void {
+    subscribe(listener: (coMap: this) => void): () => void {
         return this.core.subscribe((content) => {
-            listener(content as CoMap<M, Meta>);
+            listener(content as this);
         });
     }
 
-    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
+    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): this {
         const editable = new WriteableCoMap<M, Meta>(this.core);
         changer(editable);
-        return new CoMap(this.core);
+        return new CoMap(this.core) as this;
     }
 }
 
 export class WriteableCoMap<
-        M extends { [key: string]: JsonValue | CoValueImpl | undefined },
+        M extends { [key: string]: JsonValue | CoValue | undefined },
         Meta extends JsonObject | null = null
     >
     extends CoMap<M, Meta>
-    implements WriteableCoValue
+    implements CoValue
 {
     /** @internal */
-    edit(
-        _changer: (editable: WriteableCoMap<M, Meta>) => void
-    ): CoMap<M, Meta> {
+    edit(_changer: (editable: WriteableCoMap<M, Meta>) => void): this {
         throw new Error("Already editing.");
     }
 
@@ -288,7 +274,7 @@ export class WriteableCoMap<
      * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
     set<K extends keyof M & string>(
         key: K,
-        value: M[K] extends CoValueImpl ? M[K] | CoID<M[K]> : M[K],
+        value: M[K] extends CoValue ? M[K] | CoID<M[K]> : M[K],
         privacy: "private" | "trusting" = "private"
     ): void {
         this.core.makeTransaction(
@@ -296,7 +282,7 @@ export class WriteableCoMap<
                 {
                     op: "set",
                     key,
-                    value: isCoValueImpl(value) ? value.id : value,
+                    value: isCoValue(value) ? value.id : value,
                 },
             ],
             privacy

@@ -1,4 +1,4 @@
-import { CoID, Group, LocalNode, Media } from "cojson";
+import { CoID, Group, LocalNode, Media, Queried } from "cojson";
 
 import ImageBlobReduce from "image-blob-reduce";
 import Pica from "pica";
@@ -131,7 +131,7 @@ export type LoadingImageInfo = {
 };
 
 export function loadImage(
-    imageID: CoID<Media.ImageDefinition>,
+    image: CoID<Media.ImageDefinition> | Media.ImageDefinition | Queried<Media.ImageDefinition>,
     localNode: LocalNode,
     progressiveCallback: (update: LoadingImageInfo) => void
 ): () => void {
@@ -153,15 +153,16 @@ export function loadImage(
         stopped = true;
         for (const [res, entry] of Object.entries(resState)) {
             if (entry?.state === "loaded") {
-                URL.revokeObjectURL(entry.blobURL);
                 resState[res as `${number}x${number}`] = { state: "revoked" };
+                // prevent flashing from immediate revocation
+                setTimeout(() => {URL.revokeObjectURL(entry.blobURL)}, 3000);
             }
         }
         unsubscribe?.();
     };
 
     localNode
-        .load(imageID)
+        .load(typeof image === "string" ? image : image.id)
         .then((imageDefinition) => {
             if (stopped) return;
             unsubscribe = imageDefinition.subscribe(async (imageDefinition) => {
@@ -220,7 +221,7 @@ export function loadImage(
                             resState[res] = { state: "failed" };
                             console.error(
                                 "Loading image res failed",
-                                imageID,
+                                image,
                                 res,
                                 binaryStreamId
                             );
@@ -319,13 +320,13 @@ export function loadImage(
                 }
 
                 startLoading().catch((err) => {
-                    console.error("Error loading image", imageID, err);
+                    console.error("Error loading image", image, err);
                     cleanUp();
                 });
             });
         })
         .catch((err) => {
-            console.error("Error loading image", imageID, err);
+            console.error("Error loading image", image, err);
             cleanUp();
         });
 

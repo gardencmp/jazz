@@ -1,5 +1,5 @@
-import { LocalNode, CoMap, CoList, CoStream, BinaryCoStream, cojsonReady } from "./index";
-import { randomAnonymousAccountAndSessionID } from "./testUtils";
+import { LocalNode, CoMap, CoList, CoStream, BinaryCoStream, cojsonReady } from "../index";
+import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 beforeEach(async () => {
     await cojsonReady;

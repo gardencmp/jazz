@@ -32,7 +32,7 @@ export function accountHeaderForInitialAgentSecret(
     };
 }
 
-export class Account extends Group {
+export class AccountGroup extends Group {
     get id(): AccountID {
         return this.underlyingMap.id as AccountID;
     }
@@ -65,7 +65,7 @@ export interface GeneralizedControlledAccount {
 
 /** @hidden */
 export class ControlledAccount
-    extends Account
+    extends AccountGroup
     implements GeneralizedControlledAccount
 {
     agentSecret: AgentSecret;
@@ -136,10 +136,10 @@ export class AnonymousControlledAccount
     }
 }
 
-export type AccountContent = GroupContent & { profile: CoID<Profile> };
+export type AccountContent = { profile: Profile } & GroupContent;
 export type AccountMeta = { type: "account" };
-export type AccountMap = CoMap<AccountContent, AccountMeta>;
-export type AccountID = CoID<AccountMap>;
+export type Account = CoMap<AccountContent, AccountMeta>;
+export type AccountID = CoID<Account>;
 
 export function isAccountID(id: AccountID | AgentID): id is AccountID {
     return id.startsWith("co_");

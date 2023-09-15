@@ -1,8 +1,8 @@
-import { accountOrAgentIDfromSessionID } from "./coValueCore.js";
-import { BinaryCoStream } from "./coValues/coStream.js";
-import { createdNowUnique } from "./crypto.js";
-import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "./index.js";
-import { LocalNode } from "./node.js";
+import { accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { BinaryCoStream } from "../coValues/coStream.js";
+import { createdNowUnique } from "../crypto.js";
+import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
+import { LocalNode } from "../node.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 beforeEach(async () => {

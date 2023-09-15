@@ -37,13 +37,9 @@ export default function App() {
             const projectGroup = localNode.createGroup();
 
             // Then we create an empty todo project
-            const project = projectGroup.createMap<TodoProject>();
-
-            // We edit the todo project to initialise it.
-            // Inside the `.edit` callback we can mutate a CoValue
-            project.edit((project) => {
-                project.set("title", title);
-                project.set("tasks", projectGroup.createList<CoList<Task>>(null));
+            const project = projectGroup.createMap<TodoProject>({
+                title,
+                tasks: projectGroup.createList<CoList<Task>>()
             });
 
             navigateToProjectId(project.id);
