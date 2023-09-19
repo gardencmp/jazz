@@ -1,187 +1,188 @@
-import { JsonValue } from "./jsonValue.js";
-import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
-import {
-    BinaryCoStream,
-    BinaryStreamInfo,
-    CoStream,
-    WriteableBinaryCoStream,
-    WriteableCoStream,
-} from "./coValues/coStream.js";
-import { Static } from "./coValues/static.js";
-import { CoList, WriteableCoList } from "./coValues/coList.js";
-import { CoValueCore, accountOrAgentIDfromSessionID } from "./coValueCore.js";
+import { JsonObject, JsonValue } from "./jsonValue.js";
+import { CoMap, MutableCoMap } from "./coValues/coMap.js";
+import { CoStream, MutableCoStream } from "./coValues/coStream.js";
+import { CoList, MutableCoList } from "./coValues/coList.js";
+import { CoValueCore } from "./coValueCore.js";
 import { Group } from "./group.js";
-import { AccountID, Profile, isAccountID } from "./account.js";
-import {
-    AnyBinaryCoStream,
-    AnyCoList,
-    AnyCoMap,
-    AnyCoStream,
-    AnyCoValue,
-    AnyStatic,
-    CoID,
-    CoValue,
-} from "./coValue.js";
-import { SessionID } from "./ids.js";
+import { Account, AccountID, Profile, isAccountID } from "./account.js";
+import { AnyCoList, AnyCoMap, AnyCoStream, CoID, CoValue } from "./coValue.js";
+import { SessionID, TransactionID } from "./ids.js";
 import { LocalNode } from "./node.js";
 
 export const AllReservedQueryProps = [
     "id",
+    "isMe",
     "type",
     "meta",
     "core",
     "group",
     "shadowed",
-    "edit",
+    "set",
+    "delete",
+    "mutate",
     "edits",
 ] as const;
 
 export type ReservedQueryProps = (typeof AllReservedQueryProps)[number];
 
-export type QueriedCoMap<T extends AnyCoMap> = T extends CoMap<
-    infer M,
+export type QueriedCoMap<M extends AnyCoMap> = M extends CoMap<
+    infer Shape,
     infer Meta
 >
-    ? Readonly<{
-          [K in keyof M as Exclude<K, ReservedQueryProps>]: ValueOrSubQueried<
-              M[K]
-          >;
-      }> &
-          (keyof M & ReservedQueryProps extends never
-              ? // eslint-disable-next-line @typescript-eslint/ban-types
-                {}
-              : Readonly<{
-                    shadowed: Readonly<{
-                        [K in keyof M as Extract<
-                            K,
-                            ReservedQueryProps
-                        >]: ValueOrSubQueried<M[K]>;
-                    }>;
-                }>) &
-          Readonly<{
-              id: CoID<T>;
+    ? {
+          [K in Exclude<
+              keyof Shape & string,
+              ReservedQueryProps
+          >]: ValueOrSubQueried<Shape[K]>;
+      } & (keyof Shape & ReservedQueryProps extends never
+          ? // eslint-disable-next-line @typescript-eslint/ban-types
+            {}
+          : {
+                shadowed: {
+                    [K in Extract<
+                        keyof Shape & string,
+                        ReservedQueryProps
+                    >]: ValueOrSubQueried<Shape[K]>;
+                };
+            }) & {
+              id: CoID<M>;
               type: "comap";
-              edits: Readonly<{
-                  [K in keyof M & string]: Readonly<{
-                      by?: QueriedAccountAndProfile;
-                      at: Date;
-                      // all: TODO;
-                  }>;
-              }>;
-              meta: Meta;
-              group: Group;
-              core: CoValueCore;
-              edit: (changer: (editable: WriteableCoMap<M, Meta>) => void) => T;
-          }>
-    : never;
-
-export type QueriedAccountAndProfile = Readonly<{
-    id: AccountID;
-    profile?: Readonly<{ name?: string; id: CoID<Profile> }>;
-    isMe?: boolean;
-}>;
-
-export type QueriedCoList<T extends AnyCoList> = T extends CoList<
-    infer I,
-    infer Meta
->
-    ? readonly ValueOrSubQueried<I>[] &
-          Readonly<{
-              id: CoID<T>;
-              type: "colist";
-              meta: Meta;
-              group: Group;
-              core: CoValueCore;
-              edit: (
-                  changer: (editable: WriteableCoList<I, Meta>) => void
-              ) => T;
-              edits: readonly Readonly<{
-                  by?: QueriedAccountAndProfile;
-                  at: Date;
-              }>[] & {
-                  // deletions: TODO;
+              edits: {
+                  [K in keyof Shape & string]:
+                      | {
+                            by?: QueriedAccountAndProfile;
+                            tx: TransactionID;
+                            at: Date;
+                            value: Shape[K] extends CoValue
+                                ? CoID<Shape[K]>
+                                : Exclude<Shape[K], CoValue>;
+                            all: {
+                                by?: QueriedAccountAndProfile;
+                                tx: TransactionID;
+                                at: Date;
+                                value?: Shape[K] extends CoValue
+                                    ? CoID<Shape[K]>
+                                    : Exclude<Shape[K], CoValue>;
+                            }[];
+                        }
+                      | undefined;
               };
-          }>
+              meta: Meta;
+              group: Group;
+              core: CoValueCore;
+              set<K extends keyof Shape & string>(
+                  key: K,
+                  value: Shape[K] extends CoValue
+                      ? Shape[K] | CoID<Shape[K]>
+                      : Shape[K],
+                  privacy?: "private" | "trusting"
+              ): M;
+              set(
+                  kv: {
+                      [K in keyof Shape & string]?: Shape[K] extends CoValue
+                          ? Shape[K] | CoID<Shape[K]>
+                          : Shape[K];
+                  },
+                  privacy?: "private" | "trusting"
+              ): M;
+              delete(
+                  key: keyof Shape & string,
+                  privacy?: "private" | "trusting"
+              ): M;
+              mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): M;
+          }
     : never;
 
-export type QueriedCoStreamItems<I extends JsonValue | CoValue> = Readonly<{
-    last: ValueOrSubQueried<I> | undefined;
-    by?: QueriedAccountAndProfile;
-    at?: Date;
-    all: { value: ValueOrSubQueried<I>; at: Date }[];
-}>;
+export type QueriedAccountAndProfile = {
+    id: AccountID;
+    profile?: { name?: string; id: CoID<Profile> };
+    isMe?: boolean;
+};
 
-export type QueriedCoStream<T extends AnyCoStream> = T extends CoStream<
-    infer I,
+export type QueriedCoList<L extends AnyCoList> = L extends CoList<
+    infer Item,
     infer Meta
 >
-    ? Readonly<{
-          id: CoID<T>;
-          type: "costream";
-          me?: QueriedCoStreamItems<I>;
-          perAccount: Readonly<{
-              [account: AccountID]: QueriedCoStreamItems<I>;
-          }>;
-          perSession: Readonly<{
-              [session: SessionID]: QueriedCoStreamItems<I>;
-          }>;
-          meta: Meta;
-          group: Group;
-          core: CoValueCore;
-          edit: (changer: (editable: WriteableCoStream<I, Meta>) => void) => T;
-      }>
-    : never;
-
-export type QueriedBinaryCoStreamItems = Readonly<{
-    last: Uint8Array | undefined;
-    by: QueriedAccountAndProfile;
-    at: Date;
-    all: { value: Uint8Array; at: Date }[];
-}>;
-
-export type QueriedBinaryCoStream<T extends AnyBinaryCoStream> =
-    T extends BinaryCoStream<infer Meta>
-        ? Readonly<
-              {
-                  id: CoID<T>;
-                  type: "costream";
-                  me?: QueriedBinaryCoStreamItems;
-                  perAccount: Readonly<{
-                      [account: AccountID]: QueriedBinaryCoStreamItems;
-                  }>;
-                  perSession: Readonly<{
-                      [session: SessionID]: QueriedBinaryCoStreamItems;
-                  }>;
-                  meta: Meta;
-                  group: Group;
-                  core: CoValueCore;
-                  edit: (
-                      changer: (editable: WriteableBinaryCoStream<Meta>) => void
-                  ) => T;
-              }
-          > & Readonly<BinaryStreamInfo>
-        : never;
-
-export type QueriedStatic<T extends AnyStatic> = T extends Static<infer Meta>
-    ? Readonly<{
-          id: CoID<T>;
+    ? readonly ValueOrSubQueried<Item>[] & {
+          id: CoID<L>;
           type: "colist";
           meta: Meta;
           group: Group;
           core: CoValueCore;
-      }>
+          append(
+              item: Item extends CoValue ? Item | CoID<Item> : Item,
+              after?: number,
+              privacy?: "private" | "trusting"
+          ): L;
+          prepend(
+              item: Item extends CoValue ? Item | CoID<Item> : Item,
+              before?: number,
+              privacy?: "private" | "trusting"
+          ): L;
+          delete(at: number, privacy: "private" | "trusting"): L;
+          mutate(mutator: (mutable: MutableCoList<Item, Meta>) => void): L;
+          edits: {
+              by?: QueriedAccountAndProfile;
+              tx: TransactionID;
+              at: Date;
+              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+          }[] & {
+              deletions: {
+                  by?: QueriedAccountAndProfile;
+                  tx: TransactionID;
+                  at: Date;
+              }[];
+          };
+      }
+    : never;
+
+export type QueriedCoStreamItems<Item extends JsonValue | CoValue> = {
+    last?: ValueOrSubQueried<Item>;
+    by?: QueriedAccountAndProfile;
+    tx?: TransactionID;
+    at?: Date;
+    all: {
+        value: ValueOrSubQueried<Item>;
+        by?: QueriedAccountAndProfile;
+        tx: TransactionID;
+        at: Date;
+    }[];
+};
+
+export type QueriedCoStream<S extends AnyCoStream> = S extends CoStream<
+    infer Item,
+    infer Meta
+>
+    ? {
+          id: CoID<S>;
+          type: "costream";
+          me?: QueriedCoStreamItems<Item>;
+          perAccount: {
+              [account: AccountID]: QueriedCoStreamItems<Item>;
+          };
+          perSession: {
+              [session: SessionID]: QueriedCoStreamItems<Item>;
+          };
+          meta: Meta;
+          group: Group;
+          core: CoValueCore;
+          push(
+              item: Item extends CoValue ? Item | CoID<Item> : Item,
+              privacy?: "private" | "trusting"
+          ): S;
+          mutate(mutator: (mutable: MutableCoStream<Item, Meta>) => void): S;
+      }
     : never;
 
 export type Queried<T extends CoValue> = T extends AnyCoMap
     ? QueriedCoMap<T>
     : T extends AnyCoList
     ? QueriedCoList<T>
-    // : T extends BinaryCoStream<infer _>
-    // ? QueriedBinaryCoStream<T>
     : T extends AnyCoStream
-    ? QueriedCoStream<T>
-    : T extends AnyStatic
-    ? QueriedStatic<T>
+    ? T["meta"] extends { type: "binary" }
+        ? // eslint-disable-next-line @typescript-eslint/ban-types
+          {}
+        : QueriedCoStream<T>
     : never;
 
 export type ValueOrSubQueried<
@@ -192,27 +193,6 @@ export type ValueOrSubQueried<
     ? Queried<V> | undefined
     : V;
 
-export type QueryInclude<T extends CoValue> = T extends CoMap<
-    infer M,
-    infer _Meta
->
-    ? {
-          [K in keyof M as M[K] extends AnyCoValue | CoID<AnyCoValue>
-              ? K
-              : never]?: M[K] extends AnyCoValue
-              ? true | QueryInclude<M[K]>
-              : M[K] extends CoID<infer S>
-              ? true | QueryInclude<S>
-              : never;
-      }
-    : T extends CoList<infer I, infer _>
-    ? I extends AnyCoValue
-        ? [true] | [QueryInclude<I>]
-        : I extends CoID<infer S>
-        ? [true] | [QueryInclude<S>]
-        : never
-    : never; // TODO add CoStream;
-
 export function query<T extends CoValue>(
     id: CoID<T>,
     node: LocalNode,
@@ -222,7 +202,7 @@ export function query<T extends CoValue>(
 
     const children: {
         [id: CoID<CoValue>]: {
-            lastQueried: { [key: string]: any } | undefined;
+            lastQueried: Queried<CoValue> | undefined;
             unsubscribe: () => void;
         };
     } = {};
@@ -240,7 +220,7 @@ export function query<T extends CoValue>(
             child = {
                 lastQueried: undefined,
                 unsubscribe: query(childID, node, (childQueried) => {
-                    child!.lastQueried = childQueried;
+                    child!.lastQueried = childQueried as Queried<CoValue>;
                     onUpdate();
                 }),
             };
@@ -249,14 +229,20 @@ export function query<T extends CoValue>(
         return child.lastQueried as Queried<T> | undefined;
     }
 
+    function resolveAccount(accountID: AccountID) {
+        return getChildLastQueriedOrSubscribe(
+            accountID
+        ) as QueriedAccountAndProfile;
+    }
+
     function resolveValue<T extends JsonValue>(
         value: T
-    ): T extends CoID<CoValue> ? Queried<CoValue> | undefined : T {
+    ): T extends CoID<infer C> ? Queried<C> | undefined : T {
         return (
             typeof value === "string" && value.startsWith("co_")
                 ? getChildLastQueriedOrSubscribe(value as CoID<CoValue>)
                 : value
-        ) as T extends CoID<CoValue> ? Queried<CoValue> | undefined : T;
+        ) as T extends CoID<infer C> ? Queried<C> | undefined : T;
     }
 
     let lastRootValue: T | undefined;
@@ -275,7 +261,7 @@ export function query<T extends CoValue>(
         } else if (rootValue instanceof CoStream) {
             if (rootValue.meta?.type === "binary") {
                 // Querying binary string not yet implemented
-                return {}
+                return {};
             } else {
                 callback(queryStream(rootValue) as unknown as Queried<T>);
             }
@@ -289,40 +275,81 @@ export function query<T extends CoValue>(
         unsubscribe();
     };
 
-    function queryMap(rootValue: T & CoMap<any, any>) {
-        const mapResult: {
-            [key: string]: any;
-        } = {};
-        // let allChildrenAvailable = true;
-        for (const key of rootValue.keys()) {
-            const value = rootValue.get(key);
+    function queryMap<
+        Shape extends { [key: string]: JsonValue | CoValue | undefined },
+        Meta extends JsonObject | null = null
+    >(map: CoMap<Shape, Meta>) {
+        const shadowed = {} as {
+            [K in Extract<
+                keyof Shape & string,
+                ReservedQueryProps
+            >]: ValueOrSubQueried<Shape[K]>;
+        };
+        const nonShadowed = {} as {
+            [K in Exclude<
+                keyof Shape & string,
+                ReservedQueryProps
+            >]: ValueOrSubQueried<Shape[K]>;
+        };
 
-            if (value === undefined) continue;
+        if (map.meta?.type === "account") {
+            const profileID = map.get("profile");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (nonShadowed as any).profile = profileID && resolveValue(profileID);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (nonShadowed as any).isMe =
+                (map as unknown as Account).id === node.account.id;
+        } else {
+            for (const key of map.keys()) {
+                const value = map.get(key);
 
-            if (AllReservedQueryProps.includes(key as ReservedQueryProps)) {
-                mapResult.shadowed = mapResult.shadowed || {};
-                mapResult.shadowed[key] = resolveValue(value);
-            } else {
-                mapResult[key] = resolveValue(value);
+                if (value === undefined) continue;
+
+                if (AllReservedQueryProps.includes(key as ReservedQueryProps)) {
+                    shadowed[key as keyof typeof shadowed] = resolveValue(
+                        value
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ) as any;
+                } else {
+                    nonShadowed[key as keyof typeof nonShadowed] = resolveValue(
+                        value
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ) as any;
+                }
             }
         }
 
+        const mapResult = (
+            Object.keys(shadowed).length > 0
+                ? Object.assign({ shadowed }, nonShadowed)
+                : nonShadowed
+        ) as QueriedCoMap<CoMap<Shape, Meta>>;
+
         Object.defineProperties(mapResult, {
-            id: { value: rootValue.id },
+            id: { value: map.id },
             type: { value: "comap" },
         });
 
-        if (
-            rootValue.meta?.type !== "account" &&
-            rootValue.meta?.type !== "profile"
-        ) {
+        if (map.meta?.type !== "account" && map.meta?.type !== "profile") {
             Object.defineProperties(mapResult, {
-                edit: {
+                set: {
+                    value: (...args: Parameters<CoMap<Shape, Meta>["set"]>) => {
+                        return map.set(...args);
+                    },
+                },
+                delete: {
                     value: (
-                        changer: (editable: WriteableCoMap<any, any>) => void
+                        key: keyof Shape & string,
+                        privacy: "private" | "trusting" = "private"
                     ) => {
-                        rootValue.edit(changer);
-                        return rootValue;
+                        return map.delete(key, privacy);
+                    },
+                },
+                mutate: {
+                    value: (
+                        mutator: (mutable: MutableCoMap<Shape, Meta>) => void
+                    ) => {
+                        return map.mutate(mutator);
                     },
                 },
                 edits: {
@@ -330,161 +357,185 @@ export function query<T extends CoValue>(
                 },
             });
 
-            for (const key of rootValue.keys()) {
-                const editorID = rootValue.whoEdited(key);
-                const editor =
-                    editorID && getChildLastQueriedOrSubscribe(editorID);
+            for (const key of map.keys()) {
+                const edits = [...map.editsAt(key)].map((edit) => ({
+                    by:
+                        edit.by && isAccountID(edit.by)
+                            ? resolveAccount(edit.by)
+                            : undefined,
+                    tx: edit.tx,
+                    at: new Date(edit.at),
+                    value: edit.value && resolveValue(edit.value),
+                }));
+                const lastEdit = edits[edits.length - 1];
+                if (!lastEdit) continue;
                 mapResult.edits[key] = {
-                    by: editor && {
-                        id: editorID,
-                        isMe: editorID === node.account.id ? true : undefined,
-                        profile: editor.profile && {
-                            id: editor.profile.id,
-                            name: editor.profile.name,
-                        },
-                    },
-                    at: new Date(rootValue.getLastEntry(key)!.at),
+                    by: lastEdit.by,
+                    tx: lastEdit.tx,
+                    at: lastEdit.at,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value: lastEdit.value as any,
+                    all: edits,
                 };
             }
         }
 
         Object.defineProperties(mapResult, {
-            meta: { value: rootValue.meta },
+            meta: { value: map.meta },
             group: {
                 get() {
-                    return rootValue.group;
+                    return map.group;
                 },
             },
             core: {
                 get() {
-                    return rootValue.core;
+                    return map.core;
                 },
             },
         });
         return mapResult;
     }
 
-    function queryList(rootValue: T & CoList<any, any>) {
-        const arr: any[] & { [key: string]: any } = rootValue
+    function queryList<
+        Item extends JsonValue | CoValue,
+        Meta extends JsonObject | null = null
+    >(list: CoList<Item, Meta>) {
+        const arr = list
             .asArray()
-            .map(resolveValue);
+            .map(resolveValue) as unknown as QueriedCoList<CoList<Item, Meta>>;
 
         Object.defineProperties(arr, {
             type: { value: "colist" },
-            id: { value: rootValue.id },
-            edit: {
+            id: { value: list.id },
+            append: {
                 value: (
-                    changer: (editable: WriteableCoList<any, any>) => void
+                    item: Item extends CoValue ? Item | CoID<Item> : Item,
+                    after: number | undefined,
+                    privacy: "private" | "trusting" = "private"
                 ) => {
-                    rootValue.edit(changer);
-                    return rootValue;
+                    return list.append(item, after, privacy);
+                },
+            },
+            prepend: {
+                value: (
+                    item: Item extends CoValue ? Item | CoID<Item> : Item,
+                    before: number | undefined,
+                    privacy: "private" | "trusting" = "private"
+                ) => {
+                    return list.prepend(item, before, privacy);
+                },
+            },
+            delete: {
+                value: (
+                    at: number,
+                    privacy: "private" | "trusting" = "private"
+                ) => {
+                    return list.delete(at, privacy);
+                },
+            },
+            mutate: {
+                value: (
+                    mutator: (mutable: MutableCoList<Item, Meta>) => void
+                ) => {
+                    return list.mutate(mutator);
                 },
             },
             edits: {
                 value: [],
             },
-            meta: { value: rootValue.meta },
+            meta: { value: list.meta },
             group: {
                 get() {
-                    return rootValue.group;
+                    return list.group;
                 },
             },
             core: {
                 get() {
-                    return rootValue.core;
+                    return list.core;
                 },
             },
         });
 
         for (let i = 0; i < arr.length; i++) {
-            const editorID = rootValue.whoInserted(i);
-            const editor = editorID && getChildLastQueriedOrSubscribe(editorID);
+            const edit = list.editAt(i)!;
             arr.edits[i] = {
-                by: editor && {
-                    id: editorID,
-                    isMe: editorID === node.account.id ? true : undefined,
-                    profile: editor.profile && {
-                        id: editor.profile.id,
-                        name: editor.profile.name,
-                    },
-                },
-                at: new Date(rootValue.entries()[i]!.madeAt),
+                by:
+                    edit.by && isAccountID(edit.by)
+                        ? resolveAccount(edit.by)
+                        : undefined,
+                tx: edit.tx,
+                at: new Date(edit.at),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                value: resolveValue(edit.value) as any,
             };
         }
+        arr.edits.deletions = list.deletionEdits().map((deletion) => ({
+            by:
+                deletion.by && isAccountID(deletion.by)
+                    ? resolveAccount(deletion.by)
+                    : undefined,
+            tx: deletion.tx,
+            at: new Date(deletion.at),
+        }));
         return arr;
     }
 
-    function queryStream(rootValue: T & CoStream<any, any>) {
-        const seenAccounts = new Set<AccountID>();
-
+    function queryStream<
+        Item extends CoValue | JsonValue,
+        Meta extends JsonObject | null
+    >(stream: CoStream<Item, Meta>) {
         const perSession = Object.fromEntries(
-            Object.entries(rootValue.items).map(([sessionID, items]) => {
-                const editorID = accountOrAgentIDfromSessionID(
-                    sessionID as SessionID
-                );
-                if (isAccountID(editorID)) seenAccounts.add(editorID);
-                const editor =
-                    editorID &&
-                    (isAccountID(editorID)
-                        ? getChildLastQueriedOrSubscribe(editorID)
-                        : undefined);
+            stream.sessions().map((sessionID) => {
+                const items = [...stream.itemsIn(sessionID)].map((item) => ({
+                    by:
+                        item.by && isAccountID(item.by)
+                            ? resolveAccount(item.by)
+                            : undefined,
+                    tx: item.tx,
+                    at: new Date(item.at),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value: resolveValue(item.value) as any,
+                }));
+
                 const lastItem = items[items.length - 1];
+
                 return [
-                    sessionID as SessionID,
+                    sessionID,
                     {
-                        last: lastItem && resolveValue(lastItem.item),
-                        by: editor && {
-                            id: editorID as AccountID,
-                            isMe:
-                                editorID === node.account.id ? true : undefined,
-                            profile: editor.profile && {
-                                id: editor.profile.id,
-                                name: editor.profile.name,
-                            },
-                        },
-                        at: lastItem && new Date(lastItem.madeAt),
-                        all: items.map((item) => ({
-                            value: item.item && resolveValue(item.item),
-                            at: new Date(item.madeAt),
-                        })),
-                    } satisfies QueriedCoStreamItems<JsonValue>,
+                        last: lastItem?.value,
+                        by: lastItem?.by,
+                        tx: lastItem?.tx,
+                        at: lastItem?.at,
+                        all: items,
+                    } satisfies QueriedCoStreamItems<Item>,
                 ];
             })
         );
 
         const perAccount = Object.fromEntries(
-            [...seenAccounts.values()].map((accountID) => {
-                const itemsFromAllMatchingSessions = Object.entries(perSession)
-                    .flatMap(([sessionID, sessionItems]) =>
-                        sessionID.startsWith(accountID) ? sessionItems.all : []
-                    )
-                    .sort((a, b) => {
-                        return a.at.getTime() - b.at.getTime();
-                    });
-                const editor = getChildLastQueriedOrSubscribe(accountID);
-                const lastItem =
-                    itemsFromAllMatchingSessions[
-                        itemsFromAllMatchingSessions.length - 1
-                    ];
+            [...stream.accounts()].map((accountID) => {
+                const items = [...stream.itemsBy(accountID)].map((item) => ({
+                    by:
+                        item.by && isAccountID(item.by)
+                            ? resolveAccount(item.by)
+                            : undefined,
+                    tx: item.tx,
+                    at: new Date(item.at),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value: resolveValue(item.value) as any,
+                }));
+
+                const lastItem = items[items.length - 1];
 
                 return [
                     accountID,
                     {
                         last: lastItem?.value,
-                        by: editor && {
-                            id: accountID,
-                            isMe:
-                                accountID === node.account.id
-                                    ? true
-                                    : undefined,
-                            profile: editor.profile && {
-                                id: editor.profile.id,
-                                name: editor.profile.name,
-                            },
-                        },
-                        at: lastItem && new Date(lastItem.at),
-                        all: itemsFromAllMatchingSessions,
-                    } satisfies QueriedCoStreamItems<JsonValue>,
+                        by: lastItem?.by,
+                        tx: lastItem?.tx,
+                        at: lastItem?.at,
+                        all: items,
+                    } satisfies QueriedCoStreamItems<Item>,
                 ];
             })
         );
@@ -493,24 +544,29 @@ export function query<T extends CoValue>(
             ? perAccount[node.account.id]
             : undefined;
 
-        const streamResult: QueriedCoStream<AnyCoStream> = {
+        const streamResult: QueriedCoStream<CoStream<Item, Meta>> = {
             type: "costream",
-            id: rootValue.id,
+            id: stream.id,
             perSession,
             perAccount,
             me,
-            meta: rootValue.meta,
+            meta: stream.meta,
             get group() {
-                return rootValue.group;
+                return stream.group;
             },
             get core() {
-                return rootValue.core;
+                return stream.core;
             },
-            edit: (
-                changer: (editable: WriteableCoStream<any, any>) => void
+            push: (
+                item: Item extends CoValue ? Item | CoID<Item> : Item,
+                privacy: "private" | "trusting" = "private"
             ) => {
-                rootValue.edit(changer);
-                return rootValue;
+                return stream.push(item, privacy);
+            },
+            mutate: (
+                mutator: (mutable: MutableCoStream<Item, Meta>) => void
+            ) => {
+                return stream.mutate(mutator);
             },
         };
 

@@ -48,9 +48,7 @@ export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
                                 : "outline"
                         }
                         onClick={() => {
-                            petPost?.reactions?.edit((reactions) => {
-                                reactions.push(reactionType);
-                            });
+                            petPost?.reactions?.push(reactionType);
                         }}
                         title={`React with ${reactionType}`}
                         className="text-2xl px-2"
@@ -89,16 +87,20 @@ function ReactionOverview({
                             key={reactionType}
                         >
                             {reactionEmojiMap[reactionType]}{" "}
-                            {reactionsOfThisType.map((reaction) =>
+                            {reactionsOfThisType.map((reaction, idx) =>
                                 reaction.by?.profile?.name ? (
                                     <span
                                         className="rounded-full py-0.5 px-2 text-xs"
                                         style={uniqueColoring(reaction.by.id)}
+                                        key={reaction.by.id}
                                     >
                                         {reaction.by.profile.name}
                                     </span>
                                 ) : (
-                                    <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
+                                    <Skeleton
+                                        className="mt-1 w-[50px] h-[1em] rounded-full"
+                                        key={idx}
+                                    />
                                 )
                             )}
                         </div>

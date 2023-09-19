@@ -40,14 +40,12 @@ export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
     const createTask = useCallback(
         (text: string) => {
             if (!project?.tasks || !text) return;
-            const task = project?.group.createMap<Task>({
-                text,
+            const task = project.group.createMap<Task>({
                 done: false,
+                text,
             });
 
-            project?.tasks.edit((tasks) => {
-                tasks.push(task);
-            });
+            project.tasks.append(task);
         },
         [project?.tasks, project?.group]
     );
@@ -101,9 +99,7 @@ export function TaskRow({ task }: { task: Queried<Task> | undefined }) {
                     checked={task?.done}
                     onCheckedChange={(checked) => {
                         // (the only thing we let the user change is the "done" status)
-                        task?.edit((task) => {
-                            task.set("done", !!checked);
-                        });
+                        task?.set({ done: !!checked });
                     }}
                 />
             </TableCell>

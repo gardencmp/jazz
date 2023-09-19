@@ -39,7 +39,7 @@ test("A node with an account can create groups and and objects within them", asy
 
     expect(map.get("foo")).toEqual("bar");
 
-    expect(map.whoEdited("foo")).toEqual(accountID);
+    expect(map.lastEditAt("foo")?.by).toEqual(accountID);
 });
 
 test("Can create account with one node, and then load it on another", async () => {

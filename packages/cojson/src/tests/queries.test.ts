@@ -42,7 +42,8 @@ test("Queries with maps work", async () => {
                             },
                             isMe: true,
                         },
-                        at: new Date(map.getLastEntry("hello")!.at),
+                        tx: map.lastEditAt("hello")!.tx,
+                        at: new Date(map.lastEditAt("hello")!.at),
                     });
                     if (queriedMap.subMap) {
                         expect(queriedMap.subMap.type).toBe("comap");
@@ -54,9 +55,7 @@ test("Queries with maps work", async () => {
                         expect(queriedMap.subMap.shadowed.id).toBe("foreignID");
                         if (queriedMap.subMap.hello === "moon") {
                             // console.log("got to 'moon'");
-                            queriedMap.subMap.edit((subMap) => {
-                                subMap.set("hello", "sun");
-                            });
+                            queriedMap.subMap.set("hello", "sun");
                         } else if (
                             queriedMap.subMap.hello === "sun" &&
                             queriedMap.subMap.edits.hello?.by?.profile?.name ===
@@ -72,9 +71,7 @@ test("Queries with maps work", async () => {
         });
     });
 
-    map = map.edit((map) => {
-        map.set("hello", "world");
-    });
+    map = map.set("hello", "world");
 
     let subMap = group.createMap<
         CoMap<{
@@ -83,18 +80,14 @@ test("Queries with maps work", async () => {
         }>
     >();
 
-    map = map.edit((map) => {
-        map.set("subMap", subMap);
-    });
+    map = map.set("subMap", subMap);
 
-    subMap = subMap.edit((subMap) => {
+    subMap = subMap.mutate((subMap) => {
         subMap.set("hello", "world");
         subMap.set("id", "foreignID");
     });
 
-    subMap = subMap.edit((subMap) => {
-        subMap.set("hello", "moon");
-    });
+    subMap = subMap.set("hello", "moon");
 
     await done;
 });
@@ -133,9 +126,8 @@ test("Queries with lists work", () => {
                         at: expect.any(Date),
                     });
                     if (queriedList.length === 3) {
-                        queriedList.edit((list) => {
-                            list.push("sun");
-                        });
+                        queriedList.append("sun");
+
                     } else if (
                         queriedList.length === 4 &&
                         queriedList.edits[3]?.by?.profile?.name ===
@@ -151,10 +143,10 @@ test("Queries with lists work", () => {
         });
     });
 
-    list = list.edit((list) => {
-        list.push("hello");
-        list.push("world");
-        list.push("moon");
+    list = list.mutate((list) => {
+        list.append("hello");
+        list.append("world");
+        list.append("moon");
     });
 
     return done;
@@ -182,13 +174,11 @@ test("List of nested maps works", () => {
         });
     });
 
-    list = list.edit((list) => {
-        list.push(
-            group.createMap<CoMap<{ hello: "world" }>>({
-                hello: "world",
-            })
-        );
-    });
+    list = list.append(
+        group.createMap<CoMap<{ hello: "world" }>>({
+            hello: "world",
+        })
+    );
 
     return done;
 });
@@ -259,10 +249,8 @@ test("Queries with streams work", () => {
         });
     });
 
-    stream = stream.edit((stream) => {
-        stream.push("hello");
-        stream.push("world");
-    });
+    stream = stream.push("hello");
+    stream = stream.push("world");
 
     return done;
 });
@@ -293,9 +281,7 @@ test("Streams of nested maps work", () => {
         hello: "world",
     });
 
-    stream = stream.edit((list) => {
-        list.push(map);
-    });
+    stream = stream.push(map);
 
     return done;
 });

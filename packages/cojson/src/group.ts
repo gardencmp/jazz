@@ -28,9 +28,9 @@ import {
 } from "./coValues/coStream.js";
 
 export type GroupContent = {
-    profile: CoID<Profile> | null;
+    profile?: CoID<Profile> | null;
     [key: AccountID | AgentID]: Role;
-    readKey: KeyID;
+    readKey?: KeyID;
     [revelationFor: `${KeyID}_for_${AccountID | AgentID}`]: Sealed<KeySecret>;
     [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
         KeySecret,
@@ -111,7 +111,7 @@ export class Group {
 
     /** @internal */
     addMemberInternal(accountID: AccountID | AgentID, role: Role) {
-        this.underlyingMap = this.underlyingMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.mutate((map) => {
             const currentReadKey = this.underlyingMap.core.getCurrentReadKey();
 
             if (!currentReadKey.secret) {
@@ -131,15 +131,15 @@ export class Group {
 
             map.set(
                 `${currentReadKey.id}_for_${accountID}`,
-                seal(
-                    currentReadKey.secret,
-                    this.underlyingMap.core.node.account.currentSealerSecret(),
-                    getAgentSealerID(agent),
-                    {
+                seal({
+                    message: currentReadKey.secret,
+                    from: this.underlyingMap.core.node.account.currentSealerSecret(),
+                    to: getAgentSealerID(agent),
+                    nOnceMaterial: {
                         in: this.underlyingMap.core.id,
                         tx: this.underlyingMap.core.nextTransactionID(),
-                    }
-                ),
+                    },
+                }),
                 "trusting"
             );
         });
@@ -177,7 +177,7 @@ export class Group {
 
         const newReadKey = newRandomKeySecret();
 
-        this.underlyingMap = this.underlyingMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.mutate((map) => {
             for (const readerID of currentlyPermittedReaders) {
                 const reader = this.node.resolveAccountAgent(
                     readerID,
@@ -186,15 +186,15 @@ export class Group {
 
                 map.set(
                     `${newReadKey.id}_for_${readerID}`,
-                    seal(
-                        newReadKey.secret,
-                        this.underlyingMap.core.node.account.currentSealerSecret(),
-                        getAgentSealerID(reader),
-                        {
+                    seal({
+                        message: newReadKey.secret,
+                        from: this.underlyingMap.core.node.account.currentSealerSecret(),
+                        to: getAgentSealerID(reader),
+                        nOnceMaterial: {
                             in: this.underlyingMap.core.id,
                             tx: this.underlyingMap.core.nextTransactionID(),
-                        }
-                    ),
+                        },
+                    }),
                     "trusting"
                 );
             }
@@ -221,7 +221,7 @@ export class Group {
 
     /** @internal */
     removeMemberInternal(accountID: AccountID | AgentID) {
-        this.underlyingMap = this.underlyingMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.mutate((map) => {
             map.set(accountID, "revoked", "trusting");
         });
 
@@ -255,7 +255,8 @@ export class Group {
                       : M[K];
               }
             : never,
-        meta?: M["meta"]
+        meta?: M["meta"],
+        initPrivacy: "trusting" | "private" = "trusting"
     ): M {
         let map = this.node
             .createCoValue({
@@ -270,11 +271,9 @@ export class Group {
             .getCurrentContent() as M;
 
         if (init) {
-            map = map.edit((editable) => {
-                for (const [key, value] of Object.entries(init)) {
-                    editable.set(key, value);
-                }
-            });
+            for (const [key, value] of Object.entries(init)) {
+                map = map.set(key, value, initPrivacy);
+            }
         }
 
         return map;
@@ -286,7 +285,8 @@ export class Group {
         init?: L extends CoList<infer I, infer _Meta>
             ? (I extends CoValue ? CoID<I> | I : I)[]
             : never,
-        meta?: L["meta"]
+        meta?: L["meta"],
+        initPrivacy: "trusting" | "private" = "trusting"
     ): L {
         let list = this.node
             .createCoValue({
@@ -301,11 +301,9 @@ export class Group {
             .getCurrentContent() as L;
 
         if (init) {
-            list = list.edit((editable) => {
-                for (const item of init) {
-                    editable.push(item);
-                }
-            });
+            for (const item of init) {
+                list = list.append(item, undefined, initPrivacy);
+            }
         }
 
         return list;

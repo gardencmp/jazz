@@ -34,9 +34,7 @@ export function CreatePetPostForm({
     const onChangeName = useCallback(
         (name: string) => {
             if (newPetPost) {
-                newPetPost.edit((petPost) => {
-                    petPost.set("name", name);
-                });
+                newPetPost.set({name});
             } else {
                 const petPostGroup = localNode.createGroup();
                 const petPost = petPostGroup.createMap<PartialPetPost>({
@@ -59,9 +57,7 @@ export function CreatePetPostForm({
                 newPetPost.group
             );
 
-            newPetPost.edit((petPost) => {
-                petPost.set("image", image);
-            });
+            newPetPost.set({image});
         },
         [newPetPost]
     );

@@ -162,26 +162,31 @@ export class LocalNode {
         return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
-    subscribe<T extends CoValue>(id: CoID<T>, callback: (update: T) => void): () => void {
+    subscribe<T extends CoValue>(
+        id: CoID<T>,
+        callback: (update: T) => void
+    ): () => void {
         let stopped = false;
         let unsubscribe!: () => void;
 
         console.log("Subscribing to " + id);
 
-        this.load(id).then((coValue) => {
-            if (stopped) {
-                return;
-            }
-            unsubscribe = coValue.subscribe(callback);
-        }).catch((e) => {
-            console.error("Error subscribing to ", id, e);
-        });
+        this.load(id)
+            .then((coValue) => {
+                if (stopped) {
+                    return;
+                }
+                unsubscribe = coValue.subscribe(callback);
+            })
+            .catch((e) => {
+                console.error("Error subscribing to ", id, e);
+            });
 
         return () => {
             console.log("Unsubscribing from " + id);
             stopped = true;
             unsubscribe?.();
-        }
+        };
     }
 
     query<T extends CoValue>(
@@ -327,11 +332,12 @@ export class LocalNode {
         name: string,
         agentSecret = newRandomAgentSecret()
     ): ControlledAccount {
+        const accountAgentID = getAgentID(agentSecret);
         const account = this.createCoValue(
             accountHeaderForInitialAgentSecret(agentSecret)
         ).testWithDifferentAccount(
             new AnonymousControlledAccount(agentSecret),
-            newRandomSessionID(getAgentID(agentSecret))
+            newRandomSessionID(accountAgentID)
         );
 
         const accountAsGroup = new Group(
@@ -339,22 +345,22 @@ export class LocalNode {
             account.node
         );
 
-        accountAsGroup.underlyingMap.edit((editable) => {
-            editable.set(getAgentID(agentSecret), "admin", "trusting");
+        accountAsGroup.underlyingMap.mutate((editable) => {
+            editable.set(accountAgentID, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
 
             editable.set(
-                `${readKey.id}_for_${getAgentID(agentSecret)}`,
-                seal(
-                    readKey.secret,
-                    getAgentSealerSecret(agentSecret),
-                    getAgentSealerID(getAgentID(agentSecret)),
-                    {
+                `${readKey.id}_for_${accountAgentID}`,
+                seal({
+                    message: readKey.secret,
+                    from: getAgentSealerSecret(agentSecret),
+                    to: getAgentSealerID(accountAgentID),
+                    nOnceMaterial: {
                         in: account.id,
                         tx: account.nextTransactionID(),
-                    }
-                ),
+                    },
+                }),
                 "trusting"
             );
 
@@ -367,17 +373,15 @@ export class LocalNode {
             account.node
         );
 
-        let profile = accountAsGroup.createMap<Profile>(undefined, {
-            type: "profile",
-        });
+        const profile = accountAsGroup.createMap<Profile>(
+            { name },
+            {
+                type: "profile",
+            },
+            "trusting"
+        );
 
-        profile = profile.edit((editable) => {
-            editable.set("name", name, "trusting");
-        });
-
-        accountAsGroup.underlyingMap.edit((editable) => {
-            editable.set("profile", profile.id, "trusting");
-        });
+        accountAsGroup.underlyingMap.set("profile", profile.id, "trusting");
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
@@ -438,22 +442,22 @@ export class LocalNode {
 
         let groupContent = expectGroupContent(groupCoValue.getCurrentContent());
 
-        groupContent = groupContent.edit((editable) => {
+        groupContent = groupContent.mutate((editable) => {
             editable.set(this.account.id, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
 
             editable.set(
                 `${readKey.id}_for_${this.account.id}`,
-                seal(
-                    readKey.secret,
-                    this.account.currentSealerSecret(),
-                    this.account.currentSealerID(),
-                    {
+                seal({
+                    message: readKey.secret,
+                    from: this.account.currentSealerSecret(),
+                    to: this.account.currentSealerID(),
+                    nOnceMaterial: {
                         in: groupCoValue.id,
                         tx: groupCoValue.nextTransactionID(),
-                    }
-                ),
+                    },
+                }),
                 "trusting"
             );
 

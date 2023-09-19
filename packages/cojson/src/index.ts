@@ -1,13 +1,13 @@
 import { CoValueCore, newRandomSessionID, MAX_RECOMMENDED_TX_SIZE } from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import type { CoValue } from "./coValue.js";
-import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
-import { CoList, WriteableCoList } from "./coValues/coList.js";
+import { CoMap, MutableCoMap } from "./coValues/coMap.js";
+import { CoList, MutableCoList } from "./coValues/coList.js";
 import {
     CoStream,
-    WriteableCoStream,
+    MutableCoStream,
     BinaryCoStream,
-    WriteableBinaryCoStream,
+    MutableBinaryCoStream,
 } from "./coValues/coStream.js";
 import {
     agentSecretFromBytes,
@@ -64,13 +64,13 @@ export {
     LocalNode,
     Group,
     CoMap,
-    WriteableCoMap,
+    MutableCoMap as WriteableCoMap,
     CoList,
-    WriteableCoList,
+    MutableCoList as WriteableCoList,
     CoStream,
-    WriteableCoStream,
+    MutableCoStream as WriteableCoStream,
     BinaryCoStream,
-    WriteableBinaryCoStream,
+    MutableBinaryCoStream as WriteableBinaryCoStream,
     CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,

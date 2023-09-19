@@ -29,7 +29,7 @@ export function newGroup() {
 
     const groupContent = expectGroupContent(group.getCurrentContent());
 
-    groupContent.edit((editable) => {
+    groupContent.mutate((editable) => {
         editable.set(admin.id, "admin", "trusting");
         expect(editable.get(admin.id)).toEqual("admin");
     });
@@ -44,7 +44,7 @@ export function groupWithTwoAdmins() {
 
     let content = expectGroupContent(group.getCurrentContent());
 
-    content.edit((editable) => {
+    content.mutate((editable) => {
         editable.set(otherAdmin.id, "admin", "trusting");
         expect(editable.get(otherAdmin.id)).toEqual("admin");
     });
