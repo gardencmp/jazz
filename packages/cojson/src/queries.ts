@@ -9,132 +9,112 @@ import { AnyCoList, AnyCoMap, AnyCoStream, CoID, CoValue } from "./coValue.js";
 import { SessionID, TransactionID } from "./ids.js";
 import { LocalNode } from "./node.js";
 
-export const AllReservedQueryProps = [
-    "id",
-    "isMe",
-    "type",
-    "meta",
-    "core",
-    "group",
-    "shadowed",
-    "set",
-    "delete",
-    "mutate",
-    "edits",
-] as const;
-
-export type ReservedQueryProps = (typeof AllReservedQueryProps)[number];
-
-export type QueriedCoMap<M extends AnyCoMap> = M extends CoMap<
-    infer Shape,
-    infer Meta
->
-    ? {
-          [K in Exclude<
-              keyof Shape & string,
-              ReservedQueryProps
-          >]: ValueOrSubQueried<Shape[K]>;
-      } & (keyof Shape & ReservedQueryProps extends never
-          ? // eslint-disable-next-line @typescript-eslint/ban-types
-            {}
-          : {
-                shadowed: {
-                    [K in Extract<
-                        keyof Shape & string,
-                        ReservedQueryProps
-                    >]: ValueOrSubQueried<Shape[K]>;
-                };
-            }) & {
-              id: CoID<M>;
-              type: "comap";
-              edits: {
-                  [K in keyof Shape & string]:
-                      | {
-                            by?: QueriedAccountAndProfile;
-                            tx: TransactionID;
-                            at: Date;
-                            value: Shape[K] extends CoValue
-                                ? CoID<Shape[K]>
-                                : Exclude<Shape[K], CoValue>;
-                            all: {
-                                by?: QueriedAccountAndProfile;
-                                tx: TransactionID;
-                                at: Date;
-                                value?: Shape[K] extends CoValue
-                                    ? CoID<Shape[K]>
-                                    : Exclude<Shape[K], CoValue>;
-                            }[];
-                        }
-                      | undefined;
-              };
-              meta: Meta;
-              group: Group;
-              core: CoValueCore;
-              set<K extends keyof Shape & string>(
-                  key: K,
-                  value: Shape[K] extends CoValue
-                      ? Shape[K] | CoID<Shape[K]>
-                      : Shape[K],
-                  privacy?: "private" | "trusting"
-              ): M;
-              set(
-                  kv: {
-                      [K in keyof Shape & string]?: Shape[K] extends CoValue
-                          ? Shape[K] | CoID<Shape[K]>
-                          : Shape[K];
-                  },
-                  privacy?: "private" | "trusting"
-              ): M;
-              delete(
-                  key: keyof Shape & string,
-                  privacy?: "private" | "trusting"
-              ): M;
-              mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): M;
-          }
-    : never;
-
-export type QueriedAccountAndProfile = {
-    id: AccountID;
-    profile?: { name?: string; id: CoID<Profile> };
-    isMe?: boolean;
+export type QueriedCoMap<M extends AnyCoMap> = {
+    [K in keyof M["_shape"] & string]: ValueOrSubQueried<M["_shape"][K]>;
+} & {
+    co: {
+        id: CoID<M>;
+        type: "comap";
+        edits: {
+            [K in keyof M["_shape"] & string]:
+                | {
+                      by?: QueriedAccountAndProfile;
+                      tx: TransactionID;
+                      at: Date;
+                      value: M["_shape"][K] extends CoValue
+                          ? CoID<M["_shape"][K]>
+                          : Exclude<M["_shape"][K], CoValue>;
+                      all: {
+                          by?: QueriedAccountAndProfile;
+                          tx: TransactionID;
+                          at: Date;
+                          value?: M["_shape"][K] extends CoValue
+                              ? CoID<M["_shape"][K]>
+                              : Exclude<M["_shape"][K], CoValue>;
+                      }[];
+                  }
+                | undefined;
+        };
+        meta: M["meta"];
+        group: Group;
+        core: CoValueCore;
+        set<K extends keyof M["_shape"] & string>(
+            key: K,
+            value: M["_shape"][K] extends CoValue
+                ? M["_shape"][K] | CoID<M["_shape"][K]>
+                : M["_shape"][K],
+            privacy?: "private" | "trusting"
+        ): M;
+        set(
+            kv: {
+                [K in keyof M["_shape"] &
+                    string]?: M["_shape"][K] extends CoValue
+                    ? M["_shape"][K] | CoID<M["_shape"][K]>
+                    : M["_shape"][K];
+            },
+            privacy?: "private" | "trusting"
+        ): M;
+        delete(
+            key: keyof M["_shape"] & string,
+            privacy?: "private" | "trusting"
+        ): M;
+        mutate(
+            mutator: (mutable: MutableCoMap<M["_shape"], M["meta"]>) => void
+        ): M;
+    };
 };
 
-export type QueriedCoList<L extends AnyCoList> = L extends CoList<
-    infer Item,
-    infer Meta
->
-    ? readonly ValueOrSubQueried<Item>[] & {
-          id: CoID<L>;
-          type: "colist";
-          meta: Meta;
-          group: Group;
-          core: CoValueCore;
-          append(
-              item: Item extends CoValue ? Item | CoID<Item> : Item,
-              after?: number,
-              privacy?: "private" | "trusting"
-          ): L;
-          prepend(
-              item: Item extends CoValue ? Item | CoID<Item> : Item,
-              before?: number,
-              privacy?: "private" | "trusting"
-          ): L;
-          delete(at: number, privacy: "private" | "trusting"): L;
-          mutate(mutator: (mutable: MutableCoList<Item, Meta>) => void): L;
-          edits: {
-              by?: QueriedAccountAndProfile;
-              tx: TransactionID;
-              at: Date;
-              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
-          }[] & {
-              deletions: {
-                  by?: QueriedAccountAndProfile;
-                  tx: TransactionID;
-                  at: Date;
-              }[];
-          };
-      }
-    : never;
+export type QueriedAccountAndProfile = {
+    profile?: { name?: string; id: CoID<Profile> };
+    isMe?: boolean;
+    co: {
+        id: AccountID;
+    };
+};
+
+export type QueriedCoList<L extends AnyCoList> = readonly ValueOrSubQueried<
+    L["_item"]
+>[] & {
+    co: {
+        id: CoID<L>;
+        type: "colist";
+        meta: L["meta"];
+        group: Group;
+        core: CoValueCore;
+        append(
+            item: L["_item"] extends CoValue
+                ? L["_item"] | CoID<L["_item"]>
+                : L["_item"],
+            after?: number,
+            privacy?: "private" | "trusting"
+        ): L;
+        prepend(
+            item: L["_item"] extends CoValue
+                ? L["_item"] | CoID<L["_item"]>
+                : L["_item"],
+            before?: number,
+            privacy?: "private" | "trusting"
+        ): L;
+        delete(at: number, privacy: "private" | "trusting"): L;
+        mutate(
+            mutator: (mutable: MutableCoList<L["_item"], L["meta"]>) => void
+        ): L;
+        edits: {
+            by?: QueriedAccountAndProfile;
+            tx: TransactionID;
+            at: Date;
+            value: L["_item"] extends CoValue
+                ? CoID<L["_item"]>
+                : Exclude<L["_item"], CoValue>;
+        }[];
+
+        deletions: {
+            by?: QueriedAccountAndProfile;
+            tx: TransactionID;
+            at: Date;
+        }[];
+    };
+};
 
 export type QueriedCoStreamItems<Item extends JsonValue | CoValue> = {
     last?: ValueOrSubQueried<Item>;
@@ -149,30 +129,31 @@ export type QueriedCoStreamItems<Item extends JsonValue | CoValue> = {
     }[];
 };
 
-export type QueriedCoStream<S extends AnyCoStream> = S extends CoStream<
-    infer Item,
-    infer Meta
->
-    ? {
-          id: CoID<S>;
-          type: "costream";
-          me?: QueriedCoStreamItems<Item>;
-          perAccount: {
-              [account: AccountID]: QueriedCoStreamItems<Item>;
-          };
-          perSession: {
-              [session: SessionID]: QueriedCoStreamItems<Item>;
-          };
-          meta: Meta;
-          group: Group;
-          core: CoValueCore;
-          push(
-              item: Item extends CoValue ? Item | CoID<Item> : Item,
-              privacy?: "private" | "trusting"
-          ): S;
-          mutate(mutator: (mutable: MutableCoStream<Item, Meta>) => void): S;
-      }
-    : never;
+export type QueriedCoStream<S extends AnyCoStream> = {
+    me?: QueriedCoStreamItems<S["_item"]>;
+    perAccount: {
+        [account: AccountID]: QueriedCoStreamItems<S["_item"]>;
+    };
+    perSession: {
+        [session: SessionID]: QueriedCoStreamItems<S["_item"]>;
+    };
+    co: {
+        id: CoID<S>;
+        type: "costream";
+        meta: S["meta"];
+        group: Group;
+        core: CoValueCore;
+        push(
+            item: S["_item"] extends CoValue
+                ? S["_item"] | CoID<S["_item"]>
+                : S["_item"],
+            privacy?: "private" | "trusting"
+        ): S;
+        mutate(
+            mutator: (mutable: MutableCoStream<S["_item"], S["meta"]>) => void
+        ): S;
+    };
+};
 
 export type Queried<T extends CoValue> = T extends AnyCoMap
     ? QueriedCoMap<T>
@@ -180,8 +161,7 @@ export type Queried<T extends CoValue> = T extends AnyCoMap
     ? QueriedCoList<T>
     : T extends AnyCoStream
     ? T["meta"] extends { type: "binary" }
-        ? // eslint-disable-next-line @typescript-eslint/ban-types
-          {}
+        ? never
         : QueriedCoStream<T>
     : never;
 
@@ -279,25 +259,16 @@ export function query<T extends CoValue>(
         Shape extends { [key: string]: JsonValue | CoValue | undefined },
         Meta extends JsonObject | null = null
     >(map: CoMap<Shape, Meta>) {
-        const shadowed = {} as {
-            [K in Extract<
-                keyof Shape & string,
-                ReservedQueryProps
-            >]: ValueOrSubQueried<Shape[K]>;
-        };
-        const nonShadowed = {} as {
-            [K in Exclude<
-                keyof Shape & string,
-                ReservedQueryProps
-            >]: ValueOrSubQueried<Shape[K]>;
+        const kv = {} as {
+            [K in keyof Shape & string]: ValueOrSubQueried<Shape[K]>;
         };
 
         if (map.meta?.type === "account") {
             const profileID = map.get("profile");
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (nonShadowed as any).profile = profileID && resolveValue(profileID);
+            (kv as any).profile = profileID && resolveValue(profileID);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (nonShadowed as any).isMe =
+            (kv as any).isMe =
                 (map as unknown as Account).id === node.account.id;
         } else {
             for (const key of map.keys()) {
@@ -305,33 +276,25 @@ export function query<T extends CoValue>(
 
                 if (value === undefined) continue;
 
-                if (AllReservedQueryProps.includes(key as ReservedQueryProps)) {
-                    shadowed[key as keyof typeof shadowed] = resolveValue(
-                        value
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ) as any;
-                } else {
-                    nonShadowed[key as keyof typeof nonShadowed] = resolveValue(
-                        value
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ) as any;
-                }
+                kv[key as keyof typeof kv] = resolveValue(
+                    value
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ) as any;
             }
         }
 
-        const mapResult = (
-            Object.keys(shadowed).length > 0
-                ? Object.assign({ shadowed }, nonShadowed)
-                : nonShadowed
-        ) as QueriedCoMap<CoMap<Shape, Meta>>;
+        const mapResult = kv as QueriedCoMap<CoMap<Shape, Meta>>;
+        Object.defineProperty(mapResult, "co", {
+            value: {},
+        });
 
-        Object.defineProperties(mapResult, {
+        Object.defineProperties(mapResult.co, {
             id: { value: map.id },
             type: { value: "comap" },
         });
 
         if (map.meta?.type !== "account" && map.meta?.type !== "profile") {
-            Object.defineProperties(mapResult, {
+            Object.defineProperties(mapResult.co, {
                 set: {
                     value: (...args: Parameters<CoMap<Shape, Meta>["set"]>) => {
                         return map.set(...args);
@@ -369,7 +332,7 @@ export function query<T extends CoValue>(
                 }));
                 const lastEdit = edits[edits.length - 1];
                 if (!lastEdit) continue;
-                mapResult.edits[key] = {
+                mapResult.co.edits[key] = {
                     by: lastEdit.by,
                     tx: lastEdit.tx,
                     at: lastEdit.at,
@@ -380,7 +343,7 @@ export function query<T extends CoValue>(
             }
         }
 
-        Object.defineProperties(mapResult, {
+        Object.defineProperties(mapResult.co, {
             meta: { value: map.meta },
             group: {
                 get() {
@@ -404,53 +367,46 @@ export function query<T extends CoValue>(
             .asArray()
             .map(resolveValue) as unknown as QueriedCoList<CoList<Item, Meta>>;
 
-        Object.defineProperties(arr, {
-            type: { value: "colist" },
-            id: { value: list.id },
-            append: {
-                value: (
+        Object.defineProperty(arr, "co", {
+            value: {
+                type: "colist",
+                id: list.id,
+                append: (
                     item: Item extends CoValue ? Item | CoID<Item> : Item,
                     after: number | undefined,
                     privacy: "private" | "trusting" = "private"
                 ) => {
                     return list.append(item, after, privacy);
                 },
-            },
-            prepend: {
-                value: (
+
+                prepend: (
                     item: Item extends CoValue ? Item | CoID<Item> : Item,
                     before: number | undefined,
                     privacy: "private" | "trusting" = "private"
                 ) => {
                     return list.prepend(item, before, privacy);
                 },
-            },
-            delete: {
-                value: (
+
+                delete: (
                     at: number,
                     privacy: "private" | "trusting" = "private"
                 ) => {
                     return list.delete(at, privacy);
                 },
-            },
-            mutate: {
-                value: (
+
+                mutate: (
                     mutator: (mutable: MutableCoList<Item, Meta>) => void
                 ) => {
                     return list.mutate(mutator);
                 },
-            },
-            edits: {
-                value: [],
-            },
-            meta: { value: list.meta },
-            group: {
-                get() {
+
+                edits: [],
+
+                meta: list.meta,
+                get group() {
                     return list.group;
                 },
-            },
-            core: {
-                get() {
+                get core() {
                     return list.core;
                 },
             },
@@ -458,7 +414,7 @@ export function query<T extends CoValue>(
 
         for (let i = 0; i < arr.length; i++) {
             const edit = list.editAt(i)!;
-            arr.edits[i] = {
+            arr.co.edits[i] = {
                 by:
                     edit.by && isAccountID(edit.by)
                         ? resolveAccount(edit.by)
@@ -469,7 +425,7 @@ export function query<T extends CoValue>(
                 value: resolveValue(edit.value) as any,
             };
         }
-        arr.edits.deletions = list.deletionEdits().map((deletion) => ({
+        arr.co.deletions = list.deletionEdits().map((deletion) => ({
             by:
                 deletion.by && isAccountID(deletion.by)
                     ? resolveAccount(deletion.by)
@@ -545,28 +501,30 @@ export function query<T extends CoValue>(
             : undefined;
 
         const streamResult: QueriedCoStream<CoStream<Item, Meta>> = {
-            type: "costream",
-            id: stream.id,
             perSession,
             perAccount,
             me,
-            meta: stream.meta,
-            get group() {
-                return stream.group;
-            },
-            get core() {
-                return stream.core;
-            },
-            push: (
-                item: Item extends CoValue ? Item | CoID<Item> : Item,
-                privacy: "private" | "trusting" = "private"
-            ) => {
-                return stream.push(item, privacy);
-            },
-            mutate: (
-                mutator: (mutable: MutableCoStream<Item, Meta>) => void
-            ) => {
-                return stream.mutate(mutator);
+            co: {
+                type: "costream",
+                id: stream.id,
+                meta: stream.meta,
+                get group() {
+                    return stream.group;
+                },
+                get core() {
+                    return stream.core;
+                },
+                push: (
+                    item: Item extends CoValue ? Item | CoID<Item> : Item,
+                    privacy: "private" | "trusting" = "private"
+                ) => {
+                    return stream.push(item, privacy);
+                },
+                mutate: (
+                    mutator: (mutable: MutableCoStream<Item, Meta>) => void
+                ) => {
+                    return stream.mutate(mutator);
+                },
             },
         };
 

@@ -24,16 +24,16 @@ test("Queries with maps work", async () => {
         const unsubQuery = node.query(map.id, (queriedMap) => {
             // console.log("update", update);
             if (queriedMap) {
-                expect(queriedMap.type).toBe("comap");
-                expect(queriedMap.id).toEqual(map.id);
-                expect(queriedMap.core).toEqual(map.core);
-                expect(queriedMap.group).toBeInstanceOf(Group);
-                expect(queriedMap.group.id).toBe(group.id);
-                expect(queriedMap.meta).toBe(null);
+                expect(queriedMap.co.type).toBe("comap");
+                expect(queriedMap.co.id).toEqual(map.id);
+                expect(queriedMap.co.core).toEqual(map.core);
+                expect(queriedMap.co.group).toBeInstanceOf(Group);
+                expect(queriedMap.co.group.id).toBe(group.id);
+                expect(queriedMap.co.meta).toBe(null);
                 expect(queriedMap.hello).toBe("world");
                 expect(Object.keys(queriedMap)).toEqual(["hello", "subMap"]);
-                if (queriedMap.edits.hello?.by?.profile?.name) {
-                    expect(queriedMap.edits.hello).toMatchObject({
+                if (queriedMap.co.edits.hello?.by?.profile?.name) {
+                    expect(queriedMap.co.edits.hello).toMatchObject({
                         by: {
                             id: accountID,
                             profile: {
@@ -46,19 +46,18 @@ test("Queries with maps work", async () => {
                         at: new Date(map.lastEditAt("hello")!.at),
                     });
                     if (queriedMap.subMap) {
-                        expect(queriedMap.subMap.type).toBe("comap");
-                        expect(queriedMap.subMap.id).toEqual(subMap.id);
-                        expect(queriedMap.subMap.core).toEqual(subMap.core);
-                        expect(queriedMap.subMap.group).toBeInstanceOf(Group);
-                        expect(queriedMap.subMap.group.id).toBe(group.id);
-                        expect(queriedMap.subMap.meta).toBe(null);
-                        expect(queriedMap.subMap.shadowed.id).toBe("foreignID");
+                        expect(queriedMap.subMap.co.type).toBe("comap");
+                        expect(queriedMap.subMap.co.id).toEqual(subMap.id);
+                        expect(queriedMap.subMap.co.core).toEqual(subMap.core);
+                        expect(queriedMap.subMap.co.group).toBeInstanceOf(Group);
+                        expect(queriedMap.subMap.co.group.id).toBe(group.id);
+                        expect(queriedMap.subMap.co.meta).toBe(null);
                         if (queriedMap.subMap.hello === "moon") {
                             // console.log("got to 'moon'");
-                            queriedMap.subMap.set("hello", "sun");
+                            queriedMap.subMap.co.set("hello", "sun");
                         } else if (
                             queriedMap.subMap.hello === "sun" &&
-                            queriedMap.subMap.edits.hello?.by?.profile?.name ===
+                            queriedMap.subMap.co.edits.hello?.by?.profile?.name ===
                                 "Hermes Puggington"
                         ) {
                             // console.log("final update", queriedMap);
@@ -104,17 +103,17 @@ test("Queries with lists work", () => {
         const unsubQuery = node.query(list.id, (queriedList) => {
             if (queriedList) {
                 // console.log("update", queriedList, queriedList.edits);
-                expect(queriedList.type).toBe("colist");
-                expect(queriedList.id).toEqual(list.id);
-                expect(queriedList.core).toEqual(list.core);
-                expect(queriedList.group).toBeInstanceOf(Group);
-                expect(queriedList.group.id).toBe(group.id);
-                expect(queriedList.meta).toBe(null);
+                expect(queriedList.co.type).toBe("colist");
+                expect(queriedList.co.id).toEqual(list.id);
+                expect(queriedList.co.core).toEqual(list.core);
+                expect(queriedList.co.group).toBeInstanceOf(Group);
+                expect(queriedList.co.group.id).toBe(group.id);
+                expect(queriedList.co.meta).toBe(null);
                 expect(queriedList[0]).toBe("hello");
                 expect(queriedList[1]).toBe("world");
                 expect(queriedList[2]).toBe("moon");
-                if (queriedList.edits[2]?.by?.profile?.name) {
-                    expect(queriedList.edits[2]).toMatchObject({
+                if (queriedList.co.edits[2]?.by?.profile?.name) {
+                    expect(queriedList.co.edits[2]).toMatchObject({
                         by: {
                             id: accountID,
                             profile: {
@@ -126,11 +125,11 @@ test("Queries with lists work", () => {
                         at: expect.any(Date),
                     });
                     if (queriedList.length === 3) {
-                        queriedList.append("sun");
+                        queriedList.co.append("sun");
 
                     } else if (
                         queriedList.length === 4 &&
-                        queriedList.edits[3]?.by?.profile?.name ===
+                        queriedList.co.edits[3]?.by?.profile?.name ===
                             "Hermes Puggington"
                     ) {
                         expect(queriedList[3]).toBe("sun");
@@ -196,12 +195,12 @@ test("Queries with streams work", () => {
             if (queriedStream) {
                 console.log("update", queriedStream);
                 if (queriedStream.me?.by?.profile?.name) {
-                    expect(queriedStream.type).toBe("costream");
-                    expect(queriedStream.id).toEqual(stream.id);
-                    expect(queriedStream.core).toEqual(stream.core);
-                    expect(queriedStream.group).toBeInstanceOf(Group);
-                    expect(queriedStream.group.id).toBe(group.id);
-                    expect(queriedStream.meta).toBe(null);
+                    expect(queriedStream.co.type).toBe("costream");
+                    expect(queriedStream.co.id).toEqual(stream.id);
+                    expect(queriedStream.co.core).toEqual(stream.core);
+                    expect(queriedStream.co.group).toBeInstanceOf(Group);
+                    expect(queriedStream.co.group.id).toBe(group.id);
+                    expect(queriedStream.co.meta).toBe(null);
                     const expectedEntry = {
                         last: "world",
                         by: {

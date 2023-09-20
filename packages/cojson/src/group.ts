@@ -1,4 +1,4 @@
-import { CoID, CoValue, AnyCoValue } from "./coValue.js";
+import { CoID, CoValue, AnyCoValue, AnyCoMap, AnyCoList } from "./coValue.js";
 import { CoMap } from "./coValues/coMap.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import {
@@ -242,19 +242,12 @@ export class Group {
 
     /** Creates a new `CoMap` within this group, with the specified specialized
      *  `CoMap` type `M` and optional static metadata. */
-    createMap<
-        M extends CoMap<
-            { [key: string]: JsonValue | AnyCoValue | undefined },
-            JsonObject | null
-        >
-    >(
-        init?: M extends CoMap<infer M, infer _Meta>
-            ? {
-                  [K in keyof M]: M[K] extends AnyCoValue
-                      ? M[K] | CoID<M[K]>
-                      : M[K];
-              }
-            : never,
+    createMap<M extends AnyCoMap>(
+        init?: {
+            [K in keyof M["_shape"]]: M["_shape"][K] extends AnyCoValue
+                ? M["_shape"][K] | CoID<M["_shape"][K]>
+                : M["_shape"][K];
+        },
         meta?: M["meta"],
         initPrivacy: "trusting" | "private" = "trusting"
     ): M {
@@ -281,10 +274,10 @@ export class Group {
 
     /** Creates a new `CoList` within this group, with the specified specialized
      * `CoList` type `L` and optional static metadata. */
-    createList<L extends CoList<JsonValue | CoValue, JsonObject | null>>(
-        init?: L extends CoList<infer I, infer _Meta>
-            ? (I extends CoValue ? CoID<I> | I : I)[]
-            : never,
+    createList<L extends AnyCoList>(
+        init?: (L["_item"] extends CoValue
+            ? CoID<L["_item"]> | L["_item"]
+            : L["_item"])[],
         meta?: L["meta"],
         initPrivacy: "trusting" | "private" = "trusting"
     ): L {

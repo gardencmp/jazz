@@ -1,4 +1,4 @@
-import { BinaryCoStream, CoValue, InviteSecret, Queried } from "cojson";
+import { BinaryCoStream, CoValue, CoValueCore, InviteSecret, Queried } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
@@ -291,8 +291,8 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
-export function createInviteLink<T extends CoValue | Queried<CoValue>>(
-    value: T | Queried<T>,
+export function createInviteLink<T extends CoValue>(
+    value: T | {id: CoID<T>, core: CoValueCore},
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {

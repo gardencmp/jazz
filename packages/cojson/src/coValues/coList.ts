@@ -68,6 +68,7 @@ export class CoListView<
             };
         };
     };
+    readonly _item!: Item;
 
     /** @internal */
     constructor(core: CoValueCore) {

@@ -1,4 +1,4 @@
-import { CoID, Group, LocalNode, Media, Queried } from "cojson";
+import { CoID, Group, LocalNode, Media } from "cojson";
 
 import ImageBlobReduce from "image-blob-reduce";
 import Pica from "pica";
@@ -131,7 +131,7 @@ export type LoadingImageInfo = {
 };
 
 export function loadImage(
-    image: CoID<Media.ImageDefinition> | Media.ImageDefinition | Queried<Media.ImageDefinition>,
+    image: CoID<Media.ImageDefinition> | Media.ImageDefinition | {id: CoID<Media.ImageDefinition>},
     localNode: LocalNode,
     progressiveCallback: (update: LoadingImageInfo) => void
 ): () => void {

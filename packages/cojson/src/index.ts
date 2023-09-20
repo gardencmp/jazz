@@ -1,4 +1,8 @@
-import { CoValueCore, newRandomSessionID, MAX_RECOMMENDED_TX_SIZE } from "./coValueCore.js";
+import {
+    CoValueCore,
+    newRandomSessionID,
+    MAX_RECOMMENDED_TX_SIZE,
+} from "./coValueCore.js";
 import { LocalNode } from "./node.js";
 import type { CoValue } from "./coValue.js";
 import { CoMap, MutableCoMap } from "./coValues/coMap.js";
@@ -18,7 +22,7 @@ import {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    cryptoReady
+    cryptoReady,
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
@@ -29,8 +33,16 @@ import { parseJSON } from "./jsonStringify.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, AnyCoValue } from "./coValue.js";
-import type { Queried } from "./queries.js";
-import type { BinaryStreamInfo, BinaryCoStreamMeta } from "./coValues/coStream.js";
+import type {
+    Queried,
+    QueriedCoMap,
+    QueriedCoList,
+    QueriedCoStream,
+} from "./queries.js";
+import type {
+    BinaryStreamInfo,
+    BinaryCoStreamMeta,
+} from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
@@ -57,25 +69,25 @@ export const cojsonInternals = {
     expectGroupContent,
     base64URLtoBytes,
     bytesToBase64url,
-    parseJSON
+    parseJSON,
 };
 
 export {
     LocalNode,
     Group,
     CoMap,
-    MutableCoMap as WriteableCoMap,
+    MutableCoMap,
     CoList,
-    MutableCoList as WriteableCoList,
+    MutableCoList,
     CoStream,
-    MutableCoStream as WriteableCoStream,
+    MutableCoStream,
     BinaryCoStream,
-    MutableBinaryCoStream as WriteableBinaryCoStream,
+    MutableBinaryCoStream,
     CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,
     cryptoReady as cojsonReady,
-    MAX_RECOMMENDED_TX_SIZE
+    MAX_RECOMMENDED_TX_SIZE,
 };
 
 export type {
@@ -85,6 +97,9 @@ export type {
     AnyCoValue,
     CoID,
     Queried,
+    QueriedCoMap,
+    QueriedCoList,
+    QueriedCoStream,
     AccountID,
     Account,
     Profile,
@@ -96,7 +111,7 @@ export type {
     AgentSecret,
     InviteSecret,
     SyncMessage,
-    Media
+    Media,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

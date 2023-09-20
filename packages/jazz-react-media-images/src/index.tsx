@@ -1,11 +1,11 @@
-import { CoID, Media, Queried } from "cojson";
+import { CoID, Media } from "cojson";
 import { loadImage, LoadingImageInfo } from "jazz-browser-media-images";
 import { useJazz } from "jazz-react";
 import { useEffect, useState } from "react";
 export { createImage, LoadingImageInfo } from "jazz-browser-media-images";
 
 export function useLoadImage(
-    imageID?: CoID<Media.ImageDefinition> | Media.ImageDefinition | Queried<Media.ImageDefinition>
+    imageID?: CoID<Media.ImageDefinition> | Media.ImageDefinition | {id: CoID<Media.ImageDefinition>},
 ): LoadingImageInfo | undefined {
     const { localNode } = useJazz();
 

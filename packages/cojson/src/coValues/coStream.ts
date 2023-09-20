@@ -50,6 +50,7 @@ export class CoStreamView<
     items: {
         [key: SessionID]: CoStreamItem<Item>[];
     };
+    readonly _item!: Item;
 
     constructor(core: CoValueCore) {
         this.id = core.id as CoID<this>;

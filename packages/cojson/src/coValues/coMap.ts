@@ -40,6 +40,7 @@ export class CoMapView<
         [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
     };
     atTimeFilter?: number = undefined;
+    readonly _shape!: Shape;
 
     /** @internal */
     constructor(core: CoValueCore) {
