@@ -3,7 +3,7 @@ import {
     newRandomSessionID,
     MAX_RECOMMENDED_TX_SIZE,
 } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
+import { LocalNode } from "./localNode.js";
 import type { CoValue } from "./coValue.js";
 import { CoMap, MutableCoMap } from "./coValues/coMap.js";
 import { CoList, MutableCoList } from "./coValues/coList.js";
@@ -33,12 +33,10 @@ import { parseJSON } from "./jsonStringify.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, AnyCoValue } from "./coValue.js";
-import type {
-    Queried,
-    QueriedCoMap,
-    QueriedCoList,
-    QueriedCoStream,
-} from "./queries.js";
+import type { Queried } from "./queries.js";
+import type { QueriedCoStream } from "./queriedCoValues/queriedCoStream.js";
+import type { QueriedCoList } from "./queriedCoValues/queriedCoList.js";
+import type { QueriedCoMap } from "./queriedCoValues/queriedCoMap.js";
 import type {
     BinaryStreamInfo,
     BinaryCoStreamMeta,
@@ -83,19 +81,9 @@ export {
     MutableCoStream,
     BinaryCoStream,
     MutableBinaryCoStream,
-    CoValueCore,
-    AnonymousControlledAccount,
-    ControlledAccount,
-    cryptoReady as cojsonReady,
-    MAX_RECOMMENDED_TX_SIZE,
-};
-
-export type {
-    Value,
-    JsonValue,
     CoValue,
-    AnyCoValue,
     CoID,
+    AnyCoValue,
     Queried,
     QueriedCoMap,
     QueriedCoList,
@@ -104,6 +92,14 @@ export type {
     Account,
     Profile,
     SessionID,
+    Media,
+    CoValueCore,
+    AnonymousControlledAccount,
+    ControlledAccount,
+    cryptoReady as cojsonReady,
+    MAX_RECOMMENDED_TX_SIZE,
+    Value,
+    JsonValue,
     Peer,
     BinaryStreamInfo,
     BinaryCoStreamMeta,
@@ -111,7 +107,6 @@ export type {
     AgentSecret,
     InviteSecret,
     SyncMessage,
-    Media,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

@@ -1,10 +1,6 @@
 import {
     LocalNode,
     CoID,
-    CoMap,
-    AccountID,
-    JsonValue,
-    CojsonInternalTypes,
     BinaryCoStream,
     BinaryCoStreamMeta,
     Queried,
@@ -100,7 +96,12 @@ export function useJazz() {
     return context;
 }
 
+/** @deprecated Use the higher-level `useSyncedQuery` or the equivalent `useSyncedValue` instead */
 export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
+    return useSyncedValue(id);
+}
+
+export function useSyncedValue<T extends CoValue>(id?: CoID<T>) {
     const [state, setState] = useState<T>();
 
     const { localNode } = useJazz();
@@ -137,7 +138,7 @@ export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
     return state;
 }
 
-export function useTelepathicQuery<T extends CoValue>(
+export function useSyncedQuery<T extends CoValue>(
     id?: CoID<T>
 ): Queried<T> | undefined {
     const { localNode } = useJazz();
@@ -151,29 +152,6 @@ export function useTelepathicQuery<T extends CoValue>(
     }, [id, localNode]);
 
     return result;
-}
-
-export function useProfile<
-    P extends {
-        [key: string]: JsonValue;
-    } & CojsonInternalTypes.ProfileContent = CojsonInternalTypes.ProfileContent
->(
-    accountID?: AccountID
-): CoMap<P, CojsonInternalTypes.ProfileMeta> | undefined {
-    const [profileID, setProfileID] =
-        useState<CoID<CoMap<P, CojsonInternalTypes.ProfileMeta>>>();
-
-    const { localNode } = useJazz();
-
-    useEffect(() => {
-        accountID &&
-            localNode
-                .loadProfile(accountID)
-                .then((profile) => setProfileID(profile.id as typeof profileID))
-                .catch((e) => console.log("Failed to load profile", e));
-    }, [localNode, accountID]);
-
-    return useTelepathicState(profileID);
 }
 
 export function useBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(

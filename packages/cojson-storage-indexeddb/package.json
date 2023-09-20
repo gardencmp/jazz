@@ -1,5 +1,5 @@
 {
-  "name": "jazz-storage-indexeddb",
+  "name": "cojson-storage-indexeddb",
   "version": "0.2.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -27,7 +27,7 @@ import {
     isKeyForKeyField,
 } from "./permissions.js";
 import { Group, expectGroupContent } from "./group.js";
-import { LocalNode } from "./node.js";
+import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";

@@ -15,7 +15,7 @@ import {
     agentSecretFromSecretSeed,
     getAgentID,
 } from "./crypto.js";
-import { LocalNode } from "./node.js";
+import { LocalNode } from "./localNode.js";
 import { AgentID, SessionID, isAgentID } from "./ids.js";
 import { AccountID, GeneralizedControlledAccount, Profile } from "./account.js";
 import { Role } from "./permissions.js";

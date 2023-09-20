@@ -196,22 +196,6 @@ export class LocalNode {
         return query(id, this, callback);
     }
 
-    /**
-     * Loads a profile associated with an account. `Profile` is at least a `CoMap<{string: name}>`,
-     * but might contain other, app-specific properties.
-     */
-    async loadProfile(id: AccountID): Promise<Profile> {
-        const account = await this.load<Account>(id);
-        const profileID = account.get("profile");
-
-        if (!profileID) {
-            throw new Error(`Account ${id} has no profile`);
-        }
-        return (
-            await this.loadCoValue(profileID)
-        ).getCurrentContent() as Profile;
-    }
-
     async acceptInvite<T extends CoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret

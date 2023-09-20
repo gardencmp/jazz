@@ -1,6 +1,6 @@
 import { newRandomSessionID } from "../coValueCore.js";
 import { cojsonReady } from "../index.js";
-import { LocalNode } from "../node.js";
+import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
 
 beforeEach(async () => {
@@ -17,9 +17,6 @@ test("Can create a node while creating a new account with profile", async () => 
     expect(sessionID).not.toBeNull();
 
     expect(node.expectProfileLoaded(accountID).get("name")).toEqual(
-        "Hermes Puggington"
-    );
-    expect((await node.loadProfile(accountID)).get("name")).toEqual(
         "Hermes Puggington"
     );
 });

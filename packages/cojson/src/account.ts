@@ -14,7 +14,7 @@ import {
 } from "./crypto.js";
 import { AgentID } from "./ids.js";
 import { CoMap } from "./coValues/coMap.js";
-import { LocalNode } from "./node.js";
+import { LocalNode } from "./localNode.js";
 import { Group, GroupContent } from "./group.js";
 
 export function accountHeaderForInitialAgentSecret(

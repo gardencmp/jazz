@@ -1,5 +1,5 @@
 import { newRandomSessionID } from "../coValueCore.js";
-import { LocalNode } from "../node.js";
+import { LocalNode } from "../localNode.js";
 import { SyncMessage } from "../sync.js";
 import { expectMap } from "../coValue.js";
 import { MapOpPayload } from "../coValues/coMap.js";

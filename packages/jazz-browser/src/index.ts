@@ -1,4 +1,4 @@
-import { BinaryCoStream, CoValue, CoValueCore, InviteSecret, Queried } from "cojson";
+import { BinaryCoStream, CoValue, CoValueCore, InviteSecret } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
@@ -14,7 +14,7 @@ import {
     CoID,
 } from "cojson";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
-import { IDBStorage } from "jazz-storage-indexeddb";
+import { IDBStorage } from "cojson-storage-indexeddb";
 
 export type BrowserNodeHandle = {
     node: LocalNode;
