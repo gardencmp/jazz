@@ -1,5 +1,5 @@
 import { Transaction } from "../coValueCore.js";
-import { LocalNode } from "../node.js";
+import { LocalNode } from "../localNode.js";
 import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "../crypto.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 import { MapOpPayload } from "../coValues/coMap.js";

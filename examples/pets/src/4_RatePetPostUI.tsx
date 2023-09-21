@@ -1,5 +1,6 @@
+import { useParams } from "react-router";
 import { CoID, Queried } from "cojson";
-import { useTelepathicQuery } from "jazz-react";
+import { useSyncedQuery } from "jazz-react";
 
 import { PetPost, ReactionType, REACTION_TYPES, PetReactions } from "./1_types";
 
@@ -20,8 +21,10 @@ const reactionEmojiMap: { [reaction in ReactionType]: string } = {
     chonkers: "🐘",
 };
 
-export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
-    const petPost = useTelepathicQuery(petPostID);
+export function RatePetPostUI() {
+    const petPostID = useParams<{ petPostId: CoID<PetPost> }>().petPostId;
+
+    const petPost = useSyncedQuery(petPostID);
     const petImage = useLoadImage(petPost?.image);
 
     return (

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { CoID, Queried } from "cojson";
-import { useTelepathicQuery } from "jazz-react";
+import { useSyncedQuery } from "jazz-react";
 
 import { TodoProject, Task } from "./1_types";
 
@@ -19,6 +19,7 @@ import {
 
 import { InviteButton } from "./components/InviteButton";
 import uniqolor from "uniqolor";
+import { useParams } from "react-router";
 
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
@@ -28,11 +29,13 @@ import uniqolor from "uniqolor";
  *  the `ListOfTasks` referenced in it.
  */
 
-export function TodoTable({ projectId }: { projectId: CoID<TodoProject> }) {
+export function ProjectTodoTable() {
+    const projectId = useParams<{ projectId: CoID<TodoProject> }>().projectId;
+
     // `useTelepathicData()` reactively subscribes to updates to a CoValue's
     // content - whether we create edits locally, load persisted data, or receive
     // sync updates from other devices or participants!
-    const project = useTelepathicQuery(projectId);
+    const project = useSyncedQuery(projectId);
 
     // `createTask` is similar to `createProject` we saw earlier, creating a new CoMap
     // for a new task (in the same group as the list of tasks/the project), and then

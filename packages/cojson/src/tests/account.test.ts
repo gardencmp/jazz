@@ -54,7 +54,7 @@ test("Can create account with one node, and then load it on another", async () =
 
     const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {trace: true, peer1role: "server", peer2role: "client"});
 
-    node.sync.addPeer(node2asPeer);
+    node.syncManager.addPeer(node2asPeer);
 
     const node2 = await LocalNode.withLoadedAccount(
         accountID,

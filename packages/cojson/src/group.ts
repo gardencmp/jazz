@@ -20,7 +20,6 @@ import { AgentID, SessionID, isAgentID } from "./ids.js";
 import { AccountID, GeneralizedControlledAccount, Profile } from "./account.js";
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
-import { CoList } from "./coValues/coList.js";
 import {
     BinaryCoStream,
     BinaryCoStreamMeta,
@@ -70,6 +69,7 @@ export function expectGroupContent(
  *  ```
  * */
 export class Group {
+    /** @category 4. Underlying CoMap */
     underlyingMap: CoMap<GroupContent, JsonObject | null>;
     /** @internal */
     node: LocalNode;
@@ -83,12 +83,20 @@ export class Group {
         this.node = node;
     }
 
-    /** Returns the `CoID` of the `Group`. */
+    /**
+     * Returns the `CoID` of the `Group`.
+     *
+     * @category 4. Underlying CoMap
+     */
     get id(): CoID<CoMap<GroupContent, JsonObject | null>> {
         return this.underlyingMap.id;
     }
 
-    /** Returns the current role of a given account. */
+    /**
+     * Returns the current role of a given account.
+     *
+     * @category 1. Role reading
+     */
     roleOf(accountID: AccountID): Role | undefined {
         return this.roleOfInternal(accountID);
     }
@@ -98,13 +106,21 @@ export class Group {
         return this.underlyingMap.get(accountID);
     }
 
-    /** Returns the role of the current account in the group. */
+    /**
+     * Returns the role of the current account in the group.
+     *
+     * @category 1. Role reading
+     */
     myRole(): Role | undefined {
         return this.roleOfInternal(this.node.account.id);
     }
 
-    /** Directly grants a new member a role in the group. The current account must be an
-     * admin to be able to do so. Throws otherwise. */
+    /**
+     * Directly grants a new member a role in the group. The current account must be an
+     * admin to be able to do so. Throws otherwise.
+     *
+     * @category 2. Role changing
+     */
     addMember(accountID: AccountID, role: Role) {
         this.addMemberInternal(accountID, role);
     }
@@ -212,9 +228,13 @@ export class Group {
         });
     }
 
-    /** Strips the specified member of all roles (preventing future writes in
+    /**
+     * Strips the specified member of all roles (preventing future writes in
      *  the group and owned values) and rotates the read encryption key for that group
-     * (preventing reads of new content in the group and owned values) */
+     * (preventing reads of new content in the group and owned values)
+     *
+     * @category 2. Role changing
+     */
     removeMember(accountID: AccountID) {
         this.removeMemberInternal(accountID);
     }
@@ -228,7 +248,13 @@ export class Group {
         this.rotateReadKey();
     }
 
-    /** Creates an invite for new members to indirectly join the group, allowing them to grant themselves the specified role with the InviteSecret (a string starting with "inviteSecret_") - use `LocalNode.acceptInvite()` for this purpose. */
+    /**
+     * Creates an invite for new members to indirectly join the group,
+     * allowing them to grant themselves the specified role with the InviteSecret
+     * (a string starting with "inviteSecret_") - use `LocalNode.acceptInvite()` for this purpose.
+     *
+     * @category 2. Role changing
+     */
     createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
         const secretSeed = newRandomSecretSeed();
 
@@ -240,8 +266,12 @@ export class Group {
         return inviteSecretFromSecretSeed(secretSeed);
     }
 
-    /** Creates a new `CoMap` within this group, with the specified specialized
-     *  `CoMap` type `M` and optional static metadata. */
+    /**
+     * Creates a new `CoMap` within this group, with the specified specialized
+     * `CoMap` type `M` and optional static metadata.
+     *
+     * @category 3. Value creation
+     */
     createMap<M extends AnyCoMap>(
         init?: {
             [K in keyof M["_shape"]]: M["_shape"][K] extends AnyCoValue
@@ -272,8 +302,12 @@ export class Group {
         return map;
     }
 
-    /** Creates a new `CoList` within this group, with the specified specialized
-     * `CoList` type `L` and optional static metadata. */
+    /**
+     * Creates a new `CoList` within this group, with the specified specialized
+     * `CoList` type `L` and optional static metadata.
+     *
+     * @category 3. Value creation
+     */
     createList<L extends AnyCoList>(
         init?: (L["_item"] extends CoValue
             ? CoID<L["_item"]> | L["_item"]
@@ -302,6 +336,7 @@ export class Group {
         return list;
     }
 
+    /** @category 3. Value creation */
     createStream<C extends CoStream<JsonValue | CoValue, JsonObject | null>>(
         meta?: C["meta"]
     ): C {
@@ -318,6 +353,7 @@ export class Group {
             .getCurrentContent() as C;
     }
 
+    /** @category 3. Value creation */
     createBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
         meta: C["meta"] = { type: "binary" }
     ): C {

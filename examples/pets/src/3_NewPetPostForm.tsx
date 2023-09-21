@@ -1,10 +1,11 @@
 import { ChangeEvent, useCallback, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { CoID, CoMap, Media } from "cojson";
-import { useJazz, useTelepathicQuery } from "jazz-react";
+import { useJazz, useSyncedQuery } from "jazz-react";
 import { createImage } from "jazz-browser-media-images";
 
-import { PetPost, PetReactions } from "./1_types";
+import { PetReactions } from "./1_types";
 
 import { Input, Button } from "./basicComponents";
 import { useLoadImage } from "jazz-react-media-images";
@@ -16,25 +17,22 @@ type PartialPetPost = CoMap<{
     name: string;
     image?: Media.ImageDefinition;
     reactions: PetReactions;
-}>
+}>;
 
-export function CreatePetPostForm({
-    onCreate,
-}: {
-    onCreate: (id: CoID<PetPost>) => void;
-}) {
+export function NewPetPostForm() {
     const { localNode } = useJazz();
+    const navigate = useNavigate();
 
-    const [newPostId, setNewPostId] = useState<CoID<PartialPetPost> | undefined>(
-        undefined
-    );
+    const [newPostId, setNewPostId] = useState<
+        CoID<PartialPetPost> | undefined
+    >(undefined);
 
-    const newPetPost = useTelepathicQuery(newPostId);
+    const newPetPost = useSyncedQuery(newPostId);
 
     const onChangeName = useCallback(
         (name: string) => {
             if (newPetPost) {
-                newPetPost.set({name});
+                newPetPost.set({ name });
             } else {
                 const petPostGroup = localNode.createGroup();
                 const petPost = petPostGroup.createMap<PartialPetPost>({
@@ -57,7 +55,7 @@ export function CreatePetPostForm({
                 newPetPost.group
             );
 
-            newPetPost.set({image});
+            newPetPost.set({ image });
         },
         [newPetPost]
     );
@@ -91,7 +89,7 @@ export function CreatePetPostForm({
             {newPetPost?.name && newPetPost?.image && (
                 <Button
                     onClick={() => {
-                        onCreate(newPetPost.id as CoID<PetPost>);
+                        navigate("/pet/" + newPetPost.id);
                     }}
                 >
                     Submit Post

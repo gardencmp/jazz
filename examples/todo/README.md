@@ -27,29 +27,28 @@ npm run dev
 
 ## Structure
 
-- [`src/basicComponents`](./src/basicComponents) contains simple components to build the UI, unrelated to Jazz (powered by [shadcn/ui](https://ui.shadcn.com))
-- [`src/components`](./src/components/) contains helper components that do contain Jazz-specific logic, but are not super relevant to understand the basics of Jazz and CoJSON
-- [`src/0_main.tsx`](./src/0_main.tsx), [`src/1_types.ts`](./src/1_types.ts), [`src/2_App.tsx`](./src/2_App.tsx), [`src/3_TodoTable.tsx`](./src/3_TodoTable.tsx), [`src/router.ts`](./src/router.ts) - the main files for this example, see the walkthrough below
+- [`src/basicComponents`](./src/basicComponents): simple components to build the UI, unrelated to Jazz (uses [shadcn/ui](https://ui.shadcn.com))
+- [`src/components`](./src/components/): helper components that do contain Jazz-specific logic, but aren't very relevant to understand the basics of Jazz and CoJSON
+- [`src/1_types.ts`](./src/1_types.ts),
+[`src/2_main.tsx`](./src/2_main.tsx),
+[`src/3_NewProjectForm.tsx`](./src/3_NewProjectForm.tsx),
+[`src/4_ProjectTodoTable.tsx`](./src/4_ProjectTodoTable.tsx): the main files for this example, see the walkthrough below
 
 ## Walkthrough
 
 ### Main parts
 
-- The top-level provider `<WithJazz/>`: [`src/0_main.tsx`](./src/0_main.tsx)
+1. Defining the data model with CoJSON: [`src/1_types.ts`](./src/1_types.ts)
 
-- Defining the data model with CoJSON: [`src/1_types.ts`](./src/1_types.ts)
+2. The top-level provider `<WithJazz/>` and routing: [`src/2_main.tsx`](./src/2_main.tsx)
 
-- Creating todo projects & routing in `<App/>`: [`src/2_App.tsx`](./src/2_App.tsx)
+3. Creating a new todo project: [`src/3_NewProjectForm.tsx`](./src/3_NewProjectForm.tsx)
 
-- Reactively rendering a todo project as a table, adding and editing tasks: [`src/3_TodoTable.tsx`](./src/3_TodoTable.tsx)
+4. Reactively rendering a todo project as a table, adding and editing tasks: [`src/4_ProjectTodoTable.tsx`](./src/4_ProjectTodoTable.tsx)
 
 ### Helpers
 
-- Getting user profiles in `<NameBadge/>`: [`src/components/NameBadge.tsx`](./src/components/NameBadge.tsx)
-
-- (not yet commented) Creating invite links/QR codes with `<InviteButton/>`: [`src/components/InviteButton.tsx`](./src/components/InviteButton.tsx)
-
-- (not yet commented) `location.hash`-based routing and accepting invite links with `useSimpleHashRouterThatAcceptsInvites()` in [`src/router.ts`](./src/router.ts)
+- (not yet explained) Creating invite links/QR codes with `<InviteButton/>`: [`src/components/InviteButton.tsx`](./src/components/InviteButton.tsx)
 
 This is the whole Todo List app!
 
@@ -62,4 +61,4 @@ If you have feedback, let us know on [Discord](https://discord.gg/utDMjHYg42) or
 
 By default, the example app uses [Jazz Global Mesh](https://jazz.tools/mesh) (`wss://sync.jazz.tools`) - so cross-device use, invites and collaboration should just work.
 
-You can also run a local sync server by running `npx cojson-simple-sync` and adding the query param `?sync=ws://localhost:4200` to the URL of the example app (for example: `http://localhost:5173/?sync=ws://localhost:4200`), or by setting the `sync` parameter of the `<WithJazz>` provider component in [./src/0_main.tsx](./src/0_main.tsx).
+You can also run a local sync server by running `npx cojson-simple-sync` and adding the query param `?sync=ws://localhost:4200` to the URL of the example app (for example: `http://localhost:5173/?sync=ws://localhost:4200`), or by setting the `sync` parameter of the `<WithJazz>` provider component in [./src/2_main.tsx](./src/2_main.tsx).

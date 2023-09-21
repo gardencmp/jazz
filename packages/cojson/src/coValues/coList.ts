@@ -45,8 +45,11 @@ export class CoListView<
     Meta extends JsonObject | null = null
 > implements CoValue
 {
+    /** @category 6. Meta */
     id: CoID<this>;
+    /** @category 6. Meta */
     type = "colist" as const;
+    /** @category 6. Meta */
     core: CoValueCore;
     /** @internal */
     afterStart: OpID[];
@@ -68,6 +71,7 @@ export class CoListView<
             };
         };
     };
+    /** @category 6. Meta */
     readonly _item!: Item;
 
     /** @internal */
@@ -192,20 +196,30 @@ export class CoListView<
         }
     }
 
+    /** @category 6. Meta */
     get meta(): Meta {
         return this.core.header.meta as Meta;
     }
 
+    /** @category 6. Meta */
     get group(): Group {
         return this.core.getGroup();
     }
 
-    /** Not yet implemented */
+    /**
+     * Not yet implemented
+     *
+     * @category 4. Time travel
+     */
     atTime(_time: number): this {
         throw new Error("Not yet implemented");
     }
 
-    /** Get the item currently at `idx`. */
+    /**
+     * Get the item currently at `idx`.
+     *
+     * @category 1. Reading
+     */
     get(
         idx: number
     ):
@@ -218,12 +232,17 @@ export class CoListView<
         return entry.value;
     }
 
-    /** Returns the current items in the CoList as an array. */
+    /**
+     * Returns the current items in the CoList as an array.
+     *
+     * @category 1. Reading
+     **/
     asArray(): (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)[] {
         return this.entries().map((entry) => entry.value);
     }
 
-    entries(): {
+    /** @internal */
+     entries(): {
         value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
         madeAt: number;
         opID: OpID;
@@ -275,11 +294,16 @@ export class CoListView<
         }
     }
 
-    /** Returns the current items in the CoList as an array. (alias of `asArray`) */
+    /**
+     * Returns the current items in the CoList as an array. (alias of `asArray`)
+     *
+     * @category 1. Reading
+     */
     toJSON(): (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)[] {
         return this.asArray();
     }
 
+    /** @category 5. Edit history */
     editAt(idx: number):
         | {
               by: AccountID | AgentID;
@@ -306,6 +330,7 @@ export class CoListView<
         };
     }
 
+    /** @category 5. Edit history */
     deletionEdits(): {
         by: AccountID | AgentID;
         tx: TransactionID;
@@ -343,6 +368,7 @@ export class CoListView<
         return edits;
     }
 
+    /** @category 3. Subscription */
     subscribe(listener: (coList: this) => void): () => void {
         return this.core.subscribe((content) => {
             listener(content as this);
@@ -361,7 +387,10 @@ export class CoList<
      *
      * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
+     **/
     append(
         item: Item extends CoValue ? Item | CoID<Item> : Item,
         after?: number,
@@ -407,6 +436,8 @@ export class CoList<
      * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
      * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
      */
     prepend(
         item: Item extends CoValue ? Item | CoID<Item> : Item,
@@ -450,7 +481,10 @@ export class CoList<
      *
      * If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
+     **/
     delete(at: number, privacy: "private" | "trusting" = "private"): this {
         const entries = this.entries();
         const entry = entries[at];
@@ -470,6 +504,7 @@ export class CoList<
         return new CoList(this.core) as this;
     }
 
+    /** @category 2. Editing */
     mutate(mutator: (mutable: MutableCoList<Item, Meta>) => void): this {
         const mutable = new MutableCoList<Item, Meta>(this.core);
         mutator(mutable);
@@ -493,7 +528,10 @@ export class MutableCoList<
      *
      * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Mutating
+     **/
     append(
         item: Item extends CoValue ? Item | CoID<Item> : Item,
         after?: number,
@@ -515,7 +553,10 @@ export class MutableCoList<
      *
      * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * * @category 2. Mutating
+     **/
     prepend(
         item: Item extends CoValue ? Item | CoID<Item> : Item,
         before?: number,
@@ -537,7 +578,10 @@ export class MutableCoList<
      *
      * If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * * @category 2. Mutating
+     **/
     delete(at: number, privacy: "private" | "trusting" = "private"): void {
         const listAfter = CoList.prototype.delete.call(
             this,

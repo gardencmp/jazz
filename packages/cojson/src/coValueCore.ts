@@ -486,7 +486,7 @@ export class CoValueCore {
         );
 
         if (success) {
-            void this.node.sync.syncCoValue(this);
+            void this.node.syncManager.syncCoValue(this);
         }
 
         return success;

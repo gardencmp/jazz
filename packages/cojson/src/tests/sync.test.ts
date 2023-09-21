@@ -32,7 +32,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -114,7 +114,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -191,7 +191,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -312,7 +312,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -387,7 +387,7 @@ test("No matter the optimistic known state, node respects invalid known state me
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -491,7 +491,7 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -520,7 +520,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -592,7 +592,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -646,7 +646,7 @@ test("When we connect a new server peer, we try to sync all existing coValues to
     const [inRx, _inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -682,7 +682,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -723,7 +723,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const [inRx1, inTx1] = newStreamPair<SyncMessage>();
     const [outRx1, outTx1] = newStreamPair<SyncMessage>();
 
-    node1.sync.addPeer({
+    node1.syncManager.addPeer({
         id: "test2",
         incoming: inRx1,
         outgoing: outTx1,
@@ -738,7 +738,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const [inRx2, inTx2] = newStreamPair<SyncMessage>();
     const [outRx2, outTx2] = newStreamPair<SyncMessage>();
 
-    node2.sync.addPeer({
+    node2.syncManager.addPeer({
         id: "test1",
         incoming: inRx2,
         outgoing: outTx2,
@@ -769,7 +769,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     expect(groupTellKnownStateMsg.value).toMatchObject(groupStateEx(group));
 
     expect(
-        node2.sync.peers["test1"]!.optimisticKnownStates[
+        node2.syncManager.peers["test1"]!.optimisticKnownStates[
             group.underlyingMap.core.id
         ]
     ).toBeDefined();
@@ -850,8 +850,8 @@ test.skip("When loading a coValue on one node, the server node it is requested f
 
     const [node1asPeer, node2asPeer] = connectedPeers("peer1", "peer2");
 
-    node1.sync.addPeer(node2asPeer);
-    node2.sync.addPeer(node1asPeer);
+    node1.syncManager.addPeer(node2asPeer);
+    node2.syncManager.addPeer(node1asPeer);
 
     await node2.loadCoValue(map.core.id);
 
@@ -883,8 +883,8 @@ test("Can sync a coValue through a server to another client", async () => {
         peer2role: "client",
     });
 
-    client1.sync.addPeer(serverAsPeer);
-    server.sync.addPeer(client1AsPeer);
+    client1.syncManager.addPeer(serverAsPeer);
+    server.syncManager.addPeer(client1AsPeer);
 
     const client2 = new LocalNode(admin, newRandomSessionID(admin.id));
 
@@ -894,8 +894,8 @@ test("Can sync a coValue through a server to another client", async () => {
         { peer1role: "server", peer2role: "client" }
     );
 
-    client2.sync.addPeer(serverAsOtherPeer);
-    server.sync.addPeer(client2AsPeer);
+    client2.syncManager.addPeer(serverAsOtherPeer);
+    server.syncManager.addPeer(client2AsPeer);
 
     const mapOnClient2 = await client2.loadCoValue(map.core.id);
 
@@ -926,8 +926,8 @@ test("Can sync a coValue with private transactions through a server to another c
         peer2role: "client",
     });
 
-    client1.sync.addPeer(serverAsPeer);
-    server.sync.addPeer(client1AsPeer);
+    client1.syncManager.addPeer(serverAsPeer);
+    server.syncManager.addPeer(client1AsPeer);
 
     const client2 = new LocalNode(admin, newRandomSessionID(admin.id));
 
@@ -937,8 +937,8 @@ test("Can sync a coValue with private transactions through a server to another c
         { trace: true, peer1role: "server", peer2role: "client" }
     );
 
-    client2.sync.addPeer(serverAsOtherPeer);
-    server.sync.addPeer(client2AsPeer);
+    client2.syncManager.addPeer(serverAsOtherPeer);
+    server.syncManager.addPeer(client2AsPeer);
 
     const mapOnClient2 = await client2.loadCoValue(map.core.id);
 
@@ -956,7 +956,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -998,7 +998,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    expect(node.sync.peers["test"]).toBeUndefined();
+    expect(node.syncManager.peers["test"]).toBeUndefined();
 });
 
 test("When a peer's outgoing/writable stream closes, we remove the peer", async () => {
@@ -1010,7 +1010,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
-    node.sync.addPeer({
+    node.syncManager.addPeer({
         id: "test",
         incoming: inRx,
         outgoing: outTx,
@@ -1057,7 +1057,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    expect(node.sync.peers["test"]).toBeUndefined();
+    expect(node.syncManager.peers["test"]).toBeUndefined();
 });
 
 test("If we start loading a coValue before connecting to a peer that has it, it will load it once we connect", async () => {
@@ -1080,13 +1080,13 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
         trace: true,
     });
 
-    node1.sync.addPeer(node2asPeer);
+    node1.syncManager.addPeer(node2asPeer);
 
     const mapOnNode2Promise = node2.loadCoValue(map.core.id);
 
     expect(node2.coValues[map.core.id]?.state).toEqual("loading");
 
-    node2.sync.addPeer(node1asPeer);
+    node2.syncManager.addPeer(node1asPeer);
 
     const mapOnNode2 = await mapOnNode2Promise;
 

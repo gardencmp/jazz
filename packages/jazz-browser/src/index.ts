@@ -297,7 +297,8 @@ export function createInviteLink<T extends CoValue>(
     // default to same address as window.location, but without hash
     {
         baseURL = window.location.href.replace(/#.*$/, ""),
-    }: { baseURL?: string } = {}
+        valueHint
+    }: { baseURL?: string, valueHint?: string } = {}
 ): string {
     const coValueCore = value.core;
     const node = coValueCore.node;
@@ -318,7 +319,7 @@ export function createInviteLink<T extends CoValue>(
 
     const inviteSecret = group.createInvite(role);
 
-    return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
+    return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${value.id}/${inviteSecret}`;
 }
 
 export function parseInviteLink<C extends CoValue>(
@@ -326,18 +327,33 @@ export function parseInviteLink<C extends CoValue>(
 ):
     | {
           valueID: CoID<C>;
+          valueHint?: string;
           inviteSecret: InviteSecret;
       }
     | undefined {
     const url = new URL(inviteURL);
-    const valueID = url.hash
-        .split("&")[0]
-        ?.replace(/^#invitedTo=/, "") as CoID<C>;
-    const inviteSecret = url.hash.split("&")[1] as InviteSecret;
-    if (!valueID || !inviteSecret) {
-        return undefined;
+    const parts = url.hash.split("/");
+
+    let valueHint: string | undefined;
+    let valueID: CoID<C> | undefined;
+    let inviteSecret: InviteSecret | undefined;
+
+    if (parts[0] === "#" && parts[1] === "invite") {
+        if (parts.length === 5) {
+            valueHint = parts[2];
+            valueID = parts[3] as CoID<C>;
+            inviteSecret = parts[4] as InviteSecret;
+        } else if (parts.length === 4) {
+            valueID = parts[2] as CoID<C>;
+            inviteSecret = parts[3] as InviteSecret;
+        }
+
+        if (!valueID || !inviteSecret) {
+            return undefined;
+        }
+        return { valueID, inviteSecret, valueHint };
     }
-    return { valueID, inviteSecret };
+
 }
 
 export function consumeInviteLinkFromWindowLocation<C extends CoValue>(

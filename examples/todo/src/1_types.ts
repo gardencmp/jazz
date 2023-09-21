@@ -5,7 +5,7 @@ import { CoMap, CoList } from "cojson";
  *  Here, we define our main data model of tasks, lists of tasks and projects
  *  using CoJSON's collaborative map and list types, CoMap & CoList.
  *
- *  CoMap values and CoLists items can be:
+ *  CoMap values and CoLists items can contain:
  *  - arbitrary immutable JSON
  *  - references to other CoValues by their CoID
  *    - CoIDs are strings that look like `co_zXPuWmH1D1cKdMpDW6CMzWb3LpY`
@@ -23,4 +23,4 @@ export type TodoProject = CoMap<{
     tasks: CoList<Task>;
 }>;
 
-/** Walkthrough: Continue with ./2_App.tsx */
+/** Walkthrough: Continue with ./2_main.tsx */

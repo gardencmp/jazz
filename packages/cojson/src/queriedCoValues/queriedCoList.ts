@@ -1,4 +1,4 @@
-import { MutableCoList } from "../coValues/coList.js";
+import { CoList, MutableCoList } from "../coValues/coList.js";
 import { CoValueCore } from "../coValueCore.js";
 import { Group } from "../group.js";
 import { isAccountID } from "../account.js";
@@ -16,6 +16,12 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
 
     /** @internal */
     constructor(coList: L, queryContext: QueryContext) {
+        if (!(coList instanceof CoList)) {
+            // this might be called from an intrinsic, like map, trying to create an empty array
+            // passing `0` as the only parameter
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return new Array(coList) as any;
+        }
         super(
             ...coList
                 .asArray()

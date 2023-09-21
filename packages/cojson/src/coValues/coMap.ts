@@ -32,14 +32,19 @@ export class CoMapView<
     Meta extends JsonObject | null = null
 > implements CoValue
 {
+    /** @category 6. Meta */
     id: CoID<this>;
+    /** @category 6. Meta */
     type = "comap" as const;
+    /** @category 6. Meta */
     core: CoValueCore;
     /** @internal */
     ops: {
         [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
     };
+    /** @internal */
     atTimeFilter?: number = undefined;
+    /** @category 6. Meta */
     readonly _shape!: Shape;
 
     /** @internal */
@@ -78,14 +83,17 @@ export class CoMapView<
         }
     }
 
+    /** @category 6. Meta */
     get meta(): Meta {
         return this.core.header.meta as Meta;
     }
 
+    /** @category 6. Meta */
     get group(): Group {
         return this.core.getGroup();
     }
 
+    /** @category 4. Time travel */
     atTime(time: number): this {
         const clone = Object.create(this) as this;
         clone.id = this.id;
@@ -109,6 +117,10 @@ export class CoMapView<
         }
     }
 
+    /**
+     * Get all keys currently in the map.
+     *
+     * @category 1. Reading */
     keys(): (keyof Shape & string)[] {
         const keys = Object.keys(this.ops) as (keyof Shape & string)[];
 
@@ -121,7 +133,11 @@ export class CoMapView<
         }
     }
 
-    /** Returns the current value for the given key. */
+    /**
+     * Returns the current value for the given key.
+     *
+     * @category 1. Reading
+     **/
     get<K extends keyof Shape & string>(
         key: K
     ):
@@ -146,6 +162,7 @@ export class CoMapView<
         }
     }
 
+    /** @category 1. Reading */
     asObject(): {
         [K in keyof Shape & string]: Shape[K] extends CoValue
             ? CoID<Shape[K]>
@@ -171,6 +188,7 @@ export class CoMapView<
         };
     }
 
+    /** @category 1. Reading */
     toJSON(): {
         [K in keyof Shape & string]: Shape[K] extends CoValue
             ? CoID<Shape[K]>
@@ -179,6 +197,7 @@ export class CoMapView<
         return this.asObject();
     }
 
+    /** @category 5. Edit history */
     nthEditAt<K extends keyof Shape & string>(
         key: K,
         n: number
@@ -211,6 +230,7 @@ export class CoMapView<
         };
     }
 
+    /** @category 5. Edit history */
     lastEditAt<K extends keyof Shape & string>(
         key: K
     ):
@@ -230,6 +250,7 @@ export class CoMapView<
         return this.nthEditAt(key, ops.length - 1);
     }
 
+    /** @category 5. Edit history */
     *editsAt<K extends keyof Shape & string>(key: K) {
         const ops = this.timeFilteredOps(key);
         if (!ops) {
@@ -241,6 +262,7 @@ export class CoMapView<
         }
     }
 
+    /** @category 3. Subscription */
     subscribe(listener: (coMap: this) => void): () => void {
         return this.core.subscribe((content) => {
             listener(content as this);
@@ -248,7 +270,7 @@ export class CoMapView<
     }
 }
 
-/** A collaborative map with precise shape `M` and optional static metadata `Meta` */
+/** A collaborative map with precise shape `Shape` and optional static metadata `Meta` */
 export class CoMap<
         Shape extends { [key: string]: JsonValue | CoValue | undefined },
         Meta extends JsonObject | null = null
@@ -262,7 +284,10 @@ export class CoMap<
      *
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
+     **/
     set<K extends keyof Shape & string>(
         key: K,
         value: Shape[K] extends CoValue ? Shape[K] | CoID<Shape[K]> : Shape[K],
@@ -337,7 +362,10 @@ export class CoMap<
      *
      * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
+     **/
     delete(
         key: keyof Shape & string,
         privacy: "private" | "trusting" = "private"
@@ -355,6 +383,7 @@ export class CoMap<
         return new CoMap(this.core) as this;
     }
 
+    /** @category 2. Editing */
     mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
         const mutable = new MutableCoMap<Shape, Meta>(this.core);
         mutator(mutable);
@@ -378,7 +407,10 @@ export class MutableCoMap<
      *
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Mutation
+     */
     set<K extends keyof Shape & string>(
         key: K,
         value: Shape[K] extends CoValue ? Shape[K] | CoID<Shape[K]> : Shape[K],
@@ -398,7 +430,9 @@ export class MutableCoMap<
      *
      * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
+     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     * @category 2. Mutation
+     */
     delete(
         key: keyof Shape & string,
         privacy: "private" | "trusting" = "private"

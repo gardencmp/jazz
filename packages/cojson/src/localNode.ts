@@ -35,7 +35,6 @@ import {
     AccountID,
     Profile,
     AccountContent,
-    Account,
 } from "./account.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoValue } from "./index.js";
@@ -54,11 +53,14 @@ const { localNode } = useJazz();
 export class LocalNode {
     /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
-    /** @internal */
+    /** @category Low-level */
     account: GeneralizedControlledAccount;
+    /** @category Low-level */
     currentSessionID: SessionID;
-    sync = new SyncManager(this);
+    /** @category Low-level */
+    syncManager = new SyncManager(this);
 
+    /** @category Low-level */
     constructor(
         account: GeneralizedControlledAccount,
         currentSessionID: SessionID
@@ -67,6 +69,7 @@ export class LocalNode {
         this.currentSessionID = currentSessionID;
     }
 
+    /** @category High-level */
     static withNewlyCreatedAccount(
         name: string,
         initialAgentSecret = newRandomAgentSecret()
@@ -97,6 +100,7 @@ export class LocalNode {
         };
     }
 
+    /** @category High-level */
     static async withLoadedAccount(
         accountID: AccountID,
         accountSecret: AgentSecret,
@@ -111,7 +115,7 @@ export class LocalNode {
         const accountPromise = loadingNode.load(accountID);
 
         for (const peer of peersToLoadFrom) {
-            loadingNode.sync.addPeer(peer);
+            loadingNode.syncManager.addPeer(peer);
         }
 
         const account = await accountPromise;
@@ -121,8 +125,8 @@ export class LocalNode {
             new ControlledAccount(accountSecret, account, loadingNode),
             sessionID
         );
-        node.sync = loadingNode.sync;
-        node.sync.local = node;
+        node.syncManager = loadingNode.syncManager;
+        node.syncManager.local = node;
 
         return node;
     }
@@ -132,7 +136,7 @@ export class LocalNode {
         const coValue = new CoValueCore(header, this);
         this.coValues[coValue.id] = { state: "loaded", coValue: coValue };
 
-        void this.sync.syncCoValue(coValue);
+        void this.syncManager.syncCoValue(coValue);
 
         return coValue;
     }
@@ -145,7 +149,7 @@ export class LocalNode {
 
             this.coValues[id] = entry;
 
-            this.sync.loadFromPeers(id);
+            this.syncManager.loadFromPeers(id);
         }
         if (entry.state === "loaded") {
             return Promise.resolve(entry.coValue);
@@ -157,11 +161,14 @@ export class LocalNode {
      * Loads a CoValue's content, syncing from peers as necessary and resolving the returned
      * promise once a first version has been loaded. See `coValue.subscribe()` and `node.useTelepathicData()`
      * for listening to subsequent updates to the CoValue.
+     *
+     * @category Low-level
      */
     async load<T extends CoValue>(id: CoID<T>): Promise<T> {
         return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
+    /** @category Low-level */
     subscribe<T extends CoValue>(
         id: CoID<T>,
         callback: (update: T) => void
@@ -189,6 +196,7 @@ export class LocalNode {
         };
     }
 
+    /** @category High-level */
     query<T extends CoValue>(
         id: CoID<T>,
         callback: (update: Queried<T> | undefined) => void
@@ -196,6 +204,7 @@ export class LocalNode {
         return query(id, this, callback);
     }
 
+    /** @category High-level */
     async acceptInvite<T extends CoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
@@ -415,7 +424,10 @@ export class LocalNode {
         ).getCurrentAgentID();
     }
 
-    /** Creates a new group (with the current account as the group's first admin). */
+    /**
+     * Creates a new group (with the current account as the group's first admin).
+     * @category High-level
+     */
     createGroup(): Group {
         const groupCoValue = this.createCoValue({
             type: "comap",

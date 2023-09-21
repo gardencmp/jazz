@@ -182,6 +182,38 @@ test("List of nested maps works", () => {
     return done;
 });
 
+test("Can call .map on a quieried coList", async () => {
+    const { node } = LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+
+    const group = node.createGroup();
+
+    let list = group.createList<CoList<string>>();
+
+    const done = new Promise<void>((resolve) => {
+
+        const unsubQuery = node.query(list.id, (queriedList) => {
+
+            if (queriedList && queriedList[0]) {
+                // console.log("update", queriedList);
+                expect(queriedList.map((item) => item + "!!!")).toEqual([
+                    "hello!!!",
+                    "world!!!",
+                ]);
+                // console.log("final update", queriedList);
+                resolve();
+                unsubQuery();
+            }
+        });
+    });
+
+    list = list.mutate((list) => {
+        list.append("hello");
+        list.append("world");
+    });
+
+    await done;
+});
+
 test("Queries with streams work", () => {
     const { node, accountID } =
         LocalNode.withNewlyCreatedAccount("Hermes Puggington");
@@ -193,7 +225,7 @@ test("Queries with streams work", () => {
     const done = new Promise<void>((resolve) => {
         const unsubQuery = node.query(stream.id, (queriedStream) => {
             if (queriedStream) {
-                console.log("update", queriedStream);
+                // console.log("update", queriedStream);
                 if (queriedStream.me?.by?.profile?.name) {
                     expect(queriedStream.type).toBe("costream");
                     expect(queriedStream.id).toEqual(stream.id);
@@ -240,7 +272,7 @@ test("Queries with streams work", () => {
                         [accountID]: expectedEntry,
                     });
                     expect(queriedStream.me).toMatchObject(expectedEntry);
-                    console.log("final update", queriedStream);
+                    // console.log("final update", queriedStream);
                     resolve();
                     unsubQuery();
                 }
