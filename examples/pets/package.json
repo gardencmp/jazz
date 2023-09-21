@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-pets",
   "private": true,
-  "version": "0.0.8",
+  "version": "0.0.11",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,13 +16,15 @@
     "@types/qrcode": "^1.5.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "jazz-react": "^0.2.4",
-    "jazz-react-auth-local": "^0.2.4",
-    "jazz-react-media-images": "^0.2.4",
+    "jazz-react": "^0.3.0",
+    "jazz-react-auth-local": "^0.3.0",
+    "jazz-react-media-images": "^0.3.0",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router": "^6.16.0",
+    "react-router-dom": "^6.16.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
     "uniqolor": "^1.1.0"

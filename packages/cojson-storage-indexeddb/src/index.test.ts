@@ -12,7 +12,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
         )
     );
 
-    node.sync.addPeer(await IDBStorage.asPeer({ trace: true }));
+    node.syncManager.addPeer(await IDBStorage.asPeer({ trace: true }));
 
     console.log("yay!");
 
@@ -20,7 +20,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    expect(node.sync.peers["storage"]).toBeDefined();
+    expect(node.syncManager.peers["storage"]).toBeDefined();
 });
 
 test("Should be able to sync data to database and then load that from a new node", async () => {
@@ -33,7 +33,7 @@ test("Should be able to sync data to database and then load that from a new node
         )
     );
 
-    node1.sync.addPeer(
+    node1.syncManager.addPeer(
         await IDBStorage.asPeer({ trace: true, localNodeName: "node1" })
     );
 
@@ -56,7 +56,7 @@ test("Should be able to sync data to database and then load that from a new node
         )
     );
 
-    node2.sync.addPeer(
+    node2.syncManager.addPeer(
         await IDBStorage.asPeer({ trace: true, localNodeName: "node2" })
     );
 

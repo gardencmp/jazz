@@ -6,8 +6,9 @@ import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
+import { Queried } from "cojson";
 
-export function ShareButton({ petPost }: { petPost?: PetPost }) {
+export function ShareButton({ petPost }: { petPost?: Queried<PetPost> }) {
     const [existingInviteLink, setExistingInviteLink] = useState<string>();
     const { toast } = useToast();
 

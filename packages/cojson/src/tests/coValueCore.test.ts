@@ -1,11 +1,11 @@
-import { Transaction } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
-import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "./crypto.js";
+import { Transaction } from "../coValueCore.js";
+import { LocalNode } from "../localNode.js";
+import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "../crypto.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
-import { MapOpPayload } from "./coValues/coMap.js";
-import { Role } from "./permissions.js";
-import { cojsonReady } from "./index.js";
-import { stableStringify } from "./jsonStringify.js";
+import { MapOpPayload } from "../coValues/coMap.js";
+import { Role } from "../permissions.js";
+import { cojsonReady } from "../index.js";
+import { stableStringify } from "../jsonStringify.js";
 
 beforeEach(async () => {
     await cojsonReady;

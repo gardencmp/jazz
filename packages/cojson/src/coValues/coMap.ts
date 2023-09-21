@@ -1,71 +1,70 @@
-import { JsonObject, JsonValue } from '../jsonValue.js';
-import { TransactionID } from '../ids.js';
-import { CoID, ReadableCoValue, WriteableCoValue } from '../coValue.js';
-import { CoValueCore, accountOrAgentIDfromSessionID } from '../coValueCore.js';
-import { AccountID, isAccountID } from '../account.js';
-import { Group } from '../group.js';
-import { parseJSON } from '../jsonStringify.js';
+import { JsonObject, JsonValue } from "../jsonValue.js";
+import { AgentID, TransactionID } from "../ids.js";
+import { CoID, CoValue, isCoValue } from "../coValue.js";
+import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { AccountID } from "../account.js";
+import { Group } from "../group.js";
+import { parseJSON } from "../jsonStringify.js";
 
-type MapOp<K extends string, V extends JsonValue | undefined> = {
+type MapOp<K extends string, V extends JsonValue | CoValue | undefined> = {
     txID: TransactionID;
     madeAt: number;
     changeIdx: number;
 } & MapOpPayload<K, V>;
 // TODO: add after TransactionID[] for conflicts/ordering
 
-export type MapOpPayload<K extends string, V extends JsonValue | undefined> = {
-    op: "set";
-    key: K;
-    value: V;
-} |
+export type MapOpPayload<
+    K extends string,
+    V extends JsonValue | CoValue | undefined
+> =
+    | {
+          op: "set";
+          key: K;
+          value: V extends CoValue ? CoID<V> : Exclude<V, CoValue>;
+      }
+    | {
+          op: "del";
+          key: K;
+      };
+
+export class CoMapView<
+    Shape extends { [key: string]: JsonValue | CoValue | undefined },
+    Meta extends JsonObject | null = null
+> implements CoValue
 {
-    op: "del";
-    key: K;
-};
-
-export type MapK<M extends { [key: string]: JsonValue | undefined; }> = keyof M & string;
-export type MapV<M extends { [key: string]: JsonValue | undefined; }> = M[MapK<M>];
-
-
-/** A collaborative map with precise shape `M` and optional static metadata `Meta` */
-export class CoMap<
-    M extends { [key: string]: JsonValue | undefined; },
-    Meta extends JsonObject | null = null,
-> implements ReadableCoValue {
-    id: CoID<CoMap<M, Meta>>;
+    /** @category 6. Meta */
+    id: CoID<this>;
+    /** @category 6. Meta */
     type = "comap" as const;
+    /** @category 6. Meta */
     core: CoValueCore;
     /** @internal */
     ops: {
-        [KK in MapK<M>]?: MapOp<KK, M[KK]>[];
+        [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
     };
+    /** @internal */
+    atTimeFilter?: number = undefined;
+    /** @category 6. Meta */
+    readonly _shape!: Shape;
 
     /** @internal */
     constructor(core: CoValueCore) {
-        this.id = core.id as CoID<CoMap<M, Meta>>;
+        this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
 
-        this.fillOpsFromCoValue();
-    }
-
-    get meta(): Meta {
-        return this.core.header.meta as Meta;
-    }
-
-    get group(): Group {
-        return this.core.getGroup();
-    }
-
-    /** @internal */
-    protected fillOpsFromCoValue() {
-        this.ops = {};
-
-        for (const { txID, changes, madeAt } of this.core.getValidSortedTransactions()) {
-            for (const [changeIdx, changeUntyped] of (
-                parseJSON(changes)
+        for (const {
+            txID,
+            changes,
+            madeAt,
+        } of core.getValidSortedTransactions()) {
+            for (const [changeIdx, changeUntyped] of parseJSON(
+                changes
             ).entries()) {
-                const change = changeUntyped as MapOpPayload<MapK<M>, MapV<M>>;
+                const change = changeUntyped as MapOpPayload<
+                    keyof Shape & string,
+                    Shape[keyof Shape & string]
+                >;
                 let entries = this.ops[change.key];
                 if (!entries) {
                     entries = [];
@@ -75,175 +74,373 @@ export class CoMap<
                     txID,
                     madeAt,
                     changeIdx,
-                    ...(change as MapOpPayload<MapK<M>, MapV<M>>),
+                    ...(change as MapOpPayload<
+                        keyof Shape & string,
+                        Shape[keyof Shape & string]
+                    >),
                 });
             }
         }
     }
 
-    keys(): MapK<M>[] {
-        return Object.keys(this.ops) as MapK<M>[];
+    /** @category 6. Meta */
+    get meta(): Meta {
+        return this.core.header.meta as Meta;
     }
 
-    /** Returns the current value for the given key. */
-    get<K extends MapK<M>>(key: K): M[K] | undefined {
-        const ops = this.ops[key];
+    /** @category 6. Meta */
+    get group(): Group {
+        return this.core.getGroup();
+    }
+
+    /** @category 4. Time travel */
+    atTime(time: number): this {
+        const clone = Object.create(this) as this;
+        clone.id = this.id;
+        clone.type = this.type;
+        clone.core = this.core;
+        clone.ops = this.ops;
+        clone.atTimeFilter = time;
+        return clone;
+    }
+
+    /** @internal */
+    timeFilteredOps<K extends keyof Shape & string>(
+        key: K
+    ): MapOp<K, Shape[K]>[] | undefined {
+        if (this.atTimeFilter) {
+            return this.ops[key]?.filter(
+                (op) => op.madeAt <= this.atTimeFilter!
+            );
+        } else {
+            return this.ops[key];
+        }
+    }
+
+    /**
+     * Get all keys currently in the map.
+     *
+     * @category 1. Reading */
+    keys(): (keyof Shape & string)[] {
+        const keys = Object.keys(this.ops) as (keyof Shape & string)[];
+
+        if (this.atTimeFilter) {
+            return keys.filter((key) => {
+                this.timeFilteredOps(key)?.length;
+            });
+        } else {
+            return keys;
+        }
+    }
+
+    /**
+     * Returns the current value for the given key.
+     *
+     * @category 1. Reading
+     **/
+    get<K extends keyof Shape & string>(
+        key: K
+    ):
+        | (Shape[K] extends CoValue
+              ? CoID<Shape[K]>
+              : Exclude<Shape[K], CoValue>)
+        | undefined {
+        const ops = this.timeFilteredOps(key);
         if (!ops) {
             return undefined;
         }
 
-        const lastEntry = ops[ops.length - 1]!;
+        const includeUntil = this.atTimeFilter;
+        const lastEntry = includeUntil
+            ? ops.findLast((entry) => entry.madeAt <= includeUntil)
+            : ops[ops.length - 1]!;
 
-        if (lastEntry.op === "del") {
+        if (lastEntry?.op === "del") {
             return undefined;
         } else {
-            return lastEntry.value;
+            return lastEntry?.value;
         }
     }
 
-    getAtTime<K extends MapK<M>>(key: K, time: number): M[K] | undefined {
-        const ops = this.ops[key];
-        if (!ops) {
-            return undefined;
-        }
-
-        const lastOpBeforeOrAtTime = ops.findLast((op) => op.madeAt <= time);
-
-        if (!lastOpBeforeOrAtTime) {
-            return undefined;
-        }
-
-        if (lastOpBeforeOrAtTime.op === "del") {
-            return undefined;
-        } else {
-            return lastOpBeforeOrAtTime.value;
-        }
-    }
-
-    /** Returns the accountID of the last account to modify the value for the given key. */
-    whoEdited<K extends MapK<M>>(key: K): AccountID | undefined {
-        const tx  = this.getLastTxID(key);
-        if (!tx) {
-            return undefined;
-        }
-        const accountID = accountOrAgentIDfromSessionID(tx.sessionID);
-        if (isAccountID(accountID)) {
-            return accountID;
-        } else {
-            return undefined;
-        }
-    }
-
-    getLastTxID<K extends MapK<M>>(key: K): TransactionID | undefined {
-        const ops = this.ops[key];
-        if (!ops) {
-            return undefined;
-        }
-
-        const lastEntry = ops[ops.length - 1]!;
-
-        return lastEntry.txID;
-    }
-
-    getLastEntry<K extends MapK<M>>(key: K): { at: number; txID: TransactionID; value: M[K]; } | undefined {
-        const ops = this.ops[key];
-        if (!ops) {
-            return undefined;
-        }
-
-        const lastEntry = ops[ops.length - 1]!;
-
-        if (lastEntry.op === "del") {
-            return undefined;
-        } else {
-            return { at: lastEntry.madeAt, txID: lastEntry.txID, value: lastEntry.value };
-        }
-    }
-
-    getHistory<K extends MapK<M>>(key: K): { at: number; txID: TransactionID; value: M[K] | undefined; }[] {
-        const ops = this.ops[key];
-        if (!ops) {
-            return [];
-        }
-
-        const history: { at: number; txID: TransactionID; value: M[K] | undefined; }[] = [];
-
-        for (const op of ops) {
-            if (op.op === "del") {
-                history.push({ at: op.madeAt, txID: op.txID, value: undefined });
-            } else {
-                history.push({ at: op.madeAt, txID: op.txID, value: op.value });
-            }
-        }
-
-        return history;
-    }
-
-    toJSON(): JsonObject {
-        const json: JsonObject = {};
+    /** @category 1. Reading */
+    asObject(): {
+        [K in keyof Shape & string]: Shape[K] extends CoValue
+            ? CoID<Shape[K]>
+            : Exclude<Shape[K], CoValue>;
+    } {
+        const object: Partial<{
+            [K in keyof Shape & string]: Shape[K] extends CoValue
+                ? CoID<Shape[K]>
+                : Exclude<Shape[K], CoValue>;
+        }> = {};
 
         for (const key of this.keys()) {
             const value = this.get(key);
             if (value !== undefined) {
-                json[key] = value;
+                object[key] = value;
             }
         }
 
-        return json;
+        return object as {
+            [K in keyof Shape & string]: Shape[K] extends CoValue
+                ? CoID<Shape[K]>
+                : Exclude<Shape[K], CoValue>;
+        };
     }
 
-    subscribe(listener: (coMap: CoMap<M, Meta>) => void): () => void {
+    /** @category 1. Reading */
+    toJSON(): {
+        [K in keyof Shape & string]: Shape[K] extends CoValue
+            ? CoID<Shape[K]>
+            : Exclude<Shape[K], CoValue>;
+    } {
+        return this.asObject();
+    }
+
+    /** @category 5. Edit history */
+    nthEditAt<K extends keyof Shape & string>(
+        key: K,
+        n: number
+    ):
+        | {
+              by: AccountID | AgentID;
+              tx: TransactionID;
+              at: Date;
+              value?: Shape[K] extends CoValue
+                  ? CoID<Shape[K]>
+                  : Exclude<Shape[K], CoValue>;
+          }
+        | undefined {
+        const ops = this.timeFilteredOps(key);
+        if (!ops || ops.length <= n) {
+            return undefined;
+        }
+
+        const entry = ops[n]!;
+
+        if (this.atTimeFilter && entry.madeAt > this.atTimeFilter) {
+            return undefined;
+        }
+
+        return {
+            by: accountOrAgentIDfromSessionID(entry.txID.sessionID),
+            tx: entry.txID,
+            at: new Date(entry.madeAt),
+            value: entry.op === "del" ? undefined : entry.value,
+        };
+    }
+
+    /** @category 5. Edit history */
+    lastEditAt<K extends keyof Shape & string>(
+        key: K
+    ):
+        | {
+              by: AccountID | AgentID;
+              tx: TransactionID;
+              at: Date;
+              value?: Shape[K] extends CoValue
+                  ? CoID<Shape[K]>
+                  : Exclude<Shape[K], CoValue>;
+          }
+        | undefined {
+        const ops = this.timeFilteredOps(key);
+        if (!ops || ops.length === 0) {
+            return undefined;
+        }
+        return this.nthEditAt(key, ops.length - 1);
+    }
+
+    /** @category 5. Edit history */
+    *editsAt<K extends keyof Shape & string>(key: K) {
+        const ops = this.timeFilteredOps(key);
+        if (!ops) {
+            return;
+        }
+
+        for (let i = 0; i < ops.length; i++) {
+            yield this.nthEditAt(key, i)!;
+        }
+    }
+
+    /** @category 3. Subscription */
+    subscribe(listener: (coMap: this) => void): () => void {
         return this.core.subscribe((content) => {
-            listener(content as CoMap<M, Meta>);
+            listener(content as this);
         });
-    }
-
-    edit(changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
-        const editable = new WriteableCoMap<M, Meta>(this.core);
-        changer(editable);
-        return new CoMap(this.core);
     }
 }
 
-export class WriteableCoMap<
-    M extends { [key: string]: JsonValue | undefined; },
-    Meta extends JsonObject | null = null,
-> extends CoMap<M, Meta> implements WriteableCoValue {
-    /** @internal */
-    edit(_changer: (editable: WriteableCoMap<M, Meta>) => void): CoMap<M, Meta> {
-        throw new Error("Already editing.");
+/** A collaborative map with precise shape `Shape` and optional static metadata `Meta` */
+export class CoMap<
+        Shape extends { [key: string]: JsonValue | CoValue | undefined },
+        Meta extends JsonObject | null = null
+    >
+    extends CoMapView<Shape, Meta>
+    implements CoValue
+{
+
+
+    /** Returns a new version of this CoMap with a new value for the given key.
+     *
+     * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+     *
+     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
+     **/
+    set<K extends keyof Shape & string>(
+        key: K,
+        value: Shape[K] extends CoValue ? Shape[K] | CoID<Shape[K]> : Shape[K],
+        privacy?: "private" | "trusting"
+    ): this;
+    set(
+        kv: {
+            [K in keyof Shape & string]?: Shape[K] extends CoValue
+                ? Shape[K] | CoID<Shape[K]>
+                : Shape[K];
+        },
+        privacy?: "private" | "trusting"
+    ): this;
+    set<K extends keyof Shape & string>(
+        ...args:
+            | [
+                  {
+                      [K in keyof Shape & string]?: Shape[K] extends CoValue
+                          ? Shape[K] | CoID<Shape[K]>
+                          : Shape[K];
+                  },
+                  ("private" | "trusting")?
+              ]
+            | [
+                  K,
+                  Shape[K] extends CoValue
+                      ? Shape[K] | CoID<Shape[K]>
+                      : Shape[K],
+                  ("private" | "trusting")?
+              ]
+    ): this {
+        if (typeof args[0] === "string") {
+            const [key, value, privacy = "private"] = args;
+            this.core.makeTransaction(
+                [
+                    {
+                        op: "set",
+                        key,
+                        value: isCoValue(value) ? value.id : value,
+                    },
+                ],
+                privacy
+            );
+        } else {
+            const [kv, privacy = "private"] = args as [
+                {
+                    [K in keyof Shape & string]: Shape[K] extends CoValue
+                        ? Shape[K] | CoID<Shape[K]>
+                        : Shape[K];
+                },
+                "private" | "trusting" | undefined
+            ];
+
+            for (const [key, value] of Object.entries(kv)) {
+                this.core.makeTransaction(
+                    [
+                        {
+                            op: "set",
+                            key,
+                            value: isCoValue(value) ? value.id : value,
+                        },
+                    ],
+                    privacy
+                );
+            }
+        }
+
+        return new CoMap(this.core) as this;
     }
 
+    /** Returns a new version of this CoMap with the given key deleted (setting it to undefined).
+     *
+     * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+     *
+     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Editing
+     **/
+    delete(
+        key: keyof Shape & string,
+        privacy: "private" | "trusting" = "private"
+    ): this {
+        this.core.makeTransaction(
+            [
+                {
+                    op: "del",
+                    key,
+                },
+            ],
+            privacy
+        );
+
+        return new CoMap(this.core) as this;
+    }
+
+    /** @category 2. Editing */
+    mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
+        const mutable = new MutableCoMap<Shape, Meta>(this.core);
+        mutator(mutable);
+        return new CoMap(this.core) as this;
+    }
+
+    /** @deprecated Use `mutate` instead. */
+    edit(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
+        return this.mutate(mutator);
+    }
+}
+
+export class MutableCoMap<
+        Shape extends { [key: string]: JsonValue | CoValue | undefined },
+        Meta extends JsonObject | null = null
+    >
+    extends CoMapView<Shape, Meta>
+    implements CoValue
+{
     /** Sets a new value for the given key.
      *
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
-    set<K extends MapK<M>>(key: K, value: M[K], privacy: "private" | "trusting" = "private"): void {
-        this.core.makeTransaction([
-            {
-                op: "set",
-                key,
-                value,
-            },
-        ], privacy);
-
-        this.fillOpsFromCoValue();
+     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     *
+     * @category 2. Mutation
+     */
+    set<K extends keyof Shape & string>(
+        key: K,
+        value: Shape[K] extends CoValue ? Shape[K] | CoID<Shape[K]> : Shape[K],
+        privacy: "private" | "trusting" = "private"
+    ): void {
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        const after = (CoMap.prototype.set as Function).call(
+            this,
+            key,
+            value,
+            privacy
+        ) as CoMap<Shape, Meta>;
+        this.ops = after.ops;
     }
 
     /** Deletes the value for the given key (setting it to undefined).
      *
      * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
-     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers. */
-    delete(key: MapK<M>, privacy: "private" | "trusting" = "private"): void {
-        this.core.makeTransaction([
-            {
-                op: "del",
-                key,
-            },
-        ], privacy);
-
-        this.fillOpsFromCoValue();
+     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+     * @category 2. Mutation
+     */
+    delete(
+        key: keyof Shape & string,
+        privacy: "private" | "trusting" = "private"
+    ): void {
+        const after = CoMap.prototype.delete.call(this, key, privacy) as CoMap<
+            Shape,
+            Meta
+        >;
+        this.ops = after.ops;
     }
 }

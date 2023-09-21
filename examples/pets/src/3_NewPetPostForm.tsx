@@ -1,10 +1,11 @@
 import { ChangeEvent, useCallback, useState } from "react";
+import { useNavigate } from "react-router";
 
-import { CoID } from "cojson";
-import { useJazz, useTelepathicState } from "jazz-react";
+import { CoID, CoMap, Media } from "cojson";
+import { useJazz, useSyncedQuery } from "jazz-react";
 import { createImage } from "jazz-browser-media-images";
 
-import { PetPost, PetReactions } from "./1_types";
+import { PetReactions } from "./1_types";
 
 import { Input, Button } from "./basicComponents";
 import { useLoadImage } from "jazz-react-media-images";
@@ -12,37 +13,35 @@ import { useLoadImage } from "jazz-react-media-images";
 /** Walkthrough: TODO
  */
 
-export function CreatePetPostForm({
-    onCreate,
-}: {
-    onCreate: (id: CoID<PetPost>) => void;
-}) {
+type PartialPetPost = CoMap<{
+    name: string;
+    image?: Media.ImageDefinition;
+    reactions: PetReactions;
+}>;
+
+export function NewPetPostForm() {
     const { localNode } = useJazz();
+    const navigate = useNavigate();
 
-    const [newPostId, setNewPostId] = useState<CoID<PetPost> | undefined>(
-        undefined
-    );
+    const [newPostId, setNewPostId] = useState<
+        CoID<PartialPetPost> | undefined
+    >(undefined);
 
-    const newPetPost = useTelepathicState(newPostId);
+    const newPetPost = useSyncedQuery(newPostId);
 
     const onChangeName = useCallback(
         (name: string) => {
-            let petPost = newPetPost;
-            if (!petPost) {
+            if (newPetPost) {
+                newPetPost.set({ name });
+            } else {
                 const petPostGroup = localNode.createGroup();
-                petPost = petPostGroup.createMap<PetPost>();
-                const petReactions = petPostGroup.createStream<PetReactions>();
-
-                petPost = petPost.edit((petPost) => {
-                    petPost.set("reactions", petReactions.id);
+                const petPost = petPostGroup.createMap<PartialPetPost>({
+                    name,
+                    reactions: petPostGroup.createStream<PetReactions>(),
                 });
 
                 setNewPostId(petPost.id);
             }
-
-            petPost.edit((petPost) => {
-                petPost.set("name", name);
-            });
         },
         [localNode, newPetPost]
     );
@@ -51,19 +50,17 @@ export function CreatePetPostForm({
         async (event: ChangeEvent<HTMLInputElement>) => {
             if (!newPetPost || !event.target.files) return;
 
-            const imageDefinition = await createImage(
+            const image = await createImage(
                 event.target.files[0],
                 newPetPost.group
             );
 
-            newPetPost.edit((petPost) => {
-                petPost.set("image", imageDefinition.id);
-            });
+            newPetPost.set({ image });
         },
         [newPetPost]
     );
 
-    const petImage = useLoadImage(newPetPost?.get("image"));
+    const petImage = useLoadImage(newPetPost?.image?.id);
 
     return (
         <div className="flex flex-col gap-10">
@@ -73,7 +70,7 @@ export function CreatePetPostForm({
                 placeholder="Pet Name"
                 className="text-3xl py-6"
                 onChange={(event) => onChangeName(event.target.value)}
-                value={newPetPost?.get("name") || ""}
+                value={newPetPost?.name || ""}
             />
 
             {petImage ? (
@@ -84,15 +81,15 @@ export function CreatePetPostForm({
             ) : (
                 <Input
                     type="file"
-                    disabled={!newPetPost?.get("name")}
+                    disabled={!newPetPost?.name}
                     onChange={onImageSelected}
                 />
             )}
 
-            {newPetPost?.get("name") && newPetPost?.get("image") && (
+            {newPetPost?.name && newPetPost?.image && (
                 <Button
                     onClick={() => {
-                        onCreate(newPetPost.id);
+                        navigate("/pet/" + newPetPost.id);
                     }}
                 >
                     Submit Post

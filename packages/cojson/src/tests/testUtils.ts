@@ -1,9 +1,11 @@
-import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "./crypto.js";
-import { newRandomSessionID } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
-import { expectGroupContent } from "./group.js";
-import { AnonymousControlledAccount } from "./account.js";
-import { SessionID } from "./ids.js";
+import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { LocalNode } from "../localNode.js";
+import { expectGroupContent } from "../group.js";
+import { AnonymousControlledAccount } from "../account.js";
+import { SessionID } from "../ids.js";
+// @ts-ignore
+import { expect } from "bun:test";
 
 export function randomAnonymousAccountAndSessionID(): [AnonymousControlledAccount, SessionID] {
     const agentSecret = newRandomAgentSecret();
@@ -27,7 +29,7 @@ export function newGroup() {
 
     const groupContent = expectGroupContent(group.getCurrentContent());
 
-    groupContent.edit((editable) => {
+    groupContent.mutate((editable) => {
         editable.set(admin.id, "admin", "trusting");
         expect(editable.get(admin.id)).toEqual("admin");
     });
@@ -42,7 +44,7 @@ export function groupWithTwoAdmins() {
 
     let content = expectGroupContent(group.getCurrentContent());
 
-    content.edit((editable) => {
+    content.mutate((editable) => {
         editable.set(otherAdmin.id, "admin", "trusting");
         expect(editable.get(otherAdmin.id)).toEqual("admin");
     });

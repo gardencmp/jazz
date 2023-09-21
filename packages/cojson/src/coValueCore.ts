@@ -1,6 +1,5 @@
 import { randomBytes } from "@noble/hashes/utils";
-import { CoValueImpl } from "./coValue.js";
-import { Static } from "./coValues/static.js";
+import { AnyCoValue, CoValue } from "./coValue.js";
 import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
 import { CoMap } from "./coValues/coMap.js";
 import {
@@ -28,7 +27,7 @@ import {
     isKeyForKeyField,
 } from "./permissions.js";
 import { Group, expectGroupContent } from "./group.js";
-import { LocalNode } from "./node.js";
+import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";
@@ -38,7 +37,7 @@ import { Stringified, stableStringify } from "./jsonStringify.js";
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
 export type CoValueHeader = {
-    type: CoValueImpl["type"];
+    type: AnyCoValue["type"];
     ruleset: RulesetDef;
     meta: JsonObject | null;
     createdAt: `2${string}` | null;
@@ -99,8 +98,8 @@ export class CoValueCore {
     node: LocalNode;
     header: CoValueHeader;
     _sessions: { [key: SessionID]: SessionLog };
-    _cachedContent?: CoValueImpl;
-    listeners: Set<(content?: CoValueImpl) => void> = new Set();
+    _cachedContent?: CoValue;
+    listeners: Set<(content?: CoValue) => void> = new Set();
     _decryptionCache: {
         [key: Encrypted<JsonValue[], JsonValue>]:
             | Stringified<JsonValue[]>
@@ -376,7 +375,7 @@ export class CoValueCore {
         }
     }
 
-    subscribe(listener: (content?: CoValueImpl) => void): () => void {
+    subscribe(listener: (content?: CoValue) => void): () => void {
         this.listeners.add(listener);
         listener(this.getCurrentContent());
 
@@ -487,13 +486,13 @@ export class CoValueCore {
         );
 
         if (success) {
-            void this.node.sync.syncCoValue(this);
+            void this.node.syncManager.syncCoValue(this);
         }
 
         return success;
     }
 
-    getCurrentContent(): CoValueImpl {
+    getCurrentContent(): CoValue {
         if (this._cachedContent) {
             return this._cachedContent;
         }
@@ -508,8 +507,6 @@ export class CoValueCore {
             } else {
                 this._cachedContent = new CoStream(this);
             }
-        } else if (this.header.type === "static") {
-            this._cachedContent = new Static(this);
         } else {
             throw new Error(`Unknown coValue type ${this.header.type}`);
         }
@@ -611,26 +608,24 @@ export class CoValueCore {
 
             // Try to find key revelation for us
 
-            const readKeyEntry = content.getLastEntry(
+            const lastReadyKeyEdit = content.lastEditAt(
                 `${keyID}_for_${this.node.account.id}`
             );
 
-            if (readKeyEntry) {
-                const revealer = accountOrAgentIDfromSessionID(
-                    readKeyEntry.txID.sessionID
-                );
+            if (lastReadyKeyEdit?.value) {
+                const revealer = lastReadyKeyEdit.by;
                 const revealerAgent = this.node.resolveAccountAgent(
                     revealer,
                     "Expected to know revealer"
                 );
 
                 const secret = unseal(
-                    readKeyEntry.value,
+                    lastReadyKeyEdit.value,
                     this.node.account.currentSealerSecret(),
                     getAgentSealerID(revealerAgent),
                     {
                         in: this.id,
-                        tx: readKeyEntry.txID,
+                        tx: lastReadyKeyEdit.tx,
                     }
                 );
 
@@ -784,15 +779,16 @@ export class CoValueCore {
                     sessionEntry = {
                         after: sentState[sessionID] ?? 0,
                         newTransactions: [],
-                        lastSignature: "WILL_BE_REPLACED" as Signature
+                        lastSignature: "WILL_BE_REPLACED" as Signature,
                     };
                     currentPiece.new[sessionID] = sessionEntry;
                 }
 
                 sessionEntry.newTransactions.push(...txsToAdd);
-                sessionEntry.lastSignature = nextKnownSignatureIdx === undefined
-                ? log.lastSignature!
-                : log.signatureAfter[nextKnownSignatureIdx]!
+                sessionEntry.lastSignature =
+                    nextKnownSignatureIdx === undefined
+                        ? log.lastSignature!
+                        : log.signatureAfter[nextKnownSignatureIdx]!;
 
                 sentState[sessionID] =
                     (sentState[sessionID] || 0) + txsToAdd.length;

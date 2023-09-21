@@ -14,14 +14,14 @@ import {
     decryptForTransaction,
     encryptKeySecret,
     decryptKeySecret,
-} from './crypto.js';
+} from "../crypto.js";
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";
 import { blake3 } from "@noble/hashes/blake3";
 import stableStringify from "fast-json-stable-stringify";
-import { SessionID } from './ids.js';
-import { cojsonReady } from './index.js';
+import { SessionID } from "../ids.js";
+import { cojsonReady } from "../index.js";
 
 beforeEach(async () => {
     await cojsonReady;
@@ -58,18 +58,18 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     } as const;
 
-    const sealed = seal(
-        data,
-        sender,
-        getSealerID(sealer),
-        nOnceMaterial
-    );
+    const sealed = seal({
+        message: data,
+        from: sender,
+        to: getSealerID(sealer),
+        nOnceMaterial,
+    });
 
-    expect(
-        unseal(sealed, sealer, getSealerID(sender), nOnceMaterial)
-    ).toEqual(data);
-    expect(
-        () => unseal(sealed, wrongSealer, getSealerID(sender), nOnceMaterial)
+    expect(unseal(sealed, sealer, getSealerID(sender), nOnceMaterial)).toEqual(
+        data
+    );
+    expect(() =>
+        unseal(sealed, wrongSealer, getSealerID(sender), nOnceMaterial)
     ).toThrow(/Wrong tag/);
 
     // trying with wrong sealer secret, by hand
@@ -82,9 +82,7 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
     const senderPub = base58.decode(
         getSealerID(sender).substring("sealer_z".length)
     );
-    const sealedBytes = base64url.decode(
-        sealed.substring("sealed_U".length)
-    );
+    const sealedBytes = base64url.decode(sealed.substring("sealed_U".length));
     const sharedSecret = x25519.getSharedSecret(sealer3priv, senderPub);
 
     expect(() => {
@@ -105,7 +103,7 @@ test("Hashing is deterministic", () => {
 test("Encryption for transactions round-trips", () => {
     const { secret } = newRandomKeySecret();
 
-    const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
+    const encrypted1 = encryptForTransaction({ a: "hello" }, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
@@ -120,7 +118,7 @@ test("Encryption for transactions round-trips", () => {
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
 
-    const decrypted2 =  decryptForTransaction(encrypted2, secret, {
+    const decrypted2 = decryptForTransaction(encrypted2, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 1 },
     });
@@ -132,7 +130,7 @@ test("Encryption for transactions doesn't decrypt with a wrong key", () => {
     const { secret } = newRandomKeySecret();
     const { secret: secret2 } = newRandomKeySecret();
 
-    const encrypted1 =  encryptForTransaction({ a: "hello" }, secret, {
+    const encrypted1 = encryptForTransaction({ a: "hello" }, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
@@ -147,7 +145,7 @@ test("Encryption for transactions doesn't decrypt with a wrong key", () => {
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
 
-    const decrypted2 =  decryptForTransaction(encrypted2, secret2, {
+    const decrypted2 = decryptForTransaction(encrypted2, secret2, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 1 },
     });

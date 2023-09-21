@@ -1,13 +1,17 @@
-import { CoValueCore, newRandomSessionID, MAX_RECOMMENDED_TX_SIZE } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
-import type { CoValue, ReadableCoValue } from "./coValue.js";
-import { CoMap, WriteableCoMap } from "./coValues/coMap.js";
-import { CoList, WriteableCoList } from "./coValues/coList.js";
+import {
+    CoValueCore,
+    newRandomSessionID,
+    MAX_RECOMMENDED_TX_SIZE,
+} from "./coValueCore.js";
+import { LocalNode } from "./localNode.js";
+import type { CoValue } from "./coValue.js";
+import { CoMap, MutableCoMap } from "./coValues/coMap.js";
+import { CoList, MutableCoList } from "./coValues/coList.js";
 import {
     CoStream,
-    WriteableCoStream,
+    MutableCoStream,
     BinaryCoStream,
-    WriteableBinaryCoStream,
+    MutableBinaryCoStream,
 } from "./coValues/coStream.js";
 import {
     agentSecretFromBytes,
@@ -18,7 +22,7 @@ import {
     agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    cryptoReady
+    cryptoReady,
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
@@ -28,16 +32,23 @@ import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
 
 import type { SessionID, AgentID } from "./ids.js";
-import type { CoID, CoValueImpl } from "./coValue.js";
-import type { BinaryChunkInfo, BinaryCoStreamMeta } from "./coValues/coStream.js";
+import type { CoID, AnyCoValue } from "./coValue.js";
+import type { Queried } from "./queries.js";
+import type { QueriedCoStream } from "./queriedCoValues/queriedCoStream.js";
+import type { QueriedCoList } from "./queriedCoValues/queriedCoList.js";
+import type { QueriedCoMap } from "./queriedCoValues/queriedCoMap.js";
+import type {
+    BinaryStreamInfo,
+    BinaryCoStreamMeta,
+} from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type { AccountID, Profile } from "./account.js";
+import type { AccountID, Account, Profile } from "./account.js";
 import type { InviteSecret } from "./group.js";
 import type * as Media from "./media.js";
 
-type Value = JsonValue | CoValueImpl;
+type Value = JsonValue | AnyCoValue;
 
 /** @hidden */
 export const cojsonInternals = {
@@ -56,45 +67,46 @@ export const cojsonInternals = {
     expectGroupContent,
     base64URLtoBytes,
     bytesToBase64url,
-    parseJSON
+    parseJSON,
 };
 
 export {
     LocalNode,
     Group,
     CoMap,
-    WriteableCoMap,
+    MutableCoMap,
     CoList,
-    WriteableCoList,
+    MutableCoList,
     CoStream,
-    WriteableCoStream,
+    MutableCoStream,
     BinaryCoStream,
-    WriteableBinaryCoStream,
+    MutableBinaryCoStream,
+    CoValue,
+    CoID,
+    AnyCoValue,
+    Queried,
+    QueriedCoMap,
+    QueriedCoList,
+    QueriedCoStream,
+    AccountID,
+    Account,
+    Profile,
+    SessionID,
+    Media,
     CoValueCore,
     AnonymousControlledAccount,
     ControlledAccount,
     cryptoReady as cojsonReady,
-    MAX_RECOMMENDED_TX_SIZE
-};
-
-export type {
+    MAX_RECOMMENDED_TX_SIZE,
     Value,
     JsonValue,
-    CoValue,
-    ReadableCoValue,
-    CoValueImpl,
-    CoID,
-    AccountID,
-    Profile,
-    SessionID,
     Peer,
-    BinaryChunkInfo,
+    BinaryStreamInfo,
     BinaryCoStreamMeta,
     AgentID,
     AgentSecret,
     InviteSecret,
     SyncMessage,
-    Media
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

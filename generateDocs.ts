@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "fs/promises";
-import { Application, JSONOutput } from "typedoc";
+import { Application, JSONOutput, ReflectionKind } from "typedoc";
 
 const manuallyIgnore = new Set(["CojsonInternalTypes"]);
 
@@ -8,22 +8,18 @@ async function main() {
     // Also accepts an array of option readers if you want to disable
     // TypeDoc's tsconfig.json/package.json/typedoc.json option readers
     const packageDocs = Object.entries({
-        cojson: "index.ts",
         "jazz-react": "index.tsx",
+        cojson: "index.ts",
+        "jazz-react-media-images": "index.tsx",
         "jazz-browser": "index.ts",
         "jazz-browser-media-images": "index.ts",
-        "jazz-react-media-images": "index.tsx",
     }).map(async ([packageName, entryPoint]) => {
         const app = await Application.bootstrapWithPlugins({
             entryPoints: [`packages/${packageName}/src/${entryPoint}`],
             tsconfig: `packages/${packageName}/tsconfig.json`,
             sort: ["required-first"],
-            groupOrder: [
-                "Functions",
-                "Classes",
-                "TypeAliases",
-                "Namespaces"
-            ]
+            groupOrder: ["Functions", "Classes", "TypeAliases", "Namespaces"],
+            categorizeByGroup: false
         });
 
         const project = await app.convert();
@@ -43,38 +39,65 @@ async function main() {
             docs
                 .groups!.map((group) => {
                     return group.children
-                        ?.map((childId) => {
+                        ?.flatMap((childId) => {
                             const child = docs.children!.find(
                                 (child) => child.id === childId
                             )!;
 
-                            if (manuallyIgnore.has(child.name)) {
-                                return "";
+                            if (
+                                manuallyIgnore.has(child.name) ||
+                                child.comment?.blockTags?.some(
+                                    (tag) =>
+                                        tag.tag === "@deprecated" ||
+                                        tag.tag === "@internal" ||
+                                        tag.tag === "@ignore"
+                                ) ||
+                                child.signatures?.every((signature) =>
+                                    signature.comment?.blockTags?.some(
+                                        (tag) =>
+                                            tag.tag === "@deprecated" ||
+                                            tag.tag === "@internal" ||
+                                            tag.tag === "@ignore"
+                                    )
+                                )
+                            ) {
+                                return [];
                             }
 
                             return (
-                                `## \`${renderChildName(child)}\` (${group.title
+                                `## \`${renderChildName(
+                                    child
+                                )}\`\n\n<sup>(${group.title
                                     .toLowerCase()
+                                    .replace("bles", "ble")
                                     .replace("ces", "ce")
                                     .replace(/es$/, "")
                                     .replace(
                                         "ns",
                                         "n"
-                                    )} in \`${packageName}\`)\n\n` +
+                                    )} in \`${packageName}\`)</sup>\n\n` +
                                 renderChildType(child) +
-                                renderComment(child.comment) +
-                                (child.kind === 128 || child.kind === 256
-                                    ? child.groups
-                                          ?.map((group) =>
-                                              renderChildGroup(child, group)
+                                (child.kind === ReflectionKind.Class ||
+                                child.kind === ReflectionKind.Interface ||
+                                child.kind === ReflectionKind.Namespace
+                                    ? renderSummary(child.comment) +
+                                      renderExamples(child.comment) +
+                                      (child.categories || child.groups)
+                                          ?.map((category) =>
+                                              renderChildCategory(child, category)
                                           )
-                                          .join("\n\n")
-                                    : child.kind === 4
-                                    ? child.groups
-                                          ?.map((group) =>
-                                              renderChildGroup(child, group)
-                                          )
-                                          .join("\n\n")
+                                          .join("<br/>\n\n")
+                                    : child.kind === ReflectionKind.Function
+                                    ? renderSummary(
+                                          child.signatures?.[0].comment
+                                      ) +
+                                      renderParamComments(
+                                          child.signatures?.[0].parameters || []
+                                      ) +
+                                      renderExamples(
+                                          child.signatures?.[0].comment
+                                      ) +
+                                      "\n\n"
                                     : "TODO: doc generator not implemented yet " +
                                       child.kind)
                             );
@@ -84,7 +107,7 @@ async function main() {
                 .join("\n\n----\n\n")
         );
 
-        function renderComment(comment?: JSONOutput.Comment): string {
+        function renderSummary(comment?: JSONOutput.Comment): string {
             if (comment) {
                 return (
                     comment.summary
@@ -95,11 +118,50 @@ async function main() {
                         )
                         .join("") +
                     "\n\n" +
-                    (comment.blockTags || [])
-                        .map((blockTag) =>
-                            blockTag.tag === "@example"
-                                ? "##### Example:\n\n" +
-                                  blockTag.content
+                    "\n\n"
+                );
+            } else {
+                return "TODO: document\n\n";
+            }
+        }
+
+        function renderExamples(comment?: JSONOutput.Comment): string {
+            return (comment?.blockTags || [])
+                .map((blockTag) =>
+                    blockTag.tag === "@example"
+                        ? "##### Example:\n\n" +
+                          blockTag.content
+                              .map((token) =>
+                                  token.kind === "text" || token.kind === "code"
+                                      ? token.text
+                                      : ""
+                              )
+                              .join("") +
+                          "\n\n"
+                        : ""
+                )
+                .join("");
+        }
+
+        function renderParamComments(params: JSONOutput.ParameterReflection[]) {
+            const paramDocs = params.flatMap((param) => {
+                if (param.type?.type === "reflection") {
+                    return param.type.declaration.children?.flatMap((child) => {
+                        if (
+                            child.name === "children" &&
+                            child.type?.type === "reference" &&
+                            child.type?.name === "ReactNode"
+                        ) {
+                            return [];
+                        }
+                        return (
+                            `| \`${param.name}.${child.name}${
+                                child.flags.isOptional || child.defaultValue
+                                    ? "?"
+                                    : ""
+                            }\` | ` +
+                            (child.comment
+                                ? child.comment.summary
                                       .map((token) =>
                                           token.kind === "text" ||
                                           token.kind === "code"
@@ -107,13 +169,37 @@ async function main() {
                                               : ""
                                       )
                                       .join("")
+                                : "TODO: document") +
+                            " |"
+                        );
+                    });
+                } else {
+                    const comment = param.comment;
+                    return [
+                        `| \`${param.name}${
+                            param.flags.isOptional || param.defaultValue
+                                ? "?"
                                 : ""
-                        )
-                        .join("\n\n") +
-                    "\n\n"
-                );
-            } else {
-                return "TODO: document\n\n";
+                        }\` | ` +
+                            (comment
+                                ? comment.summary
+                                      .map((token) =>
+                                          token.kind === "text" ||
+                                          token.kind === "code"
+                                              ? token.text
+                                              : ""
+                                      )
+                                      .join("")
+                                : "TODO: document ") +
+                            " |",
+                    ];
+                }
+            });
+
+            if (paramDocs.length) {
+                return `### Parameters:\n\n| name | description |\n| ----: | ---- |\n${paramDocs.join(
+                    "\n"
+                )}\n\n`;
             }
         }
 
@@ -141,29 +227,30 @@ async function main() {
         function renderChildType(
             child: JSONOutput.DeclarationReflection
         ): string {
-            const isClass = child.kind === 128;
-            const isTypeDef = child.kind === 2097152;
-            const isInterface = child.kind === 256;
-            const isNamespace = child.kind === 4;
+            const isClass = child.kind === ReflectionKind.Class;
+            const isTypeAlias = child.kind === ReflectionKind.TypeAlias;
+            const isInterface = child.kind === ReflectionKind.Interface;
+            const isNamespace = child.kind === ReflectionKind.Namespace;
             const isFunction = !!child.signatures;
+
+            const kind = isClass
+                ? "class"
+                : isTypeAlias
+                ? "type"
+                : isFunction
+                ? "function"
+                : isInterface
+                ? "interface"
+                : isNamespace
+                ? "namespace"
+                : "";
+
             return (
                 "```typescript\n" +
-                `export ${
-                    isClass
-                        ? "class"
-                        : isTypeDef
-                        ? "type"
-                        : isFunction
-                        ? "function"
-                        : isInterface
-                        ? "interface"
-                        : isNamespace
-                        ? "namespace"
-                        : ""
-                } ${child.name}` +
-                (child.typeParameters
+                `export ${kind} ${child.name}` +
+                ((child.typeParameters || child.signatures?.[0].typeParameter)
                     ? "<" +
-                      child.typeParameters.map(renderTypeParam).join(", ") +
+                      (child.typeParameters || child.signatures?.[0].typeParameter || []).map(renderTypeParam).join(", ") +
                       ">"
                     : "") +
                 (child.extendedTypes
@@ -176,7 +263,7 @@ async function main() {
                     : "") +
                 (isClass || isInterface || isNamespace
                     ? " {...}"
-                    : isTypeDef
+                    : isTypeAlias
                     ? ` = ${renderType(child.type)}`
                     : child.signatures
                     ? `(${(child.signatures[0].parameters || [])
@@ -189,13 +276,13 @@ async function main() {
             );
         }
 
-        function renderChildGroup(
+        function renderChildCategory(
             child: JSONOutput.DeclarationReflection,
-            group: JSONOutput.ReflectionGroup
+            category: JSONOutput.ReflectionGroup
         ): string {
             return (
-                `### ${group.title}\n\n` +
-                group.children
+                `### \`${child.name}\`: ${category.title.replace(/[^d]+\./, "")}\n\n` +
+                category.children
                     ?.map((memberId) => {
                         const member = child.children!.find(
                             (member) => member.id === memberId
@@ -203,10 +290,14 @@ async function main() {
 
                         if (member.kind === 2048 || member.kind === 512) {
                             if (
-                                member.signatures?.every((sig) =>
-                                    sig.comment?.modifierTags?.includes(
-                                        "@internal"
-                                    )
+                                member.signatures?.every(
+                                    (sig) =>
+                                        sig.comment?.modifierTags?.includes(
+                                            "@internal"
+                                        ) ||
+                                        sig.comment?.modifierTags?.includes(
+                                            "@deprecated"
+                                        )
                                 )
                             ) {
                                 return "";
@@ -223,6 +314,9 @@ async function main() {
                             if (
                                 member.comment?.modifierTags?.includes(
                                     "@internal"
+                                ) ||
+                                member.comment?.modifierTags?.includes(
+                                    "@deprecated"
                                 )
                             ) {
                                 return "";
@@ -233,11 +327,17 @@ async function main() {
                             if (
                                 member.comment?.modifierTags?.includes(
                                     "@internal"
+                                ) ||
+                                member.comment?.modifierTags?.includes(
+                                    "@deprecated"
                                 )
                             ) {
                                 return "";
                             } else {
-                                return documentProperty({...member, flags: {isStatic: true}}, child);
+                                return documentProperty(
+                                    { ...member, flags: { isStatic: true } },
+                                    child
+                                );
                             }
                         } else {
                             return "Unknown member kind " + member.kind;
@@ -261,9 +361,39 @@ async function main() {
             } else if (t.type === "literal") {
                 return JSON.stringify(t.value);
             } else if (t.type === "union") {
-                return [...new Set(t.types.map(renderType))].join(" | ");
+                const seen = new Set<string>();
+                return t.types
+                    .flatMap((t) => {
+                        const rendered =
+                            t.type === "intersection" || t.type === "union"
+                                ? `(${renderType(t)})`
+                                : renderType(t);
+
+                        if (seen.has(rendered)) {
+                            return [];
+                        } else {
+                            seen.add(rendered);
+                            return [rendered];
+                        }
+                    })
+                    .join(" | ");
             } else if (t.type === "intersection") {
-                return [...new Set(t.types.map(renderType))].join(" & ");
+                const seen = new Set<string>();
+                return t.types
+                    .flatMap((t) => {
+                        const rendered =
+                            t.type === "intersection" || t.type === "union"
+                                ? `(${renderType(t)})`
+                                : renderType(t);
+
+                        if (seen.has(rendered)) {
+                            return [];
+                        } else {
+                            seen.add(rendered);
+                            return [rendered];
+                        }
+                    })
+                    .join(" & ");
             } else if (t.type === "indexedAccess") {
                 return (
                     renderType(t.objectType) +
@@ -274,42 +404,77 @@ async function main() {
             } else if (t.type === "reflection") {
                 if (t.declaration.indexSignature) {
                     return (
-                        `{ ${t.declaration.children?t.declaration.children
-                            .map(
-                                (child) =>
-                                    `${child.name}${
-                                        child.flags.isOptional ? "?" : ""
-                                    }: ${renderType(child.type)}`
-                            )
-                            .join(", ") + ", " : ""}[` +
+                        `{${
+                            t.declaration.children
+                                ? t.declaration.children
+                                      .map(
+                                          (child) =>
+                                              `  ${child.name}${
+                                                  child.flags.isOptional
+                                                      ? "?"
+                                                      : ""
+                                              }: ${indentEnd(
+                                                  renderType(child.type)
+                                              )},`
+                                      )
+                                      .join("\n")
+                                : ""
+                        }\n  [` +
                         t.declaration.indexSignature?.parameters?.[0].name +
                         ": " +
                         renderType(
                             t.declaration.indexSignature?.parameters?.[0].type
                         ) +
                         "]: " +
-                        renderType(t.declaration.indexSignature?.type) +
+                        indentEnd(
+                            renderType(t.declaration.indexSignature?.type)
+                        ) +
                         " }"
                     );
                 } else if (t.declaration.children) {
-                    return `{${t.declaration.children
-                        .map(
-                            (child) =>
-                                `${child.name}${
-                                    child.flags.isOptional ? "?" : ""
-                                }: ${renderType(child.type)}`
+                    return `{\n${t.declaration.children
+                        .map((child) =>
+                            child.signatures
+                                ? child.signatures
+                                      .map(
+                                          (signature) =>
+                                              `  ${child.name}(${
+                                                  signature.parameters
+                                                      ? "\n  " +
+                                                        indent(
+                                                            signature.parameters
+                                                                .map((p) =>
+                                                                    indentEnd(
+                                                                        renderParam(
+                                                                            p
+                                                                        )
+                                                                    )
+                                                                )
+                                                                .join(",\n  ")
+                                                        ) +
+                                                        "\n  )"
+                                                      : "()"
+                                              }: ${indentEnd(
+                                                  renderType(signature.type)
+                                              )}`
+                                      )
+                                      .join("\n") + ",\n"
+                                : `  ${child.name}${
+                                      child.flags.isOptional ? "?" : ""
+                                  }: ${indentEnd(renderType(child.type))},\n`
                         )
-                        .join(", ")}}`;
+                        .join("")}}`;
                 } else if (t.declaration.signatures) {
-                    if (t.declaration.signatures.length > 1) {
-                        return "COMPLEX_TYPE_MULTIPLE_INLINE_SIGNATURES";
-                    } else {
-                        return `(${(
-                            t.declaration.signatures[0].parameters || []
-                        ).map(renderParam)}) => ${renderType(
-                            t.declaration.signatures[0].type
-                        )}`;
-                    }
+                    return t.declaration.signatures
+                        .map(
+                            (signature) =>
+                                `(${(signature.parameters || [])
+                                    .map(renderParam)
+                                    .join(", ")}) => ${renderType(
+                                    signature.type
+                                )}`
+                        )
+                        .join("\n");
                 } else {
                     return "COMPLEX_TYPE_REFLECTION";
                 }
@@ -346,9 +511,55 @@ async function main() {
                             return "AgentID";
                         }
                     } else {
-                        return "`" + t.head + t.tail.map(bit => "${" + renderType(bit[0]) + "}" + bit[1]).join("") + "`";
+                        return (
+                            "`" +
+                            t.head +
+                            t.tail
+                                .map(
+                                    (bit) =>
+                                        "${" + renderType(bit[0]) + "}" + bit[1]
+                                )
+                                .join("") +
+                            "`"
+                        );
                     }
                 }
+            } else if (t.type === "conditional") {
+                const trueRendered = renderType(t.trueType);
+                const falseRendered = renderType(t.falseType);
+
+                if (
+                    trueRendered.includes("\n") ||
+                    falseRendered.includes("\n")
+                ) {
+                    return (
+                        renderType(t.checkType) +
+                        " extends " +
+                        renderType(t.extendsType) +
+                        "\n  ? " +
+                        indentEnd(renderType(t.trueType)) +
+                        "\n  : " +
+                        indentEnd(renderType(t.falseType))
+                    );
+                } else {
+                    return (
+                        renderType(t.checkType) +
+                        " extends " +
+                        renderType(t.extendsType) +
+                        " ? " +
+                        renderType(t.trueType) +
+                        " : " +
+                        renderType(t.falseType)
+                    );
+                }
+            } else if (t.type === "inferred") {
+                return "infer " + t.name;
+            } else if (t.type === "typeOperator") {
+                return t.operator + " " + renderType(t.target);
+            } else if (t.type === "mapped") {
+                return `{\n  [${t.parameter} in ${renderType(
+                    t.parameterType
+                )}]: ${indentEnd(renderType(t.templateType))}\n}`;
             } else {
                 return "COMPLEX_TYPE_" + t.type;
             }
@@ -391,99 +602,186 @@ async function main() {
                           (child) =>
                               child.name + (child.flags.isOptional ? "?" : "")
                       )
-                      .join(", ")}}${param.defaultValue ? "?" : ""}`
-                : param.name + (param.defaultValue ? "?" : "");
+                      .join(", ")}}${
+                      param.flags.isOptional || param.defaultValue ? "?" : ""
+                  }`
+                : param.name +
+                      (param.flags.isOptional || param.defaultValue ? "?" : "");
         }
 
         function documentConstructorOrMethod(
             member: JSONOutput.DeclarationReflection,
             child: JSONOutput.DeclarationReflection
         ) {
+            const isInClass = child.kind === 128;
+            const isInTypeDef = child.kind === 2097152;
+            const isInInterface = child.kind === 256;
+            const isInNamespace = child.kind === 4;
+            const isInFunction = !!child.signatures;
+
+            const inKind = isInClass
+                ? "class"
+                : isInTypeDef
+                ? "type"
+                : isInFunction
+                ? "function"
+                : isInInterface
+                ? "interface"
+                : isInNamespace
+                ? "namespace"
+                : "";
+
             const stem =
                 member.name === "constructor"
-                    ? "new " + child.name
-                    : (member.flags.isStatic
-                          ? child.name
-                          : child.name[0].toLowerCase() + child.name.slice(1)) +
+                    ? "new " + child.name + "</code></b>"
+                    : (member.flags.isStatic ? child.name : "") +
                       "." +
-                      member.name;
+                      member.name +
+                      "";
 
-            return (
-                `<details>\n<summary><code>${stem}(${(
-                    member.signatures?.[0]?.parameters?.map(
-                        renderParamSimple
-                    ) || []
-                ).join(", ")})</code> ${
-                    member.inheritedFrom
-                        ? "(from <code>" +
-                          member.inheritedFrom.name.split(".")[0] +
-                          "</code>) "
-                        : ""
-                } ${
-                    member.signatures?.[0]?.comment ? "" : "(undocumented)"
-                }</summary>\n\n` +
-                member.signatures?.map((signature) => {
+            return member.signatures
+                ?.map((signature) => {
                     return (
-                        "```typescript\n" +
-                        `${stem}${
-                            signature.typeParameter
-                                ? `<${signature.typeParameter
-                                      .map(renderTypeParam)
-                                      .join(", ")}>`
+                        `<details>\n<summary><b><code>${stem}(${(
+                            signature?.parameters?.map(renderParamSimple) || []
+                        ).join(", ")})</code></b> ${
+                            member.inheritedFrom
+                                ? "<sub><sup>from <code>" +
+                                  member.inheritedFrom.name.split(".")[0] +
+                                  "</code></sup></sub> "
                                 : ""
-                        }(${
-                            (
-                                signature.parameters?.map(
-                                    (param) =>
-                                        `\n  ${param.name}${
-                                            param.defaultValue ? "?" : ""
-                                        }: ${renderType(param.type)}${
-                                            param.defaultValue
-                                                ? ` = ${param.defaultValue}`
-                                                : ""
-                                        }`
-                                ) || []
-                            ).join(",") +
-                            (signature.parameters?.length ? "\n" : "")
-                        }): ${renderType(signature.type)}\n` +
-                        "```\n" +
-                        renderComment(signature.comment)
+                        } ${
+                            signature?.comment
+                                ? ""
+                                : "<sub><sup>(undocumented)</sup></sub>"
+                        }</summary>\n\n` +
+                        ("```typescript\n" +
+                            `${inKind} ${child.name}${
+                                child.typeParameters
+                                    ? `<${child.typeParameters
+                                          .map((t) => t.name)
+                                          .join(", ")}>`
+                                    : ""
+                            } {\n\n${indent(
+                                `${member.name}${
+                                    signature.typeParameter
+                                        ? `<${signature.typeParameter
+                                              .map(renderTypeParam)
+                                              .join(", ")}>`
+                                        : ""
+                                }(${
+                                    (
+                                        signature.parameters?.map(
+                                            (param) =>
+                                                `\n  ${param.name}${
+                                                    param.flags.isOptional ||
+                                                    param.defaultValue
+                                                        ? "?"
+                                                        : ""
+                                                }: ${indentEnd(
+                                                    renderType(param.type)
+                                                )}${
+                                                    param.defaultValue
+                                                        ? ` = ${param.defaultValue}`
+                                                        : ""
+                                                }`
+                                        ) || []
+                                    ).join(",") +
+                                    (signature.parameters?.length ? "\n" : "")
+                                }): ${renderType(signature.type)} {...}`
+                            )}\n\n}\n` +
+                            "```\n" +
+                            renderSummary(signature.comment)) +
+                        renderParamComments(signature.parameters || []) +
+                        renderExamples(signature.comment) +
+                        "</details>\n\n"
                     );
-                }) +
-                "</details>\n\n"
-            );
+                })
+                .join("\n\n");
         }
 
         function documentProperty(
             member: JSONOutput.DeclarationReflection,
             child: JSONOutput.DeclarationReflection
         ) {
-            const stem = member.flags.isStatic
-                ? child.name
-                : child.name[0].toLowerCase() + child.name.slice(1);
+            const isInClass = child.kind === 128;
+            const isInTypeDef = child.kind === 2097152;
+            const isInInterface = child.kind === 256;
+            const isInNamespace = child.kind === 4;
+            const isInFunction = !!child.signatures;
+
+            const inKind = isInClass
+                ? "class"
+                : isInTypeDef
+                ? "type"
+                : isInFunction
+                ? "function"
+                : isInInterface
+                ? "interface"
+                : isInNamespace
+                ? "namespace"
+                : "";
+
+            const stem = member.flags.isStatic ? child.name : "";
             return (
-                `<details>\n<summary><code>${stem}.${member.name}</code> ${
+                `<details>\n<summary><b><code>${stem}.${
+                    member.name
+                }</code></b> ${
                     member.inheritedFrom
-                        ? "(from <code>" +
+                        ? "<sub><sup>from <code>" +
                           member.inheritedFrom.name.split(".")[0] +
-                          "</code>) "
+                          "</code></sup></sub> "
                         : ""
-                } ${member.comment ? "" : "(undocumented)"}</summary>\n\n` +
+                } ${
+                    member.comment ? "" : "<sub><sup>(undocumented)</sup></sub>"
+                }</summary>\n\n` +
                 "```typescript\n" +
-                `${member.getSignature ? "get " : ""}${stem}.${member.name}${
-                    member.getSignature ? "()" : ""
-                }: ${renderType(member.type || member.getSignature?.type)}\n` +
-                "```\n" +
-                renderComment(member.comment) +
+                `${inKind} ${child.name}${
+                    child.typeParameters
+                        ? `<${child.typeParameters
+                              .map((t) => t.name)
+                              .join(", ")}>`
+                        : ""
+                } {\n\n${indent(
+                    `${member.getSignature ? "get " : ""}${member.name}${
+                        member.getSignature ? "()" : ""
+                    }: ${renderType(member.type || member.getSignature?.type)}${
+                        member.getSignature ? " {...}" : ""
+                    }`
+                )}` +
+                "\n\n}\n```\n" +
+                renderSummary(member.comment) +
+                renderExamples(member.comment) +
                 "</details>\n\n"
             );
         }
     });
 
+    const docsContent = await readFile("./DOCS.md", "utf8");
+
     await writeFile(
         "./DOCS.md",
-        (await Promise.all(packageDocs)).join("\n\n\n")
+        docsContent.slice(
+            0,
+            docsContent.indexOf("<!-- AUTOGENERATED DOCS AFTER THIS POINT -->")
+        ) +
+            "<!-- AUTOGENERATED DOCS AFTER THIS POINT -->\n" +
+            (await Promise.all(packageDocs)).join("\n\n\n")
     );
+}
+
+function indent(text: string): string {
+    return text
+        .split("\n")
+        .map((line) => "  " + line)
+        .join("\n");
+}
+
+function indentEnd(text: string): string {
+    return text
+        .split("\n")
+        .map((line, i) => (i === 0 ? line : "  " + line))
+        .join("\n");
 }
 
 main().catch(console.error);

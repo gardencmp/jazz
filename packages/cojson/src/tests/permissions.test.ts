@@ -1,6 +1,6 @@
-import { newRandomSessionID } from "./coValueCore.js";
-import { expectMap } from "./coValue.js";
-import { Group, expectGroupContent } from "./group.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { expectMap } from "../coValue.js";
+import { Group, expectGroupContent } from "../group.js";
 import {
     createdNowUnique,
     newRandomKeySecret,
@@ -10,14 +10,14 @@ import {
     getAgentID,
     getAgentSealerSecret,
     getAgentSealerID,
-} from "./crypto.js";
+} from "../crypto.js";
 import {
     newGroup,
     newGroupHighLevel,
     groupWithTwoAdmins,
     groupWithTwoAdminsHighLevel,
 } from "./testUtils.js";
-import { AnonymousControlledAccount, cojsonReady } from "./index.js";
+import { AnonymousControlledAccount, cojsonReady } from "../index.js";
 
 beforeEach(async () => {
     await cojsonReady;
@@ -39,7 +39,9 @@ test("Added admin can add a third admin to a group", () => {
         newRandomSessionID(otherAdmin.id)
     );
 
-    let otherContent = expectGroupContent(groupAsOtherAdmin.getCurrentContent());
+    let otherContent = expectGroupContent(
+        groupAsOtherAdmin.getCurrentContent()
+    );
 
     expect(otherContent.get(otherAdmin.id)).toEqual("admin");
 
@@ -112,9 +114,9 @@ test("Admins can't demote other admins in a group (high level)", () => {
         newRandomSessionID(otherAdmin.id)
     );
 
-    expect(() => groupAsOtherAdmin.addMemberInternal(admin.id, "writer")).toThrow(
-        "Failed to set role"
-    );
+    expect(() =>
+        groupAsOtherAdmin.addMemberInternal(admin.id, "writer")
+    ).toThrow("Failed to set role");
 
     expect(groupAsOtherAdmin.underlyingMap.get(admin.id)).toEqual("admin");
 });
@@ -157,7 +159,9 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
         expect(editable.get(otherAgent.id)).toBeUndefined();
     });
 
-    groupContentAsWriter = expectGroupContent(groupAsWriter.getCurrentContent());
+    groupContentAsWriter = expectGroupContent(
+        groupAsWriter.getCurrentContent()
+    );
 
     expect(groupContentAsWriter.get(otherAgent.id)).toBeUndefined();
 });
@@ -230,7 +234,9 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
         expect(editable.get(otherAgent.id)).toBeUndefined();
     });
 
-    groupContentAsReader = expectGroupContent(groupAsReader.getCurrentContent());
+    groupContentAsReader = expectGroupContent(
+        groupAsReader.getCurrentContent()
+    );
 
     expect(groupContentAsReader.get(otherAgent.id)).toBeUndefined();
 });
@@ -425,15 +431,15 @@ test("Admins can set group read key and then use it to create and read private t
 
     groupContent.edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
 
@@ -492,27 +498,27 @@ test("Admins can set group read key and then writers can use it to create and re
         editable.set(writer.id, "writer", "trusting");
         expect(editable.get(writer.id)).toEqual("writer");
 
-        const revelation1 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation1 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
 
-        const revelation2 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            writer.currentSealerID(),
-            {
+        const revelation2 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: writer.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${writer.id}`, revelation2, "trusting");
 
@@ -583,27 +589,27 @@ test("Admins can set group read key and then use it to create private transactio
         editable.set(reader.id, "reader", "trusting");
         expect(editable.get(reader.id)).toEqual("reader");
 
-        const revelation1 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation1 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
 
-        const revelation2 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            reader.currentSealerID(),
-            {
+        const revelation2 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: reader.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${reader.id}`, revelation2, "trusting");
 
@@ -674,27 +680,27 @@ test("Admins can set group read key and then use it to create private transactio
         editable.set(reader1.id, "reader", "trusting");
         expect(editable.get(reader1.id)).toEqual("reader");
 
-        const revelation1 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation1 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
 
-        const revelation2 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            reader1.currentSealerID(),
-            {
+        const revelation2 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: reader1.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${reader1.id}`, revelation2, "trusting");
 
@@ -727,15 +733,15 @@ test("Admins can set group read key and then use it to create private transactio
     expect(childContentAsReader1.get("foo")).toEqual("bar");
 
     groupContent.edit((editable) => {
-        const revelation3 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            reader2.currentSealerID(),
-            {
+        const revelation3 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: reader2.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${reader2.id}`, revelation3, "trusting");
     });
@@ -796,15 +802,15 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     groupContent.edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
 
@@ -833,15 +839,15 @@ test("Admins can set group read key, make a private transaction in an owned obje
     groupContent.edit((editable) => {
         const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
-        const revelation = seal(
-            readKey2,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey2,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID2}_for_${admin.id}`, revelation, "trusting");
 
@@ -903,15 +909,15 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
     groupContent.edit((editable) => {
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
 
@@ -935,27 +941,27 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
     groupContent.edit((editable) => {
-        const revelation2 = seal(
-            readKey2,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation2 = seal({
+            message: readKey2,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID2}_for_${admin.id}`, revelation2, "trusting");
 
-        const revelation3 = seal(
-            readKey2,
-            admin.currentSealerSecret(),
-            reader.currentSealerID(),
-            {
+        const revelation3 = seal({
+            message: readKey2,
+            from: admin.currentSealerSecret(),
+            to: reader.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID2}_for_${reader.id}`, revelation3, "trusting");
 
@@ -1051,39 +1057,39 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const reader2 = node.createAccount("reader2");
 
     groupContent.edit((editable) => {
-        const revelation1 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation1 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation1, "trusting");
 
-        const revelation2 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            reader.currentSealerID(),
-            {
+        const revelation2 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: reader.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${reader.id}`, revelation2, "trusting");
 
-        const revelation3 = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            reader2.currentSealerID(),
-            {
+        const revelation3 = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: reader2.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${reader2.id}`, revelation3, "trusting");
 
@@ -1128,15 +1134,15 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
     groupContent.edit((editable) => {
-        const newRevelation1 = seal(
-            readKey2,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const newRevelation1 = seal({
+            message: readKey2,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID2}_for_${admin.id}`,
@@ -1144,15 +1150,15 @@ test("Admins can set group read rey, make a private transaction in an owned obje
             "trusting"
         );
 
-        const newRevelation2 = seal(
-            readKey2,
-            admin.currentSealerSecret(),
-            reader2.currentSealerID(),
-            {
+        const newRevelation2 = seal({
+            message: readKey2,
+            from: admin.currentSealerSecret(),
+            to: reader2.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID2}_for_${reader2.id}`,
@@ -1281,15 +1287,15 @@ test("Admins can create an adminInvite, which can add an admin", () => {
 
     expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
         editable.set("readKey", readKeyID, "trusting");
@@ -1298,15 +1304,15 @@ test("Admins can create an adminInvite, which can add an admin", () => {
 
         expect(editable.get(inviteID)).toEqual("adminInvite");
 
-        const revelationForInvite = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            getAgentSealerID(inviteID),
-            {
+        const revelationForInvite = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: getAgentSealerID(inviteID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID}_for_${inviteID}`,
@@ -1332,15 +1338,15 @@ test("Admins can create an adminInvite, which can add an admin", () => {
 
         expect(readKey.secret).toBeDefined();
 
-        const revelation = seal(
-            readKey.secret!,
-            getAgentSealerSecret(invitedAdminSecret),
-            getAgentSealerID(invitedAdminID),
-            {
+        const revelation = seal({
+            message: readKey.secret!,
+            from: getAgentSealerSecret(invitedAdminSecret),
+            to: getAgentSealerID(invitedAdminID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKey.id}_for_${invitedAdminID}`,
@@ -1377,14 +1383,18 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
         nodeAsInvitedAdmin
     );
 
-    expect(groupAsInvitedAdmin.underlyingMap.get(invitedAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.underlyingMap.get(invitedAdminID)).toEqual(
+        "admin"
+    );
     expect(
         groupAsInvitedAdmin.underlyingMap.core.getCurrentReadKey().secret
     ).toBeDefined();
 
     groupAsInvitedAdmin.addMemberInternal(thirdAdminID, "admin");
 
-    expect(groupAsInvitedAdmin.underlyingMap.get(thirdAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.underlyingMap.get(thirdAdminID)).toEqual(
+        "admin"
+    );
 });
 
 test("Admins can create a writerInvite, which can add a writer", () => {
@@ -1395,15 +1405,15 @@ test("Admins can create a writerInvite, which can add a writer", () => {
 
     expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
         editable.set("readKey", readKeyID, "trusting");
@@ -1412,15 +1422,15 @@ test("Admins can create a writerInvite, which can add a writer", () => {
 
         expect(editable.get(inviteID)).toEqual("writerInvite");
 
-        const revelationForInvite = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            getAgentSealerID(inviteID),
-            {
+        const revelationForInvite = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: getAgentSealerID(inviteID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID}_for_${inviteID}`,
@@ -1446,15 +1456,15 @@ test("Admins can create a writerInvite, which can add a writer", () => {
 
         expect(readKey.secret).toBeDefined();
 
-        const revelation = seal(
-            readKey.secret!,
-            getAgentSealerSecret(invitedWriterSecret),
-            getAgentSealerID(invitedWriterID),
-            {
+        const revelation = seal({
+            message: readKey.secret!,
+            from: getAgentSealerSecret(invitedWriterSecret),
+            to: getAgentSealerID(invitedWriterID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKey.id}_for_${invitedWriterID}`,
@@ -1488,12 +1498,13 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
         nodeAsInvitedWriter
     );
 
-    expect(groupAsInvitedWriter.underlyingMap.get(invitedWriterID)).toEqual("writer");
+    expect(groupAsInvitedWriter.underlyingMap.get(invitedWriterID)).toEqual(
+        "writer"
+    );
     expect(
         groupAsInvitedWriter.underlyingMap.core.getCurrentReadKey().secret
     ).toBeDefined();
 });
-
 
 test("Admins can create a readerInvite, which can add a reader", () => {
     const { node, group, admin } = newGroup();
@@ -1503,15 +1514,15 @@ test("Admins can create a readerInvite, which can add a reader", () => {
 
     expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
         editable.set("readKey", readKeyID, "trusting");
@@ -1520,15 +1531,15 @@ test("Admins can create a readerInvite, which can add a reader", () => {
 
         expect(editable.get(inviteID)).toEqual("readerInvite");
 
-        const revelationForInvite = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            getAgentSealerID(inviteID),
-            {
+        const revelationForInvite = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: getAgentSealerID(inviteID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID}_for_${inviteID}`,
@@ -1554,15 +1565,15 @@ test("Admins can create a readerInvite, which can add a reader", () => {
 
         expect(readKey.secret).toBeDefined();
 
-        const revelation = seal(
-            readKey.secret!,
-            getAgentSealerSecret(invitedReaderSecret),
-            getAgentSealerID(invitedReaderID),
-            {
+        const revelation = seal({
+            message: readKey.secret!,
+            from: getAgentSealerSecret(invitedReaderSecret),
+            to: getAgentSealerID(invitedReaderID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKey.id}_for_${invitedReaderID}`,
@@ -1596,7 +1607,9 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
         nodeAsInvitedReader
     );
 
-    expect(groupAsInvitedReader.underlyingMap.get(invitedReaderID)).toEqual("reader");
+    expect(groupAsInvitedReader.underlyingMap.get(invitedReaderID)).toEqual(
+        "reader"
+    );
     expect(
         groupAsInvitedReader.underlyingMap.core.getCurrentReadKey().secret
     ).toBeDefined();
@@ -1610,15 +1623,15 @@ test("WriterInvites can not invite admins", () => {
 
     expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
         editable.set("readKey", readKeyID, "trusting");
@@ -1627,15 +1640,15 @@ test("WriterInvites can not invite admins", () => {
 
         expect(editable.get(inviteID)).toEqual("writerInvite");
 
-        const revelationForInvite = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            getAgentSealerID(inviteID),
-            {
+        const revelationForInvite = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: getAgentSealerID(inviteID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID}_for_${inviteID}`,
@@ -1666,15 +1679,15 @@ test("ReaderInvites can not invite admins", () => {
 
     expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
         editable.set("readKey", readKeyID, "trusting");
@@ -1683,15 +1696,15 @@ test("ReaderInvites can not invite admins", () => {
 
         expect(editable.get(inviteID)).toEqual("readerInvite");
 
-        const revelationForInvite = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            getAgentSealerID(inviteID),
-            {
+        const revelationForInvite = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: getAgentSealerID(inviteID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID}_for_${inviteID}`,
@@ -1722,15 +1735,15 @@ test("ReaderInvites can not invite writers", () => {
 
     expectGroupContent(group.getCurrentContent()).edit((editable) => {
         const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-        const revelation = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            admin.currentSealerID(),
-            {
+        const revelation = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: admin.currentSealerID(),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(`${readKeyID}_for_${admin.id}`, revelation, "trusting");
         editable.set("readKey", readKeyID, "trusting");
@@ -1739,15 +1752,15 @@ test("ReaderInvites can not invite writers", () => {
 
         expect(editable.get(inviteID)).toEqual("readerInvite");
 
-        const revelationForInvite = seal(
-            readKey,
-            admin.currentSealerSecret(),
-            getAgentSealerID(inviteID),
-            {
+        const revelationForInvite = seal({
+            message: readKey,
+            from: admin.currentSealerSecret(),
+            to: getAgentSealerID(inviteID),
+            nOnceMaterial: {
                 in: group.id,
                 tx: group.nextTransactionID(),
-            }
-        );
+            },
+        });
 
         editable.set(
             `${readKeyID}_for_${inviteID}`,

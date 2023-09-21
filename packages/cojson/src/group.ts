@@ -1,4 +1,4 @@
-import { CoID, CoValueImpl } from "./coValue.js";
+import { CoID, CoValue, AnyCoValue, AnyCoMap, AnyCoList } from "./coValue.js";
 import { CoMap } from "./coValues/coMap.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import {
@@ -15,18 +15,21 @@ import {
     agentSecretFromSecretSeed,
     getAgentID,
 } from "./crypto.js";
-import { LocalNode } from "./node.js";
+import { LocalNode } from "./localNode.js";
 import { AgentID, SessionID, isAgentID } from "./ids.js";
 import { AccountID, GeneralizedControlledAccount, Profile } from "./account.js";
 import { Role } from "./permissions.js";
 import { base58 } from "@scure/base";
-import { CoList } from "./coValues/coList.js";
-import { BinaryCoStream, BinaryCoStreamMeta, CoStream } from "./coValues/coStream.js";
+import {
+    BinaryCoStream,
+    BinaryCoStreamMeta,
+    CoStream,
+} from "./coValues/coStream.js";
 
 export type GroupContent = {
-    profile: CoID<Profile> | null;
+    profile?: CoID<Profile> | null;
     [key: AccountID | AgentID]: Role;
-    readKey: KeyID;
+    readKey?: KeyID;
     [revelationFor: `${KeyID}_for_${AccountID | AgentID}`]: Sealed<KeySecret>;
     [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
         KeySecret,
@@ -35,7 +38,7 @@ export type GroupContent = {
 };
 
 export function expectGroupContent(
-    content: CoValueImpl
+    content: CoValue
 ): CoMap<GroupContent, JsonObject | null> {
     if (content.type !== "comap") {
         throw new Error("Expected map");
@@ -66,6 +69,7 @@ export function expectGroupContent(
  *  ```
  * */
 export class Group {
+    /** @category 4. Underlying CoMap */
     underlyingMap: CoMap<GroupContent, JsonObject | null>;
     /** @internal */
     node: LocalNode;
@@ -79,12 +83,20 @@ export class Group {
         this.node = node;
     }
 
-    /** Returns the `CoID` of the `Group`. */
+    /**
+     * Returns the `CoID` of the `Group`.
+     *
+     * @category 4. Underlying CoMap
+     */
     get id(): CoID<CoMap<GroupContent, JsonObject | null>> {
         return this.underlyingMap.id;
     }
 
-    /** Returns the current role of a given account. */
+    /**
+     * Returns the current role of a given account.
+     *
+     * @category 1. Role reading
+     */
     roleOf(accountID: AccountID): Role | undefined {
         return this.roleOfInternal(accountID);
     }
@@ -94,20 +106,28 @@ export class Group {
         return this.underlyingMap.get(accountID);
     }
 
-    /** Returns the role of the current account in the group. */
+    /**
+     * Returns the role of the current account in the group.
+     *
+     * @category 1. Role reading
+     */
     myRole(): Role | undefined {
         return this.roleOfInternal(this.node.account.id);
     }
 
-    /** Directly grants a new member a role in the group. The current account must be an
-     * admin to be able to do so. Throws otherwise. */
+    /**
+     * Directly grants a new member a role in the group. The current account must be an
+     * admin to be able to do so. Throws otherwise.
+     *
+     * @category 2. Role changing
+     */
     addMember(accountID: AccountID, role: Role) {
         this.addMemberInternal(accountID, role);
     }
 
     /** @internal */
     addMemberInternal(accountID: AccountID | AgentID, role: Role) {
-        this.underlyingMap = this.underlyingMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.mutate((map) => {
             const currentReadKey = this.underlyingMap.core.getCurrentReadKey();
 
             if (!currentReadKey.secret) {
@@ -127,15 +147,15 @@ export class Group {
 
             map.set(
                 `${currentReadKey.id}_for_${accountID}`,
-                seal(
-                    currentReadKey.secret,
-                    this.underlyingMap.core.node.account.currentSealerSecret(),
-                    getAgentSealerID(agent),
-                    {
+                seal({
+                    message: currentReadKey.secret,
+                    from: this.underlyingMap.core.node.account.currentSealerSecret(),
+                    to: getAgentSealerID(agent),
+                    nOnceMaterial: {
                         in: this.underlyingMap.core.id,
                         tx: this.underlyingMap.core.nextTransactionID(),
-                    }
-                ),
+                    },
+                }),
                 "trusting"
             );
         });
@@ -173,7 +193,7 @@ export class Group {
 
         const newReadKey = newRandomKeySecret();
 
-        this.underlyingMap = this.underlyingMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.mutate((map) => {
             for (const readerID of currentlyPermittedReaders) {
                 const reader = this.node.resolveAccountAgent(
                     readerID,
@@ -182,15 +202,15 @@ export class Group {
 
                 map.set(
                     `${newReadKey.id}_for_${readerID}`,
-                    seal(
-                        newReadKey.secret,
-                        this.underlyingMap.core.node.account.currentSealerSecret(),
-                        getAgentSealerID(reader),
-                        {
+                    seal({
+                        message: newReadKey.secret,
+                        from: this.underlyingMap.core.node.account.currentSealerSecret(),
+                        to: getAgentSealerID(reader),
+                        nOnceMaterial: {
                             in: this.underlyingMap.core.id,
                             tx: this.underlyingMap.core.nextTransactionID(),
-                        }
-                    ),
+                        },
+                    }),
                     "trusting"
                 );
             }
@@ -208,23 +228,33 @@ export class Group {
         });
     }
 
-    /** Strips the specified member of all roles (preventing future writes in
+    /**
+     * Strips the specified member of all roles (preventing future writes in
      *  the group and owned values) and rotates the read encryption key for that group
-     * (preventing reads of new content in the group and owned values) */
+     * (preventing reads of new content in the group and owned values)
+     *
+     * @category 2. Role changing
+     */
     removeMember(accountID: AccountID) {
         this.removeMemberInternal(accountID);
     }
 
     /** @internal */
     removeMemberInternal(accountID: AccountID | AgentID) {
-        this.underlyingMap = this.underlyingMap.edit((map) => {
+        this.underlyingMap = this.underlyingMap.mutate((map) => {
             map.set(accountID, "revoked", "trusting");
         });
 
         this.rotateReadKey();
     }
 
-    /** Creates an invite for new members to indirectly join the group, allowing them to grant themselves the specified role with the InviteSecret (a string starting with "inviteSecret_") - use `LocalNode.acceptInvite()` for this purpose. */
+    /**
+     * Creates an invite for new members to indirectly join the group,
+     * allowing them to grant themselves the specified role with the InviteSecret
+     * (a string starting with "inviteSecret_") - use `LocalNode.acceptInvite()` for this purpose.
+     *
+     * @category 2. Role changing
+     */
     createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
         const secretSeed = newRandomSecretSeed();
 
@@ -236,12 +266,22 @@ export class Group {
         return inviteSecretFromSecretSeed(secretSeed);
     }
 
-    /** Creates a new `CoMap` within this group, with the specified specialized
-     *  `CoMap` type `M` and optional static metadata. */
-    createMap<M extends CoMap<{ [key: string]: JsonValue | undefined; }, JsonObject | null>>(
-        meta?: M["meta"]
+    /**
+     * Creates a new `CoMap` within this group, with the specified specialized
+     * `CoMap` type `M` and optional static metadata.
+     *
+     * @category 3. Value creation
+     */
+    createMap<M extends AnyCoMap>(
+        init?: {
+            [K in keyof M["_shape"]]: M["_shape"][K] extends AnyCoValue
+                ? M["_shape"][K] | CoID<M["_shape"][K]>
+                : M["_shape"][K];
+        },
+        meta?: M["meta"],
+        initPrivacy: "trusting" | "private" = "trusting"
     ): M {
-        return this.node
+        let map = this.node
             .createCoValue({
                 type: "comap",
                 ruleset: {
@@ -252,14 +292,30 @@ export class Group {
                 ...createdNowUnique(),
             })
             .getCurrentContent() as M;
+
+        if (init) {
+            for (const [key, value] of Object.entries(init)) {
+                map = map.set(key, value, initPrivacy);
+            }
+        }
+
+        return map;
     }
 
-    /** Creates a new `CoList` within this group, with the specified specialized
-     * `CoList` type `L` and optional static metadata. */
-    createList<L extends CoList<JsonValue, JsonObject | null>>(
-        meta?: L["meta"]
+    /**
+     * Creates a new `CoList` within this group, with the specified specialized
+     * `CoList` type `L` and optional static metadata.
+     *
+     * @category 3. Value creation
+     */
+    createList<L extends AnyCoList>(
+        init?: (L["_item"] extends CoValue
+            ? CoID<L["_item"]> | L["_item"]
+            : L["_item"])[],
+        meta?: L["meta"],
+        initPrivacy: "trusting" | "private" = "trusting"
     ): L {
-        return this.node
+        let list = this.node
             .createCoValue({
                 type: "colist",
                 ruleset: {
@@ -270,9 +326,18 @@ export class Group {
                 ...createdNowUnique(),
             })
             .getCurrentContent() as L;
+
+        if (init) {
+            for (const item of init) {
+                list = list.append(item, undefined, initPrivacy);
+            }
+        }
+
+        return list;
     }
 
-    createStream<C extends CoStream<JsonValue, JsonObject | null>>(
+    /** @category 3. Value creation */
+    createStream<C extends CoStream<JsonValue | CoValue, JsonObject | null>>(
         meta?: C["meta"]
     ): C {
         return this.node
@@ -288,9 +353,10 @@ export class Group {
             .getCurrentContent() as C;
     }
 
-    createBinaryStream<
-        C extends BinaryCoStream<BinaryCoStreamMeta>
-    >(meta: C["meta"] = { type: "binary" }): C {
+    /** @category 3. Value creation */
+    createBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
+        meta: C["meta"] = { type: "binary" }
+    ): C {
         return this.node
             .createCoValue({
                 type: "costream",

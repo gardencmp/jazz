@@ -1,14 +1,13 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoID, ReadableCoValue, WriteableCoValue } from "../coValue.js";
+import { CoValue, CoID, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { Group } from "../group.js";
-import { SessionID } from "../ids.js";
+import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
-import { AccountID } from "../index.js";
-import { isAccountID } from "../account.js";
+import { AccountID } from "../account.js";
 import { parseJSON } from "../jsonStringify.js";
 
-export type BinaryChunkInfo = {
+export type BinaryStreamInfo = {
     mimeType: string;
     fileName?: string;
     totalSizeBytes?: number;
@@ -16,7 +15,7 @@ export type BinaryChunkInfo = {
 
 export type BinaryStreamStart = {
     type: "start";
-} & BinaryChunkInfo;
+} & BinaryStreamInfo;
 
 export type BinaryStreamChunk = {
     type: "chunk";
@@ -34,20 +33,27 @@ export type BinaryStreamItem =
     | BinaryStreamChunk
     | BinaryStreamEnd;
 
-export class CoStream<
-    T extends JsonValue,
+export type CoStreamItem<Item extends JsonValue | CoValue> = {
+    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+    tx: TransactionID;
+    madeAt: number;
+};
+
+export class CoStreamView<
+    Item extends JsonValue | CoValue,
     Meta extends JsonObject | null = null
-> implements ReadableCoValue
+> implements CoValue
 {
-    id: CoID<CoStream<T, Meta>>;
+    id: CoID<this>;
     type = "costream" as const;
     core: CoValueCore;
     items: {
-        [key: SessionID]: {item: T, madeAt: number}[];
+        [key: SessionID]: CoStreamItem<Item>[];
     };
+    readonly _item!: Item;
 
     constructor(core: CoValueCore) {
-        this.id = core.id as CoID<CoStream<T, Meta>>;
+        this.id = core.id as CoID<this>;
         this.core = core;
         this.items = {};
         this.fillFromCoValue();
@@ -61,6 +67,11 @@ export class CoStream<
         return this.core.getGroup();
     }
 
+    /** Not yet implemented */
+    atTime(_time: number): this {
+        throw new Error("Not yet implemented");
+    }
+
     /** @internal */
     protected fillFromCoValue() {
         this.items = {};
@@ -71,18 +82,22 @@ export class CoStream<
             changes,
         } of this.core.getValidSortedTransactions()) {
             for (const changeUntyped of parseJSON(changes)) {
-                const change = changeUntyped as T;
+                const change = changeUntyped as Item extends CoValue
+                    ? CoID<Item>
+                    : Exclude<Item, CoValue>;
                 let entries = this.items[txID.sessionID];
                 if (!entries) {
                     entries = [];
                     this.items[txID.sessionID] = entries;
                 }
-                entries.push({item: change, madeAt});
+                entries.push({ value: change, madeAt, tx: txID });
             }
         }
     }
 
-    getSingleStream(): T[] | undefined {
+    getSingleStream():
+        | (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)[]
+        | undefined {
         if (Object.keys(this.items).length === 0) {
             return undefined;
         } else if (Object.keys(this.items).length !== 1) {
@@ -91,86 +106,202 @@ export class CoStream<
             );
         }
 
-        return Object.values(this.items)[0]?.map(item => item.item);
+        return Object.values(this.items)[0]?.map((item) => item.value);
     }
 
-    getLastItemsPerAccount(): {[account: AccountID]: T | undefined} {
-        const result: {[account: AccountID]: {item: T, madeAt: number} | undefined} = {};
+    sessions(): SessionID[] {
+        return Object.keys(this.items) as SessionID[];
+    }
 
-        for (const [sessionID, items] of Object.entries(this.items)) {
-            const account = accountOrAgentIDfromSessionID(sessionID as SessionID);
-            if (!isAccountID(account)) continue;
-            if (items.length > 0) {
-                const lastItemOfSession = items[items.length - 1]!;
-                if (!result[account] || lastItemOfSession.madeAt > result[account]!.madeAt) {
-                    result[account] = lastItemOfSession;
-                }
-            }
+    accounts(): Set<AccountID | AgentID> {
+        return new Set(this.sessions().map(accountOrAgentIDfromSessionID));
+    }
+
+    nthItemIn(
+        sessionID: SessionID,
+        n: number
+    ):
+        | {
+              by: AccountID | AgentID;
+              tx: TransactionID;
+              at: Date;
+              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+          }
+        | undefined {
+        const items = this.items[sessionID];
+        if (!items) return;
+
+        const item = items[n];
+        if (!item) return;
+
+        return {
+            by: accountOrAgentIDfromSessionID(sessionID),
+            tx: item.tx,
+            at: new Date(item.madeAt),
+            value: item.value,
+        };
+    }
+
+    lastItemIn(sessionID: SessionID):
+        | {
+              by: AccountID | AgentID;
+              tx: TransactionID;
+              at: Date;
+              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+          }
+        | undefined {
+        const items = this.items[sessionID];
+        if (!items) return;
+        return this.nthItemIn(sessionID, items.length - 1);
+    }
+
+    *itemsIn(sessionID: SessionID) {
+        const items = this.items[sessionID];
+        if (!items) return;
+        for (const item of items) {
+            yield {
+                by: accountOrAgentIDfromSessionID(sessionID),
+                tx: item.tx,
+                at: new Date(item.madeAt),
+                value: item.value,
+            };
         }
-
-        return Object.fromEntries(Object.entries(result).map(([account, item]) =>
-            [account, item?.item]
-        ));
     }
 
-    getLastItemFrom(account: AccountID): T | undefined {
-        let lastItem: {item: T, madeAt: number} | undefined;
+    lastItemBy(account: AccountID | AgentID):
+        | {
+              by: AccountID | AgentID;
+              tx: TransactionID;
+              at: Date;
+              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+          }
+        | undefined {
+        let latestItem:
+            | {
+                  by: AccountID | AgentID;
+                  tx: TransactionID;
+                  at: Date;
+                  value: Item extends CoValue
+                      ? CoID<Item>
+                      : Exclude<Item, CoValue>;
+              }
+            | undefined;
 
-        for (const [sessionID, items] of Object.entries(this.items)) {
+        for (const sessionID of Object.keys(this.items)) {
             if (sessionID.startsWith(account)) {
-                if (items.length > 0) {
-                    const lastItemOfSession = items[items.length - 1]!;
-                    if (!lastItem || lastItemOfSession.madeAt > lastItem.madeAt) {
-                        lastItem = lastItemOfSession;
-                    }
+                const item = this.lastItemIn(sessionID as SessionID);
+                if (!item) continue;
+                if (!latestItem || item.at > latestItem.at) {
+                    latestItem = {
+                        by: item.by,
+                        tx: item.tx,
+                        at: item.at,
+                        value: item.value,
+                    };
                 }
             }
         }
 
-        return lastItem?.item;
+        return latestItem;
     }
 
-    getLastItemFromMe(): T | undefined {
-        const myAccountID = this.core.node.account.id;
-        if (!isAccountID(myAccountID)) return undefined;
-        return this.getLastItemFrom(myAccountID);
+    *itemsBy(account: AccountID | AgentID) {
+        // TODO: this can be made more lazy without a huge collect and sort
+        const items = [
+            ...Object.keys(this.items).flatMap((sessionID) =>
+                sessionID.startsWith(account)
+                    ? [...this.itemsIn(sessionID as SessionID)].map((item) => ({
+                          in: sessionID as SessionID,
+                          ...item,
+                      }))
+                    : []
+            ),
+        ];
+
+        items.sort((a, b) => a.at.getTime() - b.at.getTime());
+
+        for (const item of items) {
+            yield item;
+        }
     }
 
     toJSON(): {
-        [key: SessionID]: T[];
+        [key: SessionID]: (Item extends CoValue
+            ? CoID<Item>
+            : Exclude<Item, CoValue>)[];
     } {
-        return Object.fromEntries(Object.entries(this.items).map(([sessionID, items]) =>
-            [sessionID, items.map(item => item.item)]
-        ));
+        return Object.fromEntries(
+            Object.entries(this.items).map(([sessionID, items]) => [
+                sessionID,
+                items.map((item) => item.value),
+            ])
+        );
     }
 
-    subscribe(listener: (coMap: CoStream<T, Meta>) => void): () => void {
+    subscribe(listener: (coStream: this) => void): () => void {
         return this.core.subscribe((content) => {
-            listener(content as CoStream<T, Meta>);
+            listener(content as this);
         });
     }
+}
 
-    edit(
-        changer: (editable: WriteableCoStream<T, Meta>) => void
-    ): CoStream<T, Meta> {
-        const editable = new WriteableCoStream<T, Meta>(this.core);
-        changer(editable);
-        return new CoStream(this.core);
+export class CoStream<
+        Item extends JsonValue | CoValue,
+        Meta extends JsonObject | null = null
+    >
+    extends CoStreamView<Item, Meta>
+    implements CoValue
+{
+    push(
+        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        privacy: "private" | "trusting" = "private"
+    ): this {
+        this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
+        return new CoStream(this.core) as this;
+    }
+
+    mutate(mutator: (mutable: MutableCoStream<Item, Meta>) => void): this {
+        const mutable = new MutableCoStream<Item, Meta>(this.core);
+        mutator(mutable);
+        return new CoStream(this.core) as this;
+    }
+
+    /** @deprecated Use `mutate` instead. */
+    edit(mutator: (mutable: MutableCoStream<Item, Meta>) => void): this {
+        return this.mutate(mutator);
+    }
+}
+
+export class MutableCoStream<
+        Item extends JsonValue | CoValue,
+        Meta extends JsonObject | null = null
+    >
+    extends CoStreamView<Item, Meta>
+    implements CoValue
+{
+    push(
+        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        privacy: "private" | "trusting" = "private"
+    ) {
+        this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
+        this.fillFromCoValue();
     }
 }
 
 const binary_U_prefixLength = 8; // "binary_U".length;
 
-export class BinaryCoStream<
+export class BinaryCoStreamView<
         Meta extends BinaryCoStreamMeta = { type: "binary" }
     >
-    extends CoStream<BinaryStreamItem, Meta>
-    implements ReadableCoValue
+    extends CoStreamView<BinaryStreamItem, Meta>
+    implements CoValue
 {
-    id!: CoID<BinaryCoStream<Meta>>;
+    id!: CoID<this>;
 
-    getBinaryChunks(allowUnfinished?: boolean):
-        | (BinaryChunkInfo & { chunks: Uint8Array[]; finished: boolean })
+    getBinaryChunks(
+        allowUnfinished?: boolean
+    ):
+        | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
         // const before = performance.now();
         const items = this.getSingleStream();
@@ -225,56 +356,89 @@ export class BinaryCoStream<
             finished,
         };
     }
-
-    edit(
-        changer: (editable: WriteableBinaryCoStream<Meta>) => void
-    ): BinaryCoStream<Meta> {
-        const editable = new WriteableBinaryCoStream<Meta>(this.core);
-        changer(editable);
-        return new BinaryCoStream(this.core);
-    }
 }
 
-export class WriteableCoStream<
-        T extends JsonValue,
-        Meta extends JsonObject | null = null
-    >
-    extends CoStream<T, Meta>
-    implements WriteableCoValue
-{
-    /** @internal */
-    edit(
-        _changer: (editable: WriteableCoStream<T, Meta>) => void
-    ): CoStream<T, Meta> {
-        throw new Error("Already editing.");
-    }
-
-    push(item: T, privacy: "private" | "trusting" = "private") {
-        this.core.makeTransaction([item], privacy);
-        this.fillFromCoValue();
-    }
-}
-
-export class WriteableBinaryCoStream<
+export class BinaryCoStream<
         Meta extends BinaryCoStreamMeta = { type: "binary" }
     >
-    extends BinaryCoStream<Meta>
-    implements WriteableCoValue
+    extends BinaryCoStreamView<Meta>
+    implements CoValue
 {
     /** @internal */
-    edit(
-        _changer: (editable: WriteableBinaryCoStream<Meta>) => void
-    ): BinaryCoStream<Meta> {
-        throw new Error("Already editing.");
-    }
-
-    /** @internal */
-    push(item: BinaryStreamItem, privacy: "private" | "trusting" = "private") {
-        WriteableCoStream.prototype.push.call(this, item, privacy);
+    push(
+        item: BinaryStreamItem,
+        privacy: "private" | "trusting" = "private"
+    ): this {
+        this.core.makeTransaction([item], privacy);
+        return new BinaryCoStream(this.core) as this;
     }
 
     startBinaryStream(
-        settings: BinaryChunkInfo,
+        settings: BinaryStreamInfo,
+        privacy: "private" | "trusting" = "private"
+    ): this {
+        return this.push(
+            {
+                type: "start",
+                ...settings,
+            } satisfies BinaryStreamStart,
+            privacy
+        );
+    }
+
+    pushBinaryStreamChunk(
+        chunk: Uint8Array,
+        privacy: "private" | "trusting" = "private"
+    ): this {
+        // const before = performance.now();
+        return this.push(
+            {
+                type: "chunk",
+                chunk: `binary_U${bytesToBase64url(chunk)}`,
+            } satisfies BinaryStreamChunk,
+            privacy
+        );
+        // const after = performance.now();
+        // console.log(
+        //     "pushBinaryStreamChunk bandwidth in MB/s",
+        //     (1000 * chunk.length) / (after - before) / (1024 * 1024)
+        // );
+    }
+
+    endBinaryStream(privacy: "private" | "trusting" = "private"): this {
+        return this.push(
+            {
+                type: "end",
+            } satisfies BinaryStreamEnd,
+            privacy
+        );
+    }
+
+    mutate(mutator: (mutable: MutableBinaryCoStream<Meta>) => void): this {
+        const mutable = new MutableBinaryCoStream<Meta>(this.core);
+        mutator(mutable);
+        return new BinaryCoStream(this.core) as this;
+    }
+
+    /** @deprecated Use `mutate` instead. */
+    edit(mutator: (mutable: MutableBinaryCoStream<Meta>) => void): this {
+        return this.mutate(mutator);
+    }
+}
+
+export class MutableBinaryCoStream<
+        Meta extends BinaryCoStreamMeta = { type: "binary" }
+    >
+    extends BinaryCoStreamView<Meta>
+    implements CoValue
+{
+    /** @internal */
+    push(item: BinaryStreamItem, privacy: "private" | "trusting" = "private") {
+        MutableCoStream.prototype.push.call(this, item, privacy);
+    }
+
+    startBinaryStream(
+        settings: BinaryStreamInfo,
         privacy: "private" | "trusting" = "private"
     ) {
         this.push(

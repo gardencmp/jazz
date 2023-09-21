@@ -1,12 +1,13 @@
-import { AccountID, CoID } from "cojson";
-import { useTelepathicState } from "jazz-react";
+import { useParams } from "react-router";
+import { CoID, Queried } from "cojson";
+import { useSyncedQuery } from "jazz-react";
 
-import { PetPost, PetReactions, ReactionType, REACTION_TYPES } from "./1_types";
+import { PetPost, ReactionType, REACTION_TYPES, PetReactions } from "./1_types";
 
 import { ShareButton } from "./components/ShareButton";
-import { NameBadge } from "./components/NameBadge";
-import { Button } from "./basicComponents";
+import { Button, Skeleton } from "./basicComponents";
 import { useLoadImage } from "jazz-react-media-images";
+import uniqolor from "uniqolor";
 
 /** Walkthrough: TODO
  */
@@ -20,15 +21,16 @@ const reactionEmojiMap: { [reaction in ReactionType]: string } = {
     chonkers: "🐘",
 };
 
-export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
-    const petPost = useTelepathicState(petPostID);
-    const petReactions = useTelepathicState(petPost?.get("reactions"));
-    const petImage = useLoadImage(petPost?.get("image"));
+export function RatePetPostUI() {
+    const petPostID = useParams<{ petPostId: CoID<PetPost> }>().petPostId;
+
+    const petPost = useSyncedQuery(petPostID);
+    const petImage = useLoadImage(petPost?.image);
 
     return (
         <div className="flex flex-col gap-8">
             <div className="flex justify-between">
-                <h1 className="text-3xl font-bold">{petPost?.get("name")}</h1>
+                <h1 className="text-3xl font-bold">{petPost?.name}</h1>
                 <ShareButton petPost={petPost} />
             </div>
 
@@ -44,14 +46,12 @@ export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
                     <Button
                         key={reactionType}
                         variant={
-                            petReactions?.getLastItemFromMe() === reactionType
+                            petPost?.reactions?.me?.last === reactionType
                                 ? "default"
                                 : "outline"
                         }
                         onClick={() => {
-                            petReactions?.edit((reactions) => {
-                                reactions.push(reactionType);
-                            });
+                            petPost?.reactions?.push(reactionType);
                         }}
                         title={`React with ${reactionType}`}
                         className="text-2xl px-2"
@@ -61,26 +61,28 @@ export function RatePetPostUI({ petPostID }: { petPostID: CoID<PetPost> }) {
                 ))}
             </div>
 
-            {petPost?.group.myRole() === "admin" && petReactions && (
-                <ReactionOverview petReactions={petReactions} />
+            {petPost?.group.myRole() === "admin" && petPost.reactions && (
+                <ReactionOverview petReactions={petPost.reactions} />
             )}
         </div>
     );
 }
 
-function ReactionOverview({ petReactions }: { petReactions: PetReactions }) {
+function ReactionOverview({
+    petReactions,
+}: {
+    petReactions: Queried<PetReactions>;
+}) {
     return (
         <div>
             <h2>Reactions</h2>
             <div className="flex flex-col gap-1">
                 {REACTION_TYPES.map((reactionType) => {
-                    const accountsWithThisReaction = Object.entries(
-                        petReactions.getLastItemsPerAccount()
-                    ).flatMap(([accountID, reaction]) =>
-                        reaction === reactionType ? [accountID] : []
-                    );
+                    const reactionsOfThisType = Object.values(
+                        petReactions.perAccount
+                    ).filter(({ last }) => last === reactionType);
 
-                    if (accountsWithThisReaction.length === 0) return null;
+                    if (reactionsOfThisType.length === 0) return null;
 
                     return (
                         <div
@@ -88,16 +90,35 @@ function ReactionOverview({ petReactions }: { petReactions: PetReactions }) {
                             key={reactionType}
                         >
                             {reactionEmojiMap[reactionType]}{" "}
-                            {accountsWithThisReaction.map((accountID) => (
-                                <NameBadge
-                                    key={accountID}
-                                    accountID={accountID as AccountID}
-                                />
-                            ))}
+                            {reactionsOfThisType.map((reaction, idx) =>
+                                reaction.by?.profile?.name ? (
+                                    <span
+                                        className="rounded-full py-0.5 px-2 text-xs"
+                                        style={uniqueColoring(reaction.by.id)}
+                                        key={reaction.by.id}
+                                    >
+                                        {reaction.by.profile.name}
+                                    </span>
+                                ) : (
+                                    <Skeleton
+                                        className="mt-1 w-[50px] h-[1em] rounded-full"
+                                        key={idx}
+                                    />
+                                )
+                            )}
                         </div>
                     );
                 })}
             </div>
         </div>
     );
+}
+
+function uniqueColoring(seed: string) {
+    const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    return {
+        color: uniqolor(seed, { lightness: darkMode ? 80 : 20 }).color,
+        background: uniqolor(seed, { lightness: darkMode ? 20 : 80 }).color,
+    };
 }

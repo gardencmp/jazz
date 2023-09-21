@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export { createImage, LoadingImageInfo } from "jazz-browser-media-images";
 
 export function useLoadImage(
-    imageID?: CoID<Media.ImageDefinition>
+    imageID?: CoID<Media.ImageDefinition> | Media.ImageDefinition | {id: CoID<Media.ImageDefinition>},
 ): LoadingImageInfo | undefined {
     const { localNode } = useJazz();
 

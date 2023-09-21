@@ -1,8 +1,9 @@
-import { accountOrAgentIDfromSessionID } from "./coValueCore.js";
-import { BinaryCoStream } from "./coValues/coStream.js";
-import { createdNowUnique } from "./crypto.js";
-import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "./index.js";
-import { LocalNode } from "./node.js";
+import { expectList, expectMap, expectStream } from "../coValue.js";
+import { accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { BinaryCoStream } from "../coValues/coStream.js";
+import { createdNowUnique } from "../crypto.js";
+import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
+import { LocalNode } from "../localNode.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 beforeEach(async () => {
@@ -19,11 +20,7 @@ test("Empty CoMap works", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
+    const content = expectMap(coValue.getCurrentContent());
 
     expect(content.type).toEqual("comap");
     expect([...content.keys()]).toEqual([]);
@@ -40,11 +37,7 @@ test("Can insert and delete CoMap entries in edit()", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
+    const content = expectMap(coValue.getCurrentContent());
 
     expect(content.type).toEqual("comap");
 
@@ -69,11 +62,7 @@ test("Can get CoMap entry values at different points in time", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
+    const content = expectMap(coValue.getCurrentContent());
 
     expect(content.type).toEqual("comap");
 
@@ -88,10 +77,10 @@ test("Can get CoMap entry values at different points in time", () => {
         while (Date.now() < beforeC + 10) {}
         editable.set("hello", "C", "trusting");
         expect(editable.get("hello")).toEqual("C");
-        expect(editable.getAtTime("hello", Date.now())).toEqual("C");
-        expect(editable.getAtTime("hello", beforeA)).toEqual(undefined);
-        expect(editable.getAtTime("hello", beforeB)).toEqual("A");
-        expect(editable.getAtTime("hello", beforeC)).toEqual("B");
+        expect(editable.atTime(Date.now()).get("hello")).toEqual("C");
+        expect(editable.atTime(beforeA).get("hello")).toEqual(undefined);
+        expect(editable.atTime(beforeB).get("hello")).toEqual("A");
+        expect(editable.atTime(beforeC).get("hello")).toEqual("B");
     });
 });
 
@@ -105,43 +94,43 @@ test("Can get all historic values of key in CoMap", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
+    const content = expectMap(coValue.getCurrentContent());
 
     expect(content.type).toEqual("comap");
 
     content.edit((editable) => {
         editable.set("hello", "A", "trusting");
-        const txA = editable.getLastTxID("hello");
+        const editA = editable.lastEditAt("hello");
         editable.set("hello", "B", "trusting");
-        const txB = editable.getLastTxID("hello");
+        const editB = editable.lastEditAt("hello");
         editable.delete("hello", "trusting");
-        const txDel = editable.getLastTxID("hello");
+        const editDel = editable.lastEditAt("hello");
         editable.set("hello", "C", "trusting");
-        const txC = editable.getLastTxID("hello");
-        expect(editable.getHistory("hello")).toEqual([
+        const editC = editable.lastEditAt("hello");
+        expect([...editable.editsAt("hello")]).toEqual([
             {
-                txID: txA,
+                tx: editA!.tx,
+                by: node.account.id,
                 value: "A",
-                at: txA && coValue.getTx(txA)?.madeAt,
+                at: editA?.at,
             },
             {
-                txID: txB,
+                tx: editB!.tx,
+                by: node.account.id,
                 value: "B",
-                at: txB && coValue.getTx(txB)?.madeAt,
+                at: editB?.at,
             },
             {
-                txID: txDel,
+                tx: editDel!.tx,
+                by: node.account.id,
                 value: undefined,
-                at: txDel && coValue.getTx(txDel)?.madeAt,
+                at: editDel?.at,
             },
             {
-                txID: txC,
+                tx: editC!.tx,
+                by: node.account.id,
                 value: "C",
-                at: txC && coValue.getTx(txC)?.madeAt,
+                at: editC?.at,
             },
         ]);
     });
@@ -157,26 +146,22 @@ test("Can get last tx ID for a key in CoMap", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "comap") {
-        throw new Error("Expected map");
-    }
+    const content = expectMap(coValue.getCurrentContent());
 
     expect(content.type).toEqual("comap");
 
     content.edit((editable) => {
-        expect(editable.getLastTxID("hello")).toEqual(undefined);
+        expect(editable.lastEditAt("hello")).toEqual(undefined);
         editable.set("hello", "A", "trusting");
-        const sessionID = editable.getLastTxID("hello")?.sessionID;
+        const sessionID = editable.lastEditAt("hello")?.tx.sessionID;
         expect(sessionID && accountOrAgentIDfromSessionID(sessionID)).toEqual(
             node.account.id
         );
-        expect(editable.getLastTxID("hello")?.txIndex).toEqual(0);
+        expect(editable.lastEditAt("hello")?.tx.txIndex).toEqual(0);
         editable.set("hello", "B", "trusting");
-        expect(editable.getLastTxID("hello")?.txIndex).toEqual(1);
+        expect(editable.lastEditAt("hello")?.tx.txIndex).toEqual(1);
         editable.set("hello", "C", "trusting");
-        expect(editable.getLastTxID("hello")?.txIndex).toEqual(2);
+        expect(editable.lastEditAt("hello")?.tx.txIndex).toEqual(2);
     });
 });
 
@@ -190,11 +175,7 @@ test("Empty CoList works", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "colist") {
-        throw new Error("Expected list");
-    }
+    const content = expectList(coValue.getCurrentContent());
 
     expect(content.type).toEqual("colist");
     expect(content.toJSON()).toEqual([]);
@@ -210,22 +191,16 @@ test("Can append, prepend and delete items to CoList", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "colist") {
-        throw new Error("Expected list");
-    }
-
-    expect(content.type).toEqual("colist");
+    const content = expectList(coValue.getCurrentContent());
 
     content.edit((editable) => {
-        editable.append(0, "hello", "trusting");
+        editable.append("hello", 0, "trusting");
         expect(editable.toJSON()).toEqual(["hello"]);
-        editable.append(0, "world", "trusting");
+        editable.append("world", 0, "trusting");
         expect(editable.toJSON()).toEqual(["hello", "world"]);
-        editable.prepend(1, "beautiful", "trusting");
+        editable.prepend("beautiful", 1, "trusting");
         expect(editable.toJSON()).toEqual(["hello", "beautiful", "world"]);
-        editable.prepend(3, "hooray", "trusting");
+        editable.prepend("hooray", 3, "trusting");
         expect(editable.toJSON()).toEqual([
             "hello",
             "beautiful",
@@ -247,20 +222,16 @@ test("Push is equivalent to append after last item", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "colist") {
-        throw new Error("Expected list");
-    }
+    const content = expectList(coValue.getCurrentContent());
 
     expect(content.type).toEqual("colist");
 
     content.edit((editable) => {
-        editable.append(0, "hello", "trusting");
+        editable.append("hello", 0, "trusting");
         expect(editable.toJSON()).toEqual(["hello"]);
-        editable.push("world", "trusting");
+        editable.append("world", undefined, "trusting");
         expect(editable.toJSON()).toEqual(["hello", "world"]);
-        editable.push("hooray", "trusting");
+        editable.append("hooray", undefined, "trusting");
         expect(editable.toJSON()).toEqual(["hello", "world", "hooray"]);
     });
 });
@@ -275,16 +246,12 @@ test("Can push into empty list", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "colist") {
-        throw new Error("Expected list");
-    }
+    const content = expectList(coValue.getCurrentContent());
 
     expect(content.type).toEqual("colist");
 
     content.edit((editable) => {
-        editable.push("hello", "trusting");
+        editable.append("hello", undefined, "trusting");
         expect(editable.toJSON()).toEqual(["hello"]);
     });
 });
@@ -299,11 +266,7 @@ test("Empty CoStream works", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "costream") {
-        throw new Error("Expected stream");
-    }
+    const content = expectStream(coValue.getCurrentContent());
 
     expect(content.type).toEqual("costream");
     expect(content.toJSON()).toEqual({});
@@ -320,11 +283,7 @@ test("Can push into CoStream", () => {
         ...createdNowUnique(),
     });
 
-    const content = coValue.getCurrentContent();
-
-    if (content.type !== "costream") {
-        throw new Error("Expected stream");
-    }
+    const content = expectStream(coValue.getCurrentContent());
 
     content.edit((editable) => {
         editable.push({ hello: "world" }, "trusting");
@@ -354,7 +313,11 @@ test("Empty BinaryCoStream works", () => {
 
     const content = coValue.getCurrentContent();
 
-    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+    if (
+        content.type !== "costream" ||
+        content.meta?.type !== "binary" ||
+        !(content instanceof BinaryCoStream)
+    ) {
         throw new Error("Expected binary stream");
     }
 
@@ -376,12 +339,19 @@ test("Can push into BinaryCoStream", () => {
 
     const content = coValue.getCurrentContent();
 
-    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+    if (
+        content.type !== "costream" ||
+        content.meta?.type !== "binary" ||
+        !(content instanceof BinaryCoStream)
+    ) {
         throw new Error("Expected binary stream");
     }
 
     content.edit((editable) => {
-        editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
+        editable.startBinaryStream(
+            { mimeType: "text/plain", fileName: "test.txt" },
+            "trusting"
+        );
         expect(editable.getBinaryChunks(true)).toEqual({
             mimeType: "text/plain",
             fileName: "test.txt",
@@ -426,16 +396,23 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
 
     const content = coValue.getCurrentContent();
 
-    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+    if (
+        content.type !== "costream" ||
+        content.meta?.type !== "binary" ||
+        !(content instanceof BinaryCoStream)
+    ) {
         throw new Error("Expected binary stream");
     }
 
     content.edit((editable) => {
-        editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
+        editable.startBinaryStream(
+            { mimeType: "text/plain", fileName: "test.txt" },
+            "trusting"
+        );
     });
 
     for (let i = 0; i < 10; i++) {
-        const chunk = new Uint8Array(MAX_RECOMMENDED_TX_SIZE/3 + 100);
+        const chunk = new Uint8Array(MAX_RECOMMENDED_TX_SIZE / 3 + 100);
 
         content.edit((editable) => {
             editable.pushBinaryStreamChunk(chunk, "trusting");
@@ -461,14 +438,26 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
     expect(sessionEntry.signatureAfter[10]).not.toBeDefined();
     expect(sessionEntry.signatureAfter[11]).not.toBeDefined();
 
-    const newContent = coValue.newContentSince({id: coValue.id, header: false, sessions: {}})!;
+    const newContent = coValue.newContentSince({
+        id: coValue.id,
+        header: false,
+        sessions: {},
+    })!;
 
-    expect(newContent.length).toEqual(5)
+    expect(newContent.length).toEqual(5);
     expect(newContent[0]!.header).toBeDefined();
-    expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[3]);
-    expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[6]);
-    expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[9]);
-    expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.lastSignature);
+    expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.signatureAfter[3]
+    );
+    expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.signatureAfter[6]
+    );
+    expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.signatureAfter[9]
+    );
+    expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.lastSignature
+    );
 });
 
 test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we store an inbetween signature after every large transaction and split up newContentSince accordingly", () => {
@@ -483,12 +472,19 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
 
     const content = coValue.getCurrentContent();
 
-    if (content.type !== "costream" || content.meta?.type !== "binary" || !(content instanceof BinaryCoStream)) {
+    if (
+        content.type !== "costream" ||
+        content.meta?.type !== "binary" ||
+        !(content instanceof BinaryCoStream)
+    ) {
         throw new Error("Expected binary stream");
     }
 
     content.edit((editable) => {
-        editable.startBinaryStream({mimeType: "text/plain", fileName: "test.txt"}, "trusting");
+        editable.startBinaryStream(
+            { mimeType: "text/plain", fileName: "test.txt" },
+            "trusting"
+        );
     });
 
     const chunk = new Uint8Array(MAX_RECOMMENDED_TX_SIZE + 100);
@@ -511,14 +507,24 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
     expect(sessionEntry.signatureAfter[3]).toBeDefined();
     expect(sessionEntry.signatureAfter[4]).not.toBeDefined();
 
-    const newContent = coValue.newContentSince({id: coValue.id, header: false, sessions: {}})!;
+    const newContent = coValue.newContentSince({
+        id: coValue.id,
+        header: false,
+        sessions: {},
+    })!;
 
-    expect(newContent.length).toEqual(5)
+    expect(newContent.length).toEqual(5);
     expect(newContent[0]!.header).toBeDefined();
-    expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[1]);
-    expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[2]);
-    expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.signatureAfter[3]);
-    expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(sessionEntry.lastSignature);
+    expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.signatureAfter[1]
+    );
+    expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.signatureAfter[2]
+    );
+    expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.signatureAfter[3]
+    );
+    expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(
+        sessionEntry.lastSignature
+    );
 });
-
-

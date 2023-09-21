@@ -1,4 +1,4 @@
-import { BinaryCoStream, InviteSecret } from "cojson";
+import { BinaryCoStream, CoValue, CoValueCore, InviteSecret } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
@@ -10,12 +10,11 @@ import {
     SessionID,
     SyncMessage,
     Peer,
-    CoValueImpl,
     Group,
     CoID,
 } from "cojson";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
-import { IDBStorage } from "jazz-storage-indexeddb";
+import { IDBStorage } from "cojson-storage-indexeddb";
 
 export type BrowserNodeHandle = {
     node: LocalNode;
@@ -50,7 +49,7 @@ export async function createBrowserNode({
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
-                Object.keys(node.sync.peers).some((peerId) =>
+                Object.keys(node.syncManager.peers).some((peerId) =>
                     peerId.includes(syncAddress)
                 )
             ) {
@@ -59,7 +58,7 @@ export async function createBrowserNode({
                 );
             } else {
                 console.log("Websocket disconnected, trying to reconnect");
-                node.sync.addPeer(createWebSocketPeer(syncAddress));
+                node.syncManager.addPeer(createWebSocketPeer(syncAddress));
                 await new Promise((resolve) =>
                     setTimeout(resolve, reconnectionTimeout)
                 );
@@ -73,9 +72,11 @@ export async function createBrowserNode({
         node,
         done: () => {
             shouldTryToReconnect = false;
-            console.log("Cleaning up node")
-            for (const peer of Object.values(node.sync.peers)) {
-                peer.outgoing.close().catch(e => console.error("Error while closing peer", e));
+            console.log("Cleaning up node");
+            for (const peer of Object.values(node.syncManager.peers)) {
+                peer.outgoing
+                    .close()
+                    .catch((e) => console.error("Error while closing peer", e));
             }
             sessionDone?.();
         },
@@ -290,13 +291,14 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
-export function createInviteLink(
-    value: CoValueImpl,
+export function createInviteLink<T extends CoValue>(
+    value: T | {id: CoID<T>, core: CoValueCore},
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
         baseURL = window.location.href.replace(/#.*$/, ""),
-    }: { baseURL?: string } = {}
+        valueHint
+    }: { baseURL?: string, valueHint?: string } = {}
 ): string {
     const coValueCore = value.core;
     const node = coValueCore.node;
@@ -317,29 +319,44 @@ export function createInviteLink(
 
     const inviteSecret = group.createInvite(role);
 
-    return `${baseURL}#invitedTo=${value.id}&${inviteSecret}`;
+    return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${value.id}/${inviteSecret}`;
 }
 
-export function parseInviteLink<C extends CoValueImpl>(
+export function parseInviteLink<C extends CoValue>(
     inviteURL: string
 ):
     | {
           valueID: CoID<C>;
+          valueHint?: string;
           inviteSecret: InviteSecret;
       }
     | undefined {
     const url = new URL(inviteURL);
-    const valueID = url.hash
-        .split("&")[0]
-        ?.replace(/^#invitedTo=/, "") as CoID<C>;
-    const inviteSecret = url.hash.split("&")[1] as InviteSecret;
-    if (!valueID || !inviteSecret) {
-        return undefined;
+    const parts = url.hash.split("/");
+
+    let valueHint: string | undefined;
+    let valueID: CoID<C> | undefined;
+    let inviteSecret: InviteSecret | undefined;
+
+    if (parts[0] === "#" && parts[1] === "invite") {
+        if (parts.length === 5) {
+            valueHint = parts[2];
+            valueID = parts[3] as CoID<C>;
+            inviteSecret = parts[4] as InviteSecret;
+        } else if (parts.length === 4) {
+            valueID = parts[2] as CoID<C>;
+            inviteSecret = parts[3] as InviteSecret;
+        }
+
+        if (!valueID || !inviteSecret) {
+            return undefined;
+        }
+        return { valueID, inviteSecret, valueHint };
     }
-    return { valueID, inviteSecret };
+
 }
 
-export function consumeInviteLinkFromWindowLocation<C extends CoValueImpl>(
+export function consumeInviteLinkFromWindowLocation<C extends CoValue>(
     node: LocalNode
 ): Promise<
     | {
@@ -387,17 +404,17 @@ export async function createBinaryStreamFromBlob<
                     totalSizeBytes: blob.size,
                     fileName: blob instanceof File ? blob.name : undefined,
                 });
-            }) as C;// TODO: fix this
-                const chunkSize = MAX_RECOMMENDED_TX_SIZE;
+            }) as C; // TODO: fix this
+            const chunkSize = MAX_RECOMMENDED_TX_SIZE;
 
-                for (let idx = 0; idx < data.length; idx += chunkSize) {
-                    stream = stream.edit((stream) => {
-                        stream.pushBinaryStreamChunk(
-                            data.slice(idx, idx + chunkSize)
-                        );
-                    }) as C; // TODO: fix this
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                }
+            for (let idx = 0; idx < data.length; idx += chunkSize) {
+                stream = stream.edit((stream) => {
+                    stream.pushBinaryStreamChunk(
+                        data.slice(idx, idx + chunkSize)
+                    );
+                }) as C; // TODO: fix this
+                await new Promise((resolve) => setTimeout(resolve, 0));
+            }
             stream = stream.edit((stream) => {
                 stream.endBinaryStream();
             }) as C; // TODO: fix this

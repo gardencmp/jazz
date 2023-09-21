@@ -1,7 +1,7 @@
-import { newRandomSessionID } from "./coValueCore.js";
-import { cojsonReady } from "./index.js";
-import { LocalNode } from "./node.js";
-import { connectedPeers } from "./streamUtils.js";
+import { newRandomSessionID } from "../coValueCore.js";
+import { cojsonReady } from "../index.js";
+import { LocalNode } from "../localNode.js";
+import { connectedPeers } from "../streamUtils.js";
 
 beforeEach(async () => {
     await cojsonReady;
@@ -17,9 +17,6 @@ test("Can create a node while creating a new account with profile", async () => 
     expect(sessionID).not.toBeNull();
 
     expect(node.expectProfileLoaded(accountID).get("name")).toEqual(
-        "Hermes Puggington"
-    );
-    expect((await node.loadProfile(accountID)).get("name")).toEqual(
         "Hermes Puggington"
     );
 });
@@ -39,7 +36,7 @@ test("A node with an account can create groups and and objects within them", asy
 
     expect(map.get("foo")).toEqual("bar");
 
-    expect(map.whoEdited("foo")).toEqual(accountID);
+    expect(map.lastEditAt("foo")?.by).toEqual(accountID);
 });
 
 test("Can create account with one node, and then load it on another", async () => {
@@ -57,7 +54,7 @@ test("Can create account with one node, and then load it on another", async () =
 
     const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {trace: true, peer1role: "server", peer2role: "client"});
 
-    node.sync.addPeer(node2asPeer);
+    node.syncManager.addPeer(node2asPeer);
 
     const node2 = await LocalNode.withLoadedAccount(
         accountID,

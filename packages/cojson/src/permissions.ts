@@ -1,9 +1,7 @@
 import { CoID } from "./coValue.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { JsonValue } from "./jsonValue.js";
-import {
-    KeyID,
-} from "./crypto.js";
+import { KeyID } from "./crypto.js";
 import {
     CoValueCore,
     Transaction,
@@ -11,11 +9,9 @@ import {
     accountOrAgentIDfromSessionID,
 } from "./coValueCore.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import {
-    AccountID,
-    Profile,
-} from "./account.js";
+import { AccountID, Profile } from "./account.js";
 import { parseJSON } from "./jsonStringify.js";
+import { expectGroupContent } from "./group.js";
 
 export type PermissionsDef =
     | { type: "group"; initialAdmin: AccountID | AgentID }
@@ -77,7 +73,7 @@ export function determineValidTransactions(
             // console.log("before", { memberState, validTransactions });
             const transactor = accountOrAgentIDfromSessionID(sessionID);
 
-            const changes = parseJSON(tx.changes)
+            const changes = parseJSON(tx.changes);
 
             const change = changes[0] as
                 | MapOpPayload<AccountID | AgentID, Role>
@@ -193,12 +189,14 @@ export function determineValidTransactions(
 
         return validTransactions;
     } else if (coValue.header.ruleset.type === "ownedByGroup") {
-        const groupContent = coValue.node
-            .expectCoValueLoaded(
-                coValue.header.ruleset.group,
-                "Determining valid transaction in owned object but its group wasn't loaded"
-            )
-            .getCurrentContent();
+        const groupContent = expectGroupContent(
+            coValue.node
+                .expectCoValueLoaded(
+                    coValue.header.ruleset.group,
+                    "Determining valid transaction in owned object but its group wasn't loaded"
+                )
+                .getCurrentContent()
+        );
 
         if (groupContent.type !== "comap") {
             throw new Error("Group must be a map");
@@ -211,10 +209,9 @@ export function determineValidTransactions(
                 );
                 return sessionLog.transactions
                     .filter((tx) => {
-                        const transactorRoleAtTxTime = groupContent.getAtTime(
-                            transactor,
-                            tx.madeAt
-                        );
+                        const transactorRoleAtTxTime = groupContent
+                            .atTime(tx.madeAt)
+                            .get(transactor);
 
                         return (
                             transactorRoleAtTxTime === "admin" ||

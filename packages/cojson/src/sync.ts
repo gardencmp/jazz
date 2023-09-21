@@ -1,8 +1,8 @@
 import { Signature } from "./crypto.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
-import { LocalNode } from "./node.js";
-import { newLoadingState } from "./node.js";
+import { LocalNode } from "./localNode.js";
+import { newLoadingState } from "./localNode.js";
 import {
     ReadableStream,
     WritableStream,
