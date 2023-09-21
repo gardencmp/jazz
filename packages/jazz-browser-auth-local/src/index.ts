@@ -72,7 +72,7 @@ export class BrowserLocalAuth implements AuthProvider {
                                 this.appHostname
                             );
                             for (const peer of initialPeers) {
-                                node.sync.addPeer(peer);
+                                node.syncManager.addPeer(peer);
                             }
                             doneSigningUpOrLoggingIn(node);
                             this.driver.onSignedIn({ logOut });

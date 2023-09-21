@@ -49,7 +49,7 @@ export async function createBrowserNode({
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
-                Object.keys(node.sync.peers).some((peerId) =>
+                Object.keys(node.syncManager.peers).some((peerId) =>
                     peerId.includes(syncAddress)
                 )
             ) {
@@ -58,7 +58,7 @@ export async function createBrowserNode({
                 );
             } else {
                 console.log("Websocket disconnected, trying to reconnect");
-                node.sync.addPeer(createWebSocketPeer(syncAddress));
+                node.syncManager.addPeer(createWebSocketPeer(syncAddress));
                 await new Promise((resolve) =>
                     setTimeout(resolve, reconnectionTimeout)
                 );
@@ -73,7 +73,7 @@ export async function createBrowserNode({
         done: () => {
             shouldTryToReconnect = false;
             console.log("Cleaning up node");
-            for (const peer of Object.values(node.sync.peers)) {
+            for (const peer of Object.values(node.syncManager.peers)) {
                 peer.outgoing
                     .close()
                     .catch((e) => console.error("Error while closing peer", e));

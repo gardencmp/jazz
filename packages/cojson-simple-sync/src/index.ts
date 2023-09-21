@@ -16,7 +16,7 @@ const localNode = new LocalNode(
 );
 
 SQLiteStorage.asPeer({ filename: "./sync.db" })
-    .then((storage) => localNode.sync.addPeer(storage))
+    .then((storage) => localNode.syncManager.addPeer(storage))
     .catch((e) => console.error(e));
 
 wss.on("connection", function connection(ws, req) {
@@ -34,8 +34,6 @@ wss.on("connection", function connection(ws, req) {
         clearInterval(pinging);
     });
 
-
-
     const clientAddress =
         (req.headers["x-forwarded-for"] as string | undefined)
             ?.split(",")[0]
@@ -43,7 +41,7 @@ wss.on("connection", function connection(ws, req) {
 
     const clientId = clientAddress + "@" + new Date().toISOString();
 
-    localNode.sync.addPeer({
+    localNode.syncManager.addPeer({
         id: clientId,
         role: "client",
         incoming: websocketReadableStream(ws),

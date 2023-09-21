@@ -7394,12 +7394,12 @@ TODO: document
 
 ----
 
-## `createImage(image, inGroup)`
+## `createImage(imageBlobOrFile, inGroup)`
 
 <sup>(function in `jazz-react-media-images`)</sup>
 
 ```typescript
-export function createImage(image: Blob | File, inGroup: Group): Promise<Media.ImageDefinition>
+export function createImage(imageBlobOrFile: Blob | File, inGroup: Group): Promise<Media.ImageDefinition>
 ```
 TODO: document
 
@@ -7407,7 +7407,7 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `image` | TODO: document  |
+| `imageBlobOrFile` | TODO: document  |
 | `inGroup` | TODO: document  |
 
 
