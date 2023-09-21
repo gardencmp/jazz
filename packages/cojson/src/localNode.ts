@@ -53,14 +53,14 @@ const { localNode } = useJazz();
 export class LocalNode {
     /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
-    /** @category Low-level */
+    /** @category 3. Low-level */
     account: GeneralizedControlledAccount;
-    /** @category Low-level */
+    /** @category 3. Low-level */
     currentSessionID: SessionID;
-    /** @category Low-level */
+    /** @category 3. Low-level */
     syncManager = new SyncManager(this);
 
-    /** @category Low-level */
+    /** @category 3. Low-level */
     constructor(
         account: GeneralizedControlledAccount,
         currentSessionID: SessionID
@@ -69,7 +69,7 @@ export class LocalNode {
         this.currentSessionID = currentSessionID;
     }
 
-    /** @category High-level */
+    /** @category 2. Node Creation */
     static withNewlyCreatedAccount(
         name: string,
         initialAgentSecret = newRandomAgentSecret()
@@ -100,7 +100,7 @@ export class LocalNode {
         };
     }
 
-    /** @category High-level */
+    /** @category 2. Node Creation */
     static async withLoadedAccount(
         accountID: AccountID,
         accountSecret: AgentSecret,
@@ -162,13 +162,13 @@ export class LocalNode {
      * promise once a first version has been loaded. See `coValue.subscribe()` and `node.useTelepathicData()`
      * for listening to subsequent updates to the CoValue.
      *
-     * @category Low-level
+     * @category 3. Low-level
      */
     async load<T extends CoValue>(id: CoID<T>): Promise<T> {
         return (await this.loadCoValue(id)).getCurrentContent() as T;
     }
 
-    /** @category Low-level */
+    /** @category 3. Low-level */
     subscribe<T extends CoValue>(
         id: CoID<T>,
         callback: (update: T) => void
@@ -196,7 +196,7 @@ export class LocalNode {
         };
     }
 
-    /** @category High-level */
+    /** @category 1. High-level */
     query<T extends CoValue>(
         id: CoID<T>,
         callback: (update: Queried<T> | undefined) => void
@@ -204,7 +204,7 @@ export class LocalNode {
         return query(id, this, callback);
     }
 
-    /** @category High-level */
+    /** @category 1. High-level */
     async acceptInvite<T extends CoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
@@ -426,7 +426,7 @@ export class LocalNode {
 
     /**
      * Creates a new group (with the current account as the group's first admin).
-     * @category High-level
+     * @category 1. High-level
      */
     createGroup(): Group {
         const groupCoValue = this.createCoValue({

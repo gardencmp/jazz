@@ -25,7 +25,7 @@ export function NewProjectForm() {
             // of its members, which will apply to all CoValues owned by that group.
             const projectGroup = localNode.createGroup();
 
-            // Then we create an empty todo project
+            // Then we create an empty todo project within that group
             const project = projectGroup.createMap<TodoProject>({
                 title,
                 tasks: projectGroup.createList<CoList<Task>>(),
@@ -45,4 +45,4 @@ export function NewProjectForm() {
     );
 }
 
-/** Walkthrough: continue with ./3_ProjectTodoTable.tsx */
+/** Walkthrough: continue with ./4_ProjectTodoTable.tsx */

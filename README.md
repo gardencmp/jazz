@@ -56,19 +56,19 @@ Jazz is open source and you can run your own sync & storage server, but to reall
 
 ### Building a new, entirely sync-based React app
 
-1. Define your data model with [cojson Collaborative Values (CoValues)](./DOCS.md/#covalue-interface-in-cojson).
-2. Implement permission logic using [cojson Groups](./DOCS.md/#group-class-in-cojson).
-3. Build a user interface with [jazz-react](./DOCS.md/#jazz-react)'s reactive [synced queries](./DOCS.md/#usesyncedqueryid-function-in-jazz-react).
+1. Define your data model with [cojson Collaborative Values (CoValues)](./DOCS.md/#covalue).
+2. Implement permission logic using [cojson Groups](./DOCS.md/#group).
+3. Build a user interface with [jazz-react](./DOCS.md/#jazz-react)'s reactive [synced queries](./DOCS.md/#usesyncedqueryid).
 
 ### Gradually adding sync to an existing React app
 
 Gradually migrate app features to use sync:
 
-1. Define data model for small aspect of your app with [cojson Collaborative Values (CoValues)](./DOCS.md/#covalue-interface-in-cojson).
+1. Define data model for small aspect of your app with [cojson Collaborative Values (CoValues)](./DOCS.md/#covalue).
     - Schema adapters/importers for Prisma/Drizzle/PostgreSQL introspection coming soon.
-2. Map existing permission logic with [cojson Groups](./DOCS.md/#group-class-in-cojson) & integrate existing auth.
+2. Map existing permission logic with [cojson Groups](./DOCS.md/#group) & integrate existing auth.
     - Auth integrations coming soon.
-3. Replace some of the React state and API requests in your UI with [jazz-react](./DOCS.md/#jazz-react)'s reactive [synced queries](./DOCS.md/#usesyncedqueryid-function-in-jazz-react).
+3. Replace some of the React state and API requests in your UI with [jazz-react](./DOCS.md/#jazz-react)'s reactive [synced queries](./DOCS.md/#usesyncedqueryid).
 
 # Example Apps
 

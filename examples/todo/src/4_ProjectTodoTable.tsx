@@ -24,7 +24,7 @@ import { useParams } from "react-router";
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
  *
- *  Here in `<TodoTable/>`, we use `useTelepathicData()` for the first time,
+ *  Here in `<TodoTable/>`, we use `useSyncedData()` for the first time,
  *  in this case to load the CoValue for our `TodoProject` as well as
  *  the `ListOfTasks` referenced in it.
  */
@@ -32,14 +32,15 @@ import { useParams } from "react-router";
 export function ProjectTodoTable() {
     const projectId = useParams<{ projectId: CoID<TodoProject> }>().projectId;
 
-    // `useTelepathicData()` reactively subscribes to updates to a CoValue's
+    // `useSyncedData()` reactively subscribes to updates to a CoValue's
     // content - whether we create edits locally, load persisted data, or receive
     // sync updates from other devices or participants!
+    // It also recursively resolves and subsribes to all referenced CoValues.
     const project = useSyncedQuery(projectId);
 
     // `createTask` is similar to `createProject` we saw earlier, creating a new CoMap
-    // for a new task (in the same group as the list of tasks/the project), and then
-    // adding it as an item to the project's list of tasks.
+    // for a new task (in the same group as the project), and then
+    // adding that as an item to the project's list of tasks.
     const createTask = useCallback(
         (text: string) => {
             if (!project?.tasks || !text) return;
@@ -48,6 +49,9 @@ export function ProjectTodoTable() {
                 text,
             });
 
+            // project.tasks is immutable, but `append` will create an edit
+            // that will cause useSyncedQuery to rerender this component
+            // - here and on other devices!
             project.tasks.append(task);
         },
         [project?.tasks, project?.group]
@@ -59,7 +63,7 @@ export function ProjectTodoTable() {
                 <h1>
                     {
                         // This is how we can access properties from the project query,
-                        // accounting for the fact that it might not be loaded yet
+                        // accounting for the fact that note everything might be loaded yet
                         project?.title ? (
                             <>
                                 {project.title}{" "}
@@ -101,7 +105,9 @@ export function TaskRow({ task }: { task: Queried<Task> | undefined }) {
                     className="mt-1"
                     checked={task?.done}
                     onCheckedChange={(checked) => {
-                        // (the only thing we let the user change is the "done" status)
+                        // Tick or untick the task
+                        // Task is also immutable, but this will update all queries
+                        // that include this task as a reference
                         task?.set({ done: !!checked });
                     }}
                 />
@@ -115,21 +121,27 @@ export function TaskRow({ task }: { task: Queried<Task> | undefined }) {
                     ) : (
                         <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
                     )}
-                    {task?.edits.text?.by?.profile?.name ? (
-                        <span
-                            className="rounded-full py-0.5 px-2 text-xs"
-                            style={uniqueColoring(task.edits.text.by.id)}
-                        >
-                            {task.edits.text.by.profile.name}
-                        </span>
-                    ) : (
-                        <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
-                    )}
+                    {
+                        // Here we see for the first time how we can access edit history
+                        // for a CoValue, and use it to display who created the task.
+                        task?.edits.text?.by?.profile?.name ? (
+                            <span
+                                className="rounded-full py-0.5 px-2 text-xs"
+                                style={uniqueColoring(task.edits.text.by.id)}
+                            >
+                                {task.edits.text.by.profile.name}
+                            </span>
+                        ) : (
+                            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
+                        )
+                    }
                 </div>
             </TableCell>
         </TableRow>
     );
 }
+
+/** Walkthrough: This is the end of the walkthrough so far! */
 
 function NewTaskInputRow({
     createTask,

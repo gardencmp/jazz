@@ -67,7 +67,7 @@ async function main() {
                             return (
                                 `## \`${renderChildName(
                                     child
-                                )}\` <sub><sup>(${group.title
+                                )}\`\n\n<sup>(${group.title
                                     .toLowerCase()
                                     .replace("bles", "ble")
                                     .replace("ces", "ce")
@@ -75,7 +75,7 @@ async function main() {
                                     .replace(
                                         "ns",
                                         "n"
-                                    )} in \`${packageName}\`)</sup></sub>\n\n` +
+                                    )} in \`${packageName}\`)</sup>\n\n` +
                                 renderChildType(child) +
                                 (child.kind === ReflectionKind.Class ||
                                 child.kind === ReflectionKind.Interface ||

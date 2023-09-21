@@ -20,7 +20,7 @@ import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
  *
  * This shows how to use the top-level provider `<WithJazz/>`,
  * which provides the rest of the app with a `LocalNode` (used through `useJazz` later),
- * based on `LocalAuth` that uses PassKeys (aka WebAuthn) to store a user's account secret
+ * based on `LocalAuth` that uses Passkeys (aka WebAuthn) to store a user's account secret
  * - no backend needed.
  */
 
@@ -48,6 +48,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 
 function App() {
+    // logOut logs out the AuthProvider passed to `<WithJazz/>` above.
     const { logOut } = useJazz();
 
     const router = createHashRouter([
@@ -65,6 +66,8 @@ function App() {
         }
     ]);
 
+    // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
+    // and on success calls our callback where we navigate to the project that we were just invited to.
     useAcceptInvite((projectID) => router.navigate("/project/" + projectID));
 
     return (

@@ -7,10 +7,7 @@ import { CoMap, CoList } from "cojson";
  *
  *  CoMap values and CoLists items can contain:
  *  - arbitrary immutable JSON
- *  - references to other CoValues by their CoID
- *    - CoIDs are strings that look like `co_zXPuWmH1D1cKdMpDW6CMzWb3LpY`
- *    - In TypeScript, CoIDs take a generic parameter for the type of the
- *      referenced CoValue, e.g. `CoID<Task>` - to make the references precise
+ *  - references to other CoValues (internally stored by their CoID)
  **/
 
 /** An individual task which collaborators can tick or rename */

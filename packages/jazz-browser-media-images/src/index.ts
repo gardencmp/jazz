@@ -10,7 +10,7 @@ import {
 const pica = new Pica();
 
 export async function createImage(
-    image: Blob | File,
+    imageBlobOrFile: Blob | File,
     inGroup: Group
 ): Promise<Media.ImageDefinition> {
     let originalWidth!: number;
@@ -29,7 +29,7 @@ export async function createImage(
     });
 
     const placeholderDataURL = (
-        await Reducer.toCanvas(image, { max: 8 })
+        await Reducer.toCanvas(imageBlobOrFile, { max: 8 })
     ).toDataURL("image/png");
 
     let imageDefinition = inGroup.createMap<Media.ImageDefinition>();
@@ -40,7 +40,7 @@ export async function createImage(
     });
 
     setTimeout(async () => {
-        const max256 = await Reducer.toBlob(image, { max: 256 });
+        const max256 = await Reducer.toBlob(imageBlobOrFile, { max: 256 });
 
         if (originalWidth > 256 || originalHeight > 256) {
             const width =
@@ -63,7 +63,7 @@ export async function createImage(
 
         await new Promise((resolve) => setTimeout(resolve, 0));
 
-        const max1024 = await Reducer.toBlob(image, { max: 1024 });
+        const max1024 = await Reducer.toBlob(imageBlobOrFile, { max: 1024 });
 
         if (originalWidth > 1024 || originalHeight > 1024) {
             const width =
@@ -86,7 +86,7 @@ export async function createImage(
 
         await new Promise((resolve) => setTimeout(resolve, 0));
 
-        const max2048 = await Reducer.toBlob(image, { max: 2048 });
+        const max2048 = await Reducer.toBlob(imageBlobOrFile, { max: 2048 });
 
         if (originalWidth > 2048 || originalHeight > 2048) {
             const width =
@@ -110,7 +110,7 @@ export async function createImage(
         await new Promise((resolve) => setTimeout(resolve, 0));
 
         const originalBinaryStreamId = (
-            await createBinaryStreamFromBlob(image, inGroup)
+            await createBinaryStreamFromBlob(imageBlobOrFile, inGroup)
         ).id;
 
         imageDefinition.edit((imageDefinition) => {
@@ -131,7 +131,7 @@ export type LoadingImageInfo = {
 };
 
 export function loadImage(
-    image: CoID<Media.ImageDefinition> | Media.ImageDefinition | {id: CoID<Media.ImageDefinition>},
+    imageDef: CoID<Media.ImageDefinition> | Media.ImageDefinition | {id: CoID<Media.ImageDefinition>},
     localNode: LocalNode,
     progressiveCallback: (update: LoadingImageInfo) => void
 ): () => void {
@@ -162,7 +162,7 @@ export function loadImage(
     };
 
     localNode
-        .load(typeof image === "string" ? image : image.id)
+        .load(typeof imageDef === "string" ? imageDef : imageDef.id)
         .then((imageDefinition) => {
             if (stopped) return;
             unsubscribe = imageDefinition.subscribe(async (imageDefinition) => {
@@ -221,7 +221,7 @@ export function loadImage(
                             resState[res] = { state: "failed" };
                             console.error(
                                 "Loading image res failed",
-                                image,
+                                imageDef,
                                 res,
                                 binaryStreamId
                             );
@@ -320,13 +320,13 @@ export function loadImage(
                 }
 
                 startLoading().catch((err) => {
-                    console.error("Error loading image", image, err);
+                    console.error("Error loading image", imageDef, err);
                     cleanUp();
                 });
             });
         })
         .catch((err) => {
-            console.error("Error loading image", image, err);
+            console.error("Error loading image", imageDef, err);
             cleanUp();
         });
 
