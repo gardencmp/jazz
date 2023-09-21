@@ -1,11 +1,11 @@
 {
     "name": "jazz-browser-auth-local",
-    "version": "0.3.0-alpha.0",
+    "version": "0.3.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "license": "MIT",
     "dependencies": {
-        "jazz-browser": "^0.3.0-alpha.0",
+        "jazz-browser": "^0.3.0",
         "typescript": "^5.1.6"
     },
     "scripts": {
