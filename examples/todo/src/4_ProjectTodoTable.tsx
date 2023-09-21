@@ -24,7 +24,7 @@ import { useParams } from "react-router";
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
  *
- *  Here in `<TodoTable/>`, we use `useSyncedData()` for the first time,
+ *  Here in `<TodoTable/>`, we use `useSyncedQuery()` for the first time,
  *  in this case to load the CoValue for our `TodoProject` as well as
  *  the `ListOfTasks` referenced in it.
  */
@@ -32,7 +32,7 @@ import { useParams } from "react-router";
 export function ProjectTodoTable() {
     const projectId = useParams<{ projectId: CoID<TodoProject> }>().projectId;
 
-    // `useSyncedData()` reactively subscribes to updates to a CoValue's
+    // `useSyncedQuery()` reactively subscribes to updates to a CoValue's
     // content - whether we create edits locally, load persisted data, or receive
     // sync updates from other devices or participants!
     // It also recursively resolves and subsribes to all referenced CoValues.
