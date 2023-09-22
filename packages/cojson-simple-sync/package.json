@@ -16,7 +16,7 @@
         "typescript": "5.0.2"
     },
     "dependencies": {
-        "cojson": "^0.3.0",
+        "cojson": "^0.3.2",
         "cojson-storage-sqlite": "^0.3.0",
         "ws": "^8.13.0"
     },
