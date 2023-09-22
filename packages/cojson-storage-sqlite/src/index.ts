@@ -237,19 +237,31 @@ export class SQLiteStorage {
             sessions: {},
         };
 
-        const parsedHeader = (coValueRow?.header &&
-            JSON.parse(coValueRow.header)) as
-            | CojsonInternalTypes.CoValueHeader
-            | undefined;
+        let parsedHeader;
 
-            const newContentPieces: CojsonInternalTypes.NewContentMessage[] = [
-                {
-                    action: "content",
-                    id: theirKnown.id,
-                    header: theirKnown.header ? undefined : parsedHeader,
-                    new: {},
-                },
-            ];
+        try {
+            parsedHeader = (coValueRow?.header &&
+                JSON.parse(coValueRow.header)) as
+                | CojsonInternalTypes.CoValueHeader
+                | undefined;
+        } catch (e) {
+            console.warn(
+                theirKnown.id,
+                "Invalid JSON in header",
+                e,
+                coValueRow?.header
+            );
+            return;
+        }
+
+        const newContentPieces: CojsonInternalTypes.NewContentMessage[] = [
+            {
+                action: "content",
+                id: theirKnown.id,
+                header: theirKnown.header ? undefined : parsedHeader,
+                new: {},
+            },
+        ];
 
         for (const sessionRow of allOurSessions) {
             ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
@@ -265,7 +277,10 @@ export class SQLiteStorage {
                     .prepare<[number, number]>(
                         `SELECT * FROM signatureAfter WHERE ses = ? AND idx >= ?`
                     )
-                    .all(sessionRow.rowID, firstNewTxIdx) as SignatureAfterRow[];
+                    .all(
+                        sessionRow.rowID,
+                        firstNewTxIdx
+                    ) as SignatureAfterRow[];
 
                 // console.log(
                 //     theirKnown.id,
@@ -295,7 +310,8 @@ export class SQLiteStorage {
                     if (!sessionEntry) {
                         sessionEntry = {
                             after: idx,
-                            lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
+                            lastSignature:
+                                "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
                             newTransactions: [],
                         };
                         newContentPieces[newContentPieces.length - 1]!.new[
@@ -303,7 +319,21 @@ export class SQLiteStorage {
                         ] = sessionEntry;
                     }
 
-                    sessionEntry.newTransactions.push(JSON.parse(tx.tx));
+                    let parsedTx;
+
+                    try {
+                        parsedTx = JSON.parse(tx.tx);
+                    } catch (e) {
+                        console.warn(
+                            theirKnown.id,
+                            "Invalid JSON in transaction",
+                            e,
+                            tx.tx
+                        );
+                        break;
+                    }
+
+                    sessionEntry.newTransactions.push(parsedTx);
 
                     if (
                         signaturesAndIdxs[0] &&
@@ -331,28 +361,31 @@ export class SQLiteStorage {
         const dependedOnCoValues =
             parsedHeader?.ruleset.type === "group"
                 ? newContentPieces
-                .flatMap((piece) => Object.values(piece.new)).flatMap((sessionEntry) =>
-                      sessionEntry.newTransactions.flatMap((tx) => {
-                          if (tx.privacy !== "trusting") return [];
-                          // TODO: avoid parsing here?
-                          return cojsonInternals
-                              .parseJSON(tx.changes)
-                              .map(
-                                  (change) =>
-                                      change &&
-                                      typeof change === "object" &&
-                                      "op" in change &&
-                                      change.op === "set" &&
-                                      "key" in change &&
-                                      change.key
-                              )
-                              .filter(
-                                  (key): key is CojsonInternalTypes.RawCoID =>
-                                      typeof key === "string" &&
-                                      key.startsWith("co_")
-                              );
-                      })
-                  )
+                      .flatMap((piece) => Object.values(piece.new))
+                      .flatMap((sessionEntry) =>
+                          sessionEntry.newTransactions.flatMap((tx) => {
+                              if (tx.privacy !== "trusting") return [];
+                              // TODO: avoid parsing here?
+                              return cojsonInternals
+                                  .parseJSON(tx.changes)
+                                  .map(
+                                      (change) =>
+                                          change &&
+                                          typeof change === "object" &&
+                                          "op" in change &&
+                                          change.op === "set" &&
+                                          "key" in change &&
+                                          change.key
+                                  )
+                                  .filter(
+                                      (
+                                          key
+                                      ): key is CojsonInternalTypes.RawCoID =>
+                                          typeof key === "string" &&
+                                          key.startsWith("co_")
+                                  );
+                          })
+                      )
                 : parsedHeader?.ruleset.type === "ownedByGroup"
                 ? [parsedHeader?.ruleset.group]
                 : [];
@@ -499,7 +532,7 @@ export class SQLiteStorage {
                             sessionUpdate.sessionID,
                             sessionUpdate.lastIdx,
                             sessionUpdate.lastSignature,
-                            sessionUpdate.bytesSinceLastSignature,
+                            sessionUpdate.bytesSinceLastSignature
                         ) as { rowID: number };
 
                     const sessionRowID = upsertedSession.rowID;
