@@ -25,7 +25,7 @@ export type BrowserNodeHandle = {
 export async function createBrowserNode({
     auth,
     syncAddress = "wss://sync.jazz.tools",
-    reconnectionTimeout = 300,
+    reconnectionTimeout: initialReconnectionTimeout = 500,
 }: {
     auth: AuthProvider;
     syncAddress?: string;
@@ -36,6 +36,15 @@ export async function createBrowserNode({
 
     const firstWsPeer = createWebSocketPeer(syncAddress);
     let shouldTryToReconnect = true;
+
+    let currentReconnectionTimeout = initialReconnectionTimeout;
+
+    function onOnline() {
+        console.log("Online, resetting reconnection timeout");
+        currentReconnectionTimeout = initialReconnectionTimeout;
+    }
+
+    window.addEventListener("online", onOnline);
 
     const node = await auth.createNode(
         (accountID) => {
@@ -53,15 +62,33 @@ export async function createBrowserNode({
                     peerId.includes(syncAddress)
                 )
             ) {
-                await new Promise((resolve) =>
-                    setTimeout(resolve, reconnectionTimeout)
-                );
+                // TODO: this might drain battery, use listeners instead
+                await new Promise((resolve) => setTimeout(resolve, 100));
             } else {
-                console.log("Websocket disconnected, trying to reconnect");
-                node.syncManager.addPeer(createWebSocketPeer(syncAddress));
-                await new Promise((resolve) =>
-                    setTimeout(resolve, reconnectionTimeout)
+                console.log(
+                    "Websocket disconnected, trying to reconnect in " +
+                        currentReconnectionTimeout +
+                        "ms"
                 );
+                currentReconnectionTimeout = Math.min(
+                    currentReconnectionTimeout * 2,
+                    30000
+                );
+                await new Promise<void>((resolve) => {
+                    setTimeout(resolve, currentReconnectionTimeout);
+                    window.addEventListener(
+                        "online",
+                        () => {
+                            console.log(
+                                "Online, trying to reconnect immediately"
+                            );
+                            resolve();
+                        },
+                        { once: true }
+                    );
+                });
+
+                node.syncManager.addPeer(createWebSocketPeer(syncAddress));
             }
         }
     }
@@ -72,6 +99,7 @@ export async function createBrowserNode({
         node,
         done: () => {
             shouldTryToReconnect = false;
+            window.removeEventListener("online", onOnline);
             console.log("Cleaning up node");
             for (const peer of Object.values(node.syncManager.peers)) {
                 peer.outgoing
@@ -292,13 +320,13 @@ function websocketWritableStream<T>(ws: WebSocket) {
 }
 
 export function createInviteLink<T extends CoValue>(
-    value: T | {id: CoID<T>, core: CoValueCore},
+    value: T | { id: CoID<T>; core: CoValueCore },
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
         baseURL = window.location.href.replace(/#.*$/, ""),
-        valueHint
-    }: { baseURL?: string, valueHint?: string } = {}
+        valueHint,
+    }: { baseURL?: string; valueHint?: string } = {}
 ): string {
     const coValueCore = value.core;
     const node = coValueCore.node;
@@ -319,7 +347,9 @@ export function createInviteLink<T extends CoValue>(
 
     const inviteSecret = group.createInvite(role);
 
-    return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${value.id}/${inviteSecret}`;
+    return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${
+        value.id
+    }/${inviteSecret}`;
 }
 
 export function parseInviteLink<C extends CoValue>(
@@ -353,7 +383,6 @@ export function parseInviteLink<C extends CoValue>(
         }
         return { valueID, inviteSecret, valueHint };
     }
-
 }
 
 export function consumeInviteLinkFromWindowLocation<C extends CoValue>(
