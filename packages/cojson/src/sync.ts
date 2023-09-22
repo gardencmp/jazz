@@ -505,7 +505,11 @@ export class SyncManager {
                 console.error(
                     "Failed to add transactions",
                     msg.id,
-                    newTransactions
+                    JSON.stringify(newTransactions, (k, v) =>
+                        k === "changes" || k === "encryptedChanges"
+                            ? v.slice(0, 20) + "..."
+                            : v
+                    )
                 );
                 continue;
             }
