@@ -22,23 +22,27 @@ let blake3incrementalUpdateSLOW_WITH_DEVTOOLS: (
 let blake3digestForState: (state: Uint8Array) => Uint8Array;
 
 export const cryptoReady = new Promise<void>((resolve) => {
-    createBLAKE3().then((bl3) => {
-        blake3Instance = bl3;
-        blake3HashOnce = (data) => {
-            return bl3.init().update(data).digest("binary");
-        };
-        blake3HashOnceWithContext = (data, { context }) => {
-            return bl3.init().update(context).update(data).digest("binary");
-        };
-        blake3incrementalUpdateSLOW_WITH_DEVTOOLS = (state, data) => {
-            bl3.load(state).update(data);
-            return bl3.save();
-        };
-        blake3digestForState = (state) => {
-            return bl3.load(state).digest("binary");
-        };
-        resolve();
-    });
+    createBLAKE3()
+        .then((bl3) => {
+            blake3Instance = bl3;
+            blake3HashOnce = (data) => {
+                return bl3.init().update(data).digest("binary");
+            };
+            blake3HashOnceWithContext = (data, { context }) => {
+                return bl3.init().update(context).update(data).digest("binary");
+            };
+            blake3incrementalUpdateSLOW_WITH_DEVTOOLS = (state, data) => {
+                bl3.load(state).update(data);
+                return bl3.save();
+            };
+            blake3digestForState = (state) => {
+                return bl3.load(state).digest("binary");
+            };
+            resolve();
+        })
+        .catch((e) =>
+            console.error("Failed to load cryptography dependencies", e)
+        );
 });
 
 export type SignerSecret = `signerSecret_z${string}`;
