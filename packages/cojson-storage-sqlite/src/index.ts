@@ -366,8 +366,23 @@ export class SQLiteStorage {
                           sessionEntry.newTransactions.flatMap((tx) => {
                               if (tx.privacy !== "trusting") return [];
                               // TODO: avoid parsing here?
-                              return cojsonInternals
-                                  .parseJSON(tx.changes)
+                              let parsedChanges;
+
+                              try {
+                                  parsedChanges = cojsonInternals.parseJSON(
+                                      tx.changes
+                                  );
+                              } catch (e) {
+                                  console.warn(
+                                      theirKnown.id,
+                                      "Invalid JSON in transaction",
+                                      e,
+                                      tx.changes
+                                  );
+                                  return [];
+                              }
+
+                              return parsedChanges
                                   .map(
                                       (change) =>
                                           change &&
