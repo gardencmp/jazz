@@ -252,7 +252,7 @@ export function determineValidTransactions(
         );
     } else {
         throw new Error(
-            "Unknown ruleset type " + (coValue.header.ruleset as any).type
+            "Unknown ruleset type " + (coValue.header.ruleset as {type: string}).type
         );
     }
 }

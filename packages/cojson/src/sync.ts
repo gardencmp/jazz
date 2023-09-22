@@ -9,7 +9,6 @@ import {
     WritableStreamDefaultWriter,
 } from "isomorphic-streams";
 import { RawCoID, SessionID } from "./ids.js";
-import { stableStringify } from "./jsonStringify.js";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -224,7 +223,7 @@ export class SyncManager {
                 peer.optimisticKnownStates[id] || emptyKnownState(id);
 
             const sendPieces = async () => {
-                for (const [i, piece] of newContentPieces.entries()) {
+                for (const [_i, piece] of newContentPieces.entries()) {
                     // console.log(
                     //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${newContentPieces.length} header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
