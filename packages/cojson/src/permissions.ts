@@ -73,7 +73,24 @@ export function determineValidTransactions(
             // console.log("before", { memberState, validTransactions });
             const transactor = accountOrAgentIDfromSessionID(sessionID);
 
-            const changes = parseJSON(tx.changes);
+            let changes;
+
+            try {
+                changes = parseJSON(tx.changes);
+            } catch (e) {
+                console.warn(
+                    coValue.id,
+                    "Invalid JSON in transaction",
+                    e,
+                    tx,
+                    JSON.stringify(tx.changes, (k, v) =>
+                        k === "changes" || k === "encryptedChanges"
+                            ? v.slice(0, 20) + "..."
+                            : v
+                    )
+                );
+                continue;
+            }
 
             const change = changes[0] as
                 | MapOpPayload<AccountID | AgentID, Role>
