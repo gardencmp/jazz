@@ -113,4 +113,4 @@ In the future we'll build a dedicated docs page on the Jazz homepage.
 
 ----
 
-Copyright 2023: Garden Computing, Inc.
+Copyright 2023 &mdash; Garden Computing, Inc.
