@@ -66,6 +66,7 @@ export interface Peer {
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStream<SyncMessage>;
     role: "peer" | "server" | "client";
+    delayOnError?: number;
 }
 
 export interface PeerState {
@@ -75,6 +76,7 @@ export interface PeerState {
     incoming: ReadableStream<SyncMessage>;
     outgoing: WritableStreamDefaultWriter<SyncMessage>;
     role: "peer" | "server" | "client";
+    delayOnError?: number;
 }
 
 export function combinedKnownStates(
@@ -283,6 +285,7 @@ export class SyncManager {
                         });
                     } catch (e) {
                         console.error(
+                            new Date(),
                             `Error reading from peer ${peer.id}, handling msg`,
                             JSON.stringify(msg, (k, v) =>
                                 k === "changes" || k === "encryptedChanges"
@@ -291,6 +294,11 @@ export class SyncManager {
                             ),
                             e
                         );
+                        if (peerState.delayOnError) {
+                            await new Promise<void>((resolve) => {
+                                setTimeout(resolve, peerState.delayOnError);
+                            });
+                        }
                     }
                 }
             } catch (e) {
