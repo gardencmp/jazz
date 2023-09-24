@@ -255,6 +255,7 @@ export class SyncManager {
             outgoing: peer.outgoing.getWriter(),
             toldKnownState: new Set(),
             role: peer.role,
+            delayOnError: peer.delayOnError,
         };
         this.peers[peer.id] = peerState;
 
