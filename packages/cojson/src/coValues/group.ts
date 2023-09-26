@@ -276,9 +276,7 @@ export class Group<
      * @category 3. Value creation
      */
     createMap<M extends CoMap>(
-        init?: {
-            [K in keyof M["_shape"]]: M["_shape"][K];
-        },
+        init?: M["_shape"],
         meta?: M["meta"],
         initPrivacy: "trusting" | "private" = "trusting"
     ): M {

@@ -63,8 +63,12 @@ export interface GeneralizedControlledAccount {
 }
 
 /** @hidden */
-export class ControlledAccount
-    extends Account
+export class ControlledAccount<
+P extends Profile = Profile,
+R extends CoMap = CoMap,
+Meta extends AccountMeta = AccountMeta
+>
+    extends Account<P, R, Meta>
     implements GeneralizedControlledAccount
 {
     agentSecret: AgentSecret;

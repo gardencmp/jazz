@@ -1,3 +1,4 @@
+import { Account, Profile } from "cojson";
 import { CoMap, CoList } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
@@ -20,6 +21,12 @@ export type TodoProject = CoMap<{
     title: string;
     /** A collaborative, ordered list of tasks */
     tasks: ListOfTasks["id"];
+}>;
+
+export type ListOfProjects = CoList<TodoProject["id"]>;
+
+export type TodoAccountRoot = CoMap<{
+    projects: ListOfProjects["id"];
 }>;
 
 /** Walkthrough: Continue with ./2_main.tsx */

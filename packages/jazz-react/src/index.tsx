@@ -96,7 +96,13 @@ export function WithJazz(props: {
     return (
         <>
             {node && logOut ? (
-                <JazzContext.Provider value={{ me: node.account as ControlledAccount, localNode: node, logOut }}>
+                <JazzContext.Provider
+                    value={{
+                        me: node.account as ControlledAccount,
+                        localNode: node,
+                        logOut,
+                    }}
+                >
                     <>{children}</>
                 </JazzContext.Provider>
             ) : (
@@ -192,6 +198,32 @@ export function useSyncedValue<T extends CoValue>(id?: CoID<T>) {
 /** @deprecated Use the higher-level `useSyncedQuery` or the equivalent `useSyncedValue` instead */
 export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
     return useSyncedValue(id);
+}
+
+export function useMigration<T extends CoValue>(
+    id: CoID<T>,
+    migrate: (current: T) => Promise<void>
+) {
+    const [done, setDone] = useState(false);
+
+    const { localNode } = useJazz();
+
+    useEffect(() => {
+        if (!id) return;
+        // TODO: make sure we're really on the latest version
+        localNode
+            .load(id)
+            .then((loaded) => {
+                migrate(loaded)
+                    .then(() => {
+                        setDone(true);
+                    })
+                    .catch((e) => console.error("Failed to migrate", e));
+            })
+            .catch((e) => console.error("Failed to load for migration", e));
+    }, [id, localNode, migrate]);
+
+    return done;
 }
 
 export function useBinaryStream<C extends BinaryCoStream>(

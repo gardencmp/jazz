@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { WithJazz, useJazz, useAcceptInvite } from "jazz-react";
+import { WithJazz, useJazz, useAcceptInvite, useMigration } from "jazz-react";
 import { LocalAuth } from "jazz-react-auth-local";
 
 import {
@@ -14,6 +14,7 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
+import { ListOfProjects, TodoAccountRoot } from "./1_types.ts";
 
 /**
  * Walkthrough: The top-level provider `<WithJazz/>`
@@ -49,7 +50,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 function App() {
     // logOut logs out the AuthProvider passed to `<WithJazz/>` above.
-    const { logOut } = useJazz();
+    const { me, logOut } = useJazz();
 
     const router = createHashRouter([
         {
@@ -62,9 +63,17 @@ function App() {
         },
         {
             path: "/invite/*",
-            element: <p>Accepting invite...</p>
-        }
+            element: <p>Accepting invite...</p>,
+        },
     ]);
+
+    const migrationDone = useMigration(me.id, async (account) => {
+        if (!account.get("root")) {
+            account.set("root", account.createMap<TodoAccountRoot>({
+                projects: account.createList<ListOfProjects>().id,
+            }).id);
+        }
+    });
 
     // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
     // and on success calls our callback where we navigate to the project that we were just invited to.
@@ -74,8 +83,7 @@ function App() {
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-
-                <RouterProvider router={router} />
+                {migrationDone && <RouterProvider router={router} />}
 
                 <Button
                     onClick={() => router.navigate("/").then(logOut)}
