@@ -17,16 +17,16 @@ import {
 import {
     InviteSecret,
     Group,
-    GroupContent,
-    expectGroupContent,
+    GroupShape,
+    expectGroup,
     secretSeedFromInviteSecret,
-} from "./group.js";
+} from "./coValues/group.js";
 import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID } from "./coValue.js";
 import { Queried, query } from "./queries.js";
 import {
-    AccountGroup,
+    Account,
     AccountMeta,
     accountHeaderForInitialAgentSecret,
     GeneralizedControlledAccount,
@@ -34,10 +34,11 @@ import {
     AnonymousControlledAccount,
     AccountID,
     Profile,
-    AccountContent,
-} from "./account.js";
+    isAccountID,
+} from "./coValues/account.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoValue } from "./index.js";
+import { QueriedAccount } from "./queriedCoValues/queriedAccount.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -87,7 +88,7 @@ export class LocalNode {
 
         const account = setupNode.createAccount(name, initialAgentSecret);
 
-        const nodeWithAccount = account.node.testWithDifferentAccount(
+        const nodeWithAccount = account.core.node.testWithDifferentAccount(
             account,
             newRandomSessionID(account.id)
         );
@@ -122,7 +123,7 @@ export class LocalNode {
 
         // since this is all synchronous, we can just swap out nodes for the SyncManager
         const node = loadingNode.testWithDifferentAccount(
-            new ControlledAccount(accountSecret, account, loadingNode),
+            new ControlledAccount(account.core, accountSecret),
             sessionID
         );
         node.syncManager = loadingNode.syncManager;
@@ -197,14 +198,32 @@ export class LocalNode {
     }
 
     /** @category 1. High-level */
+    query(
+        id: "me",
+        callback: (update: QueriedAccount | undefined) => void
+    ): () => void;
     query<T extends CoValue>(
         id: CoID<T>,
         callback: (update: Queried<T> | undefined) => void
+    ): () => void;
+    query(
+        id: CoID<CoValue> | "me",
+        callback: (
+            update: Queried<CoValue> | QueriedAccount | undefined
+        ) => void
     ): () => void {
-        return query(id, this, callback);
+        if (id === "me") {
+            const meId = this.account.id;
+            if (!isAccountID(meId)) {
+                throw new Error("Can only query 'me' for accounts");
+            }
+            return query(meId, this, callback);
+        } else {
+            return query(id, this, callback);
+        }
     }
 
-    /** @category 1. High-level */
+    /** @deprecated Use Account.acceptInvite instead */
     async acceptInvite<T extends CoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
@@ -213,16 +232,14 @@ export class LocalNode {
 
         if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
-                groupOrOwnedValue.core.header.ruleset.group as CoID<
-                    CoMap<GroupContent>
-                >,
+                groupOrOwnedValue.core.header.ruleset.group as CoID<Group>,
                 inviteSecret
             );
         } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
             throw new Error("Can only accept invites to groups");
         }
 
-        const group = new Group(expectGroupContent(groupOrOwnedValue), this);
+        const group = expectGroup(groupOrOwnedValue);
 
         const inviteAgentSecret = agentSecretFromSecretSeed(
             secretSeedFromInviteSecret(inviteSecret)
@@ -230,8 +247,8 @@ export class LocalNode {
         const inviteAgentID = getAgentID(inviteAgentSecret);
 
         const inviteRole = await new Promise((resolve, reject) => {
-            group.underlyingMap.subscribe((groupMap) => {
-                const role = groupMap.get(inviteAgentID);
+            group.subscribe((groupUpdate) => {
+                const role = groupUpdate.get(inviteAgentID);
                 if (role) {
                     resolve(role);
                 }
@@ -246,7 +263,7 @@ export class LocalNode {
             throw new Error("No invite found");
         }
 
-        const existingRole = group.underlyingMap.get(this.account.id);
+        const existingRole = group.get(this.account.id);
 
         if (
             existingRole === "admin" ||
@@ -260,9 +277,13 @@ export class LocalNode {
             return;
         }
 
-        const groupAsInvite = group.testWithDifferentAccount(
-            new AnonymousControlledAccount(inviteAgentSecret),
-            newRandomSessionID(inviteAgentID)
+        const groupAsInvite = expectGroup(
+            group.core
+                .testWithDifferentAccount(
+                    new AnonymousControlledAccount(inviteAgentSecret),
+                    newRandomSessionID(inviteAgentID)
+                )
+                .getCurrentContent()
         );
 
         groupAsInvite.addMemberInternal(
@@ -274,12 +295,11 @@ export class LocalNode {
                 : "reader"
         );
 
-        group.underlyingMap.core._sessions =
-            groupAsInvite.underlyingMap.core.sessions;
-        group.underlyingMap.core._cachedContent = undefined;
+        group.core._sessions = groupAsInvite.core.sessions;
+        group.core._cachedContent = undefined;
 
-        for (const groupListener of group.underlyingMap.core.listeners) {
-            groupListener(group.underlyingMap.core.getCurrentContent());
+        for (const groupListener of group.core.listeners) {
+            groupListener(group.core.getCurrentContent());
         }
     }
 
@@ -304,7 +324,7 @@ export class LocalNode {
     /** @internal */
     expectProfileLoaded(id: AccountID, expectation?: string): Profile {
         const account = this.expectCoValueLoaded(id, expectation);
-        const profileID = expectGroupContent(account.getCurrentContent()).get(
+        const profileID = expectGroup(account.getCurrentContent()).get(
             "profile"
         );
         if (!profileID) {
@@ -326,19 +346,16 @@ export class LocalNode {
         agentSecret = newRandomAgentSecret()
     ): ControlledAccount {
         const accountAgentID = getAgentID(agentSecret);
-        const account = this.createCoValue(
-            accountHeaderForInitialAgentSecret(agentSecret)
-        ).testWithDifferentAccount(
-            new AnonymousControlledAccount(agentSecret),
-            newRandomSessionID(accountAgentID)
+        let account = expectGroup(
+            this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
+                .testWithDifferentAccount(
+                    new AnonymousControlledAccount(agentSecret),
+                    newRandomSessionID(accountAgentID)
+                )
+                .getCurrentContent()
         );
 
-        const accountAsGroup = new Group(
-            expectGroupContent(account.getCurrentContent()),
-            account.node
-        );
-
-        accountAsGroup.underlyingMap.mutate((editable) => {
+        account = account.mutate((editable) => {
             editable.set(accountAgentID, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -351,7 +368,7 @@ export class LocalNode {
                     to: getAgentSealerID(accountAgentID),
                     nOnceMaterial: {
                         in: account.id,
-                        tx: account.nextTransactionID(),
+                        tx: account.core.nextTransactionID(),
                     },
                 }),
                 "trusting"
@@ -360,13 +377,7 @@ export class LocalNode {
             editable.set("readKey", readKey.id, "trusting");
         });
 
-        const controlledAccount = new ControlledAccount(
-            agentSecret,
-            account.getCurrentContent() as CoMap<AccountContent, AccountMeta>,
-            account.node
-        );
-
-        const profile = accountAsGroup.createMap<Profile>(
+        const profile = account.createMap<Profile>(
             { name },
             {
                 type: "profile",
@@ -374,12 +385,12 @@ export class LocalNode {
             "trusting"
         );
 
-        accountAsGroup.underlyingMap.set("profile", profile.id, "trusting");
+        account = account.set("profile", profile.id, "trusting");
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
         accountOnThisNode._sessions = {
-            ...accountAsGroup.underlyingMap.core.sessions,
+            ...account.core.sessions,
         };
         accountOnThisNode._cachedContent = undefined;
 
@@ -390,7 +401,7 @@ export class LocalNode {
         };
         profileOnThisNode._cachedContent = undefined;
 
-        return controlledAccount;
+        return new ControlledAccount(accountOnThisNode, agentSecret);
     }
 
     /** @internal */
@@ -418,15 +429,11 @@ export class LocalNode {
             );
         }
 
-        return new AccountGroup(
-            coValue.getCurrentContent() as CoMap<GroupContent, AccountMeta>,
-            this
-        ).getCurrentAgentID();
+        return new Account(coValue).getCurrentAgentID();
     }
 
     /**
-     * Creates a new group (with the current account as the group's first admin).
-     * @category 1. High-level
+     * @deprecated use Account.createGroup() instead
      */
     createGroup(): Group {
         const groupCoValue = this.createCoValue({
@@ -436,9 +443,9 @@ export class LocalNode {
             ...createdNowUnique(),
         });
 
-        let groupContent = expectGroupContent(groupCoValue.getCurrentContent());
+        let group = expectGroup(groupCoValue.getCurrentContent());
 
-        groupContent = groupContent.mutate((editable) => {
+        group = group.mutate((editable) => {
             editable.set(this.account.id, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -460,7 +467,7 @@ export class LocalNode {
             editable.set("readKey", readKey.id, "trusting");
         });
 
-        return new Group(groupContent, this);
+        return group;
     }
 
     /** @internal */

@@ -15,8 +15,8 @@ import { useLoadImage } from "jazz-react-media-images";
 
 type PartialPetPost = CoMap<{
     name: string;
-    image?: Media.ImageDefinition;
-    reactions: PetReactions;
+    image?: Media.ImageDefinition["id"];
+    reactions: PetReactions["id"];
 }>;
 
 export function NewPetPostForm() {
@@ -37,7 +37,7 @@ export function NewPetPostForm() {
                 const petPostGroup = localNode.createGroup();
                 const petPost = petPostGroup.createMap<PartialPetPost>({
                     name,
-                    reactions: petPostGroup.createStream<PetReactions>(),
+                    reactions: petPostGroup.createStream<PetReactions>().id,
                 });
 
                 setNewPostId(petPost.id);
@@ -55,7 +55,7 @@ export function NewPetPostForm() {
                 newPetPost.group
             );
 
-            newPetPost.set({ image });
+            newPetPost.set({ image: image.id });
         },
         [newPetPost]
     );

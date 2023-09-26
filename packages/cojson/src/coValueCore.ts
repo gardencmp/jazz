@@ -26,12 +26,12 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Group, expectGroupContent } from "./group.js";
+import { Group, expectGroup } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";
-import { AccountID, GeneralizedControlledAccount } from "./account.js";
+import { Account, AccountID, GeneralizedControlledAccount } from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
@@ -498,7 +498,15 @@ export class CoValueCore {
         }
 
         if (this.header.type === "comap") {
-            this._cachedContent = new CoMap(this);
+            if (this.header.ruleset.type === "group") {
+                if (this.header.meta?.type === "account") {
+                    this._cachedContent = new Account(this);
+                } else {
+                    this._cachedContent = new Group(this);
+                }
+            } else {
+                this._cachedContent = new CoMap(this);
+            }
         } else if (this.header.type === "colist") {
             this._cachedContent = new CoList(this);
         } else if (this.header.type === "costream") {
@@ -574,7 +582,7 @@ export class CoValueCore {
 
     getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {
         if (this.header.ruleset.type === "group") {
-            const content = expectGroupContent(this.getCurrentContent());
+            const content = expectGroup(this.getCurrentContent());
 
             const currentKeyId = content.get("readKey");
 
@@ -617,7 +625,7 @@ export class CoValueCore {
 
     getUncachedReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "group") {
-            const content = expectGroupContent(this.getCurrentContent());
+            const content = expectGroup(this.getCurrentContent());
 
             const keyForEveryone = content.get(`${keyID}_for_everyone`);
             if (keyForEveryone) return keyForEveryone;
@@ -700,13 +708,10 @@ export class CoValueCore {
             throw new Error("Only values owned by groups have groups");
         }
 
-        return new Group(
-            expectGroupContent(
-                this.node
-                    .expectCoValueLoaded(this.header.ruleset.group)
-                    .getCurrentContent()
-            ),
+        return expectGroup(
             this.node
+                .expectCoValueLoaded(this.header.ruleset.group)
+                .getCurrentContent()
         );
     }
 
@@ -810,7 +815,7 @@ export class CoValueCore {
 
     getDependedOnCoValues(): RawCoID[] {
         return this.header.ruleset.type === "group"
-            ? expectGroupContent(this.getCurrentContent())
+            ? expectGroup(this.getCurrentContent())
                   .keys()
                   .filter((k): k is AccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByGroup"

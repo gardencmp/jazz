@@ -164,7 +164,7 @@ test("New transactions in a group correctly update owned values, including subsc
         ])
     } satisfies Transaction;
 
-    const { expectedNewHash } = group.underlyingMap.core.expectedNewHashAfter(sessionID, [
+    const { expectedNewHash } = group.core.expectedNewHashAfter(sessionID, [
         resignationThatWeJustLearnedAbout,
     ]);
 
@@ -175,7 +175,7 @@ test("New transactions in a group correctly update owned values, including subsc
 
     expect(map.core.getValidSortedTransactions().length).toBe(1);
 
-    const manuallyAdddedTxSuccess = group.underlyingMap.core.tryAddTransactions(node.currentSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
+    const manuallyAdddedTxSuccess = group.core.tryAddTransactions(node.currentSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
 
     expect(manuallyAdddedTxSuccess).toBe(true);
 

@@ -1,4 +1,12 @@
-import { BinaryCoStream, CoList, CoMap, CoStream, Group, LocalNode, cojsonReady } from "..";
+import {
+    BinaryCoStream,
+    CoList,
+    CoMap,
+    CoStream,
+    Group,
+    LocalNode,
+    cojsonReady,
+} from "..";
 
 beforeEach(async () => {
     await cojsonReady;
@@ -16,7 +24,7 @@ test("Queries with maps work", async () => {
             subMap: CoMap<{
                 hello: "world" | "moon" | "sun";
                 id: string;
-            }>;
+            }>["id"];
         }>
     >();
 
@@ -33,18 +41,20 @@ test("Queries with maps work", async () => {
                 expect(queriedMap.hello).toBe("world");
                 expect(Object.keys(queriedMap)).toEqual(["hello", "subMap"]);
                 if (queriedMap.edits.hello?.by?.profile?.name) {
-                    expect(queriedMap.edits.hello).toMatchObject({
-                        by: {
-                            id: accountID,
-                            profile: {
-                                id: node.expectProfileLoaded(accountID).id,
-                                name: "Hermes Puggington",
-                            },
-                            isMe: true,
-                        },
-                        tx: map.lastEditAt("hello")!.tx,
-                        at: new Date(map.lastEditAt("hello")!.at),
-                    });
+                    expect(queriedMap.edits.hello.by.id).toEqual(accountID);
+                    expect(queriedMap.edits.hello.by.profile.id).toEqual(
+                        node.expectProfileLoaded(accountID).id
+                    );
+                    expect(queriedMap.edits.hello.by.profile.name).toEqual(
+                        "Hermes Puggington"
+                    );
+                    expect(queriedMap.edits.hello.by.isMe).toBe(true);
+                    expect(queriedMap.edits.hello.tx).toEqual(
+                        map.lastEditAt("hello")!.tx
+                    );
+                    expect(queriedMap.edits.hello.at).toEqual(
+                        new Date(map.lastEditAt("hello")!.at)
+                    );
                     if (queriedMap.subMap) {
                         expect(queriedMap.subMap.type).toBe("comap");
                         expect(queriedMap.subMap.id).toEqual("foreignID");
@@ -79,7 +89,7 @@ test("Queries with maps work", async () => {
         }>
     >();
 
-    map = map.set("subMap", subMap);
+    map = map.set("subMap", subMap.id);
 
     subMap = subMap.mutate((subMap) => {
         subMap.set("hello", "world");
@@ -113,20 +123,17 @@ test("Queries with lists work", () => {
                 expect(queriedList[1]).toBe("world");
                 expect(queriedList[2]).toBe("moon");
                 if (queriedList.edits[2]?.by?.profile?.name) {
-                    expect(queriedList.edits[2]).toMatchObject({
-                        by: {
-                            id: accountID,
-                            profile: {
-                                id: node.expectProfileLoaded(accountID).id,
-                                name: "Hermes Puggington",
-                            },
-                            isMe: true,
-                        },
-                        at: expect.any(Date),
-                    });
+                    expect(queriedList.edits[2].by.id).toEqual(accountID);
+                    expect(queriedList.edits[2].by.profile.id).toEqual(
+                        node.expectProfileLoaded(accountID).id
+                    );
+                    expect(queriedList.edits[2].by.profile.name).toEqual(
+                        "Hermes Puggington"
+                    );
+                    expect(queriedList.edits[2].by.isMe).toBe(true);
+                    expect(queriedList.edits[2].at).toBeInstanceOf(Date);
                     if (queriedList.length === 3) {
                         queriedList.append("sun");
-
                     } else if (
                         queriedList.length === 4 &&
                         queriedList.edits[3]?.by?.profile?.name ===
@@ -156,7 +163,7 @@ test("List of nested maps works", () => {
 
     const group = node.createGroup();
 
-    let list = group.createList<CoList<CoMap<{ hello: "world" }>>>();
+    let list = group.createList<CoList<CoMap<{ hello: "world" }>["id"]>>();
 
     const done = new Promise<void>((resolve) => {
         const unsubQuery = node.query(list.id, (queriedList) => {
@@ -176,7 +183,7 @@ test("List of nested maps works", () => {
     list = list.append(
         group.createMap<CoMap<{ hello: "world" }>>({
             hello: "world",
-        })
+        }).id
     );
 
     return done;
@@ -190,9 +197,7 @@ test("Can call .map on a quieried coList", async () => {
     let list = group.createList<CoList<string>>();
 
     const done = new Promise<void>((resolve) => {
-
         const unsubQuery = node.query(list.id, (queriedList) => {
-
             if (queriedList && queriedList[0]) {
                 // console.log("update", queriedList);
                 expect(queriedList.map((item) => item + "!!!")).toEqual([
@@ -233,45 +238,58 @@ test("Queries with streams work", () => {
                     expect(queriedStream.group).toBeInstanceOf(Group);
                     expect(queriedStream.group.id).toBe(group.id);
                     expect(queriedStream.meta).toBe(null);
-                    const expectedEntry = {
-                        last: "world",
-                        by: {
-                            id: accountID,
-                            isMe: true,
-                            profile: {
-                                id: node.expectProfileLoaded(accountID).id,
-                                name: "Hermes Puggington",
-                            },
-                        },
-                        at: new Date(
-                            stream.items[node.currentSessionID][1].madeAt
-                        ),
-                        all: [
-                            {
-                                value: "hello",
-                                at: new Date(
-                                    stream.items[
-                                        node.currentSessionID
-                                    ][0].madeAt
-                                ),
-                            },
-                            {
-                                value: "world",
-                                at: new Date(
-                                    stream.items[
-                                        node.currentSessionID
-                                    ][1].madeAt
-                                ),
-                            },
-                        ],
-                    };
-                    expect(queriedStream.perSession).toMatchObject({
-                        [node.currentSessionID]: expectedEntry,
-                    });
-                    expect(queriedStream.perAccount).toMatchObject({
-                        [accountID]: expectedEntry,
-                    });
-                    expect(queriedStream.me).toMatchObject(expectedEntry);
+
+                    expect(queriedStream.perSession[node.currentSessionID].last).toEqual(
+                        "world"
+                    );
+                    expect(queriedStream.perSession[node.currentSessionID].all[0].value).toEqual("hello");
+                    expect(queriedStream.perSession[node.currentSessionID].all[0].at).toEqual(new Date(
+                        stream.items[
+                            node.currentSessionID
+                        ][0].madeAt
+                    ));
+                    expect(queriedStream.perSession[node.currentSessionID].all[1].value).toEqual("world");
+                    expect(queriedStream.perSession[node.currentSessionID].all[1].at).toEqual(new Date(
+                        stream.items[
+                            node.currentSessionID
+                        ][1].madeAt
+                    ));
+                    expect(queriedStream.perSession[node.currentSessionID].by?.id).toEqual(accountID);
+                    expect(queriedStream.perSession[node.currentSessionID].by?.profile?.id).toEqual(
+                        node.expectProfileLoaded(accountID).id
+                    );
+                    expect(queriedStream.perSession[node.currentSessionID].by?.profile?.name).toEqual(
+                        "Hermes Puggington"
+                    );
+                    expect(queriedStream.perSession[node.currentSessionID].by?.isMe).toBe(true);
+                    expect(queriedStream.perSession[node.currentSessionID].at).toBeInstanceOf(Date);
+
+                    expect(queriedStream.perAccount[accountID].last).toEqual(
+                        "world"
+                    );
+                    expect(queriedStream.perAccount[accountID].all[0].value).toEqual("hello");
+                    expect(queriedStream.perAccount[accountID].all[0].at).toEqual(new Date(
+                        stream.items[
+                            node.currentSessionID
+                        ][0].madeAt
+                    ));
+                    expect(queriedStream.perAccount[accountID].all[1].value).toEqual("world");
+                    expect(queriedStream.perAccount[accountID].all[1].at).toEqual(new Date(
+                        stream.items[
+                            node.currentSessionID
+                        ][1].madeAt
+                    ));
+                    expect(queriedStream.perAccount[accountID].by?.id).toEqual(accountID);
+                    expect(queriedStream.perAccount[accountID].by?.profile?.id).toEqual(
+                        node.expectProfileLoaded(accountID).id
+                    );
+                    expect(queriedStream.perAccount[accountID].by?.profile?.name).toEqual(
+                        "Hermes Puggington"
+                    );
+                    expect(queriedStream.perAccount[accountID].by?.isMe).toBe(true);
+                    expect(queriedStream.perAccount[accountID].at).toBeInstanceOf(Date);
+
+                    expect(queriedStream.me).toEqual(queriedStream.perAccount[accountID]);
                     // console.log("final update", queriedStream);
                     resolve();
                     unsubQuery();
@@ -291,7 +309,8 @@ test("Streams of nested maps work", () => {
 
     const group = node.createGroup();
 
-    let stream = group.createStream<CoStream<CoMap<{ hello: "world" }>>>();
+    let stream =
+        group.createStream<CoStream<CoMap<{ hello: "world" }>["id"]>>();
 
     const done = new Promise<void>((resolve) => {
         const unsubQuery = node.query(stream.id, (queriedStream) => {
@@ -312,7 +331,7 @@ test("Streams of nested maps work", () => {
         hello: "world",
     });
 
-    stream = stream.push(map);
+    stream = stream.push(map.id);
 
     return done;
 });

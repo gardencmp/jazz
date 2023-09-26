@@ -1,13 +1,13 @@
 import { CoList, MutableCoList } from "../coValues/coList.js";
 import { CoValueCore } from "../coValueCore.js";
-import { Group } from "../group.js";
-import { isAccountID } from "../account.js";
-import { AnyCoList, CoID, CoValue } from "../coValue.js";
+import { Group } from "../coValues/group.js";
+import { isAccountID } from "../coValues/account.js";
+import { CoID, CoValue } from "../coValue.js";
 import { TransactionID } from "../ids.js";
-import { QueriedAccountAndProfile } from "./queriedCoMap.js";
 import { ValueOrSubQueried, QueryContext } from "../queries.js";
+import { QueriedAccount } from "./queriedAccount.js";
 
-export class QueriedCoList<L extends AnyCoList> extends Array<
+export class QueriedCoList<L extends CoList> extends Array<
     ValueOrSubQueried<L["_item"]>
 > {
     coList!: L;
@@ -43,7 +43,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
                     return {
                         by:
                             edit.by && isAccountID(edit.by)
-                                ? queryContext.resolveAccount(edit.by)
+                                ? queryContext.resolveValue(edit.by)
                                 : undefined,
                         tx: edit.tx,
                         at: new Date(edit.at),
@@ -56,7 +56,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
                 value: coList.deletionEdits().map((deletion) => ({
                     by:
                         deletion.by && isAccountID(deletion.by)
-                            ? queryContext.resolveAccount(deletion.by)
+                            ? queryContext.resolveValue(deletion.by)
                             : undefined,
                     tx: deletion.tx,
                     at: new Date(deletion.at),
@@ -78,9 +78,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }
 
     append(
-        item: L["_item"] extends CoValue
-            ? L["_item"] | CoID<L["_item"]>
-            : L["_item"],
+        item: L["_item"],
         after?: number,
         privacy?: "private" | "trusting"
     ): L {
@@ -88,9 +86,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }
 
     prepend(
-        item: L["_item"] extends CoValue
-            ? L["_item"] | CoID<L["_item"]>
-            : L["_item"],
+        item: L["_item"],
         before?: number,
         privacy?: "private" | "trusting"
     ): L {
@@ -108,7 +104,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }
 
     edits!: {
-        by?: QueriedAccountAndProfile;
+        by?: QueriedAccount;
         tx: TransactionID;
         at: Date;
         value: L["_item"] extends CoValue
@@ -117,7 +113,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }[];
 
     deletions!: {
-        by?: QueriedAccountAndProfile;
+        by?: QueriedAccount;
         tx: TransactionID;
         at: Date;
     }[];

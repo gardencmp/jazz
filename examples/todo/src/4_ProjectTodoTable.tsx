@@ -52,7 +52,7 @@ export function ProjectTodoTable() {
             // project.tasks is immutable, but `append` will create an edit
             // that will cause useSyncedQuery to rerender this component
             // - here and on other devices!
-            project.tasks.append(task);
+            project.tasks.append(task.id);
         },
         [project?.tasks, project?.group]
     );

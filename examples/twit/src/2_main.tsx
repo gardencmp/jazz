@@ -8,12 +8,11 @@ import { LocalAuth } from "jazz-react-auth-local";
 
 import {
     Button,
-    Input,
     ThemeProvider,
     TitleAndLogo,
 } from "./basicComponents/index.ts";
 import { PrettyAuthUI } from "./components/Auth.tsx";
-import { Chat, Twit, TwitProfile } from "./1_types.ts";
+import { Twit, TwitProfile } from "./1_types.ts";
 import { Queried } from "cojson";
 
 const appName = "Jazz Twit Example";
@@ -93,7 +92,7 @@ export function ProfileUI() {
             <h1>{profile?.name}</h1>
             <img src={profile?.avatar?.highestResSrc} />
             <p>{profile?.bio}</p>
-            {profile?.posts?.map((post) => (
+            {profile?.twits?.map((twit) => (
                 <TwitUI twit={twit} />
             ))}
         </div>

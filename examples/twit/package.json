@@ -1,7 +1,7 @@
 {
-  "name": "jazz-example-todo",
+  "name": "jazz-example-twit",
   "private": true,
-  "version": "0.0.39",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",

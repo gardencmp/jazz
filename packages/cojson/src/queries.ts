@@ -2,22 +2,28 @@ import { JsonValue } from "./jsonValue.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoStream } from "./coValues/coStream.js";
 import { CoList } from "./coValues/coList.js";
-import { AccountID } from "./account.js";
-import { AnyCoList, AnyCoMap, AnyCoStream, CoID, CoValue } from "./coValue.js";
+import { Account, AccountID } from "./coValues/account.js";
+import { CoID, CoValue } from "./coValue.js";
 import { LocalNode } from "./localNode.js";
 import {
-    QueriedAccountAndProfile,
     QueriedCoMap,
     QueriedCoMapBase,
 } from "./queriedCoValues/queriedCoMap.js";
 import { QueriedCoList } from "./queriedCoValues/queriedCoList.js";
 import { QueriedCoStream } from "./queriedCoValues/queriedCoStream.js";
+import { Group } from "./coValues/group.js";
+import { QueriedAccount } from "./queriedCoValues/queriedAccount.js";
+import { QueriedGroup } from "./queriedCoValues/queriedGroup.js";
 
-export type Queried<T extends CoValue> = T extends AnyCoMap
-    ? QueriedCoMap<T>
-    : T extends AnyCoList
+export type Queried<T extends CoValue> = T extends CoMap
+    ? T extends Account
+        ? QueriedAccount<T>
+        : T extends Group
+        ? QueriedGroup<T>
+        : QueriedCoMap<T>
+    : T extends CoList
     ? QueriedCoList<T>
-    : T extends AnyCoStream
+    : T extends CoStream
     ? T["meta"] extends { type: "binary" }
         ? never
         : QueriedCoStream<T>
@@ -66,12 +72,6 @@ export class QueryContext {
         return value.lastQueried as Queried<T> | undefined;
     }
 
-    resolveAccount(accountID: AccountID) {
-        return this.getChildLastQueriedOrSubscribe(
-            accountID
-        ) as QueriedAccountAndProfile;
-    }
-
     resolveValue<T extends JsonValue>(
         value: T
     ): T extends CoID<infer C> ? Queried<C> | undefined : T {
@@ -114,12 +114,18 @@ export function query<T extends CoValue>(
         }
 
         if (rootValue instanceof CoMap) {
-            callback(
-                QueriedCoMapBase.newWithKVPairs(
-                    rootValue,
-                    context
-                ) as Queried<T>
-            );
+            if (rootValue instanceof Account) {
+                callback(new QueriedAccount(rootValue, context) as Queried<T>);
+            } else if (rootValue instanceof Group) {
+                callback(new QueriedGroup(rootValue, context) as Queried<T>);
+            } else {
+                callback(
+                    QueriedCoMapBase.newWithKVPairs(
+                        rootValue,
+                        context
+                    ) as Queried<T>
+                );
+            }
         } else if (rootValue instanceof CoList) {
             callback(new QueriedCoList(rootValue, context) as Queried<T>);
         } else if (rootValue instanceof CoStream) {

@@ -9,8 +9,8 @@ import { CoMap, CoStream, Media } from "cojson";
 
 export type PetPost = CoMap<{
     name: string;
-    image: Media.ImageDefinition;
-    reactions: PetReactions;
+    image: Media.ImageDefinition["id"];
+    reactions: PetReactions["id"];
 }>;
 
 export const REACTION_TYPES = [

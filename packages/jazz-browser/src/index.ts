@@ -329,21 +329,19 @@ export function createInviteLink<T extends CoValue>(
     }: { baseURL?: string; valueHint?: string } = {}
 ): string {
     const coValueCore = value.core;
-    const node = coValueCore.node;
     let currentCoValue = coValueCore;
 
     while (currentCoValue.header.ruleset.type === "ownedByGroup") {
-        currentCoValue = currentCoValue.getGroup().underlyingMap.core;
+        currentCoValue = currentCoValue.getGroup().core;
     }
 
     if (currentCoValue.header.ruleset.type !== "group") {
         throw new Error("Can't create invite link for object without group");
     }
 
-    const group = new Group(
-        cojsonInternals.expectGroupContent(currentCoValue.getCurrentContent()),
-        node
-    );
+    const group =
+        cojsonInternals.expectGroup(currentCoValue.getCurrentContent())
+        ;
 
     const inviteSecret = group.createInvite(role);
 

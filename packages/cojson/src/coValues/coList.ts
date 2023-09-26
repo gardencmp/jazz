@@ -2,21 +2,21 @@ import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoID, CoValue, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
-import { Group } from "../group.js";
-import { AccountID } from "../account.js";
+import { AccountID } from "./account.js";
 import { parseJSON } from "../jsonStringify.js";
+import { Group } from "./group.js";
 
 type OpID = TransactionID & { changeIdx: number };
 
-type InsertionOpPayload<T extends JsonValue | CoValue> =
+type InsertionOpPayload<T extends JsonValue> =
     | {
           op: "pre";
-          value: T extends CoValue ? CoID<T> : Exclude<T, CoValue>;
+          value: T;
           before: OpID | "end";
       }
     | {
           op: "app";
-          value: T extends CoValue ? CoID<T> : Exclude<T, CoValue>;
+          value: T;
           after: OpID | "start";
       };
 
@@ -25,11 +25,11 @@ type DeletionOpPayload = {
     insertion: OpID;
 };
 
-export type ListOpPayload<T extends JsonValue | CoValue> =
+export type ListOpPayload<T extends JsonValue> =
     | InsertionOpPayload<T>
     | DeletionOpPayload;
 
-type InsertionEntry<T extends JsonValue | CoValue> = {
+type InsertionEntry<T extends JsonValue> = {
     madeAt: number;
     predecessors: OpID[];
     successors: OpID[];
@@ -41,7 +41,7 @@ type DeletionEntry = {
 } & DeletionOpPayload;
 
 export class CoListView<
-    Item extends JsonValue | CoValue,
+    Item extends JsonValue = JsonValue,
     Meta extends JsonObject | null = null
 > implements CoValue
 {
@@ -220,11 +220,7 @@ export class CoListView<
      *
      * @category 1. Reading
      */
-    get(
-        idx: number
-    ):
-        | (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)
-        | undefined {
+    get(idx: number): Item | undefined {
         const entry = this.entries()[idx];
         if (!entry) {
             return undefined;
@@ -237,18 +233,18 @@ export class CoListView<
      *
      * @category 1. Reading
      **/
-    asArray(): (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)[] {
+    asArray(): Item[] {
         return this.entries().map((entry) => entry.value);
     }
 
     /** @internal */
-     entries(): {
-        value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+    entries(): {
+        value: Item;
         madeAt: number;
         opID: OpID;
     }[] {
         const arr: {
-            value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+            value: Item;
             madeAt: number;
             opID: OpID;
         }[] = [];
@@ -265,7 +261,7 @@ export class CoListView<
     private fillArrayFromOpID(
         opID: OpID,
         arr: {
-            value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+            value: Item;
             madeAt: number;
             opID: OpID;
         }[]
@@ -299,7 +295,7 @@ export class CoListView<
      *
      * @category 1. Reading
      */
-    toJSON(): (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)[] {
+    toJSON(): Item[] {
         return this.asArray();
     }
 
@@ -309,7 +305,7 @@ export class CoListView<
               by: AccountID | AgentID;
               tx: TransactionID;
               at: Date;
-              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+              value: Item;
           }
         | undefined {
         const entry = this.entries()[idx];
@@ -377,8 +373,8 @@ export class CoListView<
 }
 
 export class CoList<
-        Item extends JsonValue | CoValue,
-        Meta extends JsonObject | null = null
+        Item extends JsonValue = JsonValue,
+        Meta extends JsonObject | null = JsonObject | null
     >
     extends CoListView<Item, Meta>
     implements CoValue
@@ -392,7 +388,7 @@ export class CoList<
      * @category 2. Editing
      **/
     append(
-        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        item: Item,
         after?: number,
         privacy: "private" | "trusting" = "private"
     ): this {
@@ -440,7 +436,7 @@ export class CoList<
      * @category 2. Editing
      */
     prepend(
-        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        item: Item,
         before?: number,
         privacy: "private" | "trusting" = "private"
     ): this {
@@ -518,8 +514,8 @@ export class CoList<
 }
 
 export class MutableCoList<
-        Item extends JsonValue | CoValue,
-        Meta extends JsonObject | null = null
+        Item extends JsonValue = JsonValue,
+        Meta extends JsonObject | null = JsonObject | null
     >
     extends CoListView<Item, Meta>
     implements CoValue
@@ -533,7 +529,7 @@ export class MutableCoList<
      * @category 2. Mutating
      **/
     append(
-        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        item: Item,
         after?: number,
         privacy: "private" | "trusting" = "private"
     ): void {
@@ -558,7 +554,7 @@ export class MutableCoList<
      * * @category 2. Mutating
      **/
     prepend(
-        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        item: Item,
         before?: number,
         privacy: "private" | "trusting" = "private"
     ): void {

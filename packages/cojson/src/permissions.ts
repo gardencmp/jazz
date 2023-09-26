@@ -9,9 +9,9 @@ import {
     accountOrAgentIDfromSessionID,
 } from "./coValueCore.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { AccountID, Profile } from "./account.js";
+import { AccountID, Profile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
-import { EVERYONE, Everyone, expectGroupContent } from "./group.js";
+import { EVERYONE, Everyone, expectGroup } from "./coValues/group.js";
 
 export type PermissionsDef =
     | { type: "group"; initialAdmin: AccountID | AgentID }
@@ -211,7 +211,7 @@ export function determineValidTransactions(
 
         return validTransactions;
     } else if (coValue.header.ruleset.type === "ownedByGroup") {
-        const groupContent = expectGroupContent(
+        const groupContent = expectGroup(
             coValue.node
                 .expectCoValueLoaded(
                     coValue.header.ruleset.group,

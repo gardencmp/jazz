@@ -1,8 +1,8 @@
 import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
-import { expectGroupContent } from "../group.js";
-import { AnonymousControlledAccount } from "../account.js";
+import { expectGroup } from "../coValues/group.js";
+import { AnonymousControlledAccount } from "../coValues/account.js";
 import { SessionID } from "../ids.js";
 // @ts-ignore
 import { expect } from "bun:test";
@@ -20,43 +20,41 @@ export function newGroup() {
 
     const node = new LocalNode(admin, sessionID);
 
-    const group = node.createCoValue({
+    const groupCore = node.createCoValue({
         type: "comap",
         ruleset: { type: "group", initialAdmin: admin.id },
         meta: null,
         ...createdNowUnique(),
     });
 
-    const groupContent = expectGroupContent(group.getCurrentContent());
+    const group = expectGroup(groupCore.getCurrentContent());
 
-    groupContent.mutate((editable) => {
+    group.mutate((editable) => {
         editable.set(admin.id, "admin", "trusting");
         expect(editable.get(admin.id)).toEqual("admin");
     });
 
-    return { node, group, admin };
+    return { node, groupCore, admin };
 }
 
 export function groupWithTwoAdmins() {
-    const { group, admin, node } = newGroup();
+    const { groupCore, admin, node } = newGroup();
 
     const otherAdmin = node.createAccount("otherAdmin");
 
-    let content = expectGroupContent(group.getCurrentContent());
+    let group = expectGroup(groupCore.getCurrentContent());
 
-    content.mutate((editable) => {
-        editable.set(otherAdmin.id, "admin", "trusting");
-        expect(editable.get(otherAdmin.id)).toEqual("admin");
+    group = group.mutate((mutable) => {
+        mutable.set(otherAdmin.id, "admin", "trusting");
+        expect(mutable.get(otherAdmin.id)).toEqual("admin");
     });
 
-    content = expectGroupContent(group.getCurrentContent());
-
-    if (content.type !== "comap") {
+    if (group.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    expect(content.get(otherAdmin.id)).toEqual("admin");
-    return { group, admin, otherAdmin, node };
+    expect(group.get(otherAdmin.id)).toEqual("admin");
+    return { groupCore, admin, otherAdmin, node };
 }
 
 export function newGroupHighLevel() {
@@ -71,11 +69,11 @@ export function newGroupHighLevel() {
 }
 
 export function groupWithTwoAdminsHighLevel() {
-    const { admin, node, group } = newGroupHighLevel();
+    let { admin, node, group } = newGroupHighLevel();
 
     const otherAdmin = node.createAccount("otherAdmin");
 
-    group.addMember(otherAdmin.id, "admin");
+    group = group.addMember(otherAdmin.id, "admin");
 
     return { admin, node, group, otherAdmin };
 }

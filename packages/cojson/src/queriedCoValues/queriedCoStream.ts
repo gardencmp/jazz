@@ -1,28 +1,28 @@
 import { JsonValue } from "../jsonValue.js";
-import { MutableCoStream } from "../coValues/coStream.js";
+import { CoStream, MutableCoStream } from "../coValues/coStream.js";
 import { CoValueCore } from "../coValueCore.js";
-import { Group } from "../group.js";
-import { AccountID, isAccountID } from "../account.js";
-import { AnyCoStream, CoID, CoValue } from "../coValue.js";
+import { Group } from "../coValues/group.js";
+import { AccountID, isAccountID } from "../coValues/account.js";
+import { CoID, CoValue } from "../coValue.js";
 import { SessionID, TransactionID } from "../ids.js";
-import { QueriedAccountAndProfile } from "./queriedCoMap.js";
 import { ValueOrSubQueried, QueryContext } from "../queries.js";
+import { QueriedAccount } from "./queriedAccount.js";
 
 
 export type QueriedCoStreamItems<Item extends JsonValue | CoValue> = {
     last?: ValueOrSubQueried<Item>;
-    by?: QueriedAccountAndProfile;
+    by?: QueriedAccount;
     tx?: TransactionID;
     at?: Date;
     all: {
         value: ValueOrSubQueried<Item>;
-        by?: QueriedAccountAndProfile;
+        by?: QueriedAccount;
         tx: TransactionID;
         at: Date;
     }[];
 };
 
-export class QueriedCoStream<S extends AnyCoStream> {
+export class QueriedCoStream<S extends CoStream> {
     coStream: S;
     id: CoID<S>;
     type = "costream" as const;
@@ -36,7 +36,7 @@ export class QueriedCoStream<S extends AnyCoStream> {
             coStream.sessions().map((sessionID) => {
                 const items = [...coStream.itemsIn(sessionID)].map((item) => ({
                     by: item.by && isAccountID(item.by)
-                        ? queryContext.resolveAccount(item.by)
+                        ? queryContext.resolveValue(item.by)
                         : undefined,
                     tx: item.tx,
                     at: new Date(item.at),
@@ -63,7 +63,7 @@ export class QueriedCoStream<S extends AnyCoStream> {
             [...coStream.accounts()].map((accountID) => {
                 const items = [...coStream.itemsBy(accountID)].map((item) => ({
                     by: item.by && isAccountID(item.by)
-                        ? queryContext.resolveAccount(item.by)
+                        ? queryContext.resolveValue(item.by)
                         : undefined,
                     tx: item.tx,
                     at: new Date(item.at),
@@ -112,7 +112,7 @@ export class QueriedCoStream<S extends AnyCoStream> {
     };
 
     push(
-        item: S["_item"] extends CoValue ? S["_item"] | CoID<S["_item"]> : S["_item"],
+        item: S["_item"],
         privacy?: "private" | "trusting"
     ): S {
         return this.coStream.push(item, privacy);

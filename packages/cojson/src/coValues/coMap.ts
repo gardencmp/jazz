@@ -2,25 +2,22 @@ import { JsonObject, JsonValue } from "../jsonValue.js";
 import { AgentID, TransactionID } from "../ids.js";
 import { CoID, CoValue, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
-import { AccountID } from "../account.js";
-import { Group } from "../group.js";
+import { AccountID } from "./account.js";
 import { parseJSON } from "../jsonStringify.js";
+import { Group } from "./group.js";
 
-type MapOp<K extends string, V extends JsonValue | CoValue | undefined> = {
+type MapOp<K extends string, V extends JsonValue | undefined> = {
     txID: TransactionID;
     madeAt: number;
     changeIdx: number;
 } & MapOpPayload<K, V>;
 // TODO: add after TransactionID[] for conflicts/ordering
 
-export type MapOpPayload<
-    K extends string,
-    V extends JsonValue | CoValue | undefined
-> =
+export type MapOpPayload<K extends string, V extends JsonValue | undefined> =
     | {
           op: "set";
           key: K;
-          value: V extends CoValue ? CoID<V> : Exclude<V, CoValue>;
+          value: V;
       }
     | {
           op: "del";
@@ -28,8 +25,8 @@ export type MapOpPayload<
       };
 
 export class CoMapView<
-    Shape extends { [key: string]: JsonValue | CoValue | undefined },
-    Meta extends JsonObject | null = null
+    Shape extends { [key: string]: JsonValue | undefined } = { [key: string]: JsonValue | undefined },
+    Meta extends JsonObject | null = JsonObject | null
 > implements CoValue
 {
     /** @category 6. Meta */
@@ -138,13 +135,7 @@ export class CoMapView<
      *
      * @category 1. Reading
      **/
-    get<K extends keyof Shape & string>(
-        key: K
-    ):
-        | (Shape[K] extends CoValue
-              ? CoID<Shape[K]>
-              : Exclude<Shape[K], CoValue>)
-        | undefined {
+    get<K extends keyof Shape & string>(key: K): Shape[K] | undefined {
         const ops = this.timeFilteredOps(key);
         if (!ops) {
             return undefined;
@@ -164,14 +155,10 @@ export class CoMapView<
 
     /** @category 1. Reading */
     asObject(): {
-        [K in keyof Shape & string]: Shape[K] extends CoValue
-            ? CoID<Shape[K]>
-            : Exclude<Shape[K], CoValue>;
+        [K in keyof Shape & string]: Shape[K];
     } {
         const object: Partial<{
-            [K in keyof Shape & string]: Shape[K] extends CoValue
-                ? CoID<Shape[K]>
-                : Exclude<Shape[K], CoValue>;
+            [K in keyof Shape & string]: Shape[K];
         }> = {};
 
         for (const key of this.keys()) {
@@ -182,17 +169,13 @@ export class CoMapView<
         }
 
         return object as {
-            [K in keyof Shape & string]: Shape[K] extends CoValue
-                ? CoID<Shape[K]>
-                : Exclude<Shape[K], CoValue>;
+            [K in keyof Shape & string]: Shape[K];
         };
     }
 
     /** @category 1. Reading */
     toJSON(): {
-        [K in keyof Shape & string]: Shape[K] extends CoValue
-            ? CoID<Shape[K]>
-            : Exclude<Shape[K], CoValue>;
+        [K in keyof Shape & string]: Shape[K];
     } {
         return this.asObject();
     }
@@ -206,9 +189,7 @@ export class CoMapView<
               by: AccountID | AgentID;
               tx: TransactionID;
               at: Date;
-              value?: Shape[K] extends CoValue
-                  ? CoID<Shape[K]>
-                  : Exclude<Shape[K], CoValue>;
+              value?: Shape[K];
           }
         | undefined {
         const ops = this.timeFilteredOps(key);
@@ -238,9 +219,7 @@ export class CoMapView<
               by: AccountID | AgentID;
               tx: TransactionID;
               at: Date;
-              value?: Shape[K] extends CoValue
-                  ? CoID<Shape[K]>
-                  : Exclude<Shape[K], CoValue>;
+              value?: Shape[K];
           }
         | undefined {
         const ops = this.timeFilteredOps(key);
@@ -272,14 +251,12 @@ export class CoMapView<
 
 /** A collaborative map with precise shape `Shape` and optional static metadata `Meta` */
 export class CoMap<
-        Shape extends { [key: string]: JsonValue | CoValue | undefined },
-        Meta extends JsonObject | null = null
+        Shape extends { [key: string]: JsonValue | undefined } = { [key: string]: JsonValue | undefined },
+        Meta extends JsonObject | null = JsonObject | null
     >
     extends CoMapView<Shape, Meta>
     implements CoValue
 {
-
-
     /** Returns a new version of this CoMap with a new value for the given key.
      *
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
@@ -290,14 +267,12 @@ export class CoMap<
      **/
     set<K extends keyof Shape & string>(
         key: K,
-        value: Shape[K] extends CoValue ? Shape[K] | CoID<Shape[K]> : Shape[K],
+        value: Shape[K],
         privacy?: "private" | "trusting"
     ): this;
     set(
         kv: {
-            [K in keyof Shape & string]?: Shape[K] extends CoValue
-                ? Shape[K] | CoID<Shape[K]>
-                : Shape[K];
+            [K in keyof Shape & string]?: Shape[K];
         },
         privacy?: "private" | "trusting"
     ): this;
@@ -305,19 +280,11 @@ export class CoMap<
         ...args:
             | [
                   {
-                      [K in keyof Shape & string]?: Shape[K] extends CoValue
-                          ? Shape[K] | CoID<Shape[K]>
-                          : Shape[K];
+                      [K in keyof Shape & string]?: Shape[K];
                   },
                   ("private" | "trusting")?
               ]
-            | [
-                  K,
-                  Shape[K] extends CoValue
-                      ? Shape[K] | CoID<Shape[K]>
-                      : Shape[K],
-                  ("private" | "trusting")?
-              ]
+            | [K, Shape[K], ("private" | "trusting")?]
     ): this {
         if (typeof args[0] === "string") {
             const [key, value, privacy = "private"] = args;
@@ -387,7 +354,7 @@ export class CoMap<
     mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
         const mutable = new MutableCoMap<Shape, Meta>(this.core);
         mutator(mutable);
-        return new CoMap(this.core) as this;
+        return new (this.constructor as new (core: CoValueCore) => this)(this.core);
     }
 
     /** @deprecated Use `mutate` instead. */
@@ -397,8 +364,8 @@ export class CoMap<
 }
 
 export class MutableCoMap<
-        Shape extends { [key: string]: JsonValue | CoValue | undefined },
-        Meta extends JsonObject | null = null
+        Shape extends { [key: string]: JsonValue | undefined } = { [key: string]: JsonValue | undefined },
+        Meta extends JsonObject | null = JsonObject | null
     >
     extends CoMapView<Shape, Meta>
     implements CoValue
@@ -413,7 +380,7 @@ export class MutableCoMap<
      */
     set<K extends keyof Shape & string>(
         key: K,
-        value: Shape[K] extends CoValue ? Shape[K] | CoID<Shape[K]> : Shape[K],
+        value: Shape[K],
         privacy: "private" | "trusting" = "private"
     ): void {
         // eslint-disable-next-line @typescript-eslint/ban-types

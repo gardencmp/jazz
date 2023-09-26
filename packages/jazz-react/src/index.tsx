@@ -3,6 +3,8 @@ import {
     CoID,
     Queried,
     CoValue,
+    BinaryCoStream,
+    ControlledAccount,
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,10 +13,10 @@ import {
     createBrowserNode,
 } from "jazz-browser";
 import { readBlobFromBinaryStream } from "jazz-browser";
-import { AnyBinaryCoStream } from "cojson/dist/coValue";
 
 const JazzContext = React.createContext<
     | {
+          me: ControlledAccount;
           localNode: LocalNode;
           logOut: () => void;
       }
@@ -94,7 +96,7 @@ export function WithJazz(props: {
     return (
         <>
             {node && logOut ? (
-                <JazzContext.Provider value={{ localNode: node, logOut }}>
+                <JazzContext.Provider value={{ me: node.account as ControlledAccount, localNode: node, logOut }}>
                     <>{children}</>
                 </JazzContext.Provider>
             ) : (
@@ -192,7 +194,7 @@ export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
     return useSyncedValue(id);
 }
 
-export function useBinaryStream<C extends AnyBinaryCoStream>(
+export function useBinaryStream<C extends BinaryCoStream>(
     streamID?: CoID<C>,
     allowUnfinished?: boolean
 ): { blob: Blob; blobURL: string } | undefined {

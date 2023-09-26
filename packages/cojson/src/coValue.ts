@@ -8,7 +8,8 @@ import {
 } from "./coValues/coStream.js";
 import { CoList } from "./coValues/coList.js";
 import { CoValueCore } from "./coValueCore.js";
-import { Group } from "./group.js";
+import { Group } from "./coValues/group.js";
+import { Account, Profile } from "./index.js";
 
 export type CoID<T extends CoValue> = RawCoID & {
     readonly __type: T;
@@ -37,55 +38,35 @@ export interface CoValue {
     subscribe(listener: (coValue: this) => void): () => void;
 }
 
-export type AnyCoMap = CoMap<
-    { [key: string]: JsonValue | CoValue | undefined },
-    JsonObject | null
->;
+export type AnyCoValue = CoMap | Group | Account | Profile | CoList | CoStream | BinaryCoStream;
 
-export type AnyCoList = CoList<JsonValue | CoValue, JsonObject | null>;
-
-export type AnyCoStream = CoStream<JsonValue | CoValue, JsonObject | null>;
-
-export type AnyBinaryCoStream = BinaryCoStream<BinaryCoStreamMeta>;
-
-
-export type AnyCoValue =
-    | AnyCoMap
-    | AnyCoList
-    | AnyCoStream
-    | AnyBinaryCoStream
-
-export function expectMap(
-    content: CoValue
-): AnyCoMap {
+export function expectMap(content: CoValue): CoMap {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    return content as AnyCoMap;
+    return content as CoMap;
 }
 
-export function expectList(
-    content: CoValue
-): AnyCoList {
+export function expectList(content: CoValue): CoList {
     if (content.type !== "colist") {
         throw new Error("Expected list");
     }
 
-    return content as AnyCoList;
+    return content as CoList;
 }
 
-export function expectStream(
-    content: CoValue
-): AnyCoStream {
+export function expectStream(content: CoValue): CoStream {
     if (content.type !== "costream") {
         throw new Error("Expected stream");
     }
 
-    return content as AnyCoStream;
+    return content as CoStream;
 }
 
-export function isCoValue(value: JsonValue | CoValue | undefined) : value is CoValue {
+export function isCoValue(
+    value: JsonValue | CoValue | undefined
+): value is CoValue {
     return (
         value instanceof CoMap ||
         value instanceof CoList ||
