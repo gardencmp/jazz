@@ -14,9 +14,11 @@ export class QueriedGroup<G extends Group = Group> {
     id!: CoID<G>;
     type = "group" as const;
     profile?: ValueOrSubQueried<G["_shape"]["profile"]>;
+    root?: ValueOrSubQueried<G["_shape"]["root"]>;
 
     constructor(group: G, queryContext: QueryContext) {
         const profileID = group.get("profile");
+        const rootID = group.get("root");
         Object.defineProperties(this, {
             group: {
                 get() {
@@ -28,6 +30,10 @@ export class QueriedGroup<G extends Group = Group> {
             type: { value: "group", enumerable: false },
             profile: {
                 value: profileID && queryContext.resolveValue(profileID),
+                enumerable: false,
+            },
+            root: {
+                value: rootID && queryContext.resolveValue(rootID),
                 enumerable: false,
             },
         });
