@@ -26,11 +26,16 @@ import {
     CoStream,
 } from "./coValues/coStream.js";
 
+export const EVERYONE = "everyone" as const;
+export type Everyone = "everyone";
+
 export type GroupContent = {
     profile?: CoID<Profile> | null;
     [key: AccountID | AgentID]: Role;
+    [EVERYONE]?: Role;
     readKey?: KeyID;
     [revelationFor: `${KeyID}_for_${AccountID | AgentID}`]: Sealed<KeySecret>;
+    [revelationFor: `${KeyID}_for_${Everyone}`]: KeySecret;
     [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
         KeySecret,
         { encryptedID: KeyID; encryptingID: KeyID }
@@ -121,12 +126,12 @@ export class Group {
      *
      * @category 2. Role changing
      */
-    addMember(accountID: AccountID, role: Role) {
+    addMember(accountID: AccountID | Everyone, role: Role) {
         this.addMemberInternal(accountID, role);
     }
 
     /** @internal */
-    addMemberInternal(accountID: AccountID | AgentID, role: Role) {
+    addMemberInternal(accountID: AccountID | AgentID | Everyone, role: Role) {
         this.underlyingMap = this.underlyingMap.mutate((map) => {
             const currentReadKey = this.underlyingMap.core.getCurrentReadKey();
 
@@ -134,10 +139,13 @@ export class Group {
                 throw new Error("Can't add member without read key secret");
             }
 
-            const agent = this.node.resolveAccountAgent(
-                accountID,
-                "Expected to know agent to add them to group"
-            );
+            const agent =
+                accountID === EVERYONE
+                    ? undefined
+                    : this.node.resolveAccountAgent(
+                          accountID,
+                          "Expected to know agent to add them to group"
+                      );
 
             map.set(accountID, role, "trusting");
 
@@ -145,19 +153,28 @@ export class Group {
                 throw new Error("Failed to set role");
             }
 
-            map.set(
-                `${currentReadKey.id}_for_${accountID}`,
-                seal({
-                    message: currentReadKey.secret,
-                    from: this.underlyingMap.core.node.account.currentSealerSecret(),
-                    to: getAgentSealerID(agent),
-                    nOnceMaterial: {
-                        in: this.underlyingMap.core.id,
-                        tx: this.underlyingMap.core.nextTransactionID(),
-                    },
-                }),
-                "trusting"
-            );
+            if (accountID === EVERYONE) {
+                map.set(
+                    `${currentReadKey.id}_for_${EVERYONE}`,
+                    currentReadKey.secret,
+                    "trusting"
+                );
+            } else if (agent) {
+                // should always be true, see above
+                map.set(
+                    `${currentReadKey.id}_for_${accountID}`,
+                    seal({
+                        message: currentReadKey.secret,
+                        from: this.underlyingMap.core.node.account.currentSealerSecret(),
+                        to: getAgentSealerID(agent),
+                        nOnceMaterial: {
+                            in: this.underlyingMap.core.id,
+                            tx: this.underlyingMap.core.nextTransactionID(),
+                        },
+                    }),
+                    "trusting"
+                );
+            }
         });
     }
 

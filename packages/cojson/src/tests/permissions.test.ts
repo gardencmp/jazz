@@ -1782,3 +1782,150 @@ test("ReaderInvites can not invite writers", () => {
         expect(editable.get(invitedWriterID)).toBeUndefined();
     });
 });
+
+test("Can give read permission to 'everyone'", () => {
+    const { node, group } = newGroup();
+
+    const childObject = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        editable.set("everyone", "reader", "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+        editable.set(`${readKeyID}_for_everyone`, readKey, "trusting");
+    });
+
+    const childContent = expectMap(childObject.getCurrentContent());
+
+    expect(childContent.get("foo")).toBeUndefined();
+
+    childContent.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+
+    const childContent2 = expectMap(
+        childObject
+            .testWithDifferentAccount(
+                newAccount,
+                newRandomSessionID(newAccount.currentAgentID())
+            )
+            .getCurrentContent()
+    );
+
+    expect(childContent2.get("foo")).toEqual("bar");
+});
+
+test("Can give read permissions to 'everyone' (high-level)", async () => {
+    const { group } = newGroupHighLevel();
+
+    const childObject = group.createMap();
+
+    expect(childObject.get("foo")).toBeUndefined();
+
+    group.addMember("everyone", "reader");
+
+    childObject.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+
+    const childContent2 = expectMap(
+        childObject.core
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(newRandomAgentSecret()),
+                newRandomSessionID(newAccount.currentAgentID())
+            )
+            .getCurrentContent()
+    );
+
+    expect(childContent2.get("foo")).toEqual("bar");
+});
+
+test("Can give write permission to 'everyone'", () => {
+    const { node, group } = newGroup();
+
+    const childObject = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        ...createdNowUnique(),
+    });
+
+    expectGroupContent(group.getCurrentContent()).edit((editable) => {
+        const { secret: readKey, id: readKeyID } = newRandomKeySecret();
+        editable.set("everyone", "writer", "trusting");
+        editable.set("readKey", readKeyID, "trusting");
+        editable.set(`${readKeyID}_for_everyone`, readKey, "trusting");
+    });
+
+    const childContent = expectMap(childObject.getCurrentContent());
+
+    expect(childContent.get("foo")).toBeUndefined();
+
+    childContent.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+
+    const childContent2 = expectMap(
+        childObject
+            .testWithDifferentAccount(
+                newAccount,
+                newRandomSessionID(newAccount.currentAgentID())
+            )
+            .getCurrentContent()
+    );
+
+    expect(childContent2.get("foo")).toEqual("bar");
+
+    childContent2.edit((editable) => {
+        editable.set("foo", "bar2", "private");
+        expect(editable.get("foo")).toEqual("bar2");
+    });
+});
+
+test("Can give write permissions to 'everyone' (high-level)", async () => {
+    const { group } = newGroupHighLevel();
+
+    const childObject = group.createMap();
+
+    expect(childObject.get("foo")).toBeUndefined();
+
+    group.addMember("everyone", "writer");
+
+    childObject.edit((editable) => {
+        editable.set("foo", "bar", "private");
+        expect(editable.get("foo")).toEqual("bar");
+    });
+
+    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+
+    const childContent2 = expectMap(
+        childObject.core
+            .testWithDifferentAccount(
+                newAccount,
+                newRandomSessionID(newAccount.currentAgentID())
+            )
+            .getCurrentContent()
+    );
+
+    expect(childContent2.get("foo")).toEqual("bar");
+
+    childContent2.edit((editable) => {
+        console.log("Before anon set")
+        editable.set("foo", "bar2", "private");
+        expect(editable.get("foo")).toEqual("bar2");
+    });
+});

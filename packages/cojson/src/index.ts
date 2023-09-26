@@ -27,7 +27,7 @@ import {
 import { connectedPeers } from "./streamUtils.js";
 import { AnonymousControlledAccount, ControlledAccount } from "./account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
-import { Group, expectGroupContent } from "./group.js";
+import { Group, expectGroupContent, EVERYONE } from "./group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
 
@@ -73,6 +73,7 @@ export const cojsonInternals = {
 export {
     LocalNode,
     Group,
+    EVERYONE,
     CoMap,
     MutableCoMap,
     CoList,

@@ -11,7 +11,7 @@ import {
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { AccountID, Profile } from "./account.js";
 import { parseJSON } from "./jsonStringify.js";
-import { expectGroupContent } from "./group.js";
+import { EVERYONE, Everyone, expectGroupContent } from "./group.js";
 
 export type PermissionsDef =
     | { type: "group"; initialAdmin: AccountID | AgentID }
@@ -60,7 +60,7 @@ export function determineValidTransactions(
             throw new Error("Group must have initialAdmin");
         }
 
-        const memberState: { [agent: AccountID | AgentID]: Role } = {};
+        const memberState: { [agent: AccountID | AgentID]: Role, [EVERYONE]?: Role } = {};
 
         const validTransactions: { txID: TransactionID; tx: Transaction }[] =
             [];
@@ -93,7 +93,7 @@ export function determineValidTransactions(
             }
 
             const change = changes[0] as
-                | MapOpPayload<AccountID | AgentID, Role>
+                | MapOpPayload<AccountID | AgentID | Everyone, Role>
                 | MapOpPayload<"readKey", JsonValue>
                 | MapOpPayload<"profile", CoID<Profile>>;
             if (changes.length !== 1) {
@@ -155,6 +155,11 @@ export function determineValidTransactions(
                 change.value !== "readerInvite"
             ) {
                 console.warn("Group transaction must set a valid role");
+                continue;
+            }
+
+            if (affectedMember === EVERYONE && !(change.value === "reader" || change.value === "writer" || change.value === "revoked")) {
+                console.warn("Everyone can only be set to reader, writer or revoked");
                 continue;
             }
 
@@ -224,11 +229,12 @@ export function determineValidTransactions(
                 const transactor = accountOrAgentIDfromSessionID(
                     sessionID as SessionID
                 );
+
                 return sessionLog.transactions
                     .filter((tx) => {
-                        const transactorRoleAtTxTime = groupContent
-                            .atTime(tx.madeAt)
-                            .get(transactor);
+                        const groupAtTime = groupContent.atTime(tx.madeAt);
+                        const transactorRoleAtTxTime = groupAtTime
+                            .get(transactor) || groupAtTime.get(EVERYONE);
 
                         return (
                             transactorRoleAtTxTime === "admin" ||
@@ -252,7 +258,8 @@ export function determineValidTransactions(
         );
     } else {
         throw new Error(
-            "Unknown ruleset type " + (coValue.header.ruleset as {type: string}).type
+            "Unknown ruleset type " +
+                (coValue.header.ruleset as { type: string }).type
         );
     }
 }
@@ -267,7 +274,8 @@ export function isKeyForAccountField(
     field: string
 ): field is `${KeyID}_for_${AccountID | AgentID}` {
     return (
-        field.startsWith("key_") &&
-        (field.includes("_for_sealer") || field.includes("_for_co"))
+        (field.startsWith("key_") &&
+            (field.includes("_for_sealer") || field.includes("_for_co")) || field.includes("_for_everyone"))
+
     );
 }

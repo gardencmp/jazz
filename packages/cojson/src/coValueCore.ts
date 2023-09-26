@@ -600,11 +600,27 @@ export class CoValueCore {
     }
 
     getReadKey(keyID: KeyID): KeySecret | undefined {
-        if (readKeyCache.get(this)?.[keyID]) {
-            return readKeyCache.get(this)?.[keyID];
+        let key = readKeyCache.get(this)?.[keyID];
+        if (!key) {
+            key = this.getUncachedReadKey(keyID);
+            if (key) {
+                let cache = readKeyCache.get(this);
+                if (!cache) {
+                    cache = {};
+                    readKeyCache.set(this, cache);
+                }
+                cache[keyID] = key;
+            }
         }
+        return key;
+    }
+
+    getUncachedReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "group") {
             const content = expectGroupContent(this.getCurrentContent());
+
+            const keyForEveryone = content.get(`${keyID}_for_everyone`);
+            if (keyForEveryone) return keyForEveryone;
 
             // Try to find key revelation for us
 
@@ -630,13 +646,6 @@ export class CoValueCore {
                 );
 
                 if (secret) {
-                    let cache = readKeyCache.get(this);
-                    if (!cache) {
-                        cache = {};
-                        readKeyCache.set(this, cache);
-                    }
-                    cache[keyID] = secret;
-
                     return secret as KeySecret;
                 }
             }
@@ -665,13 +674,6 @@ export class CoValueCore {
                     );
 
                     if (secret) {
-                        let cache = readKeyCache.get(this);
-                        if (!cache) {
-                            cache = {};
-                            readKeyCache.set(this, cache);
-                        }
-                        cache[keyID] = secret;
-
                         return secret as KeySecret;
                     } else {
                         console.error(
