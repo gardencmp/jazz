@@ -23,7 +23,7 @@ export function BioInput(props: { value?: string; onChange: (value: string) => v
         props.onChange(e.target.value);
       }}
       placeholder="Add a bio..."
-      className="w-full p-2 border rounded"
+      className="w-full p-2 border rounded max-md:text-base"
     />
   );
 }
@@ -136,7 +136,7 @@ export function TwitTextInput(props: { onSubmit: (text: string) => void; submitB
         name="twitText"
         placeholder="What's happenin'"
         autoComplete="off"
-        className="p-2 border rounded grow"
+        className="p-2 border rounded grow max-md:text-base"
       />
       <Button asChild>
         <input type="submit" value={props.submitButtonLabel} />
