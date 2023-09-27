@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { CoID, CoMap, Media, Profile, Queried } from "cojson";
+import { CoID, CoMap, Media, Profile } from "cojson";
 import { useJazz, useSyncedQuery } from "jazz-react";
 import { BrowserImage, createImage } from "jazz-browser-media-images";
 

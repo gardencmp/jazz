@@ -1,4 +1,4 @@
-import { CoMap, CoList } from "cojson";
+import { CoMap, CoList, AccountMigration, Profile } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -27,5 +27,16 @@ export type ListOfProjects = CoList<TodoProject["id"]>;
 export type TodoAccountRoot = CoMap<{
     projects: ListOfProjects["id"];
 }>;
+
+export const migration: AccountMigration<Profile, TodoAccountRoot> = (account) => {
+    if (!account.get("root")) {
+        account.set(
+            "root",
+            account.createMap<TodoAccountRoot>({
+                projects: account.createList<ListOfProjects>().id,
+            }).id
+        );
+    }
+}
 
 /** Walkthrough: Continue with ./2_main.tsx */

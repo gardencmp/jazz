@@ -26,7 +26,7 @@ export type TwitProfile = CoMap<
     twits: ListOfTwits['id'];
     following: ListOfProfiles['id'];
     followers: ListOfProfiles['id'];
-    twitStyle?: {fontFamily: string; color: string};
+    twitStyle?: { fontFamily: string; color: string };
   },
   ProfileMeta
 >;

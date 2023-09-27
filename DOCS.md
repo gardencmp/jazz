@@ -51,6 +51,7 @@ export function WithJazz(props: {
   auth: ReactAuthHook,
   children: ReactNode,
   syncAddress?: string,
+  migration?: AccountMigration,
 }): Element
 ```
 Top-level component that provides Jazz context to your whole app, so you can use Jazz hooks in your components.
@@ -63,6 +64,7 @@ Top-level component that provides Jazz context to your whole app, so you can use
 | ----: | ---- |
 | `props.auth` | An auth provider (renders login/sign-up UI if not logged in) - see available providers in the [Documentation](../../../DOCS.md#auth-providers) |
 | `props.syncAddress?` | The address of the upstream syncing peer. Defaults to `wss://sync.jazz.tool` (Jazz Global Mesh). If not set explicitly, it can also be temporarily overwritten by setting the `sync` query parameter in the URL, like `https://your-app.example.net?sync=ws://localhost:4200`. |
+| `props.migration?` | TODO: document |
 
 ##### Example:
 
@@ -92,8 +94,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function useJazz(): {
-  me: ControlledAccount,
+export function useJazz<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(): {
+  me: QueriedAccount<Account<P, R, Meta>>,
   localNode: LocalNode,
   logOut: () => void,
 }
@@ -111,12 +114,13 @@ undefined
 
 ----
 
-## `useSyncedQuery(id?)`
+## `useSyncedQuery(id)`
 
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function useSyncedQuery<T extends CoValue>(id: CoID<T>): Queried<T> | undefined
+export function useSyncedQuery<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(id: "me"): QueriedAccount<Account<P, R, Meta>> | undefined
 ```
 Hook that subscribes to all updates of a given `CoValue` (identified by its `CoID`) and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
 
@@ -128,7 +132,31 @@ See `Queried<T>` in `cojson` to see which fields and methods are available on th
 
 | name | description |
 | ----: | ---- |
-| `id?` | The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined). |
+| `id` | The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined). |
+
+
+
+
+
+----
+
+## `useSyncedQueryWithNode(id?, localNode?)`
+
+<sup>(function in `jazz-react`)</sup>
+
+```typescript
+export function useSyncedQueryWithNode(id: CoID<CoValue> | "me", localNode: LocalNode): Queried<CoValue> | QueriedAccount | undefined
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id?` | TODO: document  |
+| `localNode?` | TODO: document  |
 
 
 
@@ -309,10 +337,9 @@ const { localNode } = useJazz();
 ```typescript
 class LocalNode {
 
-  query(
-    id: "me",
-    callback: (update: undefined | QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
-      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>) => void
+  query<T extends CoValue>(
+    id: CoID<T>,
+    callback: (update: undefined | Queried<T>) => void
   ): () => void {...}
 
 }
@@ -336,9 +363,39 @@ TODO: document
 ```typescript
 class LocalNode {
 
-  query<T extends CoValue>(
-    id: CoID<T>,
-    callback: (update: undefined | Queried<T>) => void
+  query<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
+    id: "me",
+    callback: (update: undefined | QueriedAccount<Account<P, R, Meta>>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.query(id, callback)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class LocalNode {
+
+  query(
+    id: CoID<CoValue> | "me",
+    callback: (update: undefined | QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>> | QueriedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>> | QueriedCoMap<CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>> | QueriedCoList<CoList<JsonValue, null | JsonObject>> | QueriedCoStream<CoStream<JsonValue, null | JsonObject>>) => void
   ): () => void {...}
 
 }
@@ -359,14 +416,18 @@ TODO: document
 ### `LocalNode`:  Node Creation
 
 <details>
-<summary><b><code>LocalNode.withNewlyCreatedAccount(name, initialAgentSecret?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>LocalNode.withNewlyCreatedAccount({name, migration?, initialAgentSecret?})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class LocalNode {
 
-  withNewlyCreatedAccount(
-    name: string,
-    initialAgentSecret?: AgentSecret = ...
+  withNewlyCreatedAccount<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
+    __namedParameters: {
+      name: string,
+      migration?: AccountMigration<P, R, Meta>,
+      initialAgentSecret?: AgentSecret,
+    }
   ): {
     node: LocalNode,
     accountID: AccountID,
@@ -382,24 +443,29 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `name` | TODO: document  |
-| `initialAgentSecret?` | TODO: document  |
+| `__namedParameters.name` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
+| `__namedParameters.initialAgentSecret?` | TODO: document |
 
 </details>
 
 
 
 <details>
-<summary><b><code>LocalNode.withLoadedAccount(accountID, accountSecret, sessionID, peersToLoadFrom)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>LocalNode.withLoadedAccount({accountID, accountSecret, sessionID, peersToLoadFrom, migration?})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class LocalNode {
 
-  withLoadedAccount(
-    accountID: AccountID,
-    accountSecret: AgentSecret,
-    sessionID: SessionID,
-    peersToLoadFrom: Peer[]
+  withLoadedAccount<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
+    __namedParameters: {
+      accountID: AccountID,
+      accountSecret: AgentSecret,
+      sessionID: SessionID,
+      peersToLoadFrom: Peer[],
+      migration?: AccountMigration<P, R, Meta>,
+    }
   ): Promise<LocalNode> {...}
 
 }
@@ -410,10 +476,11 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `accountID` | TODO: document  |
-| `accountSecret` | TODO: document  |
-| `sessionID` | TODO: document  |
-| `peersToLoadFrom` | TODO: document  |
+| `__namedParameters.accountID` | TODO: document |
+| `__namedParameters.accountSecret` | TODO: document |
+| `__namedParameters.sessionID` | TODO: document |
+| `__namedParameters.peersToLoadFrom` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
 
 </details>
 
@@ -656,7 +723,7 @@ Or, you can create a new group with a `LocalNode`:
 ```typescript
 class Group<P, R, Meta> {
 
-  keys(): Object[] {...}
+  keys<K extends Object>(): K[] {...}
 
 }
 ```
@@ -1031,11 +1098,9 @@ class Group<P, R, Meta> {
 
   createMap<M extends CoMap<{
     [key: string]: JsonValue | undefined }, null | JsonObject>>(
-    init?: {
-      [K in string | number | symbol]: M["_shape"][K]
-    },
+    init?: M["_shape"],
     meta?: M["meta"],
-    initPrivacy?: "private" | "trusting" = "trusting"
+    initPrivacy?: "private" | "trusting" = "private"
   ): M {...}
 
 }
@@ -1066,7 +1131,7 @@ class Group<P, R, Meta> {
   createList<L extends CoList<JsonValue, null | JsonObject>>(
     init?: L["_item"][],
     meta?: L["meta"],
-    initPrivacy?: "private" | "trusting" = "trusting"
+    initPrivacy?: "private" | "trusting" = "private"
   ): L {...}
 
 }
@@ -1424,7 +1489,7 @@ A collaborative map with precise shape `Shape` and optional static metadata `Met
 ```typescript
 class CoMap<Shape, Meta> {
 
-  keys(): keyof Shape & string[] {...}
+  keys<K extends string>(): K[] {...}
 
 }
 ```
@@ -1920,7 +1985,7 @@ TODO: document
 ```typescript
 class MutableCoMap<Shape, Meta> {
 
-  keys(): keyof Shape & string[] {...}
+  keys<K extends string>(): K[] {...}
 
 }
 ```
@@ -5423,14 +5488,14 @@ TODO: document
 
 
 <details>
-<summary><b><code>.delete(at, privacy)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.delete(at, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class QueriedCoList<L> {
 
   delete(
     at: number,
-    privacy: "private" | "trusting"
+    privacy?: "private" | "trusting"
   ): L {...}
 
 }
@@ -5442,7 +5507,7 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `at` | TODO: document  |
-| `privacy` | TODO: document  |
+| `privacy?` | TODO: document  |
 
 </details>
 
@@ -6763,6 +6828,747 @@ TODO: document
 
 ----
 
+## `QueriedGroup`
+
+<sup>(class in `cojson`)</sup>
+
+```typescript
+export class QueriedGroup<G extends Group> {...}
+```
+TODO: document
+
+### `QueriedGroup`: Accessors
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  get meta(): G["meta"] {...}
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  get core(): CoValueCore {...}
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `QueriedGroup`: Constructors
+
+<details>
+<summary><b><code>new QueriedGroup</code></b>(group, queryContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  constructor<G extends Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>(
+    group: G,
+    queryContext: QueryContext
+  ): QueriedGroup<G> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `group` | TODO: document  |
+| `queryContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedGroup`: Methods
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  removeMember(
+    accountID: AccountID
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): InviteSecret {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["meta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["meta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedGroup`: Properties
+
+<details>
+<summary><b><code>.group</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  group: G
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  id: CoID<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  type: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  profile: ValueOrSubQueried<G["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  root: ValueOrSubQueried<G["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `QueriedAccount`
+
+<sup>(class in `cojson`)</sup>
+
+```typescript
+export class QueriedAccount<A extends Account> extends QueriedGroup<A> {...}
+```
+TODO: document
+
+### `QueriedAccount`: Accessors
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  get meta(): G["meta"] {...}
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  get core(): CoValueCore {...}
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `QueriedAccount`: Constructors
+
+<details>
+<summary><b><code>new QueriedAccount</code></b>(account, queryContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  constructor<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>(
+    account: A,
+    queryContext: QueryContext
+  ): QueriedAccount<A> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `account` | TODO: document  |
+| `queryContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedAccount`: Methods
+
+<details>
+<summary><b><code>.createGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  acceptInvite<T extends CoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: InviteSecret
+  ): Promise<void> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `groupOrOwnedValueID` | TODO: document  |
+| `inviteSecret` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  removeMember(
+    accountID: AccountID
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): InviteSecret {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["meta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["meta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedAccount`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  id: CoID<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  isMe: boolean
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.group</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  group: A
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.type</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  type: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  profile: ValueOrSubQueried<A["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  root: ValueOrSubQueried<A["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
 ## `Account`
 
 <sup>(class in `cojson`)</sup>
@@ -6803,7 +7609,7 @@ Or, you can create a new group with a `LocalNode`:
 ```typescript
 class Account<P, R, Meta> {
 
-  keys(): Object[] {...}
+  keys<K extends Object>(): K[] {...}
 
 }
 ```
@@ -7178,11 +7984,9 @@ class Account<P, R, Meta> {
 
   createMap<M extends CoMap<{
     [key: string]: JsonValue | undefined }, null | JsonObject>>(
-    init?: {
-      [K in string | number | symbol]: M["_shape"][K]
-    },
+    init?: M["_shape"],
     meta?: M["meta"],
-    initPrivacy?: "private" | "trusting" = "trusting"
+    initPrivacy?: "private" | "trusting" = "private"
   ): M {...}
 
 }
@@ -7213,7 +8017,7 @@ class Account<P, R, Meta> {
   createList<L extends CoList<JsonValue, null | JsonObject>>(
     init?: L["_item"][],
     meta?: L["meta"],
-    initPrivacy?: "private" | "trusting" = "trusting"
+    initPrivacy?: "private" | "trusting" = "private"
   ): L {...}
 
 }
@@ -7586,7 +8390,7 @@ A collaborative map with precise shape `Shape` and optional static metadata `Met
 ```typescript
 class Profile<Shape, Meta> {
 
-  keys(): keyof Shape & string[] {...}
+  keys<K extends string>(): K[] {...}
 
 }
 ```
@@ -8400,34 +9204,54 @@ TODO: document
 
 
 <details>
-<summary><b><code>.getCurrentContent()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.getCurrentContent(options?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  getCurrentContent(): CoValue {...}
+  getCurrentContent(
+    options?: {
+      ignorePrivateTransactions: true,
+    }
+  ): CoValue {...}
 
 }
 ```
 TODO: document
 
-undefined</details>
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.ignorePrivateTransactions` | TODO: document |
+
+</details>
 
 
 
 <details>
-<summary><b><code>.getValidSortedTransactions()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.getValidSortedTransactions(options?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  getValidSortedTransactions(): DecryptedTransaction[] {...}
+  getValidSortedTransactions(
+    options?: {
+      ignorePrivateTransactions: true,
+    }
+  ): DecryptedTransaction[] {...}
 
 }
 ```
 TODO: document
 
-undefined</details>
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.ignorePrivateTransactions` | TODO: document |
+
+</details>
 
 
 
@@ -8999,6 +9823,65 @@ TODO: document
 
 ----
 
+## `QueryExtension`
+
+<sup>(interface in `cojson`)</sup>
+
+```typescript
+export interface QueryExtension<T extends CoValue, O> {...}
+```
+TODO: document
+
+### `QueryExtension`: Methods
+
+<details>
+<summary><b><code>.query(base, queryContext, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface QueryExtension<T, O> {
+
+  query(
+    base: T,
+    queryContext: QueryContext,
+    onUpdate: (value: O) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `base` | TODO: document  |
+| `queryContext` | TODO: document  |
+
+
+</details>
+
+<br/>
+
+### `QueryExtension`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface QueryExtension<T, O> {
+
+  id: string
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
 ## `Value`
 
 <sup>(type alias in `cojson`)</sup>
@@ -9047,7 +9930,7 @@ export type Queried<T extends CoValue> = T extends CoMap
       ? T["meta"] extends {
         type: "binary",
       } ? never : QueriedCoStream<T>
-      : never
+      : QueriedAccount | QueriedGroup | QueriedCoMap<CoMap> | QueriedCoList<CoList> | QueriedCoStream<CoStream>
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -9072,6 +9955,43 @@ TODO: doc generator not implemented yet 2097152
 
 ```typescript
 export type AccountID = CoID<Account>
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `AccountMeta`
+
+<sup>(type alias in `cojson`)</sup>
+
+```typescript
+export type AccountMeta = {
+  type: "account",
+}
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `AccountMigration`
+
+<sup>(type alias in `cojson`)</sup>
+
+```typescript
+export type AccountMigration<P extends Profile, R extends CoMap, Meta extends AccountMeta> = (account: ControlledAccount<P, R, Meta>, profile: P) => void
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `ProfileMeta`
+
+<sup>(type alias in `cojson`)</sup>
+
+```typescript
+export type ProfileMeta = {
+  type: "profile",
+}
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -9203,71 +10123,9 @@ export  MAX_RECOMMENDED_TX_SIZE
 TODO: doc generator not implemented yet 32
 
 
-# jazz-react-media-images
-
-## `useLoadImage(imageID?)`
-
-<sup>(function in `jazz-react-media-images`)</sup>
-
-```typescript
-export function useLoadImage(imageID: ImageDefinition | CoID<ImageDefinition> | {
-  id: CoID<ImageDefinition>,
-}): LoadingImageInfo | undefined
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `imageID?` | TODO: document  |
-
-
-
-
-
-----
-
-## `createImage(imageBlobOrFile, inGroup)`
-
-<sup>(function in `jazz-react-media-images`)</sup>
-
-```typescript
-export function createImage(imageBlobOrFile: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>): Promise<Media.ImageDefinition>
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `imageBlobOrFile` | TODO: document  |
-| `inGroup` | TODO: document  |
-
-
-
-
-
-----
-
-## `LoadingImageInfo`
-
-<sup>(type alias in `jazz-react-media-images`)</sup>
-
-```typescript
-export type LoadingImageInfo = {
-  originalSize?: [number, number],
-  placeholderDataURL?: string,
-  highestResSrc?: string,
-}
-```
-TODO: doc generator not implemented yet 2097152
-
-
 # jazz-browser
 
-## `createBrowserNode({auth, syncAddress?, reconnectionTimeout?})`
+## `createBrowserNode({auth, syncAddress?, reconnectionTimeout?, migration?})`
 
 <sup>(function in `jazz-browser`)</sup>
 
@@ -9276,6 +10134,7 @@ export function createBrowserNode({
   auth: AuthProvider,
   syncAddress?: string,
   reconnectionTimeout?: number,
+  migration?: AccountMigration,
 }): Promise<BrowserNodeHandle>
 ```
 TODO: document
@@ -9287,6 +10146,7 @@ TODO: document
 | `__namedParameters.auth` | TODO: document |
 | `__namedParameters.syncAddress?` | TODO: document |
 | `__namedParameters.reconnectionTimeout?` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
 
 
 
@@ -9432,14 +10292,15 @@ TODO: document
 ### `AuthProvider`: Methods
 
 <details>
-<summary><b><code>.createNode(getSessionFor, initialPeers)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.createNode(getSessionFor, initialPeers, migration?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface AuthProvider {
 
   createNode(
     getSessionFor: SessionProvider,
-    initialPeers: Peer[]
+    initialPeers: Peer[],
+    migration?: AccountMigration
   ): Promise<LocalNode> {...}
 
 }
@@ -9452,6 +10313,7 @@ TODO: document
 | ----: | ---- |
 | `getSessionFor` | TODO: document  |
 | `initialPeers` | TODO: document  |
+| `migration?` | TODO: document  |
 
 </details>
 
@@ -9499,13 +10361,13 @@ TODO: doc generator not implemented yet 2097152
 
 # jazz-browser-media-images
 
-## `createImage(imageBlobOrFile, inGroup)`
+## `createImage(imageBlobOrFile, inGroup, maxSize?)`
 
 <sup>(function in `jazz-browser-media-images`)</sup>
 
 ```typescript
 export function createImage(imageBlobOrFile: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>): Promise<Media.ImageDefinition>
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>, maxSize: 256 | 1024 | 2048): Promise<Media.ImageDefinition>
 ```
 TODO: document
 
@@ -9515,6 +10377,7 @@ TODO: document
 | ----: | ---- |
 | `imageBlobOrFile` | TODO: document  |
 | `inGroup` | TODO: document  |
+| `maxSize?` | TODO: document  |
 
 
 
@@ -9556,6 +10419,18 @@ export type LoadingImageInfo = {
   originalSize?: [number, number],
   placeholderDataURL?: string,
   highestResSrc?: string,
+  highestResSrcOrPlaceholder?: string,
 }
 ```
 TODO: doc generator not implemented yet 2097152
+
+----
+
+## `BrowserImage`
+
+<sup>(variable in `jazz-browser-media-images`)</sup>
+
+```typescript
+export  BrowserImage
+```
+TODO: doc generator not implemented yet 32

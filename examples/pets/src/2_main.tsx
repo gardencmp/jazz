@@ -4,7 +4,6 @@ import {
     Link,
     RouterProvider,
     createHashRouter,
-    useParams,
 } from "react-router-dom";
 import "./index.css";
 
@@ -19,8 +18,8 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
-import { ListOfPosts, PetAccountRoot, migration } from "./1_types.ts";
-import { Profile } from "cojson";
+import { PetAccountRoot, migration } from "./1_types.ts";
+import { AccountMigration, Profile } from "cojson";
 
 /** Walkthrough: The top-level provider `<WithJazz/>`
  *
@@ -41,7 +40,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <WithJazz auth={auth} migration={migration}>
+                <WithJazz auth={auth} migration={migration as AccountMigration}>
                     <App />
                 </WithJazz>
             </div>

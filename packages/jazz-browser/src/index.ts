@@ -329,8 +329,8 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
-export function createInviteLink<T extends CoValue>(
-    value: T | { id: CoID<T>; core: CoValueCore },
+export function createInviteLink(
+    value: CoValue | { id: CoID<CoValue>; core: CoValueCore },
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
