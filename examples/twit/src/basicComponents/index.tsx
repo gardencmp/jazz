@@ -60,7 +60,7 @@ export function ChooseProfilePicInput(props: { onChange: (file: File) => void })
 }
 
 export function LargeProfilePicImg(props: { src?: string }) {
-  return <img src={props.src} className="w-20 h-20 bg-neutral-200 rounded-full mr-2 object-cover" />;
+  return <img src={props.src} className="w-20 h-20 bg-neutral-200 rounded-full mr-2 object-cover shrink-0" />;
 }
 
 export function ProfilePicImg(props: { src?: string; smaller?: boolean }) {
@@ -70,10 +70,6 @@ export function ProfilePicImg(props: { src?: string; smaller?: boolean }) {
       className={'bg-neutral-200 rounded-full mr-2 object-cover shrink-0' + (props.smaller ? ' w-8 h-8' : ' w-10 h-10')}
     />
   );
-}
-
-export function SubtleProfileID(props: { children: React.ReactNode }) {
-  return <div className="ml-2 text-neutral-300 text-xs">{props.children}</div>;
 }
 
 export function SubtleRelativeTimeAgo(props: { dateTime?: Date }) {

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Link, RouterProvider, createHashRouter, useParams } from 'react-router-dom';
+import { Link, RouterProvider, createHashRouter, useNavigate, useParams } from 'react-router-dom';
 import './index.css';
 
 import { WithJazz, useJazz, useSyncedQuery } from 'jazz-react';
 import { LocalAuth } from 'jazz-react-auth-local';
+import QRCode from 'qrcode';
 
 import {
   AddTwitPicsInput,
@@ -20,7 +21,6 @@ import {
   ReactionsAndReplyContainer,
   ReactionsContainer,
   RepliesContainer,
-  SubtleProfileID,
   SubtleRelativeTimeAgo,
   ThemeProvider,
   TitleAndLogo,
@@ -112,6 +112,9 @@ function App() {
 
 export function MyProfile() {
   const { me } = useJazz<TwitProfile, TwitAccountRoot>();
+  const navigate = useNavigate();
+
+  setTimeout(() => me.profile?.id &&  navigate('/' + me.profile.id), 0);
 
   return me.profile && <ProfileUI profileId={me.profile.id} />;
 }
@@ -143,6 +146,16 @@ export function ProfileUI({ profileId }: { profileId: CoID<TwitProfile> }) {
     );
   }, [profile?.twits]);
 
+  const [qr, setQr] = useState<string>('');
+  useEffect(() => {
+    QRCode.toDataURL(
+      window.location.protocol + '//' + window.location.host + window.location.pathname + '#/' + profile?.id,
+      {
+        errorCorrectionLevel: 'L'
+      }
+    ).then(setQr);
+  }, [profile?.id]);
+
   return (
     <div>
       <div className="py-2 mb-5 flex gap-2">
@@ -162,7 +175,6 @@ export function ProfileUI({ profileId }: { profileId: CoID<TwitProfile> }) {
         <div className="grow">
           <ProfileTitleContainer>
             <ProfileName>{profile?.name}</ProfileName>
-            <div className="ml-2 text-neutral-300 text-xs">{profile?.id}</div>
             {!isMe && (
               <Button
                 onClick={() => {
@@ -198,10 +210,12 @@ export function ProfileUI({ profileId }: { profileId: CoID<TwitProfile> }) {
           </div>
 
           <FollowerStatsContainer>
-            {new Set(profile?.followers || []).size} Followers &mdash; {new Set(profile?.following || []).size}{' '}
+            {new Set(profile?.followers || []).size} Followers <span className='hidden md:block'>&mdash;</span><br className="md:hidden"/> {new Set(profile?.following || []).size}{' '}
             Following
           </FollowerStatsContainer>
         </div>
+
+        {isMe && <img src={qr} className="rounded w-28 h-28 -mr-3 dark:invert max-sm:w-16 max-sm:h-16" />}
       </div>
 
       {isMe && <CreateTwitForm className="mb-4" />}
@@ -238,7 +252,6 @@ export function TwitUI({
                 {posterProfile.name}
               </Link>
             )}
-            <SubtleProfileID>{posterProfile?.id}</SubtleProfileID>
             <SubtleRelativeTimeAgo dateTime={twit?.edits.text?.at} />
           </div>
           <div style={posterProfile?.twitStyle}>{twit?.text}</div>
