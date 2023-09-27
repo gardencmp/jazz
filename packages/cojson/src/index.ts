@@ -2,6 +2,7 @@ import {
     CoValueCore,
     newRandomSessionID,
     MAX_RECOMMENDED_TX_SIZE,
+    accountOrAgentIDfromSessionID
 } from "./coValueCore.js";
 import { LocalNode } from "./localNode.js";
 import type { CoValue } from "./coValue.js";
@@ -33,7 +34,7 @@ import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
 import { Group, expectGroup, EVERYONE } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
-import { Account, Profile } from "./coValues/account.js";
+import { Account, Profile, isAccountID } from "./coValues/account.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, AnyCoValue } from "./coValue.js";
@@ -50,7 +51,7 @@ import type {
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type { AccountID, AccountMeta, AccountMigration } from "./coValues/account.js";
+import type { AccountID, AccountMeta, AccountMigration, ProfileMeta } from "./coValues/account.js";
 import type { InviteSecret } from "./coValues/group.js";
 import type * as Media from "./media.js";
 
@@ -74,6 +75,8 @@ export const cojsonInternals = {
     base64URLtoBytes,
     bytesToBase64url,
     parseJSON,
+    accountOrAgentIDfromSessionID,
+    isAccountID,
 };
 
 export {
@@ -102,6 +105,7 @@ export {
     AccountMeta,
     AccountMigration,
     Profile,
+    ProfileMeta,
     SessionID,
     Media,
     CoValueCore,

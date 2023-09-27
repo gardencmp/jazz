@@ -35,6 +35,7 @@ import {
     Account,
     AccountID,
     GeneralizedControlledAccount,
+    isAccountID,
 } from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
 
@@ -543,7 +544,7 @@ export class CoValueCore {
         }
 
         if (!options?.ignorePrivateTransactions) {
-            this._cachedContent = newContent
+            this._cachedContent = newContent;
         }
 
         return newContent;
@@ -857,7 +858,21 @@ export class CoValueCore {
                   .keys()
                   .filter((k): k is AccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByGroup"
-            ? [this.header.ruleset.group]
+            ? [
+                  this.header.ruleset.group,
+                  ...new Set(
+                      Object.keys(this._sessions)
+                          .map((sessionID) =>
+                              accountOrAgentIDfromSessionID(
+                                  sessionID as SessionID
+                              )
+                          )
+                          .filter(
+                              (session): session is AccountID =>
+                                  isAccountID(session) && session !== this.id
+                          )
+                  ),
+              ]
             : [];
     }
 }

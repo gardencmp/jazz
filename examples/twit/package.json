@@ -16,6 +16,8 @@
     "@types/qrcode": "^1.5.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "javascript-time-ago": "^2.5.9",
+    "jazz-browser-media-images": "^0.3.5",
     "jazz-react": "^0.3.5",
     "jazz-react-auth-local": "^0.3.5",
     "lucide-react": "^0.274.0",
@@ -24,6 +26,7 @@
     "react-dom": "^18.2.0",
     "react-router": "^6.16.0",
     "react-router-dom": "^6.16.0",
+    "react-time-ago": "^7.2.1",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
     "uniqolor": "^1.1.0"

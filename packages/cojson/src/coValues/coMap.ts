@@ -121,8 +121,8 @@ export class CoMapView<
      * Get all keys currently in the map.
      *
      * @category 1. Reading */
-    keys(): (keyof Shape & string)[] {
-        const keys = Object.keys(this.ops) as (keyof Shape & string)[];
+    keys<K extends (keyof Shape & string) = (keyof Shape & string)>(): K[] {
+        const keys = Object.keys(this.ops) as K[];
 
         if (this.atTimeFilter) {
             return keys.filter((key) => this.timeFilteredOps(key)?.length);

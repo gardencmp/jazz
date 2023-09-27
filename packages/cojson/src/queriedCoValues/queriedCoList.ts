@@ -89,7 +89,7 @@ export class QueriedCoList<L extends CoList> extends Array<
         return this.coList.prepend(item, before, privacy);
     }
 
-    delete(at: number, privacy: "private" | "trusting"): L {
+    delete(at: number, privacy?: "private" | "trusting"): L {
         return this.coList.delete(at, privacy);
     }
 

@@ -12,7 +12,8 @@ const pica = new Pica();
 
 export async function createImage(
     imageBlobOrFile: Blob | File,
-    inGroup: Group
+    inGroup: Group,
+    maxSize?: 256 | 1024 | 2048
 ): Promise<Media.ImageDefinition> {
     let originalWidth!: number;
     let originalHeight!: number;
@@ -64,6 +65,8 @@ export async function createImage(
 
         await new Promise((resolve) => setTimeout(resolve, 0));
 
+        if (maxSize === 256) return;
+
         const max1024 = await Reducer.toBlob(imageBlobOrFile, { max: 1024 });
 
         if (originalWidth > 1024 || originalHeight > 1024) {
@@ -87,6 +90,8 @@ export async function createImage(
 
         await new Promise((resolve) => setTimeout(resolve, 0));
 
+        if (maxSize === 1024) return;
+
         const max2048 = await Reducer.toBlob(imageBlobOrFile, { max: 2048 });
 
         if (originalWidth > 2048 || originalHeight > 2048) {
@@ -109,6 +114,8 @@ export async function createImage(
         }
 
         await new Promise((resolve) => setTimeout(resolve, 0));
+
+        if (maxSize === 2048) return;
 
         const originalBinaryStreamId = (
             await createBinaryStreamFromBlob(imageBlobOrFile, inGroup)

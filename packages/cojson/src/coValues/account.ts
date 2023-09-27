@@ -168,4 +168,4 @@ export class Profile<Shape extends ProfileShape = ProfileShape, Meta extends Pro
 
 export type AccountMigration< P extends Profile = Profile,
 R extends CoMap = CoMap,
-Meta extends AccountMeta = AccountMeta> = (account: Account<P, R, Meta>, profile: P) => void;
+Meta extends AccountMeta = AccountMeta> = (account: ControlledAccount<P, R, Meta>, profile: P) => void;
