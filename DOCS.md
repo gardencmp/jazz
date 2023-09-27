@@ -242,8 +242,8 @@ TODO: document
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function createInviteLink<T extends CoValue>(value: T | {
-  id: CoID<T>,
+export function createInviteLink(value: CoValue | {
+  id: CoID<CoValue>,
   core: CoValueCore,
 }, role: "reader" | "writer" | "admin", {
   baseURL?: string,
@@ -10159,8 +10159,8 @@ TODO: document
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
-export function createInviteLink<T extends CoValue>(value: T | {
-  id: CoID<T>,
+export function createInviteLink(value: CoValue | {
+  id: CoID<CoValue>,
   core: CoValueCore,
 }, role: "reader" | "writer" | "admin", {
   baseURL?: string,
