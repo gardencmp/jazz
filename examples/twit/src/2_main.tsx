@@ -168,11 +168,11 @@ export function ProfileUI({ profileId }: { profileId: CoID<TwitProfile> }) {
                 onClick={() => {
                   if (!profile?.followers || !me.profile?.following) return;
                   if (profile.followers.some(f => f?.id === me.profile?.id)) {
-                    me.profile.following.append(profile.id);
-                    profile.followers.append(me.profile.id);
-                  } else {
                     me.profile.following.delete(me.profile.following.findIndex(f => f?.id === profile.id));
                     profile.followers.delete(profile.followers.findIndex(f => f?.id === me.profile?.id));
+                  } else {
+                    me.profile.following.append(profile.id);
+                    profile.followers.append(me.profile.id);
                   }
                 }}
                 className="ml-auto"
