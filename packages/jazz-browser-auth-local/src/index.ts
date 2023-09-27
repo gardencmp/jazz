@@ -1,5 +1,6 @@
 import {
     AccountID,
+    AccountMigration,
     AgentSecret,
     cojsonInternals,
     LocalNode,
@@ -41,7 +42,8 @@ export class BrowserLocalAuth implements AuthProvider {
 
     async createNode(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
+        initialPeers: Peer[],
+        migration?: AccountMigration
     ): Promise<LocalNode> {
         if (sessionStorage[sessionStorageKey]) {
             const sessionStorageData = JSON.parse(
@@ -50,12 +52,13 @@ export class BrowserLocalAuth implements AuthProvider {
 
             const sessionID = await getSessionFor(sessionStorageData.accountID);
 
-            const node = await LocalNode.withLoadedAccount(
-                sessionStorageData.accountID,
-                sessionStorageData.accountSecret,
+            const node = await LocalNode.withLoadedAccount({
+                accountID: sessionStorageData.accountID,
+                accountSecret: sessionStorageData.accountSecret,
                 sessionID,
-                initialPeers
-            );
+                peersToLoadFrom: initialPeers,
+                migration,
+            });
 
             this.driver.onSignedIn({ logOut });
 
@@ -69,7 +72,8 @@ export class BrowserLocalAuth implements AuthProvider {
                                 username,
                                 getSessionFor,
                                 this.appName,
-                                this.appHostname
+                                this.appHostname,
+                                migration
                             );
                             for (const peer of initialPeers) {
                                 node.syncManager.addPeer(peer);
@@ -81,7 +85,8 @@ export class BrowserLocalAuth implements AuthProvider {
                             const node = await logIn(
                                 getSessionFor,
                                 this.appHostname,
-                                initialPeers
+                                initialPeers,
+                                migration
                             );
                             doneSigningUpOrLoggingIn(node);
                             this.driver.onSignedIn({ logOut });
@@ -99,15 +104,17 @@ async function signUp(
     username: string,
     getSessionFor: SessionProvider,
     appName: string,
-    appHostname: string
+    appHostname: string,
+    migration?: AccountMigration
 ): Promise<LocalNode> {
     const secretSeed = cojsonInternals.newRandomSecretSeed();
 
     const { node, accountID, accountSecret } =
-        LocalNode.withNewlyCreatedAccount(
-            username,
-            agentSecretFromSecretSeed(secretSeed)
-        );
+        LocalNode.withNewlyCreatedAccount({
+            name: username,
+            initialAgentSecret: agentSecretFromSecretSeed(secretSeed),
+            migration,
+        });
 
     const webAuthNCredentialPayload = new Uint8Array(
         cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength
@@ -155,7 +162,8 @@ async function signUp(
 async function logIn(
     getSessionFor: SessionProvider,
     appHostname: string,
-    initialPeers: Peer[]
+    initialPeers: Peer[],
+    migration?: AccountMigration
 ): Promise<LocalNode> {
     const webAuthNCredential = (await navigator.credentials.get({
         publicKey: {
@@ -197,12 +205,13 @@ async function logIn(
         accountSecret,
     } satisfies SessionStorageData);
 
-    const node = await LocalNode.withLoadedAccount(
+    const node = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        await getSessionFor(accountID),
-        initialPeers
-    );
+        sessionID: await getSessionFor(accountID),
+        peersToLoadFrom: initialPeers,
+        migration,
+    });
 
     return node;
 }

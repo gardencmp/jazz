@@ -31,7 +31,11 @@ import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";
-import { Account, AccountID, GeneralizedControlledAccount } from "./coValues/account.js";
+import {
+    Account,
+    AccountID,
+    GeneralizedControlledAccount,
+} from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
@@ -163,7 +167,15 @@ export class CoValueCore {
     }
 
     nextTransactionID(): TransactionID {
-        const sessionID = this.node.currentSessionID;
+        // This is an ugly hack to get a unique but stable session ID for editing the current account
+        const sessionID =
+            this.header.meta?.type === "account"
+                ? (this.node.currentSessionID.replace(
+                      this.node.account.id,
+                      this.node.account.currentAgentID()
+                  ) as SessionID)
+                : this.node.currentSessionID;
+
         return {
             sessionID,
             txIndex: this.sessions[sessionID]?.transactions.length || 0,
@@ -467,7 +479,14 @@ export class CoValueCore {
             };
         }
 
-        const sessionID = this.node.currentSessionID;
+        // This is an ugly hack to get a unique but stable session ID for editing the current account
+        const sessionID =
+            this.header.meta?.type === "account"
+                ? (this.node.currentSessionID.replace(
+                      this.node.account.id,
+                      this.node.account.currentAgentID()
+                  ) as SessionID)
+                : this.node.currentSessionID;
 
         const { expectedNewHash } = this.expectedNewHashAfter(sessionID, [
             transaction,
@@ -492,41 +511,51 @@ export class CoValueCore {
         return success;
     }
 
-    getCurrentContent(): CoValue {
-        if (this._cachedContent) {
+    getCurrentContent(options?: { ignorePrivateTransactions: true }): CoValue {
+        if (!options?.ignorePrivateTransactions && this._cachedContent) {
             return this._cachedContent;
         }
 
+        let newContent;
         if (this.header.type === "comap") {
             if (this.header.ruleset.type === "group") {
-                if (this.header.meta?.type === "account") {
-                    this._cachedContent = new Account(this);
+                if (
+                    this.header.meta?.type === "account" &&
+                    !options?.ignorePrivateTransactions
+                ) {
+                    newContent = new Account(this);
                 } else {
-                    this._cachedContent = new Group(this);
+                    newContent = new Group(this, options);
                 }
             } else {
-                this._cachedContent = new CoMap(this);
+                newContent = new CoMap(this);
             }
         } else if (this.header.type === "colist") {
-            this._cachedContent = new CoList(this);
+            newContent = new CoList(this);
         } else if (this.header.type === "costream") {
             if (this.header.meta && this.header.meta.type === "binary") {
-                this._cachedContent = new BinaryCoStream(this);
+                newContent = new BinaryCoStream(this);
             } else {
-                this._cachedContent = new CoStream(this);
+                newContent = new CoStream(this);
             }
         } else {
             throw new Error(`Unknown coValue type ${this.header.type}`);
         }
 
-        return this._cachedContent;
+        if (!options?.ignorePrivateTransactions) {
+            this._cachedContent = newContent
+        }
+
+        return newContent;
     }
 
-    getValidSortedTransactions(): DecryptedTransaction[] {
+    getValidSortedTransactions(options?: {
+        ignorePrivateTransactions: true;
+    }): DecryptedTransaction[] {
         const validTransactions = determineValidTransactions(this);
 
         const allTransactions: DecryptedTransaction[] = validTransactions
-            .map(({ txID, tx }) => {
+            .flatMap(({ txID, tx }) => {
                 if (tx.privacy === "trusting") {
                     return {
                         txID,
@@ -534,6 +563,9 @@ export class CoValueCore {
                         changes: tx.changes,
                     };
                 } else {
+                    if (options?.ignorePrivateTransactions) {
+                        return undefined;
+                    }
                     const readKey = this.getReadKey(tx.keyUsed);
 
                     if (!readKey) {
@@ -625,15 +657,21 @@ export class CoValueCore {
 
     getUncachedReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "group") {
-            const content = expectGroup(this.getCurrentContent());
+            const content = expectGroup(
+                this.getCurrentContent({ ignorePrivateTransactions: true })
+            );
 
             const keyForEveryone = content.get(`${keyID}_for_everyone`);
             if (keyForEveryone) return keyForEveryone;
 
             // Try to find key revelation for us
+            const lookupAccountOrAgentID =
+                this.header.meta?.type === "account"
+                    ? this.node.account.currentAgentID()
+                    : this.node.account.id;
 
             const lastReadyKeyEdit = content.lastEditAt(
-                `${keyID}_for_${this.node.account.id}`
+                `${keyID}_for_${lookupAccountOrAgentID}`
             );
 
             if (lastReadyKeyEdit?.value) {

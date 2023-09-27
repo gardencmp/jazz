@@ -1,14 +1,13 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { CoID, CoMap, Media } from "cojson";
+import { CoID, CoMap, Media, Profile, Queried } from "cojson";
 import { useJazz, useSyncedQuery } from "jazz-react";
-import { createImage } from "jazz-browser-media-images";
+import { BrowserImage, createImage } from "jazz-browser-media-images";
 
-import { PetReactions } from "./1_types";
+import { PetAccountRoot, PetPost, PetReactions } from "./1_types";
 
 import { Input, Button } from "./basicComponents";
-import { useLoadImage } from "jazz-react-media-images";
 
 /** Walkthrough: TODO
  */
@@ -20,7 +19,7 @@ type PartialPetPost = CoMap<{
 }>;
 
 export function NewPetPostForm() {
-    const { localNode } = useJazz();
+    const { me } = useJazz<Profile, PetAccountRoot>();
     const navigate = useNavigate();
 
     const [newPostId, setNewPostId] = useState<
@@ -34,7 +33,7 @@ export function NewPetPostForm() {
             if (newPetPost) {
                 newPetPost.set({ name });
             } else {
-                const petPostGroup = localNode.createGroup();
+                const petPostGroup = me.createGroup();
                 const petPost = petPostGroup.createMap<PartialPetPost>({
                     name,
                     reactions: petPostGroup.createStream<PetReactions>().id,
@@ -43,7 +42,7 @@ export function NewPetPostForm() {
                 setNewPostId(petPost.id);
             }
         },
-        [localNode, newPetPost]
+        [me, newPetPost]
     );
 
     const onImageSelected = useCallback(
@@ -60,7 +59,18 @@ export function NewPetPostForm() {
         [newPetPost]
     );
 
-    const petImage = useLoadImage(newPetPost?.image?.id);
+    const onSubmit = useCallback(() => {
+        if (!newPetPost) return;
+        const myPosts = me.root?.posts;
+
+        if (!myPosts) {
+            throw new Error("No posts list found");
+        }
+
+        myPosts.append(newPetPost.id as PetPost["id"]);
+
+        navigate("/pet/" + newPetPost.id);
+    }, [me.root?.posts, newPetPost, navigate]);
 
     return (
         <div className="flex flex-col gap-10">
@@ -73,10 +83,13 @@ export function NewPetPostForm() {
                 value={newPetPost?.name || ""}
             />
 
-            {petImage ? (
+            {newPetPost?.image ? (
                 <img
                     className="w-80 max-w-full rounded"
-                    src={petImage.highestResSrc || petImage.placeholderDataURL}
+                    src={
+                        newPetPost?.image.as(BrowserImage)
+                            ?.highestResSrcOrPlaceholder
+                    }
                 />
             ) : (
                 <Input
@@ -87,13 +100,7 @@ export function NewPetPostForm() {
             )}
 
             {newPetPost?.name && newPetPost?.image && (
-                <Button
-                    onClick={() => {
-                        navigate("/pet/" + newPetPost.id);
-                    }}
-                >
-                    Submit Post
-                </Button>
+                <Button onClick={onSubmit}>Submit Post</Button>
             )}
         </div>
     );

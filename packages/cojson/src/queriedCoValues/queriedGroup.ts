@@ -19,7 +19,7 @@ export class QueriedGroup<G extends Group = Group> {
     constructor(group: G, queryContext: QueryContext) {
         const profileID = group.get("profile");
         const rootID = group.get("root");
-        Object.defineProperties(this, {
+        queryContext.defineSubqueryPropertiesIn(Object.defineProperties(this, {
             group: {
                 get() {
                     return group;
@@ -28,15 +28,16 @@ export class QueriedGroup<G extends Group = Group> {
             },
             id: { value: group.id, enumerable: false },
             type: { value: "group", enumerable: false },
+        }), {
             profile: {
-                value: profileID && queryContext.resolveValue(profileID),
+                value: profileID,
                 enumerable: false,
             },
             root: {
-                value: rootID && queryContext.resolveValue(rootID),
+                value: rootID,
                 enumerable: false,
             },
-        });
+        }, [group.id]);
     }
 
     get meta(): G["meta"] {
@@ -64,7 +65,7 @@ export class QueriedGroup<G extends Group = Group> {
             [K in keyof M["_shape"]]: M["_shape"][K];
         },
         meta?: M["meta"],
-        initPrivacy: "trusting" | "private" = "trusting"
+        initPrivacy: "trusting" | "private" = "private"
     ): M {
         return this.group.createMap(init, meta, initPrivacy);
     }
@@ -72,7 +73,7 @@ export class QueriedGroup<G extends Group = Group> {
     createList<L extends CoList>(
         init?: L["_item"][],
         meta?: L["meta"],
-        initPrivacy: "trusting" | "private" = "trusting"
+        initPrivacy: "trusting" | "private" = "private"
     ): L {
         return this.group.createList(init, meta, initPrivacy);
     }

@@ -161,7 +161,7 @@ export class CoStreamView<
                 by: accountOrAgentIDfromSessionID(sessionID),
                 tx: item.tx,
                 at: new Date(item.madeAt),
-                value: item.value,
+                value: item.value as Item,
             };
         }
     }

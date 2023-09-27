@@ -35,6 +35,7 @@ import {
     AccountID,
     Profile,
     isAccountID,
+    AccountMigration,
 } from "./coValues/account.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoValue } from "./index.js";
@@ -71,10 +72,19 @@ export class LocalNode {
     }
 
     /** @category 2. Node Creation */
-    static withNewlyCreatedAccount(
-        name: string,
-        initialAgentSecret = newRandomAgentSecret()
-    ): {
+    static withNewlyCreatedAccount<
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >({
+        name,
+        migration,
+        initialAgentSecret = newRandomAgentSecret(),
+    }: {
+        name: string;
+        migration?: AccountMigration<P, R, Meta>;
+        initialAgentSecret?: AgentSecret;
+    }): {
         node: LocalNode;
         accountID: AccountID;
         accountSecret: AgentSecret;
@@ -93,21 +103,47 @@ export class LocalNode {
             newRandomSessionID(account.id)
         );
 
+        const accountOnNodeWithAccount = nodeWithAccount.account as ControlledAccount<P, R, Meta>;
+
+        const profile = nodeWithAccount.expectProfileLoaded(
+            accountOnNodeWithAccount.id,
+            "After creating account"
+        );
+
+        if (migration) {
+            migration(accountOnNodeWithAccount, profile as P);
+            nodeWithAccount.account = new ControlledAccount(
+                accountOnNodeWithAccount.core,
+                accountOnNodeWithAccount.agentSecret
+            );
+        }
+
         return {
             node: nodeWithAccount,
-            accountID: account.id,
-            accountSecret: account.agentSecret,
+            accountID: accountOnNodeWithAccount.id,
+            accountSecret: accountOnNodeWithAccount.agentSecret,
             sessionID: nodeWithAccount.currentSessionID,
         };
     }
 
     /** @category 2. Node Creation */
-    static async withLoadedAccount(
-        accountID: AccountID,
-        accountSecret: AgentSecret,
-        sessionID: SessionID,
-        peersToLoadFrom: Peer[]
-    ): Promise<LocalNode> {
+    static async withLoadedAccount<
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >({
+        accountID,
+        accountSecret,
+        sessionID,
+        peersToLoadFrom,
+        migration,
+    }: {
+        accountID: AccountID;
+        accountSecret: AgentSecret;
+        sessionID: SessionID;
+        peersToLoadFrom: Peer[];
+        migration?: AccountMigration<P, R, Meta>;
+    }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
             new AnonymousControlledAccount(accountSecret),
             newRandomSessionID(accountID)
@@ -120,14 +156,37 @@ export class LocalNode {
         }
 
         const account = await accountPromise;
+        const controlledAccount = new ControlledAccount(
+            account.core,
+            accountSecret
+        );
 
         // since this is all synchronous, we can just swap out nodes for the SyncManager
         const node = loadingNode.testWithDifferentAccount(
-            new ControlledAccount(account.core, accountSecret),
+            controlledAccount,
             sessionID
         );
         node.syncManager = loadingNode.syncManager;
         node.syncManager.local = node;
+
+        controlledAccount.core.node = node;
+
+        const profileID = account.get("profile");
+        if (!profileID) {
+            throw new Error("Account has no profile");
+        }
+        const profile = await node.load(profileID);
+
+        if (migration) {
+            migration(
+                controlledAccount as ControlledAccount<P, R, Meta>,
+                profile as P
+            );
+            node.account = new ControlledAccount(
+                controlledAccount.core,
+                controlledAccount.agentSecret
+            );
+        }
 
         return node;
     }
@@ -198,18 +257,33 @@ export class LocalNode {
     }
 
     /** @category 1. High-level */
-    query(
-        id: "me",
-        callback: (update: QueriedAccount | undefined) => void
-    ): () => void;
+
     query<T extends CoValue>(
         id: CoID<T>,
         callback: (update: Queried<T> | undefined) => void
+    ): () => void;
+    query<
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >(
+        id: "me",
+        callback: (
+            update: QueriedAccount<Account<P, R, Meta>> | undefined
+        ) => void
     ): () => void;
     query(
         id: CoID<CoValue> | "me",
         callback: (
             update: Queried<CoValue> | QueriedAccount | undefined
+        ) => void
+    ): () => void;
+    query(
+        id: CoID<CoValue> | "me",
+        callback: (
+            // TODO: sort this out
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            update: any
         ) => void
     ): () => void {
         if (id === "me") {
@@ -360,17 +434,30 @@ export class LocalNode {
 
             const readKey = newRandomKeySecret();
 
+            const sealed = seal({
+                message: readKey.secret,
+                from: getAgentSealerSecret(agentSecret),
+                to: getAgentSealerID(accountAgentID),
+                nOnceMaterial: {
+                    in: account.id,
+                    tx: account.core.nextTransactionID(),
+                },
+            });
+
+            console.log(
+                "Creating read key",
+                getAgentSealerSecret(agentSecret),
+                getAgentSealerID(accountAgentID),
+                account.id,
+                account.core.nextTransactionID(),
+                "in session",
+                account.core.node.currentSessionID,
+                "=",
+                sealed
+            );
             editable.set(
                 `${readKey.id}_for_${accountAgentID}`,
-                seal({
-                    message: readKey.secret,
-                    from: getAgentSealerSecret(agentSecret),
-                    to: getAgentSealerID(accountAgentID),
-                    nOnceMaterial: {
-                        in: account.id,
-                        tx: account.core.nextTransactionID(),
-                    },
-                }),
+                sealed,
                 "trusting"
             );
 
@@ -510,6 +597,15 @@ export class LocalNode {
 
                 coValuesToCopy.pop();
             }
+        }
+
+        if (account instanceof ControlledAccount) {
+            // To make sure that when we edit the account, we're modifying the correct sessions
+            const accountInNode = new ControlledAccount(newNode.expectCoValueLoaded(account.id), account.agentSecret);
+            if (accountInNode.core.node !== newNode) {
+                throw new Error("Account's node is not the new node");
+            }
+            newNode.account = accountInNode;
         }
 
         return newNode;

@@ -25,18 +25,24 @@ import {
     cryptoReady,
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
-import { AnonymousControlledAccount, ControlledAccount } from "./coValues/account.js";
+import {
+    AnonymousControlledAccount,
+    ControlledAccount,
+} from "./coValues/account.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
 import { Group, expectGroup, EVERYONE } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
+import { Account, Profile } from "./coValues/account.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, AnyCoValue } from "./coValue.js";
-import type { Queried } from "./queries.js";
+import type { Queried, QueryExtension } from "./queries.js";
 import type { QueriedCoStream } from "./queriedCoValues/queriedCoStream.js";
 import type { QueriedCoList } from "./queriedCoValues/queriedCoList.js";
 import type { QueriedCoMap } from "./queriedCoValues/queriedCoMap.js";
+import { QueriedAccount } from "./queriedCoValues/queriedAccount.js";
+import { QueriedGroup } from "./queriedCoValues/queriedGroup.js";
 import type {
     BinaryStreamInfo,
     BinaryCoStreamMeta,
@@ -44,7 +50,7 @@ import type {
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
 import type { AgentSecret } from "./crypto.js";
-import type { AccountID, Account, Profile } from "./coValues/account.js";
+import type { AccountID, AccountMeta, AccountMigration } from "./coValues/account.js";
 import type { InviteSecret } from "./coValues/group.js";
 import type * as Media from "./media.js";
 
@@ -89,8 +95,12 @@ export {
     QueriedCoMap,
     QueriedCoList,
     QueriedCoStream,
-    AccountID,
+    QueriedGroup,
+    QueriedAccount,
     Account,
+    AccountID,
+    AccountMeta,
+    AccountMigration,
     Profile,
     SessionID,
     Media,
@@ -108,6 +118,7 @@ export {
     AgentSecret,
     InviteSecret,
     SyncMessage,
+    QueryExtension,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

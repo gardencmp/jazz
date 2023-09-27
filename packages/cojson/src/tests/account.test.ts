@@ -9,7 +9,7 @@ beforeEach(async () => {
 
 test("Can create a node while creating a new account with profile", async () => {
     const { node, accountID, accountSecret, sessionID } =
-        LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+        LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
 
     expect(node).not.toBeNull();
     expect(accountID).not.toBeNull();
@@ -22,8 +22,9 @@ test("Can create a node while creating a new account with profile", async () => 
 });
 
 test("A node with an account can create groups and and objects within them", async () => {
-    const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = await node.createGroup();
     expect(group).not.toBeNull();
@@ -41,7 +42,7 @@ test("A node with an account can create groups and and objects within them", asy
 
 test("Can create account with one node, and then load it on another", async () => {
     const { node, accountID, accountSecret } =
-        LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+        LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
 
     const group = await node.createGroup();
     expect(group).not.toBeNull();
@@ -52,16 +53,20 @@ test("Can create account with one node, and then load it on another", async () =
         expect(edit.get("foo")).toEqual("bar");
     });
 
-    const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {trace: true, peer1role: "server", peer2role: "client"});
+    const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {
+        trace: true,
+        peer1role: "server",
+        peer2role: "client",
+    });
 
     node.syncManager.addPeer(node2asPeer);
 
-    const node2 = await LocalNode.withLoadedAccount(
+    const node2 = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        newRandomSessionID(accountID),
-        [node1asPeer]
-    );
+        sessionID: newRandomSessionID(accountID),
+        peersToLoadFrom: [node1asPeer],
+    });
 
     const map2 = await node2.load(map.id);
 

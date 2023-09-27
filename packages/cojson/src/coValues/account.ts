@@ -165,3 +165,7 @@ export type ProfileMeta = { type: "profile" };
 export class Profile<Shape extends ProfileShape = ProfileShape, Meta extends ProfileMeta = ProfileMeta> extends CoMap<Shape, Meta> {
 
 }
+
+export type AccountMigration< P extends Profile = Profile,
+R extends CoMap = CoMap,
+Meta extends AccountMeta = AccountMeta> = (account: Account<P, R, Meta>, profile: P) => void;

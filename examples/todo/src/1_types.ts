@@ -1,4 +1,3 @@
-import { Account, Profile } from "cojson";
 import { CoMap, CoList } from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON

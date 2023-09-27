@@ -1,4 +1,5 @@
-import { CoMap, CoList, Media, CoStream, Account } from "cojson";
+import { CoMap, CoList, Media, CoStream, Account, Group } from "cojson";
+import { ProfileMeta } from "cojson/dist/coValues/account";
 
 export type Twit = CoMap<{
     text?: string;
@@ -10,10 +11,18 @@ export type Twit = CoMap<{
     isReplyTo?: Twit["id"];
 }>;
 
+export type ListOfTwits = CoList<Twit["id"]>;
+export type ListOfProfiles = CoList<TwitProfile["id"]>;
+
 export type TwitProfile = CoMap<{
     name: string;
     bio: string;
     avatar?: Media.ImageDefinition["id"];
-    twits: CoList<Twit["id"]>["id"];
-    follows: CoList<Account["id"]>["id"];
+    twits: ListOfTwits["id"];
+    follows: ListOfProfiles["id"];
+}, ProfileMeta>;
+
+export type TwitAccountRoot = CoMap<{
+    peopleWhoCanSeeMyTwits: Group["id"];
+    peopleWhoCanSeeMyFollows: Group["id"];
 }>;

@@ -3,7 +3,7 @@ import { CoID, CoValue, ControlledAccount, InviteSecret } from "../index.js";
 import { QueryContext } from "../queries.js";
 import { QueriedGroup } from "./queriedGroup.js";
 
-export class QueriedAccount<A extends Account = Account> extends QueriedGroup {
+export class QueriedAccount<A extends Account = Account> extends QueriedGroup<A> {
     id!: CoID<A>;
     isMe!: boolean;
 

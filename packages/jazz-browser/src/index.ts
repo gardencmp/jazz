@@ -1,4 +1,10 @@
-import { BinaryCoStream, CoValue, CoValueCore, InviteSecret } from "cojson";
+import {
+    AccountMigration,
+    BinaryCoStream,
+    CoValue,
+    CoValueCore,
+    InviteSecret,
+} from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
@@ -26,10 +32,12 @@ export async function createBrowserNode({
     auth,
     syncAddress = "wss://sync.jazz.tools",
     reconnectionTimeout: initialReconnectionTimeout = 500,
+    migration,
 }: {
     auth: AuthProvider;
     syncAddress?: string;
     reconnectionTimeout?: number;
+    migration?: AccountMigration;
 }): Promise<BrowserNodeHandle> {
     await cojsonReady;
     let sessionDone: () => void;
@@ -52,7 +60,8 @@ export async function createBrowserNode({
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
-        [await IDBStorage.asPeer(), firstWsPeer]
+        [await IDBStorage.asPeer(), firstWsPeer],
+        migration
     );
 
     async function websocketReconnectLoop() {
@@ -114,7 +123,8 @@ export async function createBrowserNode({
 export interface AuthProvider {
     createNode(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
+        initialPeers: Peer[],
+        migration?: AccountMigration
     ): Promise<LocalNode>;
 }
 
@@ -339,10 +349,9 @@ export function createInviteLink<T extends CoValue>(
         throw new Error("Can't create invite link for object without group");
     }
 
-    const group =
-        cojsonInternals.expectGroup(currentCoValue.getCurrentContent())
-        ;
-
+    const group = cojsonInternals.expectGroup(
+        currentCoValue.getCurrentContent()
+    );
     const inviteSecret = group.createInvite(role);
 
     return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${

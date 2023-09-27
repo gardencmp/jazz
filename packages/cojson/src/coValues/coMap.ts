@@ -25,7 +25,9 @@ export type MapOpPayload<K extends string, V extends JsonValue | undefined> =
       };
 
 export class CoMapView<
-    Shape extends { [key: string]: JsonValue | undefined } = { [key: string]: JsonValue | undefined },
+    Shape extends { [key: string]: JsonValue | undefined } = {
+        [key: string]: JsonValue | undefined;
+    },
     Meta extends JsonObject | null = JsonObject | null
 > implements CoValue
 {
@@ -45,16 +47,17 @@ export class CoMapView<
     readonly _shape!: Shape;
 
     /** @internal */
-    constructor(core: CoValueCore) {
+    constructor(
+        core: CoValueCore,
+        options?: { ignorePrivateTransactions: true }
+    ) {
         this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
 
-        for (const {
-            txID,
-            changes,
-            madeAt,
-        } of core.getValidSortedTransactions()) {
+        for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
+            options
+        )) {
             for (const [changeIdx, changeUntyped] of parseJSON(
                 changes
             ).entries()) {
@@ -122,9 +125,7 @@ export class CoMapView<
         const keys = Object.keys(this.ops) as (keyof Shape & string)[];
 
         if (this.atTimeFilter) {
-            return keys.filter((key) => {
-                this.timeFilteredOps(key)?.length;
-            });
+            return keys.filter((key) => this.timeFilteredOps(key)?.length);
         } else {
             return keys;
         }
@@ -251,7 +252,9 @@ export class CoMapView<
 
 /** A collaborative map with precise shape `Shape` and optional static metadata `Meta` */
 export class CoMap<
-        Shape extends { [key: string]: JsonValue | undefined } = { [key: string]: JsonValue | undefined },
+        Shape extends { [key: string]: JsonValue | undefined } = {
+            [key: string]: JsonValue | undefined;
+        },
         Meta extends JsonObject | null = JsonObject | null
     >
     extends CoMapView<Shape, Meta>
@@ -354,7 +357,9 @@ export class CoMap<
     mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
         const mutable = new MutableCoMap<Shape, Meta>(this.core);
         mutator(mutable);
-        return new (this.constructor as new (core: CoValueCore) => this)(this.core);
+        return new (this.constructor as new (core: CoValueCore) => this)(
+            this.core
+        );
     }
 
     /** @deprecated Use `mutate` instead. */
@@ -364,7 +369,9 @@ export class CoMap<
 }
 
 export class MutableCoMap<
-        Shape extends { [key: string]: JsonValue | undefined } = { [key: string]: JsonValue | undefined },
+        Shape extends { [key: string]: JsonValue | undefined } = {
+            [key: string]: JsonValue | undefined;
+        },
         Meta extends JsonObject | null = JsonObject | null
     >
     extends CoMapView<Shape, Meta>

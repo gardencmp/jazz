@@ -1,7 +1,6 @@
 import { CoList, MutableCoList } from "../coValues/coList.js";
 import { CoValueCore } from "../coValueCore.js";
 import { Group } from "../coValues/group.js";
-import { isAccountID } from "../coValues/account.js";
 import { CoID, CoValue } from "../coValue.js";
 import { TransactionID } from "../ids.js";
 import { ValueOrSubQueried, QueryContext } from "../queries.js";
@@ -27,40 +26,37 @@ export class QueriedCoList<L extends CoList> extends Array<
                 .asArray()
                 .map(
                     (item) =>
-                        queryContext.resolveValue(item) as ValueOrSubQueried<
+                        queryContext.queryIfCoID(item, [coList.id]) as ValueOrSubQueried<
                             L["_item"]
                         >
                 )
         );
 
         Object.defineProperties(this, {
-            coList: { value: coList },
+            coList: { get() {return coList} },
             id: { value: coList.id },
             type: { value: "colist" },
             edits: {
                 value: [...this.keys()].map((i) => {
                     const edit = coList.editAt(i)!;
-                    return {
-                        by:
-                            edit.by && isAccountID(edit.by)
-                                ? queryContext.resolveValue(edit.by)
-                                : undefined,
+                    return queryContext.defineSubqueryPropertiesIn({
+
                         tx: edit.tx,
                         at: new Date(edit.at),
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        value: queryContext.resolveValue(edit.value) as any,
-                    };
+                    }, {
+                        by: {value: edit.by, enumerable: true},
+                        value: {value: edit.value, enumerable: true},
+                    }, [coList.id]);
                 }),
             },
             deletions: {
-                value: coList.deletionEdits().map((deletion) => ({
-                    by:
-                        deletion.by && isAccountID(deletion.by)
-                            ? queryContext.resolveValue(deletion.by)
-                            : undefined,
+                value: coList.deletionEdits().map((deletion) => queryContext.defineSubqueryPropertiesIn({
+
                     tx: deletion.tx,
                     at: new Date(deletion.at),
-                })),
+                }, {
+                    by: {value: deletion.by, enumerable: true},
+                }, [coList.id])),
             },
         });
     }

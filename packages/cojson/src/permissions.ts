@@ -5,11 +5,10 @@ import { KeyID } from "./crypto.js";
 import {
     CoValueCore,
     Transaction,
-    TrustingTransaction,
     accountOrAgentIDfromSessionID,
 } from "./coValueCore.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { AccountID, Profile } from "./coValues/account.js";
+import { Account, AccountID, Profile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
 import { EVERYONE, Everyone, expectGroup } from "./coValues/group.js";
 
@@ -31,26 +30,21 @@ export function determineValidTransactions(
     coValue: CoValueCore
 ): { txID: TransactionID; tx: Transaction }[] {
     if (coValue.header.ruleset.type === "group") {
-        const allTrustingTransactionsSorted = Object.entries(
-            coValue.sessions
-        ).flatMap(([sessionID, sessionLog]) => {
-            return sessionLog.transactions
-                .map((tx, txIndex) => ({ sessionID, txIndex, tx }))
-                .filter(({ tx }) => {
-                    if (tx.privacy === "trusting") {
-                        return true;
-                    } else {
-                        console.warn("Unexpected private transaction in Group");
-                        return false;
-                    }
-                }) as {
-                sessionID: SessionID;
-                txIndex: number;
-                tx: TrustingTransaction;
-            }[];
-        });
+        const allTransactionsSorted = Object.entries(coValue.sessions).flatMap(
+            ([sessionID, sessionLog]) => {
+                return sessionLog.transactions.map((tx, txIndex) => ({
+                    sessionID,
+                    txIndex,
+                    tx,
+                })) as {
+                    sessionID: SessionID;
+                    txIndex: number;
+                    tx: Transaction;
+                }[];
+            }
+        );
 
-        allTrustingTransactionsSorted.sort((a, b) => {
+        allTransactionsSorted.sort((a, b) => {
             return a.tx.madeAt - b.tx.madeAt;
         });
 
@@ -60,18 +54,32 @@ export function determineValidTransactions(
             throw new Error("Group must have initialAdmin");
         }
 
-        const memberState: { [agent: AccountID | AgentID]: Role, [EVERYONE]?: Role } = {};
+        const memberState: {
+            [agent: AccountID | AgentID]: Role;
+            [EVERYONE]?: Role;
+        } = {};
 
         const validTransactions: { txID: TransactionID; tx: Transaction }[] =
             [];
 
-        for (const {
-            sessionID,
-            txIndex,
-            tx,
-        } of allTrustingTransactionsSorted) {
+        for (const { sessionID, txIndex, tx } of allTransactionsSorted) {
             // console.log("before", { memberState, validTransactions });
             const transactor = accountOrAgentIDfromSessionID(sessionID);
+
+            if (tx.privacy === "private") {
+                if (memberState[transactor] === "admin") {
+                    validTransactions.push({
+                        txID: { sessionID, txIndex },
+                        tx,
+                    });
+                    continue;
+                } else {
+                    console.warn(
+                        "Only admins can make private transactions in groups"
+                    );
+                    continue;
+                }
+            }
 
             let changes;
 
@@ -158,8 +166,17 @@ export function determineValidTransactions(
                 continue;
             }
 
-            if (affectedMember === EVERYONE && !(change.value === "reader" || change.value === "writer" || change.value === "revoked")) {
-                console.warn("Everyone can only be set to reader, writer or revoked");
+            if (
+                affectedMember === EVERYONE &&
+                !(
+                    change.value === "reader" ||
+                    change.value === "writer" ||
+                    change.value === "revoked"
+                )
+            ) {
+                console.warn(
+                    "Everyone can only be set to reader, writer or revoked"
+                );
                 continue;
             }
 
@@ -233,8 +250,14 @@ export function determineValidTransactions(
                 return sessionLog.transactions
                     .filter((tx) => {
                         const groupAtTime = groupContent.atTime(tx.madeAt);
-                        const transactorRoleAtTxTime = groupAtTime
-                            .get(transactor) || groupAtTime.get(EVERYONE);
+                        const effectiveTransactor =
+                            transactor === groupContent.id &&
+                            groupAtTime instanceof Account
+                                ? groupAtTime.getCurrentAgentID()
+                                : transactor;
+                        const transactorRoleAtTxTime =
+                            groupAtTime.get(effectiveTransactor) ||
+                            groupAtTime.get(EVERYONE);
 
                         return (
                             transactorRoleAtTxTime === "admin" ||
@@ -275,7 +298,7 @@ export function isKeyForAccountField(
 ): field is `${KeyID}_for_${AccountID | AgentID}` {
     return (
         (field.startsWith("key_") &&
-            (field.includes("_for_sealer") || field.includes("_for_co")) || field.includes("_for_everyone"))
-
+            (field.includes("_for_sealer") || field.includes("_for_co"))) ||
+        field.includes("_for_everyone")
     );
 }

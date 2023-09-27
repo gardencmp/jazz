@@ -34,9 +34,14 @@ const auth = LocalAuth({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <WithJazz auth={auth}>
-            <App />
-        </WithJazz>
+        <ThemeProvider>
+            <TitleAndLogo name={appName} />
+            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+                <WithJazz auth={auth}>
+                    <App />
+                </WithJazz>
+            </div>
+        </ThemeProvider>
     </React.StrictMode>
 );
 
@@ -50,7 +55,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 function App() {
     // logOut logs out the AuthProvider passed to `<WithJazz/>` above.
-    const { me, logOut } = useJazz();
+    const { logOut } = useJazz();
 
     const router = createHashRouter([
         {
@@ -67,11 +72,14 @@ function App() {
         },
     ]);
 
-    const migrationDone = useMigration(me.id, async (account) => {
+    const migrationDone = useMigration(async (account) => {
         if (!account.get("root")) {
-            account.set("root", account.createMap<TodoAccountRoot>({
-                projects: account.createList<ListOfProjects>().id,
-            }).id);
+            account.set(
+                "root",
+                account.createMap<TodoAccountRoot>({
+                    projects: account.createList<ListOfProjects>().id,
+                }).id
+            );
         }
     });
 
@@ -80,19 +88,16 @@ function App() {
     useAcceptInvite((projectID) => router.navigate("/project/" + projectID));
 
     return (
-        <ThemeProvider>
-            <TitleAndLogo name={appName} />
-            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                {migrationDone && <RouterProvider router={router} />}
+        <>
+            {migrationDone && <RouterProvider router={router} />}
 
-                <Button
-                    onClick={() => router.navigate("/").then(logOut)}
-                    variant="outline"
-                >
-                    Log Out
-                </Button>
-            </div>
-        </ThemeProvider>
+            <Button
+                onClick={() => router.navigate("/").then(logOut)}
+                variant="outline"
+            >
+                Log Out
+            </Button>
+        </>
     );
 }
 

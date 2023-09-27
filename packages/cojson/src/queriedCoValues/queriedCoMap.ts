@@ -1,10 +1,9 @@
 import { CoMap, MutableCoMap } from "../coValues/coMap.js";
 import { CoValueCore } from "../coValueCore.js";
 import { Group } from "../coValues/group.js";
-import { isAccountID } from "../coValues/account.js";
 import { CoID } from "../coValue.js";
 import { TransactionID } from "../ids.js";
-import { ValueOrSubQueried, QueryContext } from "../queries.js";
+import { ValueOrSubQueried, QueryContext, QueryExtension } from "../queries.js";
 import { QueriedAccount } from "./queriedAccount.js";
 
 export type QueriedCoMap<M extends CoMap> = {
@@ -38,10 +37,13 @@ export class QueriedCoMapBase<M extends CoMap> {
 
             if (value === undefined) continue;
 
-            kv[key as keyof typeof kv] = queryContext.resolveValue(
-                value
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ) as any;
+            queryContext.defineSubqueryPropertiesIn(
+                kv,
+                {
+                    [key]: { value, enumerable: true },
+                },
+                [coMap.id]
+            );
         }
 
         return Object.assign(new QueriedCoMapBase(coMap, queryContext), kv);
@@ -50,23 +52,33 @@ export class QueriedCoMapBase<M extends CoMap> {
     /** @internal */
     constructor(coMap: M, queryContext: QueryContext) {
         Object.defineProperties(this, {
-            coMap: { value: coMap, enumerable: false },
+            coMap: {
+                get() {
+                    return coMap;
+                },
+                enumerable: false,
+            },
             id: { value: coMap.id, enumerable: false },
             type: { value: "comap", enumerable: false },
             edits: {
                 value: Object.fromEntries(
                     coMap.keys().flatMap((key) => {
-                        const edits = [...coMap.editsAt(key)].map((edit) => ({
-                            by:
-                                edit.by && isAccountID(edit.by)
-                                    ? queryContext.resolveValue(edit.by)
-                                    : undefined,
-                            tx: edit.tx,
-                            at: new Date(edit.at),
-                            value:
-                                edit.value &&
-                                queryContext.resolveValue(edit.value),
-                        }));
+                        const edits = [...coMap.editsAt(key)].map((edit) =>
+                            queryContext.defineSubqueryPropertiesIn(
+                                {
+                                    tx: edit.tx,
+                                    at: new Date(edit.at),
+                                },
+                                {
+                                    by: { value: edit.by, enumerable: true },
+                                    value: {
+                                        value: edit.value,
+                                        enumerable: true,
+                                    },
+                                },
+                                [coMap.id]
+                            )
+                        );
                         const lastEdit = edits[edits.length - 1];
                         if (!lastEdit) return [];
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,6 +94,15 @@ export class QueriedCoMapBase<M extends CoMap> {
                         return [[key, editsAtKey]];
                     })
                 ),
+                enumerable: false,
+            },
+            as: {
+                value: <O>(extension: QueryExtension<M, O>) => {
+                    return queryContext.getOrCreateExtension(
+                        coMap.id,
+                        extension
+                    );
+                },
                 enumerable: false,
             },
         });
@@ -142,4 +163,6 @@ export class QueriedCoMapBase<M extends CoMap> {
     ): M {
         return this.coMap.mutate(mutator);
     }
+
+    as!: <O>(extension: QueryExtension<M, O>) => O | undefined;
 }

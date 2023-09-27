@@ -2,6 +2,7 @@ import React from "react";
 import { useMemo, useState, ReactNode } from "react";
 import { BrowserLocalAuth } from "jazz-browser-auth-local";
 import { ReactAuthHook } from "jazz-react";
+import { AccountMigration } from "cojson";
 
 export type LocalAuthComponent = (props: {
     loading: boolean;
@@ -53,7 +54,7 @@ export function LocalAuth({
                     },
                 },
                 appName,
-                appHostname
+                appHostname,
             );
         }, [appName, appHostname, logOutCounter]);
 

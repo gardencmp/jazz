@@ -278,7 +278,7 @@ export class Group<
     createMap<M extends CoMap>(
         init?: M["_shape"],
         meta?: M["meta"],
-        initPrivacy: "trusting" | "private" = "trusting"
+        initPrivacy: "trusting" | "private" = "private"
     ): M {
         let map = this.core.node
             .createCoValue({
@@ -310,7 +310,7 @@ export class Group<
     createList<L extends CoList>(
         init?: L["_item"][],
         meta?: L["meta"],
-        initPrivacy: "trusting" | "private" = "trusting"
+        initPrivacy: "trusting" | "private" = "private"
     ): L {
         let list = this.core.node
             .createCoValue({

@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createHashRouter, useParams } from "react-router-dom";
 import "./index.css";
 
-import { WithJazz, useJazz, useAcceptInvite, useSyncedQuery } from "jazz-react";
+import { WithJazz, useJazz, useAcceptInvite, useSyncedQuery, useMigration } from "jazz-react";
 import { LocalAuth } from "jazz-react-auth-local";
 
 import {
@@ -12,8 +12,8 @@ import {
     TitleAndLogo,
 } from "./basicComponents/index.ts";
 import { PrettyAuthUI } from "./components/Auth.tsx";
-import { Twit, TwitProfile } from "./1_types.ts";
-import { Queried } from "cojson";
+import { ListOfProfiles, ListOfTwits, Twit, TwitAccountRoot, TwitProfile } from "./1_types.ts";
+import { ControlledAccount, Queried } from "cojson";
 
 const appName = "Jazz Twit Example";
 
@@ -60,6 +60,21 @@ function App() {
             element: <p>Accepting invite...</p>,
         },
     ]);
+
+    useMigration<TwitProfile, TwitAccountRoot>((account, profile) => {
+        if (!account.get("root")) {
+            const peopleWhoCanSeeMyTwits = account.createGroup();
+            const peopleWhoCanSeeMyFollows = account.createGroup();
+            const root = account.createMap<TwitAccountRoot>({
+                peopleWhoCanSeeMyTwits: peopleWhoCanSeeMyTwits.id,
+                peopleWhoCanSeeMyFollows: peopleWhoCanSeeMyFollows.id,
+            });
+            account.set("root", root.id);
+
+            profile.set("twits", peopleWhoCanSeeMyTwits.createList<ListOfTwits>().id);
+            profile.set("follows", peopleWhoCanSeeMyFollows.createList<ListOfProfiles>().id);
+        }
+    });
 
     // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
     // and on success calls our callback where we navigate to the project that we were just invited to.

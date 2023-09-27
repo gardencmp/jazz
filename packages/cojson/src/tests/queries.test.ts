@@ -14,7 +14,7 @@ beforeEach(async () => {
 
 test("Queries with maps work", async () => {
     const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+        LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
 
     const group = node.createGroup();
 
@@ -103,7 +103,7 @@ test("Queries with maps work", async () => {
 
 test("Queries with lists work", () => {
     const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+        LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
 
     const group = node.createGroup();
 
@@ -159,7 +159,7 @@ test("Queries with lists work", () => {
 });
 
 test("List of nested maps works", () => {
-    const { node } = LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+    const { node } = LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
 
     const group = node.createGroup();
 
@@ -190,7 +190,7 @@ test("List of nested maps works", () => {
 });
 
 test("Can call .map on a quieried coList", async () => {
-    const { node } = LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+    const { node } = LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
 
     const group = node.createGroup();
 
@@ -221,7 +221,7 @@ test("Can call .map on a quieried coList", async () => {
 
 test("Queries with streams work", () => {
     const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+        LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
 
     const group = node.createGroup();
 
@@ -305,7 +305,7 @@ test("Queries with streams work", () => {
 });
 
 test("Streams of nested maps work", () => {
-    const { node } = LocalNode.withNewlyCreatedAccount("Hermes Puggington");
+    const { node } = LocalNode.withNewlyCreatedAccount({name:"Hermes Puggington"});
 
     const group = node.createGroup();
 

@@ -1,4 +1,11 @@
-import { CoMap, CoStream, Media } from "cojson";
+import {
+    AccountMigration,
+    CoList,
+    CoMap,
+    CoStream,
+    Media,
+    Profile,
+} from "cojson";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -25,5 +32,21 @@ export const REACTION_TYPES = [
 export type ReactionType = (typeof REACTION_TYPES)[number];
 
 export type PetReactions = CoStream<ReactionType>;
+
+export type ListOfPosts = CoList<PetPost["id"]>;
+
+export type PetAccountRoot = CoMap<{
+    posts: ListOfPosts["id"];
+}>;
+
+export const migration: AccountMigration<Profile, PetAccountRoot> = (account) => {
+    if (!account.get("root")) {
+        const root = account.createMap<PetAccountRoot>({
+            posts: account.createList<ListOfPosts>().id,
+        });
+        account.set("root", root.id);
+        console.log("Created root", root.id);
+    }
+};
 
 /** Walkthrough: Continue with ./2_App.tsx */

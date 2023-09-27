@@ -4,7 +4,10 @@ import {
     Queried,
     CoValue,
     BinaryCoStream,
-    ControlledAccount,
+    QueriedAccount,
+    Account,
+    AccountMeta,
+    AccountMigration,
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import {
@@ -13,10 +16,12 @@ import {
     createBrowserNode,
 } from "jazz-browser";
 import { readBlobFromBinaryStream } from "jazz-browser";
+import { Profile } from "cojson";
+import { CoMap } from "cojson";
 
 const JazzContext = React.createContext<
     | {
-          me: ControlledAccount;
+          me: Queried<Account>;
           localNode: LocalNode;
           logOut: () => void;
       }
@@ -55,6 +60,7 @@ export function WithJazz(props: {
     auth: ReactAuthHook;
     syncAddress?: string;
     children: React.ReactNode;
+    migration?: AccountMigration;
 }) {
     const { auth: authHook, syncAddress, children } = props;
 
@@ -73,6 +79,7 @@ export function WithJazz(props: {
                     syncAddress ||
                     new URLSearchParams(window.location.search).get("sync") ||
                     undefined,
+                migration: props.migration,
             });
 
             if (stop) {
@@ -93,12 +100,14 @@ export function WithJazz(props: {
         };
     }, [auth, syncAddress]);
 
+    const me = useSyncedQueryWithNode("me", node) as QueriedAccount | undefined;
+
     return (
         <>
-            {node && logOut ? (
+            {node && me && logOut ? (
                 <JazzContext.Provider
                     value={{
-                        me: node.account as ControlledAccount,
+                        me,
                         localNode: node,
                         logOut,
                     }}
@@ -118,14 +127,22 @@ export function WithJazz(props: {
  *
  * Also provides a `logOut` function, which invokes the log-out logic of the Auth Provider passed to `<WithJazz/>`.
  */
-export function useJazz() {
+export function useJazz<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+>() {
     const context = React.useContext(JazzContext);
 
     if (!context) {
         throw new Error("useJazz must be used within a WithJazz provider");
     }
 
-    return context;
+    return {
+        me: context.me as QueriedAccount<Account<P, R, Meta>>,
+        localNode: context.localNode,
+        logOut: context.logOut,
+    };
 }
 
 /**
@@ -135,15 +152,31 @@ export function useJazz() {
  *
  * @param id The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined).
  */
+export function useSyncedQuery<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+>(id: "me"): QueriedAccount<Account<P, R, Meta>> | undefined;
 export function useSyncedQuery<T extends CoValue>(
     id?: CoID<T>
-): Queried<T> | undefined {
-    const { localNode } = useJazz();
+): Queried<T> | undefined;
+export function useSyncedQuery(
+    id?: CoID<CoValue> | "me"
+): Queried<CoValue> | QueriedAccount | undefined {
+    return useSyncedQueryWithNode(id, useJazz().localNode);
+}
 
-    const [result, setResult] = useState<Queried<T> | undefined>();
+/** @internal */
+export function useSyncedQueryWithNode(
+    id?: CoID<CoValue> | "me",
+    localNode?: LocalNode
+): Queried<CoValue> | QueriedAccount | undefined {
+    const [result, setResult] = useState<
+        Queried<CoValue> | QueriedAccount | undefined
+    >();
 
     useEffect(() => {
-        if (!id) return;
+        if (!id || !localNode) return;
         const unsubscribe = localNode.query(id, setResult);
         return unsubscribe;
     }, [id, localNode]);
@@ -198,32 +231,6 @@ export function useSyncedValue<T extends CoValue>(id?: CoID<T>) {
 /** @deprecated Use the higher-level `useSyncedQuery` or the equivalent `useSyncedValue` instead */
 export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
     return useSyncedValue(id);
-}
-
-export function useMigration<T extends CoValue>(
-    id: CoID<T>,
-    migrate: (current: T) => Promise<void>
-) {
-    const [done, setDone] = useState(false);
-
-    const { localNode } = useJazz();
-
-    useEffect(() => {
-        if (!id) return;
-        // TODO: make sure we're really on the latest version
-        localNode
-            .load(id)
-            .then((loaded) => {
-                migrate(loaded)
-                    .then(() => {
-                        setDone(true);
-                    })
-                    .catch((e) => console.error("Failed to migrate", e));
-            })
-            .catch((e) => console.error("Failed to load for migration", e));
-    }, [id, localNode, migrate]);
-
-    return done;
 }
 
 export function useBinaryStream<C extends BinaryCoStream>(
