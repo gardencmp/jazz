@@ -3455,7 +3455,7 @@ undefined</details>
 ```typescript
 class CoStream<Item, Meta> {
 
-  accounts(): Set<AccountID | AgentID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -3921,7 +3921,7 @@ undefined</details>
 ```typescript
 class MutableCoStream<Item, Meta> {
 
-  accounts(): Set<AccountID | AgentID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -4516,7 +4516,7 @@ undefined</details>
 ```typescript
 class BinaryCoStream<Meta> {
 
-  accounts(): Set<AccountID | AgentID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -5061,7 +5061,7 @@ undefined</details>
 ```typescript
 class MutableBinaryCoStream<Meta> {
 
-  accounts(): Set<AccountID | AgentID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -6782,8 +6782,7 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  perAccount: {
-    [account: AccountID]: QueriedCoStreamItems<S["_item"]> }
+  perAccount: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
 
 }
 ```
@@ -6799,8 +6798,7 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  perSession: {
-    [session: SessionID]: QueriedCoStreamItems<S["_item"]> }
+  perSession: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
 
 }
 ```
@@ -6816,7 +6814,7 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  me: QueriedCoStreamItems<S["_item"]>
+  me: QueriedCoStreamEntry<S["_item"]>
 
 }
 ```
