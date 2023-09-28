@@ -132,6 +132,21 @@ export async function createImage(
     return imageDefinition;
 }
 
+export const BrowserImage: QueryExtension<
+    Media.ImageDefinition,
+    LoadingImageInfo
+> = {
+    id: "BrowserImage",
+
+    query(
+        imageDef: Media.ImageDefinition,
+        queryContext: QueryContext,
+        callback: (update: LoadingImageInfo) => void
+    ): () => void {
+        return loadImage(imageDef, queryContext.node, callback);
+    },
+};
+
 export type LoadingImageInfo = {
     originalSize?: [number, number];
     placeholderDataURL?: string;
@@ -299,7 +314,8 @@ export function loadImage(
                                                 originalSize,
                                                 placeholderDataURL,
                                                 highestResSrc: blobURL,
-                                                highestResSrcOrPlaceholder: blobURL
+                                                highestResSrcOrPlaceholder:
+                                                    blobURL,
                                             });
 
                                             unsubFromStream();
@@ -348,18 +364,3 @@ export function loadImage(
 
     return cleanUp;
 }
-
-export const BrowserImage: QueryExtension<
-    Media.ImageDefinition,
-    LoadingImageInfo
-> = {
-    id: "BrowserImage",
-
-    query(
-        imageDef: Media.ImageDefinition,
-        queryContext: QueryContext,
-        callback: (update: LoadingImageInfo) => void
-    ): () => void {
-        return loadImage(imageDef, queryContext.node, callback);
-    },
-};

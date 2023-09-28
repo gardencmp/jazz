@@ -13,10 +13,9 @@
 
 ### Feature-specific Extensions
 
-#### `jazz-react-media-images` → [API](#jazz-react-media-images)
+#### `jazz-browser-media-images` → [API](#jazz-browser-media-images)
 
-- Convert images from browser `File`s / `Blob`s into CoJSON `ImageDefinition`s with multi-resolution `BinaryCoStreams` &mdash; and progressively stream them back as `BlobURL`s you can use in `img` or `srcset`. Wraps `jazz-browser-media-images` ([API](#jazz-browser-media-images)).
-
+- Convert images from browser `File`s / `Blob`s into CoJSON `ImageDefinition`s with multi-resolution `BinaryCoStreams` &mdash; and progressively stream them back as `BlobURL`s you can use in `img` or `srcset`
 ## Supporting packages
 
 ### Binaries

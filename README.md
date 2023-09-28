@@ -106,7 +106,7 @@ For now, docs are hosted in a single well-structured markdown file: [`./DOCS.md`
 - [Package Overview](./DOCS.md/#overview)
 - [`jazz-react` API](./DOCS.md/#jazz-react)
 - [`cojson` API](./DOCS.md/#cojson)
-- [`jazz-react-media-images` API](./DOCS.md/#jazz-react-media-images)
+- [`jazz-browser-media-images` API](./DOCS.md/#jazz-browser-media-images)
 
 
 In the future we'll build a dedicated docs page on the Jazz homepage.
