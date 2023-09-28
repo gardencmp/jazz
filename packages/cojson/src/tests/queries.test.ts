@@ -13,8 +13,9 @@ beforeEach(async () => {
 });
 
 test("Queries with maps work", async () => {
-    const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
+    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = node.createGroup();
 
@@ -102,8 +103,9 @@ test("Queries with maps work", async () => {
 });
 
 test("Queries with lists work", () => {
-    const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
+    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = node.createGroup();
 
@@ -159,7 +161,9 @@ test("Queries with lists work", () => {
 });
 
 test("List of nested maps works", () => {
-    const { node } = LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
+    const { node } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = node.createGroup();
 
@@ -190,7 +194,9 @@ test("List of nested maps works", () => {
 });
 
 test("Can call .map on a quieried coList", async () => {
-    const { node } = LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
+    const { node } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = node.createGroup();
 
@@ -220,8 +226,9 @@ test("Can call .map on a quieried coList", async () => {
 });
 
 test("Queries with streams work", () => {
-    const { node, accountID } =
-        LocalNode.withNewlyCreatedAccount({name: "Hermes Puggington"});
+    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = node.createGroup();
 
@@ -239,57 +246,109 @@ test("Queries with streams work", () => {
                     expect(queriedStream.group.id).toBe(group.id);
                     expect(queriedStream.meta).toBe(null);
 
-                    expect(queriedStream.perSession[node.currentSessionID].last).toEqual(
-                        "world"
-                    );
-                    expect(queriedStream.perSession[node.currentSessionID].all[0].value).toEqual("hello");
-                    expect(queriedStream.perSession[node.currentSessionID].all[0].at).toEqual(new Date(
-                        stream.items[
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
                             node.currentSessionID
-                        ][0].madeAt
-                    ));
-                    expect(queriedStream.perSession[node.currentSessionID].all[1].value).toEqual("world");
-                    expect(queriedStream.perSession[node.currentSessionID].all[1].at).toEqual(new Date(
-                        stream.items[
+                        ].last
+                    ).toEqual("world");
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
                             node.currentSessionID
-                        ][1].madeAt
-                    ));
-                    expect(queriedStream.perSession[node.currentSessionID].by?.id).toEqual(accountID);
-                    expect(queriedStream.perSession[node.currentSessionID].by?.profile?.id).toEqual(
-                        node.expectProfileLoaded(accountID).id
+                        ].all[0].value
+                    ).toEqual("hello");
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].all[0].at
+                    ).toEqual(
+                        new Date(stream.items[node.currentSessionID][0].madeAt)
                     );
-                    expect(queriedStream.perSession[node.currentSessionID].by?.profile?.name).toEqual(
-                        "Hermes Puggington"
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].all[1].value
+                    ).toEqual("world");
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].all[1].at
+                    ).toEqual(
+                        new Date(stream.items[node.currentSessionID][1].madeAt)
                     );
-                    expect(queriedStream.perSession[node.currentSessionID].by?.isMe).toBe(true);
-                    expect(queriedStream.perSession[node.currentSessionID].at).toBeInstanceOf(Date);
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].by?.id
+                    ).toEqual(accountID);
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].by?.profile?.id
+                    ).toEqual(node.expectProfileLoaded(accountID).id);
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].by?.profile?.name
+                    ).toEqual("Hermes Puggington");
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].by?.isMe
+                    ).toBe(true);
+                    expect(
+                        Object.fromEntries(queriedStream.perSession)[
+                            node.currentSessionID
+                        ].at
+                    ).toBeInstanceOf(Date);
 
-                    expect(queriedStream.perAccount[accountID].last).toEqual(
-                        "world"
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .last
+                    ).toEqual("world");
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .all[0].value
+                    ).toEqual("hello");
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .all[0].at
+                    ).toEqual(
+                        new Date(stream.items[node.currentSessionID][0].madeAt)
                     );
-                    expect(queriedStream.perAccount[accountID].all[0].value).toEqual("hello");
-                    expect(queriedStream.perAccount[accountID].all[0].at).toEqual(new Date(
-                        stream.items[
-                            node.currentSessionID
-                        ][0].madeAt
-                    ));
-                    expect(queriedStream.perAccount[accountID].all[1].value).toEqual("world");
-                    expect(queriedStream.perAccount[accountID].all[1].at).toEqual(new Date(
-                        stream.items[
-                            node.currentSessionID
-                        ][1].madeAt
-                    ));
-                    expect(queriedStream.perAccount[accountID].by?.id).toEqual(accountID);
-                    expect(queriedStream.perAccount[accountID].by?.profile?.id).toEqual(
-                        node.expectProfileLoaded(accountID).id
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .all[1].value
+                    ).toEqual("world");
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .all[1].at
+                    ).toEqual(
+                        new Date(stream.items[node.currentSessionID][1].madeAt)
                     );
-                    expect(queriedStream.perAccount[accountID].by?.profile?.name).toEqual(
-                        "Hermes Puggington"
-                    );
-                    expect(queriedStream.perAccount[accountID].by?.isMe).toBe(true);
-                    expect(queriedStream.perAccount[accountID].at).toBeInstanceOf(Date);
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .by?.id
+                    ).toEqual(accountID);
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .by?.profile?.id
+                    ).toEqual(node.expectProfileLoaded(accountID).id);
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .by?.profile?.name
+                    ).toEqual("Hermes Puggington");
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .by?.isMe
+                    ).toBe(true);
+                    expect(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                            .at
+                    ).toBeInstanceOf(Date);
 
-                    expect(queriedStream.me).toEqual(queriedStream.perAccount[accountID]);
+                    expect(queriedStream.me).toEqual(
+                        Object.fromEntries(queriedStream.perAccount)[accountID]
+                    );
                     // console.log("final update", queriedStream);
                     resolve();
                     unsubQuery();
@@ -305,7 +364,9 @@ test("Queries with streams work", () => {
 });
 
 test("Streams of nested maps work", () => {
-    const { node } = LocalNode.withNewlyCreatedAccount({name:"Hermes Puggington"});
+    const { node } = LocalNode.withNewlyCreatedAccount({
+        name: "Hermes Puggington",
+    });
 
     const group = node.createGroup();
 

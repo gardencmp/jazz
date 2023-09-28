@@ -8,7 +8,7 @@ import { SessionID, TransactionID } from "../ids.js";
 import { ValueOrSubQueried, QueryContext } from "../queries.js";
 import { QueriedAccount } from "./queriedAccount.js";
 
-export type QueriedCoStreamItems<Item extends JsonValue | CoValue> = {
+export type QueriedCoStreamEntry<Item extends JsonValue | CoValue> = {
     last?: ValueOrSubQueried<Item>;
     by?: QueriedAccount;
     tx?: TransactionID;
@@ -35,52 +35,9 @@ export class QueriedCoStream<S extends CoStream> {
         });
         this.id = coStream.id;
 
-        this.perSession = Object.fromEntries(
-            coStream.sessions().map((sessionID) => {
-                const items = [...coStream.itemsIn(sessionID)].map((item) =>
-                    queryContext.defineSubqueryPropertiesIn(
-                        {
-                            tx: item.tx,
-                            at: new Date(item.at),
-                        },
-                        {
-                            by: {
-                                value: isAccountID(item.by)
-                                    ? item.by
-                                    : (undefined as never),
-                                enumerable: true,
-                            },
-                            value: {
-                                value: item.value as S["_item"],
-                                enumerable: true,
-                            },
-                        },
-                        [coStream.id]
-                    )
-                );
-
-                const lastItem = items[items.length - 1];
-
-                return [
-                    sessionID,
-                    {
-                        get last() {
-                            return lastItem?.value;
-                        },
-                        get by() {
-                            return lastItem?.by;
-                        },
-                        tx: lastItem?.tx,
-                        at: lastItem?.at,
-                        all: items,
-                    } satisfies QueriedCoStreamItems<S["_item"]>,
-                ];
-            })
-        );
-
-        this.perAccount = Object.fromEntries(
-            [...coStream.accounts()].map((accountID) => {
-                const items = [...coStream.itemsBy(accountID)].map((item) => queryContext.defineSubqueryPropertiesIn(
+        this.perSession = coStream.sessions().map((sessionID) => {
+            const items = [...coStream.itemsIn(sessionID)].map((item) =>
+                queryContext.defineSubqueryPropertiesIn(
                     {
                         tx: item.tx,
                         at: new Date(item.at),
@@ -98,30 +55,73 @@ export class QueriedCoStream<S extends CoStream> {
                         },
                     },
                     [coStream.id]
-                ));
+                )
+            );
 
-                const lastItem = items[items.length - 1];
+            const lastItem = items[items.length - 1];
 
-                return [
-                    accountID,
+            return [
+                sessionID,
+                {
+                    get last() {
+                        return lastItem?.value;
+                    },
+                    get by() {
+                        return lastItem?.by;
+                    },
+                    tx: lastItem?.tx,
+                    at: lastItem?.at,
+                    all: items,
+                } satisfies QueriedCoStreamEntry<S["_item"]>,
+            ];
+        });
+
+        this.perAccount = [...coStream.accounts()].map((accountID) => {
+            const items = [...coStream.itemsBy(accountID)].map((item) =>
+                queryContext.defineSubqueryPropertiesIn(
                     {
-                        get last() {
-                            return lastItem?.value;
+                        tx: item.tx,
+                        at: new Date(item.at),
+                    },
+                    {
+                        by: {
+                            value: isAccountID(item.by)
+                                ? item.by
+                                : (undefined as never),
+                            enumerable: true,
                         },
-                        get by() {
-                            return lastItem?.by;
+                        value: {
+                            value: item.value as S["_item"],
+                            enumerable: true,
                         },
-                        tx: lastItem?.tx,
-                        at: lastItem?.at,
-                        all: items,
-                    } satisfies QueriedCoStreamItems<S["_item"]>,
-                ];
-            })
-        );
+                    },
+                    [coStream.id]
+                )
+            );
 
-        this.me = isAccountID(queryContext.node.account.id)
-            ? this.perAccount[queryContext.node.account.id]
-            : undefined;
+            const lastItem = items[items.length - 1];
+
+            const entry = {
+                get last() {
+                    return lastItem?.value;
+                },
+                get by() {
+                    return lastItem?.by;
+                },
+                tx: lastItem?.tx,
+                at: lastItem?.at,
+                all: items,
+            } satisfies QueriedCoStreamEntry<S["_item"]>;
+
+            if (accountID === queryContext.node.account.id) {
+                this.me = entry;
+            }
+
+            return [
+                accountID,
+                entry
+            ];
+        });
     }
 
     get meta(): S["meta"] {
@@ -136,13 +136,9 @@ export class QueriedCoStream<S extends CoStream> {
         return this.coStream.core;
     }
 
-    me?: QueriedCoStreamItems<S["_item"]>;
-    perAccount: {
-        [account: AccountID]: QueriedCoStreamItems<S["_item"]>;
-    };
-    perSession: {
-        [session: SessionID]: QueriedCoStreamItems<S["_item"]>;
-    };
+    me?: QueriedCoStreamEntry<S["_item"]>;
+    perAccount: [account: AccountID, items: QueriedCoStreamEntry<S["_item"]>][];
+    perSession: [session: SessionID, items: QueriedCoStreamEntry<S["_item"]>][];
 
     push(item: S["_item"], privacy?: "private" | "trusting"): S {
         return this.coStream.push(item, privacy);

@@ -4,7 +4,7 @@ import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { Group } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
-import { AccountID } from "./account.js";
+import { AccountID, isAccountID } from "./account.js";
 import { parseJSON } from "../jsonStringify.js";
 
 export type BinaryStreamInfo = {
@@ -111,8 +111,8 @@ export class CoStreamView<
         return Object.keys(this.items) as SessionID[];
     }
 
-    accounts(): Set<AccountID | AgentID> {
-        return new Set(this.sessions().map(accountOrAgentIDfromSessionID));
+    accounts(): Set<AccountID> {
+        return new Set(this.sessions().map(accountOrAgentIDfromSessionID).filter(isAccountID));
     }
 
     nthItemIn(
