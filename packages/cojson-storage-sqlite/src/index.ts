@@ -5,6 +5,7 @@ import {
     CojsonInternalTypes,
     SessionID,
     MAX_RECOMMENDED_TX_SIZE,
+    AccountID
 } from "cojson";
 import {
     ReadableStream,
@@ -402,7 +403,24 @@ export class SQLiteStorage {
                           })
                       )
                 : parsedHeader?.ruleset.type === "ownedByGroup"
-                ? [parsedHeader?.ruleset.group]
+                ? [
+                      parsedHeader?.ruleset.group,
+                      ...new Set(
+                          newContentPieces.flatMap((piece) =>
+                              Object.keys(piece)
+                                  .map((sessionID) =>
+                                  cojsonInternals.accountOrAgentIDfromSessionID(
+                                          sessionID as SessionID
+                                      )
+                                  )
+                                  .filter(
+                                      (accountID): accountID is AccountID =>
+                                      cojsonInternals.isAccountID(accountID) &&
+                                          accountID !== theirKnown.id
+                                  )
+                          )
+                      ),
+                  ]
                 : [];
 
         for (const dependedOnCoValue of dependedOnCoValues) {

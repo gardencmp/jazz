@@ -1,6 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createHashRouter } from "react-router-dom";
+import {
+    Link,
+    RouterProvider,
+    createHashRouter,
+} from "react-router-dom";
 import "./index.css";
 
 import { WithJazz, useJazz, useAcceptInvite } from "jazz-react";
@@ -14,6 +18,8 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
+import { PetAccountRoot, migration } from "./1_types.ts";
+import { AccountMigration, Profile } from "cojson";
 
 /** Walkthrough: The top-level provider `<WithJazz/>`
  *
@@ -31,9 +37,14 @@ const auth = LocalAuth({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <WithJazz auth={auth}>
-            <App />
-        </WithJazz>
+        <ThemeProvider>
+            <TitleAndLogo name={appName} />
+            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+                <WithJazz auth={auth} migration={migration as AccountMigration}>
+                    <App />
+                </WithJazz>
+            </div>
+        </ThemeProvider>
     </React.StrictMode>
 );
 
@@ -50,6 +61,10 @@ export default function App() {
     const router = createHashRouter([
         {
             path: "/",
+            element: <PostOverview />,
+        },
+        {
+            path: "/new",
             element: <NewPetPostForm />,
         },
         {
@@ -65,22 +80,40 @@ export default function App() {
     useAcceptInvite((petPostID) => router.navigate("/pet/" + petPostID));
 
     return (
-        <ThemeProvider>
-            <TitleAndLogo name={appName} />
-            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <RouterProvider router={router} />
+        <>
+            <RouterProvider router={router} />
 
-                <Button
-                    onClick={() => router.navigate("/").then(logOut)}
-                    variant="outline"
-                >
-                    Log Out
-                </Button>
-            </div>
-        </ThemeProvider>
+            <Button
+                onClick={() => router.navigate("/").then(logOut)}
+                variant="outline"
+            >
+                Log Out
+            </Button>
+        </>
     );
 }
 
-/** Walkthrough: continue with ./3_CreatePetPostForm.tsx */
+export function PostOverview() {
+    const { me } = useJazz<Profile, PetAccountRoot>();
 
-/** Walkthrough: Continue with ./1_types.ts */
+    const myPosts = me.root?.posts;
+
+    return (
+        <>
+            root: {JSON.stringify(me.root?.coMap.asObject())}
+            posts: {JSON.stringify(me.root?.posts?.coList?.asArray())}
+            <h1>My posts</h1>
+            {myPosts?.length
+                ? myPosts.map(
+                      (post) =>
+                          post && (
+                              <Link key={post.id} to={"/pet/" + post.id}>
+                                  {post.name}
+                              </Link>
+                          )
+                  )
+                : undefined}
+            <Link to="/new">New post</Link>
+        </>
+    );
+}

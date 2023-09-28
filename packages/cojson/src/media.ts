@@ -4,5 +4,5 @@ import { BinaryCoStream } from './coValues/coStream.js'
 export type ImageDefinition = CoMap<{
     originalSize: [number, number];
     placeholderDataURL?: string;
-    [res: `${number}x${number}`]: BinaryCoStream;
+    [res: `${number}x${number}`]: BinaryCoStream["id"];
 }>;

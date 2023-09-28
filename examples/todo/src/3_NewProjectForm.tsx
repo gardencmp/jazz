@@ -2,11 +2,10 @@ import { useCallback } from "react";
 
 import { useJazz } from "jazz-react";
 
-import { Task, TodoProject } from "./1_types";
+import { ListOfTasks, TodoProject } from "./1_types";
 
 import { SubmittableInput } from "./basicComponents";
 
-import { CoList } from "cojson";
 import { useNavigate } from "react-router";
 
 export function NewProjectForm() {
@@ -28,7 +27,7 @@ export function NewProjectForm() {
             // Then we create an empty todo project within that group
             const project = projectGroup.createMap<TodoProject>({
                 title,
-                tasks: projectGroup.createList<CoList<Task>>(),
+                tasks: projectGroup.createList<ListOfTasks>().id,
             });
 
             navigate("/project/" + project.id);

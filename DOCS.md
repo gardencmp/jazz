@@ -51,6 +51,7 @@ export function WithJazz(props: {
   auth: ReactAuthHook,
   children: ReactNode,
   syncAddress?: string,
+  migration?: AccountMigration,
 }): Element
 ```
 Top-level component that provides Jazz context to your whole app, so you can use Jazz hooks in your components.
@@ -63,6 +64,7 @@ Top-level component that provides Jazz context to your whole app, so you can use
 | ----: | ---- |
 | `props.auth` | An auth provider (renders login/sign-up UI if not logged in) - see available providers in the [Documentation](../../../DOCS.md#auth-providers) |
 | `props.syncAddress?` | The address of the upstream syncing peer. Defaults to `wss://sync.jazz.tool` (Jazz Global Mesh). If not set explicitly, it can also be temporarily overwritten by setting the `sync` query parameter in the URL, like `https://your-app.example.net?sync=ws://localhost:4200`. |
+| `props.migration?` | TODO: document |
 
 ##### Example:
 
@@ -92,7 +94,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function useJazz(): {
+export function useJazz<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(): {
+  me: QueriedAccount<Account<P, R, Meta>>,
   localNode: LocalNode,
   logOut: () => void,
 }
@@ -110,12 +114,13 @@ undefined
 
 ----
 
-## `useSyncedQuery(id?)`
+## `useSyncedQuery(id)`
 
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function useSyncedQuery<T extends CoValue>(id: CoID<T>): Queried<T> | undefined
+export function useSyncedQuery<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(id: "me"): QueriedAccount<Account<P, R, Meta>> | undefined
 ```
 Hook that subscribes to all updates of a given `CoValue` (identified by its `CoID`) and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
 
@@ -127,7 +132,31 @@ See `Queried<T>` in `cojson` to see which fields and methods are available on th
 
 | name | description |
 | ----: | ---- |
-| `id?` | The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined). |
+| `id` | The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined). |
+
+
+
+
+
+----
+
+## `useSyncedQueryWithNode(id?, localNode?)`
+
+<sup>(function in `jazz-react`)</sup>
+
+```typescript
+export function useSyncedQueryWithNode(id: CoID<CoValue> | "me", localNode: LocalNode): Queried<CoValue> | QueriedAccount | undefined
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id?` | TODO: document  |
+| `localNode?` | TODO: document  |
 
 
 
@@ -165,7 +194,9 @@ References to nested `CoValue`s are not automatically resolved, they are returne
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function useBinaryStream<C extends AnyBinaryCoStream>(streamID: CoID<C>, allowUnfinished: boolean): {
+export function useBinaryStream<C extends BinaryCoStream<{
+  type: "binary",
+}>>(streamID: CoID<C>, allowUnfinished: boolean): {
   blob: Blob,
   blobURL: string,
 } | undefined
@@ -211,8 +242,8 @@ TODO: document
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function createInviteLink<T extends CoValue>(value: T | {
-  id: CoID<T>,
+export function createInviteLink(value: CoValue | {
+  id: CoID<CoValue>,
   core: CoValueCore,
 }, role: "reader" | "writer" | "admin", {
   baseURL?: string,
@@ -327,15 +358,16 @@ TODO: document
 
 
 <details>
-<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.query(id, callback)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class LocalNode {
 
-  acceptInvite<T extends CoValue>(
-    groupOrOwnedValueID: CoID<T>,
-    inviteSecret: InviteSecret
-  ): Promise<void> {...}
+  query<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
+    id: "me",
+    callback: (update: undefined | QueriedAccount<Account<P, R, Meta>>) => void
+  ): () => void {...}
 
 }
 ```
@@ -345,42 +377,57 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `groupOrOwnedValueID` | TODO: document  |
-| `inviteSecret` | TODO: document  |
+| `id` | TODO: document  |
+
 
 </details>
 
 
 
 <details>
-<summary><b><code>.createGroup()</code></b>  </summary>
+<summary><b><code>.query(id, callback)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class LocalNode {
 
-  createGroup(): Group {...}
+  query(
+    id: CoID<CoValue> | "me",
+    callback: (update: undefined | QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>> | QueriedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>> | QueriedCoMap<CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>> | QueriedCoList<CoList<JsonValue, null | JsonObject>> | QueriedCoStream<CoStream<JsonValue, null | JsonObject>>) => void
+  ): () => void {...}
 
 }
 ```
-Creates a new group (with the current account as the group's first admin).
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
 
 
-
-undefined</details>
+</details>
 
 <br/>
 
 ### `LocalNode`:  Node Creation
 
 <details>
-<summary><b><code>LocalNode.withNewlyCreatedAccount(name, initialAgentSecret?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>LocalNode.withNewlyCreatedAccount({name, migration?, initialAgentSecret?})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class LocalNode {
 
-  withNewlyCreatedAccount(
-    name: string,
-    initialAgentSecret?: AgentSecret = ...
+  withNewlyCreatedAccount<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
+    __namedParameters: {
+      name: string,
+      migration?: AccountMigration<P, R, Meta>,
+      initialAgentSecret?: AgentSecret,
+    }
   ): {
     node: LocalNode,
     accountID: AccountID,
@@ -396,24 +443,29 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `name` | TODO: document  |
-| `initialAgentSecret?` | TODO: document  |
+| `__namedParameters.name` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
+| `__namedParameters.initialAgentSecret?` | TODO: document |
 
 </details>
 
 
 
 <details>
-<summary><b><code>LocalNode.withLoadedAccount(accountID, accountSecret, sessionID, peersToLoadFrom)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>LocalNode.withLoadedAccount({accountID, accountSecret, sessionID, peersToLoadFrom, migration?})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class LocalNode {
 
-  withLoadedAccount(
-    accountID: AccountID,
-    accountSecret: AgentSecret,
-    sessionID: SessionID,
-    peersToLoadFrom: Peer[]
+  withLoadedAccount<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
+    __namedParameters: {
+      accountID: AccountID,
+      accountSecret: AgentSecret,
+      sessionID: SessionID,
+      peersToLoadFrom: Peer[],
+      migration?: AccountMigration<P, R, Meta>,
+    }
   ): Promise<LocalNode> {...}
 
 }
@@ -424,10 +476,11 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `accountID` | TODO: document  |
-| `accountSecret` | TODO: document  |
-| `sessionID` | TODO: document  |
-| `peersToLoadFrom` | TODO: document  |
+| `__namedParameters.accountID` | TODO: document |
+| `__namedParameters.accountSecret` | TODO: document |
+| `__namedParameters.sessionID` | TODO: document |
+| `__namedParameters.peersToLoadFrom` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
 
 </details>
 
@@ -571,11 +624,58 @@ TODO: document
 
 
 
+<details>
+<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  </summary>
+
+```typescript
+class LocalNode {
+
+  acceptInvite<T extends CoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: InviteSecret
+  ): Promise<void> {...}
+
+}
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `groupOrOwnedValueID` | TODO: document  |
+| `inviteSecret` | TODO: document  |
+
+</details>
 
 
 
 
 
+
+
+
+
+
+
+<details>
+<summary><b><code>.createGroup()</code></b>  </summary>
+
+```typescript
+class LocalNode {
+
+  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+
+
+
+
+undefined</details>
 
 
 
@@ -588,7 +688,7 @@ TODO: document
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class Group {...}
+export class Group<P extends Profile, R extends CoMap, Meta extends JsonObject | null> extends CoMap<GroupShape<P, R>, Meta> {...}
 ```
 A `Group` is a scope for permissions of its members (`"reader" | "writer" | "admin"`), applying to objects owned by that group.
 
@@ -615,13 +715,101 @@ Or, you can create a new group with a `LocalNode`:
  const localNode.createGroup();
  ```
 
+### `Group`:  Reading
+
+<details>
+<summary><b><code>.keys()</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  keys<K extends Object>(): K[] {...}
+
+}
+```
+Get all keys currently in the map.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.get(key)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  get<K extends Object>(
+    key: K
+  ): undefined | GroupShape<P, R>[K] {...}
+
+}
+```
+Returns the current value for the given key.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.asObject()</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  asObject(): {
+    everyone: undefined | Role,
+    readKey: undefined | `key_z${string}`,
+    profile: undefined | null | CoID<P>,
+    root: undefined | null | CoID<R>,
+  } {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  toJSON(): {
+    everyone: undefined | Role,
+    readKey: undefined | `key_z${string}`,
+    profile: undefined | null | CoID<P>,
+    root: undefined | null | CoID<R>,
+  } {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
 ### `Group`:  Role reading
 
 <details>
 <summary><b><code>.roleOf(accountID)</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
   roleOf(
     accountID: AccountID
@@ -647,7 +835,7 @@ Returns the current role of a given account.
 <summary><b><code>.myRole()</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
   myRole(): undefined | Role {...}
 
@@ -661,18 +849,144 @@ undefined</details>
 
 <br/>
 
+### `Group`:  Editing
+
+<details>
+<summary><b><code>.set(key, value, privacy?)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  set<K extends Object>(
+    key: K,
+    value: GroupShape<P, R>[K],
+    privacy?: "private" | "trusting"
+  ): Group<P, R, Meta> {...}
+
+}
+```
+Returns a new version of this CoMap with a new value for the given key.
+
+If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `value` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(kv, privacy?)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  set(
+    kv: {
+      everyone: undefined | Role,
+      readKey: undefined | `key_z${string}`,
+      profile: undefined | null | CoID<P>,
+      root: undefined | null | CoID<R>,
+    },
+    privacy?: "private" | "trusting"
+  ): Group<P, R, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `kv.everyone` | TODO: document |
+| `kv.readKey` | TODO: document |
+| `kv.profile` | TODO: document |
+| `kv.root` | TODO: document |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(key, privacy?)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  delete(
+    key: Object,
+    privacy?: "private" | "trusting" = "private"
+  ): Group<P, R, Meta> {...}
+
+}
+```
+Returns a new version of this CoMap with the given key deleted (setting it to undefined).
+
+If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  mutate(
+    mutator: (mutable: MutableCoMap<GroupShape<P, R>, Meta>) => void
+  ): Group<P, R, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
 ### `Group`:  Role changing
 
 <details>
 <summary><b><code>.addMember(accountID, role)</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
   addMember(
-    accountID: AccountID,
+    accountID: AccountID | "everyone",
     role: Role
-  ): void {...}
+  ): Group<P, R, Meta> {...}
 
 }
 ```
@@ -696,11 +1010,11 @@ admin to be able to do so. Throws otherwise.
 <summary><b><code>.removeMember(accountID)</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
   removeMember(
     accountID: AccountID
-  ): void {...}
+  ): Group<P, R, Meta> {...}
 
 }
 ```
@@ -724,7 +1038,7 @@ Strips the specified member of all roles (preventing future writes in
 <summary><b><code>.createInvite(role)</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
   createInvite(
     role: "reader" | "writer" | "admin"
@@ -748,20 +1062,45 @@ allowing them to grant themselves the specified role with the InviteSecret
 
 <br/>
 
+### `Group`:  Subscription
+
+<details>
+<summary><b><code>.subscribe(listener)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  subscribe(
+    listener: (coMap: Group<P, R, Meta>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
 ### `Group`:  Value creation
 
 <details>
 <summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
-  createMap<M extends AnyCoMap>(
-    init?: {
-      [K in string | number | symbol]: M["_shape"][K] extends AnyCoValue ? any[any] | CoID<any[any]> : M["_shape"][K]
-    },
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: M["_shape"],
     meta?: M["meta"],
-    initPrivacy?: "private" | "trusting" = "trusting"
+    initPrivacy?: "private" | "trusting" = "private"
   ): M {...}
 
 }
@@ -787,12 +1126,12 @@ Creates a new `CoMap` within this group, with the specified specialized
 <summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  </summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
-  createList<L extends AnyCoList>(
-    init?: L["_item"] extends CoValue ? any[any] | CoID<any[any]> : L["_item"][],
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
     meta?: L["meta"],
-    initPrivacy?: "private" | "trusting" = "trusting"
+    initPrivacy?: "private" | "trusting" = "private"
   ): L {...}
 
 }
@@ -818,9 +1157,9 @@ Creates a new `CoList` within this group, with the specified specialized
 <summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
-  createStream<C extends CoStream<JsonValue | CoValue, null | JsonObject>>(
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
     meta?: C["meta"]
   ): C {...}
 
@@ -842,9 +1181,11 @@ TODO: document
 <summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
-  createBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
     meta?: C["meta"] = ...
   ): C {...}
 
@@ -862,15 +1203,132 @@ TODO: document
 
 <br/>
 
-### `Group`:  Underlying CoMap
+### `Group`:  Time travel
 
 <details>
-<summary><b><code>.underlyingMap</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.atTime(time)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
-  underlyingMap: CoMap<GroupContent, null | JsonObject>
+  atTime(
+    time: number
+  ): Group<P, R, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `time` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Group`:  Edit history
+
+<details>
+<summary><b><code>.nthEditAt(key, n)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  nthEditAt<K extends Object>(
+    key: K,
+    n: number
+  ): undefined | {
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: GroupShape<P, R>[K],
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `n` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastEditAt(key)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  lastEditAt<K extends Object>(
+    key: K
+  ): undefined | {
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: GroupShape<P, R>[K],
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.editsAt(key)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  editsAt<K extends Object>(
+    key: K
+  ): Generator<{
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: GroupShape<P, R>[K],
+  }, void, unknown> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Group`:  Meta
+
+<details>
+<summary><b><code>.id</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  id: CoID<Group<P, R, Meta>>
 
 }
 ```
@@ -881,16 +1339,85 @@ TODO: document
 
 
 <details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.type</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-class Group {
+class Group<P, R, Meta> {
 
-  get id(): CoID<CoMap<GroupContent, null | JsonObject>> {...}
+  type: "comap"
 
 }
 ```
 TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  core: CoValueCore
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>._shape</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  _shape: GroupShape<P, R>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  get meta(): Meta {...}
+
+}
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.group</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
 
 </details>
 
@@ -908,6 +1435,34 @@ TODO: document
 
 
 
+<details>
+<summary><b><code>.edit(mutator)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Group<P, R, Meta> {
+
+  edit(
+    mutator: (mutable: MutableCoMap<GroupShape<P, R>, Meta>) => void
+  ): Group<P, R, Meta> {...}
+
+}
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+
+
 
 
 
@@ -920,7 +1475,7 @@ TODO: document
 
 ```typescript
 export class CoMap<Shape extends {
-  [key: string]: JsonValue | CoValue | undefined }, Meta extends JsonObject | null> extends CoMapView<Shape, Meta> implements CoValue {...}
+  [key: string]: JsonValue | undefined }, Meta extends JsonObject | null> extends CoMapView<Shape, Meta> implements CoValue {...}
 ```
 A collaborative map with precise shape `Shape` and optional static metadata `Meta`
 
@@ -934,7 +1489,7 @@ A collaborative map with precise shape `Shape` and optional static metadata `Met
 ```typescript
 class CoMap<Shape, Meta> {
 
-  keys(): keyof Shape & string[] {...}
+  keys<K extends string>(): K[] {...}
 
 }
 ```
@@ -954,7 +1509,7 @@ class CoMap<Shape, Meta> {
 
   get<K extends string>(
     key: K
-  ): undefined | Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue> {...}
+  ): undefined | Shape[K] {...}
 
 }
 ```
@@ -979,7 +1534,7 @@ Returns the current value for the given key.
 class CoMap<Shape, Meta> {
 
   asObject(): {
-    [K in string]: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>
+    [K in string]: Shape[K]
   } {...}
 
 }
@@ -997,7 +1552,7 @@ undefined</details>
 class CoMap<Shape, Meta> {
 
   toJSON(): {
-    [K in string]: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>
+    [K in string]: Shape[K]
   } {...}
 
 }
@@ -1018,7 +1573,7 @@ class CoMap<Shape, Meta> {
 
   set<K extends string>(
     key: K,
-    value: Shape[K] extends CoValue ? any[any] | CoID<any[any]> : Shape[K],
+    value: Shape[K],
     privacy?: "private" | "trusting"
   ): CoMap<Shape, Meta> {...}
 
@@ -1052,7 +1607,7 @@ class CoMap<Shape, Meta> {
 
   set(
     kv: {
-      [K in string]: Shape[K] extends CoValue ? any[any] | CoID<any[any]> : Shape[K]
+      [K in string]: Shape[K]
     },
     privacy?: "private" | "trusting"
   ): CoMap<Shape, Meta> {...}
@@ -1192,10 +1747,10 @@ class CoMap<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value?: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>,
+    value?: Shape[K],
   } {...}
 
 }
@@ -1222,10 +1777,10 @@ class CoMap<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value?: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>,
+    value?: Shape[K],
   } {...}
 
 }
@@ -1251,10 +1806,10 @@ class CoMap<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value?: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>,
+    value?: Shape[K],
   }, void, unknown> {...}
 
 }
@@ -1361,7 +1916,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class CoMap<Shape, Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -1417,7 +1973,7 @@ class CoMap<Shape, Meta> {
 
 ```typescript
 export class MutableCoMap<Shape extends {
-  [key: string]: JsonValue | CoValue | undefined }, Meta extends JsonObject | null> extends CoMapView<Shape, Meta> implements CoValue {...}
+  [key: string]: JsonValue | undefined }, Meta extends JsonObject | null> extends CoMapView<Shape, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -1429,7 +1985,7 @@ TODO: document
 ```typescript
 class MutableCoMap<Shape, Meta> {
 
-  keys(): keyof Shape & string[] {...}
+  keys<K extends string>(): K[] {...}
 
 }
 ```
@@ -1449,7 +2005,7 @@ class MutableCoMap<Shape, Meta> {
 
   get<K extends string>(
     key: K
-  ): undefined | Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue> {...}
+  ): undefined | Shape[K] {...}
 
 }
 ```
@@ -1474,7 +2030,7 @@ Returns the current value for the given key.
 class MutableCoMap<Shape, Meta> {
 
   asObject(): {
-    [K in string]: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>
+    [K in string]: Shape[K]
   } {...}
 
 }
@@ -1492,7 +2048,7 @@ undefined</details>
 class MutableCoMap<Shape, Meta> {
 
   toJSON(): {
-    [K in string]: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>
+    [K in string]: Shape[K]
   } {...}
 
 }
@@ -1513,7 +2069,7 @@ class MutableCoMap<Shape, Meta> {
 
   set<K extends string>(
     key: K,
-    value: Shape[K] extends CoValue ? any[any] | CoID<any[any]> : Shape[K],
+    value: Shape[K],
     privacy?: "private" | "trusting" = "private"
   ): void {...}
 
@@ -1635,10 +2191,10 @@ class MutableCoMap<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value?: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>,
+    value?: Shape[K],
   } {...}
 
 }
@@ -1665,10 +2221,10 @@ class MutableCoMap<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value?: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>,
+    value?: Shape[K],
   } {...}
 
 }
@@ -1694,10 +2250,10 @@ class MutableCoMap<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value?: Shape[K] extends CoValue ? CoID<any[any]> : Exclude<Shape[K], CoValue>,
+    value?: Shape[K],
   }, void, unknown> {...}
 
 }
@@ -1804,7 +2360,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class MutableCoMap<Shape, Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -1833,7 +2390,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class CoList<Item extends JsonValue | CoValue, Meta extends JsonObject | null> extends CoListView<Item, Meta> implements CoValue {...}
+export class CoList<Item extends JsonValue, Meta extends JsonObject | null> extends CoListView<Item, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -1847,7 +2404,7 @@ class CoList<Item, Meta> {
 
   get(
     idx: number
-  ): undefined | Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue> {...}
+  ): undefined | Item {...}
 
 }
 ```
@@ -1871,7 +2428,7 @@ Get the item currently at `idx`.
 ```typescript
 class CoList<Item, Meta> {
 
-  asArray(): Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] {...}
+  asArray(): Item[] {...}
 
 }
 ```
@@ -1889,7 +2446,7 @@ undefined</details>
 ```typescript
 class CoList<Item, Meta> {
 
-  toJSON(): Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] {...}
+  toJSON(): Item[] {...}
 
 }
 ```
@@ -1910,7 +2467,7 @@ undefined</details>
 class CoList<Item, Meta> {
 
   append(
-    item: Item extends CoValue ? Item | CoID<Item> : Item,
+    item: Item,
     after?: number,
     privacy?: "private" | "trusting" = "private"
   ): CoList<Item, Meta> {...}
@@ -1944,7 +2501,7 @@ If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, 
 class CoList<Item, Meta> {
 
   prepend(
-    item: Item extends CoValue ? Item | CoID<Item> : Item,
+    item: Item,
     before?: number,
     privacy?: "private" | "trusting" = "private"
   ): CoList<Item, Meta> {...}
@@ -2092,10 +2649,10 @@ class CoList<Item, Meta> {
   editAt(
     idx: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -2119,7 +2676,7 @@ TODO: document
 class CoList<Item, Meta> {
 
   deletionEdits(): {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
   }[] {...}
@@ -2222,7 +2779,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class CoList<Item, Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -2281,7 +2839,7 @@ class CoList<Item, Meta> {
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class MutableCoList<Item extends JsonValue | CoValue, Meta extends JsonObject | null> extends CoListView<Item, Meta> implements CoValue {...}
+export class MutableCoList<Item extends JsonValue, Meta extends JsonObject | null> extends CoListView<Item, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -2295,7 +2853,7 @@ class MutableCoList<Item, Meta> {
 
   get(
     idx: number
-  ): undefined | Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue> {...}
+  ): undefined | Item {...}
 
 }
 ```
@@ -2319,7 +2877,7 @@ Get the item currently at `idx`.
 ```typescript
 class MutableCoList<Item, Meta> {
 
-  asArray(): Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] {...}
+  asArray(): Item[] {...}
 
 }
 ```
@@ -2337,7 +2895,7 @@ undefined</details>
 ```typescript
 class MutableCoList<Item, Meta> {
 
-  toJSON(): Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] {...}
+  toJSON(): Item[] {...}
 
 }
 ```
@@ -2358,7 +2916,7 @@ undefined</details>
 class MutableCoList<Item, Meta> {
 
   append(
-    item: Item extends CoValue ? Item | CoID<Item> : Item,
+    item: Item,
     after?: number,
     privacy?: "private" | "trusting" = "private"
   ): void {...}
@@ -2392,7 +2950,7 @@ If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, 
 class MutableCoList<Item, Meta> {
 
   prepend(
-    item: Item extends CoValue ? Item | CoID<Item> : Item,
+    item: Item,
     before?: number,
     privacy?: "private" | "trusting" = "private"
   ): void {...}
@@ -2520,10 +3078,10 @@ class MutableCoList<Item, Meta> {
   editAt(
     idx: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -2547,7 +3105,7 @@ TODO: document
 class MutableCoList<Item, Meta> {
 
   deletionEdits(): {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
   }[] {...}
@@ -2650,7 +3208,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class MutableCoList<Item, Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -2683,7 +3242,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class CoStream<Item extends JsonValue | CoValue, Meta extends JsonObject | null> extends CoStreamView<Item, Meta> implements CoValue {...}
+export class CoStream<Item extends JsonValue, Meta extends JsonObject | null> extends CoStreamView<Item, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -2713,7 +3272,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class CoStream<Item, Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -2733,7 +3293,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ```typescript
 class CoStream<Item, Meta> {
 
-  constructor<Item extends JsonValue | CoValue, Meta extends null | JsonObject>(
+  constructor<Item extends JsonValue, Meta extends null | JsonObject>(
     core: CoValueCore
   ): CoStream<Item, Meta> {...}
 
@@ -2760,7 +3320,7 @@ TODO: document
 class CoStream<Item, Meta> {
 
   push(
-    item: Item extends CoValue ? Item | CoID<Item> : Item,
+    item: Item,
     privacy?: "private" | "trusting" = "private"
   ): CoStream<Item, Meta> {...}
 
@@ -2863,7 +3423,7 @@ Not yet implemented
 ```typescript
 class CoStream<Item, Meta> {
 
-  getSingleStream(): undefined | Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] {...}
+  getSingleStream(): undefined | Item[] {...}
 
 }
 ```
@@ -2895,7 +3455,7 @@ undefined</details>
 ```typescript
 class CoStream<Item, Meta> {
 
-  accounts(): Set<AgentID | AccountID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -2915,10 +3475,10 @@ class CoStream<Item, Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -2945,10 +3505,10 @@ class CoStream<Item, Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -2974,10 +3534,10 @@ class CoStream<Item, Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   }, void, unknown> {...}
 
 }
@@ -3001,12 +3561,12 @@ TODO: document
 class CoStream<Item, Meta> {
 
   lastItemBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -3030,12 +3590,12 @@ TODO: document
 class CoStream<Item, Meta> {
 
   itemsBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
     in: SessionID,
   }, void, unknown> {...}
 
@@ -3060,7 +3620,7 @@ TODO: document
 class CoStream<Item, Meta> {
 
   toJSON(): {
-    [key: SessionID]: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] } {...}
+    [key: SessionID]: Item[] } {...}
 
 }
 ```
@@ -3198,7 +3758,7 @@ TODO: document
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class MutableCoStream<Item extends JsonValue | CoValue, Meta extends JsonObject | null> extends CoStreamView<Item, Meta> implements CoValue {...}
+export class MutableCoStream<Item extends JsonValue, Meta extends JsonObject | null> extends CoStreamView<Item, Meta> implements CoValue {...}
 ```
 TODO: document
 
@@ -3228,7 +3788,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class MutableCoStream<Item, Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -3248,7 +3809,7 @@ The `Group` this `CoValue` belongs to (determining permissions)
 ```typescript
 class MutableCoStream<Item, Meta> {
 
-  constructor<Item extends JsonValue | CoValue, Meta extends null | JsonObject>(
+  constructor<Item extends JsonValue, Meta extends null | JsonObject>(
     core: CoValueCore
   ): MutableCoStream<Item, Meta> {...}
 
@@ -3275,7 +3836,7 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   push(
-    item: Item extends CoValue ? Item | CoID<Item> : Item,
+    item: Item,
     privacy?: "private" | "trusting" = "private"
   ): void {...}
 
@@ -3328,7 +3889,7 @@ Not yet implemented
 ```typescript
 class MutableCoStream<Item, Meta> {
 
-  getSingleStream(): undefined | Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] {...}
+  getSingleStream(): undefined | Item[] {...}
 
 }
 ```
@@ -3360,7 +3921,7 @@ undefined</details>
 ```typescript
 class MutableCoStream<Item, Meta> {
 
-  accounts(): Set<AgentID | AccountID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -3380,10 +3941,10 @@ class MutableCoStream<Item, Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -3410,10 +3971,10 @@ class MutableCoStream<Item, Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -3439,10 +4000,10 @@ class MutableCoStream<Item, Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   }, void, unknown> {...}
 
 }
@@ -3466,12 +4027,12 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   lastItemBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
   } {...}
 
 }
@@ -3495,12 +4056,12 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   itemsBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>,
+    value: Item,
     in: SessionID,
   }, void, unknown> {...}
 
@@ -3525,7 +4086,7 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   toJSON(): {
-    [key: SessionID]: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] } {...}
+    [key: SessionID]: Item[] } {...}
 
 }
 ```
@@ -3693,7 +4254,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class BinaryCoStream<Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -3954,7 +4516,7 @@ undefined</details>
 ```typescript
 class BinaryCoStream<Meta> {
 
-  accounts(): Set<AgentID | AccountID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -3974,7 +4536,7 @@ class BinaryCoStream<Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4004,7 +4566,7 @@ class BinaryCoStream<Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4033,7 +4595,7 @@ class BinaryCoStream<Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4060,9 +4622,9 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   lastItemBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4089,9 +4651,9 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   itemsBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4119,7 +4681,7 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   toJSON(): {
-    [key: SessionID]: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] } {...}
+    [key: SessionID]: Item[] } {...}
 
 }
 ```
@@ -4287,7 +4849,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 class MutableBinaryCoStream<Meta> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -4498,7 +5061,7 @@ undefined</details>
 ```typescript
 class MutableBinaryCoStream<Meta> {
 
-  accounts(): Set<AgentID | AccountID> {...}
+  accounts(): Set<AccountID> {...}
 
 }
 ```
@@ -4518,7 +5081,7 @@ class MutableBinaryCoStream<Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4548,7 +5111,7 @@ class MutableBinaryCoStream<Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4577,7 +5140,7 @@ class MutableBinaryCoStream<Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4604,9 +5167,9 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   lastItemBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): undefined | {
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4633,9 +5196,9 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   itemsBy(
-    account: AgentID | AccountID
+    account: AccountID | AgentID
   ): Generator<{
-    by: AgentID | AccountID,
+    by: AccountID | AgentID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -4663,7 +5226,7 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   toJSON(): {
-    [key: SessionID]: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>[] } {...}
+    [key: SessionID]: Item[] } {...}
 
 }
 ```
@@ -4801,7 +5364,7 @@ TODO: document
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class QueriedCoList<L extends AnyCoList> extends Array<ValueOrSubQueried<L["_item"]>> {...}
+export class QueriedCoList<L extends CoList> extends Array<ValueOrSubQueried<L["_item"]>> {...}
 ```
 TODO: document
 
@@ -4829,7 +5392,8 @@ TODO: document
 ```typescript
 class QueriedCoList<L> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -4874,7 +5438,7 @@ TODO: document
 class QueriedCoList<L> {
 
   append(
-    item: L["_item"] extends CoValue ? any[any] | CoID<any[any]> : L["_item"],
+    item: L["_item"],
     after?: number,
     privacy?: "private" | "trusting"
   ): L {...}
@@ -4902,7 +5466,7 @@ TODO: document
 class QueriedCoList<L> {
 
   prepend(
-    item: L["_item"] extends CoValue ? any[any] | CoID<any[any]> : L["_item"],
+    item: L["_item"],
     before?: number,
     privacy?: "private" | "trusting"
   ): L {...}
@@ -4924,14 +5488,14 @@ TODO: document
 
 
 <details>
-<summary><b><code>.delete(at, privacy)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.delete(at, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class QueriedCoList<L> {
 
   delete(
     at: number,
-    privacy: "private" | "trusting"
+    privacy?: "private" | "trusting"
   ): L {...}
 
 }
@@ -4943,7 +5507,7 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `at` | TODO: document  |
-| `privacy` | TODO: document  |
+| `privacy?` | TODO: document  |
 
 </details>
 
@@ -5149,7 +5713,7 @@ Returns the index of the last occurrence of a specified value in an array, or -1
 ```typescript
 class QueriedCoList<L> {
 
-  every<S extends undefined | JsonValue>(
+  every<S extends JsonValue>(
     predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
     thisArg?: any
   ): COMPLEX_TYPE_predicate {...}
@@ -5292,7 +5856,7 @@ Calls a defined callback function on each element of an array, and returns an ar
 ```typescript
 class QueriedCoList<L> {
 
-  filter<S extends undefined | JsonValue>(
+  filter<S extends JsonValue>(
     predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
     thisArg?: any
   ): S[] {...}
@@ -5508,7 +6072,7 @@ Calls the specified callback function for all the elements in an array, in desce
 ```typescript
 class QueriedCoList<L> {
 
-  find<S extends undefined | JsonValue>(
+  find<S extends JsonValue>(
     predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, obj: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
     thisArg?: any
   ): undefined | S {...}
@@ -5762,7 +6326,7 @@ Returns the item located at the specified index.
 ```typescript
 class QueriedCoList<L> {
 
-  findLast<S extends undefined | JsonValue>(
+  findLast<S extends JsonValue>(
     predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
     thisArg?: any
   ): undefined | S {...}
@@ -5936,7 +6500,8 @@ class QueriedCoList<L> {
     tx: TransactionID,
     at: Date,
     value: L["_item"] extends CoValue ? CoID<any[any]> : Exclude<L["_item"], CoValue>,
-    by?: QueriedAccountAndProfile,
+    by?: QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>,
   }[]
 
 }
@@ -5956,7 +6521,8 @@ class QueriedCoList<L> {
   deletions: {
     tx: TransactionID,
     at: Date,
-    by?: QueriedAccountAndProfile,
+    by?: QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>,
   }[]
 
 }
@@ -6049,7 +6615,7 @@ when they will be absent when used in a 'with' statement.
 <sup>(class in `cojson`)</sup>
 
 ```typescript
-export class QueriedCoStream<S extends AnyCoStream> {...}
+export class QueriedCoStream<S extends CoStream> {...}
 ```
 TODO: document
 
@@ -6077,7 +6643,8 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  get group(): Group {...}
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -6116,7 +6683,7 @@ TODO: document
 class QueriedCoStream<S> {
 
   push(
-    item: S["_item"] extends CoValue ? any[any] | CoID<any[any]> : S["_item"],
+    item: S["_item"],
     privacy?: "private" | "trusting"
   ): S {...}
 
@@ -6215,8 +6782,7 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  perAccount: {
-    [account: AccountID]: QueriedCoStreamItems<S["_item"]> }
+  perAccount: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
 
 }
 ```
@@ -6232,8 +6798,7 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  perSession: {
-    [session: SessionID]: QueriedCoStreamItems<S["_item"]> }
+  perSession: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
 
 }
 ```
@@ -6249,13 +6814,2053 @@ TODO: document
 ```typescript
 class QueriedCoStream<S> {
 
-  me: QueriedCoStreamItems<S["_item"]>
+  me: QueriedCoStreamEntry<S["_item"]>
 
 }
 ```
 TODO: document
 
 </details>
+
+
+
+----
+
+## `QueriedGroup`
+
+<sup>(class in `cojson`)</sup>
+
+```typescript
+export class QueriedGroup<G extends Group> {...}
+```
+TODO: document
+
+### `QueriedGroup`: Accessors
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  get meta(): G["meta"] {...}
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  get core(): CoValueCore {...}
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `QueriedGroup`: Constructors
+
+<details>
+<summary><b><code>new QueriedGroup</code></b>(group, queryContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  constructor<G extends Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>(
+    group: G,
+    queryContext: QueryContext
+  ): QueriedGroup<G> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `group` | TODO: document  |
+| `queryContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedGroup`: Methods
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  removeMember(
+    accountID: AccountID
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): InviteSecret {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["meta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["meta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedGroup`: Properties
+
+<details>
+<summary><b><code>.group</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  group: G
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  id: CoID<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  type: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  profile: ValueOrSubQueried<G["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedGroup<G> {
+
+  root: ValueOrSubQueried<G["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `QueriedAccount`
+
+<sup>(class in `cojson`)</sup>
+
+```typescript
+export class QueriedAccount<A extends Account> extends QueriedGroup<A> {...}
+```
+TODO: document
+
+### `QueriedAccount`: Accessors
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  get meta(): G["meta"] {...}
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  get core(): CoValueCore {...}
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `QueriedAccount`: Constructors
+
+<details>
+<summary><b><code>new QueriedAccount</code></b>(account, queryContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  constructor<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>(
+    account: A,
+    queryContext: QueryContext
+  ): QueriedAccount<A> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `account` | TODO: document  |
+| `queryContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedAccount`: Methods
+
+<details>
+<summary><b><code>.createGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  acceptInvite<T extends CoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: InviteSecret
+  ): Promise<void> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `groupOrOwnedValueID` | TODO: document  |
+| `inviteSecret` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  removeMember(
+    accountID: AccountID
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): InviteSecret {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["meta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["meta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `QueriedAccount`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  id: CoID<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  isMe: boolean
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.group</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  group: A
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.type</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  type: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  profile: ValueOrSubQueried<A["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class QueriedAccount<A> {
+
+  root: ValueOrSubQueried<A["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `Account`
+
+<sup>(class in `cojson`)</sup>
+
+```typescript
+export class Account<P extends Profile, R extends CoMap, Meta extends AccountMeta> extends Group<P, R, Meta> {...}
+```
+A `Group` is a scope for permissions of its members (`"reader" | "writer" | "admin"`), applying to objects owned by that group.
+
+ A `Group` object exposes methods for permission management and allows you to create new CoValues owned by that group.
+
+ (Internally, a `Group` is also just a `CoMap`, mapping member accounts to roles and containing some
+ state management for making cryptographic keys available to current members)
+
+
+
+##### Example:
+
+You typically get a group from a CoValue that you already have loaded:
+
+ ```typescript
+ const group = coMap.group;
+ ```
+
+##### Example:
+
+Or, you can create a new group with a `LocalNode`:
+
+ ```typescript
+ const localNode.createGroup();
+ ```
+
+### `Account`:  Reading
+
+<details>
+<summary><b><code>.keys()</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  keys<K extends Object>(): K[] {...}
+
+}
+```
+Get all keys currently in the map.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.get(key)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  get<K extends Object>(
+    key: K
+  ): undefined | GroupShape<P, R>[K] {...}
+
+}
+```
+Returns the current value for the given key.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.asObject()</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  asObject(): {
+    everyone: undefined | Role,
+    readKey: undefined | `key_z${string}`,
+    profile: undefined | null | CoID<P>,
+    root: undefined | null | CoID<R>,
+  } {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  toJSON(): {
+    everyone: undefined | Role,
+    readKey: undefined | `key_z${string}`,
+    profile: undefined | null | CoID<P>,
+    root: undefined | null | CoID<R>,
+  } {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `Account`:  Role reading
+
+<details>
+<summary><b><code>.roleOf(accountID)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  roleOf(
+    accountID: AccountID
+  ): undefined | Role {...}
+
+}
+```
+Returns the current role of a given account.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.myRole()</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  myRole(): undefined | Role {...}
+
+}
+```
+Returns the role of the current account in the group.
+
+
+
+undefined</details>
+
+<br/>
+
+### `Account`:  Editing
+
+<details>
+<summary><b><code>.set(key, value, privacy?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  set<K extends Object>(
+    key: K,
+    value: GroupShape<P, R>[K],
+    privacy?: "private" | "trusting"
+  ): Account<P, R, Meta> {...}
+
+}
+```
+Returns a new version of this CoMap with a new value for the given key.
+
+If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `value` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(kv, privacy?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  set(
+    kv: {
+      everyone: undefined | Role,
+      readKey: undefined | `key_z${string}`,
+      profile: undefined | null | CoID<P>,
+      root: undefined | null | CoID<R>,
+    },
+    privacy?: "private" | "trusting"
+  ): Account<P, R, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `kv.everyone` | TODO: document |
+| `kv.readKey` | TODO: document |
+| `kv.profile` | TODO: document |
+| `kv.root` | TODO: document |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(key, privacy?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  delete(
+    key: Object,
+    privacy?: "private" | "trusting" = "private"
+  ): Account<P, R, Meta> {...}
+
+}
+```
+Returns a new version of this CoMap with the given key deleted (setting it to undefined).
+
+If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  mutate(
+    mutator: (mutable: MutableCoMap<GroupShape<P, R>, Meta>) => void
+  ): Account<P, R, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `Account`:  Role changing
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): Account<P, R, Meta> {...}
+
+}
+```
+Directly grants a new member a role in the group. The current account must be an
+admin to be able to do so. Throws otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  removeMember(
+    accountID: AccountID
+  ): Account<P, R, Meta> {...}
+
+}
+```
+Strips the specified member of all roles (preventing future writes in
+ the group and owned values) and rotates the read encryption key for that group
+(preventing reads of new content in the group and owned values)
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): InviteSecret {...}
+
+}
+```
+Creates an invite for new members to indirectly join the group,
+allowing them to grant themselves the specified role with the InviteSecret
+(a string starting with "inviteSecret_") - use `LocalNode.acceptInvite()` for this purpose.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Account`:  Subscription
+
+<details>
+<summary><b><code>.subscribe(listener)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  subscribe(
+    listener: (coMap: Account<P, R, Meta>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `Account`:  Value creation
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: M["_shape"],
+    meta?: M["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+Creates a new `CoMap` within this group, with the specified specialized
+`CoMap` type `M` and optional static metadata.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["meta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+Creates a new `CoList` within this group, with the specified specialized
+`CoList` type `L` and optional static metadata.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["meta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["meta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Account`:  Time travel
+
+<details>
+<summary><b><code>.atTime(time)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  atTime(
+    time: number
+  ): Account<P, R, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `time` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Account`:  Edit history
+
+<details>
+<summary><b><code>.nthEditAt(key, n)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  nthEditAt<K extends Object>(
+    key: K,
+    n: number
+  ): undefined | {
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: GroupShape<P, R>[K],
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `n` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastEditAt(key)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  lastEditAt<K extends Object>(
+    key: K
+  ): undefined | {
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: GroupShape<P, R>[K],
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.editsAt(key)</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  editsAt<K extends Object>(
+    key: K
+  ): Generator<{
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: GroupShape<P, R>[K],
+  }, void, unknown> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Account`:  Meta
+
+<details>
+<summary><b><code>.id</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  id: CoID<Account<P, R, Meta>>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.type</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  type: "comap"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  core: CoValueCore
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>._shape</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  _shape: GroupShape<P, R>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  get meta(): Meta {...}
+
+}
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.group</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+<br/>
+
+### `Account`: Other
+
+
+
+<details>
+<summary><b><code>.getCurrentAgentID()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  getCurrentAgentID(): AgentID {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.edit(mutator)</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+
+```typescript
+class Account<P, R, Meta> {
+
+  edit(
+    mutator: (mutable: MutableCoMap<GroupShape<P, R>, Meta>) => void
+  ): Account<P, R, Meta> {...}
+
+}
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+
+
+
+
+
+
+----
+
+## `Profile`
+
+<sup>(class in `cojson`)</sup>
+
+```typescript
+export class Profile<Shape extends ProfileShape, Meta extends ProfileMeta> extends CoMap<Shape, Meta> {...}
+```
+A collaborative map with precise shape `Shape` and optional static metadata `Meta`
+
+
+
+### `Profile`:  Reading
+
+<details>
+<summary><b><code>.keys()</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  keys<K extends string>(): K[] {...}
+
+}
+```
+Get all keys currently in the map.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.get(key)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  get<K extends string>(
+    key: K
+  ): undefined | Shape[K] {...}
+
+}
+```
+Returns the current value for the given key.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.asObject()</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  asObject(): {
+    [K in string]: Shape[K]
+  } {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  toJSON(): {
+    [K in string]: Shape[K]
+  } {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `Profile`:  Editing
+
+<details>
+<summary><b><code>.set(key, value, privacy?)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  set<K extends string>(
+    key: K,
+    value: Shape[K],
+    privacy?: "private" | "trusting"
+  ): Profile<Shape, Meta> {...}
+
+}
+```
+Returns a new version of this CoMap with a new value for the given key.
+
+If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `value` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(kv, privacy?)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  set(
+    kv: {
+      [K in string]: Shape[K]
+    },
+    privacy?: "private" | "trusting"
+  ): Profile<Shape, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `kv` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(key, privacy?)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  delete(
+    key: keyof Shape & string,
+    privacy?: "private" | "trusting" = "private"
+  ): Profile<Shape, Meta> {...}
+
+}
+```
+Returns a new version of this CoMap with the given key deleted (setting it to undefined).
+
+If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
+
+If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  mutate(
+    mutator: (mutable: MutableCoMap<Shape, Meta>) => void
+  ): Profile<Shape, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `Profile`:  Subscription
+
+<details>
+<summary><b><code>.subscribe(listener)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  subscribe(
+    listener: (coMap: Profile<Shape, Meta>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `Profile`:  Time travel
+
+<details>
+<summary><b><code>.atTime(time)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  atTime(
+    time: number
+  ): Profile<Shape, Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `time` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Profile`:  Edit history
+
+<details>
+<summary><b><code>.nthEditAt(key, n)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  nthEditAt<K extends string>(
+    key: K,
+    n: number
+  ): undefined | {
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: Shape[K],
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `n` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastEditAt(key)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  lastEditAt<K extends string>(
+    key: K
+  ): undefined | {
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: Shape[K],
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.editsAt(key)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  editsAt<K extends string>(
+    key: K
+  ): Generator<{
+    by: AccountID | AgentID,
+    tx: TransactionID,
+    at: Date,
+    value?: Shape[K],
+  }, void, unknown> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `Profile`:  Meta
+
+<details>
+<summary><b><code>.id</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  id: CoID<Profile<Shape, Meta>>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.type</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  type: "comap"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.core</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  core: CoValueCore
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>._shape</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  _shape: Shape
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  get meta(): Meta {...}
+
+}
+```
+The `CoValue`'s (precisely typed) static metadata
+
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.group</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+The `Group` this `CoValue` belongs to (determining permissions)
+
+
+
+</details>
+
+<br/>
+
+### `Profile`: Other
+
+
+
+<details>
+<summary><b><code>.edit(mutator)</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+
+```typescript
+class Profile<Shape, Meta> {
+
+  edit(
+    mutator: (mutable: MutableCoMap<Shape, Meta>) => void
+  ): Profile<Shape, Meta> {...}
+
+}
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+
+
+
 
 
 
@@ -6597,34 +9202,54 @@ TODO: document
 
 
 <details>
-<summary><b><code>.getCurrentContent()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.getCurrentContent(options?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  getCurrentContent(): CoValue {...}
+  getCurrentContent(
+    options?: {
+      ignorePrivateTransactions: true,
+    }
+  ): CoValue {...}
 
 }
 ```
 TODO: document
 
-undefined</details>
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.ignorePrivateTransactions` | TODO: document |
+
+</details>
 
 
 
 <details>
-<summary><b><code>.getValidSortedTransactions()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.getValidSortedTransactions(options?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  getValidSortedTransactions(): DecryptedTransaction[] {...}
+  getValidSortedTransactions(
+    options?: {
+      ignorePrivateTransactions: true,
+    }
+  ): DecryptedTransaction[] {...}
 
 }
 ```
 TODO: document
 
-undefined</details>
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.ignorePrivateTransactions` | TODO: document |
+
+</details>
 
 
 
@@ -6672,12 +9297,37 @@ TODO: document
 
 
 <details>
+<summary><b><code>.getUncachedReadKey(keyID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class CoValueCore {
+
+  getUncachedReadKey(
+    keyID: `key_z${string}`
+  ): undefined | `keySecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `keyID` | TODO: document  |
+
+</details>
+
+
+
+<details>
 <summary><b><code>.getGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  getGroup(): Group {...}
+  getGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
 
 }
 ```
@@ -6888,7 +9538,7 @@ namespace Media {
 
   ImageDefinition: CoMap<{  originalSize: [number, number],
     placeholderDataURL?: string,
-    [res: `${number}x${number}`]: BinaryCoStream }>
+    [res: `${number}x${number}`]: BinaryCoStream["id"] }>
 
 }
 ```
@@ -7063,7 +9713,8 @@ The `CoValue`'s (precisely typed) static metadata
 ```typescript
 interface CoValue {
 
-  group: Group
+  group: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>
 
 }
 ```
@@ -7152,6 +9803,81 @@ TODO: document
 
 
 
+<details>
+<summary><b><code>.delayOnError</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Peer {
+
+  delayOnError: number
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `QueryExtension`
+
+<sup>(interface in `cojson`)</sup>
+
+```typescript
+export interface QueryExtension<T extends CoValue, O> {...}
+```
+TODO: document
+
+### `QueryExtension`: Methods
+
+<details>
+<summary><b><code>.query(base, queryContext, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface QueryExtension<T, O> {
+
+  query(
+    base: T,
+    queryContext: QueryContext,
+    onUpdate: (value: O) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `base` | TODO: document  |
+| `queryContext` | TODO: document  |
+
+
+</details>
+
+<br/>
+
+### `QueryExtension`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface QueryExtension<T, O> {
+
+  id: string
+
+}
+```
+TODO: document
+
+</details>
+
+
+
 ----
 
 ## `Value`
@@ -7183,7 +9909,7 @@ TODO: doc generator not implemented yet 2097152
 <sup>(type alias in `cojson`)</sup>
 
 ```typescript
-export type AnyCoValue = AnyCoMap | AnyCoList | AnyCoStream | AnyBinaryCoStream
+export type AnyCoValue = CoMap | Group | Account | Profile | CoList | CoStream | BinaryCoStream
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -7194,15 +9920,15 @@ TODO: doc generator not implemented yet 2097152
 <sup>(type alias in `cojson`)</sup>
 
 ```typescript
-export type Queried<T extends CoValue> = T extends AnyCoMap
-  ? QueriedCoMap<T>
-  : T extends AnyCoList
+export type Queried<T extends CoValue> = T extends CoMap
+  ? T extends Account ? QueriedAccount<T> : T extends Group ? QueriedGroup<T> : QueriedCoMap<T>
+  : T extends CoList
     ? QueriedCoList<T>
-    : T extends AnyCoStream
+    : T extends CoStream
       ? T["meta"] extends {
         type: "binary",
       } ? never : QueriedCoStream<T>
-      : never
+      : QueriedAccount | QueriedGroup | QueriedCoMap<CoMap> | QueriedCoList<CoList> | QueriedCoStream<CoStream>
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -7213,7 +9939,7 @@ TODO: doc generator not implemented yet 2097152
 <sup>(type alias in `cojson`)</sup>
 
 ```typescript
-export type QueriedCoMap<M extends AnyCoMap> = {
+export type QueriedCoMap<M extends CoMap> = {
   [K in keyof M["_shape"] & string]: ValueOrSubQueried<M["_shape"][K]>
 } & QueriedCoMapBase<M>
 ```
@@ -7232,23 +9958,38 @@ TODO: doc generator not implemented yet 2097152
 
 ----
 
-## `Account`
+## `AccountMeta`
 
 <sup>(type alias in `cojson`)</sup>
 
 ```typescript
-export type Account = CoMap<AccountContent, AccountMeta>
+export type AccountMeta = {
+  type: "account",
+}
 ```
 TODO: doc generator not implemented yet 2097152
 
 ----
 
-## `Profile`
+## `AccountMigration`
 
 <sup>(type alias in `cojson`)</sup>
 
 ```typescript
-export type Profile = CoMap<ProfileContent, ProfileMeta>
+export type AccountMigration<P extends Profile, R extends CoMap, Meta extends AccountMeta> = (account: ControlledAccount<P, R, Meta>, profile: P) => void
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `ProfileMeta`
+
+<sup>(type alias in `cojson`)</sup>
+
+```typescript
+export type ProfileMeta = {
+  type: "profile",
+}
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -7348,6 +10089,17 @@ TODO: doc generator not implemented yet 2097152
 
 ----
 
+## `EVERYONE`
+
+<sup>(variable in `cojson`)</sup>
+
+```typescript
+export  EVERYONE
+```
+TODO: doc generator not implemented yet 32
+
+----
+
 ## `cojsonReady`
 
 <sup>(variable in `cojson`)</sup>
@@ -7369,70 +10121,9 @@ export  MAX_RECOMMENDED_TX_SIZE
 TODO: doc generator not implemented yet 32
 
 
-# jazz-react-media-images
-
-## `useLoadImage(imageID?)`
-
-<sup>(function in `jazz-react-media-images`)</sup>
-
-```typescript
-export function useLoadImage(imageID: ImageDefinition | CoID<ImageDefinition> | {
-  id: CoID<ImageDefinition>,
-}): LoadingImageInfo | undefined
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `imageID?` | TODO: document  |
-
-
-
-
-
-----
-
-## `createImage(imageBlobOrFile, inGroup)`
-
-<sup>(function in `jazz-react-media-images`)</sup>
-
-```typescript
-export function createImage(imageBlobOrFile: Blob | File, inGroup: Group): Promise<Media.ImageDefinition>
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `imageBlobOrFile` | TODO: document  |
-| `inGroup` | TODO: document  |
-
-
-
-
-
-----
-
-## `LoadingImageInfo`
-
-<sup>(type alias in `jazz-react-media-images`)</sup>
-
-```typescript
-export type LoadingImageInfo = {
-  originalSize?: [number, number],
-  placeholderDataURL?: string,
-  highestResSrc?: string,
-}
-```
-TODO: doc generator not implemented yet 2097152
-
-
 # jazz-browser
 
-## `createBrowserNode({auth, syncAddress?, reconnectionTimeout?})`
+## `createBrowserNode({auth, syncAddress?, reconnectionTimeout?, migration?})`
 
 <sup>(function in `jazz-browser`)</sup>
 
@@ -7441,6 +10132,7 @@ export function createBrowserNode({
   auth: AuthProvider,
   syncAddress?: string,
   reconnectionTimeout?: number,
+  migration?: AccountMigration,
 }): Promise<BrowserNodeHandle>
 ```
 TODO: document
@@ -7452,6 +10144,7 @@ TODO: document
 | `__namedParameters.auth` | TODO: document |
 | `__namedParameters.syncAddress?` | TODO: document |
 | `__namedParameters.reconnectionTimeout?` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
 
 
 
@@ -7464,8 +10157,8 @@ TODO: document
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
-export function createInviteLink<T extends CoValue>(value: T | {
-  id: CoID<T>,
+export function createInviteLink(value: CoValue | {
+  id: CoID<CoValue>,
   core: CoValueCore,
 }, role: "reader" | "writer" | "admin", {
   baseURL?: string,
@@ -7543,7 +10236,8 @@ TODO: document
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
-export function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group, meta: C["meta"]): Promise<C>
+export function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>, meta: C["meta"]): Promise<C>
 ```
 TODO: document
 
@@ -7596,14 +10290,15 @@ TODO: document
 ### `AuthProvider`: Methods
 
 <details>
-<summary><b><code>.createNode(getSessionFor, initialPeers)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.createNode(getSessionFor, initialPeers, migration?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface AuthProvider {
 
   createNode(
     getSessionFor: SessionProvider,
-    initialPeers: Peer[]
+    initialPeers: Peer[],
+    migration?: AccountMigration
   ): Promise<LocalNode> {...}
 
 }
@@ -7616,6 +10311,7 @@ TODO: document
 | ----: | ---- |
 | `getSessionFor` | TODO: document  |
 | `initialPeers` | TODO: document  |
+| `migration?` | TODO: document  |
 
 </details>
 
@@ -7663,12 +10359,13 @@ TODO: doc generator not implemented yet 2097152
 
 # jazz-browser-media-images
 
-## `createImage(imageBlobOrFile, inGroup)`
+## `createImage(imageBlobOrFile, inGroup, maxSize?)`
 
 <sup>(function in `jazz-browser-media-images`)</sup>
 
 ```typescript
-export function createImage(imageBlobOrFile: Blob | File, inGroup: Group): Promise<Media.ImageDefinition>
+export function createImage(imageBlobOrFile: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>, maxSize: 256 | 1024 | 2048): Promise<Media.ImageDefinition>
 ```
 TODO: document
 
@@ -7678,6 +10375,7 @@ TODO: document
 | ----: | ---- |
 | `imageBlobOrFile` | TODO: document  |
 | `inGroup` | TODO: document  |
+| `maxSize?` | TODO: document  |
 
 
 
@@ -7719,6 +10417,18 @@ export type LoadingImageInfo = {
   originalSize?: [number, number],
   placeholderDataURL?: string,
   highestResSrc?: string,
+  highestResSrcOrPlaceholder?: string,
 }
 ```
 TODO: doc generator not implemented yet 2097152
+
+----
+
+## `BrowserImage`
+
+<sup>(variable in `jazz-browser-media-images`)</sup>
+
+```typescript
+export  BrowserImage
+```
+TODO: doc generator not implemented yet 32

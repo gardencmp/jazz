@@ -10,7 +10,6 @@ async function main() {
     const packageDocs = Object.entries({
         "jazz-react": "index.tsx",
         cojson: "index.ts",
-        "jazz-react-media-images": "index.tsx",
         "jazz-browser": "index.ts",
         "jazz-browser-media-images": "index.ts",
     }).map(async ([packageName, entryPoint]) => {

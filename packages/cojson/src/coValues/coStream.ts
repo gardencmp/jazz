@@ -1,10 +1,10 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoValue, CoID, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
-import { Group } from "../group.js";
+import { Group } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
-import { AccountID } from "../account.js";
+import { AccountID, isAccountID } from "./account.js";
 import { parseJSON } from "../jsonStringify.js";
 
 export type BinaryStreamInfo = {
@@ -33,15 +33,15 @@ export type BinaryStreamItem =
     | BinaryStreamChunk
     | BinaryStreamEnd;
 
-export type CoStreamItem<Item extends JsonValue | CoValue> = {
-    value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+export type CoStreamItem<Item extends JsonValue> = {
+    value: Item;
     tx: TransactionID;
     madeAt: number;
 };
 
 export class CoStreamView<
-    Item extends JsonValue | CoValue,
-    Meta extends JsonObject | null = null
+    Item extends JsonValue = JsonValue,
+    Meta extends JsonObject | null = JsonObject | null
 > implements CoValue
 {
     id: CoID<this>;
@@ -82,9 +82,7 @@ export class CoStreamView<
             changes,
         } of this.core.getValidSortedTransactions()) {
             for (const changeUntyped of parseJSON(changes)) {
-                const change = changeUntyped as Item extends CoValue
-                    ? CoID<Item>
-                    : Exclude<Item, CoValue>;
+                const change = changeUntyped as Item;
                 let entries = this.items[txID.sessionID];
                 if (!entries) {
                     entries = [];
@@ -96,7 +94,7 @@ export class CoStreamView<
     }
 
     getSingleStream():
-        | (Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>)[]
+        | (Item)[]
         | undefined {
         if (Object.keys(this.items).length === 0) {
             return undefined;
@@ -113,8 +111,8 @@ export class CoStreamView<
         return Object.keys(this.items) as SessionID[];
     }
 
-    accounts(): Set<AccountID | AgentID> {
-        return new Set(this.sessions().map(accountOrAgentIDfromSessionID));
+    accounts(): Set<AccountID> {
+        return new Set(this.sessions().map(accountOrAgentIDfromSessionID).filter(isAccountID));
     }
 
     nthItemIn(
@@ -125,7 +123,7 @@ export class CoStreamView<
               by: AccountID | AgentID;
               tx: TransactionID;
               at: Date;
-              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+              value: Item;
           }
         | undefined {
         const items = this.items[sessionID];
@@ -147,7 +145,7 @@ export class CoStreamView<
               by: AccountID | AgentID;
               tx: TransactionID;
               at: Date;
-              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+              value: Item;
           }
         | undefined {
         const items = this.items[sessionID];
@@ -163,7 +161,7 @@ export class CoStreamView<
                 by: accountOrAgentIDfromSessionID(sessionID),
                 tx: item.tx,
                 at: new Date(item.madeAt),
-                value: item.value,
+                value: item.value as Item,
             };
         }
     }
@@ -173,7 +171,7 @@ export class CoStreamView<
               by: AccountID | AgentID;
               tx: TransactionID;
               at: Date;
-              value: Item extends CoValue ? CoID<Item> : Exclude<Item, CoValue>;
+              value: Item;
           }
         | undefined {
         let latestItem:
@@ -181,9 +179,7 @@ export class CoStreamView<
                   by: AccountID | AgentID;
                   tx: TransactionID;
                   at: Date;
-                  value: Item extends CoValue
-                      ? CoID<Item>
-                      : Exclude<Item, CoValue>;
+                  value: Item;
               }
             | undefined;
 
@@ -226,9 +222,7 @@ export class CoStreamView<
     }
 
     toJSON(): {
-        [key: SessionID]: (Item extends CoValue
-            ? CoID<Item>
-            : Exclude<Item, CoValue>)[];
+        [key: SessionID]: (Item )[];
     } {
         return Object.fromEntries(
             Object.entries(this.items).map(([sessionID, items]) => [
@@ -246,14 +240,14 @@ export class CoStreamView<
 }
 
 export class CoStream<
-        Item extends JsonValue | CoValue,
-        Meta extends JsonObject | null = null
+        Item extends JsonValue = JsonValue,
+        Meta extends JsonObject | null = JsonObject | null
     >
     extends CoStreamView<Item, Meta>
     implements CoValue
 {
     push(
-        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        item: Item,
         privacy: "private" | "trusting" = "private"
     ): this {
         this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
@@ -273,14 +267,14 @@ export class CoStream<
 }
 
 export class MutableCoStream<
-        Item extends JsonValue | CoValue,
-        Meta extends JsonObject | null = null
+        Item extends JsonValue,
+        Meta extends JsonObject | null = JsonObject | null
     >
     extends CoStreamView<Item, Meta>
     implements CoValue
 {
     push(
-        item: Item extends CoValue ? Item | CoID<Item> : Item,
+        item: Item,
         privacy: "private" | "trusting" = "private"
     ) {
         this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);

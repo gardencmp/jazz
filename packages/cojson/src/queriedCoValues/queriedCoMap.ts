@@ -1,34 +1,29 @@
-import { MutableCoMap } from "../coValues/coMap.js";
+import { CoMap, MutableCoMap } from "../coValues/coMap.js";
 import { CoValueCore } from "../coValueCore.js";
-import { Group } from "../group.js";
-import { Account, AccountID, Profile, isAccountID } from "../account.js";
-import { AnyCoMap, CoID, CoValue } from "../coValue.js";
+import { Group } from "../coValues/group.js";
+import { CoID } from "../coValue.js";
 import { TransactionID } from "../ids.js";
-import { ValueOrSubQueried, QueryContext } from "../queries.js";
+import { ValueOrSubQueried, QueryContext, QueryExtension } from "../queries.js";
+import { QueriedAccount } from "./queriedAccount.js";
 
-export type QueriedCoMap<M extends AnyCoMap> = {
+export type QueriedCoMap<M extends CoMap> = {
     [K in keyof M["_shape"] & string]: ValueOrSubQueried<M["_shape"][K]>;
 } & QueriedCoMapBase<M>;
 
-export type QueriedCoMapEdit<
-    M extends AnyCoMap,
-    K extends keyof M["_shape"]
-> = {
-    by?: QueriedAccountAndProfile;
+export type QueriedCoMapEdit<M extends CoMap, K extends keyof M["_shape"]> = {
+    by?: QueriedAccount;
     tx: TransactionID;
     at: Date;
-    value: M["_shape"][K] extends CoValue
-        ? CoID<M["_shape"][K]>
-        : Exclude<M["_shape"][K], CoValue>;
+    value: M["_shape"][K];
 };
 
-export class QueriedCoMapBase<M extends AnyCoMap> {
+export class QueriedCoMapBase<M extends CoMap> {
     coMap!: M;
     id!: CoID<M>;
     type!: "comap";
 
     /** @internal */
-    static newWithKVPairs<M extends AnyCoMap>(
+    static newWithKVPairs<M extends CoMap>(
         coMap: M,
         queryContext: QueryContext
     ): QueriedCoMap<M> {
@@ -37,27 +32,18 @@ export class QueriedCoMapBase<M extends AnyCoMap> {
                 M["_shape"][K]
             >;
         };
+        for (const key of coMap.keys()) {
+            const value = coMap.get(key);
 
-        if (coMap.meta?.type === "account") {
-            const profileID = coMap.get("profile");
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (kv as any).profile =
-                profileID && queryContext.resolveValue(profileID);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (kv as any).isMe =
-                (coMap as unknown as Account).id ===
-                queryContext.node.account.id;
-        } else {
-            for (const key of coMap.keys()) {
-                const value = coMap.get(key);
+            if (value === undefined) continue;
 
-                if (value === undefined) continue;
-
-                kv[key as keyof typeof kv] = queryContext.resolveValue(
-                    value
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ) as any;
-            }
+            queryContext.defineSubqueryPropertiesIn(
+                kv,
+                {
+                    [key]: { value, enumerable: true },
+                },
+                [coMap.id]
+            );
         }
 
         return Object.assign(new QueriedCoMapBase(coMap, queryContext), kv);
@@ -66,23 +52,33 @@ export class QueriedCoMapBase<M extends AnyCoMap> {
     /** @internal */
     constructor(coMap: M, queryContext: QueryContext) {
         Object.defineProperties(this, {
-            coMap: { value: coMap, enumerable: false },
+            coMap: {
+                get() {
+                    return coMap;
+                },
+                enumerable: false,
+            },
             id: { value: coMap.id, enumerable: false },
             type: { value: "comap", enumerable: false },
             edits: {
                 value: Object.fromEntries(
                     coMap.keys().flatMap((key) => {
-                        const edits = [...coMap.editsAt(key)].map((edit) => ({
-                            by:
-                                edit.by && isAccountID(edit.by)
-                                    ? queryContext.resolveAccount(edit.by)
-                                    : undefined,
-                            tx: edit.tx,
-                            at: new Date(edit.at),
-                            value:
-                                edit.value &&
-                                queryContext.resolveValue(edit.value),
-                        }));
+                        const edits = [...coMap.editsAt(key)].map((edit) =>
+                            queryContext.defineSubqueryPropertiesIn(
+                                {
+                                    tx: edit.tx,
+                                    at: new Date(edit.at),
+                                },
+                                {
+                                    by: { value: edit.by, enumerable: true },
+                                    value: {
+                                        value: edit.value,
+                                        enumerable: true,
+                                    },
+                                },
+                                [coMap.id]
+                            )
+                        );
                         const lastEdit = edits[edits.length - 1];
                         if (!lastEdit) return [];
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,6 +94,15 @@ export class QueriedCoMapBase<M extends AnyCoMap> {
                         return [[key, editsAtKey]];
                     })
                 ),
+                enumerable: false,
+            },
+            as: {
+                value: <O>(extension: QueryExtension<M, O>) => {
+                    return queryContext.getOrCreateExtension(
+                        coMap.id,
+                        extension
+                    );
+                },
                 enumerable: false,
             },
         });
@@ -125,16 +130,12 @@ export class QueriedCoMapBase<M extends AnyCoMap> {
 
     set<K extends keyof M["_shape"] & string>(
         key: K,
-        value: M["_shape"][K] extends CoValue
-            ? M["_shape"][K] | CoID<M["_shape"][K]>
-            : M["_shape"][K],
+        value: M["_shape"][K],
         privacy?: "private" | "trusting"
     ): M;
     set(
         kv: {
-            [K in keyof M["_shape"] & string]?: M["_shape"][K] extends CoValue
-                ? M["_shape"][K] | CoID<M["_shape"][K]>
-                : M["_shape"][K];
+            [K in keyof M["_shape"] & string]?: M["_shape"][K];
         },
         privacy?: "private" | "trusting"
     ): M;
@@ -142,20 +143,11 @@ export class QueriedCoMapBase<M extends AnyCoMap> {
         ...args:
             | [
                   {
-                      [K in keyof M["_shape"] &
-                          string]?: M["_shape"][K] extends CoValue
-                          ? M["_shape"][K] | CoID<M["_shape"][K]>
-                          : M["_shape"][K];
+                      [K in keyof M["_shape"] & string]?: M["_shape"][K];
                   },
                   ("private" | "trusting")?
               ]
-            | [
-                  K,
-                  M["_shape"][K] extends CoValue
-                      ? M["_shape"][K] | CoID<M["_shape"][K]>
-                      : M["_shape"][K],
-                  ("private" | "trusting")?
-              ]
+            | [K, M["_shape"][K], ("private" | "trusting")?]
     ): M {
         // eslint-disable-next-line @typescript-eslint/ban-types
         return (this.coMap.set as Function)(...args);
@@ -171,10 +163,6 @@ export class QueriedCoMapBase<M extends AnyCoMap> {
     ): M {
         return this.coMap.mutate(mutator);
     }
-}
 
-export type QueriedAccountAndProfile = {
-    profile?: { name?: string; id: CoID<Profile> };
-    isMe?: boolean;
-    id: AccountID;
-};
+    as!: <O>(extension: QueryExtension<M, O>) => O | undefined;
+}

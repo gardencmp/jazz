@@ -1,4 +1,4 @@
-import { CoID, Group, LocalNode, Media } from "cojson";
+import { CoID, Group, LocalNode, Media, QueryExtension } from "cojson";
 
 import ImageBlobReduce from "image-blob-reduce";
 import Pica from "pica";
@@ -6,12 +6,14 @@ import {
     createBinaryStreamFromBlob,
     readBlobFromBinaryStream,
 } from "jazz-browser";
+import { QueryContext } from "cojson/dist/queries";
 
 const pica = new Pica();
 
 export async function createImage(
     imageBlobOrFile: Blob | File,
-    inGroup: Group
+    inGroup: Group,
+    maxSize?: 256 | 1024 | 2048
 ): Promise<Media.ImageDefinition> {
     let originalWidth!: number;
     let originalHeight!: number;
@@ -63,6 +65,8 @@ export async function createImage(
 
         await new Promise((resolve) => setTimeout(resolve, 0));
 
+        if (maxSize === 256) return;
+
         const max1024 = await Reducer.toBlob(imageBlobOrFile, { max: 1024 });
 
         if (originalWidth > 1024 || originalHeight > 1024) {
@@ -85,6 +89,8 @@ export async function createImage(
         }
 
         await new Promise((resolve) => setTimeout(resolve, 0));
+
+        if (maxSize === 1024) return;
 
         const max2048 = await Reducer.toBlob(imageBlobOrFile, { max: 2048 });
 
@@ -109,6 +115,8 @@ export async function createImage(
 
         await new Promise((resolve) => setTimeout(resolve, 0));
 
+        if (maxSize === 2048) return;
+
         const originalBinaryStreamId = (
             await createBinaryStreamFromBlob(imageBlobOrFile, inGroup)
         ).id;
@@ -128,10 +136,14 @@ export type LoadingImageInfo = {
     originalSize?: [number, number];
     placeholderDataURL?: string;
     highestResSrc?: string;
+    highestResSrcOrPlaceholder?: string;
 };
 
 export function loadImage(
-    imageDef: CoID<Media.ImageDefinition> | Media.ImageDefinition | {id: CoID<Media.ImageDefinition>},
+    imageDef:
+        | CoID<Media.ImageDefinition>
+        | Media.ImageDefinition
+        | { id: CoID<Media.ImageDefinition> },
     localNode: LocalNode,
     progressiveCallback: (update: LoadingImageInfo) => void
 ): () => void {
@@ -155,7 +167,9 @@ export function loadImage(
             if (entry?.state === "loaded") {
                 resState[res as `${number}x${number}`] = { state: "revoked" };
                 // prevent flashing from immediate revocation
-                setTimeout(() => {URL.revokeObjectURL(entry.blobURL)}, 3000);
+                setTimeout(() => {
+                    URL.revokeObjectURL(entry.blobURL);
+                }, 3000);
             }
         }
         unsubscribe?.();
@@ -285,6 +299,7 @@ export function loadImage(
                                                 originalSize,
                                                 placeholderDataURL,
                                                 highestResSrc: blobURL,
+                                                highestResSrcOrPlaceholder: blobURL
                                             });
 
                                             unsubFromStream();
@@ -316,6 +331,7 @@ export function loadImage(
                     progressiveCallback({
                         originalSize,
                         placeholderDataURL,
+                        highestResSrcOrPlaceholder: placeholderDataURL!,
                     });
                 }
 
@@ -332,3 +348,18 @@ export function loadImage(
 
     return cleanUp;
 }
+
+export const BrowserImage: QueryExtension<
+    Media.ImageDefinition,
+    LoadingImageInfo
+> = {
+    id: "BrowserImage",
+
+    query(
+        imageDef: Media.ImageDefinition,
+        queryContext: QueryContext,
+        callback: (update: LoadingImageInfo) => void
+    ): () => void {
+        return loadImage(imageDef, queryContext.node, callback);
+    },
+};

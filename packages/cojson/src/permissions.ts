@@ -5,13 +5,12 @@ import { KeyID } from "./crypto.js";
 import {
     CoValueCore,
     Transaction,
-    TrustingTransaction,
     accountOrAgentIDfromSessionID,
 } from "./coValueCore.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { AccountID, Profile } from "./account.js";
+import { Account, AccountID, Profile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
-import { expectGroupContent } from "./group.js";
+import { EVERYONE, Everyone, expectGroup } from "./coValues/group.js";
 
 export type PermissionsDef =
     | { type: "group"; initialAdmin: AccountID | AgentID }
@@ -31,26 +30,21 @@ export function determineValidTransactions(
     coValue: CoValueCore
 ): { txID: TransactionID; tx: Transaction }[] {
     if (coValue.header.ruleset.type === "group") {
-        const allTrustingTransactionsSorted = Object.entries(
-            coValue.sessions
-        ).flatMap(([sessionID, sessionLog]) => {
-            return sessionLog.transactions
-                .map((tx, txIndex) => ({ sessionID, txIndex, tx }))
-                .filter(({ tx }) => {
-                    if (tx.privacy === "trusting") {
-                        return true;
-                    } else {
-                        console.warn("Unexpected private transaction in Group");
-                        return false;
-                    }
-                }) as {
-                sessionID: SessionID;
-                txIndex: number;
-                tx: TrustingTransaction;
-            }[];
-        });
+        const allTransactionsSorted = Object.entries(coValue.sessions).flatMap(
+            ([sessionID, sessionLog]) => {
+                return sessionLog.transactions.map((tx, txIndex) => ({
+                    sessionID,
+                    txIndex,
+                    tx,
+                })) as {
+                    sessionID: SessionID;
+                    txIndex: number;
+                    tx: Transaction;
+                }[];
+            }
+        );
 
-        allTrustingTransactionsSorted.sort((a, b) => {
+        allTransactionsSorted.sort((a, b) => {
             return a.tx.madeAt - b.tx.madeAt;
         });
 
@@ -60,18 +54,32 @@ export function determineValidTransactions(
             throw new Error("Group must have initialAdmin");
         }
 
-        const memberState: { [agent: AccountID | AgentID]: Role } = {};
+        const memberState: {
+            [agent: AccountID | AgentID]: Role;
+            [EVERYONE]?: Role;
+        } = {};
 
         const validTransactions: { txID: TransactionID; tx: Transaction }[] =
             [];
 
-        for (const {
-            sessionID,
-            txIndex,
-            tx,
-        } of allTrustingTransactionsSorted) {
+        for (const { sessionID, txIndex, tx } of allTransactionsSorted) {
             // console.log("before", { memberState, validTransactions });
             const transactor = accountOrAgentIDfromSessionID(sessionID);
+
+            if (tx.privacy === "private") {
+                if (memberState[transactor] === "admin") {
+                    validTransactions.push({
+                        txID: { sessionID, txIndex },
+                        tx,
+                    });
+                    continue;
+                } else {
+                    console.warn(
+                        "Only admins can make private transactions in groups"
+                    );
+                    continue;
+                }
+            }
 
             let changes;
 
@@ -93,7 +101,7 @@ export function determineValidTransactions(
             }
 
             const change = changes[0] as
-                | MapOpPayload<AccountID | AgentID, Role>
+                | MapOpPayload<AccountID | AgentID | Everyone, Role>
                 | MapOpPayload<"readKey", JsonValue>
                 | MapOpPayload<"profile", CoID<Profile>>;
             if (changes.length !== 1) {
@@ -158,6 +166,20 @@ export function determineValidTransactions(
                 continue;
             }
 
+            if (
+                affectedMember === EVERYONE &&
+                !(
+                    change.value === "reader" ||
+                    change.value === "writer" ||
+                    change.value === "revoked"
+                )
+            ) {
+                console.warn(
+                    "Everyone can only be set to reader, writer or revoked"
+                );
+                continue;
+            }
+
             const isFirstSelfAppointment =
                 !memberState[transactor] &&
                 transactor === initialAdmin &&
@@ -206,7 +228,7 @@ export function determineValidTransactions(
 
         return validTransactions;
     } else if (coValue.header.ruleset.type === "ownedByGroup") {
-        const groupContent = expectGroupContent(
+        const groupContent = expectGroup(
             coValue.node
                 .expectCoValueLoaded(
                     coValue.header.ruleset.group,
@@ -224,11 +246,18 @@ export function determineValidTransactions(
                 const transactor = accountOrAgentIDfromSessionID(
                     sessionID as SessionID
                 );
+
                 return sessionLog.transactions
                     .filter((tx) => {
-                        const transactorRoleAtTxTime = groupContent
-                            .atTime(tx.madeAt)
-                            .get(transactor);
+                        const groupAtTime = groupContent.atTime(tx.madeAt);
+                        const effectiveTransactor =
+                            transactor === groupContent.id &&
+                            groupAtTime instanceof Account
+                                ? groupAtTime.getCurrentAgentID()
+                                : transactor;
+                        const transactorRoleAtTxTime =
+                            groupAtTime.get(effectiveTransactor) ||
+                            groupAtTime.get(EVERYONE);
 
                         return (
                             transactorRoleAtTxTime === "admin" ||
@@ -252,7 +281,8 @@ export function determineValidTransactions(
         );
     } else {
         throw new Error(
-            "Unknown ruleset type " + (coValue.header.ruleset as {type: string}).type
+            "Unknown ruleset type " +
+                (coValue.header.ruleset as { type: string }).type
         );
     }
 }
@@ -267,7 +297,8 @@ export function isKeyForAccountField(
     field: string
 ): field is `${KeyID}_for_${AccountID | AgentID}` {
     return (
-        field.startsWith("key_") &&
-        (field.includes("_for_sealer") || field.includes("_for_co"))
+        (field.startsWith("key_") &&
+            (field.includes("_for_sealer") || field.includes("_for_co"))) ||
+        field.includes("_for_everyone")
     );
 }

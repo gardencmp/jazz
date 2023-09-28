@@ -1,13 +1,12 @@
 import { CoList, MutableCoList } from "../coValues/coList.js";
 import { CoValueCore } from "../coValueCore.js";
-import { Group } from "../group.js";
-import { isAccountID } from "../account.js";
-import { AnyCoList, CoID, CoValue } from "../coValue.js";
+import { Group } from "../coValues/group.js";
+import { CoID, CoValue } from "../coValue.js";
 import { TransactionID } from "../ids.js";
-import { QueriedAccountAndProfile } from "./queriedCoMap.js";
 import { ValueOrSubQueried, QueryContext } from "../queries.js";
+import { QueriedAccount } from "./queriedAccount.js";
 
-export class QueriedCoList<L extends AnyCoList> extends Array<
+export class QueriedCoList<L extends CoList> extends Array<
     ValueOrSubQueried<L["_item"]>
 > {
     coList!: L;
@@ -27,40 +26,37 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
                 .asArray()
                 .map(
                     (item) =>
-                        queryContext.resolveValue(item) as ValueOrSubQueried<
+                        queryContext.queryIfCoID(item, [coList.id]) as ValueOrSubQueried<
                             L["_item"]
                         >
                 )
         );
 
         Object.defineProperties(this, {
-            coList: { value: coList },
+            coList: { get() {return coList} },
             id: { value: coList.id },
             type: { value: "colist" },
             edits: {
                 value: [...this.keys()].map((i) => {
                     const edit = coList.editAt(i)!;
-                    return {
-                        by:
-                            edit.by && isAccountID(edit.by)
-                                ? queryContext.resolveAccount(edit.by)
-                                : undefined,
+                    return queryContext.defineSubqueryPropertiesIn({
+
                         tx: edit.tx,
                         at: new Date(edit.at),
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        value: queryContext.resolveValue(edit.value) as any,
-                    };
+                    }, {
+                        by: {value: edit.by, enumerable: true},
+                        value: {value: edit.value, enumerable: true},
+                    }, [coList.id]);
                 }),
             },
             deletions: {
-                value: coList.deletionEdits().map((deletion) => ({
-                    by:
-                        deletion.by && isAccountID(deletion.by)
-                            ? queryContext.resolveAccount(deletion.by)
-                            : undefined,
+                value: coList.deletionEdits().map((deletion) => queryContext.defineSubqueryPropertiesIn({
+
                     tx: deletion.tx,
                     at: new Date(deletion.at),
-                })),
+                }, {
+                    by: {value: deletion.by, enumerable: true},
+                }, [coList.id])),
             },
         });
     }
@@ -78,9 +74,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }
 
     append(
-        item: L["_item"] extends CoValue
-            ? L["_item"] | CoID<L["_item"]>
-            : L["_item"],
+        item: L["_item"],
         after?: number,
         privacy?: "private" | "trusting"
     ): L {
@@ -88,16 +82,14 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }
 
     prepend(
-        item: L["_item"] extends CoValue
-            ? L["_item"] | CoID<L["_item"]>
-            : L["_item"],
+        item: L["_item"],
         before?: number,
         privacy?: "private" | "trusting"
     ): L {
         return this.coList.prepend(item, before, privacy);
     }
 
-    delete(at: number, privacy: "private" | "trusting"): L {
+    delete(at: number, privacy?: "private" | "trusting"): L {
         return this.coList.delete(at, privacy);
     }
 
@@ -108,7 +100,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }
 
     edits!: {
-        by?: QueriedAccountAndProfile;
+        by?: QueriedAccount;
         tx: TransactionID;
         at: Date;
         value: L["_item"] extends CoValue
@@ -117,7 +109,7 @@ export class QueriedCoList<L extends AnyCoList> extends Array<
     }[];
 
     deletions!: {
-        by?: QueriedAccountAndProfile;
+        by?: QueriedAccount;
         tx: TransactionID;
         at: Date;
     }[];

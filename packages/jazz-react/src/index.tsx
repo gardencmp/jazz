@@ -3,6 +3,11 @@ import {
     CoID,
     Queried,
     CoValue,
+    BinaryCoStream,
+    QueriedAccount,
+    Account,
+    AccountMeta,
+    AccountMigration,
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,10 +16,12 @@ import {
     createBrowserNode,
 } from "jazz-browser";
 import { readBlobFromBinaryStream } from "jazz-browser";
-import { AnyBinaryCoStream } from "cojson/dist/coValue";
+import { Profile } from "cojson";
+import { CoMap } from "cojson";
 
 const JazzContext = React.createContext<
     | {
+          me: Queried<Account>;
           localNode: LocalNode;
           logOut: () => void;
       }
@@ -53,6 +60,7 @@ export function WithJazz(props: {
     auth: ReactAuthHook;
     syncAddress?: string;
     children: React.ReactNode;
+    migration?: AccountMigration;
 }) {
     const { auth: authHook, syncAddress, children } = props;
 
@@ -71,6 +79,7 @@ export function WithJazz(props: {
                     syncAddress ||
                     new URLSearchParams(window.location.search).get("sync") ||
                     undefined,
+                migration: props.migration,
             });
 
             if (stop) {
@@ -91,10 +100,18 @@ export function WithJazz(props: {
         };
     }, [auth, syncAddress]);
 
+    const me = useSyncedQueryWithNode("me", node) as QueriedAccount | undefined;
+
     return (
         <>
-            {node && logOut ? (
-                <JazzContext.Provider value={{ localNode: node, logOut }}>
+            {node && me && logOut ? (
+                <JazzContext.Provider
+                    value={{
+                        me,
+                        localNode: node,
+                        logOut,
+                    }}
+                >
                     <>{children}</>
                 </JazzContext.Provider>
             ) : (
@@ -110,14 +127,22 @@ export function WithJazz(props: {
  *
  * Also provides a `logOut` function, which invokes the log-out logic of the Auth Provider passed to `<WithJazz/>`.
  */
-export function useJazz() {
+export function useJazz<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+>() {
     const context = React.useContext(JazzContext);
 
     if (!context) {
         throw new Error("useJazz must be used within a WithJazz provider");
     }
 
-    return context;
+    return {
+        me: context.me as QueriedAccount<Account<P, R, Meta>>,
+        localNode: context.localNode,
+        logOut: context.logOut,
+    };
 }
 
 /**
@@ -127,15 +152,31 @@ export function useJazz() {
  *
  * @param id The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined).
  */
+export function useSyncedQuery<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+>(id: "me"): QueriedAccount<Account<P, R, Meta>> | undefined;
 export function useSyncedQuery<T extends CoValue>(
     id?: CoID<T>
-): Queried<T> | undefined {
-    const { localNode } = useJazz();
+): Queried<T> | undefined;
+export function useSyncedQuery(
+    id?: CoID<CoValue> | "me"
+): Queried<CoValue> | QueriedAccount | undefined {
+    return useSyncedQueryWithNode(id, useJazz().localNode);
+}
 
-    const [result, setResult] = useState<Queried<T> | undefined>();
+/** @internal */
+export function useSyncedQueryWithNode(
+    id?: CoID<CoValue> | "me",
+    localNode?: LocalNode
+): Queried<CoValue> | QueriedAccount | undefined {
+    const [result, setResult] = useState<
+        Queried<CoValue> | QueriedAccount | undefined
+    >();
 
     useEffect(() => {
-        if (!id) return;
+        if (!id || !localNode) return;
         const unsubscribe = localNode.query(id, setResult);
         return unsubscribe;
     }, [id, localNode]);
@@ -192,7 +233,7 @@ export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
     return useSyncedValue(id);
 }
 
-export function useBinaryStream<C extends AnyBinaryCoStream>(
+export function useBinaryStream<C extends BinaryCoStream>(
     streamID?: CoID<C>,
     allowUnfinished?: boolean
 ): { blob: Blob; blobURL: string } | undefined {

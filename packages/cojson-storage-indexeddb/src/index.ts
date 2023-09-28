@@ -5,6 +5,7 @@ import {
     Peer,
     CojsonInternalTypes,
     MAX_RECOMMENDED_TX_SIZE,
+    AccountID,
 } from "cojson";
 import {
     ReadableStream,
@@ -141,7 +142,9 @@ export class IDBStorage {
                 if (ev.oldVersion !== 0 && ev.oldVersion <= 3) {
                     // fix embarrassing off-by-one error for transaction indices
                     console.log("Migration: fixing off-by-one error");
-                    const transaction = (ev.target as unknown as {transaction: IDBTransaction}).transaction;
+                    const transaction = (
+                        ev.target as unknown as { transaction: IDBTransaction }
+                    ).transaction;
 
                     const txsStore = transaction.objectStore("transactions");
                     const txs = await promised(txsStore.getAll());
@@ -266,7 +269,8 @@ export class IDBStorage {
                     if (!sessionEntry) {
                         sessionEntry = {
                             after: idx,
-                            lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
+                            lastSignature:
+                                "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
                             newTransactions: [],
                         };
                         newContentPieces[newContentPieces.length - 1]!.new[
@@ -328,7 +332,25 @@ export class IDBStorage {
                           })
                       )
                 : coValueRow?.header.ruleset.type === "ownedByGroup"
-                ? [coValueRow?.header.ruleset.group]
+                ? [
+                      coValueRow?.header.ruleset.group,
+                      ...new Set(
+                          newContentPieces.flatMap((piece) =>
+                              Object.keys(piece)
+                                  .map((sessionID) =>
+                                      cojsonInternals.accountOrAgentIDfromSessionID(
+                                          sessionID as SessionID
+                                      )
+                                  )
+                                  .filter(
+                                      (accountID): accountID is AccountID =>
+                                          cojsonInternals.isAccountID(
+                                              accountID
+                                          ) && accountID !== theirKnown.id
+                                  )
+                          )
+                      ),
+                  ]
                 : [];
 
         for (const dependedOnCoValue of dependedOnCoValues) {

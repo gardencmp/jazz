@@ -1,4 +1,4 @@
-import { AccountID } from './account.js';
+import { AccountID } from './coValues/account.js';
 import { base58 } from "@scure/base";
 import { shortHashLength } from './crypto.js';
 

@@ -1,4 +1,10 @@
-import { BinaryCoStream, CoValue, CoValueCore, InviteSecret } from "cojson";
+import {
+    AccountMigration,
+    BinaryCoStream,
+    CoValue,
+    CoValueCore,
+    InviteSecret,
+} from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
 import { cojsonReady } from "cojson";
@@ -26,10 +32,12 @@ export async function createBrowserNode({
     auth,
     syncAddress = "wss://sync.jazz.tools",
     reconnectionTimeout: initialReconnectionTimeout = 500,
+    migration,
 }: {
     auth: AuthProvider;
     syncAddress?: string;
     reconnectionTimeout?: number;
+    migration?: AccountMigration;
 }): Promise<BrowserNodeHandle> {
     await cojsonReady;
     let sessionDone: () => void;
@@ -52,7 +60,8 @@ export async function createBrowserNode({
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
-        [await IDBStorage.asPeer(), firstWsPeer]
+        [await IDBStorage.asPeer(), firstWsPeer],
+        migration
     );
 
     async function websocketReconnectLoop() {
@@ -114,7 +123,8 @@ export async function createBrowserNode({
 export interface AuthProvider {
     createNode(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
+        initialPeers: Peer[],
+        migration?: AccountMigration
     ): Promise<LocalNode>;
 }
 
@@ -319,8 +329,8 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
-export function createInviteLink<T extends CoValue>(
-    value: T | { id: CoID<T>; core: CoValueCore },
+export function createInviteLink(
+    value: CoValue | { id: CoID<CoValue>; core: CoValueCore },
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
@@ -329,22 +339,19 @@ export function createInviteLink<T extends CoValue>(
     }: { baseURL?: string; valueHint?: string } = {}
 ): string {
     const coValueCore = value.core;
-    const node = coValueCore.node;
     let currentCoValue = coValueCore;
 
     while (currentCoValue.header.ruleset.type === "ownedByGroup") {
-        currentCoValue = currentCoValue.getGroup().underlyingMap.core;
+        currentCoValue = currentCoValue.getGroup().core;
     }
 
     if (currentCoValue.header.ruleset.type !== "group") {
         throw new Error("Can't create invite link for object without group");
     }
 
-    const group = new Group(
-        cojsonInternals.expectGroupContent(currentCoValue.getCurrentContent()),
-        node
+    const group = cojsonInternals.expectGroup(
+        currentCoValue.getCurrentContent()
     );
-
     const inviteSecret = group.createInvite(role);
 
     return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${

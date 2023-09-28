@@ -1,11 +1,11 @@
 {
   "name": "cojson-storage-indexeddb",
-  "version": "0.3.5",
+  "version": "0.4.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "^0.3.5",
+    "cojson": "^0.4.1",
     "typescript": "^5.1.6"
   },
   "devDependencies": {

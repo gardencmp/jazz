@@ -6,7 +6,7 @@ import { PetPost, ReactionType, REACTION_TYPES, PetReactions } from "./1_types";
 
 import { ShareButton } from "./components/ShareButton";
 import { Button, Skeleton } from "./basicComponents";
-import { useLoadImage } from "jazz-react-media-images";
+import { BrowserImage } from "jazz-browser-media-images";
 import uniqolor from "uniqolor";
 
 /** Walkthrough: TODO
@@ -25,7 +25,6 @@ export function RatePetPostUI() {
     const petPostID = useParams<{ petPostId: CoID<PetPost> }>().petPostId;
 
     const petPost = useSyncedQuery(petPostID);
-    const petImage = useLoadImage(petPost?.image);
 
     return (
         <div className="flex flex-col gap-8">
@@ -34,10 +33,13 @@ export function RatePetPostUI() {
                 <ShareButton petPost={petPost} />
             </div>
 
-            {petImage && (
+            {petPost?.image && (
                 <img
                     className="w-80 max-w-full rounded"
-                    src={petImage.highestResSrc || petImage.placeholderDataURL}
+                    src={
+                        petPost.image.as(BrowserImage)
+                            ?.highestResSrcOrPlaceholder
+                    }
                 />
             )}
 
@@ -78,9 +80,9 @@ function ReactionOverview({
             <h2>Reactions</h2>
             <div className="flex flex-col gap-1">
                 {REACTION_TYPES.map((reactionType) => {
-                    const reactionsOfThisType = Object.values(
-                        petReactions.perAccount
-                    ).filter(({ last }) => last === reactionType);
+                    const reactionsOfThisType = petReactions.perAccount
+                        .map(([, reaction]) => reaction)
+                        .filter(({ last }) => last === reactionType);
 
                     if (reactionsOfThisType.length === 0) return null;
 

@@ -14,6 +14,8 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
+import { migration } from "./1_types.ts";
+import { AccountMigration } from "cojson";
 
 /**
  * Walkthrough: The top-level provider `<WithJazz/>`
@@ -33,9 +35,14 @@ const auth = LocalAuth({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <WithJazz auth={auth}>
-            <App />
-        </WithJazz>
+        <ThemeProvider>
+            <TitleAndLogo name={appName} />
+            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+                <WithJazz auth={auth} migration={migration as AccountMigration}>
+                    <App />
+                </WithJazz>
+            </div>
+        </ThemeProvider>
     </React.StrictMode>
 );
 
@@ -62,8 +69,8 @@ function App() {
         },
         {
             path: "/invite/*",
-            element: <p>Accepting invite...</p>
-        }
+            element: <p>Accepting invite...</p>,
+        },
     ]);
 
     // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
@@ -71,20 +78,16 @@ function App() {
     useAcceptInvite((projectID) => router.navigate("/project/" + projectID));
 
     return (
-        <ThemeProvider>
-            <TitleAndLogo name={appName} />
-            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+        <>
+            <RouterProvider router={router} />
 
-                <RouterProvider router={router} />
-
-                <Button
-                    onClick={() => router.navigate("/").then(logOut)}
-                    variant="outline"
-                >
-                    Log Out
-                </Button>
-            </div>
-        </ThemeProvider>
+            <Button
+                onClick={() => router.navigate("/").then(logOut)}
+                variant="outline"
+            >
+                Log Out
+            </Button>
+        </>
     );
 }
 

@@ -1,5 +1,5 @@
-import { CoValueHeader } from "./coValueCore.js";
-import { CoID } from "./coValue.js";
+import { CoValueCore, CoValueHeader } from "../coValueCore.js";
+import { CoID, CoValue } from "../coValue.js";
 import {
     AgentSecret,
     SealerID,
@@ -11,11 +11,10 @@ import {
     getAgentSealerSecret,
     getAgentSignerID,
     getAgentSignerSecret,
-} from "./crypto.js";
-import { AgentID } from "./ids.js";
-import { CoMap } from "./coValues/coMap.js";
-import { LocalNode } from "./localNode.js";
-import { Group, GroupContent } from "./group.js";
+} from "../crypto.js";
+import { AgentID } from "../ids.js";
+import { CoMap } from "./coMap.js";
+import { Group, InviteSecret } from "./group.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret
@@ -32,15 +31,15 @@ export function accountHeaderForInitialAgentSecret(
     };
 }
 
-export class AccountGroup extends Group {
-    get id(): AccountID {
-        return this.underlyingMap.id as AccountID;
-    }
-
+export class Account<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+> extends Group<P, R, Meta> {
     getCurrentAgentID(): AgentID {
-        const agents = this.underlyingMap
-            .keys()
-            .filter((k): k is AgentID => k.startsWith("sealer_"));
+        const agents = this.keys().filter((k): k is AgentID =>
+            k.startsWith("sealer_")
+        );
 
         if (agents.length !== 1) {
             throw new Error(
@@ -64,20 +63,35 @@ export interface GeneralizedControlledAccount {
 }
 
 /** @hidden */
-export class ControlledAccount
-    extends AccountGroup
+export class ControlledAccount<
+P extends Profile = Profile,
+R extends CoMap = CoMap,
+Meta extends AccountMeta = AccountMeta
+>
+    extends Account<P, R, Meta>
     implements GeneralizedControlledAccount
 {
     agentSecret: AgentSecret;
 
-    constructor(
-        agentSecret: AgentSecret,
-        groupMap: CoMap<AccountContent, AccountMeta>,
-        node: LocalNode
-    ) {
-        super(groupMap, node);
+    constructor(core: CoValueCore, agentSecret: AgentSecret) {
+        super(core);
 
         this.agentSecret = agentSecret;
+    }
+
+    /**
+     * Creates a new group (with the current account as the group's first admin).
+     * @category 1. High-level
+     */
+    createGroup() {
+        return this.core.node.createGroup();
+    }
+
+    async acceptInvite<T extends CoValue>(
+        groupOrOwnedValueID: CoID<T>,
+        inviteSecret: InviteSecret
+    ): Promise<void> {
+        return this.core.node.acceptInvite(groupOrOwnedValueID, inviteSecret);
     }
 
     currentAgentID(): AgentID {
@@ -136,17 +150,22 @@ export class AnonymousControlledAccount
     }
 }
 
-export type AccountContent = { profile: Profile } & GroupContent;
 export type AccountMeta = { type: "account" };
-export type Account = CoMap<AccountContent, AccountMeta>;
 export type AccountID = CoID<Account>;
 
 export function isAccountID(id: AccountID | AgentID): id is AccountID {
     return id.startsWith("co_");
 }
 
-export type ProfileContent = {
+export type ProfileShape = {
     name: string;
 };
 export type ProfileMeta = { type: "profile" };
-export type Profile = CoMap<ProfileContent, ProfileMeta>;
+
+export class Profile<Shape extends ProfileShape = ProfileShape, Meta extends ProfileMeta = ProfileMeta> extends CoMap<Shape, Meta> {
+
+}
+
+export type AccountMigration< P extends Profile = Profile,
+R extends CoMap = CoMap,
+Meta extends AccountMeta = AccountMeta> = (account: ControlledAccount<P, R, Meta>, profile: P) => void;

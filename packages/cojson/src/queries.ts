@@ -2,26 +2,37 @@ import { JsonValue } from "./jsonValue.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoStream } from "./coValues/coStream.js";
 import { CoList } from "./coValues/coList.js";
-import { AccountID } from "./account.js";
-import { AnyCoList, AnyCoMap, AnyCoStream, CoID, CoValue } from "./coValue.js";
+import { Account, AccountID } from "./coValues/account.js";
+import { CoID, CoValue } from "./coValue.js";
 import { LocalNode } from "./localNode.js";
 import {
-    QueriedAccountAndProfile,
     QueriedCoMap,
     QueriedCoMapBase,
 } from "./queriedCoValues/queriedCoMap.js";
 import { QueriedCoList } from "./queriedCoValues/queriedCoList.js";
 import { QueriedCoStream } from "./queriedCoValues/queriedCoStream.js";
+import { Group } from "./coValues/group.js";
+import { QueriedAccount } from "./queriedCoValues/queriedAccount.js";
+import { QueriedGroup } from "./queriedCoValues/queriedGroup.js";
 
-export type Queried<T extends CoValue> = T extends AnyCoMap
-    ? QueriedCoMap<T>
-    : T extends AnyCoList
+export type Queried<T extends CoValue> = T extends CoMap
+    ? T extends Account
+        ? QueriedAccount<T>
+        : T extends Group
+        ? QueriedGroup<T>
+        : QueriedCoMap<T>
+    : T extends CoList
     ? QueriedCoList<T>
-    : T extends AnyCoStream
+    : T extends CoStream
     ? T["meta"] extends { type: "binary" }
         ? never
         : QueriedCoStream<T>
-    : never;
+    :
+          | QueriedAccount
+          | QueriedGroup
+          | QueriedCoMap<CoMap>
+          | QueriedCoList<CoList>
+          | QueriedCoStream<CoStream>;
 
 export type ValueOrSubQueried<
     V extends JsonValue | CoValue | CoID<CoValue> | undefined
@@ -36,10 +47,27 @@ export interface CleanupCallbackAndUsable {
     [Symbol.dispose]: () => void;
 }
 
+export interface QueryExtension<T extends CoValue, O> {
+    id: string;
+    query(
+        base: T,
+        queryContext: QueryContext,
+        onUpdate: (value: O) => void
+    ): () => void;
+}
+
 export class QueryContext {
     values: {
         [id: CoID<CoValue>]: {
+            lastUpdate: CoValue | undefined;
             lastQueried: Queried<CoValue> | undefined;
+            render: () => void;
+            unsubscribe: () => void;
+        };
+    } = {};
+    extensions: {
+        [id: `${CoID<CoValue>}_${string}`]: {
+            lastOutput: unknown;
             unsubscribe: () => void;
         };
     } = {};
@@ -51,13 +79,68 @@ export class QueryContext {
         this.onUpdate = onUpdate;
     }
 
-    getChildLastQueriedOrSubscribe<T extends CoValue>(valueID: CoID<T>) {
+    query<T extends CoValue>(valueID: CoID<T>, alsoRender: CoID<CoValue>[]) {
         let value = this.values[valueID];
         if (!value) {
+            const render = () => {
+                let newQueried;
+                const lastUpdate = value!.lastUpdate;
+
+                if (lastUpdate instanceof CoMap) {
+                    if (lastUpdate instanceof Account) {
+                        newQueried = new QueriedAccount(
+                            lastUpdate,
+                            this
+                        ) as Queried<T>;
+                    } else if (lastUpdate instanceof Group) {
+                        newQueried = new QueriedGroup(
+                            lastUpdate,
+                            this
+                        ) as Queried<T>;
+                    } else {
+                        newQueried = QueriedCoMapBase.newWithKVPairs(
+                            lastUpdate,
+                            this
+                        ) as Queried<T>;
+                    }
+                } else if (lastUpdate instanceof CoList) {
+                    newQueried = new QueriedCoList(
+                        lastUpdate,
+                        this
+                    ) as Queried<T>;
+                } else if (lastUpdate instanceof CoStream) {
+                    if (lastUpdate.meta?.type === "binary") {
+                        // Querying binary string not yet implemented
+                    } else {
+                        newQueried = new QueriedCoStream(
+                            lastUpdate,
+                            this
+                        ) as Queried<T>;
+                    }
+                }
+
+                // console.log(
+                //     "Rendered ",
+                //     valueID,
+                //     lastUpdate?.constructor.name,
+                //     newQueried
+                // );
+
+                value!.lastQueried = newQueried;
+
+                for (const alsoRenderID of alsoRender) {
+                    // console.log("Also rendering", alsoRenderID);
+                    this.values[alsoRenderID]?.render();
+                }
+            };
+
             value = {
                 lastQueried: undefined,
-                unsubscribe: query(valueID, this.node, (childQueried) => {
-                    value!.lastQueried = childQueried as Queried<CoValue>;
+                lastUpdate: undefined,
+                render,
+                unsubscribe: this.node.subscribe(valueID, (valueUpdate) => {
+                    value!.lastUpdate = valueUpdate;
+                    value!.render();
                     this.onUpdate();
                 }),
             };
@@ -66,25 +149,91 @@ export class QueryContext {
         return value.lastQueried as Queried<T> | undefined;
     }
 
-    resolveAccount(accountID: AccountID) {
-        return this.getChildLastQueriedOrSubscribe(
-            accountID
-        ) as QueriedAccountAndProfile;
+    queryIfCoID<T extends JsonValue | undefined>(value: T, alsoRender: CoID<CoValue>[]): T extends CoID<infer C> ? Queried<C> | undefined : T {
+        if (typeof value === "string" && value.startsWith("co_")) {
+            return this.query(value as CoID<CoValue>, alsoRender) as T extends CoID<infer C> ? Queried<C> | undefined : never;
+        } else {
+            return value as T extends CoID<infer C> ? Queried<C> | undefined : T;
+        }
     }
 
-    resolveValue<T extends JsonValue>(
-        value: T
-    ): T extends CoID<infer C> ? Queried<C> | undefined : T {
-        return (
-            typeof value === "string" && value.startsWith("co_")
-                ? this.getChildLastQueriedOrSubscribe(value as CoID<CoValue>)
-                : value
-        ) as T extends CoID<infer C> ? Queried<C> | undefined : T;
+    valueOrSubQueryPropertyDescriptor<T extends JsonValue | undefined>(
+        value: T,
+        alsoRender: CoID<CoValue>[]
+    ): T extends CoID<infer C>
+        ? { get(): Queried<C> | undefined }
+        : { value: T } {
+        if (typeof value === "string" && value.startsWith("co_")) {
+            // TODO: when we track render dirty status, we can actually return the queried value without a getter if it's up to date
+            return {
+                get: () => this.query(value as CoID<CoValue>, alsoRender),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return { value: value } as any;
+        }
+    }
+
+    defineSubqueryPropertiesIn<
+        O extends object,
+        P extends {
+            [key: string]: { value: JsonValue | undefined; enumerable: boolean };
+        }
+    >(
+        obj: O,
+        subqueryProps: P,
+        alsoRender: CoID<CoValue>[]
+    ): O & {
+        [Key in keyof P]: ValueOrSubQueried<P[Key]["value"]>;
+    } {
+        for (const [key, descriptor] of Object.entries(subqueryProps)) {
+            Object.defineProperty(
+                obj,
+                key,
+                {
+                    ...this.valueOrSubQueryPropertyDescriptor(descriptor.value, alsoRender),
+                    enumerable: descriptor.enumerable,
+                }
+            );
+        }
+        return obj as O & {
+            [Key in keyof P]: ValueOrSubQueried<P[Key]["value"]>
+        };
+    }
+
+    getOrCreateExtension<T extends CoValue, O>(
+        valueID: CoID<T>,
+        extension: QueryExtension<T, O>
+    ): O | undefined {
+        const id = `${valueID}_${extension.id}`;
+        let ext = this.extensions[id as keyof typeof this.extensions];
+        if (!ext) {
+            ext = {
+                lastOutput: undefined,
+                unsubscribe: extension.query(
+                    this.node
+                        .expectCoValueLoaded(valueID)
+                        .getCurrentContent() as T,
+                    this,
+                    (output) => {
+                        ext!.lastOutput = output;
+                        this.values[valueID]?.render();
+                        this.onUpdate();
+                    }
+                ),
+            };
+            this.extensions[id as keyof typeof this.extensions] = ext;
+        }
+        return ext.lastOutput as O | undefined;
     }
 
     cleanup() {
         for (const child of Object.values(this.values)) {
-            child.unsubscribe();
+            child.unsubscribe?.();
+        }
+        for (const extension of Object.values(this.extensions)) {
+            extension.unsubscribe();
         }
     }
 }
@@ -92,49 +241,21 @@ export class QueryContext {
 export function query<T extends CoValue>(
     id: CoID<T>,
     node: LocalNode,
-    callback: (queried: Queried<T> | undefined) => void,
-    parentContext?: QueryContext
+    callback: (queried: Queried<T> | undefined) => void
 ): CleanupCallbackAndUsable {
-    console.log("querying", id);
+    // console.log("querying", id);
 
-    const context = parentContext || new QueryContext(node, onUpdate);
-
-    const unsubscribe = node.subscribe(id, (update) => {
-        lastRootValue = update;
-        onUpdate();
+    const context = new QueryContext(node, () => {
+        const rootQueried = context.values[id]?.lastQueried as
+            | Queried<T>
+            | undefined;
+        callback(rootQueried);
     });
 
-    let lastRootValue: T | undefined;
-
-    function onUpdate() {
-        const rootValue = lastRootValue;
-
-        if (rootValue === undefined) {
-            return undefined;
-        }
-
-        if (rootValue instanceof CoMap) {
-            callback(
-                QueriedCoMapBase.newWithKVPairs(
-                    rootValue,
-                    context
-                ) as Queried<T>
-            );
-        } else if (rootValue instanceof CoList) {
-            callback(new QueriedCoList(rootValue, context) as Queried<T>);
-        } else if (rootValue instanceof CoStream) {
-            if (rootValue.meta?.type === "binary") {
-                // Querying binary string not yet implemented
-                return {};
-            } else {
-                callback(new QueriedCoStream(rootValue, context) as Queried<T>);
-            }
-        }
-    }
+    context.query(id, []);
 
     const cleanup = function cleanup() {
         context.cleanup();
-        unsubscribe();
     } as CleanupCallbackAndUsable;
     cleanup[Symbol.dispose] = cleanup;
 

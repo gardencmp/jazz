@@ -26,12 +26,17 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Group, expectGroupContent } from "./group.js";
+import { Group, expectGroup } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { CoList } from "./coValues/coList.js";
-import { AccountID, GeneralizedControlledAccount } from "./account.js";
+import {
+    Account,
+    AccountID,
+    GeneralizedControlledAccount,
+    isAccountID,
+} from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
@@ -163,7 +168,15 @@ export class CoValueCore {
     }
 
     nextTransactionID(): TransactionID {
-        const sessionID = this.node.currentSessionID;
+        // This is an ugly hack to get a unique but stable session ID for editing the current account
+        const sessionID =
+            this.header.meta?.type === "account"
+                ? (this.node.currentSessionID.replace(
+                      this.node.account.id,
+                      this.node.account.currentAgentID()
+                  ) as SessionID)
+                : this.node.currentSessionID;
+
         return {
             sessionID,
             txIndex: this.sessions[sessionID]?.transactions.length || 0,
@@ -467,7 +480,14 @@ export class CoValueCore {
             };
         }
 
-        const sessionID = this.node.currentSessionID;
+        // This is an ugly hack to get a unique but stable session ID for editing the current account
+        const sessionID =
+            this.header.meta?.type === "account"
+                ? (this.node.currentSessionID.replace(
+                      this.node.account.id,
+                      this.node.account.currentAgentID()
+                  ) as SessionID)
+                : this.node.currentSessionID;
 
         const { expectedNewHash } = this.expectedNewHashAfter(sessionID, [
             transaction,
@@ -492,33 +512,51 @@ export class CoValueCore {
         return success;
     }
 
-    getCurrentContent(): CoValue {
-        if (this._cachedContent) {
+    getCurrentContent(options?: { ignorePrivateTransactions: true }): CoValue {
+        if (!options?.ignorePrivateTransactions && this._cachedContent) {
             return this._cachedContent;
         }
 
+        let newContent;
         if (this.header.type === "comap") {
-            this._cachedContent = new CoMap(this);
+            if (this.header.ruleset.type === "group") {
+                if (
+                    this.header.meta?.type === "account" &&
+                    !options?.ignorePrivateTransactions
+                ) {
+                    newContent = new Account(this);
+                } else {
+                    newContent = new Group(this, options);
+                }
+            } else {
+                newContent = new CoMap(this);
+            }
         } else if (this.header.type === "colist") {
-            this._cachedContent = new CoList(this);
+            newContent = new CoList(this);
         } else if (this.header.type === "costream") {
             if (this.header.meta && this.header.meta.type === "binary") {
-                this._cachedContent = new BinaryCoStream(this);
+                newContent = new BinaryCoStream(this);
             } else {
-                this._cachedContent = new CoStream(this);
+                newContent = new CoStream(this);
             }
         } else {
             throw new Error(`Unknown coValue type ${this.header.type}`);
         }
 
-        return this._cachedContent;
+        if (!options?.ignorePrivateTransactions) {
+            this._cachedContent = newContent;
+        }
+
+        return newContent;
     }
 
-    getValidSortedTransactions(): DecryptedTransaction[] {
+    getValidSortedTransactions(options?: {
+        ignorePrivateTransactions: true;
+    }): DecryptedTransaction[] {
         const validTransactions = determineValidTransactions(this);
 
         const allTransactions: DecryptedTransaction[] = validTransactions
-            .map(({ txID, tx }) => {
+            .flatMap(({ txID, tx }) => {
                 if (tx.privacy === "trusting") {
                     return {
                         txID,
@@ -526,6 +564,9 @@ export class CoValueCore {
                         changes: tx.changes,
                     };
                 } else {
+                    if (options?.ignorePrivateTransactions) {
+                        return undefined;
+                    }
                     const readKey = this.getReadKey(tx.keyUsed);
 
                     if (!readKey) {
@@ -574,7 +615,7 @@ export class CoValueCore {
 
     getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {
         if (this.header.ruleset.type === "group") {
-            const content = expectGroupContent(this.getCurrentContent());
+            const content = expectGroup(this.getCurrentContent());
 
             const currentKeyId = content.get("readKey");
 
@@ -600,16 +641,38 @@ export class CoValueCore {
     }
 
     getReadKey(keyID: KeyID): KeySecret | undefined {
-        if (readKeyCache.get(this)?.[keyID]) {
-            return readKeyCache.get(this)?.[keyID];
+        let key = readKeyCache.get(this)?.[keyID];
+        if (!key) {
+            key = this.getUncachedReadKey(keyID);
+            if (key) {
+                let cache = readKeyCache.get(this);
+                if (!cache) {
+                    cache = {};
+                    readKeyCache.set(this, cache);
+                }
+                cache[keyID] = key;
+            }
         }
+        return key;
+    }
+
+    getUncachedReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "group") {
-            const content = expectGroupContent(this.getCurrentContent());
+            const content = expectGroup(
+                this.getCurrentContent({ ignorePrivateTransactions: true })
+            );
+
+            const keyForEveryone = content.get(`${keyID}_for_everyone`);
+            if (keyForEveryone) return keyForEveryone;
 
             // Try to find key revelation for us
+            const lookupAccountOrAgentID =
+                this.header.meta?.type === "account"
+                    ? this.node.account.currentAgentID()
+                    : this.node.account.id;
 
             const lastReadyKeyEdit = content.lastEditAt(
-                `${keyID}_for_${this.node.account.id}`
+                `${keyID}_for_${lookupAccountOrAgentID}`
             );
 
             if (lastReadyKeyEdit?.value) {
@@ -630,13 +693,6 @@ export class CoValueCore {
                 );
 
                 if (secret) {
-                    let cache = readKeyCache.get(this);
-                    if (!cache) {
-                        cache = {};
-                        readKeyCache.set(this, cache);
-                    }
-                    cache[keyID] = secret;
-
                     return secret as KeySecret;
                 }
             }
@@ -665,13 +721,6 @@ export class CoValueCore {
                     );
 
                     if (secret) {
-                        let cache = readKeyCache.get(this);
-                        if (!cache) {
-                            cache = {};
-                            readKeyCache.set(this, cache);
-                        }
-                        cache[keyID] = secret;
-
                         return secret as KeySecret;
                     } else {
                         console.error(
@@ -698,13 +747,10 @@ export class CoValueCore {
             throw new Error("Only values owned by groups have groups");
         }
 
-        return new Group(
-            expectGroupContent(
-                this.node
-                    .expectCoValueLoaded(this.header.ruleset.group)
-                    .getCurrentContent()
-            ),
+        return expectGroup(
             this.node
+                .expectCoValueLoaded(this.header.ruleset.group)
+                .getCurrentContent()
         );
     }
 
@@ -808,11 +854,25 @@ export class CoValueCore {
 
     getDependedOnCoValues(): RawCoID[] {
         return this.header.ruleset.type === "group"
-            ? expectGroupContent(this.getCurrentContent())
+            ? expectGroup(this.getCurrentContent())
                   .keys()
                   .filter((k): k is AccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByGroup"
-            ? [this.header.ruleset.group]
+            ? [
+                  this.header.ruleset.group,
+                  ...new Set(
+                      Object.keys(this._sessions)
+                          .map((sessionID) =>
+                              accountOrAgentIDfromSessionID(
+                                  sessionID as SessionID
+                              )
+                          )
+                          .filter(
+                              (session): session is AccountID =>
+                                  isAccountID(session) && session !== this.id
+                          )
+                  ),
+              ]
             : [];
     }
 }

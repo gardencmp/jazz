@@ -53,7 +53,7 @@ export function LocalAuth({
                     },
                 },
                 appName,
-                appHostname
+                appHostname,
             );
         }, [appName, appHostname, logOutCounter]);
 

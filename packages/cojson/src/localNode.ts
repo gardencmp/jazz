@@ -17,16 +17,16 @@ import {
 import {
     InviteSecret,
     Group,
-    GroupContent,
-    expectGroupContent,
+    GroupShape,
+    expectGroup,
     secretSeedFromInviteSecret,
-} from "./group.js";
+} from "./coValues/group.js";
 import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID } from "./coValue.js";
 import { Queried, query } from "./queries.js";
 import {
-    AccountGroup,
+    Account,
     AccountMeta,
     accountHeaderForInitialAgentSecret,
     GeneralizedControlledAccount,
@@ -34,10 +34,12 @@ import {
     AnonymousControlledAccount,
     AccountID,
     Profile,
-    AccountContent,
-} from "./account.js";
+    isAccountID,
+    AccountMigration,
+} from "./coValues/account.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoValue } from "./index.js";
+import { QueriedAccount } from "./queriedCoValues/queriedAccount.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -70,10 +72,19 @@ export class LocalNode {
     }
 
     /** @category 2. Node Creation */
-    static withNewlyCreatedAccount(
-        name: string,
-        initialAgentSecret = newRandomAgentSecret()
-    ): {
+    static withNewlyCreatedAccount<
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >({
+        name,
+        migration,
+        initialAgentSecret = newRandomAgentSecret(),
+    }: {
+        name: string;
+        migration?: AccountMigration<P, R, Meta>;
+        initialAgentSecret?: AgentSecret;
+    }): {
         node: LocalNode;
         accountID: AccountID;
         accountSecret: AgentSecret;
@@ -87,26 +98,52 @@ export class LocalNode {
 
         const account = setupNode.createAccount(name, initialAgentSecret);
 
-        const nodeWithAccount = account.node.testWithDifferentAccount(
+        const nodeWithAccount = account.core.node.testWithDifferentAccount(
             account,
             newRandomSessionID(account.id)
         );
 
+        const accountOnNodeWithAccount = nodeWithAccount.account as ControlledAccount<P, R, Meta>;
+
+        const profile = nodeWithAccount.expectProfileLoaded(
+            accountOnNodeWithAccount.id,
+            "After creating account"
+        );
+
+        if (migration) {
+            migration(accountOnNodeWithAccount, profile as P);
+            nodeWithAccount.account = new ControlledAccount(
+                accountOnNodeWithAccount.core,
+                accountOnNodeWithAccount.agentSecret
+            );
+        }
+
         return {
             node: nodeWithAccount,
-            accountID: account.id,
-            accountSecret: account.agentSecret,
+            accountID: accountOnNodeWithAccount.id,
+            accountSecret: accountOnNodeWithAccount.agentSecret,
             sessionID: nodeWithAccount.currentSessionID,
         };
     }
 
     /** @category 2. Node Creation */
-    static async withLoadedAccount(
-        accountID: AccountID,
-        accountSecret: AgentSecret,
-        sessionID: SessionID,
-        peersToLoadFrom: Peer[]
-    ): Promise<LocalNode> {
+    static async withLoadedAccount<
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >({
+        accountID,
+        accountSecret,
+        sessionID,
+        peersToLoadFrom,
+        migration,
+    }: {
+        accountID: AccountID;
+        accountSecret: AgentSecret;
+        sessionID: SessionID;
+        peersToLoadFrom: Peer[];
+        migration?: AccountMigration<P, R, Meta>;
+    }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
             new AnonymousControlledAccount(accountSecret),
             newRandomSessionID(accountID)
@@ -119,14 +156,37 @@ export class LocalNode {
         }
 
         const account = await accountPromise;
+        const controlledAccount = new ControlledAccount(
+            account.core,
+            accountSecret
+        );
 
         // since this is all synchronous, we can just swap out nodes for the SyncManager
         const node = loadingNode.testWithDifferentAccount(
-            new ControlledAccount(accountSecret, account, loadingNode),
+            controlledAccount,
             sessionID
         );
         node.syncManager = loadingNode.syncManager;
         node.syncManager.local = node;
+
+        controlledAccount.core.node = node;
+
+        const profileID = account.get("profile");
+        if (!profileID) {
+            throw new Error("Account has no profile");
+        }
+        const profile = await node.load(profileID);
+
+        if (migration) {
+            migration(
+                controlledAccount as ControlledAccount<P, R, Meta>,
+                profile as P
+            );
+            node.account = new ControlledAccount(
+                controlledAccount.core,
+                controlledAccount.agentSecret
+            );
+        }
 
         return node;
     }
@@ -197,14 +257,47 @@ export class LocalNode {
     }
 
     /** @category 1. High-level */
+
     query<T extends CoValue>(
         id: CoID<T>,
         callback: (update: Queried<T> | undefined) => void
+    ): () => void;
+    query<
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >(
+        id: "me",
+        callback: (
+            update: QueriedAccount<Account<P, R, Meta>> | undefined
+        ) => void
+    ): () => void;
+    query(
+        id: CoID<CoValue> | "me",
+        callback: (
+            update: Queried<CoValue> | QueriedAccount | undefined
+        ) => void
+    ): () => void;
+    query(
+        id: CoID<CoValue> | "me",
+        callback: (
+            // TODO: sort this out
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            update: any
+        ) => void
     ): () => void {
-        return query(id, this, callback);
+        if (id === "me") {
+            const meId = this.account.id;
+            if (!isAccountID(meId)) {
+                throw new Error("Can only query 'me' for accounts");
+            }
+            return query(meId, this, callback);
+        } else {
+            return query(id, this, callback);
+        }
     }
 
-    /** @category 1. High-level */
+    /** @deprecated Use Account.acceptInvite instead */
     async acceptInvite<T extends CoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
@@ -213,16 +306,14 @@ export class LocalNode {
 
         if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
-                groupOrOwnedValue.core.header.ruleset.group as CoID<
-                    CoMap<GroupContent>
-                >,
+                groupOrOwnedValue.core.header.ruleset.group as CoID<Group>,
                 inviteSecret
             );
         } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
             throw new Error("Can only accept invites to groups");
         }
 
-        const group = new Group(expectGroupContent(groupOrOwnedValue), this);
+        const group = expectGroup(groupOrOwnedValue);
 
         const inviteAgentSecret = agentSecretFromSecretSeed(
             secretSeedFromInviteSecret(inviteSecret)
@@ -230,8 +321,8 @@ export class LocalNode {
         const inviteAgentID = getAgentID(inviteAgentSecret);
 
         const inviteRole = await new Promise((resolve, reject) => {
-            group.underlyingMap.subscribe((groupMap) => {
-                const role = groupMap.get(inviteAgentID);
+            group.subscribe((groupUpdate) => {
+                const role = groupUpdate.get(inviteAgentID);
                 if (role) {
                     resolve(role);
                 }
@@ -246,7 +337,7 @@ export class LocalNode {
             throw new Error("No invite found");
         }
 
-        const existingRole = group.underlyingMap.get(this.account.id);
+        const existingRole = group.get(this.account.id);
 
         if (
             existingRole === "admin" ||
@@ -260,9 +351,13 @@ export class LocalNode {
             return;
         }
 
-        const groupAsInvite = group.testWithDifferentAccount(
-            new AnonymousControlledAccount(inviteAgentSecret),
-            newRandomSessionID(inviteAgentID)
+        const groupAsInvite = expectGroup(
+            group.core
+                .testWithDifferentAccount(
+                    new AnonymousControlledAccount(inviteAgentSecret),
+                    newRandomSessionID(inviteAgentID)
+                )
+                .getCurrentContent()
         );
 
         groupAsInvite.addMemberInternal(
@@ -274,12 +369,11 @@ export class LocalNode {
                 : "reader"
         );
 
-        group.underlyingMap.core._sessions =
-            groupAsInvite.underlyingMap.core.sessions;
-        group.underlyingMap.core._cachedContent = undefined;
+        group.core._sessions = groupAsInvite.core.sessions;
+        group.core._cachedContent = undefined;
 
-        for (const groupListener of group.underlyingMap.core.listeners) {
-            groupListener(group.underlyingMap.core.getCurrentContent());
+        for (const groupListener of group.core.listeners) {
+            groupListener(group.core.getCurrentContent());
         }
     }
 
@@ -304,7 +398,7 @@ export class LocalNode {
     /** @internal */
     expectProfileLoaded(id: AccountID, expectation?: string): Profile {
         const account = this.expectCoValueLoaded(id, expectation);
-        const profileID = expectGroupContent(account.getCurrentContent()).get(
+        const profileID = expectGroup(account.getCurrentContent()).get(
             "profile"
         );
         if (!profileID) {
@@ -326,47 +420,51 @@ export class LocalNode {
         agentSecret = newRandomAgentSecret()
     ): ControlledAccount {
         const accountAgentID = getAgentID(agentSecret);
-        const account = this.createCoValue(
-            accountHeaderForInitialAgentSecret(agentSecret)
-        ).testWithDifferentAccount(
-            new AnonymousControlledAccount(agentSecret),
-            newRandomSessionID(accountAgentID)
+        let account = expectGroup(
+            this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
+                .testWithDifferentAccount(
+                    new AnonymousControlledAccount(agentSecret),
+                    newRandomSessionID(accountAgentID)
+                )
+                .getCurrentContent()
         );
 
-        const accountAsGroup = new Group(
-            expectGroupContent(account.getCurrentContent()),
-            account.node
-        );
-
-        accountAsGroup.underlyingMap.mutate((editable) => {
+        account = account.mutate((editable) => {
             editable.set(accountAgentID, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
 
+            const sealed = seal({
+                message: readKey.secret,
+                from: getAgentSealerSecret(agentSecret),
+                to: getAgentSealerID(accountAgentID),
+                nOnceMaterial: {
+                    in: account.id,
+                    tx: account.core.nextTransactionID(),
+                },
+            });
+
+            console.log(
+                "Creating read key",
+                getAgentSealerSecret(agentSecret),
+                getAgentSealerID(accountAgentID),
+                account.id,
+                account.core.nextTransactionID(),
+                "in session",
+                account.core.node.currentSessionID,
+                "=",
+                sealed
+            );
             editable.set(
                 `${readKey.id}_for_${accountAgentID}`,
-                seal({
-                    message: readKey.secret,
-                    from: getAgentSealerSecret(agentSecret),
-                    to: getAgentSealerID(accountAgentID),
-                    nOnceMaterial: {
-                        in: account.id,
-                        tx: account.nextTransactionID(),
-                    },
-                }),
+                sealed,
                 "trusting"
             );
 
             editable.set("readKey", readKey.id, "trusting");
         });
 
-        const controlledAccount = new ControlledAccount(
-            agentSecret,
-            account.getCurrentContent() as CoMap<AccountContent, AccountMeta>,
-            account.node
-        );
-
-        const profile = accountAsGroup.createMap<Profile>(
+        const profile = account.createMap<Profile>(
             { name },
             {
                 type: "profile",
@@ -374,12 +472,12 @@ export class LocalNode {
             "trusting"
         );
 
-        accountAsGroup.underlyingMap.set("profile", profile.id, "trusting");
+        account = account.set("profile", profile.id, "trusting");
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
         accountOnThisNode._sessions = {
-            ...accountAsGroup.underlyingMap.core.sessions,
+            ...account.core.sessions,
         };
         accountOnThisNode._cachedContent = undefined;
 
@@ -390,7 +488,7 @@ export class LocalNode {
         };
         profileOnThisNode._cachedContent = undefined;
 
-        return controlledAccount;
+        return new ControlledAccount(accountOnThisNode, agentSecret);
     }
 
     /** @internal */
@@ -418,15 +516,11 @@ export class LocalNode {
             );
         }
 
-        return new AccountGroup(
-            coValue.getCurrentContent() as CoMap<GroupContent, AccountMeta>,
-            this
-        ).getCurrentAgentID();
+        return new Account(coValue).getCurrentAgentID();
     }
 
     /**
-     * Creates a new group (with the current account as the group's first admin).
-     * @category 1. High-level
+     * @deprecated use Account.createGroup() instead
      */
     createGroup(): Group {
         const groupCoValue = this.createCoValue({
@@ -436,9 +530,9 @@ export class LocalNode {
             ...createdNowUnique(),
         });
 
-        let groupContent = expectGroupContent(groupCoValue.getCurrentContent());
+        let group = expectGroup(groupCoValue.getCurrentContent());
 
-        groupContent = groupContent.mutate((editable) => {
+        group = group.mutate((editable) => {
             editable.set(this.account.id, "admin", "trusting");
 
             const readKey = newRandomKeySecret();
@@ -460,7 +554,7 @@ export class LocalNode {
             editable.set("readKey", readKey.id, "trusting");
         });
 
-        return new Group(groupContent, this);
+        return group;
     }
 
     /** @internal */
@@ -503,6 +597,15 @@ export class LocalNode {
 
                 coValuesToCopy.pop();
             }
+        }
+
+        if (account instanceof ControlledAccount) {
+            // To make sure that when we edit the account, we're modifying the correct sessions
+            const accountInNode = new ControlledAccount(newNode.expectCoValueLoaded(account.id), account.agentSecret);
+            if (accountInNode.core.node !== newNode) {
+                throw new Error("Account's node is not the new node");
+            }
+            newNode.account = accountInNode;
         }
 
         return newNode;

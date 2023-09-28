@@ -3,13 +3,13 @@ import { LocalNode } from "../localNode.js";
 import { SyncMessage } from "../sync.js";
 import { expectMap } from "../coValue.js";
 import { MapOpPayload } from "../coValues/coMap.js";
-import { Group } from "../group.js";
+import { Group } from "../coValues/group.js";
 import {
     randomAnonymousAccountAndSessionID,
     shouldNotResolve,
 } from "./testUtils.js";
 import { connectedPeers, newStreamPair } from "../streamUtils.js";
-import { AccountID } from "../account.js";
+import { AccountID } from "../coValues/account.js";
 import { cojsonReady } from "../index.js";
 import { stableStringify } from "../jsonStringify.js";
 
@@ -534,7 +534,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     });
 
     const mapSubscribeMsg = await reader.read();
@@ -606,7 +606,7 @@ test("If we add a server peer, newly created coValues are auto-subscribed to", a
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     });
 
     const map = group.createMap();
@@ -660,7 +660,7 @@ test("When we connect a new server peer, we try to sync all existing coValues to
 
     expect(groupSubscribeMessage.value).toEqual({
         action: "load",
-        ...group.underlyingMap.core.knownState(),
+        ...group.core.knownState(),
     } satisfies SyncMessage);
 
     const secondMessage = await reader.read();
@@ -756,7 +756,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     const groupSubscribeMsg = await from1.read();
     expect(groupSubscribeMsg.value).toMatchObject({
         action: "load",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     });
 
     await to2.write(adminSubscribeMessage.value!);
@@ -770,7 +770,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     expect(
         node2.syncManager.peers["test1"]!.optimisticKnownStates[
-            group.underlyingMap.core.id
+            group.core.id
         ]
     ).toBeDefined();
 
@@ -970,7 +970,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     });
 
     const map = group.createMap();
@@ -1024,7 +1024,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     // });
     expect((await reader.read()).value).toMatchObject({
         action: "load",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     });
 
     const map = group.createMap();
@@ -1098,7 +1098,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 function groupContentEx(group: Group) {
     return {
         action: "content",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     };
 }
 
@@ -1112,7 +1112,7 @@ function admContEx(adminID: AccountID) {
 function groupStateEx(group: Group) {
     return {
         action: "known",
-        id: group.underlyingMap.core.id,
+        id: group.core.id,
     };
 }
 
