@@ -1,8 +1,9 @@
 import ReactTimeAgo from 'react-time-ago';
-import { Button } from './ui/button';
+import { Button, ButtonProps } from './ui/button';
 export { Button } from './ui/button';
 export { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
+import { Link } from 'react-router-dom';
 export { Input } from './ui/input';
 export { Skeleton } from './ui/skeleton';
 export { Toaster } from './ui/toaster';
@@ -12,6 +13,11 @@ export { TitleAndLogo } from './TitleAndLogo';
 export { ThemeProvider } from './themeProvider';
 export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
+export { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en.json';
+TimeAgo.addDefaultLocale(en);
 
 export function BioInput(props: { value?: string; onChange: (value: string) => void }) {
   return (
@@ -59,16 +65,32 @@ export function ChooseProfilePicInput(props: { onChange: (file: File) => void })
   );
 }
 
-export function LargeProfilePicImg(props: { src?: string }) {
-  return <img src={props.src} className="w-20 h-20 bg-neutral-200 rounded-full mr-2 object-cover shrink-0" />;
-}
-
-export function ProfilePicImg(props: { src?: string; smaller?: boolean }) {
+export function ProfilePicImg(props: { src?: string; size?: 'sm' | 'xxl'; linkTo?: string; initial?: string }) {
   return (
-    <img
-      src={props.src}
-      className={'bg-neutral-200 rounded-full mr-2 object-cover shrink-0' + (props.smaller ? ' w-8 h-8' : ' w-10 h-10')}
-    />
+    <Link to={props.linkTo || ''}>
+      {props.src ? (
+        <img
+          src={props.src}
+          className={
+            'bg-neutral-200 rounded-full mr-2 object-cover shrink-0' +
+            (props.size === 'sm' ? ' w-8 h-8' : props.size === 'xxl' ? ' w-20 h-20' : ' w-10 h-10')
+          }
+        />
+      ) : (
+        <div
+          className={
+            'bg-neutral-200 rounded-full mr-2 object-cover shrink-0 flex items-center justify-center text-neutral-700 ' +
+            (props.size === 'sm'
+              ? ' w-8 h-8 text-[1.5rem]'
+              : props.size === 'xxl'
+              ? ' w-20 h-20 text-[3.75rem]'
+              : ' w-10 h-10 text-[1.875rem]')
+          }
+        >
+          <div className="-mt-[8%]">{props.initial}</div>
+        </div>
+      )}
+    </Link>
   );
 }
 
@@ -84,12 +106,8 @@ export function TwitImg(props: { src?: string }) {
   return <img src={props.src} className="h-40 rounded object-cover" />;
 }
 
-export function ReactionsAndReplyContainer(props: { children: React.ReactNode }) {
-  return <div className="flex flex-col mt-2">{props.children}</div>;
-}
-
 export function ReactionsContainer(props: { children: React.ReactNode }) {
-  return <div className="flex gap-4">{props.children}</div>;
+  return <div className="flex gap-4 mt-2">{props.children}</div>;
 }
 
 export function RepliesContainer(props: { children: React.ReactNode }) {
@@ -160,6 +178,51 @@ export function AddTwitPicsInput(props: { onChange: (files: File[]) => void }) {
           multiple
         />
       </label>
+    </Button>
+  );
+}
+
+export function TwitWithRepliesContainer(props: { children: React.ReactNode; isTopLevel?: boolean }) {
+  return (
+    <div className={'py-2 flex flex-col items-stretch' + (props.isTopLevel ? ' border-t' : ' ml-14')}>
+      {props.children}
+    </div>
+  );
+}
+
+export function TwitContainer(props: { children: React.ReactNode }) {
+  return <div className="flex gap-2">{props.children}</div>;
+}
+
+export function TwitBody(props: { children: React.ReactNode }) {
+  return <div className="grow flex flex-col items-stretch">{props.children}</div>;
+}
+
+export function TwitHeader(props: { children: React.ReactNode }) {
+  return <div className="flex items-baseline">{props.children}</div>;
+}
+
+export function TwitImgGallery(props: { children: React.ReactNode }) {
+  return <div className="flex gap-2 mt-2 max-w-full overflow-auto">{props.children}</div>;
+}
+
+export function TwitText(props: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return <div style={props.style}>{props.children}</div>;
+}
+
+export function QuoteContainer(props: { children: React.ReactNode }) {
+  return <div className="border rounded">{props.children}</div>;
+}
+
+export function MainH1(props: { children: React.ReactNode }) {
+  return <h1 className="text-2xl mb-4">{props.children}</h1>;
+}
+
+export function SmallInlineButton(props: { children: React.ReactNode } & ButtonProps) {
+  const {children, ...rest} = props
+  return (
+    <Button variant={'ghost'} className="h-6 px-1 -mx-1" {...rest}>
+      {children}
     </Button>
   );
 }

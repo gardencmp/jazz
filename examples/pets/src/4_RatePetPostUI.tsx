@@ -80,9 +80,9 @@ function ReactionOverview({
             <h2>Reactions</h2>
             <div className="flex flex-col gap-1">
                 {REACTION_TYPES.map((reactionType) => {
-                    const reactionsOfThisType = Object.values(
-                        petReactions.perAccount
-                    ).filter(({ last }) => last === reactionType);
+                    const reactionsOfThisType = petReactions.perAccount
+                        .map(([, reaction]) => reaction)
+                        .filter(({ last }) => last === reactionType);
 
                     if (reactionsOfThisType.length === 0) return null;
 

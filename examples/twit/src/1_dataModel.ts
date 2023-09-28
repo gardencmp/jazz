@@ -1,34 +1,31 @@
-import { CoMap, CoList, Media, CoStream, Group, ProfileMeta, AccountMigration, EVERYONE } from 'cojson';
+import { CoMap, CoList, Media, CoStream, Group, AccountMigration, EVERYONE, Profile } from 'cojson';
 
 export type Twit = CoMap<{
   text?: string;
   images?: ListOfImages['id'];
   likes: LikeStream['id'];
-  quotedPost?: Twit['id'];
   replies: ReplyStream['id'];
-  isRepostedIn: RepostedInStream['id'];
   isReplyTo?: Twit['id'];
 }>;
 
 export type ListOfImages = CoList<Media.ImageDefinition['id']>;
 export type LikeStream = CoStream<'❤️' | null>;
 export type ReplyStream = CoStream<Twit['id']>;
-export type RepostedInStream = CoStream<Twit['id']>;
 
 export type ListOfTwits = CoList<Twit['id']>;
 export type ListOfProfiles = CoList<TwitProfile['id']>;
+export type StreamOfFollowers = CoStream<TwitProfile['id'] | null>;
 
-export type TwitProfile = CoMap<
+export type TwitProfile = Profile<
   {
     name: string;
     bio: string;
     avatar?: Media.ImageDefinition['id'];
     twits: ListOfTwits['id'];
     following: ListOfProfiles['id'];
-    followers: ListOfProfiles['id'];
+    followers: StreamOfFollowers['id'];
     twitStyle?: { fontFamily: string; color: string };
-  },
-  ProfileMeta
+  }
 >;
 
 export type TwitAccountRoot = CoMap<{
@@ -61,7 +58,7 @@ export const migration: AccountMigration<TwitProfile, TwitAccountRoot> = (accoun
 
     profile.set('twits', peopleWhoCanSeeMyTwits.createList<ListOfTwits>().id, 'trusting');
     profile.set('following', peopleWhoCanSeeMyFollows.createList<ListOfProfiles>().id, 'trusting');
-    profile.set('followers', peopleWhoCanFollowMe.createList<ListOfProfiles>().id, 'trusting');
+    profile.set('followers', peopleWhoCanFollowMe.createStream<StreamOfFollowers>().id, 'trusting');
     console.log('MIGRATION SUCCESSFUL!');
   }
 };
