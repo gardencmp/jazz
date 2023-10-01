@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { CoID, CoMap, Media, Profile } from "cojson";
-import { useJazz, useSyncedQuery } from "jazz-react";
+import { useAutoSub, useJazz } from "jazz-react";
 import { BrowserImage, createImage } from "jazz-browser-media-images";
 
 import { PetAccountRoot, PetPost, PetReactions } from "./1_types";
@@ -26,7 +26,7 @@ export function NewPetPostForm() {
         CoID<PartialPetPost> | undefined
     >(undefined);
 
-    const newPetPost = useSyncedQuery(newPostId);
+    const newPetPost = useAutoSub(newPostId);
 
     const onChangeName = useCallback(
         (name: string) => {
@@ -51,7 +51,7 @@ export function NewPetPostForm() {
 
             const image = await createImage(
                 event.target.files[0],
-                newPetPost.group
+                newPetPost.meta.group
             );
 
             newPetPost.set({ image: image.id });

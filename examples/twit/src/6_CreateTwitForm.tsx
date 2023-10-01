@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
-import { useJazz } from 'jazz-react';
+import { Resolved, useJazz } from 'jazz-react';
 import { AddTwitPicsInput, TwitImg, TwitTextInput } from './basicComponents/index.tsx';
 import { LikeStream, ListOfImages, ReplyStream, Twit, TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
-import { Queried } from 'cojson';
 import { createImage } from 'jazz-browser-media-images';
 
 export function CreateTwitForm(
   props: {
-    inReplyTo?: Queried<Twit>;
+    inReplyTo?: Resolved<Twit>;
     onSubmit?: () => void;
     className?: string;
   } = {}

@@ -17,14 +17,12 @@ import {
 import {
     InviteSecret,
     Group,
-    GroupShape,
     expectGroup,
     secretSeedFromInviteSecret,
 } from "./coValues/group.js";
 import { Peer, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID } from "./coValue.js";
-import { Queried, query } from "./queries.js";
 import {
     Account,
     AccountMeta,
@@ -34,12 +32,10 @@ import {
     AnonymousControlledAccount,
     AccountID,
     Profile,
-    isAccountID,
     AccountMigration,
 } from "./coValues/account.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoValue } from "./index.js";
-import { QueriedAccount } from "./queriedCoValues/queriedAccount.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -103,7 +99,8 @@ export class LocalNode {
             newRandomSessionID(account.id)
         );
 
-        const accountOnNodeWithAccount = nodeWithAccount.account as ControlledAccount<P, R, Meta>;
+        const accountOnNodeWithAccount =
+            nodeWithAccount.account as ControlledAccount<P, R, Meta>;
 
         const profile = nodeWithAccount.expectProfileLoaded(
             accountOnNodeWithAccount.id,
@@ -254,47 +251,6 @@ export class LocalNode {
             stopped = true;
             unsubscribe?.();
         };
-    }
-
-    /** @category 1. High-level */
-
-    query<T extends CoValue>(
-        id: CoID<T>,
-        callback: (update: Queried<T> | undefined) => void
-    ): () => void;
-    query<
-        P extends Profile = Profile,
-        R extends CoMap = CoMap,
-        Meta extends AccountMeta = AccountMeta
-    >(
-        id: "me",
-        callback: (
-            update: QueriedAccount<Account<P, R, Meta>> | undefined
-        ) => void
-    ): () => void;
-    query(
-        id: CoID<CoValue> | "me",
-        callback: (
-            update: Queried<CoValue> | QueriedAccount | undefined
-        ) => void
-    ): () => void;
-    query(
-        id: CoID<CoValue> | "me",
-        callback: (
-            // TODO: sort this out
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            update: any
-        ) => void
-    ): () => void {
-        if (id === "me") {
-            const meId = this.account.id;
-            if (!isAccountID(meId)) {
-                throw new Error("Can only query 'me' for accounts");
-            }
-            return query(meId, this, callback);
-        } else {
-            return query(id, this, callback);
-        }
     }
 
     /** @deprecated Use Account.acceptInvite instead */
@@ -601,7 +557,10 @@ export class LocalNode {
 
         if (account instanceof ControlledAccount) {
             // To make sure that when we edit the account, we're modifying the correct sessions
-            const accountInNode = new ControlledAccount(newNode.expectCoValueLoaded(account.id), account.agentSecret);
+            const accountInNode = new ControlledAccount(
+                newNode.expectCoValueLoaded(account.id),
+                account.agentSecret
+            );
             if (accountInNode.core.node !== newNode) {
                 throw new Error("Account's node is not the new node");
             }

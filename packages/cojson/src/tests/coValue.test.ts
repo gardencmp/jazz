@@ -315,14 +315,14 @@ test("Empty BinaryCoStream works", () => {
 
     if (
         content.type !== "costream" ||
-        content.meta?.type !== "binary" ||
+        content.headerMeta?.type !== "binary" ||
         !(content instanceof BinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
     }
 
     expect(content.type).toEqual("costream");
-    expect(content.meta.type).toEqual("binary");
+    expect(content.headerMeta.type).toEqual("binary");
     expect(content.toJSON()).toEqual({});
     expect(content.getBinaryChunks()).toEqual(undefined);
 });
@@ -341,7 +341,7 @@ test("Can push into BinaryCoStream", () => {
 
     if (
         content.type !== "costream" ||
-        content.meta?.type !== "binary" ||
+        content.headerMeta?.type !== "binary" ||
         !(content instanceof BinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
@@ -398,7 +398,7 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
 
     if (
         content.type !== "costream" ||
-        content.meta?.type !== "binary" ||
+        content.headerMeta?.type !== "binary" ||
         !(content instanceof BinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
@@ -474,7 +474,7 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
 
     if (
         content.type !== "costream" ||
-        content.meta?.type !== "binary" ||
+        content.headerMeta?.type !== "binary" ||
         !(content instanceof BinaryCoStream)
     ) {
         throw new Error("Expected binary stream");

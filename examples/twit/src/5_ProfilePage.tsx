@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useJazz, useSyncedQuery } from 'jazz-react';
+import { useJazz, useAutoSub } from 'jazz-react';
 import QRCode from 'qrcode';
 import {
   BioInput,
@@ -24,7 +24,7 @@ export function ProfilePage() {
   const { profileId } = useParams<{ profileId: CoID<TwitProfile> }>();
   const { me } = useJazz<TwitProfile, TwitAccountRoot>();
 
-  const profile = useSyncedQuery(profileId);
+  const profile = useAutoSub(profileId);
   const isMe = profile?.id == me.profile?.id;
 
   const profileTwitsAndRepliedToTwits = useMemo(() => {
@@ -65,7 +65,7 @@ export function ProfilePage() {
             <ChooseProfilePicInput
               onChange={(file: File) =>
                 me.root?.peopleWhoCanSeeMyTwits &&
-                createImage(file, me.root.peopleWhoCanSeeMyTwits.group, 256).then(image => {
+                createImage(file, me.root.peopleWhoCanSeeMyTwits, 256).then(image => {
                   me.profile?.set({ avatar: image.id }, 'trusting');
                 })
               }

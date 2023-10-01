@@ -1,18 +1,20 @@
-import { CoID, Group, LocalNode, Media, QueryExtension } from "cojson";
+import { CoID, Group, LocalNode, Media } from "cojson";
 
 import ImageBlobReduce from "image-blob-reduce";
 import Pica from "pica";
 import {
+    AutoSubContext,
+    AutoSubExtension,
     createBinaryStreamFromBlob,
     readBlobFromBinaryStream,
+    ResolvedGroup
 } from "jazz-browser";
-import { QueryContext } from "cojson/dist/queries";
 
 const pica = new Pica();
 
 export async function createImage(
     imageBlobOrFile: Blob | File,
-    inGroup: Group,
+    inGroup: Group | ResolvedGroup,
     maxSize?: 256 | 1024 | 2048
 ): Promise<Media.ImageDefinition> {
     let originalWidth!: number;
@@ -132,18 +134,18 @@ export async function createImage(
     return imageDefinition;
 }
 
-export const BrowserImage: QueryExtension<
+export const BrowserImage: AutoSubExtension<
     Media.ImageDefinition,
     LoadingImageInfo
 > = {
     id: "BrowserImage",
 
-    query(
+    subscribe(
         imageDef: Media.ImageDefinition,
-        queryContext: QueryContext,
+        autoSubContext: AutoSubContext,
         callback: (update: LoadingImageInfo) => void
     ): () => void {
-        return loadImage(imageDef, queryContext.node, callback);
+        return loadImage(imageDef, autoSubContext.node, callback);
     },
 };
 

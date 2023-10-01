@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 
-import { CoID, Queried } from "cojson";
-import { useSyncedQuery } from "jazz-react";
+import { CoID } from "cojson";
 
 import { TodoProject, Task } from "./1_types";
 
@@ -20,11 +19,12 @@ import {
 import { InviteButton } from "./components/InviteButton";
 import uniqolor from "uniqolor";
 import { useParams } from "react-router";
+import { Resolved, useAutoSub } from "jazz-react";
 
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
  *
- *  Here in `<TodoTable/>`, we use `useSyncedQuery()` for the first time,
+ *  Here in `<TodoTable/>`, we use `useAutoSub()` for the first time,
  *  in this case to load the CoValue for our `TodoProject` as well as
  *  the `ListOfTasks` referenced in it.
  */
@@ -32,11 +32,11 @@ import { useParams } from "react-router";
 export function ProjectTodoTable() {
     const projectId = useParams<{ projectId: CoID<TodoProject> }>().projectId;
 
-    // `useSyncedQuery()` reactively subscribes to updates to a CoValue's
+    // `useAutoSub()` reactively subscribes to updates to a CoValue's
     // content - whether we create edits locally, load persisted data, or receive
     // sync updates from other devices or participants!
     // It also recursively resolves and subsribes to all referenced CoValues.
-    const project = useSyncedQuery(projectId);
+    const project = useAutoSub(projectId);
 
     // `createTask` is similar to `createProject` we saw earlier, creating a new CoMap
     // for a new task (in the same group as the project), and then
@@ -44,17 +44,17 @@ export function ProjectTodoTable() {
     const createTask = useCallback(
         (text: string) => {
             if (!project?.tasks || !text) return;
-            const task = project.group.createMap<Task>({
+            const task = project.meta.group.createMap<Task>({
                 done: false,
                 text,
             });
 
             // project.tasks is immutable, but `append` will create an edit
-            // that will cause useSyncedQuery to rerender this component
+            // that will cause useAutoSub to rerender this component
             // - here and on other devices!
             project.tasks.append(task.id);
         },
-        [project?.tasks, project?.group]
+        [project?.tasks, project?.meta.group]
     );
 
     return (
@@ -97,7 +97,7 @@ export function ProjectTodoTable() {
     );
 }
 
-export function TaskRow({ task }: { task: Queried<Task> | undefined }) {
+export function TaskRow({ task }: { task: Resolved<Task> | undefined }) {
     return (
         <TableRow>
             <TableCell>
@@ -124,12 +124,12 @@ export function TaskRow({ task }: { task: Queried<Task> | undefined }) {
                     {
                         // Here we see for the first time how we can access edit history
                         // for a CoValue, and use it to display who created the task.
-                        task?.edits.text?.by?.profile?.name ? (
+                        task?.meta.edits.text?.by?.profile?.name ? (
                             <span
                                 className="rounded-full py-0.5 px-2 text-xs"
-                                style={uniqueColoring(task.edits.text.by.id)}
+                                style={uniqueColoring(task.meta.edits.text.by.id)}
                             >
-                                {task.edits.text.by.profile.name}
+                                {task.meta.edits.text.by.profile.name}
                             </span>
                         ) : (
                             <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />

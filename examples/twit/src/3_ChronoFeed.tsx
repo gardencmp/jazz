@@ -19,7 +19,7 @@ export function ChronoFeed() {
     () =>
       [...(myTwits || []), ...twitsFromFollows]
         .flatMap(tw => (tw ? (tw.isReplyTo ? [] : tw) : []))
-        .sort((a, b) => (b.edits.text?.at?.getTime() || 0) - (a.edits.text?.at?.getTime() || 0)),
+        .sort((a, b) => (b.meta.edits.text?.at?.getTime() || 0) - (a.meta.edits.text?.at?.getTime() || 0)),
     [myTwits, twitsFromFollows]
   );
 

@@ -9,10 +9,9 @@ import { SubmittableInput } from "./basicComponents";
 import { useNavigate } from "react-router";
 
 export function NewProjectForm() {
-    // A `LocalNode` represents a local view of loaded & created CoValues.
-    // It is associated with a current user account, which will determine
+    // `me` represents the current user account, which will determine
     // access rights to CoValues. We get it from the top-level provider `<WithJazz/>`.
-    const { localNode } = useJazz();
+    const { me } = useJazz();
     const navigate = useNavigate();
 
     const createProject = useCallback(
@@ -22,7 +21,7 @@ export function NewProjectForm() {
             // To create a new todo project, we first create a `Group`,
             // which is a scope for defining access rights (reader/writer/admin)
             // of its members, which will apply to all CoValues owned by that group.
-            const projectGroup = localNode.createGroup();
+            const projectGroup = me.createGroup();
 
             // Then we create an empty todo project within that group
             const project = projectGroup.createMap<TodoProject>({
@@ -32,7 +31,7 @@ export function NewProjectForm() {
 
             navigate("/project/" + project.id);
         },
-        [localNode, navigate]
+        [me, navigate]
     );
 
     return (
