@@ -84,7 +84,7 @@ export class CoMapView<
     }
 
     /** @category 6. Meta */
-    get meta(): Meta {
+    get headerMeta(): Meta {
         return this.core.header.meta as Meta;
     }
 

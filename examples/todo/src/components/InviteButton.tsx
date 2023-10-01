@@ -1,25 +1,25 @@
 import { useState } from "react";
 
-import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
-import { CoValue, Queried } from "cojson";
+import { CoValue } from "cojson";
+import { Resolved, createInviteLink } from "jazz-react";
 
-export function InviteButton<T extends CoValue>({ value }: { value: T | Queried<T> | undefined }) {
+export function InviteButton<T extends CoValue>({ value }: { value?: Resolved<T> }) {
     const [existingInviteLink, setExistingInviteLink] = useState<string>();
     const { toast } = useToast();
 
     return (
-        value?.group?.myRole() === "admin" && (
+        value?.meta.group?.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"
-                disabled={!value.group || !value.id}
+                disabled={!value.meta.group || !value.id}
                 variant="outline"
                 onClick={async () => {
                     let inviteLink = existingInviteLink;
-                    if (value.group && value.id && !inviteLink) {
+                    if (value.meta.group && value.id && !inviteLink) {
                         inviteLink = createInviteLink(value, "writer");
                         setExistingInviteLink(inviteLink);
                     }

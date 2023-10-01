@@ -1,27 +1,35 @@
 import {
     LocalNode,
     CoID,
-    Queried,
     CoValue,
     BinaryCoStream,
-    QueriedAccount,
     Account,
     AccountMeta,
     AccountMigration,
+    Profile,
+    CoMap,
 } from "cojson";
 import React, { useEffect, useState } from "react";
 import {
     AuthProvider,
     consumeInviteLinkFromWindowLocation,
     createBrowserNode,
+    readBlobFromBinaryStream,
 } from "jazz-browser";
-import { readBlobFromBinaryStream } from "jazz-browser";
-import { Profile } from "cojson";
-import { CoMap } from "cojson";
+
+import { Resolved, ResolvedAccount, autoSub } from "jazz-autosub";
+export type { Resolved, ResolvedCoMap } from "jazz-autosub";
+export {
+    ResolvedAccount,
+    ResolvedCoList,
+    ResolvedCoMapBase,
+    ResolvedCoStream,
+    ResolvedGroup,
+} from "jazz-autosub";
 
 const JazzContext = React.createContext<
     | {
-          me: Queried<Account>;
+          me: Resolved<Account>;
           localNode: LocalNode;
           logOut: () => void;
       }
@@ -100,7 +108,7 @@ export function WithJazz(props: {
         };
     }, [auth, syncAddress]);
 
-    const me = useSyncedQueryWithNode("me", node) as QueriedAccount | undefined;
+    const me = useAutoSubWithNode("me", node) as ResolvedAccount | undefined;
 
     return (
         <>
@@ -122,8 +130,9 @@ export function WithJazz(props: {
 }
 
 /**
- * Hook that exposes the Jazz context provided by `<WithJazz/>`, most importantly the `LocalNode`
- * for the logged in user (which you can use to create `Group`s, and `CoValue`s in those).
+ * Hook that exposes the Jazz context provided by `<WithJazz/>`, most importantly `me`, the account of
+ * the current in user (which you can use access the account's `root` or `profile`,
+ * and to create `Group`s as the current user, in which you can then create `CoValue`s).
  *
  * Also provides a `logOut` function, which invokes the log-out logic of the Auth Provider passed to `<WithJazz/>`.
  */
@@ -139,7 +148,7 @@ export function useJazz<
     }
 
     return {
-        me: context.me as QueriedAccount<Account<P, R, Meta>>,
+        me: context.me as ResolvedAccount<Account<P, R, Meta>>,
         localNode: context.localNode,
         logOut: context.logOut,
     };
@@ -148,36 +157,44 @@ export function useJazz<
 /**
  * Hook that subscribes to all updates of a given `CoValue` (identified by its `CoID`) and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
  *
- * See `Queried<T>` in `cojson` to see which fields and methods are available on the returned object.
+ * See `Resolved<T>` in `jazz-autosub` to see which fields and methods are available on the returned object.
  *
  * @param id The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined).
  */
-export function useSyncedQuery<
+
+export function useAutoSub<T extends CoValue>(
+    id?: CoID<T>
+): Resolved<T> | undefined;
+
+/**
+ * Hook that subscribes to all updates the current user account and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
+ *
+ * See `Resolved<T>` in `jazz-autosub` to see which fields and methods are available on the returned object.
+ *
+ */
+export function useAutoSub<
     P extends Profile = Profile,
     R extends CoMap = CoMap,
     Meta extends AccountMeta = AccountMeta
->(id: "me"): QueriedAccount<Account<P, R, Meta>> | undefined;
-export function useSyncedQuery<T extends CoValue>(
-    id?: CoID<T>
-): Queried<T> | undefined;
-export function useSyncedQuery(
+>(id: "me"): ResolvedAccount<Account<P, R, Meta>> | undefined;
+export function useAutoSub(
     id?: CoID<CoValue> | "me"
-): Queried<CoValue> | QueriedAccount | undefined {
-    return useSyncedQueryWithNode(id, useJazz().localNode);
+): Resolved<CoValue> | ResolvedAccount | undefined {
+    return useAutoSubWithNode(id, useJazz().localNode);
 }
 
 /** @internal */
-export function useSyncedQueryWithNode(
+function useAutoSubWithNode(
     id?: CoID<CoValue> | "me",
     localNode?: LocalNode
-): Queried<CoValue> | QueriedAccount | undefined {
+): Resolved<CoValue> | ResolvedAccount | undefined {
     const [result, setResult] = useState<
-        Queried<CoValue> | QueriedAccount | undefined
+        Resolved<CoValue> | ResolvedAccount | undefined
     >();
 
     useEffect(() => {
         if (!id || !localNode) return;
-        const unsubscribe = localNode.query(id, setResult);
+        const unsubscribe = autoSub(id, localNode, setResult);
         return unsubscribe;
     }, [id, localNode]);
 

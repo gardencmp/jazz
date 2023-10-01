@@ -2,10 +2,10 @@
     "name": "cojson",
     "module": "dist/index.js",
     "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.4.1",
+    "version": "0.4.5",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
@@ -26,7 +26,7 @@
     "scripts": {
         "test": "jest",
         "lint": "eslint src/**/*.ts",
-        "build": "npm run lint && rm -rf ./dist && tsc --declaration --sourceMap --outDir dist",
+        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },
     "jest": {

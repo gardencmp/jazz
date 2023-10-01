@@ -2,7 +2,6 @@ import {
     AccountMigration,
     BinaryCoStream,
     CoValue,
-    CoValueCore,
     InviteSecret,
 } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
@@ -21,6 +20,9 @@ import {
 } from "cojson";
 import { ReadableStream, WritableStream } from "isomorphic-streams";
 import { IDBStorage } from "cojson-storage-indexeddb";
+import { Resolved } from "jazz-autosub";
+
+export * from "jazz-autosub";
 
 export type BrowserNodeHandle = {
     node: LocalNode;
@@ -329,8 +331,8 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
-export function createInviteLink(
-    value: CoValue | { id: CoID<CoValue>; core: CoValueCore },
+export function createInviteLink<C extends CoValue>(
+    value: C | Resolved<C>,
     role: "reader" | "writer" | "admin",
     // default to same address as window.location, but without hash
     {
@@ -338,7 +340,8 @@ export function createInviteLink(
         valueHint,
     }: { baseURL?: string; valueHint?: string } = {}
 ): string {
-    const coValueCore = value.core;
+    const coValueCore =
+        "coValueType" in value ? value.meta.coValue.core : value.core;
     let currentCoValue = coValueCore;
 
     while (currentCoValue.header.ruleset.type === "ownedByGroup") {
@@ -425,8 +428,8 @@ export async function createBinaryStreamFromBlob<
     C extends BinaryCoStream<BinaryCoStreamMeta>
 >(
     blob: Blob | File,
-    inGroup: Group,
-    meta: C["meta"] = { type: "binary" }
+    inGroup: Group | Resolved<Group>,
+    meta: C["headerMeta"] = { type: "binary" }
 ): Promise<C> {
     let stream = inGroup.createBinaryStream(meta);
 

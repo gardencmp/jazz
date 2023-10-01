@@ -1,11 +1,7 @@
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { RawCoID } from "./ids.js";
 import { CoMap } from "./coValues/coMap.js";
-import {
-    BinaryCoStream,
-    BinaryCoStreamMeta,
-    CoStream,
-} from "./coValues/coStream.js";
+import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
 import { CoList } from "./coValues/coList.js";
 import { CoValueCore } from "./coValueCore.js";
 import { Group } from "./coValues/group.js";
@@ -22,7 +18,7 @@ export interface CoValue {
     /** Specifies which kind of `CoValue` this is */
     type: string;
     /** The `CoValue`'s (precisely typed) static metadata */
-    meta: JsonObject | null;
+    headerMeta: JsonObject | null;
     /** The `Group` this `CoValue` belongs to (determining permissions) */
     group: Group;
     /** Returns an immutable JSON presentation of this `CoValue` */
@@ -38,7 +34,14 @@ export interface CoValue {
     subscribe(listener: (coValue: this) => void): () => void;
 }
 
-export type AnyCoValue = CoMap | Group | Account | Profile | CoList | CoStream | BinaryCoStream;
+export type AnyCoValue =
+    | CoMap
+    | Group
+    | Account
+    | Profile
+    | CoList
+    | CoStream
+    | BinaryCoStream;
 
 export function expectMap(content: CoValue): CoMap {
     if (content.type !== "comap") {

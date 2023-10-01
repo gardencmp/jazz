@@ -1,10 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {
-    Link,
-    RouterProvider,
-    createHashRouter,
-} from "react-router-dom";
+import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
 import { WithJazz, useJazz, useAcceptInvite } from "jazz-react";
@@ -100,19 +96,19 @@ export function PostOverview() {
 
     return (
         <>
-            root: {JSON.stringify(me.root?.coMap.asObject())}
-            posts: {JSON.stringify(me.root?.posts?.coList?.asArray())}
-            <h1>My posts</h1>
-            {myPosts?.length
-                ? myPosts.map(
-                      (post) =>
-                          post && (
-                              <Link key={post.id} to={"/pet/" + post.id}>
-                                  {post.name}
-                              </Link>
-                          )
-                  )
-                : undefined}
+            {myPosts?.length ? (
+                <>
+                    <h1>My posts</h1>
+                    {myPosts.map(
+                        (post) =>
+                            post && (
+                                <Link key={post.id} to={"/pet/" + post.id}>
+                                    {post.name}
+                                </Link>
+                            )
+                    )}
+                </>
+            ) : undefined}
             <Link to="/new">New post</Link>
         </>
     );

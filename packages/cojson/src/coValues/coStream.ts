@@ -59,7 +59,7 @@ export class CoStreamView<
         this.fillFromCoValue();
     }
 
-    get meta(): Meta {
+    get headerMeta(): Meta {
         return this.core.header.meta as Meta;
     }
 
@@ -290,8 +290,6 @@ export class BinaryCoStreamView<
     extends CoStreamView<BinaryStreamItem, Meta>
     implements CoValue
 {
-    id!: CoID<this>;
-
     getBinaryChunks(
         allowUnfinished?: boolean
     ):

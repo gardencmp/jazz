@@ -1,6 +1,5 @@
 import { useParams } from "react-router";
-import { CoID, Queried } from "cojson";
-import { useSyncedQuery } from "jazz-react";
+import { CoID } from "cojson";
 
 import { PetPost, ReactionType, REACTION_TYPES, PetReactions } from "./1_types";
 
@@ -8,6 +7,7 @@ import { ShareButton } from "./components/ShareButton";
 import { Button, Skeleton } from "./basicComponents";
 import { BrowserImage } from "jazz-browser-media-images";
 import uniqolor from "uniqolor";
+import { Resolved, useAutoSub } from "jazz-react";
 
 /** Walkthrough: TODO
  */
@@ -24,7 +24,7 @@ const reactionEmojiMap: { [reaction in ReactionType]: string } = {
 export function RatePetPostUI() {
     const petPostID = useParams<{ petPostId: CoID<PetPost> }>().petPostId;
 
-    const petPost = useSyncedQuery(petPostID);
+    const petPost = useAutoSub(petPostID);
 
     return (
         <div className="flex flex-col gap-8">
@@ -63,7 +63,7 @@ export function RatePetPostUI() {
                 ))}
             </div>
 
-            {petPost?.group.myRole() === "admin" && petPost.reactions && (
+            {petPost?.meta.group.myRole() === "admin" && petPost.reactions && (
                 <ReactionOverview petReactions={petPost.reactions} />
             )}
         </div>
@@ -73,7 +73,7 @@ export function RatePetPostUI() {
 function ReactionOverview({
     petReactions,
 }: {
-    petReactions: Queried<PetReactions>;
+    petReactions: Resolved<PetReactions>;
 }) {
     return (
         <div>

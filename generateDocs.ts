@@ -12,6 +12,7 @@ async function main() {
         cojson: "index.ts",
         "jazz-browser": "index.ts",
         "jazz-browser-media-images": "index.ts",
+        "jazz-autosub": "index.ts",
     }).map(async ([packageName, entryPoint]) => {
         const app = await Application.bootstrapWithPlugins({
             entryPoints: [`packages/${packageName}/src/${entryPoint}`],

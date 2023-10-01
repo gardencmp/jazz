@@ -13,11 +13,13 @@
 
 ### Feature-specific Extensions
 
-#### `jazz-react-media-images` → [API](#jazz-react-media-images)
+#### `jazz-browser-media-images` → [API](#jazz-browser-media-images)
 
-- Convert images from browser `File`s / `Blob`s into CoJSON `ImageDefinition`s with multi-resolution `BinaryCoStreams` &mdash; and progressively stream them back as `BlobURL`s you can use in `img` or `srcset`. Wraps `jazz-browser-media-images` ([API](#jazz-browser-media-images)).
-
+- Convert images from browser `File`s / `Blob`s into CoJSON `ImageDefinition`s with multi-resolution `BinaryCoStreams` &mdash; and progressively stream them back as `BlobURL`s you can use in `img` or `srcset`
 ## Supporting packages
+
+#### `jazz-autosub` → [API](#jazz-autosub)
+- **Automatically subscribe to nested CoValues** (e.g. `CoMap`s, `CoList`s, `CoStream`s) and **resolve references** to them
 
 ### Binaries
 
@@ -96,13 +98,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 ```typescript
 export function useJazz<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
   [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(): {
-  me: QueriedAccount<Account<P, R, Meta>>,
+  me: ResolvedAccount<Account<P, R, Meta>>,
   localNode: LocalNode,
   logOut: () => void,
 }
 ```
-Hook that exposes the Jazz context provided by `<WithJazz/>`, most importantly the `LocalNode`
-for the logged in user (which you can use to create `Group`s, and `CoValue`s in those).
+Hook that exposes the Jazz context provided by `<WithJazz/>`, most importantly `me`, the account of
+the current in user (which you can use access the account's `root` or `profile`,
+and to create `Group`s as the current user, in which you can then create `CoValue`s).
 
 Also provides a `logOut` function, which invokes the log-out logic of the Auth Provider passed to `<WithJazz/>`.
 
@@ -114,17 +117,16 @@ undefined
 
 ----
 
-## `useSyncedQuery(id)`
+## `useAutoSub(id?)`
 
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function useSyncedQuery<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(id: "me"): QueriedAccount<Account<P, R, Meta>> | undefined
+export function useAutoSub<T extends CoValue>(id: CoID<T>): Resolved<T> | undefined
 ```
 Hook that subscribes to all updates of a given `CoValue` (identified by its `CoID`) and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
 
-See `Queried<T>` in `cojson` to see which fields and methods are available on the returned object.
+See `Resolved<T>` in `jazz-autosub` to see which fields and methods are available on the returned object.
 
 
 
@@ -132,31 +134,7 @@ See `Queried<T>` in `cojson` to see which fields and methods are available on th
 
 | name | description |
 | ----: | ---- |
-| `id` | The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined). |
-
-
-
-
-
-----
-
-## `useSyncedQueryWithNode(id?, localNode?)`
-
-<sup>(function in `jazz-react`)</sup>
-
-```typescript
-export function useSyncedQueryWithNode(id: CoID<CoValue> | "me", localNode: LocalNode): Queried<CoValue> | QueriedAccount | undefined
-```
-
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id?` | TODO: document  |
-| `localNode?` | TODO: document  |
+| `id?` | The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined). |
 
 
 
@@ -242,10 +220,7 @@ TODO: document
 <sup>(function in `jazz-react`)</sup>
 
 ```typescript
-export function createInviteLink(value: CoValue | {
-  id: CoID<CoValue>,
-  core: CoValueCore,
-}, role: "reader" | "writer" | "admin", {
+export function createInviteLink<C extends CoValue>(value: C | Resolved<C>, role: "reader" | "writer" | "admin", {
   baseURL?: string,
   valueHint?: string,
 }): string
@@ -292,6 +267,2216 @@ TODO: document
 
 ----
 
+## `ResolvedAccount`
+
+<sup>(class in `jazz-react`)</sup>
+
+```typescript
+export class ResolvedAccount<A extends Account> extends ResolvedGroup<A> {...}
+```
+TODO: document
+
+### `ResolvedAccount`: Constructors
+
+<details>
+<summary><b><code>new ResolvedAccount</code></b>(account, autoSubContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  constructor<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>(
+    account: A,
+    autoSubContext: AutoSubContext
+  ): ResolvedAccount<A> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `account` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedAccount`: Methods
+
+<details>
+<summary><b><code>.createGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  acceptInvite<T extends CoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: `inviteSecret_z${string}`
+  ): Promise<void> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `groupOrOwnedValueID` | TODO: document  |
+| `inviteSecret` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  removeMember(
+    accountID: AccountID
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): `inviteSecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["headerMeta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["headerMeta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedAccount`: Properties
+
+<details>
+<summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  isMe: boolean
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  id: CoID<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  coValueType: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  meta: ResolvedGroupMeta<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  profile: ValueOrResolvedRef<A["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  root: ValueOrResolvedRef<A["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedCoList`
+
+<sup>(class in `jazz-react`)</sup>
+
+```typescript
+export class ResolvedCoList<L extends CoList> extends Array<ValueOrResolvedRef<L["_item"]>> {...}
+```
+TODO: document
+
+### `ResolvedCoList`: Constructors
+
+<br/>
+
+### `ResolvedCoList`: Methods
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.append(item, after?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  append(
+    item: L["_item"],
+    after?: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `after?` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.prepend(item, before?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  prepend(
+    item: L["_item"],
+    before?: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `before?` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(at, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  delete(
+    at: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `at` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  mutate(
+    mutator: (mutable: MutableCoList<L["_item"], L["headerMeta"]>) => void
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.toString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  toString(): string {...}
+
+}
+```
+Returns a string representation of an array.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toLocaleString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  toLocaleString(): string {...}
+
+}
+```
+Returns a string representation of an array. The elements are converted to string using their toLocaleString methods.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.join(separator?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  join(
+    separator?: string
+  ): string {...}
+
+}
+```
+Adds all the elements of an array into a string, separated by the specified separator string.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `separator?` | A string used to separate one element of the array from the next in the resulting string. If omitted, the array elements are separated with a comma. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.slice(start?, end?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  slice(
+    start?: number,
+    end?: number
+  ): ValueOrResolvedRef<L["_item"]>[] {...}
+
+}
+```
+Returns a copy of a section of an array.
+For both start and end, a negative index can be used to indicate an offset from the end of the array.
+For example, -2 refers to the second to last element of the array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `start?` | The beginning index of the specified portion of the array.
+If start is undefined, then the slice begins at index 0. |
+| `end?` | The end index of the specified portion of the array. This is exclusive of the element at the index 'end'.
+If end is undefined, then the slice extends to the end of the array. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.indexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  indexOf(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The value to locate in the array. |
+| `fromIndex?` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastIndexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  lastIndexOf(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The value to locate in the array. |
+| `fromIndex?` | The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  every<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): COMPLEX_TYPE_predicate {...}
+
+}
+```
+Determines whether all the members of an array satisfy the specified test.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  every(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): boolean {...}
+
+}
+```
+Determines whether all the members of an array satisfy the specified test.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.some(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  some(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): boolean {...}
+
+}
+```
+Determines whether the specified callback function returns true for any element of an array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.forEach(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  forEach(
+    callbackfn: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => void,
+    thisArg?: any
+  ): void {...}
+
+}
+```
+Performs the specified action for each element in an array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.map(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  map<U>(
+    callbackfn: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    thisArg?: any
+  ): U[] {...}
+
+}
+```
+Calls a defined callback function on each element of an array, and returns an array that contains the results.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  filter<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): S[] {...}
+
+}
+```
+Returns the elements of an array that meet the condition specified in a callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  filter(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): ValueOrResolvedRef<L["_item"]>[] {...}
+
+}
+```
+Returns the elements of an array that meet the condition specified in a callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>,
+    initialValue: ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce<U>(
+    callbackfn: (previousValue: U, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>,
+    initialValue: ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight<U>(
+    callbackfn: (previousValue: U, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  find<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): undefined | S {...}
+
+}
+```
+Returns the value of the first element in the array where predicate is true, and undefined
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  find(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findIndex(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): number {...}
+
+}
+```
+Returns the index of the first element in the array where predicate is true, and -1
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.entries()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  entries(): IterableIterator<[number, ValueOrResolvedRef<L["_item"]>]> {...}
+
+}
+```
+Returns an iterable of key, value pairs for every entry in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.keys()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  keys(): IterableIterator<number> {...}
+
+}
+```
+Returns an iterable of keys in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.values()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  values(): IterableIterator<ValueOrResolvedRef<L["_item"]>> {...}
+
+}
+```
+Returns an iterable of values in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.includes(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  includes(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): boolean {...}
+
+}
+```
+Determines whether an array includes a certain element, returning true or false as appropriate.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The element to search for. |
+| `fromIndex?` | The position in this array at which to begin searching for searchElement. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.flatMap(callback, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  flatMap<U, This>(
+    callback: (this: This, value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => U | readonly U[],
+    thisArg?: This
+  ): U[] {...}
+
+}
+```
+Calls a defined callback function on each element of an array. Then, flattens the result into
+a new array.
+This is identical to a map followed by flat with depth 1.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callback function. If
+thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.flat(this, depth?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  flat<A, D extends number>(
+    this: A,
+    depth?: D
+  ): FlatArray<A, D>[] {...}
+
+}
+```
+Returns a new array with all sub-array elements concatenated into it recursively up to the
+specified depth.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `this` | TODO: document  |
+| `depth?` | The maximum recursion depth |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.at(index)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  at(
+    index: number
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Returns the item located at the specified index.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `index` | The zero-based index of the desired code unit. A negative index will count back from the last item. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLast<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): undefined | S {...}
+
+}
+```
+Returns the value of the last element in the array where predicate is true, and undefined
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLast(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLastIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLastIndex(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): number {...}
+
+}
+```
+Returns the index of the last element in the array where predicate is true, and -1
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[iterator]()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [iterator](): IterableIterator<ValueOrResolvedRef<L["_item"]>> {...}
+
+}
+```
+Iterator
+
+
+
+undefined</details>
+
+<br/>
+
+### `ResolvedCoList`: Properties
+
+<details>
+<summary><b><code>ResolvedCoList.[species]</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [species]: ArrayConstructor
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  id: CoID<L>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  coValueType: "colist"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  meta: ResolvedCoListMeta<L>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  length: number
+
+}
+```
+Gets or sets the length of the array. This is a number one higher than the highest index in the array.
+
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[unscopables]</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [unscopables]: {
+    length?: boolean,
+    toString?: ,
+    toLocaleString?: ,
+    pop?: ,
+    push?: ,
+    concat?: ,
+    join?: ,
+    reverse?: ,
+    shift?: ,
+    slice?: ,
+    sort?: ,
+    splice?: ,
+    unshift?: ,
+    indexOf?: ,
+    lastIndexOf?: ,
+    every?: ,
+    some?: ,
+    forEach?: ,
+    map?: ,
+    filter?: ,
+    reduce?: ,
+    reduceRight?: ,
+    find?: ,
+    findIndex?: ,
+    fill?: ,
+    copyWithin?: ,
+    entries?: ,
+    keys?: ,
+    values?: ,
+    includes?: ,
+    flatMap?: ,
+    flat?: ,
+    at?: ,
+    findLast?: ,
+    findLastIndex?: ,
+    [iterator]?: ,
+    [unscopables]?: boolean,
+  }
+
+}
+```
+Is an object whose properties have the value 'true'
+when they will be absent when used in a 'with' statement.
+
+
+
+</details>
+
+
+
+----
+
+## `ResolvedCoMapBase`
+
+<sup>(class in `jazz-react`)</sup>
+
+```typescript
+export class ResolvedCoMapBase<M extends CoMap> {...}
+```
+TODO: document
+
+### `ResolvedCoMapBase`: Constructors
+
+<br/>
+
+### `ResolvedCoMapBase`: Methods
+
+
+
+<details>
+<summary><b><code>.get(key)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  get<K extends string>(
+    key: K
+  ): ResolvedCoMap<M>[K] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(key, value, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  set<K extends string>(
+    key: K,
+    value: M["_shape"][K],
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `value` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(kv, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  set(
+    kv: {
+      [K in string]: M["_shape"][K]
+    },
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `kv` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(key, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  delete(
+    key: keyof M["_shape"] & string,
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  mutate(
+    mutator: (mutable: MutableCoMap<M["_shape"], M["headerMeta"]>) => void
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `ResolvedCoMapBase`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  id: CoID<M>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  coValueType: "comap"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  meta: ResolvedCoMapMeta<M>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.as</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  as: (extension: AutoSubExtension<M, O>) => undefined | O
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedCoStream`
+
+<sup>(class in `jazz-react`)</sup>
+
+```typescript
+export class ResolvedCoStream<S extends CoStream> {...}
+```
+TODO: document
+
+### `ResolvedCoStream`: Constructors
+
+<br/>
+
+### `ResolvedCoStream`: Methods
+
+<details>
+<summary><b><code>.push(item, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  push(
+    item: S["_item"],
+    privacy?: "private" | "trusting"
+  ): S {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  mutate(
+    mutator: (mutable: MutableCoStream<S["_item"], S["headerMeta"]>) => void
+  ): S {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `ResolvedCoStream`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  id: CoID<S>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  coValueType: "costream"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  meta: ResolvedCoStreamMeta<S>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.perAccount</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  perAccount: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.perSession</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  perSession: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.me</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  me: ResolvedCoStreamEntry<S["_item"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedGroup`
+
+<sup>(class in `jazz-react`)</sup>
+
+```typescript
+export class ResolvedGroup<G extends Group> {...}
+```
+TODO: document
+
+### `ResolvedGroup`: Constructors
+
+<details>
+<summary><b><code>new ResolvedGroup</code></b>(group, autoSubContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  constructor<G extends Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>(
+    group: G,
+    autoSubContext: AutoSubContext
+  ): ResolvedGroup<G> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `group` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedGroup`: Methods
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  removeMember(
+    accountID: AccountID
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): `inviteSecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["headerMeta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["headerMeta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedGroup`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  id: CoID<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  coValueType: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  meta: ResolvedGroupMeta<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  profile: ValueOrResolvedRef<G["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  root: ValueOrResolvedRef<G["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
 ## `ReactAuthHook`
 
 <sup>(type alias in `jazz-react`)</sup>
@@ -302,6 +2487,38 @@ export type ReactAuthHook = () => {
   AuthUI: React.ReactNode,
   logOut?: () => void,
 }
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Resolved`
+
+<sup>(type alias in `jazz-react`)</sup>
+
+```typescript
+export type Resolved<T extends CoValue> = T extends CoMap
+  ? T extends Account ? ResolvedAccount<T> : T extends Group ? ResolvedGroup<T> : ResolvedCoMap<T>
+  : T extends CoList
+    ? ResolvedCoList<T>
+    : T extends CoStream
+      ? T["headerMeta"] extends {
+        type: "binary",
+      } ? never : ResolvedCoStream<T>
+      : ResolvedAccount | ResolvedGroup | ResolvedCoMap<CoMap> | ResolvedCoList<CoList> | ResolvedCoStream<CoStream>
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `ResolvedCoMap`
+
+<sup>(type alias in `jazz-react`)</sup>
+
+```typescript
+export type ResolvedCoMap<M extends CoMap> = {
+  [K in keyof M["_shape"] & string]: ValueOrResolvedRef<M["_shape"][K]>
+} & ResolvedCoMapBase<M>
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -328,90 +2545,6 @@ You typically get hold of a `LocalNode` using `jazz-react`'s `useJazz()`:
 ```typescript
 const { localNode } = useJazz();
 ```
-
-### `LocalNode`:  High-level
-
-<details>
-<summary><b><code>.query(id, callback)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class LocalNode {
-
-  query<T extends CoValue>(
-    id: CoID<T>,
-    callback: (update: undefined | Queried<T>) => void
-  ): () => void {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.query(id, callback)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class LocalNode {
-
-  query<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, Meta extends AccountMeta>(
-    id: "me",
-    callback: (update: undefined | QueriedAccount<Account<P, R, Meta>>) => void
-  ): () => void {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.query(id, callback)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class LocalNode {
-
-  query(
-    id: CoID<CoValue> | "me",
-    callback: (update: undefined | QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
-      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>> | QueriedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-      [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>> | QueriedCoMap<CoMap<{
-      [key: string]: JsonValue | undefined }, null | JsonObject>> | QueriedCoList<CoList<JsonValue, null | JsonObject>> | QueriedCoStream<CoStream<JsonValue, null | JsonObject>>) => void
-  ): () => void {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-
-
-</details>
-
-<br/>
 
 ### `LocalNode`:  Node Creation
 
@@ -1099,7 +3232,7 @@ class Group<P, R, Meta> {
   createMap<M extends CoMap<{
     [key: string]: JsonValue | undefined }, null | JsonObject>>(
     init?: M["_shape"],
-    meta?: M["meta"],
+    meta?: M["headerMeta"],
     initPrivacy?: "private" | "trusting" = "private"
   ): M {...}
 
@@ -1130,7 +3263,7 @@ class Group<P, R, Meta> {
 
   createList<L extends CoList<JsonValue, null | JsonObject>>(
     init?: L["_item"][],
-    meta?: L["meta"],
+    meta?: L["headerMeta"],
     initPrivacy?: "private" | "trusting" = "private"
   ): L {...}
 
@@ -1160,7 +3293,7 @@ Creates a new `CoList` within this group, with the specified specialized
 class Group<P, R, Meta> {
 
   createStream<C extends CoStream<JsonValue, null | JsonObject>>(
-    meta?: C["meta"]
+    meta?: C["headerMeta"]
   ): C {...}
 
 }
@@ -1186,7 +3319,7 @@ class Group<P, R, Meta> {
   createBinaryStream<C extends BinaryCoStream<{
     type: "binary",
   }>>(
-    meta?: C["meta"] = ...
+    meta?: C["headerMeta"] = ...
   ): C {...}
 
 }
@@ -1387,12 +3520,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
 
 ```typescript
 class Group<P, R, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -1893,12 +4026,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoMapView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoMapView</code></sup></sub>  </summary>
 
 ```typescript
 class CoMap<Shape, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -2337,12 +4470,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoMapView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoMapView</code></sup></sub>  </summary>
 
 ```typescript
 class MutableCoMap<Shape, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -2756,12 +4889,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoListView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoListView</code></sup></sub>  </summary>
 
 ```typescript
 class CoList<Item, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -3185,12 +5318,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoListView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoListView</code></sup></sub>  </summary>
 
 ```typescript
 class MutableCoList<Item, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -3249,12 +5382,12 @@ TODO: document
 ### `CoStream`: Accessors
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoStreamView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoStreamView</code></sup></sub>  </summary>
 
 ```typescript
 class CoStream<Item, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -3765,12 +5898,12 @@ TODO: document
 ### `MutableCoStream`: Accessors
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoStreamView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoStreamView</code></sup></sub>  </summary>
 
 ```typescript
 class MutableCoStream<Item, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -4231,12 +6364,12 @@ TODO: document
 ### `BinaryCoStream`: Accessors
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>BinaryCoStreamView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>BinaryCoStreamView</code></sup></sub>  </summary>
 
 ```typescript
 class BinaryCoStream<Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -4826,12 +6959,12 @@ TODO: document
 ### `MutableBinaryCoStream`: Accessors
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>BinaryCoStreamView</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>BinaryCoStreamView</code></sup></sub>  </summary>
 
 ```typescript
 class MutableBinaryCoStream<Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -5359,2214 +7492,6 @@ TODO: document
 
 ----
 
-## `QueriedCoList`
-
-<sup>(class in `cojson`)</sup>
-
-```typescript
-export class QueriedCoList<L extends CoList> extends Array<ValueOrSubQueried<L["_item"]>> {...}
-```
-TODO: document
-
-### `QueriedCoList`: Accessors
-
-<details>
-<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  get meta(): L["meta"] {...}
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.group</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.core</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  get core(): CoValueCore {...}
-
-}
-```
-TODO: document
-
-</details>
-
-<br/>
-
-### `QueriedCoList`: Constructors
-
-<br/>
-
-### `QueriedCoList`: Methods
-
-
-
-
-
-
-
-<details>
-<summary><b><code>.append(item, after?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  append(
-    item: L["_item"],
-    after?: number,
-    privacy?: "private" | "trusting"
-  ): L {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `item` | TODO: document  |
-| `after?` | TODO: document  |
-| `privacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.prepend(item, before?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  prepend(
-    item: L["_item"],
-    before?: number,
-    privacy?: "private" | "trusting"
-  ): L {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `item` | TODO: document  |
-| `before?` | TODO: document  |
-| `privacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.delete(at, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  delete(
-    at: number,
-    privacy?: "private" | "trusting"
-  ): L {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `at` | TODO: document  |
-| `privacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  mutate(
-    mutator: (mutable: MutableCoList<L["_item"], L["meta"]>) => void
-  ): L {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-
-</details>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<details>
-<summary><b><code>.toString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  toString(): string {...}
-
-}
-```
-Returns a string representation of an array.
-
-
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.toLocaleString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  toLocaleString(): string {...}
-
-}
-```
-Returns a string representation of an array. The elements are converted to string using their toLocaleString methods.
-
-
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.join(separator?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  join(
-    separator?: string
-  ): string {...}
-
-}
-```
-Adds all the elements of an array into a string, separated by the specified separator string.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `separator?` | A string used to separate one element of the array from the next in the resulting string. If omitted, the array elements are separated with a comma. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.slice(start?, end?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  slice(
-    start?: number,
-    end?: number
-  ): ValueOrSubQueried<L["_item"]>[] {...}
-
-}
-```
-Returns a copy of a section of an array.
-For both start and end, a negative index can be used to indicate an offset from the end of the array.
-For example, -2 refers to the second to last element of the array.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `start?` | The beginning index of the specified portion of the array.
-If start is undefined, then the slice begins at index 0. |
-| `end?` | The end index of the specified portion of the array. This is exclusive of the element at the index 'end'.
-If end is undefined, then the slice extends to the end of the array. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.indexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  indexOf(
-    searchElement: ValueOrSubQueried<L["_item"]>,
-    fromIndex?: number
-  ): number {...}
-
-}
-```
-Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `searchElement` | The value to locate in the array. |
-| `fromIndex?` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.lastIndexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  lastIndexOf(
-    searchElement: ValueOrSubQueried<L["_item"]>,
-    fromIndex?: number
-  ): number {...}
-
-}
-```
-Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `searchElement` | The value to locate in the array. |
-| `fromIndex?` | The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  every<S extends JsonValue>(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
-    thisArg?: any
-  ): COMPLEX_TYPE_predicate {...}
-
-}
-```
-Determines whether all the members of an array satisfy the specified test.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the predicate function.
-If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  every(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): boolean {...}
-
-}
-```
-Determines whether all the members of an array satisfy the specified test.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the predicate function.
-If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.some(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  some(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): boolean {...}
-
-}
-```
-Determines whether the specified callback function returns true for any element of an array.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the predicate function.
-If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.forEach(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  forEach(
-    callbackfn: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => void,
-    thisArg?: any
-  ): void {...}
-
-}
-```
-Performs the specified action for each element in an array.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.map(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  map<U>(
-    callbackfn: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => U,
-    thisArg?: any
-  ): U[] {...}
-
-}
-```
-Calls a defined callback function on each element of an array, and returns an array that contains the results.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  filter<S extends JsonValue>(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
-    thisArg?: any
-  ): S[] {...}
-
-}
-```
-Returns the elements of an array that meet the condition specified in a callback function.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  filter(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): ValueOrSubQueried<L["_item"]>[] {...}
-
-}
-```
-Returns the elements of an array that meet the condition specified in a callback function.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduce(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  reduce(
-    callbackfn: (previousValue: ValueOrSubQueried<L["_item"]>, currentValue: ValueOrSubQueried<L["_item"]>, currentIndex: number, array: ValueOrSubQueried<L["_item"]>[]) => ValueOrSubQueried<L["_item"]>
-  ): ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  reduce(
-    callbackfn: (previousValue: ValueOrSubQueried<L["_item"]>, currentValue: ValueOrSubQueried<L["_item"]>, currentIndex: number, array: ValueOrSubQueried<L["_item"]>[]) => ValueOrSubQueried<L["_item"]>,
-    initialValue: ValueOrSubQueried<L["_item"]>
-  ): ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `initialValue` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  reduce<U>(
-    callbackfn: (previousValue: U, currentValue: ValueOrSubQueried<L["_item"]>, currentIndex: number, array: ValueOrSubQueried<L["_item"]>[]) => U,
-    initialValue: U
-  ): U {...}
-
-}
-```
-Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduceRight(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  reduceRight(
-    callbackfn: (previousValue: ValueOrSubQueried<L["_item"]>, currentValue: ValueOrSubQueried<L["_item"]>, currentIndex: number, array: ValueOrSubQueried<L["_item"]>[]) => ValueOrSubQueried<L["_item"]>
-  ): ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  reduceRight(
-    callbackfn: (previousValue: ValueOrSubQueried<L["_item"]>, currentValue: ValueOrSubQueried<L["_item"]>, currentIndex: number, array: ValueOrSubQueried<L["_item"]>[]) => ValueOrSubQueried<L["_item"]>,
-    initialValue: ValueOrSubQueried<L["_item"]>
-  ): ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `initialValue` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  reduceRight<U>(
-    callbackfn: (previousValue: U, currentValue: ValueOrSubQueried<L["_item"]>, currentIndex: number, array: ValueOrSubQueried<L["_item"]>[]) => U,
-    initialValue: U
-  ): U {...}
-
-}
-```
-Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  find<S extends JsonValue>(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, obj: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
-    thisArg?: any
-  ): undefined | S {...}
-
-}
-```
-Returns the value of the first element in the array where predicate is true, and undefined
-otherwise.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | If provided, it will be used as the this value for each invocation of
-predicate. If it is not provided, undefined is used instead. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  find(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, obj: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): undefined | ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.findIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  findIndex(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, obj: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): number {...}
-
-}
-```
-Returns the index of the first element in the array where predicate is true, and -1
-otherwise.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | If provided, it will be used as the this value for each invocation of
-predicate. If it is not provided, undefined is used instead. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.entries()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  entries(): IterableIterator<[number, ValueOrSubQueried<L["_item"]>]> {...}
-
-}
-```
-Returns an iterable of key, value pairs for every entry in the array
-
-
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.keys()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  keys(): IterableIterator<number> {...}
-
-}
-```
-Returns an iterable of keys in the array
-
-
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.values()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  values(): IterableIterator<ValueOrSubQueried<L["_item"]>> {...}
-
-}
-```
-Returns an iterable of values in the array
-
-
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.includes(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  includes(
-    searchElement: ValueOrSubQueried<L["_item"]>,
-    fromIndex?: number
-  ): boolean {...}
-
-}
-```
-Determines whether an array includes a certain element, returning true or false as appropriate.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `searchElement` | The element to search for. |
-| `fromIndex?` | The position in this array at which to begin searching for searchElement. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.flatMap(callback, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  flatMap<U, This>(
-    callback: (this: This, value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => U | readonly U[],
-    thisArg?: This
-  ): U[] {...}
-
-}
-```
-Calls a defined callback function on each element of an array. Then, flattens the result into
-a new array.
-This is identical to a map followed by flat with depth 1.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | An object to which the this keyword can refer in the callback function. If
-thisArg is omitted, undefined is used as the this value. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.flat(this, depth?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  flat<A, D extends number>(
-    this: A,
-    depth?: D
-  ): FlatArray<A, D>[] {...}
-
-}
-```
-Returns a new array with all sub-array elements concatenated into it recursively up to the
-specified depth.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `this` | TODO: document  |
-| `depth?` | The maximum recursion depth |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.at(index)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  at(
-    index: number
-  ): undefined | ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-Returns the item located at the specified index.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `index` | The zero-based index of the desired code unit. A negative index will count back from the last item. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  findLast<S extends JsonValue>(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => COMPLEX_TYPE_predicate,
-    thisArg?: any
-  ): undefined | S {...}
-
-}
-```
-Returns the value of the last element in the array where predicate is true, and undefined
-otherwise.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | If provided, it will be used as the this value for each invocation of
-predicate. If it is not provided, undefined is used instead. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  findLast(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): undefined | ValueOrSubQueried<L["_item"]> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.findLastIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  findLastIndex(
-    predicate: (value: ValueOrSubQueried<L["_item"]>, index: number, array: ValueOrSubQueried<L["_item"]>[]) => unknown,
-    thisArg?: any
-  ): number {...}
-
-}
-```
-Returns the index of the last element in the array where predicate is true, and -1
-otherwise.
-
-
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | If provided, it will be used as the this value for each invocation of
-predicate. If it is not provided, undefined is used instead. |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.[iterator]()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  [iterator](): IterableIterator<ValueOrSubQueried<L["_item"]>> {...}
-
-}
-```
-Iterator
-
-
-
-undefined</details>
-
-<br/>
-
-### `QueriedCoList`: Properties
-
-<details>
-<summary><b><code>QueriedCoList.[species]</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  [species]: ArrayConstructor
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.coList</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  coList: L
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  id: CoID<L>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  type: "colist"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.edits</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  edits: {
-    tx: TransactionID,
-    at: Date,
-    value: L["_item"] extends CoValue ? CoID<any[any]> : Exclude<L["_item"], CoValue>,
-    by?: QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
-      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>,
-  }[]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.deletions</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  deletions: {
-    tx: TransactionID,
-    at: Date,
-    by?: QueriedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
-      [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>,
-  }[]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  length: number
-
-}
-```
-Gets or sets the length of the array. This is a number one higher than the highest index in the array.
-
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.[unscopables]</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-class QueriedCoList<L> {
-
-  [unscopables]: {
-    length?: boolean,
-    toString?: ,
-    toLocaleString?: ,
-    pop?: ,
-    push?: ,
-    concat?: ,
-    join?: ,
-    reverse?: ,
-    shift?: ,
-    slice?: ,
-    sort?: ,
-    splice?: ,
-    unshift?: ,
-    indexOf?: ,
-    lastIndexOf?: ,
-    every?: ,
-    some?: ,
-    forEach?: ,
-    map?: ,
-    filter?: ,
-    reduce?: ,
-    reduceRight?: ,
-    find?: ,
-    findIndex?: ,
-    fill?: ,
-    copyWithin?: ,
-    entries?: ,
-    keys?: ,
-    values?: ,
-    includes?: ,
-    flatMap?: ,
-    flat?: ,
-    at?: ,
-    findLast?: ,
-    findLastIndex?: ,
-    [iterator]?: ,
-    [unscopables]?: boolean,
-  }
-
-}
-```
-Is an object whose properties have the value 'true'
-when they will be absent when used in a 'with' statement.
-
-
-
-</details>
-
-
-
-----
-
-## `QueriedCoStream`
-
-<sup>(class in `cojson`)</sup>
-
-```typescript
-export class QueriedCoStream<S extends CoStream> {...}
-```
-TODO: document
-
-### `QueriedCoStream`: Accessors
-
-<details>
-<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  get meta(): S["meta"] {...}
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.group</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  get group(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.core</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  get core(): CoValueCore {...}
-
-}
-```
-TODO: document
-
-</details>
-
-<br/>
-
-### `QueriedCoStream`: Constructors
-
-<br/>
-
-### `QueriedCoStream`: Methods
-
-<details>
-<summary><b><code>.push(item, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  push(
-    item: S["_item"],
-    privacy?: "private" | "trusting"
-  ): S {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `item` | TODO: document  |
-| `privacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  mutate(
-    mutator: (mutable: MutableCoStream<S["_item"], S["meta"]>) => void
-  ): S {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-
-</details>
-
-<br/>
-
-### `QueriedCoStream`: Properties
-
-<details>
-<summary><b><code>.coStream</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  coStream: S
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  id: CoID<S>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  type: "costream"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.perAccount</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  perAccount: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.perSession</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  perSession: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.me</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedCoStream<S> {
-
-  me: QueriedCoStreamEntry<S["_item"]>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-----
-
-## `QueriedGroup`
-
-<sup>(class in `cojson`)</sup>
-
-```typescript
-export class QueriedGroup<G extends Group> {...}
-```
-TODO: document
-
-### `QueriedGroup`: Accessors
-
-<details>
-<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  get meta(): G["meta"] {...}
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.core</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  get core(): CoValueCore {...}
-
-}
-```
-TODO: document
-
-</details>
-
-<br/>
-
-### `QueriedGroup`: Constructors
-
-<details>
-<summary><b><code>new QueriedGroup</code></b>(group, queryContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  constructor<G extends Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>(
-    group: G,
-    queryContext: QueryContext
-  ): QueriedGroup<G> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `group` | TODO: document  |
-| `queryContext` | TODO: document  |
-
-</details>
-
-<br/>
-
-### `QueriedGroup`: Methods
-
-<details>
-<summary><b><code>.addMember(accountID, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  addMember(
-    accountID: AccountID | "everyone",
-    role: Role
-  ): G {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `accountID` | TODO: document  |
-| `role` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.removeMember(accountID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  removeMember(
-    accountID: AccountID
-  ): G {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `accountID` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createInvite(role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  createInvite(
-    role: "reader" | "writer" | "admin"
-  ): InviteSecret {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `role` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  createMap<M extends CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>>(
-    init?: {
-      [K in string | number | symbol]: M["_shape"][K]
-    },
-    meta?: M["meta"],
-    initPrivacy?: "private" | "trusting" = "private"
-  ): M {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `init?` | TODO: document  |
-| `meta?` | TODO: document  |
-| `initPrivacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  createList<L extends CoList<JsonValue, null | JsonObject>>(
-    init?: L["_item"][],
-    meta?: L["meta"],
-    initPrivacy?: "private" | "trusting" = "private"
-  ): L {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `init?` | TODO: document  |
-| `meta?` | TODO: document  |
-| `initPrivacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
-    meta?: C["meta"]
-  ): C {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `meta?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  createBinaryStream<C extends BinaryCoStream<{
-    type: "binary",
-  }>>(
-    meta?: C["meta"] = ...
-  ): C {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `meta?` | TODO: document  |
-
-</details>
-
-<br/>
-
-### `QueriedGroup`: Properties
-
-<details>
-<summary><b><code>.group</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  group: G
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  id: CoID<G>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  type: "group"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  profile: ValueOrSubQueried<G["_shape"]["profile"]>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedGroup<G> {
-
-  root: ValueOrSubQueried<G["_shape"]["root"]>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-----
-
-## `QueriedAccount`
-
-<sup>(class in `cojson`)</sup>
-
-```typescript
-export class QueriedAccount<A extends Account> extends QueriedGroup<A> {...}
-```
-TODO: document
-
-### `QueriedAccount`: Accessors
-
-<details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  get meta(): G["meta"] {...}
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.core</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  get core(): CoValueCore {...}
-
-}
-```
-TODO: document
-
-</details>
-
-<br/>
-
-### `QueriedAccount`: Constructors
-
-<details>
-<summary><b><code>new QueriedAccount</code></b>(account, queryContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  constructor<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>(
-    account: A,
-    queryContext: QueryContext
-  ): QueriedAccount<A> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `account` | TODO: document  |
-| `queryContext` | TODO: document  |
-
-</details>
-
-<br/>
-
-### `QueriedAccount`: Methods
-
-<details>
-<summary><b><code>.createGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  acceptInvite<T extends CoValue>(
-    groupOrOwnedValueID: CoID<T>,
-    inviteSecret: InviteSecret
-  ): Promise<void> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `groupOrOwnedValueID` | TODO: document  |
-| `inviteSecret` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  addMember(
-    accountID: AccountID | "everyone",
-    role: Role
-  ): A {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `accountID` | TODO: document  |
-| `role` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  removeMember(
-    accountID: AccountID
-  ): A {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `accountID` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  createInvite(
-    role: "reader" | "writer" | "admin"
-  ): InviteSecret {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `role` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  createMap<M extends CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>>(
-    init?: {
-      [K in string | number | symbol]: M["_shape"][K]
-    },
-    meta?: M["meta"],
-    initPrivacy?: "private" | "trusting" = "private"
-  ): M {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `init?` | TODO: document  |
-| `meta?` | TODO: document  |
-| `initPrivacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  createList<L extends CoList<JsonValue, null | JsonObject>>(
-    init?: L["_item"][],
-    meta?: L["meta"],
-    initPrivacy?: "private" | "trusting" = "private"
-  ): L {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `init?` | TODO: document  |
-| `meta?` | TODO: document  |
-| `initPrivacy?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
-    meta?: C["meta"]
-  ): C {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `meta?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  createBinaryStream<C extends BinaryCoStream<{
-    type: "binary",
-  }>>(
-    meta?: C["meta"] = ...
-  ): C {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `meta?` | TODO: document  |
-
-</details>
-
-<br/>
-
-### `QueriedAccount`: Properties
-
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  id: CoID<A>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  isMe: boolean
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.group</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  group: A
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.type</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  type: "group"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.profile</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  profile: ValueOrSubQueried<A["_shape"]["profile"]>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.root</code></b> <sub><sup>from <code>QueriedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class QueriedAccount<A> {
-
-  root: ValueOrSubQueried<A["_shape"]["root"]>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-----
-
 ## `Account`
 
 <sup>(class in `cojson`)</sup>
@@ -7983,7 +7908,7 @@ class Account<P, R, Meta> {
   createMap<M extends CoMap<{
     [key: string]: JsonValue | undefined }, null | JsonObject>>(
     init?: M["_shape"],
-    meta?: M["meta"],
+    meta?: M["headerMeta"],
     initPrivacy?: "private" | "trusting" = "private"
   ): M {...}
 
@@ -8014,7 +7939,7 @@ class Account<P, R, Meta> {
 
   createList<L extends CoList<JsonValue, null | JsonObject>>(
     init?: L["_item"][],
-    meta?: L["meta"],
+    meta?: L["headerMeta"],
     initPrivacy?: "private" | "trusting" = "private"
   ): L {...}
 
@@ -8044,7 +7969,7 @@ Creates a new `CoList` within this group, with the specified specialized
 class Account<P, R, Meta> {
 
   createStream<C extends CoStream<JsonValue, null | JsonObject>>(
-    meta?: C["meta"]
+    meta?: C["headerMeta"]
   ): C {...}
 
 }
@@ -8070,7 +7995,7 @@ class Account<P, R, Meta> {
   createBinaryStream<C extends BinaryCoStream<{
     type: "binary",
   }>>(
-    meta?: C["meta"] = ...
+    meta?: C["headerMeta"] = ...
   ): C {...}
 
 }
@@ -8271,12 +8196,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>Group</code></sup></sub>  </summary>
 
 ```typescript
 class Account<P, R, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -8792,12 +8717,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
+<summary><b><code>.headerMeta</code></b> <sub><sup>from <code>CoMap</code></sup></sub>  </summary>
 
 ```typescript
 class Profile<Shape, Meta> {
 
-  get meta(): Meta {...}
+  get headerMeta(): Meta {...}
 
 }
 ```
@@ -9690,12 +9615,12 @@ Specifies which kind of `CoValue` this is
 
 
 <details>
-<summary><b><code>.meta</code></b>  </summary>
+<summary><b><code>.headerMeta</code></b>  </summary>
 
 ```typescript
 interface CoValue {
 
-  meta: null | JsonObject
+  headerMeta: null | JsonObject
 
 }
 ```
@@ -9821,71 +9746,34 @@ TODO: document
 
 ----
 
-## `QueryExtension`
-
-<sup>(interface in `cojson`)</sup>
-
-```typescript
-export interface QueryExtension<T extends CoValue, O> {...}
-```
-TODO: document
-
-### `QueryExtension`: Methods
-
-<details>
-<summary><b><code>.query(base, queryContext, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface QueryExtension<T, O> {
-
-  query(
-    base: T,
-    queryContext: QueryContext,
-    onUpdate: (value: O) => void
-  ): () => void {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `base` | TODO: document  |
-| `queryContext` | TODO: document  |
-
-
-</details>
-
-<br/>
-
-### `QueryExtension`: Properties
-
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface QueryExtension<T, O> {
-
-  id: string
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-----
-
 ## `Value`
 
 <sup>(type alias in `cojson`)</sup>
 
 ```typescript
 export type Value = JsonValue | AnyCoValue
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Role`
+
+<sup>(type alias in `cojson`)</sup>
+
+```typescript
+export type Role = "reader" | "writer" | "admin" | "revoked" | "adminInvite" | "writerInvite" | "readerInvite"
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Everyone`
+
+<sup>(type alias in `cojson`)</sup>
+
+```typescript
+export type Everyone = "everyone"
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -9910,38 +9798,6 @@ TODO: doc generator not implemented yet 2097152
 
 ```typescript
 export type AnyCoValue = CoMap | Group | Account | Profile | CoList | CoStream | BinaryCoStream
-```
-TODO: doc generator not implemented yet 2097152
-
-----
-
-## `Queried`
-
-<sup>(type alias in `cojson`)</sup>
-
-```typescript
-export type Queried<T extends CoValue> = T extends CoMap
-  ? T extends Account ? QueriedAccount<T> : T extends Group ? QueriedGroup<T> : QueriedCoMap<T>
-  : T extends CoList
-    ? QueriedCoList<T>
-    : T extends CoStream
-      ? T["meta"] extends {
-        type: "binary",
-      } ? never : QueriedCoStream<T>
-      : QueriedAccount | QueriedGroup | QueriedCoMap<CoMap> | QueriedCoList<CoList> | QueriedCoStream<CoStream>
-```
-TODO: doc generator not implemented yet 2097152
-
-----
-
-## `QueriedCoMap`
-
-<sup>(type alias in `cojson`)</sup>
-
-```typescript
-export type QueriedCoMap<M extends CoMap> = {
-  [K in keyof M["_shape"] & string]: ValueOrSubQueried<M["_shape"][K]>
-} & QueriedCoMapBase<M>
 ```
 TODO: doc generator not implemented yet 2097152
 
@@ -10157,10 +10013,7 @@ TODO: document
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
-export function createInviteLink(value: CoValue | {
-  id: CoID<CoValue>,
-  core: CoValueCore,
-}, role: "reader" | "writer" | "admin", {
+export function createInviteLink<C extends CoValue>(value: C | Resolved<C>, role: "reader" | "writer" | "admin", {
   baseURL?: string,
   valueHint?: string,
 }): string
@@ -10237,7 +10090,8 @@ TODO: document
 
 ```typescript
 export function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>, meta: C["meta"]): Promise<C>
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> | ResolvedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>, meta: C["headerMeta"]): Promise<C>
 ```
 TODO: document
 
@@ -10273,6 +10127,2543 @@ TODO: document
 | `allowUnfinished?` | TODO: document  |
 
 
+
+
+
+----
+
+## `autoSub(id, node, callback)`
+
+<sup>(function in `jazz-browser`)</sup>
+
+```typescript
+export function autoSub<C extends CoValue>(id: undefined | CoID<C>, node: LocalNode, callback: (resolved: undefined | Resolved<C>) => void): () => void
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `node` | TODO: document  |
+
+
+
+
+
+
+----
+
+## `autoSubResolution(id, drillDown, node)`
+
+<sup>(function in `jazz-browser`)</sup>
+
+```typescript
+export function autoSubResolution<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>, O extends ResolvedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>> | ResolvedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>> | ResolvedCoMap<CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>> | ResolvedCoList<CoList<JsonValue, null | JsonObject>> | ResolvedCoStream<CoStream<JsonValue, null | JsonObject>>>(id: "me", drillDown: (root: ResolvedAccount<A>) => undefined | O, node: LocalNode): Promise<O>
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+| `node` | TODO: document  |
+
+
+
+
+
+----
+
+## `ResolvedCoStream`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class ResolvedCoStream<S extends CoStream> {...}
+```
+TODO: document
+
+### `ResolvedCoStream`: Constructors
+
+<br/>
+
+### `ResolvedCoStream`: Methods
+
+<details>
+<summary><b><code>.push(item, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  push(
+    item: S["_item"],
+    privacy?: "private" | "trusting"
+  ): S {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  mutate(
+    mutator: (mutable: MutableCoStream<S["_item"], S["headerMeta"]>) => void
+  ): S {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `ResolvedCoStream`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  id: CoID<S>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  coValueType: "costream"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  meta: ResolvedCoStreamMeta<S>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.perAccount</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  perAccount: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.perSession</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  perSession: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.me</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  me: ResolvedCoStreamEntry<S["_item"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedCoList`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class ResolvedCoList<L extends CoList> extends Array<ValueOrResolvedRef<L["_item"]>> {...}
+```
+TODO: document
+
+### `ResolvedCoList`: Constructors
+
+<br/>
+
+### `ResolvedCoList`: Methods
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.append(item, after?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  append(
+    item: L["_item"],
+    after?: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `after?` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.prepend(item, before?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  prepend(
+    item: L["_item"],
+    before?: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `before?` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(at, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  delete(
+    at: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `at` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  mutate(
+    mutator: (mutable: MutableCoList<L["_item"], L["headerMeta"]>) => void
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.toString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  toString(): string {...}
+
+}
+```
+Returns a string representation of an array.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toLocaleString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  toLocaleString(): string {...}
+
+}
+```
+Returns a string representation of an array. The elements are converted to string using their toLocaleString methods.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.join(separator?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  join(
+    separator?: string
+  ): string {...}
+
+}
+```
+Adds all the elements of an array into a string, separated by the specified separator string.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `separator?` | A string used to separate one element of the array from the next in the resulting string. If omitted, the array elements are separated with a comma. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.slice(start?, end?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  slice(
+    start?: number,
+    end?: number
+  ): ValueOrResolvedRef<L["_item"]>[] {...}
+
+}
+```
+Returns a copy of a section of an array.
+For both start and end, a negative index can be used to indicate an offset from the end of the array.
+For example, -2 refers to the second to last element of the array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `start?` | The beginning index of the specified portion of the array.
+If start is undefined, then the slice begins at index 0. |
+| `end?` | The end index of the specified portion of the array. This is exclusive of the element at the index 'end'.
+If end is undefined, then the slice extends to the end of the array. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.indexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  indexOf(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The value to locate in the array. |
+| `fromIndex?` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastIndexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  lastIndexOf(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The value to locate in the array. |
+| `fromIndex?` | The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  every<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): COMPLEX_TYPE_predicate {...}
+
+}
+```
+Determines whether all the members of an array satisfy the specified test.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  every(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): boolean {...}
+
+}
+```
+Determines whether all the members of an array satisfy the specified test.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.some(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  some(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): boolean {...}
+
+}
+```
+Determines whether the specified callback function returns true for any element of an array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.forEach(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  forEach(
+    callbackfn: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => void,
+    thisArg?: any
+  ): void {...}
+
+}
+```
+Performs the specified action for each element in an array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.map(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  map<U>(
+    callbackfn: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    thisArg?: any
+  ): U[] {...}
+
+}
+```
+Calls a defined callback function on each element of an array, and returns an array that contains the results.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  filter<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): S[] {...}
+
+}
+```
+Returns the elements of an array that meet the condition specified in a callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  filter(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): ValueOrResolvedRef<L["_item"]>[] {...}
+
+}
+```
+Returns the elements of an array that meet the condition specified in a callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>,
+    initialValue: ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce<U>(
+    callbackfn: (previousValue: U, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>,
+    initialValue: ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight<U>(
+    callbackfn: (previousValue: U, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  find<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): undefined | S {...}
+
+}
+```
+Returns the value of the first element in the array where predicate is true, and undefined
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  find(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findIndex(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): number {...}
+
+}
+```
+Returns the index of the first element in the array where predicate is true, and -1
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.entries()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  entries(): IterableIterator<[number, ValueOrResolvedRef<L["_item"]>]> {...}
+
+}
+```
+Returns an iterable of key, value pairs for every entry in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.keys()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  keys(): IterableIterator<number> {...}
+
+}
+```
+Returns an iterable of keys in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.values()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  values(): IterableIterator<ValueOrResolvedRef<L["_item"]>> {...}
+
+}
+```
+Returns an iterable of values in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.includes(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  includes(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): boolean {...}
+
+}
+```
+Determines whether an array includes a certain element, returning true or false as appropriate.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The element to search for. |
+| `fromIndex?` | The position in this array at which to begin searching for searchElement. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.flatMap(callback, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  flatMap<U, This>(
+    callback: (this: This, value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => U | readonly U[],
+    thisArg?: This
+  ): U[] {...}
+
+}
+```
+Calls a defined callback function on each element of an array. Then, flattens the result into
+a new array.
+This is identical to a map followed by flat with depth 1.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callback function. If
+thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.flat(this, depth?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  flat<A, D extends number>(
+    this: A,
+    depth?: D
+  ): FlatArray<A, D>[] {...}
+
+}
+```
+Returns a new array with all sub-array elements concatenated into it recursively up to the
+specified depth.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `this` | TODO: document  |
+| `depth?` | The maximum recursion depth |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.at(index)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  at(
+    index: number
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Returns the item located at the specified index.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `index` | The zero-based index of the desired code unit. A negative index will count back from the last item. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLast<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): undefined | S {...}
+
+}
+```
+Returns the value of the last element in the array where predicate is true, and undefined
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLast(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLastIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLastIndex(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): number {...}
+
+}
+```
+Returns the index of the last element in the array where predicate is true, and -1
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[iterator]()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [iterator](): IterableIterator<ValueOrResolvedRef<L["_item"]>> {...}
+
+}
+```
+Iterator
+
+
+
+undefined</details>
+
+<br/>
+
+### `ResolvedCoList`: Properties
+
+<details>
+<summary><b><code>ResolvedCoList.[species]</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [species]: ArrayConstructor
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  id: CoID<L>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  coValueType: "colist"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  meta: ResolvedCoListMeta<L>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  length: number
+
+}
+```
+Gets or sets the length of the array. This is a number one higher than the highest index in the array.
+
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[unscopables]</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [unscopables]: {
+    length?: boolean,
+    toString?: ,
+    toLocaleString?: ,
+    pop?: ,
+    push?: ,
+    concat?: ,
+    join?: ,
+    reverse?: ,
+    shift?: ,
+    slice?: ,
+    sort?: ,
+    splice?: ,
+    unshift?: ,
+    indexOf?: ,
+    lastIndexOf?: ,
+    every?: ,
+    some?: ,
+    forEach?: ,
+    map?: ,
+    filter?: ,
+    reduce?: ,
+    reduceRight?: ,
+    find?: ,
+    findIndex?: ,
+    fill?: ,
+    copyWithin?: ,
+    entries?: ,
+    keys?: ,
+    values?: ,
+    includes?: ,
+    flatMap?: ,
+    flat?: ,
+    at?: ,
+    findLast?: ,
+    findLastIndex?: ,
+    [iterator]?: ,
+    [unscopables]?: boolean,
+  }
+
+}
+```
+Is an object whose properties have the value 'true'
+when they will be absent when used in a 'with' statement.
+
+
+
+</details>
+
+
+
+----
+
+## `ResolvedCoMapBase`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class ResolvedCoMapBase<M extends CoMap> {...}
+```
+TODO: document
+
+### `ResolvedCoMapBase`: Constructors
+
+<br/>
+
+### `ResolvedCoMapBase`: Methods
+
+
+
+<details>
+<summary><b><code>.get(key)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  get<K extends string>(
+    key: K
+  ): ResolvedCoMap<M>[K] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(key, value, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  set<K extends string>(
+    key: K,
+    value: M["_shape"][K],
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `value` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(kv, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  set(
+    kv: {
+      [K in string]: M["_shape"][K]
+    },
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `kv` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(key, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  delete(
+    key: keyof M["_shape"] & string,
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  mutate(
+    mutator: (mutable: MutableCoMap<M["_shape"], M["headerMeta"]>) => void
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `ResolvedCoMapBase`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  id: CoID<M>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  coValueType: "comap"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  meta: ResolvedCoMapMeta<M>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.as</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  as: (extension: AutoSubExtension<M, O>) => undefined | O
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedAccount`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class ResolvedAccount<A extends Account> extends ResolvedGroup<A> {...}
+```
+TODO: document
+
+### `ResolvedAccount`: Constructors
+
+<details>
+<summary><b><code>new ResolvedAccount</code></b>(account, autoSubContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  constructor<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>(
+    account: A,
+    autoSubContext: AutoSubContext
+  ): ResolvedAccount<A> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `account` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedAccount`: Methods
+
+<details>
+<summary><b><code>.createGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  acceptInvite<T extends CoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: `inviteSecret_z${string}`
+  ): Promise<void> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `groupOrOwnedValueID` | TODO: document  |
+| `inviteSecret` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  removeMember(
+    accountID: AccountID
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): `inviteSecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["headerMeta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["headerMeta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedAccount`: Properties
+
+<details>
+<summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  isMe: boolean
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  id: CoID<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  coValueType: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  meta: ResolvedGroupMeta<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  profile: ValueOrResolvedRef<A["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  root: ValueOrResolvedRef<A["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedGroup`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class ResolvedGroup<G extends Group> {...}
+```
+TODO: document
+
+### `ResolvedGroup`: Constructors
+
+<details>
+<summary><b><code>new ResolvedGroup</code></b>(group, autoSubContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  constructor<G extends Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>(
+    group: G,
+    autoSubContext: AutoSubContext
+  ): ResolvedGroup<G> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `group` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedGroup`: Methods
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  removeMember(
+    accountID: AccountID
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): `inviteSecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["headerMeta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["headerMeta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedGroup`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  id: CoID<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  coValueType: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  meta: ResolvedGroupMeta<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  profile: ValueOrResolvedRef<G["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  root: ValueOrResolvedRef<G["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `AutoSubContext`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class AutoSubContext {...}
+```
+TODO: document
+
+### `AutoSubContext`: Constructors
+
+<details>
+<summary><b><code>new AutoSubContext</code></b>(node, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  constructor(
+    node: LocalNode,
+    onUpdate: () => void
+  ): AutoSubContext {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `node` | TODO: document  |
+
+
+</details>
+
+<br/>
+
+### `AutoSubContext`: Methods
+
+<details>
+<summary><b><code>.autoSub(valueID, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  autoSub<T extends CoValue>(
+    valueID: CoID<T>,
+    alsoRender: CoID<CoValue>[]
+  ): undefined | Resolved<T> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `valueID` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeIfCoID(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  subscribeIfCoID<T extends undefined | JsonValue>(
+    value: T,
+    alsoRender: CoID<CoValue>[]
+  ): T extends CoID<C> ? undefined | Resolved<C> : T {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.valueOrResolvedRefPropertyDescriptor(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  valueOrResolvedRefPropertyDescriptor<T extends undefined | JsonValue>(
+    value: T,
+    alsoRender: CoID<CoValue>[]
+  ): T extends CoID<C>
+    ? {
+      get((): undefined | Resolved<C>,
+    }
+    : {
+      value: T,
+    } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.defineResolvedRefPropertiesIn(obj, subqueryProps, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  defineResolvedRefPropertiesIn<O extends object, P extends {
+    [key: string]: {
+      value: JsonValue | undefined,
+      enumerable: boolean,
+    } }>(
+    obj: O,
+    subqueryProps: P,
+    alsoRender: CoID<CoValue>[]
+  ): O & {
+    [Key in string | number | symbol]: ValueOrResolvedRef<P[Key]["value"]>
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `obj` | TODO: document  |
+| `subqueryProps` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.getOrCreateExtension(valueID, extension)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  getOrCreateExtension<T extends CoValue, O>(
+    valueID: CoID<T>,
+    extension: AutoSubExtension<T, O>
+  ): undefined | O {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `valueID` | TODO: document  |
+| `extension` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.cleanup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  cleanup(): void {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `AutoSubContext`: Properties
+
+<details>
+<summary><b><code>.values</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  values: {
+    [id: CoID<CoValue>]: {
+      lastUpdate: CoValue | undefined,
+      lastLoaded: Resolved<CoValue> | undefined,
+      render: () => void,
+      unsubscribe: () => void,
+    } }
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.extensions</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  extensions: {
+    [id: `${CoID<CoValue>}_${string}`]: {
+      lastOutput: unknown,
+      unsubscribe: () => void,
+    } }
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.node</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  node: LocalNode
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.onUpdate</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  onUpdate: () => void
+
+}
+```
+TODO: document
+
+</details>
 
 
 
@@ -10319,6 +12710,65 @@ TODO: document
 
 ----
 
+## `AutoSubExtension`
+
+<sup>(interface in `jazz-browser`)</sup>
+
+```typescript
+export interface AutoSubExtension<T extends CoValue, O> {...}
+```
+TODO: document
+
+### `AutoSubExtension`: Methods
+
+<details>
+<summary><b><code>.subscribe(base, autoSubContext, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AutoSubExtension<T, O> {
+
+  subscribe(
+    base: T,
+    autoSubContext: AutoSubContext,
+    onUpdate: (value: O) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `base` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+
+</details>
+
+<br/>
+
+### `AutoSubExtension`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AutoSubExtension<T, O> {
+
+  id: string
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
 ## `BrowserNodeHandle`
 
 <sup>(type alias in `jazz-browser`)</sup>
@@ -10356,6 +12806,38 @@ export type SessionHandle = {
 ```
 TODO: doc generator not implemented yet 2097152
 
+----
+
+## `ResolvedCoMap`
+
+<sup>(type alias in `jazz-browser`)</sup>
+
+```typescript
+export type ResolvedCoMap<M extends CoMap> = {
+  [K in keyof M["_shape"] & string]: ValueOrResolvedRef<M["_shape"][K]>
+} & ResolvedCoMapBase<M>
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Resolved`
+
+<sup>(type alias in `jazz-browser`)</sup>
+
+```typescript
+export type Resolved<T extends CoValue> = T extends CoMap
+  ? T extends Account ? ResolvedAccount<T> : T extends Group ? ResolvedGroup<T> : ResolvedCoMap<T>
+  : T extends CoList
+    ? ResolvedCoList<T>
+    : T extends CoStream
+      ? T["headerMeta"] extends {
+        type: "binary",
+      } ? never : ResolvedCoStream<T>
+      : ResolvedAccount | ResolvedGroup | ResolvedCoMap<CoMap> | ResolvedCoList<CoList> | ResolvedCoStream<CoStream>
+```
+TODO: doc generator not implemented yet 2097152
+
 
 # jazz-browser-media-images
 
@@ -10365,7 +12847,8 @@ TODO: doc generator not implemented yet 2097152
 
 ```typescript
 export function createImage(imageBlobOrFile: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>, maxSize: 256 | 1024 | 2048): Promise<Media.ImageDefinition>
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> | ResolvedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>, maxSize: 1024 | 256 | 2048): Promise<Media.ImageDefinition>
 ```
 TODO: document
 
@@ -10432,3 +12915,2632 @@ TODO: doc generator not implemented yet 2097152
 export  BrowserImage
 ```
 TODO: doc generator not implemented yet 32
+
+
+# jazz-autosub
+
+## `autoSub(id, node, callback)`
+
+<sup>(function in `jazz-autosub`)</sup>
+
+```typescript
+export function autoSub<C extends CoValue>(id: undefined | CoID<C>, node: LocalNode, callback: (resolved: undefined | Resolved<C>) => void): () => void
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `node` | TODO: document  |
+
+
+
+
+
+
+----
+
+## `autoSubResolution(id, drillDown, node)`
+
+<sup>(function in `jazz-autosub`)</sup>
+
+```typescript
+export function autoSubResolution<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>, O extends ResolvedAccount<Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>> | ResolvedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>> | ResolvedCoMap<CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>> | ResolvedCoList<CoList<JsonValue, null | JsonObject>> | ResolvedCoStream<CoStream<JsonValue, null | JsonObject>>>(id: "me", drillDown: (root: ResolvedAccount<A>) => undefined | O, node: LocalNode): Promise<O>
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+| `node` | TODO: document  |
+
+
+
+
+
+----
+
+## `ResolvedCoStream`
+
+<sup>(class in `jazz-autosub`)</sup>
+
+```typescript
+export class ResolvedCoStream<S extends CoStream> {...}
+```
+TODO: document
+
+### `ResolvedCoStream`: Constructors
+
+<br/>
+
+### `ResolvedCoStream`: Methods
+
+<details>
+<summary><b><code>.push(item, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  push(
+    item: S["_item"],
+    privacy?: "private" | "trusting"
+  ): S {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  mutate(
+    mutator: (mutable: MutableCoStream<S["_item"], S["headerMeta"]>) => void
+  ): S {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `ResolvedCoStream`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  id: CoID<S>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  coValueType: "costream"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  meta: ResolvedCoStreamMeta<S>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.perAccount</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  perAccount: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.perSession</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  perSession: [COMPLEX_TYPE_namedTupleMember, COMPLEX_TYPE_namedTupleMember][]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.me</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoStream<S> {
+
+  me: ResolvedCoStreamEntry<S["_item"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedCoList`
+
+<sup>(class in `jazz-autosub`)</sup>
+
+```typescript
+export class ResolvedCoList<L extends CoList> extends Array<ValueOrResolvedRef<L["_item"]>> {...}
+```
+TODO: document
+
+### `ResolvedCoList`: Constructors
+
+<br/>
+
+### `ResolvedCoList`: Methods
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.append(item, after?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  append(
+    item: L["_item"],
+    after?: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `after?` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.prepend(item, before?, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  prepend(
+    item: L["_item"],
+    before?: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `before?` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(at, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  delete(
+    at: number,
+    privacy?: "private" | "trusting"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `at` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  mutate(
+    mutator: (mutable: MutableCoList<L["_item"], L["headerMeta"]>) => void
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<details>
+<summary><b><code>.toString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  toString(): string {...}
+
+}
+```
+Returns a string representation of an array.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toLocaleString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  toLocaleString(): string {...}
+
+}
+```
+Returns a string representation of an array. The elements are converted to string using their toLocaleString methods.
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.join(separator?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  join(
+    separator?: string
+  ): string {...}
+
+}
+```
+Adds all the elements of an array into a string, separated by the specified separator string.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `separator?` | A string used to separate one element of the array from the next in the resulting string. If omitted, the array elements are separated with a comma. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.slice(start?, end?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  slice(
+    start?: number,
+    end?: number
+  ): ValueOrResolvedRef<L["_item"]>[] {...}
+
+}
+```
+Returns a copy of a section of an array.
+For both start and end, a negative index can be used to indicate an offset from the end of the array.
+For example, -2 refers to the second to last element of the array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `start?` | The beginning index of the specified portion of the array.
+If start is undefined, then the slice begins at index 0. |
+| `end?` | The end index of the specified portion of the array. This is exclusive of the element at the index 'end'.
+If end is undefined, then the slice extends to the end of the array. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.indexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  indexOf(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The value to locate in the array. |
+| `fromIndex?` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastIndexOf(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  lastIndexOf(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The value to locate in the array. |
+| `fromIndex?` | The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  every<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): COMPLEX_TYPE_predicate {...}
+
+}
+```
+Determines whether all the members of an array satisfy the specified test.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  every(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): boolean {...}
+
+}
+```
+Determines whether all the members of an array satisfy the specified test.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.some(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  some(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): boolean {...}
+
+}
+```
+Determines whether the specified callback function returns true for any element of an array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function.
+If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.forEach(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  forEach(
+    callbackfn: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => void,
+    thisArg?: any
+  ): void {...}
+
+}
+```
+Performs the specified action for each element in an array.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.map(callbackfn, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  map<U>(
+    callbackfn: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    thisArg?: any
+  ): U[] {...}
+
+}
+```
+Calls a defined callback function on each element of an array, and returns an array that contains the results.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  filter<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): S[] {...}
+
+}
+```
+Returns the elements of an array that meet the condition specified in a callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.filter(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  filter(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): ValueOrResolvedRef<L["_item"]>[] {...}
+
+}
+```
+Returns the elements of an array that meet the condition specified in a callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>,
+    initialValue: ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduce<U>(
+    callbackfn: (previousValue: U, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight(
+    callbackfn: (previousValue: ValueOrResolvedRef<L["_item"]>, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => ValueOrResolvedRef<L["_item"]>,
+    initialValue: ValueOrResolvedRef<L["_item"]>
+  ): ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  reduceRight<U>(
+    callbackfn: (previousValue: U, currentValue: ValueOrResolvedRef<L["_item"]>, currentIndex: number, array: ValueOrResolvedRef<L["_item"]>[]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  find<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): undefined | S {...}
+
+}
+```
+Returns the value of the first element in the array where predicate is true, and undefined
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  find(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findIndex(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, obj: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): number {...}
+
+}
+```
+Returns the index of the first element in the array where predicate is true, and -1
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.entries()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  entries(): IterableIterator<[number, ValueOrResolvedRef<L["_item"]>]> {...}
+
+}
+```
+Returns an iterable of key, value pairs for every entry in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.keys()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  keys(): IterableIterator<number> {...}
+
+}
+```
+Returns an iterable of keys in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.values()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  values(): IterableIterator<ValueOrResolvedRef<L["_item"]>> {...}
+
+}
+```
+Returns an iterable of values in the array
+
+
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.includes(searchElement, fromIndex?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  includes(
+    searchElement: ValueOrResolvedRef<L["_item"]>,
+    fromIndex?: number
+  ): boolean {...}
+
+}
+```
+Determines whether an array includes a certain element, returning true or false as appropriate.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | The element to search for. |
+| `fromIndex?` | The position in this array at which to begin searching for searchElement. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.flatMap(callback, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  flatMap<U, This>(
+    callback: (this: This, value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => U | readonly U[],
+    thisArg?: This
+  ): U[] {...}
+
+}
+```
+Calls a defined callback function on each element of an array. Then, flattens the result into
+a new array.
+This is identical to a map followed by flat with depth 1.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | An object to which the this keyword can refer in the callback function. If
+thisArg is omitted, undefined is used as the this value. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.flat(this, depth?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  flat<A, D extends number>(
+    this: A,
+    depth?: D
+  ): FlatArray<A, D>[] {...}
+
+}
+```
+Returns a new array with all sub-array elements concatenated into it recursively up to the
+specified depth.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `this` | TODO: document  |
+| `depth?` | The maximum recursion depth |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.at(index)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  at(
+    index: number
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+Returns the item located at the specified index.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `index` | The zero-based index of the desired code unit. A negative index will count back from the last item. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLast<S extends JsonValue>(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => COMPLEX_TYPE_predicate,
+    thisArg?: any
+  ): undefined | S {...}
+
+}
+```
+Returns the value of the last element in the array where predicate is true, and undefined
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLast(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLast(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): undefined | ValueOrResolvedRef<L["_item"]> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findLastIndex(predicate, thisArg?)</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  findLastIndex(
+    predicate: (value: ValueOrResolvedRef<L["_item"]>, index: number, array: ValueOrResolvedRef<L["_item"]>[]) => unknown,
+    thisArg?: any
+  ): number {...}
+
+}
+```
+Returns the index of the last element in the array where predicate is true, and -1
+otherwise.
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | If provided, it will be used as the this value for each invocation of
+predicate. If it is not provided, undefined is used instead. |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[iterator]()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [iterator](): IterableIterator<ValueOrResolvedRef<L["_item"]>> {...}
+
+}
+```
+Iterator
+
+
+
+undefined</details>
+
+<br/>
+
+### `ResolvedCoList`: Properties
+
+<details>
+<summary><b><code>ResolvedCoList.[species]</code></b> <sub><sup>from <code>Array</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [species]: ArrayConstructor
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  id: CoID<L>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  coValueType: "colist"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  meta: ResolvedCoListMeta<L>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  length: number
+
+}
+```
+Gets or sets the length of the array. This is a number one higher than the highest index in the array.
+
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[unscopables]</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  [unscopables]: {
+    length?: boolean,
+    toString?: ,
+    toLocaleString?: ,
+    pop?: ,
+    push?: ,
+    concat?: ,
+    join?: ,
+    reverse?: ,
+    shift?: ,
+    slice?: ,
+    sort?: ,
+    splice?: ,
+    unshift?: ,
+    indexOf?: ,
+    lastIndexOf?: ,
+    every?: ,
+    some?: ,
+    forEach?: ,
+    map?: ,
+    filter?: ,
+    reduce?: ,
+    reduceRight?: ,
+    find?: ,
+    findIndex?: ,
+    fill?: ,
+    copyWithin?: ,
+    entries?: ,
+    keys?: ,
+    values?: ,
+    includes?: ,
+    flatMap?: ,
+    flat?: ,
+    at?: ,
+    findLast?: ,
+    findLastIndex?: ,
+    [iterator]?: ,
+    [unscopables]?: boolean,
+  }
+
+}
+```
+Is an object whose properties have the value 'true'
+when they will be absent when used in a 'with' statement.
+
+
+
+</details>
+
+
+
+----
+
+## `ResolvedCoMapBase`
+
+<sup>(class in `jazz-autosub`)</sup>
+
+```typescript
+export class ResolvedCoMapBase<M extends CoMap> {...}
+```
+TODO: document
+
+### `ResolvedCoMapBase`: Constructors
+
+<br/>
+
+### `ResolvedCoMapBase`: Methods
+
+
+
+<details>
+<summary><b><code>.get(key)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  get<K extends string>(
+    key: K
+  ): ResolvedCoMap<M>[K] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(key, value, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  set<K extends string>(
+    key: K,
+    value: M["_shape"][K],
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `value` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.set(kv, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  set(
+    kv: {
+      [K in string]: M["_shape"][K]
+    },
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `kv` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.delete(key, privacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  delete(
+    key: keyof M["_shape"] & string,
+    privacy?: "private" | "trusting"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `key` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.mutate(mutator)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  mutate(
+    mutator: (mutable: MutableCoMap<M["_shape"], M["headerMeta"]>) => void
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+<br/>
+
+### `ResolvedCoMapBase`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  id: CoID<M>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  coValueType: "comap"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  meta: ResolvedCoMapMeta<M>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.as</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoMapBase<M> {
+
+  as: (extension: AutoSubExtension<M, O>) => undefined | O
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedAccount`
+
+<sup>(class in `jazz-autosub`)</sup>
+
+```typescript
+export class ResolvedAccount<A extends Account> extends ResolvedGroup<A> {...}
+```
+TODO: document
+
+### `ResolvedAccount`: Constructors
+
+<details>
+<summary><b><code>new ResolvedAccount</code></b>(account, autoSubContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  constructor<A extends Account<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>>(
+    account: A,
+    autoSubContext: AutoSubContext
+  ): ResolvedAccount<A> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `account` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedAccount`: Methods
+
+<details>
+<summary><b><code>.createGroup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createGroup(): Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.acceptInvite(groupOrOwnedValueID, inviteSecret)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  acceptInvite<T extends CoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: `inviteSecret_z${string}`
+  ): Promise<void> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `groupOrOwnedValueID` | TODO: document  |
+| `inviteSecret` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  removeMember(
+    accountID: AccountID
+  ): A {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): `inviteSecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["headerMeta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["headerMeta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedAccount`: Properties
+
+<details>
+<summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  isMe: boolean
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.id</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  id: CoID<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  coValueType: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  meta: ResolvedGroupMeta<A>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  profile: ValueOrResolvedRef<A["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b> <sub><sup>from <code>ResolvedGroup</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedAccount<A> {
+
+  root: ValueOrResolvedRef<A["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedGroup`
+
+<sup>(class in `jazz-autosub`)</sup>
+
+```typescript
+export class ResolvedGroup<G extends Group> {...}
+```
+TODO: document
+
+### `ResolvedGroup`: Constructors
+
+<details>
+<summary><b><code>new ResolvedGroup</code></b>(group, autoSubContext)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  constructor<G extends Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>(
+    group: G,
+    autoSubContext: AutoSubContext
+  ): ResolvedGroup<G> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `group` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedGroup`: Methods
+
+<details>
+<summary><b><code>.addMember(accountID, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  addMember(
+    accountID: AccountID | "everyone",
+    role: Role
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.removeMember(accountID)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  removeMember(
+    accountID: AccountID
+  ): G {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `accountID` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createInvite(role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createInvite(
+    role: "reader" | "writer" | "admin"
+  ): `inviteSecret_z${string}` {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `role` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createMap(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createMap<M extends CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>>(
+    init?: {
+      [K in string | number | symbol]: M["_shape"][K]
+    },
+    meta?: M["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): M {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createList(init?, meta?, initPrivacy?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createList<L extends CoList<JsonValue, null | JsonObject>>(
+    init?: L["_item"][],
+    meta?: L["headerMeta"],
+    initPrivacy?: "private" | "trusting" = "private"
+  ): L {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init?` | TODO: document  |
+| `meta?` | TODO: document  |
+| `initPrivacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createStream<C extends CoStream<JsonValue, null | JsonObject>>(
+    meta?: C["headerMeta"]
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.createBinaryStream(meta?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  createBinaryStream<C extends BinaryCoStream<{
+    type: "binary",
+  }>>(
+    meta?: C["headerMeta"] = ...
+  ): C {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `meta?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `ResolvedGroup`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  id: CoID<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.coValueType</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  coValueType: "group"
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  meta: ResolvedGroupMeta<G>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  profile: ValueOrResolvedRef<G["_shape"]["profile"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedGroup<G> {
+
+  root: ValueOrResolvedRef<G["_shape"]["root"]>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `AutoSubContext`
+
+<sup>(class in `jazz-autosub`)</sup>
+
+```typescript
+export class AutoSubContext {...}
+```
+TODO: document
+
+### `AutoSubContext`: Constructors
+
+<details>
+<summary><b><code>new AutoSubContext</code></b>(node, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  constructor(
+    node: LocalNode,
+    onUpdate: () => void
+  ): AutoSubContext {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `node` | TODO: document  |
+
+
+</details>
+
+<br/>
+
+### `AutoSubContext`: Methods
+
+<details>
+<summary><b><code>.autoSub(valueID, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  autoSub<T extends CoValue>(
+    valueID: CoID<T>,
+    alsoRender: CoID<CoValue>[]
+  ): undefined | Resolved<T> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `valueID` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeIfCoID(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  subscribeIfCoID<T extends undefined | JsonValue>(
+    value: T,
+    alsoRender: CoID<CoValue>[]
+  ): T extends CoID<C> ? undefined | Resolved<C> : T {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.valueOrResolvedRefPropertyDescriptor(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  valueOrResolvedRefPropertyDescriptor<T extends undefined | JsonValue>(
+    value: T,
+    alsoRender: CoID<CoValue>[]
+  ): T extends CoID<C>
+    ? {
+      get((): undefined | Resolved<C>,
+    }
+    : {
+      value: T,
+    } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.defineResolvedRefPropertiesIn(obj, subqueryProps, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  defineResolvedRefPropertiesIn<O extends object, P extends {
+    [key: string]: {
+      value: JsonValue | undefined,
+      enumerable: boolean,
+    } }>(
+    obj: O,
+    subqueryProps: P,
+    alsoRender: CoID<CoValue>[]
+  ): O & {
+    [Key in string | number | symbol]: ValueOrResolvedRef<P[Key]["value"]>
+  } {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `obj` | TODO: document  |
+| `subqueryProps` | TODO: document  |
+| `alsoRender` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.getOrCreateExtension(valueID, extension)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  getOrCreateExtension<T extends CoValue, O>(
+    valueID: CoID<T>,
+    extension: AutoSubExtension<T, O>
+  ): undefined | O {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `valueID` | TODO: document  |
+| `extension` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.cleanup()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  cleanup(): void {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `AutoSubContext`: Properties
+
+<details>
+<summary><b><code>.values</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  values: {
+    [id: CoID<CoValue>]: {
+      lastUpdate: CoValue | undefined,
+      lastLoaded: Resolved<CoValue> | undefined,
+      render: () => void,
+      unsubscribe: () => void,
+    } }
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.extensions</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  extensions: {
+    [id: `${CoID<CoValue>}_${string}`]: {
+      lastOutput: unknown,
+      unsubscribe: () => void,
+    } }
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.node</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  node: LocalNode
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.onUpdate</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class AutoSubContext {
+
+  onUpdate: () => void
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `AutoSubExtension`
+
+<sup>(interface in `jazz-autosub`)</sup>
+
+```typescript
+export interface AutoSubExtension<T extends CoValue, O> {...}
+```
+TODO: document
+
+### `AutoSubExtension`: Methods
+
+<details>
+<summary><b><code>.subscribe(base, autoSubContext, onUpdate)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AutoSubExtension<T, O> {
+
+  subscribe(
+    base: T,
+    autoSubContext: AutoSubContext,
+    onUpdate: (value: O) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `base` | TODO: document  |
+| `autoSubContext` | TODO: document  |
+
+
+</details>
+
+<br/>
+
+### `AutoSubExtension`: Properties
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AutoSubExtension<T, O> {
+
+  id: string
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `ResolvedCoMap`
+
+<sup>(type alias in `jazz-autosub`)</sup>
+
+```typescript
+export type ResolvedCoMap<M extends CoMap> = {
+  [K in keyof M["_shape"] & string]: ValueOrResolvedRef<M["_shape"][K]>
+} & ResolvedCoMapBase<M>
+```
+TODO: doc generator not implemented yet 2097152
+
+----
+
+## `Resolved`
+
+<sup>(type alias in `jazz-autosub`)</sup>
+
+```typescript
+export type Resolved<T extends CoValue> = T extends CoMap
+  ? T extends Account ? ResolvedAccount<T> : T extends Group ? ResolvedGroup<T> : ResolvedCoMap<T>
+  : T extends CoList
+    ? ResolvedCoList<T>
+    : T extends CoStream
+      ? T["headerMeta"] extends {
+        type: "binary",
+      } ? never : ResolvedCoStream<T>
+      : ResolvedAccount | ResolvedGroup | ResolvedCoMap<CoMap> | ResolvedCoList<CoList> | ResolvedCoStream<CoStream>
+```
+TODO: doc generator not implemented yet 2097152

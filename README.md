@@ -56,19 +56,19 @@ Jazz is open source and you can run your own sync & storage server, but to reall
 
 ### Building a new, entirely sync-based React app
 
-1. Define your data model with [cojson Collaborative Values (CoValues)](./DOCS.md/#covalue).
-2. Implement permission logic using [cojson Groups](./DOCS.md/#group).
-3. Build a user interface with [jazz-react](./DOCS.md/#jazz-react)'s reactive [synced queries](./DOCS.md/#usesyncedqueryid).
+1. Define your data model with [cojson Collaborative Values (CoValues)](./DOCS.md#covalue).
+2. Implement permission logic using [cojson Groups](./DOCS.md#group).
+3. Build a user interface with [jazz-react](./DOCS.md#jazz-react) and [auto-sub](./DOCS.md#useautosubid).
 
 ### Gradually adding sync to an existing React app
 
 Gradually migrate app features to use sync:
 
-1. Define data model for small aspect of your app with [cojson Collaborative Values (CoValues)](./DOCS.md/#covalue).
+1. Define data model for small aspect of your app with [cojson Collaborative Values (CoValues)](./DOCS.md#covalue).
     - Schema adapters/importers for Prisma/Drizzle/PostgreSQL introspection coming soon.
-2. Map existing permission logic with [cojson Groups](./DOCS.md/#group) & integrate existing auth.
+2. Map existing permission logic with [cojson Groups](./DOCS.md#group) & integrate existing auth.
     - Auth integrations coming soon.
-3. Replace some of the React state and API requests in your UI with [jazz-react](./DOCS.md/#jazz-react)'s reactive [synced queries](./DOCS.md/#usesyncedqueryid).
+3. Replace some of the React state and API requests in your UI with [jazz-react](./DOCS.md#jazz-react) and [auto-sub](./DOCS.md#useautosubid).
 
 # Example Apps
 
@@ -103,10 +103,10 @@ Demonstrates:
 
 For now, docs are hosted in a single well-structured markdown file: [`./DOCS.md`](./DOCS.md).
 
-- [Package Overview](./DOCS.md/#overview)
-- [`jazz-react` API](./DOCS.md/#jazz-react)
-- [`cojson` API](./DOCS.md/#cojson)
-- [`jazz-react-media-images` API](./DOCS.md/#jazz-react-media-images)
+- [Package Overview](./DOCS.md#overview)
+- [`jazz-react` API](./DOCS.md#jazz-react)
+- [`cojson` API](./DOCS.md#cojson)
+- [`jazz-browser-media-images` API](./DOCS.md#jazz-browser-media-images)
 
 
 In the future we'll build a dedicated docs page on the Jazz homepage.

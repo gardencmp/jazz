@@ -15,21 +15,21 @@ import {
   TwitText,
 } from './basicComponents/index.tsx';
 import { Twit, TwitProfile } from './1_dataModel.ts';
-import { Queried } from 'cojson';
 import { BrowserImage } from 'jazz-browser-media-images';
 import { HeartIcon, MessagesSquareIcon } from 'lucide-react';
 import { CreateTwitForm } from './6_CreateTwitForm.tsx';
+import { Resolved } from 'jazz-react';
 
 export function TwitComponent({
   twit,
   alreadyInReplies: alreadyInReplies
 }: {
-  twit?: Queried<Twit>;
+  twit?: Resolved<Twit>;
   alreadyInReplies?: boolean;
 }) {
   const [showReplyForm, setShowReplyForm] = React.useState(false);
 
-  const posterProfile = twit?.edits.text?.by?.profile as Queried<TwitProfile> | undefined;
+  const posterProfile = twit?.meta.edits.text?.by?.profile as Resolved<TwitProfile> | undefined;
   const isTopLevel = !twit?.isReplyTo || alreadyInReplies;
 
   return (
@@ -47,7 +47,7 @@ export function TwitComponent({
             <Link to={'/' + posterProfile?.id} className="font-bold hover:underline">
               {posterProfile?.name}
             </Link>
-            <SubtleRelativeTimeAgo dateTime={twit?.edits.text?.at} />
+            <SubtleRelativeTimeAgo dateTime={twit?.meta.edits.text?.at} />
           </TwitHeader>
 
           <TwitText style={posterProfile?.twitStyle}>

@@ -277,7 +277,7 @@ export class Group<
      */
     createMap<M extends CoMap>(
         init?: M["_shape"],
-        meta?: M["meta"],
+        meta?: M["headerMeta"],
         initPrivacy: "trusting" | "private" = "private"
     ): M {
         let map = this.core.node
@@ -309,7 +309,7 @@ export class Group<
      */
     createList<L extends CoList>(
         init?: L["_item"][],
-        meta?: L["meta"],
+        meta?: L["headerMeta"],
         initPrivacy: "trusting" | "private" = "private"
     ): L {
         let list = this.core.node
@@ -334,7 +334,7 @@ export class Group<
     }
 
     /** @category 3. Value creation */
-    createStream<C extends CoStream>(meta?: C["meta"]): C {
+    createStream<C extends CoStream>(meta?: C["headerMeta"]): C {
         return this.core.node
             .createCoValue({
                 type: "costream",
@@ -350,7 +350,7 @@ export class Group<
 
     /** @category 3. Value creation */
     createBinaryStream<C extends BinaryCoStream>(
-        meta: C["meta"] = { type: "binary" }
+        meta: C["headerMeta"] = { type: "binary" }
     ): C {
         return this.core.node
             .createCoValue({

@@ -1,50 +1,64 @@
-import { JsonValue } from "../jsonValue.js";
-import { CoStream, MutableCoStream } from "../coValues/coStream.js";
-import { CoValueCore } from "../coValueCore.js";
-import { Group } from "../coValues/group.js";
-import { AccountID, isAccountID } from "../coValues/account.js";
-import { CoID, CoValue } from "../coValue.js";
-import { SessionID, TransactionID } from "../ids.js";
-import { ValueOrSubQueried, QueryContext } from "../queries.js";
-import { QueriedAccount } from "./queriedAccount.js";
+import {
+    CoValue,
+    JsonValue,
+    CojsonInternalTypes,
+    CoStream,
+    CoID,
+    cojsonInternals,
+    Group,
+    AccountID,
+    SessionID,
+    MutableCoStream,
+} from "cojson";
+import { ValueOrResolvedRef, AutoSubContext } from "../autoSub.js";
+import { ResolvedAccount } from "./resolvedAccount.js";
 
-export type QueriedCoStreamEntry<Item extends JsonValue | CoValue> = {
-    last?: ValueOrSubQueried<Item>;
-    by?: QueriedAccount;
-    tx?: TransactionID;
+export type ResolvedCoStreamEntry<Item extends JsonValue | CoValue> = {
+    last?: ValueOrResolvedRef<Item>;
+    by?: ResolvedAccount;
+    tx?: CojsonInternalTypes.TransactionID;
     at?: Date;
     all: {
-        value: ValueOrSubQueried<Item>;
-        by?: QueriedAccount;
-        tx: TransactionID;
+        value: ValueOrResolvedRef<Item>;
+        by?: ResolvedAccount;
+        tx: CojsonInternalTypes.TransactionID;
         at: Date;
     }[];
 };
 
-export class QueriedCoStream<S extends CoStream> {
-    coStream!: S;
+export type ResolvedCoStreamMeta<S extends CoStream> = {
+    coValue: S;
+    headerMeta: S["headerMeta"];
+    group: Group;
+}
+
+export class ResolvedCoStream<S extends CoStream> {
     id: CoID<S>;
-    type = "costream" as const;
+    coValueType = "costream" as const;
+    meta: ResolvedCoStreamMeta<S>;
+    me?: ResolvedCoStreamEntry<S["_item"]>;
+    perAccount: [account: AccountID, items: ResolvedCoStreamEntry<S["_item"]>][];
+    perSession: [session: SessionID, items: ResolvedCoStreamEntry<S["_item"]>][];
 
     /** @internal */
-    constructor(coStream: S, queryContext: QueryContext) {
-        Object.defineProperty(this, "coStream", {
-            get() {
-                return coStream;
-            },
-        });
+    constructor(coStream: S, autoSubContext: AutoSubContext) {
         this.id = coStream.id;
+        this.meta = {
+            coValue: coStream,
+            headerMeta: coStream.headerMeta,
+            group: coStream.group,
+        }
 
         this.perSession = coStream.sessions().map((sessionID) => {
             const items = [...coStream.itemsIn(sessionID)].map((item) =>
-                queryContext.defineSubqueryPropertiesIn(
+                autoSubContext.defineResolvedRefPropertiesIn(
                     {
                         tx: item.tx,
                         at: new Date(item.at),
                     },
                     {
                         by: {
-                            value: isAccountID(item.by)
+                            value: cojsonInternals.isAccountID(item.by)
                                 ? item.by
                                 : (undefined as never),
                             enumerable: true,
@@ -72,20 +86,20 @@ export class QueriedCoStream<S extends CoStream> {
                     tx: lastItem?.tx,
                     at: lastItem?.at,
                     all: items,
-                } satisfies QueriedCoStreamEntry<S["_item"]>,
+                } satisfies ResolvedCoStreamEntry<S["_item"]>,
             ];
         });
 
         this.perAccount = [...coStream.accounts()].map((accountID) => {
             const items = [...coStream.itemsBy(accountID)].map((item) =>
-                queryContext.defineSubqueryPropertiesIn(
+                autoSubContext.defineResolvedRefPropertiesIn(
                     {
                         tx: item.tx,
                         at: new Date(item.at),
                     },
                     {
                         by: {
-                            value: isAccountID(item.by)
+                            value: cojsonInternals.isAccountID(item.by)
                                 ? item.by
                                 : (undefined as never),
                             enumerable: true,
@@ -111,41 +125,22 @@ export class QueriedCoStream<S extends CoStream> {
                 tx: lastItem?.tx,
                 at: lastItem?.at,
                 all: items,
-            } satisfies QueriedCoStreamEntry<S["_item"]>;
+            } satisfies ResolvedCoStreamEntry<S["_item"]>;
 
-            if (accountID === queryContext.node.account.id) {
+            if (accountID === autoSubContext.node.account.id) {
                 this.me = entry;
             }
 
-            return [
-                accountID,
-                entry
-            ];
+            return [accountID, entry];
         });
     }
 
-    get meta(): S["meta"] {
-        return this.coStream.meta;
-    }
-
-    get group(): Group {
-        return this.coStream.group;
-    }
-
-    get core(): CoValueCore {
-        return this.coStream.core;
-    }
-
-    me?: QueriedCoStreamEntry<S["_item"]>;
-    perAccount: [account: AccountID, items: QueriedCoStreamEntry<S["_item"]>][];
-    perSession: [session: SessionID, items: QueriedCoStreamEntry<S["_item"]>][];
-
     push(item: S["_item"], privacy?: "private" | "trusting"): S {
-        return this.coStream.push(item, privacy);
+        return this.meta.coValue.push(item, privacy);
     }
     mutate(
-        mutator: (mutable: MutableCoStream<S["_item"], S["meta"]>) => void
+        mutator: (mutable: MutableCoStream<S["_item"], S["headerMeta"]>) => void
     ): S {
-        return this.coStream.mutate(mutator);
+        return this.meta.coValue.mutate(mutator);
     }
 }

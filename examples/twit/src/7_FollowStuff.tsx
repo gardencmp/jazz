@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
-import { useJazz } from 'jazz-react';
+import { Resolved, useJazz } from 'jazz-react';
 import { Button, ProfilePicImg } from './basicComponents/index.tsx';
 import { TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
-import { Queried } from 'cojson';
 import { Link } from 'react-router-dom';
 import { BrowserImage } from 'jazz-browser-media-images';
 
-export function FollowButton({ profile }: { profile?: Queried<TwitProfile> }) {
+export function FollowButton({ profile }: { profile?: Resolved<TwitProfile> }) {
   const { me } = useJazz<TwitProfile, TwitAccountRoot>();
 
   const alreadyFollowing = profile?.followers?.perAccount?.some(([acc, status]) => acc === me.id && !!status.last);
@@ -32,7 +31,7 @@ export function FollowButton({ profile }: { profile?: Queried<TwitProfile> }) {
   );
 }
 
-export function FollowerList({ profile }: { profile?: Queried<TwitProfile> }) {
+export function FollowerList({ profile }: { profile?: Resolved<TwitProfile> }) {
   return (
     <div className="flex flex-col gap-4 p-4 bg-background rounded-lg border shadow-lg w-96 max-w-full m-2">
       {profile?.followers?.perAccount.map(([, followEntry]) => {
@@ -58,7 +57,7 @@ export function FollowerList({ profile }: { profile?: Queried<TwitProfile> }) {
   );
 }
 
-export function FollowingList({ profile }: { profile?: Queried<TwitProfile> }) {
+export function FollowingList({ profile }: { profile?: Resolved<TwitProfile> }) {
   return (
     <div className="flex flex-col gap-4 p-4 bg-background rounded-lg border shadow-lg w-96 max-w-full m-2">
       {[...new Set(profile?.following || [])].map(followingProfile => {
