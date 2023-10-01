@@ -5,6 +5,7 @@
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
+    "@types/image-blob-reduce": "^4.1.1",
     "cojson": "^0.4.5",
     "image-blob-reduce": "^4.1.0",
     "jazz-autosub": "^0.4.5",
@@ -15,8 +16,5 @@
     "lint": "eslint src/**/*.ts",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
-  },
-  "devDependencies": {
-    "@types/image-blob-reduce": "^4.1.1"
   }
 }
