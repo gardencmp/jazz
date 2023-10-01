@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-twit",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "javascript-time-ago": "^2.5.9",
-    "jazz-browser-media-images": "^0.4.5",
+    "jazz-browser-media-images": "^0.4.6",
     "jazz-react": "^0.4.5",
     "jazz-react-auth-local": "^0.4.5",
     "lucide-react": "^0.274.0",
