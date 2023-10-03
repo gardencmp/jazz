@@ -1,6 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createHashRouter } from "react-router-dom";
+import {
+    RouterProvider,
+    createHashRouter,
+    useNavigate,
+} from "react-router-dom";
 import "./index.css";
 
 import { WithJazz, useJazz, useAcceptInvite } from "jazz-react";
@@ -14,8 +18,8 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
-import { migration } from "./1_types.ts";
-import { AccountMigration } from "cojson";
+import { TodoAccountRoot, migration } from "./1_types.ts";
+import { AccountMigration, Profile } from "cojson";
 
 /**
  * Walkthrough: The top-level provider `<WithJazz/>`
@@ -61,7 +65,7 @@ function App() {
     const router = createHashRouter([
         {
             path: "/",
-            element: <NewProjectForm />,
+            element: <HomeScreen />,
         },
         {
             path: "/project/:projectId",
@@ -87,6 +91,29 @@ function App() {
             >
                 Log Out
             </Button>
+        </>
+    );
+}
+
+export function HomeScreen() {
+    const { me } = useJazz<Profile, TodoAccountRoot>();
+    const navigate = useNavigate();
+
+    return (
+        <>
+            {me.root?.projects?.length ? <h1>My Projects</h1> : null}
+            {me.root?.projects?.map((project) => {
+                return (
+                    <Button
+                        key={project?.id}
+                        onClick={() => navigate("/project/" + project?.id)}
+                        variant="ghost"
+                    >
+                        {project?.title}
+                    </Button>
+                );
+            })}
+            <NewProjectForm />
         </>
     );
 }
