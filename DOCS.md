@@ -2902,9 +2902,9 @@ class Group<P, R, Meta> {
 
   asObject(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -2923,9 +2923,9 @@ class Group<P, R, Meta> {
 
   toJSON(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -3027,9 +3027,9 @@ class Group<P, R, Meta> {
   set(
     kv: {
       everyone: undefined | Role,
-      readKey: undefined | `key_z${string}`,
       profile: undefined | null | CoID<P>,
       root: undefined | null | CoID<R>,
+      readKey: undefined | `key_z${string}`,
     },
     privacy?: "private" | "trusting"
   ): Group<P, R, Meta> {...}
@@ -3043,9 +3043,9 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `kv.everyone` | TODO: document |
-| `kv.readKey` | TODO: document |
 | `kv.profile` | TODO: document |
 | `kv.root` | TODO: document |
+| `kv.readKey` | TODO: document |
 | `privacy?` | TODO: document  |
 
 </details>
@@ -3374,7 +3374,7 @@ class Group<P, R, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -3404,7 +3404,7 @@ class Group<P, R, Meta> {
   lastEditAt<K extends Object>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -3433,7 +3433,7 @@ class Group<P, R, Meta> {
   editsAt<K extends Object>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -3880,7 +3880,7 @@ class CoMap<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -3910,7 +3910,7 @@ class CoMap<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -3939,7 +3939,7 @@ class CoMap<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4324,7 +4324,7 @@ class MutableCoMap<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4354,7 +4354,7 @@ class MutableCoMap<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4383,7 +4383,7 @@ class MutableCoMap<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4782,7 +4782,7 @@ class CoList<Item, Meta> {
   editAt(
     idx: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -4809,7 +4809,7 @@ TODO: document
 class CoList<Item, Meta> {
 
   deletionEdits(): {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
   }[] {...}
@@ -5211,7 +5211,7 @@ class MutableCoList<Item, Meta> {
   editAt(
     idx: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5238,7 +5238,7 @@ TODO: document
 class MutableCoList<Item, Meta> {
 
   deletionEdits(): {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
   }[] {...}
@@ -5608,7 +5608,7 @@ class CoStream<Item, Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5638,7 +5638,7 @@ class CoStream<Item, Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5667,7 +5667,7 @@ class CoStream<Item, Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5694,9 +5694,9 @@ TODO: document
 class CoStream<Item, Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5723,9 +5723,9 @@ TODO: document
 class CoStream<Item, Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6074,7 +6074,7 @@ class MutableCoStream<Item, Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6104,7 +6104,7 @@ class MutableCoStream<Item, Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6133,7 +6133,7 @@ class MutableCoStream<Item, Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6160,9 +6160,9 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6189,9 +6189,9 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6669,7 +6669,7 @@ class BinaryCoStream<Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6699,7 +6699,7 @@ class BinaryCoStream<Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6728,7 +6728,7 @@ class BinaryCoStream<Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6755,9 +6755,9 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6784,9 +6784,9 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7214,7 +7214,7 @@ class MutableBinaryCoStream<Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7244,7 +7244,7 @@ class MutableBinaryCoStream<Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7273,7 +7273,7 @@ class MutableBinaryCoStream<Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7300,9 +7300,9 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7329,9 +7329,9 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7578,9 +7578,9 @@ class Account<P, R, Meta> {
 
   asObject(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -7599,9 +7599,9 @@ class Account<P, R, Meta> {
 
   toJSON(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -7703,9 +7703,9 @@ class Account<P, R, Meta> {
   set(
     kv: {
       everyone: undefined | Role,
-      readKey: undefined | `key_z${string}`,
       profile: undefined | null | CoID<P>,
       root: undefined | null | CoID<R>,
+      readKey: undefined | `key_z${string}`,
     },
     privacy?: "private" | "trusting"
   ): Account<P, R, Meta> {...}
@@ -7719,9 +7719,9 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `kv.everyone` | TODO: document |
-| `kv.readKey` | TODO: document |
 | `kv.profile` | TODO: document |
 | `kv.root` | TODO: document |
+| `kv.readKey` | TODO: document |
 | `privacy?` | TODO: document  |
 
 </details>
@@ -8050,7 +8050,7 @@ class Account<P, R, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -8080,7 +8080,7 @@ class Account<P, R, Meta> {
   lastEditAt<K extends Object>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -8109,7 +8109,7 @@ class Account<P, R, Meta> {
   editsAt<K extends Object>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -8571,7 +8571,7 @@ class Profile<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -8601,7 +8601,7 @@ class Profile<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -8630,7 +8630,7 @@ class Profile<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
