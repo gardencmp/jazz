@@ -1,7 +1,5 @@
 import { randomBytes } from "@noble/hashes/utils";
 import { AnyCoValue, CoValue } from "./coValue.js";
-import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
-import { CoMap } from "./coValues/coMap.js";
 import {
     Encrypted,
     Hash,
@@ -30,15 +28,13 @@ import { Group, expectGroup } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { CoList } from "./coValues/coList.js";
 import {
-    Account,
     AccountID,
     GeneralizedControlledAccount,
-    isAccountID,
 } from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
 import { coreToCoValue } from "./coreToCoValue.js";
+import { isAccountID } from "./typeCheckers.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 

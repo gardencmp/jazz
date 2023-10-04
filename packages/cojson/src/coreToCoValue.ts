@@ -1,4 +1,4 @@
-import { CoValueCore } from "./coValueCore.js";
+import type { CoValueCore } from "./coValueCore.js";
 import { Account } from "./coValues/account.js";
 import { Group } from "./coValues/group.js";
 import { CoMap } from "./coValues/coMap.js";

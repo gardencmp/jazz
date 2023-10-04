@@ -36,7 +36,8 @@ import { Group, expectGroup, EVERYONE } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
-import { Account, Profile, isAccountID } from "./coValues/account.js";
+import { Account, Profile } from "./coValues/account.js";
+import { isAccountID } from "./typeCheckers.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, AnyCoValue } from "./coValue.js";

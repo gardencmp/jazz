@@ -153,10 +153,6 @@ export class AnonymousControlledAccount
 export type AccountMeta = { type: "account" };
 export type AccountID = CoID<Account>;
 
-export function isAccountID(id: AccountID | AgentID): id is AccountID {
-    return id.startsWith("co_");
-}
-
 export type ProfileShape = {
     name: string;
 };
