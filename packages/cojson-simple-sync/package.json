@@ -4,7 +4,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@types/ws": "^8.5.5",
@@ -16,8 +16,8 @@
         "typescript": "5.0.2"
     },
     "dependencies": {
-        "cojson": "^0.4.6",
-        "cojson-storage-sqlite": "^0.4.6",
+        "cojson": "^0.4.7",
+        "cojson-storage-sqlite": "^0.4.7",
         "ws": "^8.13.0"
     },
     "scripts": {

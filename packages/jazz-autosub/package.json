@@ -5,9 +5,9 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "dependencies": {
-        "cojson": "^0.4.6"
+        "cojson": "^0.4.7"
     },
     "scripts": {
         "test": "jest",
