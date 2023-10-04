@@ -1,0 +1,231 @@
+import { Tabs, Cards, Card } from "nextra/components";
+import { Slogan, Grid, GridItem, GridCard, GoogleLogo } from "../components";
+import { ResponsiveIframe } from "../components/ResponsiveIframe";
+import {
+  ArrowUpDownIcon,
+  UploadCloudIcon,
+  TrainFrontTunnelIcon,
+  MonitorSmartphoneIcon,
+  TextCursorIcon,
+  MousePointer2Icon,
+  GaugeIcon,
+  HandIcon
+} from "lucide-react";
+
+# Instant sync.
+
+<Slogan>Go beyond request/response &mdash; ship modern apps with sync.</Slogan>
+
+Jazz is an open-source toolkit for building apps with **sync** and **secure collaborative data.**
+
+<h2 className="mt-24">Hard things are easy now.</h2>
+
+Jazz takes what *backends* + *databases* + *CDNs* + *real-time infrastructure* do, generalizes the problem and solves it in a completely new way. (How? Keep reading.)
+
+Because of that, with Jazz, you only build what makes your app *your app:*<br/>1. **Define your data model.** -> 2. **Add role-based permissions.** -> 3. **Build your UI.**
+
+And you get **built-in capabilities** that took the &ldquo;big ones&rdquo; <small>(G‑Docs,&nbsp;Figma,&nbsp;Notion,&nbsp;Linear,&nbsp;&hellip;)</small> *years* to build:
+
+<Cards>
+<Card href="#" title="Cross-device sync" icon={<MonitorSmartphoneIcon />} />
+  <Card
+    href="#"
+    title="Real-time multiplayer"
+    icon={
+      <div className="w-6 h-6 flex flex-col">
+        <TextCursorIcon
+          size="10"
+          absoluteStrokeWidth
+          className="-scale-x-100 self-start -ml-1"
+        />
+        <MousePointer2Icon size="15" absoluteStrokeWidth className="-mt-1 -mx-1.5 self-end"/>
+        <HandIcon size="15" absoluteStrokeWidth className="-mt-2 -mx-1.5 self-start"/>
+      </div>
+    }
+  />
+  <Card href="#" title="Automatic granular data-fetching" icon={<ArrowUpDownIcon />} />
+  <Card href="#" title="Cloud persistence & Local storage" icon={<UploadCloudIcon />} />
+  <Card
+    href="#"
+    title="Offline support & sync-when-possible"
+    icon={<TrainFrontTunnelIcon />}
+  />
+
+  <Card href="#" title="Fluid UI perf & 90% less loading" icon={<GaugeIcon />}/>
+</Cards>
+
+## First impressions&hellip;
+
+<Slogan small>A chat app in 84 lines of code.</Slogan>
+
+<Grid>
+<GridItem>
+```tsx filename="app.tsx" showLineNumbers
+import { CoMap, CoList } from 'cojson';
+// Our data model: a chat is a collaborative list of messages
+export type Chat = CoList<Message['id']>;
+export type Message = CoMap<{ text: string }>;
+
+import { WithJazz, useJazz, DemoAuth } from 'jazz-react';
+import ReactDOM from 'react-dom/client';
+import { HashRoute } from 'hashroute';
+import { ChatWindow } from './chatWindow.tsx';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <WithJazz auth={DemoAuth({ appName: 'Chat' })}>
+    <App />
+  </WithJazz>,
+);
+
+function App() {
+  const { logOut } = useJazz();
+  return <div className='flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white'>
+    <button onClick={() => { logOut() }} className='rounded mb-5 px-2 py-1 bg-stone-200 dark:bg-stone-800 dark:text-white self-end'>
+      Log Out
+    </button>
+    {HashRoute({
+      '/': <Home />,
+      '/:id': (id) => <ChatWindow chatId={id as Chat['id']} />,
+    }, { reportToParentFrame: true })}
+  </div>
+}
+
+function Home() {
+  const { me } = useJazz();
+  // Groups determine access rights to values they own.
+  const createChat = () => {
+    const group = me.createGroup().addMember('everyone', 'writer');
+    const chat = group.createList<Chat>();
+    location.hash = '/' + chat.id;
+  };
+
+  return <button onClick={createChat} className='rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto'>
+    Create New Chat
+  </button>
+}
+````
+</GridItem>
+<GridItem>
+```tsx filename="chatWindow.tsx" showLineNumbers
+import { useAutoSub } from 'jazz-react';
+import { Chat, Message } from './app.tsx';
+
+export function ChatWindow({ chatId }: { chatId: Chat['id'] }) {
+  const chat = useAutoSub(chatId);
+
+  if (!chat) return 'Loading...';
+  return <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
+    {
+      chat.map((msg, i) => (
+        <ChatBubble key={msg?.id}
+          text={msg?.text}
+          by={chat.meta.edits[i].by?.profile?.name}
+          byMe={chat.meta.edits[i].by?.isMe}
+          time={chat.meta.edits[i].at} />
+      ))
+    }
+    <ChatInput onSubmit={(text) => {
+      const msg = chat.meta.group.createMap<Message>({ text });
+      chat.append(msg.id);
+    }}/>
+  </div>;
+}
+
+function ChatBubble({ text, by, time: t, byMe }: { text?: string, by?: string, time?: Date, byMe?: boolean }) {
+  return <div className={'flex flex-col ' + (byMe ? 'items-end' : 'items-start')}>
+    <div className='rounded-xl bg-stone-100 dark:bg-stone-700 dark:text-white py-2 px-4 mt-2 min-w-[5rem]'>
+      { text }
+    </div>
+    <div className='text-xs text-neutral-500 ml-2'>
+      { by } { t?.getHours() }:{ t?.getMinutes() }
+    </div>
+  </div>;
+}
+
+function ChatInput({ onSubmit }: { onSubmit: (text: string) => void }) {
+  return <input className='rounded p-2 border mt-auto dark:bg-black dark:text-white dark:border-stone-700'
+    placeholder='Type a message and press Enter'
+    onKeyDown={({ key, currentTarget: inp }) => {
+      if (key === 'Enter' && inp.value) { onSubmit(inp.value); inp.value = '' }
+    }}/>
+}
+````
+
+</GridItem>
+<ResponsiveIframe src="http://localhost:9999/" className="rounded-xl overflow-hidden border dark:border-stone-700 min-h-[50vh]"/>
+</Grid>
+
+## How does it work?
+
+<Slogan small>Introducing: Secure collaborative data.</Slogan>
+
+Jazz is built around **CoJSON,** a new abstraction that implements **multi-device co-editing,** **user identities & permissions** and **sync & persistence** in a standardized way with a high-level API.
+
+This makes collaboration and secure access control feel like **inherent properties of your data** &mdash;&nbsp;so&nbsp;we're calling it &ldquo;secure collaborative data.&rdquo;
+
+### Collaborative Values
+
+<Slogan small>Your new building blocks.</Slogan>
+
+- Data that multiple users can co-edit in real time or async with smart conflict resolution
+
+<Grid>
+<GridCard>
+#### `CoMap`s - Key-value maps
+
+</GridCard>
+<GridCard>
+#### `CoList`s - Ordered lists
+
+</GridCard>
+<GridCard>
+#### `CoString`s - Plain-text
+
+</GridCard>
+<GridCard>
+#### `CoText`s - Rich-text
+
+- Generic collaborative markup format that prevents most editing conflicts
+
+</GridCard>
+<GridCard>
+
+#### `CoStream`s - Per-user value streams
+
+- Enforce per-user separation for user presence, social reactions, polls, replies etc.
+
+</GridCard>
+<GridCard>
+
+#### `BinaryCoStream`s - file/media streams
+
+- Create, reference and load even huge binary blobs or create live-streams without needing external services
+
+</GridCard>
+</Grid>
+
+### Accounts & Groups
+
+<Slogan small>First-class user identities & secure permissions.</Slogan>
+
+- Simple API to define groups of users, their roles
+- Verifiably enforced by encryption and signatures
+
+## Jazz: batteries included.
+
+<Grid>
+<GridCard>
+### Auto-sub
+
+<Slogan small>Let your UI drive data-syncing</Slogan>
+
+</GridCard>
+<GridCard>
+### Auth providers
+</GridCard>
+<GridCard>
+### Two-way sync to your existing database
+</GridCard>
+</Grid>
+
+## Global Mesh

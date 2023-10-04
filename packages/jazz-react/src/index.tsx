@@ -310,3 +310,4 @@ export function useAcceptInvite<C extends CoValue = CoValue>(
 }
 
 export { createInviteLink, parseInviteLink } from "jazz-browser";
+export { DemoAuth } from './DemoAuth'

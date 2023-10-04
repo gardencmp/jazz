@@ -1,28 +1,31 @@
-import { useMemo, useState, ReactNode } from "react";
-import { BrowserLocalAuth } from "jazz-browser-auth-local";
-import { ReactAuthHook } from "jazz-react";
+import { ReactNode, useMemo, useState } from "react";
+import { BrowserDemoAuth } from "jazz-browser";
+import { ReactAuthHook } from ".";
+import React from "react";
 
-export type LocalAuthComponent = (props: {
+export type DemoAuthComponent = (props: {
     loading: boolean;
-    logIn: () => void;
+    existingUsers: string[];
+    logInAs: (existingUser: string) => void;
     signUp: (username: string) => void;
 }) => ReactNode;
 
-export function LocalAuth({
+export function DemoAuth({
     appName,
     appHostname,
-    Component = LocalAuthBasicUI,
+    Component = DemoAuthBasicUI,
 }: {
     appName: string;
     appHostname?: string;
-    Component?: LocalAuthComponent;
+    Component?: DemoAuthComponent;
 }): ReactAuthHook {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
                   state: "ready";
-                  logIn: () => void;
+                  existingUsers: string[];
+                  logInAs: (existingUser: string) => void;
                   signUp: (username: string) => void;
               }
             | { state: "signedIn"; logOut: () => void }
@@ -31,12 +34,13 @@ export function LocalAuth({
         const [logOutCounter, setLogOutCounter] = useState(0);
 
         const auth = useMemo(() => {
-            return new BrowserLocalAuth(
+            return new BrowserDemoAuth(
                 {
                     onReady(next) {
                         setAuthState({
                             state: "ready",
-                            logIn: next.logIn,
+                            existingUsers: next.existingUsers,
+                            logInAs: next.logInAs,
                             signUp: next.signUp,
                         });
                     },
@@ -51,8 +55,7 @@ export function LocalAuth({
                         });
                     },
                 },
-                appName,
-                appHostname
+                appName
             );
         }, [appName, appHostname, logOutCounter]);
 
@@ -60,12 +63,14 @@ export function LocalAuth({
             authState.state === "ready"
                 ? Component({
                       loading: false,
-                      logIn: authState.logIn,
+                      existingUsers: authState.existingUsers,
+                      logInAs: authState.logInAs,
                       signUp: authState.signUp,
                   })
                 : Component({
                       loading: false,
-                      logIn: () => {},
+                      existingUsers: [],
+                      logInAs: () => {},
                       signUp: (_) => {},
                   });
 
@@ -78,11 +83,13 @@ export function LocalAuth({
     };
 }
 
-export const LocalAuthBasicUI = ({
-    logIn,
+export const DemoAuthBasicUI = ({
+    existingUsers,
+    logInAs,
     signUp,
 }: {
-    logIn: () => void;
+    existingUsers: string[];
+    logInAs: (existingUser: string) => void;
     signUp: (username: string) => void;
 }) => {
     const [username, setUsername] = useState<string>("");
@@ -137,23 +144,28 @@ export const LocalAuthBasicUI = ({
                             padding: "13px 5px",
                             border: "none",
                             borderRadius: "6px",
-                            cursor: "pointer"
+                            cursor: "pointer",
                         }}
                     />
                 </form>
-                <button
-                    onClick={logIn}
-                    style={{
-                        background: "#000",
-                        color: "#fff",
-                        padding: "13px 5px",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer"
-                    }}
-                >
-                    Log In with existing account
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    {existingUsers.map((user) => (
+                        <button
+                            key={user}
+                            onClick={() => logInAs(user)}
+                            style={{
+                                background: "#000",
+                                color: "#fff",
+                                padding: "13px 5px",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Log In as "{user}"
+                        </button>
+                    ))}
+                </div>
             </div>
         </div>
     );

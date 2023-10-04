@@ -267,6 +267,33 @@ TODO: document
 
 ----
 
+## `DemoAuth({appName, appHostname?, Component?})`
+
+<sup>(function in `jazz-react`)</sup>
+
+```typescript
+export function DemoAuth({
+  appName: string,
+  appHostname?: string,
+  Component?: DemoAuthComponent,
+}): ReactAuthHook
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `__namedParameters.appName` | TODO: document |
+| `__namedParameters.appHostname?` | TODO: document |
+| `__namedParameters.Component?` | TODO: document |
+
+
+
+
+
+----
+
 ## `ResolvedAccount`
 
 <sup>(class in `jazz-react`)</sup>
@@ -10182,6 +10209,109 @@ TODO: document
 
 ----
 
+## `BrowserDemoAuth`
+
+<sup>(class in `jazz-browser`)</sup>
+
+```typescript
+export class BrowserDemoAuth implements AuthProvider {...}
+```
+TODO: document
+
+### `BrowserDemoAuth`: Constructors
+
+<details>
+<summary><b><code>new BrowserDemoAuth</code></b>(driver, appName)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BrowserDemoAuth {
+
+  constructor(
+    driver: BrowserDemoAuthDriver,
+    appName: string
+  ): BrowserDemoAuth {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `driver` | TODO: document  |
+| `appName` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `BrowserDemoAuth`: Methods
+
+<details>
+<summary><b><code>.createNode(getSessionFor, initialPeers, migration?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BrowserDemoAuth {
+
+  createNode(
+    getSessionFor: SessionProvider,
+    initialPeers: Peer[],
+    migration?: AccountMigration
+  ): Promise<LocalNode> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `getSessionFor` | TODO: document  |
+| `initialPeers` | TODO: document  |
+| `migration?` | TODO: document  |
+
+</details>
+
+<br/>
+
+### `BrowserDemoAuth`: Properties
+
+<details>
+<summary><b><code>.driver</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BrowserDemoAuth {
+
+  driver: BrowserDemoAuthDriver
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.appName</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BrowserDemoAuth {
+
+  appName: string
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
 ## `ResolvedCoStream`
 
 <sup>(class in `jazz-browser`)</sup>
@@ -12703,6 +12833,57 @@ TODO: document
 | `getSessionFor` | TODO: document  |
 | `initialPeers` | TODO: document  |
 | `migration?` | TODO: document  |
+
+</details>
+
+
+
+----
+
+## `BrowserDemoAuthDriver`
+
+<sup>(interface in `jazz-browser`)</sup>
+
+```typescript
+export interface BrowserDemoAuthDriver {...}
+```
+TODO: document
+
+### `BrowserDemoAuthDriver`: Properties
+
+<details>
+<summary><b><code>.onReady</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BrowserDemoAuthDriver {
+
+  onReady: (next: {
+    signUp: (username: string) => Promise<void>,
+    existingUsers: string[],
+    logInAs: (existingUser: string) => Promise<void>,
+  }) => void
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.onSignedIn</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BrowserDemoAuthDriver {
+
+  onSignedIn: (next: {
+    logOut: () => void,
+  }) => void
+
+}
+```
+TODO: document
 
 </details>
 

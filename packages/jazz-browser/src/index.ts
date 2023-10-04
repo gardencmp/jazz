@@ -23,6 +23,7 @@ import { IDBStorage } from "cojson-storage-indexeddb";
 import { Resolved } from "jazz-autosub";
 
 export * from "jazz-autosub";
+export { BrowserDemoAuth, BrowserDemoAuthDriver } from "./DemoAuth";
 
 export type BrowserNodeHandle = {
     node: LocalNode;
