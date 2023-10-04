@@ -38,6 +38,7 @@ import {
     isAccountID,
 } from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
+import { coreToCoValue } from "./coreToCoValue.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
@@ -517,31 +518,7 @@ export class CoValueCore {
             return this._cachedContent;
         }
 
-        let newContent;
-        if (this.header.type === "comap") {
-            if (this.header.ruleset.type === "group") {
-                if (
-                    this.header.meta?.type === "account" &&
-                    !options?.ignorePrivateTransactions
-                ) {
-                    newContent = new Account(this);
-                } else {
-                    newContent = new Group(this, options);
-                }
-            } else {
-                newContent = new CoMap(this);
-            }
-        } else if (this.header.type === "colist") {
-            newContent = new CoList(this);
-        } else if (this.header.type === "costream") {
-            if (this.header.meta && this.header.meta.type === "binary") {
-                newContent = new BinaryCoStream(this);
-            } else {
-                newContent = new CoStream(this);
-            }
-        } else {
-            throw new Error(`Unknown coValue type ${this.header.type}`);
-        }
+        const newContent = coreToCoValue(this, options);
 
         if (!options?.ignorePrivateTransactions) {
             this._cachedContent = newContent;

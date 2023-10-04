@@ -1,5 +1,6 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoValue, CoID, isCoValue } from "../coValue.js";
+import { CoValue, CoID } from "../coValue.js";
+import { isCoValue } from "../isCoValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { Group } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
