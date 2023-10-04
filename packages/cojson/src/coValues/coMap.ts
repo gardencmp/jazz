@@ -1,11 +1,12 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { AgentID, TransactionID } from "../ids.js";
 import { CoID, CoValue } from "../coValue.js";
-import { isCoValue } from "../typeCheckers.js";
-import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { isCoValue } from "../typeUtils/isCoValue.js";
+import { CoValueCore } from "../coValueCore.js";
+import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AccountID } from "./account.js";
 import { parseJSON } from "../jsonStringify.js";
-import { Group } from "./group.js";
+import type { Group } from "./group.js";
 
 type MapOp<K extends string, V extends JsonValue | undefined> = {
     txID: TransactionID;

@@ -17,7 +17,6 @@ import {
 import {
     InviteSecret,
     Group,
-    expectGroup,
     secretSeedFromInviteSecret,
 } from "./coValues/group.js";
 import { Peer, SyncManager } from "./sync.js";
@@ -36,6 +35,7 @@ import {
 } from "./coValues/account.js";
 import { CoMap } from "./coValues/coMap.js";
 import { CoValue } from "./index.js";
+import { expectGroup } from "./typeUtils/expectGroup.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 

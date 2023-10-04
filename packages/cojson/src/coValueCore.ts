@@ -24,7 +24,7 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Group, expectGroup } from "./coValues/group.js";
+import { Group } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
@@ -34,7 +34,9 @@ import {
 } from "./coValues/account.js";
 import { Stringified, stableStringify } from "./jsonStringify.js";
 import { coreToCoValue } from "./coreToCoValue.js";
-import { isAccountID } from "./typeCheckers.js";
+import { expectGroup } from "./typeUtils/expectGroup.js";
+import { isAccountID } from "./typeUtils/isAccountID.js";
+import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
@@ -49,12 +51,6 @@ export type CoValueHeader = {
 export function idforHeader(header: CoValueHeader): RawCoID {
     const hash = shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
-}
-
-export function accountOrAgentIDfromSessionID(
-    sessionID: SessionID
-): AccountID | AgentID {
-    return sessionID.split("_session")[0] as AccountID | AgentID;
 }
 
 export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {

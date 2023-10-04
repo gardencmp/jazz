@@ -1,7 +1,8 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { CoID, CoValue } from "../coValue.js";
-import { isCoValue } from "../typeCheckers.js";
-import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { isCoValue } from "../typeUtils/isCoValue.js";
+import { CoValueCore } from "../coValueCore.js";
+import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { AccountID } from "./account.js";
 import { parseJSON } from "../jsonStringify.js";
