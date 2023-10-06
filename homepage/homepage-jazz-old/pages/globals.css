@@ -30,8 +30,41 @@ body article.nx-w-full p {
     @apply max-w-3xl;
 }
 
-body pre code {
+body pre code.nx-text-\[\.9em\] {
+    font-size: 0.8rem;
     line-height: 1.35;
+}
+
+[style="color:var(--shiki-token-keyword)"]+[style="color:var(--shiki-token-string-expression)"]:after {
+    content: "⋯";
+    text-indent: 0;
+    display: block;
+    line-height: initial;
+    letter-spacing: normal;
+    outline: 1px solid var(--shiki-token-string-expression);
+    border-radius: 0.25rem;
+    margin-left: 0.1rem;
+    margin-right: 0.1rem;
+}
+
+[style="color:var(--shiki-token-keyword)"]+[style="color:var(--shiki-token-string-expression)"] {
+    position: relative;
+    opacity: 1;
+    display: inline-block;
+    text-indent: -9999px;
+    line-height: 0;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+[style="color:var(--shiki-token-keyword)"]+[style="color:var(--shiki-token-string-expression)"]:hover {
+    text-indent: 0;
+    line-height: initial;
+    opacity: 1;
+}
+
+[style="color:var(--shiki-token-keyword)"]+[style="color:var(--shiki-token-string-expression)"]:hover:after {
+    display: none;
 }
 
 body .nextra-card svg {

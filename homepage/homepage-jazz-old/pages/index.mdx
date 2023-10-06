@@ -4,7 +4,7 @@ import { ResponsiveIframe } from "../components/ResponsiveIframe";
 import {
   ArrowUpDownIcon,
   UploadCloudIcon,
-  TrainFrontTunnelIcon,
+  PlaneIcon,
   MonitorSmartphoneIcon,
   TextCursorIcon,
   MousePointer2Icon,
@@ -48,7 +48,7 @@ And you get **built-in capabilities** that took the &ldquo;big ones&rdquo; <smal
   <Card
     href="#"
     title="Offline support & sync-when-possible"
-    icon={<TrainFrontTunnelIcon />}
+    icon={<PlaneIcon />}
   />
 
   <Card href="#" title="Fluid UI perf & 90% less loading" icon={<GaugeIcon />}/>
@@ -56,20 +56,24 @@ And you get **built-in capabilities** that took the &ldquo;big ones&rdquo; <smal
 
 ## First impressions&hellip;
 
-<Slogan small>A chat app in 84 lines of code.</Slogan>
+<Slogan small>A chat app in 86 lines of code.</Slogan>
 
 <Grid>
 <GridItem>
-```tsx filename="app.tsx" showLineNumbers
+```tsx filename="dataModel.ts" showLineNumbers
 import { CoMap, CoList } from 'cojson';
-// Our data model: a chat is a collaborative list of messages
+
 export type Chat = CoList<Message['id']>;
 export type Message = CoMap<{ text: string }>;
-
+```
+</GridItem>
+<GridItem className="col-start-1">
+```tsx filename="app.tsx" showLineNumbers
 import { WithJazz, useJazz, DemoAuth } from 'jazz-react';
 import ReactDOM from 'react-dom/client';
 import { HashRoute } from 'hashroute';
 import { ChatWindow } from './chatWindow.tsx';
+import { Chat } from './dataModel.ts';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <WithJazz auth={DemoAuth({ appName: 'Chat' })}>
@@ -78,9 +82,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 function App() {
-  const { logOut } = useJazz();
   return <div className='flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white'>
-    <button onClick={() => { logOut() }} className='rounded mb-5 px-2 py-1 bg-stone-200 dark:bg-stone-800 dark:text-white self-end'>
+    <button onClick={useJazz().logOut} className='rounded mb-5 px-2 py-1 bg-stone-200 dark:bg-stone-800 dark:text-white self-end'>
       Log Out
     </button>
     {HashRoute({
@@ -105,16 +108,15 @@ function Home() {
 }
 ````
 </GridItem>
-<GridItem>
+<GridItem className="col-start-2 row-start-1 row-span-2">
 ```tsx filename="chatWindow.tsx" showLineNumbers
 import { useAutoSub } from 'jazz-react';
-import { Chat, Message } from './app.tsx';
+import { Chat, Message } from './dataModel.ts';
 
 export function ChatWindow({ chatId }: { chatId: Chat['id'] }) {
   const chat = useAutoSub(chatId);
 
-  if (!chat) return 'Loading...';
-  return <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
+  return chat ? <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
     {
       chat.map((msg, i) => (
         <ChatBubble key={msg?.id}
@@ -128,11 +130,13 @@ export function ChatWindow({ chatId }: { chatId: Chat['id'] }) {
       const msg = chat.meta.group.createMap<Message>({ text });
       chat.append(msg.id);
     }}/>
-  </div>;
+  </div> : <div>Loading...</div>;
 }
 
-function ChatBubble({ text, by, time: t, byMe }: { text?: string, by?: string, time?: Date, byMe?: boolean }) {
-  return <div className={'flex flex-col ' + (byMe ? 'items-end' : 'items-start')}>
+function ChatBubble({ text, by, time: t, byMe }:
+  { text?: string, by?: string, time?: Date, byMe?: boolean }
+) {
+  return <div className={`items-${byMe ? 'end' : 'start'} flex flex-col`}>
     <div className='rounded-xl bg-stone-100 dark:bg-stone-700 dark:text-white py-2 px-4 mt-2 min-w-[5rem]'>
       { text }
     </div>
@@ -145,14 +149,16 @@ function ChatBubble({ text, by, time: t, byMe }: { text?: string, by?: string, t
 function ChatInput({ onSubmit }: { onSubmit: (text: string) => void }) {
   return <input className='rounded p-2 border mt-auto dark:bg-black dark:text-white dark:border-stone-700'
     placeholder='Type a message and press Enter'
-    onKeyDown={({ key, currentTarget: inp }) => {
-      if (key === 'Enter' && inp.value) { onSubmit(inp.value); inp.value = '' }
+    onKeyDown={({ key, currentTarget: input }) => {
+      if (key !== 'Enter' || !input.value) return;
+      onSubmit(input.value);
+      input.value = '';
     }}/>
 }
 ````
 
 </GridItem>
-<ResponsiveIframe src="http://localhost:9999/" className="rounded-xl overflow-hidden border dark:border-stone-700 min-h-[50vh]"/>
+<ResponsiveIframe src="http://localhost:9999/" className="col-start-3 row-start-1 row-span-2 rounded-xl overflow-hidden border dark:border-stone-700 min-h-[50vh]"/>
 </Grid>
 
 ## How does it work?

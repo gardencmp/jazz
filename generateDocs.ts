@@ -5,6 +5,7 @@ export const manuallyIgnore = new Set(["CojsonInternalTypes"]);
 
 async function main() {
     const exampleFilesInDocs = {
+        "examples/chat/src/dataModel.ts": "homepage/homepage-jazz/pages/index.mdx",
         "examples/chat/src/app.tsx": "homepage/homepage-jazz/pages/index.mdx",
         "examples/chat/src/chatWindow.tsx": "homepage/homepage-jazz/pages/index.mdx",
     };

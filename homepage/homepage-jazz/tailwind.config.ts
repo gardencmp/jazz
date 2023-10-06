@@ -1,15 +1,20 @@
-module.exports = {
-  darkMode: 'class',
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
   content: [
-    './pages/**/*.{js,jsx,ts,tsx,md,mdx}',
-    './components/**/*.{js,jsx,ts,tsx,md,mdx}',
-    './theme.config.jsx'
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
-      display: ['var(--font-manrope)'],
-      mono: ['var(--font-pragmata)'],
-    }
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 }
+export default config
