@@ -2696,13 +2696,14 @@ TODO: document
 
 
 <details>
-<summary><b><code>.load(id)</code></b>  </summary>
+<summary><b><code>.load(id, onProgress?)</code></b>  </summary>
 
 ```typescript
 class LocalNode {
 
   load<T extends CoValue>(
-    id: CoID<T>
+    id: CoID<T>,
+    onProgress?: (progress: number) => void
   ): Promise<T> {...}
 
 }
@@ -2718,6 +2719,7 @@ for listening to subsequent updates to the CoValue.
 | name | description |
 | ----: | ---- |
 | `id` | TODO: document  |
+
 
 </details>
 
@@ -6428,6 +6430,88 @@ TODO: document
 
 ### `BinaryCoStream`: Methods
 
+<details>
+<summary><b><code>.push(item, privacy?)</code></b>  </summary>
+
+```typescript
+class BinaryCoStream<Meta> {
+
+  push(
+    item: BinaryStreamItem,
+    privacy?: "private" | "trusting"
+  ): BinaryCoStream<Meta> {...}
+
+}
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.push(item, privacy, returnNewStream)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BinaryCoStream<Meta> {
+
+  push(
+    item: BinaryStreamItem,
+    privacy: "private" | "trusting",
+    returnNewStream: true
+  ): BinaryCoStream<Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy` | TODO: document  |
+| `returnNewStream` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.push(item, privacy, returnNewStream)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BinaryCoStream<Meta> {
+
+  push(
+    item: BinaryStreamItem,
+    privacy: "private" | "trusting",
+    returnNewStream: false
+  ): void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy` | TODO: document  |
+| `returnNewStream` | TODO: document  |
+
+</details>
+
 
 
 <details>
@@ -6439,7 +6523,7 @@ class BinaryCoStream<Meta> {
   startBinaryStream(
     settings: BinaryStreamInfo,
     privacy?: "private" | "trusting" = "private"
-  ): BinaryCoStream<Meta> {...}
+  ): void {...}
 
 }
 ```
@@ -6465,7 +6549,7 @@ class BinaryCoStream<Meta> {
   pushBinaryStreamChunk(
     chunk: Uint8Array,
     privacy?: "private" | "trusting" = "private"
-  ): BinaryCoStream<Meta> {...}
+  ): void {...}
 
 }
 ```
@@ -9416,7 +9500,7 @@ TODO: document
 class CoValueCore {
 
   _decryptionCache: {
-    [key: Encrypted<JsonValue[], JsonValue>]: Stringified<JsonValue[]> | undefined }
+    [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined }
 
 }
 ```
@@ -10084,14 +10168,14 @@ TODO: document
 
 ----
 
-## `createBinaryStreamFromBlob(blob, inGroup, meta?)`
+## `createBinaryStreamFromBlob(blob, inGroup, meta?, onProgress?)`
 
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
 export function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
   [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> | ResolvedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>, meta: C["headerMeta"]): Promise<C>
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>, meta: C["headerMeta"], onProgress: (progress: number) => void): Promise<C>
 ```
 TODO: document
 
@@ -10107,14 +10191,15 @@ TODO: document
 
 
 
+
 ----
 
-## `readBlobFromBinaryStream(streamId, node, allowUnfinished?)`
+## `readBlobFromBinaryStream(streamId, node, allowUnfinished?, onProgress?)`
 
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
-export function readBlobFromBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(streamId: CoID<C>, node: LocalNode, allowUnfinished: boolean): Promise<Blob | undefined>
+export function readBlobFromBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(streamId: CoID<C>, node: LocalNode, allowUnfinished: boolean, onProgress: (progress: number) => void): Promise<Blob | undefined>
 ```
 TODO: document
 
@@ -10125,6 +10210,7 @@ TODO: document
 | `streamId` | TODO: document  |
 | `node` | TODO: document  |
 | `allowUnfinished?` | TODO: document  |
+
 
 
 
