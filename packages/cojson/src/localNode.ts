@@ -199,10 +199,10 @@ export class LocalNode {
     }
 
     /** @internal */
-    loadCoValue(id: RawCoID): Promise<CoValueCore> {
+    loadCoValue(id: RawCoID, onProgress?: (progress: number) => void): Promise<CoValueCore> {
         let entry = this.coValues[id];
         if (!entry) {
-            entry = newLoadingState();
+            entry = newLoadingState(onProgress);
 
             this.coValues[id] = entry;
 
@@ -221,8 +221,8 @@ export class LocalNode {
      *
      * @category 3. Low-level
      */
-    async load<T extends CoValue>(id: CoID<T>): Promise<T> {
-        return (await this.loadCoValue(id)).getCurrentContent() as T;
+    async load<T extends CoValue>(id: CoID<T>, onProgress?: (progress: number) => void): Promise<T> {
+        return (await this.loadCoValue(id, onProgress)).getCurrentContent() as T;
     }
 
     /** @category 3. Low-level */
@@ -577,11 +577,12 @@ type CoValueState =
           state: "loading";
           done: Promise<CoValueCore>;
           resolve: (coValue: CoValueCore) => void;
+          onProgress?: (progress: number) => void;
       }
-    | { state: "loaded"; coValue: CoValueCore };
+    | { state: "loaded"; coValue: CoValueCore; onProgress?: (progress: number) => void; };
 
 /** @internal */
-export function newLoadingState(): CoValueState {
+export function newLoadingState(onProgress?: (progress: number) => void): CoValueState {
     let resolve: (coValue: CoValueCore) => void;
 
     const promise = new Promise<CoValueCore>((r) => {
@@ -592,5 +593,6 @@ export function newLoadingState(): CoValueState {
         state: "loading",
         done: promise,
         resolve: resolve!,
+        onProgress
     };
 }

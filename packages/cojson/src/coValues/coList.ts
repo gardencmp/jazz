@@ -3,7 +3,6 @@ import { CoID, CoValue, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { AccountID } from "./account.js";
-import { parseJSON } from "../jsonStringify.js";
 import { Group } from "./group.js";
 
 type OpID = TransactionID & { changeIdx: number };
@@ -93,9 +92,7 @@ export class CoListView<
             changes,
             madeAt,
         } of this.core.getValidSortedTransactions()) {
-            for (const [changeIdx, changeUntyped] of parseJSON(
-                changes
-            ).entries()) {
+            for (const [changeIdx, changeUntyped] of changes.entries()) {
                 const change = changeUntyped as ListOpPayload<Item>;
 
                 if (change.op === "pre" || change.op === "app") {

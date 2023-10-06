@@ -37,7 +37,7 @@ import {
     GeneralizedControlledAccount,
     isAccountID,
 } from "./coValues/account.js";
-import { Stringified, stableStringify } from "./jsonStringify.js";
+import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
@@ -92,7 +92,7 @@ export type Transaction = PrivateTransaction | TrustingTransaction;
 
 export type DecryptedTransaction = {
     txID: TransactionID;
-    changes: Stringified<JsonValue[]>;
+    changes: JsonValue[];
     madeAt: number;
 };
 
@@ -107,7 +107,7 @@ export class CoValueCore {
     listeners: Set<(content?: CoValue) => void> = new Set();
     _decryptionCache: {
         [key: Encrypted<JsonValue[], JsonValue>]:
-            | Stringified<JsonValue[]>
+            | JsonValue[]
             | undefined;
     } = {};
 
@@ -464,7 +464,7 @@ export class CoValueCore {
                 tx: this.nextTransactionID(),
             });
 
-            this._decryptionCache[encrypted] = stableStringify(changes);
+            this._decryptionCache[encrypted] = changes;
 
             transaction = {
                 privacy: "private",
@@ -561,7 +561,7 @@ export class CoValueCore {
                     return {
                         txID,
                         madeAt: tx.madeAt,
-                        changes: tx.changes,
+                        changes: parseJSON(tx.changes),
                     };
                 } else {
                     if (options?.ignorePrivateTransactions) {
@@ -576,14 +576,15 @@ export class CoValueCore {
                             this._decryptionCache[tx.encryptedChanges];
 
                         if (!decrytedChanges) {
-                            decrytedChanges = decryptRawForTransaction(
+                            const decryptedString = decryptRawForTransaction(
                                 tx.encryptedChanges,
                                 readKey,
                                 {
                                     in: this.id,
                                     tx: txID,
                                 }
-                            );
+                            )
+                            decrytedChanges = decryptedString && parseJSON(decryptedString);
                             this._decryptionCache[tx.encryptedChanges] =
                                 decrytedChanges;
                         }

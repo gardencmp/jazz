@@ -3,7 +3,6 @@ import { AgentID, TransactionID } from "../ids.js";
 import { CoID, CoValue, isCoValue } from "../coValue.js";
 import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
 import { AccountID } from "./account.js";
-import { parseJSON } from "../jsonStringify.js";
 import { Group } from "./group.js";
 
 type MapOp<K extends string, V extends JsonValue | undefined> = {
@@ -58,9 +57,7 @@ export class CoMapView<
         for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
             options
         )) {
-            for (const [changeIdx, changeUntyped] of parseJSON(
-                changes
-            ).entries()) {
+            for (const [changeIdx, changeUntyped] of changes.entries()) {
                 const change = changeUntyped as MapOpPayload<
                     keyof Shape & string,
                     Shape[keyof Shape & string]
@@ -121,7 +118,7 @@ export class CoMapView<
      * Get all keys currently in the map.
      *
      * @category 1. Reading */
-    keys<K extends (keyof Shape & string) = (keyof Shape & string)>(): K[] {
+    keys<K extends keyof Shape & string = keyof Shape & string>(): K[] {
         const keys = Object.keys(this.ops) as K[];
 
         if (this.atTimeFilter) {

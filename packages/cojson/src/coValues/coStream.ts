@@ -5,7 +5,6 @@ import { Group } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
 import { AccountID, isAccountID } from "./account.js";
-import { parseJSON } from "../jsonStringify.js";
 
 export type BinaryStreamInfo = {
     mimeType: string;
@@ -81,7 +80,7 @@ export class CoStreamView<
             madeAt,
             changes,
         } of this.core.getValidSortedTransactions()) {
-            for (const changeUntyped of parseJSON(changes)) {
+            for (const changeUntyped of changes) {
                 const change = changeUntyped as Item;
                 let entries = this.items[txID.sessionID];
                 if (!entries) {
@@ -291,7 +290,7 @@ export class BinaryCoStreamView<
     implements CoValue
 {
     getBinaryChunks(
-        allowUnfinished?: boolean
+        allowUnfinished?: boolean,
     ):
         | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
@@ -316,6 +315,8 @@ export class BinaryCoStreamView<
         let finished = false;
         // let totalLength = 0;
 
+        let lastProgressUpdate = Date.now();
+
         for (const item of items.slice(1)) {
             if (item.type === "end") {
                 finished = true;
@@ -332,6 +333,10 @@ export class BinaryCoStreamView<
             );
             // totalLength += chunk.length;
             chunks.push(chunk);
+
+            if (Date.now() - lastProgressUpdate > 100) {
+                lastProgressUpdate = Date.now();
+            }
         }
 
         // const after = performance.now();
@@ -359,36 +364,55 @@ export class BinaryCoStream<
     /** @internal */
     push(
         item: BinaryStreamItem,
-        privacy: "private" | "trusting" = "private"
-    ): this {
+        privacy?: "private" | "trusting",
+    ): this
+    push(
+        item: BinaryStreamItem,
+        privacy: "private" | "trusting",
+        returnNewStream: true
+    ): this
+    push(
+        item: BinaryStreamItem,
+        privacy: "private" | "trusting",
+        returnNewStream: false
+    ): void
+    push(
+        item: BinaryStreamItem,
+        privacy: "private" | "trusting" = "private",
+        returnNewStream: boolean = true
+    ): this | void {
         this.core.makeTransaction([item], privacy);
-        return new BinaryCoStream(this.core) as this;
+        if (returnNewStream) {
+            return new BinaryCoStream(this.core) as this;
+        }
     }
 
     startBinaryStream(
         settings: BinaryStreamInfo,
         privacy: "private" | "trusting" = "private"
-    ): this {
+    ): void {
         return this.push(
             {
                 type: "start",
                 ...settings,
             } satisfies BinaryStreamStart,
-            privacy
+            privacy,
+            false
         );
     }
 
     pushBinaryStreamChunk(
         chunk: Uint8Array,
         privacy: "private" | "trusting" = "private"
-    ): this {
+    ): void {
         // const before = performance.now();
         return this.push(
             {
                 type: "chunk",
                 chunk: `binary_U${bytesToBase64url(chunk)}`,
             } satisfies BinaryStreamChunk,
-            privacy
+            privacy,
+            false
         );
         // const after = performance.now();
         // console.log(
@@ -402,7 +426,8 @@ export class BinaryCoStream<
             {
                 type: "end",
             } satisfies BinaryStreamEnd,
-            privacy
+            privacy,
+            true
         );
     }
 

@@ -429,38 +429,52 @@ export async function createBinaryStreamFromBlob<
 >(
     blob: Blob | File,
     inGroup: Group | Resolved<Group>,
-    meta: C["headerMeta"] = { type: "binary" }
+    meta: C["headerMeta"] = { type: "binary" },
+    onProgress?: (progress: number) => void
 ): Promise<C> {
     let stream = inGroup.createBinaryStream(meta);
+
+    const start = Date.now();
 
     const reader = new FileReader();
     const done = new Promise<void>((resolve) => {
         reader.onload = async () => {
             const data = new Uint8Array(reader.result as ArrayBuffer);
-            stream = stream.edit((stream) => {
-                stream.startBinaryStream({
-                    mimeType: blob.type,
-                    totalSizeBytes: blob.size,
-                    fileName: blob instanceof File ? blob.name : undefined,
-                });
-            }) as C; // TODO: fix this
+            stream.startBinaryStream({
+                mimeType: blob.type,
+                totalSizeBytes: blob.size,
+                fileName: blob instanceof File ? blob.name : undefined,
+            });
             const chunkSize = MAX_RECOMMENDED_TX_SIZE;
 
+            let lastProgressUpdate = Date.now();
+
             for (let idx = 0; idx < data.length; idx += chunkSize) {
-                stream = stream.edit((stream) => {
-                    stream.pushBinaryStreamChunk(
-                        data.slice(idx, idx + chunkSize)
-                    );
-                }) as C; // TODO: fix this
+                stream.pushBinaryStreamChunk(data.slice(idx, idx + chunkSize));
+
+                if (Date.now() - lastProgressUpdate > 100) {
+                    onProgress?.(idx / data.length);
+                    lastProgressUpdate = Date.now();
+                }
+
                 await new Promise((resolve) => setTimeout(resolve, 0));
             }
-            stream = stream.edit((stream) => {
-                stream.endBinaryStream();
-            }) as C; // TODO: fix this
+            stream = stream.endBinaryStream();
+            const end = Date.now();
+
+            console.debug(
+                "Finished creating binary stream in",
+                (end - start) / 1000,
+                "s - Throughput in MB/s",
+                (1000 * (blob.size / (end - start))) / (1024 * 1024)
+            );
+            onProgress?.(1);
             resolve();
         };
     });
-    reader.readAsArrayBuffer(blob);
+    setTimeout(() => {
+        reader.readAsArrayBuffer(blob);
+    });
 
     await done;
 
@@ -472,13 +486,10 @@ export async function readBlobFromBinaryStream<
 >(
     streamId: CoID<C>,
     node: LocalNode,
-    allowUnfinished?: boolean
+    allowUnfinished?: boolean,
+    onProgress?: (progress: number) => void
 ): Promise<Blob | undefined> {
-    const stream = await node.load<C>(streamId);
-
-    if (!stream) {
-        return undefined;
-    }
+    const stream = await node.load<C>(streamId, onProgress);
 
     const chunks = stream.getBinaryChunks(allowUnfinished);
 
