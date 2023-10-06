@@ -66,14 +66,3 @@ export function expectStream(content: CoValue): CoStream {
 
     return content as CoStream;
 }
-
-export function isCoValue(
-    value: JsonValue | CoValue | undefined
-): value is CoValue {
-    return (
-        value instanceof CoMap ||
-        value instanceof CoList ||
-        value instanceof CoStream ||
-        value instanceof BinaryCoStream
-    );
-}

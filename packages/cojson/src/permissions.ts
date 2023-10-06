@@ -5,12 +5,13 @@ import { KeyID } from "./crypto.js";
 import {
     CoValueCore,
     Transaction,
-    accountOrAgentIDfromSessionID,
 } from "./coValueCore.js";
+import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { Account, AccountID, Profile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
-import { EVERYONE, Everyone, expectGroup } from "./coValues/group.js";
+import { EVERYONE, Everyone } from "./coValues/group.js";
+import { expectGroup } from "./typeUtils/expectGroup.js";
 
 export type PermissionsDef =
     | { type: "group"; initialAdmin: AccountID | AgentID }

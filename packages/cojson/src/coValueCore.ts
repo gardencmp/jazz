@@ -1,7 +1,5 @@
 import { randomBytes } from "@noble/hashes/utils";
 import { AnyCoValue, CoValue } from "./coValue.js";
-import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
-import { CoMap } from "./coValues/coMap.js";
 import {
     Encrypted,
     Hash,
@@ -26,18 +24,19 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Group, expectGroup } from "./coValues/group.js";
+import { Group } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { CoList } from "./coValues/coList.js";
 import {
-    Account,
     AccountID,
     GeneralizedControlledAccount,
-    isAccountID,
 } from "./coValues/account.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
+import { coreToCoValue } from "./coreToCoValue.js";
+import { expectGroup } from "./typeUtils/expectGroup.js";
+import { isAccountID } from "./typeUtils/isAccountID.js";
+import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
@@ -52,12 +51,6 @@ export type CoValueHeader = {
 export function idforHeader(header: CoValueHeader): RawCoID {
     const hash = shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
-}
-
-export function accountOrAgentIDfromSessionID(
-    sessionID: SessionID
-): AccountID | AgentID {
-    return sessionID.split("_session")[0] as AccountID | AgentID;
 }
 
 export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {
@@ -517,31 +510,7 @@ export class CoValueCore {
             return this._cachedContent;
         }
 
-        let newContent;
-        if (this.header.type === "comap") {
-            if (this.header.ruleset.type === "group") {
-                if (
-                    this.header.meta?.type === "account" &&
-                    !options?.ignorePrivateTransactions
-                ) {
-                    newContent = new Account(this);
-                } else {
-                    newContent = new Group(this, options);
-                }
-            } else {
-                newContent = new CoMap(this);
-            }
-        } else if (this.header.type === "colist") {
-            newContent = new CoList(this);
-        } else if (this.header.type === "costream") {
-            if (this.header.meta && this.header.meta.type === "binary") {
-                newContent = new BinaryCoStream(this);
-            } else {
-                newContent = new CoStream(this);
-            }
-        } else {
-            throw new Error(`Unknown coValue type ${this.header.type}`);
-        }
+        const newContent = coreToCoValue(this, options);
 
         if (!options?.ignorePrivateTransactions) {
             this._cachedContent = newContent;

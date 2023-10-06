@@ -1,10 +1,13 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoValue, CoID, isCoValue } from "../coValue.js";
-import { CoValueCore, accountOrAgentIDfromSessionID } from "../coValueCore.js";
+import { CoValue, CoID } from "../coValue.js";
+import { isAccountID } from "../typeUtils/isAccountID.js";
+import { isCoValue } from "../typeUtils/isCoValue.js";
+import { CoValueCore } from "../coValueCore.js";
+import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { Group } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
-import { AccountID, isAccountID } from "./account.js";
+import { AccountID } from "./account.js";
 
 export type BinaryStreamInfo = {
     mimeType: string;

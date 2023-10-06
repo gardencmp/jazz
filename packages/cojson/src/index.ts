@@ -2,8 +2,8 @@ import {
     CoValueCore,
     newRandomSessionID,
     MAX_RECOMMENDED_TX_SIZE,
-    accountOrAgentIDfromSessionID,
 } from "./coValueCore.js";
+import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { LocalNode } from "./localNode.js";
 import type { CoValue } from "./coValue.js";
 import { CoMap, MutableCoMap } from "./coValues/coMap.js";
@@ -32,11 +32,13 @@ import {
 } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
-import { Group, expectGroup, EVERYONE } from "./coValues/group.js";
+import { Group, EVERYONE } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
-import { Account, Profile, isAccountID } from "./coValues/account.js";
+import { Account, Profile } from "./coValues/account.js";
+import { expectGroup } from "./typeUtils/expectGroup.js";
+import { isAccountID } from "./typeUtils/isAccountID.js";
 
 import type { SessionID, AgentID } from "./ids.js";
 import type { CoID, AnyCoValue } from "./coValue.js";
