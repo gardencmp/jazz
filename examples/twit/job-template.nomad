@@ -3,7 +3,7 @@ job "twit$BRANCH_SUFFIX" {
   datacenters = ["*"]
 
   group "static" {
-    count = 8
+    count = 4
 
     network {
       port "http" {
