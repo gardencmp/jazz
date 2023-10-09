@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: ["todo", "pets", "twit"]
+        example: ["todo", "pets", "twit", "file-drop"]
 
     steps:
     - uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        example: ["todo", "pets", "twit"]
+        example: ["todo", "pets", "twit", "file-drop"]
 
     steps:
     - uses: actions/checkout@v3

@@ -1,5 +1,9 @@
 import { CoID, CoMap, Group, MutableCoMap, CojsonInternalTypes } from "cojson";
-import { ValueOrResolvedRef, AutoSubContext, AutoSubExtension } from "../autoSub.js";
+import {
+    ValueOrResolvedRef,
+    AutoSubContext,
+    AutoSubExtension,
+} from "../autoSub.js";
 import { ResolvedAccount } from "./resolvedAccount.js";
 
 export type ResolvedCoMap<M extends CoMap> = {
@@ -41,16 +45,14 @@ export class ResolvedCoMapBase<M extends CoMap> {
         coMap: M,
         autoSubContext: AutoSubContext
     ): ResolvedCoMap<M> {
-        const kv = {} as {
-            [K in keyof M["_shape"] & string]: ValueOrResolvedRef<M["_shape"][K]>;
-        };
+        const extendedCoMap = new ResolvedCoMapBase(coMap, autoSubContext) as ResolvedCoMap<M>;
         for (const key of coMap.keys()) {
             const value = coMap.get(key);
 
             if (value === undefined) continue;
 
             autoSubContext.defineResolvedRefPropertiesIn(
-                kv,
+                extendedCoMap,
                 {
                     [key]: { value, enumerable: true },
                 },
@@ -58,7 +60,7 @@ export class ResolvedCoMapBase<M extends CoMap> {
             );
         }
 
-        return Object.assign(new ResolvedCoMapBase(coMap, autoSubContext), kv);
+        return extendedCoMap;
     }
 
     /** @internal */
@@ -95,11 +97,15 @@ export class ResolvedCoMapBase<M extends CoMap> {
                             if (!lastEdit) return [];
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const editsAtKey = {
-                                by: lastEdit.by,
+                                get by() {
+                                    return lastEdit.by;
+                                },
                                 tx: lastEdit.tx,
                                 at: lastEdit.at,
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                value: lastEdit.value as any,
+                                get value() {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    return lastEdit.value as any;
+                                },
                                 all: edits,
                             };
 

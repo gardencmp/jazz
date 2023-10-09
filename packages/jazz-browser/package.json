@@ -1,13 +1,13 @@
 {
   "name": "jazz-browser",
-  "version": "0.4.5",
+  "version": "0.4.13",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "^0.4.5",
-    "cojson-storage-indexeddb": "^0.4.5",
-    "jazz-autosub": "^0.4.5",
+    "cojson": "^0.4.13",
+    "cojson-storage-indexeddb": "^0.4.13",
+    "jazz-autosub": "^0.4.13",
     "typescript": "^5.1.6"
   },
   "scripts": {

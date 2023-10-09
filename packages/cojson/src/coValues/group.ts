@@ -1,4 +1,4 @@
-import { CoID, CoValue, expectMap } from "../coValue.js";
+import { CoID } from "../coValue.js";
 import { CoMap } from "./coMap.js";
 import { CoList } from "./coList.js";
 import { JsonObject } from "../jsonValue.js";
@@ -38,19 +38,6 @@ export type GroupShape<P extends Profile, R extends CoMap> = {
         { encryptedID: KeyID; encryptingID: KeyID }
     >;
 };
-
-export function expectGroup(content: CoValue): Group {
-    const map = expectMap(content);
-    if (map.core.header.ruleset.type !== "group") {
-        throw new Error("Expected group ruleset in group");
-    }
-
-    if (!(map instanceof Group)) {
-        throw new Error("Expected group");
-    }
-
-    return map;
-}
 
 /** A `Group` is a scope for permissions of its members (`"reader" | "writer" | "admin"`), applying to objects owned by that group.
  *
