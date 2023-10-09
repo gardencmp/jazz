@@ -24,7 +24,6 @@ import {
     readBlobFromBinaryStream,
 } from "jazz-browser";
 import { DownloadIcon } from "lucide-react";
-import { flushSync } from "react-dom";
 
 const appName = "Jazz File Drop Example";
 
@@ -115,7 +114,7 @@ export function FileDropUI({ bundleId }: { bundleId?: FileBundle["id"] }) {
                 files.map((file) =>
                     createBinaryStreamFromBlob(
                         file,
-                        fileBundleToUse.group,
+                        fileBundleToUse!.group,
                         { type: "binary" },
                         (progress) =>
                             setProgressMessage((old) => ({
