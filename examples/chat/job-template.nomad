@@ -1,4 +1,4 @@
-job "example-chat$BRANCH_SUFFIX" {
+job "chat$BRANCH_SUFFIX" {
   region     = "global"
   datacenters = ["*"]
 
@@ -41,7 +41,7 @@ job "example-chat$BRANCH_SUFFIX" {
 
       service {
         tags = ["public"]
-        name = "example-chat$BRANCH_SUFFIX"
+        name = "chat$BRANCH_SUFFIX"
         port = "http"
         provider = "consul"
       }

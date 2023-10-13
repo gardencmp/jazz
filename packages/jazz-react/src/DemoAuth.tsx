@@ -4,6 +4,7 @@ import { ReactAuthHook } from ".";
 import React from "react";
 
 export type DemoAuthComponent = (props: {
+    appName: string;
     loading: boolean;
     existingUsers: string[];
     logInAs: (existingUser: string) => void;
@@ -62,12 +63,14 @@ export function DemoAuth({
         const AuthUI =
             authState.state === "ready"
                 ? Component({
+                      appName,
                       loading: false,
                       existingUsers: authState.existingUsers,
                       logInAs: authState.logInAs,
                       signUp: authState.signUp,
                   })
                 : Component({
+                      appName,
                       loading: false,
                       existingUsers: [],
                       logInAs: () => {},
@@ -84,15 +87,18 @@ export function DemoAuth({
 }
 
 export const DemoAuthBasicUI = ({
+    appName,
     existingUsers,
     logInAs,
     signUp,
 }: {
+    appName: string;
     existingUsers: string[];
     logInAs: (existingUser: string) => void;
     signUp: (username: string) => void;
 }) => {
     const [username, setUsername] = useState<string>("");
+    const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     return (
         <div
@@ -102,6 +108,7 @@ export const DemoAuthBasicUI = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                ...(darkMode ? { background: "#000" } : {}),
             }}
         >
             <div
@@ -112,6 +119,7 @@ export const DemoAuthBasicUI = ({
                     gap: "2rem",
                 }}
             >
+                <h1 style={{ color: darkMode ? "#fff" : "#000", textAlign: "center" }}>{appName}</h1>
                 <form
                     style={{
                         width: "18rem",
@@ -130,32 +138,42 @@ export const DemoAuthBasicUI = ({
                         onChange={(e) => setUsername(e.target.value)}
                         autoComplete="webauthn"
                         style={{
-                            border: "2px solid #000",
+                            border: darkMode
+                                ? "2px solid #444"
+                                : "2px solid #ddd",
                             padding: "11px 8px",
                             borderRadius: "6px",
+                            background: darkMode ? "#000" : "#fff",
+                            color: darkMode ? "#fff" : "#000",
                         }}
                     />
                     <input
                         type="submit"
                         value="Sign Up as new account"
                         style={{
-                            background: "#000",
-                            color: "#fff",
                             padding: "13px 5px",
                             border: "none",
                             borderRadius: "6px",
                             cursor: "pointer",
+                            background: darkMode ? "#444" : "#ddd",
+                            color: darkMode ? "#fff" : "#000",
                         }}
                     />
                 </form>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.5rem",
+                    }}
+                >
                     {existingUsers.map((user) => (
                         <button
                             key={user}
                             onClick={() => logInAs(user)}
                             style={{
-                                background: "#000",
-                                color: "#fff",
+                                background: darkMode ? "#222" : "#eee",
+                                color: darkMode ? "#fff" : "#000",
                                 padding: "13px 5px",
                                 border: "none",
                                 borderRadius: "6px",

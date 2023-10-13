@@ -69,6 +69,7 @@ export function WithJazz(props: {
     syncAddress?: string;
     children: React.ReactNode;
     migration?: AccountMigration;
+    apiKey?: string
 }) {
     const { auth: authHook, syncAddress, children } = props;
 

@@ -2,7 +2,7 @@
   "name": "hashroute",
   "version": "0.1.0",
   "main": "dist/index.js",
-  "types": "src/index.ts",
+  "types": "src/index.tsx",
   "license": "MIT",
   "dependencies": {
   },

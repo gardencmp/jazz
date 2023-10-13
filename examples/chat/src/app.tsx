@@ -5,7 +5,7 @@ import { ChatWindow } from './chatWindow.tsx';
 import { Chat } from './dataModel.ts';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <WithJazz auth={DemoAuth({ appName: 'Chat' })}>
+  <WithJazz auth={DemoAuth({ appName: 'Jazz Chat Example' })} apiKey="api_z9d034j3t34ht034ir">
     <App />
   </WithJazz>,
 );
@@ -17,21 +17,19 @@ function App() {
     </button>
     {HashRoute({
       '/': <Home />,
-      '/:id': (id) => <ChatWindow chatId={id as Chat['id']} />,
-    }, { reportToParentFrame: true })}
+      '/chat/:id': (id) => <ChatWindow chatId={id as Chat['id']} />,
+    })}
   </div>
 }
 
 function Home() {
   const { me } = useJazz();
-  // Groups determine access rights to values they own.
-  const createChat = () => {
-    const group = me.createGroup().addMember('everyone', 'writer');
-    const chat = group.createList<Chat>();
-    location.hash = '/' + chat.id;
-  };
-
-  return <button onClick={createChat} className='rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto'>
+  return <button className='rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto'
+    onClick={() => {
+      const group = me.createGroup().addMember('everyone', 'writer');
+      const chat = group.createList<Chat>();
+      location.hash = '/chat/' + chat.id;
+    }}>
     Create New Chat
   </button>
 }
