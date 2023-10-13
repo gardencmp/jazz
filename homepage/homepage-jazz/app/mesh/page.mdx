@@ -1,0 +1,94 @@
+import { Slogan, Grid, GridCard } from '@/components/forMdx';
+import { Pricing } from '@/components/pricing';
+
+# Jazz Global Mesh
+
+<Slogan>Serverless sync & storage for Jazz apps.</Slogan>
+
+Real-time sync and storage infrastructure that scales up to millions of users.<br/>
+Pricing that scales down to zero.
+
+## The first Collaboration Delivery Network
+
+<Slogan small>Build demanding apps with write-heavy distributed state, backed by a new kind of cloud.</Slogan>
+
+<Grid>
+<GridCard>
+#### Optimal mesh routing.
+
+Get ultra-low latency between any group of users with our decentralized mesh interconnect.
+</GridCard>
+<GridCard>
+#### Smart caching.
+
+Give users instant load times, with their latest data state always cached close to them.
+</GridCard>
+<GridCard>
+#### Blob storage & media streaming.
+
+</GridCard>
+</Grid>
+
+## Pricing
+
+<Slogan small></Slogan>
+
+<Pricing />
+
+### Transactions explained
+
+## Global Footprint
+
+Currently we are running endpoints in the following locations:
+
+- Los Angeles
+- New Jersey
+- Frankfurt
+- Singapore
+
+## Custom Deployment Scenarios
+
+<Slogan>You can rely on Global Mesh. But you don't have to.</Slogan>
+
+<p>Because Jazz is open-source, you can optionally run your own sync nodes &mdash; in a variety of setups.</p>
+
+<Grid>
+<GridCard>
+#### Global Mesh + Data Backup Node.
+
+<p className="no-prose text-base">Connect your users to Global Mesh for all its benefits, but also run and connect your own data backup node (just in case.)</p>
+
+<div className="text-sm">
+Extra costs:
+- Instance costs for the backup node.
+- Moderate self-hosted storage costs.
+- Every transaction is additionally synced to your backup node and counted as synced out.
+</div>
+</GridCard>
+<GridCard>
+#### Global Mesh + DIY Mesh.
+
+<p className="no-prose text-base">Connect your users to Global Mesh, or your own nodes as a lower-performance fallback. The two networks stay in constant sync.</p>
+
+<div className="text-sm">
+Extra costs:
+- N × instance cost for your sync nodes.
+- Typically moderate self-hosted egress costs.
+- High self-hosted storage costs.
+- Every transaction is additionally synced to your DIY mesh and counted as synced out.
+</div>
+</GridCard>
+<GridCard>
+#### Completely DIY Mesh.
+
+<p className="no-prose text-base">Build your own network of sync and storage nodes.
+Handle networking, security and backups yourself.</p>
+
+<div className="text-sm">
+Costs:
+- N × instance cost for your sync nodes.
+- Very high self-hosted egress costs.
+- High self-hosted storage costs.
+</div>
+</GridCard>
+</Grid>

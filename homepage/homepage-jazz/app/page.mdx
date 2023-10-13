@@ -1,0 +1,175 @@
+import {
+    Slogan,
+    Grid,
+    GridItem,
+    GridFeature,
+    GridCard,
+    MultiplayerIcon,
+    ResponsiveIframe,
+    ComingSoonBadge
+} from "@/components/forMdx";
+import {
+    ListTreeIcon,
+    UploadCloudIcon,
+    PlaneIcon,
+    MonitorSmartphoneIcon,
+    GaugeIcon,
+} from "lucide-react";
+import {
+    DataModel_ts,
+    App_tsx,
+    ChatWindow_tsx,
+} from "@/codeSamples/examples/chat/src";
+
+# Instant sync.
+
+<Slogan>Go beyond request/response &mdash; ship modern apps with sync.</Slogan>
+
+Jazz is an open-source toolkit for building apps with **sync** & **secure collaborative data.**
+
+<h2 className="md:mt-24">Hard things are easy now.</h2>
+
+Jazz replaces APIs, DBs and message queues with **a single new abstraction: CoJSON**.
+
+And you get **built-in capabilities** that took best-in-class apps years to build:
+
+<Grid className="-mt-2">
+<GridFeature icon={<MonitorSmartphoneIcon />}>Cross-device sync</GridFeature>
+<GridFeature icon={<MultiplayerIcon/>}>Real-time multiplayer</GridFeature>
+<GridFeature icon={<ListTreeIcon />}>Automatic granular data‑fetching</GridFeature>
+<GridFeature icon={<UploadCloudIcon />}>Cloud persistence<br/>& local storage</GridFeature>
+<GridFeature icon={<PlaneIcon />}>Offline support<br/>& sync-when-possible</GridFeature>
+<GridFeature icon={<GaugeIcon />}>Fluid UI performance<br/>& 90% less loading</GridFeature>
+</Grid>
+
+<div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
+### First impressions: A chat app in 82 lines of code.
+
+<Grid className="mt-0">
+<GridItem>
+
+<DataModel_ts/>
+
+</GridItem>
+<GridItem className="md:col-start-1">
+
+<App_tsx/>
+
+</GridItem>
+<GridItem className="md:col-start-2 md:row-start-1 md:row-span-2">
+
+<ChatWindow_tsx/>
+
+</GridItem>
+<ResponsiveIframe src="http://localhost:9999/" className="lg:col-start-3 lg:row-start-1 lg:row-span-2 rounded-xl overflow-hidden min-h-[50vh]"/>
+</Grid>
+</div>
+
+## A new standard for secure collaborative data.
+
+Jazz is built around **CoJSON,** a new abstraction that implements **multi-device co-editing,** **user identities,** **permissions,**  **sync** and **persistence** in a standardized way.
+
+CoJSON makes collaboration and secure access control feel like **inherent properties of your data**.
+
+### Collaborative Values
+
+<Slogan small>Your new building blocks.</Slogan>
+
+Collaborative Values (CoValues) **can be edited as if they were simple local data,** but they're **automatically encrypted, signed** and **synced** between participants.
+
+CoValues also **retain their full edit history,** including author metadata and potential editing conflicts. This makes it **super simple to build collaborative and social features.**
+
+<Grid className="lg:gap-y-8">
+
+<GridCard>
+### `CoMap`
+<div className="text-sm">
+- Collaborative key-value map
+- Possible values:
+    - Immutable JSON & IDs of other CoValues
+</div>
+</GridCard>
+<GridCard>
+### `CoList`
+<div className="text-sm">
+- Collaborative ordered list
+- Possible items:
+    - Immutable JSON & IDs of other CoValues
+</div>
+</GridCard>
+<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0">
+The bread and butter of datastructures, with collaboration built-in. You can build whole apps with just these.
+</GridItem>
+
+<GridCard>
+### `CoString`
+<div className="text-sm">
+- Collaborative plain-text
+- Implemented as a CoList of unicode graphemes
+</div>
+</GridCard>
+<GridCard>
+### `CoText`
+<div className="text-sm">
+- Collaborative rich-text & generic markup format
+- Based on CoString + collaborative markup ranges
+    - Gracefully prevents most editing conflicts
+    - Rendered as markdown, HTML, JSX, etc.
+</div>
+</GridCard>
+
+<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0">
+A shocking amount of UI is text editing. CoJSON offers correct, versatile primitives.
+</GridItem>
+<GridCard>
+
+### `CoStream`
+<div className="text-sm">
+- Collection of independent per-user items streams:
+    - Immutable JSON & IDs of other CoValues
+- Can be used for user presence, social reactions, polls, replies etc.
+</div>
+</GridCard>
+<GridCard>
+
+### `BinaryCoStream`
+<div className="text-sm">
+- File/media stream
+- Create, reference and load binary blobs or do live-streams without external services
+</div>
+</GridCard>
+<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0">
+The secret weapons of
+</GridItem>
+</Grid>
+
+### Accounts & Groups
+
+<Slogan small>First-class user identities & secure permissions.</Slogan>
+
+-   Simple API to define groups of users, their roles
+-   Verifiably enforced by encryption and signatures
+
+## Jazz: batteries included.
+
+<Grid>
+
+<GridCard>
+### Auto-sub
+<Slogan small>Let your UI drive data-syncing</Slogan>
+</GridCard>
+
+<GridCard>
+### Auth providers <ComingSoonBadge/>
+
+<Slogan small>Plug and play different kinds of auth.</Slogan>
+</GridCard>
+
+<GridCard>
+### Two-way sync to your DB <ComingSoonBadge/>
+
+<Slogan small>Migrate to Jazz feature-by-feature.</Slogan>
+</GridCard>
+</Grid>
+
+## Global Mesh
