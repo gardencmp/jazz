@@ -1,6 +1,6 @@
 import { WithJazz, useJazz, DemoAuth } from 'jazz-react';
 import ReactDOM from 'react-dom/client';
-import { HashRoute } from 'hashroute';
+import { HashRoute } from 'hash-slash';
 import { ChatWindow } from './chatWindow.tsx';
 import { Chat } from './dataModel.ts';
 
