@@ -1,7 +1,6 @@
 import { ReactNode, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
 import { ReactAuthHook } from ".";
-import React from "react";
 
 export type DemoAuthComponent = (props: {
     appName: string;
