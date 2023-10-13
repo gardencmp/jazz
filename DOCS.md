@@ -2723,13 +2723,14 @@ TODO: document
 
 
 <details>
-<summary><b><code>.load(id)</code></b>  </summary>
+<summary><b><code>.load(id, onProgress?)</code></b>  </summary>
 
 ```typescript
 class LocalNode {
 
   load<T extends CoValue>(
-    id: CoID<T>
+    id: CoID<T>,
+    onProgress?: (progress: number) => void
   ): Promise<T> {...}
 
 }
@@ -2745,6 +2746,7 @@ for listening to subsequent updates to the CoValue.
 | name | description |
 | ----: | ---- |
 | `id` | TODO: document  |
+
 
 </details>
 
@@ -2929,9 +2931,9 @@ class Group<P, R, Meta> {
 
   asObject(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -2950,9 +2952,9 @@ class Group<P, R, Meta> {
 
   toJSON(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -3054,9 +3056,9 @@ class Group<P, R, Meta> {
   set(
     kv: {
       everyone: undefined | Role,
-      readKey: undefined | `key_z${string}`,
       profile: undefined | null | CoID<P>,
       root: undefined | null | CoID<R>,
+      readKey: undefined | `key_z${string}`,
     },
     privacy?: "private" | "trusting"
   ): Group<P, R, Meta> {...}
@@ -3070,9 +3072,9 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `kv.everyone` | TODO: document |
-| `kv.readKey` | TODO: document |
 | `kv.profile` | TODO: document |
 | `kv.root` | TODO: document |
+| `kv.readKey` | TODO: document |
 | `privacy?` | TODO: document  |
 
 </details>
@@ -3401,7 +3403,7 @@ class Group<P, R, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -3431,7 +3433,7 @@ class Group<P, R, Meta> {
   lastEditAt<K extends Object>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -3460,7 +3462,7 @@ class Group<P, R, Meta> {
   editsAt<K extends Object>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -3907,7 +3909,7 @@ class CoMap<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -3937,7 +3939,7 @@ class CoMap<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -3966,7 +3968,7 @@ class CoMap<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4351,7 +4353,7 @@ class MutableCoMap<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4381,7 +4383,7 @@ class MutableCoMap<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4410,7 +4412,7 @@ class MutableCoMap<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -4809,7 +4811,7 @@ class CoList<Item, Meta> {
   editAt(
     idx: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -4836,7 +4838,7 @@ TODO: document
 class CoList<Item, Meta> {
 
   deletionEdits(): {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
   }[] {...}
@@ -5238,7 +5240,7 @@ class MutableCoList<Item, Meta> {
   editAt(
     idx: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5265,7 +5267,7 @@ TODO: document
 class MutableCoList<Item, Meta> {
 
   deletionEdits(): {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
   }[] {...}
@@ -5635,7 +5637,7 @@ class CoStream<Item, Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5665,7 +5667,7 @@ class CoStream<Item, Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5694,7 +5696,7 @@ class CoStream<Item, Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5721,9 +5723,9 @@ TODO: document
 class CoStream<Item, Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -5750,9 +5752,9 @@ TODO: document
 class CoStream<Item, Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6101,7 +6103,7 @@ class MutableCoStream<Item, Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6131,7 +6133,7 @@ class MutableCoStream<Item, Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6160,7 +6162,7 @@ class MutableCoStream<Item, Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6187,9 +6189,9 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6216,9 +6218,9 @@ TODO: document
 class MutableCoStream<Item, Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: Item,
@@ -6455,6 +6457,88 @@ TODO: document
 
 ### `BinaryCoStream`: Methods
 
+<details>
+<summary><b><code>.push(item, privacy?)</code></b>  </summary>
+
+```typescript
+class BinaryCoStream<Meta> {
+
+  push(
+    item: BinaryStreamItem,
+    privacy?: "private" | "trusting"
+  ): BinaryCoStream<Meta> {...}
+
+}
+```
+
+
+
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.push(item, privacy, returnNewStream)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BinaryCoStream<Meta> {
+
+  push(
+    item: BinaryStreamItem,
+    privacy: "private" | "trusting",
+    returnNewStream: true
+  ): BinaryCoStream<Meta> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy` | TODO: document  |
+| `returnNewStream` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.push(item, privacy, returnNewStream)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BinaryCoStream<Meta> {
+
+  push(
+    item: BinaryStreamItem,
+    privacy: "private" | "trusting",
+    returnNewStream: false
+  ): void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+| `privacy` | TODO: document  |
+| `returnNewStream` | TODO: document  |
+
+</details>
+
 
 
 <details>
@@ -6466,7 +6550,7 @@ class BinaryCoStream<Meta> {
   startBinaryStream(
     settings: BinaryStreamInfo,
     privacy?: "private" | "trusting" = "private"
-  ): BinaryCoStream<Meta> {...}
+  ): void {...}
 
 }
 ```
@@ -6492,7 +6576,7 @@ class BinaryCoStream<Meta> {
   pushBinaryStreamChunk(
     chunk: Uint8Array,
     privacy?: "private" | "trusting" = "private"
-  ): BinaryCoStream<Meta> {...}
+  ): void {...}
 
 }
 ```
@@ -6696,7 +6780,7 @@ class BinaryCoStream<Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6726,7 +6810,7 @@ class BinaryCoStream<Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6755,7 +6839,7 @@ class BinaryCoStream<Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6782,9 +6866,9 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -6811,9 +6895,9 @@ TODO: document
 class BinaryCoStream<Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7241,7 +7325,7 @@ class MutableBinaryCoStream<Meta> {
     sessionID: SessionID,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7271,7 +7355,7 @@ class MutableBinaryCoStream<Meta> {
   lastItemIn(
     sessionID: SessionID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7300,7 +7384,7 @@ class MutableBinaryCoStream<Meta> {
   itemsIn(
     sessionID: SessionID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7327,9 +7411,9 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   lastItemBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7356,9 +7440,9 @@ TODO: document
 class MutableBinaryCoStream<Meta> {
 
   itemsBy(
-    account: AccountID | AgentID
+    account: AgentID | AccountID
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value: BinaryStreamItem,
@@ -7605,9 +7689,9 @@ class Account<P, R, Meta> {
 
   asObject(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -7626,9 +7710,9 @@ class Account<P, R, Meta> {
 
   toJSON(): {
     everyone: undefined | Role,
-    readKey: undefined | `key_z${string}`,
     profile: undefined | null | CoID<P>,
     root: undefined | null | CoID<R>,
+    readKey: undefined | `key_z${string}`,
   } {...}
 
 }
@@ -7730,9 +7814,9 @@ class Account<P, R, Meta> {
   set(
     kv: {
       everyone: undefined | Role,
-      readKey: undefined | `key_z${string}`,
       profile: undefined | null | CoID<P>,
       root: undefined | null | CoID<R>,
+      readKey: undefined | `key_z${string}`,
     },
     privacy?: "private" | "trusting"
   ): Account<P, R, Meta> {...}
@@ -7746,9 +7830,9 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `kv.everyone` | TODO: document |
-| `kv.readKey` | TODO: document |
 | `kv.profile` | TODO: document |
 | `kv.root` | TODO: document |
+| `kv.readKey` | TODO: document |
 | `privacy?` | TODO: document  |
 
 </details>
@@ -8077,7 +8161,7 @@ class Account<P, R, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -8107,7 +8191,7 @@ class Account<P, R, Meta> {
   lastEditAt<K extends Object>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -8136,7 +8220,7 @@ class Account<P, R, Meta> {
   editsAt<K extends Object>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: GroupShape<P, R>[K],
@@ -8598,7 +8682,7 @@ class Profile<Shape, Meta> {
     key: K,
     n: number
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -8628,7 +8712,7 @@ class Profile<Shape, Meta> {
   lastEditAt<K extends string>(
     key: K
   ): undefined | {
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -8657,7 +8741,7 @@ class Profile<Shape, Meta> {
   editsAt<K extends string>(
     key: K
   ): Generator<{
-    by: AccountID | AgentID,
+    by: AgentID | AccountID,
     tx: TransactionID,
     at: Date,
     value?: Shape[K],
@@ -9443,7 +9527,7 @@ TODO: document
 class CoValueCore {
 
   _decryptionCache: {
-    [key: Encrypted<JsonValue[], JsonValue>]: Stringified<JsonValue[]> | undefined }
+    [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined }
 
 }
 ```
@@ -10111,14 +10195,14 @@ TODO: document
 
 ----
 
-## `createBinaryStreamFromBlob(blob, inGroup, meta?)`
+## `createBinaryStreamFromBlob(blob, inGroup, meta?, onProgress?)`
 
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
 export function createBinaryStreamFromBlob<C extends BinaryCoStream<BinaryCoStreamMeta>>(blob: Blob | File, inGroup: Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
   [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject> | ResolvedGroup<Group<Profile<ProfileShape, ProfileMeta>, CoMap<{
-  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>, meta: C["headerMeta"]): Promise<C>
+  [key: string]: JsonValue | undefined }, null | JsonObject>, null | JsonObject>>, meta: C["headerMeta"], onProgress: (progress: number) => void): Promise<C>
 ```
 TODO: document
 
@@ -10134,14 +10218,15 @@ TODO: document
 
 
 
+
 ----
 
-## `readBlobFromBinaryStream(streamId, node, allowUnfinished?)`
+## `readBlobFromBinaryStream(streamId, node, allowUnfinished?, onProgress?)`
 
 <sup>(function in `jazz-browser`)</sup>
 
 ```typescript
-export function readBlobFromBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(streamId: CoID<C>, node: LocalNode, allowUnfinished: boolean): Promise<Blob | undefined>
+export function readBlobFromBinaryStream<C extends BinaryCoStream<BinaryCoStreamMeta>>(streamId: CoID<C>, node: LocalNode, allowUnfinished: boolean, onProgress: (progress: number) => void): Promise<Blob | undefined>
 ```
 TODO: document
 
@@ -10152,6 +10237,7 @@ TODO: document
 | `streamId` | TODO: document  |
 | `node` | TODO: document  |
 | `allowUnfinished?` | TODO: document  |
+
 
 
 

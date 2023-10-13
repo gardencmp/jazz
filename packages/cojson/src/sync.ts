@@ -225,12 +225,19 @@ export class SyncManager {
                 peer.optimisticKnownStates[id] || emptyKnownState(id);
 
             const sendPieces = async () => {
+                let lastYield = performance.now();
                 for (const [_i, piece] of newContentPieces.entries()) {
                     // console.log(
                     //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${newContentPieces.length} header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
                     await this.trySendToPeer(peer, piece);
+                    if (performance.now() - lastYield > 10) {
+                        await new Promise<void>((resolve) => {
+                            setTimeout(resolve, 0);
+                        });
+                        lastYield = performance.now();
+                    }
                 }
             };
 
@@ -315,19 +322,20 @@ export class SyncManager {
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
         return new Promise<void>((resolve) => {
-            const timeout = setTimeout(() => {
-                console.error(
-                    new Error(
-                        `Writing to peer ${peer.id} took >1s - this should never happen as write should resolve quickly or error`
-                    )
-                );
-                resolve();
-            }, 1000);
+            const start = Date.now()
             peer.outgoing
                 .write(msg)
                 .then(() => {
-                    clearTimeout(timeout);
-                    resolve();
+                    const end = Date.now();
+                    if (end - start > 1000) {
+                        console.error(
+                            new Error(
+                                `Writing to peer "${peer.id}" took ${Math.round((Date.now() - start)/100)/10}s - this should never happen as write should resolve quickly or error`
+                            )
+                        );
+                    } else {
+                        resolve();
+                    }
                 })
                 .catch((e) => {
                     console.error(
@@ -450,6 +458,7 @@ export class SyncManager {
             entry = {
                 state: "loaded",
                 coValue: coValue,
+                onProgress: entry.onProgress
             };
 
             this.local.coValues[msg.id] = entry;
@@ -509,6 +518,11 @@ export class SyncManager {
                 );
             }
 
+            const theirTotalnTxs = Object.values(peer.optimisticKnownStates[msg.id]?.sessions || {}).reduce((sum, nTxs) => sum + nTxs, 0);
+            const ourTotalnTxs = Object.values(coValue.sessions).reduce((sum, session) => sum + session.transactions.length, 0);
+
+            entry.onProgress?.(ourTotalnTxs / theirTotalnTxs);
+
             if (!success) {
                 console.error(
                     "Failed to add transactions",
@@ -522,9 +536,9 @@ export class SyncManager {
                 continue;
             }
 
-            peerOptimisticKnownState.sessions[sessionID] =
+            peerOptimisticKnownState.sessions[sessionID] = Math.max(peerOptimisticKnownState.sessions[sessionID] || 0,
                 newContentForSession.after +
-                newContentForSession.newTransactions.length;
+                newContentForSession.newTransactions.length);
         }
 
         if (resolveAfterDone) {
