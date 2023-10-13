@@ -54,6 +54,7 @@ export function WithJazz(props: {
   children: ReactNode,
   syncAddress?: string,
   migration?: AccountMigration,
+  apiKey?: string,
 }): Element
 ```
 Top-level component that provides Jazz context to your whole app, so you can use Jazz hooks in your components.
@@ -67,6 +68,7 @@ Top-level component that provides Jazz context to your whole app, so you can use
 | `props.auth` | An auth provider (renders login/sign-up UI if not logged in) - see available providers in the [Documentation](../../../DOCS.md#auth-providers) |
 | `props.syncAddress?` | The address of the upstream syncing peer. Defaults to `wss://sync.jazz.tool` (Jazz Global Mesh). If not set explicitly, it can also be temporarily overwritten by setting the `sync` query parameter in the URL, like `https://your-app.example.net?sync=ws://localhost:4200`. |
 | `props.migration?` | TODO: document |
+| `props.apiKey?` | TODO: document |
 
 ##### Example:
 
