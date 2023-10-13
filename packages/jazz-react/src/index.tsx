@@ -69,6 +69,7 @@ export function WithJazz(props: {
     syncAddress?: string;
     children: React.ReactNode;
     migration?: AccountMigration;
+    apiKey?: string
 }) {
     const { auth: authHook, syncAddress, children } = props;
 
@@ -310,3 +311,4 @@ export function useAcceptInvite<C extends CoValue = CoValue>(
 }
 
 export { createInviteLink, parseInviteLink } from "jazz-browser";
+export { DemoAuth } from './DemoAuth'

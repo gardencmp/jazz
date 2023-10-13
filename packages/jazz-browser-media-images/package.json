@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.4.13",
+  "version": "0.4.15",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
@@ -9,7 +9,7 @@
     "cojson": "^0.4.13",
     "image-blob-reduce": "^4.1.0",
     "jazz-autosub": "^0.4.13",
-    "jazz-browser": "^0.4.13",
+    "jazz-browser": "^0.4.15",
     "typescript": "^5.1.6"
   },
   "scripts": {

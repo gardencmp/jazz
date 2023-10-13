@@ -52,7 +52,7 @@ export function LocalAuth({
                     },
                 },
                 appName,
-                appHostname,
+                appHostname
             );
         }, [appName, appHostname, logOutCounter]);
 
@@ -90,8 +90,8 @@ export const LocalAuthBasicUI = ({
     return (
         <div
             style={{
-                width: "100%",
-                height: "100%",
+                width: "100vw",
+                height: "100vh",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -123,22 +123,34 @@ export const LocalAuthBasicUI = ({
                         onChange={(e) => setUsername(e.target.value)}
                         autoComplete="webauthn"
                         style={{
-                            border: "1px solid #333",
-                            padding: "10px 5px",
+                            border: "2px solid #000",
+                            padding: "11px 8px",
+                            borderRadius: "6px",
                         }}
                     />
                     <input
                         type="submit"
                         value="Sign Up as new account"
                         style={{
-                            background: "#aaa",
-                            padding: "10px 5px",
+                            background: "#000",
+                            color: "#fff",
+                            padding: "13px 5px",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer"
                         }}
                     />
                 </form>
                 <button
                     onClick={logIn}
-                    style={{ background: "#aaa", padding: "10px 5px" }}
+                    style={{
+                        background: "#000",
+                        color: "#fff",
+                        padding: "13px 5px",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer"
+                    }}
                 >
                     Log In with existing account
                 </button>

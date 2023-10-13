@@ -1,0 +1,41 @@
+{
+    "index": {
+        "title": "Introduction",
+        "theme": {
+            "typesetting": "article",
+            "layout": "full"
+        },
+        "type": "page"
+    },
+    "examples": {
+        "title": "Example Gallery",
+        "theme": {
+            "typesetting": "article",
+            "layout": "full"
+        },
+        "type": "page"
+    },
+    "mesh": {
+        "title": "Global Mesh & Pricing",
+        "theme": {
+            "typesetting": "article",
+            "layout": "full"
+        },
+        "type": "page"
+    },
+    "guides": {
+        "title": "Guides",
+        "type": "page",
+        "theme": {
+            "breadcrumb": true,
+            "footer": true,
+            "sidebar": true,
+            "toc": true,
+            "pagination": true
+        }
+    },
+    "docs": {
+        "title": "API Docs",
+        "type": "page"
+    }
+}
