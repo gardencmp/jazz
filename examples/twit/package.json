@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-twit",
   "private": true,
-  "version": "0.0.61",
+  "version": "0.0.62",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,9 +18,9 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "javascript-time-ago": "^2.5.9",
-    "jazz-browser-media-images": "^0.4.14",
-    "jazz-react": "^0.4.14",
-    "jazz-react-auth-local": "^0.4.14",
+    "jazz-browser-media-images": "^0.4.15",
+    "jazz-react": "^0.4.15",
+    "jazz-react-auth-local": "^0.4.15",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
