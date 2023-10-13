@@ -1,6 +1,6 @@
 {
   "name": "hashroute",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",
