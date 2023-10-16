@@ -1,11 +1,12 @@
 import { ComingSoonBadge, Grid, GridCard, GridItem } from "./forMdx";
 
-export function Pricing() {
-    const pricePer1MtxSyncedOut = 2;
-    const pricePer1MtxStored = 4;
+export const pricePer1MtxSyncedOut = 1;
+export const pricePer1MtxStored = 2;
 
-    const pricePerTxSyncedOut = pricePer1MtxSyncedOut / 1_000_000;
-    const pricePerTxStored = pricePer1MtxStored / 1_000_000;
+export const pricePerTxSyncedOut = pricePer1MtxSyncedOut / 1_000_000;
+export const pricePerTxStored = pricePer1MtxStored / 1_000_000;
+
+export function Pricing() {
 
     const worstCaseBytesPerTx = 200_000;
     const avgCaseBytesPerTx = 10_000;
@@ -39,12 +40,12 @@ export function Pricing() {
         <Grid>
             <GridCard>
                 <h3>Free Tier</h3>
-                <p className="text-lg line-through">Any usage under $2/mo is free!</p>
-                <p className="text-lg font-medium bg-amber-200 dark:bg-amber-800 px-2 py-1 rounded">Until we implement API keys and billing all usage of Global Mesh is free!</p>
+                <p className="text-lg font-medium bg-indigo-200 dark:bg-indigo-800 px-2 py-1 rounded">Until we implement billing all usage of Global Mesh is free!</p>
+                <p className="text-sm">Later, any usage under $2/mo will be free.</p>
             </GridCard>
             <GridCard>
                 <h3>Unlimited <ComingSoonBadge/></h3>
-                <p className="text-lg line-through">
+                <p className="text-lg">
                     {fmt$(pricePer1MtxSyncedOut)} per 1,000,000 transactions
                     synced out
                     {/* <br />
@@ -59,7 +60,7 @@ export function Pricing() {
                     <br />
                     Worst cost: {fmt$(worstCaseCostPerTxStored * 1_000_000)} */}
                 </p>
-                <p className="text-sm">Transactions usually represent individual user actions, or up to 100KB of binary data.</p>
+                <p className="text-sm">See below for how transactions are defined.</p>
             </GridCard>
             <GridCard>
                 <h3>Enterprise</h3>
