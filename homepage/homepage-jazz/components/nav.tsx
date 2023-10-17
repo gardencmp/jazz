@@ -353,6 +353,7 @@ function ml_webform_success_5744530(){var r=ml_jQuery||jQuery;r(".ml-subscribe-f
 `,
                 }}
             />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src="https://track.mailerlite.com/webforms/o/5744530/p5o0j8?v1697487427"
                 width="1"
@@ -370,6 +371,7 @@ function ml_webform_success_5744530(){var r=ml_jQuery||jQuery;r(".ml-subscribe-f
             <script
                 src="https://static.mailerlite.com/js/w/webforms.min.js?vd4de52e171e8eb9c47c0c20caf367ddf"
                 type="text/javascript"
+                defer
             ></script>
         </>
     );
