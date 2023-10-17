@@ -15,8 +15,8 @@ import { MailIcon } from "lucide-react";
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const pragmata = localFont({
-    src: "../fonts/PragmataProR_0829.woff2",
-    variable: "--font-pragmata",
+    src: "../fonts/ppr_0829.woff2",
+    variable: "--font-ppr",
 });
 
 export const metadata: Metadata = {
