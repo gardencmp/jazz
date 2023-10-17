@@ -1,11 +1,27 @@
 import { useMemo } from 'react';
-import { useJazz } from 'jazz-react';
-import { TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
+import { useAutoSub, useJazz } from 'jazz-react';
+import { ALL_TWEETS_LIST_ID, TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
 import { CreateTwitForm } from './6_CreateTwitForm.tsx';
 import { TwitComponent } from './4_TwitComponent.tsx';
 import { MainH1 } from './basicComponents/index.tsx';
 
-export function ChronoFeed() {
+export function AllTwitsFeed() {
+  const allTwits = useAutoSub(ALL_TWEETS_LIST_ID);
+
+  return (
+    <div className="flex flex-col items-stretch">
+      <CreateTwitForm className="mb-10" />
+      <MainH1>All Twits</MainH1>
+      {allTwits
+        ?.filter((tw): tw is Exclude<typeof tw, undefined> => !!tw)
+        .map(twit => (
+          <TwitComponent twit={twit} key={twit.id} />
+        ))}
+    </div>
+  );
+}
+
+export function FollowingFeed() {
   const { me } = useJazz<TwitProfile, TwitAccountRoot>();
 
   const myTwits = me.profile?.twits;

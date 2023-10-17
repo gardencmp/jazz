@@ -57,8 +57,8 @@ export function TwitComponent({
 
           {twit?.images && (
             <TwitImgGallery>
-              {twit.images.map(image => (
-                <TwitImg src={image?.as(BrowserImage)?.highestResSrcOrPlaceholder} key={image?.id} />
+              {twit.images.map((image, idx) => (
+                <TwitImg src={image?.as(BrowserImage)?.highestResSrcOrPlaceholder} key={image?.id || idx} />
               ))}
             </TwitImgGallery>
           )}

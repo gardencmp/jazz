@@ -35,6 +35,8 @@ export type TwitAccountRoot = CoMap<{
   peopleWhoCanInteractWithMe: Group['id'];
 }>;
 
+export const ALL_TWEETS_LIST_ID = "co_z3HbBb7Wtnn7gbvnWbZHeezTnS5" as ListOfTwits['id'];
+
 export const migration: AccountMigration<TwitProfile, TwitAccountRoot> = (account, profile) => {
   if (!account.get('root')) {
     const peopleWhoCanSeeMyTwits = account.createGroup();
