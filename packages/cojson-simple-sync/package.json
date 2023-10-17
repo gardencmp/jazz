@@ -24,6 +24,7 @@
         "build": "rm -rf ./dist && tsc --sourceMap --outDir dist && npm run add-shebang && chmod +x ./dist/index.js",
         "add-shebang": "echo \"#!/usr/bin/env node\" | cat - ./dist/index.js > /tmp/out && mv /tmp/out ./dist/index.js",
         "start": "node dist/index.js",
+        "inspect": "node --inspect dist/index.js",
         "test": "jest",
         "prepublishOnly": "npm run build"
     },

@@ -48,15 +48,25 @@ export class ResolvedCoList<L extends CoList> extends Array<
             return new Array(coList) as any;
         }
         super(
-            ...coList
-                .asArray()
-                .map(
-                    (item) =>
-                        autoSubContext.subscribeIfCoID(item, [
-                            coList.id,
-                        ]) as ValueOrResolvedRef<L["_item"]>
-                )
+
         );
+
+        coList
+        .asArray()
+        .forEach(
+            (item, idx) => {
+                Object.defineProperty(this, idx, {
+                    get: () => {
+                        return autoSubContext.subscribeIfCoID(item, [
+                            coList.id,
+                        ], "idx_" + idx) as ValueOrResolvedRef<L["_item"]>
+                    },
+                    enumerable: true,
+                    configurable: true,
+                });
+            }
+
+        )
 
         Object.defineProperties(this, {
             id: { value: coList.id, enumerable: false },

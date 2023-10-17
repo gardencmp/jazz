@@ -125,7 +125,10 @@ export class SyncManager {
     async loadFromPeers(id: RawCoID, excludePeer?: PeerID) {
         for (const peer of this.peersInPriorityOrder()) {
             if (peer.id === excludePeer) {
-                return;
+                continue;
+            }
+            if (peer.role !== "server") {
+                continue;
             }
             // console.log("loading", id, "from", peer.id);
             peer.outgoing
@@ -140,7 +143,7 @@ export class SyncManager {
                 });
             const coValueEntry = this.local.coValues[id];
             if (coValueEntry?.state !== "loading") {
-                throw new Error("Expected coValueState to be waiting " + id);
+                continue;
             }
             const firstStateEntry = coValueEntry.firstPeerState[peer.id];
             if (firstStateEntry?.type !== "waiting") {
@@ -323,6 +326,7 @@ export class SyncManager {
                 for (const id of Object.keys(
                     this.local.coValues
                 ) as RawCoID[]) {
+                    // console.log("subscribing to after peer added", id, peer.id)
                     await this.subscribeToIncludingDependencies(id, peerState);
 
                     peerState.optimisticKnownStates[id] = {
@@ -385,6 +389,11 @@ export class SyncManager {
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
+        if (!this.peers[peer.id]) {
+            // already disconnected, return to drain potential queue
+            return Promise.resolve();
+        }
+
         return new Promise<void>((resolve) => {
             const start = Date.now();
             peer.outgoing
@@ -422,7 +431,7 @@ export class SyncManager {
         let entry = this.local.coValues[msg.id];
 
         if (!entry) {
-            console.log(`Loading ${msg.id} from all peers except ${peer.id}`);
+            // console.log(`Loading ${msg.id} from all peers except ${peer.id}`);
             this.local
                 .loadCoValueCore(msg.id, {
                     dontLoadFrom: peer.id,

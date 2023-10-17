@@ -32,6 +32,8 @@ export function TwitComponent({
   const posterProfile = twit?.meta.edits.text?.by?.profile as Resolved<TwitProfile> | undefined;
   const isTopLevel = !twit?.isReplyTo || alreadyInReplies;
 
+  const loadReactions = !!posterProfile?.name;
+
   return (
     <TwitWithRepliesContainer isTopLevel={isTopLevel}>
       <TwitContainer>
@@ -65,15 +67,15 @@ export function TwitComponent({
 
           <ReactionsContainer>
             <ButtonWithCount
-              active={twit?.likes?.me?.last === '❤️'}
+              active={loadReactions && (twit?.likes?.me?.last === '❤️')}
               onClick={() => twit?.likes?.push(twit?.likes?.me?.last ? null : '❤️')}
-              count={twit?.likes?.perAccount.filter(([, liked]) => liked.last === '❤️').length || 0}
+              count={loadReactions && (twit?.likes?.perAccount.filter(([, liked]) => liked.last === '❤️').length) || 0}
               icon={<HeartIcon size="18" />}
               activeIcon={<HeartIcon color="red" size="18" fill="red" />}
             />
             <ButtonWithCount
               onClick={() => setShowReplyForm(s => !s)}
-              count={twit?.replies?.perAccount.flatMap(([, byAccount]) => byAccount.all).length || 0}
+              count={loadReactions && (twit?.replies?.perAccount.flatMap(([, byAccount]) => byAccount.all).length) || 0}
               icon={<MessagesSquareIcon size="18" />}
             />
           </ReactionsContainer>
@@ -89,7 +91,7 @@ export function TwitComponent({
           />
         )}
 
-        {twit?.replies?.perAccount
+        {loadReactions && twit?.replies?.perAccount
           .flatMap(([, byAccount]) => byAccount.all)
           .sort((a, b) => b.at.getTime() - a.at.getTime())
           .map(replyEntry => (

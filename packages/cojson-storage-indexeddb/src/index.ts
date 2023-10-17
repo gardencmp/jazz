@@ -65,6 +65,11 @@ export class IDBStorage {
 
                 if (result.value) {
                     await this.handleSyncMessage(result.value);
+                    // console.log(
+                    //     "IDB: handling msg",
+                    //     result.value.id,
+                    //     result.value.action
+                    // );
                 }
             }
         })();

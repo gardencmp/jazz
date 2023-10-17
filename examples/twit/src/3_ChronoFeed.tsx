@@ -13,6 +13,7 @@ export function AllTwitsFeed() {
       <CreateTwitForm className="mb-10" />
       <MainH1>All Twits</MainH1>
       {allTwits
+        ?.slice(0, 10)
         ?.filter((tw): tw is Exclude<typeof tw, undefined> => !!tw)
         .map(twit => (
           <TwitComponent twit={twit} key={twit.id} />

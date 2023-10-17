@@ -215,7 +215,7 @@ export class LocalNode {
         let entry = this.coValues[id];
         if (!entry) {
             const peersToWaitFor = new Set(
-                Object.values(this.syncManager.peers).map((peer) => peer.id)
+                Object.values(this.syncManager.peers).filter(peer => peer.role === "server").map((peer) => peer.id)
             );
             if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
             entry = newLoadingState(peersToWaitFor, options.onProgress);
@@ -267,7 +267,7 @@ export class LocalNode {
         let stopped = false;
         let unsubscribe!: () => void;
 
-        console.log("Subscribing to " + id);
+        // console.log("Subscribing to " + id);
 
         this.load(id)
             .then((coValue) => {

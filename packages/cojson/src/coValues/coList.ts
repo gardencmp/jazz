@@ -76,6 +76,13 @@ export class CoListView<
     readonly _item!: Item;
 
     /** @internal */
+    _cachedEntries?: {
+        value: Item;
+        madeAt: number;
+        opID: OpID;
+    }[];
+
+    /** @internal */
     constructor(core: CoValueCore) {
         this.id = core.id as CoID<this>;
         this.core = core;
@@ -126,10 +133,11 @@ export class CoListView<
                                     change.before.txIndex
                                 ]?.[change.before.changeIdx];
                             if (!beforeEntry) {
-                                throw new Error(
-                                    "Not yet implemented: insertion before missing op " +
+                                console.error(
+                                    "Insertion before missing op " +
                                         change.before
                                 );
+                                continue;
                             }
                             beforeEntry.predecessors.splice(0, 0, {
                                 ...txID,
@@ -148,10 +156,10 @@ export class CoListView<
                                     change.after.txIndex
                                 ]?.[change.after.changeIdx];
                             if (!afterEntry) {
-                                throw new Error(
-                                    "Not yet implemented: insertion after missing op " +
-                                        change.after
+                                console.error(
+                                    "Insertion after missing op " + change.after
                                 );
+                                continue;
                             }
                             afterEntry.successors.push({
                                 ...txID,
@@ -238,6 +246,20 @@ export class CoListView<
 
     /** @internal */
     entries(): {
+        value: Item;
+        madeAt: number;
+        opID: OpID;
+    }[] {
+        if (this._cachedEntries) {
+            return this._cachedEntries;
+        }
+        const arr = this.entriesUncached();
+        this._cachedEntries = arr;
+        return arr;
+    }
+
+    /** @internal */
+    entriesUncached(): {
         value: Item;
         madeAt: number;
         opID: OpID;

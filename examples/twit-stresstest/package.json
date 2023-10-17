@@ -7,5 +7,9 @@
   "dependencies": {
     "cojson": "^0.4.13",
     "cojson-transport-nodejs-ws": "^0.4.13"
+  },
+  "scripts": {
+    "stress4": "npx concurrently \"bun --inspect index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\"",
+    "stress8": "npx concurrently \"bun --inspect index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\""
   }
 }
