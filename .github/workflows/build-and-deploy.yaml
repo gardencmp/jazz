@@ -85,7 +85,7 @@ jobs:
     needs: build-examples
     strategy:
       matrix:
-        images: ["chat", "todo", "pets", "twit", "file-drop"]
+        example: ["chat", "todo", "pets", "twit", "file-drop"]
 
     steps:
     - uses: actions/checkout@v3
