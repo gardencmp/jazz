@@ -20,7 +20,7 @@ const pragmata = localFont({
 });
 
 export const metadata: Metadata = {
-    title: "jazz - Instant sync.",
+    title: "jazz - Instant sync",
     description: "Go beyond request/response - ship modern apps with sync.",
 };
 
