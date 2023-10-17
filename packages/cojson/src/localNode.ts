@@ -153,6 +153,11 @@ export class LocalNode {
         }
 
         const account = await accountPromise;
+
+        if (account === "unavailable") {
+            throw new Error("Account unavailable from all peers");
+        }
+
         const controlledAccount = new ControlledAccount(
             account.core,
             accountSecret
@@ -199,20 +204,34 @@ export class LocalNode {
     }
 
     /** @internal */
-    loadCoValueCore(
+    async loadCoValueCore(
         id: RawCoID,
         options: {
-            excludePeer?: PeerID;
+            dontLoadFrom?: PeerID;
+            dontWaitFor?: PeerID;
             onProgress?: (progress: number) => void;
         } = {}
-    ): Promise<CoValueCore> {
+    ): Promise<CoValueCore | "unavailable"> {
         let entry = this.coValues[id];
         if (!entry) {
-            entry = newLoadingState(options.onProgress);
+            const peersToWaitFor = new Set(
+                Object.values(this.syncManager.peers).map((peer) => peer.id)
+            );
+            if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
+            entry = newLoadingState(peersToWaitFor, options.onProgress);
 
             this.coValues[id] = entry;
 
-            this.syncManager.loadFromPeers(id, options.excludePeer);
+            this.syncManager
+                .loadFromPeers(id, options.dontLoadFrom)
+                .catch((e) => {
+                    console.error(
+                        "Error loading from peers",
+                        id,
+
+                        e
+                    );
+                });
         }
         if (entry.state === "loaded") {
             return Promise.resolve(entry.coValue);
@@ -230,16 +249,20 @@ export class LocalNode {
     async load<T extends CoValue>(
         id: CoID<T>,
         onProgress?: (progress: number) => void
-    ): Promise<T> {
-        return (
-            await this.loadCoValueCore(id, { onProgress })
-        ).getCurrentContent() as T;
+    ): Promise<T | "unavailable"> {
+        const core = await this.loadCoValueCore(id, { onProgress });
+
+        if (core === "unavailable") {
+            return "unavailable";
+        }
+
+        return core.getCurrentContent() as T;
     }
 
     /** @category 3. Low-level */
     subscribe<T extends CoValue>(
         id: CoID<T>,
-        callback: (update: T) => void
+        callback: (update: T | "unavailable") => void
     ): () => void {
         let stopped = false;
         let unsubscribe!: () => void;
@@ -249,6 +272,10 @@ export class LocalNode {
         this.load(id)
             .then((coValue) => {
                 if (stopped) {
+                    return;
+                }
+                if (coValue === "unavailable") {
+                    callback("unavailable");
                     return;
                 }
                 unsubscribe = coValue.subscribe(callback);
@@ -270,6 +297,12 @@ export class LocalNode {
         inviteSecret: InviteSecret
     ): Promise<void> {
         const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
+
+        if (groupOrOwnedValue === "unavailable") {
+            throw new Error(
+                "Trying to accept invite: Group/owned value unavailable from all peers"
+            );
+        }
 
         if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
@@ -485,6 +518,14 @@ export class LocalNode {
 
         const coValue = await this.loadCoValueCore(id);
 
+        if (coValue === "unavailable") {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }Account ${id} is unavailable from all peers`
+            );
+        }
+
         if (
             coValue.header.type !== "comap" ||
             coValue.header.ruleset.type !== "group" ||
@@ -602,9 +643,19 @@ export class LocalNode {
 type CoValueState =
     | {
           state: "loading";
-          done: Promise<CoValueCore>;
-          resolve: (coValue: CoValueCore) => void;
+          done: Promise<CoValueCore | "unavailable">;
+          resolve: (coValue: CoValueCore | "unavailable") => void;
           onProgress?: (progress: number) => void;
+          firstPeerState: {
+              [peerID: string]:
+                  | {
+                        type: "waiting";
+                        done: Promise<void>;
+                        resolve: () => void;
+                    }
+                  | { type: "available" }
+                  | { type: "unavailable" };
+          };
       }
     | {
           state: "loaded";
@@ -614,11 +665,12 @@ type CoValueState =
 
 /** @internal */
 export function newLoadingState(
+    currentPeerIds: Set<PeerID>,
     onProgress?: (progress: number) => void
 ): CoValueState {
-    let resolve: (coValue: CoValueCore) => void;
+    let resolve: (coValue: CoValueCore | "unavailable") => void;
 
-    const promise = new Promise<CoValueCore>((r) => {
+    const promise = new Promise<CoValueCore | "unavailable">((r) => {
         resolve = r;
     });
 
@@ -627,5 +679,14 @@ export function newLoadingState(
         done: promise,
         resolve: resolve!,
         onProgress,
+        firstPeerState: Object.fromEntries(
+            [...currentPeerIds].map((id) => {
+                let resolve: () => void;
+                const done = new Promise<void>((r) => {
+                    resolve = r;
+                });
+                return [id, { type: "waiting", done, resolve: resolve! }];
+            })
+        ),
     };
 }

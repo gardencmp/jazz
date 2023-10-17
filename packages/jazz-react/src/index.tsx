@@ -224,6 +224,7 @@ export function useSyncedValue<T extends CoValue>(id?: CoID<T>) {
             .load(id)
             .then((state) => {
                 if (done) return;
+                if (state === "unavailable") return;
                 unsubscribe = state.subscribe((newState) => {
                     // console.log(
                     //     "Got update",

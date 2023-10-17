@@ -493,6 +493,10 @@ export async function readBlobFromBinaryStream<
 ): Promise<Blob | undefined> {
     const stream = await node.load<C>(streamId, onProgress);
 
+    if (stream === "unavailable") {
+        return undefined;
+    }
+
     const chunks = stream.getBinaryChunks(allowUnfinished);
 
     if (!chunks) {

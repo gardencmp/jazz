@@ -7,7 +7,7 @@ import {
     AutoSubExtension,
     createBinaryStreamFromBlob,
     readBlobFromBinaryStream,
-    ResolvedGroup
+    ResolvedGroup,
 } from "jazz-browser";
 
 const pica = new Pica();
@@ -196,6 +196,15 @@ export function loadImage(
         .load(typeof imageDef === "string" ? imageDef : imageDef.id)
         .then((imageDefinition) => {
             if (stopped) return;
+            if (imageDefinition === "unavailable") {
+                console.warn(
+                    "Image unavailable " +
+                        (typeof imageDef === "string" ? imageDef : imageDef.id),
+                    imageDef
+                );
+                cleanUp();
+                return;
+            }
             unsubscribe = imageDefinition.subscribe(async (imageDefinition) => {
                 if (stopped) return;
 
@@ -243,18 +252,21 @@ export function loadImage(
                         //     binaryStreamId
                         // );
 
+                        await new Promise((resolve) => setTimeout(resolve, 2 * Number(res.split("x"))));
+
                         const binaryStream = await localNode.load(
                             binaryStreamId
                         );
 
                         if (stopped) return;
-                        if (!binaryStream) {
+                        if (!binaryStream || binaryStream === "unavailable") {
                             resState[res] = { state: "failed" };
                             console.error(
                                 "Loading image res failed",
                                 imageDef,
                                 res,
-                                binaryStreamId
+                                binaryStreamId,
+                                binaryStream
                             );
                             return;
                         }

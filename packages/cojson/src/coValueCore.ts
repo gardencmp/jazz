@@ -103,6 +103,7 @@ export class CoValueCore {
             | JsonValue[]
             | undefined;
     } = {};
+    currentlyAsyncApplyingTxDone?: Promise<void>;
 
     constructor(
         header: CoValueHeader,
@@ -250,6 +251,15 @@ export class CoValueCore {
         givenExpectedNewHash: Hash | undefined,
         newSignature: Signature
     ): Promise<boolean> {
+        if (this.currentlyAsyncApplyingTxDone) {
+            await this.currentlyAsyncApplyingTxDone;
+        }
+        let resolveDone!: () => void;
+
+        this.currentlyAsyncApplyingTxDone = new Promise((resolve) => {
+            resolveDone = resolve;
+        });
+
         const signerID = getAgentSignerID(
             await this.node.resolveAccountAgentAsync(
                 accountOrAgentIDfromSessionID(sessionID),
@@ -262,6 +272,7 @@ export class CoValueCore {
                 "Unknown agent",
                 accountOrAgentIDfromSessionID(sessionID)
             );
+            resolveDone();
             return false;
         }
 
@@ -294,6 +305,7 @@ export class CoValueCore {
                 expectedNewHash,
                 givenExpectedNewHash,
             });
+            resolveDone();
             return false;
         }
 
@@ -306,6 +318,7 @@ export class CoValueCore {
                 expectedNewHash,
                 signerID
             );
+            resolveDone();
             return false;
         }
         // const afterVerify = performance.now();
@@ -322,6 +335,7 @@ export class CoValueCore {
             newStreamingHash
         );
 
+        resolveDone();
         return true;
     }
 

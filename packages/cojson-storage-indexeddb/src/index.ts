@@ -89,7 +89,7 @@ export class IDBStorage {
             localNodeAsPeer.outgoing
         );
 
-        return storageAsPeer;
+        return { ...storageAsPeer, priority: 100 };
     }
 
     static async open(
