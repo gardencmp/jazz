@@ -1,0 +1,11 @@
+{
+  "name": "twit-stresstest",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "cojson": "^0.4.13",
+    "cojson-transport-nodejs-ws": "^0.4.13"
+  }
+}

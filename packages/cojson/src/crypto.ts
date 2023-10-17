@@ -10,7 +10,13 @@ import { createBLAKE3 } from "hash-wasm";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 
 let blake3Instance: Awaited<ReturnType<typeof createBLAKE3>>;
-let blake3HashOnce: (data: Uint8Array) => Uint8Array;
+let blake3HashOnce: (data: Uint8Array) => Uint8Array = () => {
+    throw new Error(
+        "cojson WASM dependencies not yet loaded; Make sure to import `cojsonReady` from `cojson` and await it before using any cojson functionality:\n\n" +
+            'import { cojsonReady } from "cojson";\n' +
+            "await cojsonReady;\n\n"
+    );
+};
 let blake3HashOnceWithContext: (
     data: Uint8Array,
     { context }: { context: Uint8Array }

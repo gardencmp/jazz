@@ -112,8 +112,11 @@ export class SyncManager {
         this.local = local;
     }
 
-    loadFromPeers(id: RawCoID) {
+    loadFromPeers(id: RawCoID, excludePeer?: PeerID) {
         for (const peer of Object.values(this.peers)) {
+            if (peer.id === excludePeer) {
+                return;
+            }
             peer.outgoing
                 .write({
                     action: "load",
@@ -322,7 +325,7 @@ export class SyncManager {
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
         return new Promise<void>((resolve) => {
-            const start = Date.now()
+            const start = Date.now();
             peer.outgoing
                 .write(msg)
                 .then(() => {
@@ -330,7 +333,9 @@ export class SyncManager {
                     if (end - start > 1000) {
                         console.error(
                             new Error(
-                                `Writing to peer "${peer.id}" took ${Math.round((Date.now() - start)/100)/10}s - this should never happen as write should resolve quickly or error`
+                                `Writing to peer "${peer.id}" took ${
+                                    Math.round((Date.now() - start) / 100) / 10
+                                }s - this should never happen as write should resolve quickly or error`
                             )
                         );
                     } else {
@@ -358,7 +363,7 @@ export class SyncManager {
             if (!entry) {
                 await new Promise<void>((resolve) => {
                     this.local
-                        .loadCoValueCore(msg.id)
+                        .loadCoValueCore(msg.id, { excludePeer: peer.id })
                         .then(() => resolve())
                         .catch((e) => {
                             console.error(
@@ -458,7 +463,7 @@ export class SyncManager {
             entry = {
                 state: "loaded",
                 coValue: coValue,
-                onProgress: entry.onProgress
+                onProgress: entry.onProgress,
             };
 
             this.local.coValues[msg.id] = entry;
@@ -518,8 +523,13 @@ export class SyncManager {
                 );
             }
 
-            const theirTotalnTxs = Object.values(peer.optimisticKnownStates[msg.id]?.sessions || {}).reduce((sum, nTxs) => sum + nTxs, 0);
-            const ourTotalnTxs = Object.values(coValue.sessions).reduce((sum, session) => sum + session.transactions.length, 0);
+            const theirTotalnTxs = Object.values(
+                peer.optimisticKnownStates[msg.id]?.sessions || {}
+            ).reduce((sum, nTxs) => sum + nTxs, 0);
+            const ourTotalnTxs = Object.values(coValue.sessions).reduce(
+                (sum, session) => sum + session.transactions.length,
+                0
+            );
 
             entry.onProgress?.(ourTotalnTxs / theirTotalnTxs);
 
@@ -536,9 +546,11 @@ export class SyncManager {
                 continue;
             }
 
-            peerOptimisticKnownState.sessions[sessionID] = Math.max(peerOptimisticKnownState.sessions[sessionID] || 0,
+            peerOptimisticKnownState.sessions[sessionID] = Math.max(
+                peerOptimisticKnownState.sessions[sessionID] || 0,
                 newContentForSession.after +
-                newContentForSession.newTransactions.length);
+                    newContentForSession.newTransactions.length
+            );
         }
 
         if (resolveAfterDone) {

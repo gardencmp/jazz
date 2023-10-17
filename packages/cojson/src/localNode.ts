@@ -19,7 +19,7 @@ import {
     Group,
     secretSeedFromInviteSecret,
 } from "./coValues/group.js";
-import { Peer, SyncManager } from "./sync.js";
+import { Peer, PeerID, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID } from "./coValue.js";
 import {
@@ -199,14 +199,20 @@ export class LocalNode {
     }
 
     /** @internal */
-    loadCoValueCore(id: RawCoID, onProgress?: (progress: number) => void): Promise<CoValueCore> {
+    loadCoValueCore(
+        id: RawCoID,
+        options: {
+            excludePeer?: PeerID;
+            onProgress?: (progress: number) => void;
+        } = {}
+    ): Promise<CoValueCore> {
         let entry = this.coValues[id];
         if (!entry) {
-            entry = newLoadingState(onProgress);
+            entry = newLoadingState(options.onProgress);
 
             this.coValues[id] = entry;
 
-            this.syncManager.loadFromPeers(id);
+            this.syncManager.loadFromPeers(id, options.excludePeer);
         }
         if (entry.state === "loaded") {
             return Promise.resolve(entry.coValue);
@@ -221,8 +227,13 @@ export class LocalNode {
      *
      * @category 3. Low-level
      */
-    async load<T extends CoValue>(id: CoID<T>, onProgress?: (progress: number) => void): Promise<T> {
-        return (await this.loadCoValueCore(id, onProgress)).getCurrentContent() as T;
+    async load<T extends CoValue>(
+        id: CoID<T>,
+        onProgress?: (progress: number) => void
+    ): Promise<T> {
+        return (
+            await this.loadCoValueCore(id, { onProgress })
+        ).getCurrentContent() as T;
     }
 
     /** @category 3. Low-level */
@@ -400,17 +411,6 @@ export class LocalNode {
                 },
             });
 
-            console.log(
-                "Creating read key",
-                getAgentSealerSecret(agentSecret),
-                getAgentSealerID(accountAgentID),
-                account.id,
-                account.core.nextTransactionID(),
-                "in session",
-                account.core.node.currentSessionID,
-                "=",
-                sealed
-            );
             editable.set(
                 `${readKey.id}_for_${accountAgentID}`,
                 sealed,
@@ -475,30 +475,32 @@ export class LocalNode {
         return new Account(coValue).getCurrentAgentID();
     }
 
-    async resolveAccountAgentAsync(id: AccountID | AgentID,
-        expectation?: string): Promise<AgentID> {
-            if (isAgentID(id)) {
-                return id;
-            }
-
-            const coValue = await this.loadCoValueCore(id);
-
-            if (
-                coValue.header.type !== "comap" ||
-                coValue.header.ruleset.type !== "group" ||
-                !coValue.header.meta ||
-                !("type" in coValue.header.meta) ||
-                coValue.header.meta.type !== "account"
-            ) {
-                throw new Error(
-                    `${
-                        expectation ? expectation + ": " : ""
-                    }CoValue ${id} is not an account`
-                );
-            }
-
-            return new Account(coValue).getCurrentAgentID();
+    async resolveAccountAgentAsync(
+        id: AccountID | AgentID,
+        expectation?: string
+    ): Promise<AgentID> {
+        if (isAgentID(id)) {
+            return id;
         }
+
+        const coValue = await this.loadCoValueCore(id);
+
+        if (
+            coValue.header.type !== "comap" ||
+            coValue.header.ruleset.type !== "group" ||
+            !coValue.header.meta ||
+            !("type" in coValue.header.meta) ||
+            coValue.header.meta.type !== "account"
+        ) {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }CoValue ${id} is not an account`
+            );
+        }
+
+        return new Account(coValue).getCurrentAgentID();
+    }
 
     /**
      * @deprecated use Account.createGroup() instead
@@ -604,10 +606,16 @@ type CoValueState =
           resolve: (coValue: CoValueCore) => void;
           onProgress?: (progress: number) => void;
       }
-    | { state: "loaded"; coValue: CoValueCore; onProgress?: (progress: number) => void; };
+    | {
+          state: "loaded";
+          coValue: CoValueCore;
+          onProgress?: (progress: number) => void;
+      };
 
 /** @internal */
-export function newLoadingState(onProgress?: (progress: number) => void): CoValueState {
+export function newLoadingState(
+    onProgress?: (progress: number) => void
+): CoValueState {
     let resolve: (coValue: CoValueCore) => void;
 
     const promise = new Promise<CoValueCore>((r) => {
@@ -618,6 +626,6 @@ export function newLoadingState(onProgress?: (progress: number) => void): CoValu
         state: "loading",
         done: promise,
         resolve: resolve!,
-        onProgress
+        onProgress,
     };
 }

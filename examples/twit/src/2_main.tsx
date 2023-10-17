@@ -22,7 +22,7 @@ const auth = LocalAuth({
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ThemeProvider>
       <TitleAndLogo name={appName} />
       <div className="flex flex-col h-full items-stretch justify-start gap-10 pt-10 pb-10 px-5 w-full max-w-xl mx-auto">
@@ -31,7 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </WithJazz>
       </div>
     </ThemeProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 function App() {
