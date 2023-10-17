@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-examples:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -53,9 +53,36 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  deploy:
+  build-homepage:
     runs-on: ubuntu-latest
-    needs: build
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: gardencmp
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker Build & Push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./homepage/homepage-jazz
+        push: true
+        tags: ghcr.io/gardencmp/${{github.event.repository.name}}-homepage-jazz:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-examples:
+    runs-on: ubuntu-latest
+    needs: build-examples
     strategy:
       matrix:
         example: ["chat", "todo", "pets", "twit", "file-drop"]
@@ -88,3 +115,36 @@ jobs:
         cat job-instance.nomad;
         NOMAD_ADDR='http://control1v2-london:4646' nomad job run job-instance.nomad;
       working-directory: ./examples/${{ matrix.example }}
+
+  deploy-homepage:
+    runs-on: ubuntu-latest
+    needs: build-homepage
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - uses: gacts/install-nomad@v1
+    - name: Tailscale
+      uses: tailscale/github-action@v1
+      with:
+        authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+    - name: Deploy on Nomad
+      run: |
+        if [ "${{github.ref_name}}" == "main" ]; then
+          export BRANCH_SUFFIX="";
+          export BRANCH_SUBDOMAIN="";
+        else
+          export BRANCH_SUFFIX=-${{github.head_ref || github.ref_name}};
+          export BRANCH_SUBDOMAIN=${{github.head_ref || github.ref_name}}.;
+        fi
+
+        export DOCKER_USER=gardencmp;
+        export DOCKER_PASSWORD=${{ secrets.DOCKER_PULL_PAT }};
+        export DOCKER_TAG=ghcr.io/gardencmp/${{github.event.repository.name}}-homepage-jazz:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}};
+
+        envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN}' < job-template.nomad > job-instance.nomad;
+        cat job-instance.nomad;
+        NOMAD_ADDR='http://control1v2-london:4646' nomad job run job-instance.nomad;
+      working-directory: ./homepage/homepage-jazz

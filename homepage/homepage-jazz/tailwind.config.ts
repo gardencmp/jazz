@@ -31,7 +31,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         display: ['var(--font-manrope)'],
-        mono: ['var(--font-pragmata)'],
+        mono: ['var(--font-ppr)'],
       },
       // shadcn-ui
       colors: {

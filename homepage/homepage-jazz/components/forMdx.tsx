@@ -71,33 +71,27 @@ export function GridCard(props: { children: ReactNode; className?: string }) {
 
 export function MultiplayerIcon() {
     return (
-        <div className="w-8 h-8 -my-1 -mr-2 relative">
-            <TextCursorIcon
-                size="12"
+        <div className="w-8 h-8 -my-1 -mr-2 relative z-0">
+            <MousePointer2Icon
+                size="20"
                 absoluteStrokeWidth
-                strokeWidth={1.8}
-                className="absolute top-0 left-0.5 -z-10"
+                strokeWidth={2}
+                className="absolute top-1 right-0"
             />
             <MousePointer2Icon
                 size="16"
                 absoluteStrokeWidth
-                strokeWidth={1.8}
-                className="absolute top-1.5 right-1 -z-10"
-            />
-            <HandIcon
-                size="16"
-                absoluteStrokeWidth
-                strokeWidth={1.8}
-                className="absolute bottom-0 left-0 -z-10"
+                strokeWidth={2}
+                className="absolute bottom-1 left-0 -scale-x-100"
             />
         </div>
     );
 }
 
-export function ComingSoonBadge() {
+export function ComingSoonBadge({when = "soon"}: {when?: string}) {
     return (
         <span className="bg-stone-100 dark:bg-stone-900 text-stone-500 dark:text-stone-400 border border-stone-300 dark:border-stone-700 text-[0.6rem] px-1 py-0.5 rounded-xl align-text-top">
-            Coming&nbsp;soon
+            Coming&nbsp;{when}
         </span>
     );
 }

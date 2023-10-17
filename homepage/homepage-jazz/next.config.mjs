@@ -18,4 +18,9 @@ const withMDX = createMDX({
     },
 });
 
-export default withMDX(nextConfig);
+const config = {
+    ...withMDX(nextConfig),
+    output: 'standalone'
+};
+
+export default config;
