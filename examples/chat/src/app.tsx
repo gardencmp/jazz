@@ -18,7 +18,7 @@ function App() {
     {HashRoute({
       '/': <Home />,
       '/chat/:id': (id) => <ChatWindow chatId={id as Chat['id']} />,
-    })}
+    }, { reportToParentFrame: true })}
   </div>
 }
 
