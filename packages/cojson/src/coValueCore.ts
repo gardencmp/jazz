@@ -251,7 +251,7 @@ export class CoValueCore {
         newSignature: Signature
     ): Promise<boolean> {
         const signerID = getAgentSignerID(
-            this.node.resolveAccountAgent(
+            await this.node.resolveAccountAgentAsync(
                 accountOrAgentIDfromSessionID(sessionID),
                 "Expected to know signer of transaction"
             )

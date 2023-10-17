@@ -199,7 +199,7 @@ export class LocalNode {
     }
 
     /** @internal */
-    loadCoValue(id: RawCoID, onProgress?: (progress: number) => void): Promise<CoValueCore> {
+    loadCoValueCore(id: RawCoID, onProgress?: (progress: number) => void): Promise<CoValueCore> {
         let entry = this.coValues[id];
         if (!entry) {
             entry = newLoadingState(onProgress);
@@ -222,7 +222,7 @@ export class LocalNode {
      * @category 3. Low-level
      */
     async load<T extends CoValue>(id: CoID<T>, onProgress?: (progress: number) => void): Promise<T> {
-        return (await this.loadCoValue(id, onProgress)).getCurrentContent() as T;
+        return (await this.loadCoValueCore(id, onProgress)).getCurrentContent() as T;
     }
 
     /** @category 3. Low-level */
@@ -474,6 +474,31 @@ export class LocalNode {
 
         return new Account(coValue).getCurrentAgentID();
     }
+
+    async resolveAccountAgentAsync(id: AccountID | AgentID,
+        expectation?: string): Promise<AgentID> {
+            if (isAgentID(id)) {
+                return id;
+            }
+
+            const coValue = await this.loadCoValueCore(id);
+
+            if (
+                coValue.header.type !== "comap" ||
+                coValue.header.ruleset.type !== "group" ||
+                !coValue.header.meta ||
+                !("type" in coValue.header.meta) ||
+                coValue.header.meta.type !== "account"
+            ) {
+                throw new Error(
+                    `${
+                        expectation ? expectation + ": " : ""
+                    }CoValue ${id} is not an account`
+                );
+            }
+
+            return new Account(coValue).getCurrentAgentID();
+        }
 
     /**
      * @deprecated use Account.createGroup() instead

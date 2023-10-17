@@ -358,7 +358,7 @@ export class SyncManager {
             if (!entry) {
                 await new Promise<void>((resolve) => {
                     this.local
-                        .loadCoValue(msg.id)
+                        .loadCoValueCore(msg.id)
                         .then(() => resolve())
                         .catch((e) => {
                             console.error(
