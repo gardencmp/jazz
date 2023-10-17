@@ -199,6 +199,7 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </ThemeProvider>
+                <script defer data-api="/api/event" data-domain="jazz.tools" src="/js/script.js"></script>
             </body>
         </html>
     );
