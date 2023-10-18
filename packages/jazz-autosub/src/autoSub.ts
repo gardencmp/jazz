@@ -140,7 +140,7 @@ export class AutoSubContext {
                 render,
                 unsubscribe: this.node.subscribe(valueID, (valueUpdate) => {
                     if (valueUpdate === "unavailable") {
-                        console.warn("Value", valueID, "is unavailable");
+                        // console.warn("Value", valueID, "is unavailable");
                         return;
                     }
                     value!.lastUpdate = valueUpdate;

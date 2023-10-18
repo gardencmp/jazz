@@ -209,6 +209,24 @@ function websocketReadableStream<T>(ws: WebSocket) {
 
             ws.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
+
+                if (pingTimeout) {
+                    clearTimeout(pingTimeout);
+                }
+
+                pingTimeout = setTimeout(() => {
+                    console.debug("Ping timeout");
+                    try {
+                        controller.close();
+                        ws.close();
+                    } catch (e) {
+                        console.error(
+                            "Error while trying to close ws on ping timeout",
+                            e
+                        );
+                    }
+                }, 2500);
+
                 if (msg.type === "ping") {
                     console.debug(
                         "Got ping from",
@@ -218,22 +236,6 @@ function websocketReadableStream<T>(ws: WebSocket) {
                         "ms"
                     );
 
-                    if (pingTimeout) {
-                        clearTimeout(pingTimeout);
-                    }
-
-                    pingTimeout = setTimeout(() => {
-                        console.debug("Ping timeout");
-                        try {
-                            controller.close();
-                            ws.close();
-                        } catch (e) {
-                            console.error(
-                                "Error while trying to close ws on ping timeout",
-                                e
-                            );
-                        }
-                    }, 2500);
 
                     return;
                 }

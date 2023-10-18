@@ -2,6 +2,10 @@ import { WebSocket } from "ws";
 import { WritableStream, ReadableStream } from "isomorphic-streams";
 import { SyncMessage } from "cojson";
 
+let msgsInThisInterval = 0;
+let msgsOutThisInterval = 0;
+let txsInThisInterval = 0;
+let txsOutThisInterval = 0;
 let msgsInLastInterval = 0;
 let msgsOutLastInterval = 0;
 let txsInLastInterval = 0;
@@ -11,29 +15,43 @@ let maxMsgsOutPerS = 0;
 let maxTxsInPerS = 0;
 let maxTxsOutPerS = 0;
 let lastInterval = Date.now();
-const interval = 10_000;
+const interval = 1_000;
 
 setInterval(() => {
-    const dt = (Date.now() - lastInterval)/1000;
+    const dt = (Date.now() - lastInterval) / 1000;
 
-    maxMsgsInPerS = Math.max(maxMsgsInPerS, Math.round(msgsInLastInterval / dt));
-    maxMsgsOutPerS = Math.max(maxMsgsOutPerS, Math.round(msgsOutLastInterval / dt));
-    maxTxsInPerS = Math.max(maxTxsInPerS, Math.round(txsInLastInterval / dt));
-    maxTxsOutPerS = Math.max(maxTxsOutPerS, Math.round(txsOutLastInterval / dt));
+    maxMsgsInPerS = Math.max(
+        maxMsgsInPerS,
+        Math.round(msgsInThisInterval / dt)
+    );
+    maxMsgsOutPerS = Math.max(
+        maxMsgsOutPerS,
+        Math.round(msgsOutThisInterval / dt)
+    );
+    maxTxsInPerS = Math.max(maxTxsInPerS, Math.round(txsInThisInterval / dt));
+    maxTxsOutPerS = Math.max(
+        maxTxsOutPerS,
+        Math.round(txsOutThisInterval / dt)
+    );
 
-    if (msgsInLastInterval || msgsOutLastInterval || txsInLastInterval || txsOutLastInterval) {
+    if (
+        msgsInThisInterval ||
+        msgsOutThisInterval ||
+        txsInThisInterval ||
+        txsOutThisInterval
+    ) {
         console.log("++++++++++++++++++++++++++++++");
         console.log(
             "DT",
             dt,
             "Msgs in:",
-            msgsInLastInterval,
+            msgsInThisInterval,
             "out:",
-            msgsOutLastInterval,
+            msgsOutThisInterval,
             "txs in:",
-            txsInLastInterval,
+            txsInThisInterval,
             "out:",
-            txsOutLastInterval
+            txsOutThisInterval
         );
         console.log(
             "MAX/s",
@@ -48,10 +66,14 @@ setInterval(() => {
         );
     }
 
-    msgsInLastInterval = 0;
-    msgsOutLastInterval = 0;
-    txsInLastInterval = 0;
-    txsOutLastInterval = 0;
+    msgsInLastInterval = msgsInThisInterval;
+    msgsOutLastInterval = msgsOutThisInterval;
+    txsInLastInterval = txsInThisInterval;
+    txsOutLastInterval = txsOutThisInterval;
+    msgsInThisInterval = 0;
+    msgsOutThisInterval = 0;
+    txsInThisInterval = 0;
+    txsOutThisInterval = 0;
     lastInterval = Date.now();
 }, interval);
 
@@ -67,16 +89,24 @@ export function websocketReadableStream<T>(ws: WebSocket) {
                         event.data
                     );
                 const msg = JSON.parse(event.data);
-                msgsInLastInterval++;
+                msgsInThisInterval++;
                 const syncMsg = msg as SyncMessage;
                 if (syncMsg.action === "content") {
-                    txsInLastInterval +=
+                    txsInThisInterval +=
                         (syncMsg.header ? 1 : 0) +
                         Object.values(syncMsg.new).reduce(
                             (sum, sess) => sess.newTransactions.length + sum,
                             0
                         );
                 }
+
+                if (txsInLastInterval > 500 || txsOutLastInterval > 1_000) {
+                    ws.pause();
+                    const waitTime = Math.min(500, Math.max(txsOutLastInterval / 20, txsInLastInterval / 10));
+                    // console.log("Throttling", waitTime);
+                    setTimeout(() => ws.resume(), waitTime);
+                }
+
                 if (msg.type === "ping") {
                     // console.debug(
                     //     "Got ping from",
@@ -121,10 +151,10 @@ export function websocketWritableStream<T>(ws: WebSocket) {
         },
 
         write(chunk) {
-            msgsOutLastInterval++;
+            msgsOutThisInterval++;
             const syncMsg = chunk as SyncMessage;
             if (syncMsg.action === "content") {
-                txsOutLastInterval +=
+                txsOutThisInterval +=
                     (syncMsg.header ? 1 : 0) +
                     Object.values(syncMsg.new).reduce(
                         (sum, sess) => sess.newTransactions.length + sum,

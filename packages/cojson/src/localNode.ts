@@ -215,7 +215,9 @@ export class LocalNode {
         let entry = this.coValues[id];
         if (!entry) {
             const peersToWaitFor = new Set(
-                Object.values(this.syncManager.peers).filter(peer => peer.role === "server").map((peer) => peer.id)
+                Object.values(this.syncManager.peers)
+                    .filter((peer) => peer.role === "server")
+                    .map((peer) => peer.id)
             );
             if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
             entry = newLoadingState(peersToWaitFor, options.onProgress);
@@ -369,7 +371,7 @@ export class LocalNode {
                 : "reader"
         );
 
-        group.core._sessions = groupAsInvite.core.sessions;
+        group.core._sessionLogs = groupAsInvite.core.sessionLogs;
         group.core._cachedContent = undefined;
 
         for (const groupListener of group.core.listeners) {
@@ -465,16 +467,13 @@ export class LocalNode {
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
-        accountOnThisNode._sessions = {
-            ...account.core.sessions,
-        };
+        accountOnThisNode._sessionLogs = new Map(account.core.sessionLogs);
+
         accountOnThisNode._cachedContent = undefined;
 
         const profileOnThisNode = this.createCoValue(profile.core.header);
 
-        profileOnThisNode._sessions = {
-            ...profile.core.sessions,
-        };
+        profileOnThisNode._sessionLogs = new Map(profile.core.sessionLogs);
         profileOnThisNode._cachedContent = undefined;
 
         return new ControlledAccount(accountOnThisNode, agentSecret);
@@ -611,7 +610,7 @@ export class LocalNode {
                 const newCoValue = new CoValueCore(
                     entry.coValue.header,
                     newNode,
-                    { ...entry.coValue.sessions }
+                    new Map(entry.coValue.sessionLogs)
                 );
 
                 newNode.coValues[coValueID as RawCoID] = {

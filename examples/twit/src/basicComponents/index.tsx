@@ -17,6 +17,8 @@ export { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
+import { useInView } from 'react-intersection-observer';
+import { useEffect, useState } from 'react';
 TimeAgo.addDefaultLocale(en);
 
 export function BioInput(props: { value?: string; onChange: (value: string) => void }) {
@@ -53,7 +55,7 @@ export function ChooseProfilePicInput(props: { onChange: (file: File) => void })
         Choose Pic
         <Input
           type="file"
-          accept="image/*"
+          accept="image/jpg,image/jpeg,image/png,image/gif"
           onChange={e => {
             e.target.files?.[0] && props.onChange(e.target.files[0]);
             e.target.value = '';
@@ -72,14 +74,17 @@ export function ProfilePicImg(props: { src?: string; size?: 'sm' | 'xxl'; linkTo
         <img
           src={props.src}
           className={
-            'bg-neutral-200 rounded-full mr-2 object-cover shrink-0' +
+            'bg-neutral-200 dark:bg-neutral-800 rounded-full mr-2 object-cover shrink-0' +
             (props.size === 'sm' ? ' w-8 h-8' : props.size === 'xxl' ? ' w-20 h-20' : ' w-10 h-10')
           }
         />
       ) : (
         <div
           className={
-            'bg-neutral-200 rounded-full mr-2 object-cover shrink-0 flex items-center justify-center text-neutral-700 ' +
+            'rounded-full mr-2 object-cover shrink-0 flex items-center justify-center text-neutral-700 dark:text-neutral-300 ' +
+            (props.initial
+              ? 'bg-neutral-200 dark:bg-neutral-800 '
+              : 'animate-pulse bg-neutral-100 dark:bg-neutral-900 ') +
             (props.size === 'sm'
               ? ' w-8 h-8 text-[1.5rem]'
               : props.size === 'xxl'
@@ -97,13 +102,17 @@ export function ProfilePicImg(props: { src?: string; size?: 'sm' | 'xxl'; linkTo
 export function SubtleRelativeTimeAgo(props: { dateTime?: Date }) {
   return (
     <div className="ml-auto text-neutral-300 text-xs whitespace-nowrap">
-      <ReactTimeAgo date={props.dateTime || 0} />
+      {props.dateTime ? <ReactTimeAgo date={props.dateTime} /> : <Placeholder />}
     </div>
   );
 }
 
 export function TwitImg(props: { src?: string }) {
-  return <img src={props.src} className="h-40 rounded object-cover" />;
+  return props.src ? (
+    <img src={props.src} className="h-40 rounded object-cover" />
+  ) : (
+    <div className="h-40 w-30 rounded bg-neutral-100" />
+  );
 }
 
 export function ReactionsContainer(props: { children: React.ReactNode }) {
@@ -120,18 +129,20 @@ export function ButtonWithCount(props: {
   active?: boolean;
   icon: React.ReactNode;
   activeIcon?: React.ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-center">
       <Button
-        className="w-10 h-7 p-1 mr-1"
+        className={"w-10 h-7 p-1 mr-1 " + (props.disabled ? "text-neutral-200 dark:text-neutral-800" : "")}
         variant={props.active ? 'secondary' : 'outline'}
         onClick={props.onClick}
         size="icon"
+        disabled={props.disabled}
       >
         {props.active ? props.activeIcon : props.icon}
       </Button>{' '}
-      <span className="tabular-nums">{props.count}</span>
+      <span className={"tabular-nums " + (props.disabled ? "text-neutral-200 dark:text-neutral-800" : "")}>{props.count}</span>
     </div>
   );
 }
@@ -174,7 +185,7 @@ export function AddTwitPicsInput(props: { onChange: (files: File[]) => void }) {
             props.onChange(Array.from(e.target.files || []));
           }}
           className="hidden"
-          accept="image/*"
+          accept="image/jpg,image/jpeg,image/png,image/gif"
           multiple
         />
       </label>
@@ -203,7 +214,7 @@ export function TwitHeader(props: { children: React.ReactNode }) {
 }
 
 export function TwitImgGallery(props: { children: React.ReactNode }) {
-  return <div className="flex gap-2 mt-2 max-w-full overflow-auto">{props.children}</div>;
+  return <div className="flex gap-2 mt-2 max-w-full overflow-auto">{props.children || <TwitImg />}</div>;
 }
 
 export function TwitText(props: { children: React.ReactNode; style?: React.CSSProperties }) {
@@ -219,10 +230,36 @@ export function MainH1(props: { children: React.ReactNode }) {
 }
 
 export function SmallInlineButton(props: { children: React.ReactNode } & ButtonProps) {
-  const {children, ...rest} = props
+  const { children, ...rest } = props;
   return (
     <Button variant={'ghost'} className="h-6 px-1 -mx-1" {...rest}>
       {children}
     </Button>
+  );
+}
+
+export function Placeholder() {
+  return (
+    <span className="bg-neutral-100 dark:bg-neutral-900 rounded animate-pulse text-transparent">
+      Loading, loading...
+    </span>
+  );
+}
+
+export function LazyLoadRow(props: { children: React.ReactNode }) {
+  const { ref, inView, entry } = useInView({
+    // triggerOnce: true,
+    delay: 100
+  });
+  const [height, setHeight] = useState("0");
+  useEffect(() => {
+    setHeight("500px")
+  },[])
+  return (
+    <div ref={ref} style={{
+      maxHeight: height,
+      overflowX: inView ? "scroll" : "hidden",
+      transition: 'max-height 1s ease-in-out',
+    }}>{inView ? props.children : <div className="mb-[1px] h-20 bg-neutral-50 dark:bg-neutral-950" />}</div>
   );
 }

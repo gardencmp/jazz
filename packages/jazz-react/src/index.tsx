@@ -100,7 +100,7 @@ export function WithJazz(props: {
 
             done = nodeHandle.done;
         })().catch((e) => {
-            console.log("Failed to create browser node", e);
+            console.error("Failed to create browser node", e);
         });
 
         return () => {

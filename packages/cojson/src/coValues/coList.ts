@@ -133,10 +133,10 @@ export class CoListView<
                                     change.before.txIndex
                                 ]?.[change.before.changeIdx];
                             if (!beforeEntry) {
-                                console.error(
-                                    "Insertion before missing op " +
-                                        change.before
-                                );
+                                // console.error(
+                                //     "Insertion before missing op " +
+                                //         change.before
+                                // );
                                 continue;
                             }
                             beforeEntry.predecessors.splice(0, 0, {
@@ -156,9 +156,9 @@ export class CoListView<
                                     change.after.txIndex
                                 ]?.[change.after.changeIdx];
                             if (!afterEntry) {
-                                console.error(
-                                    "Insertion after missing op " + change.after
-                                );
+                                // console.error(
+                                //     "Insertion after missing op " + change.after
+                                // );
                                 continue;
                             }
                             afterEntry.successors.push({
@@ -564,6 +564,7 @@ export class MutableCoList<
         this.beforeEnd = listAfter.beforeEnd;
         this.insertions = listAfter.insertions;
         this.deletionsByInsertion = listAfter.deletionsByInsertion;
+        this._cachedEntries = undefined;
     }
 
     /** Prepends `item` before the item currently at index `before`.
@@ -589,6 +590,7 @@ export class MutableCoList<
         this.beforeEnd = listAfter.beforeEnd;
         this.insertions = listAfter.insertions;
         this.deletionsByInsertion = listAfter.deletionsByInsertion;
+        this._cachedEntries = undefined;
     }
 
     /** Deletes the item at index `at` from the list.
@@ -609,5 +611,6 @@ export class MutableCoList<
         this.beforeEnd = listAfter.beforeEnd;
         this.insertions = listAfter.insertions;
         this.deletionsByInsertion = listAfter.deletionsByInsertion;
+        this._cachedEntries = undefined;
     }
 }

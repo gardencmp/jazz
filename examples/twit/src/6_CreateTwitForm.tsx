@@ -18,7 +18,7 @@ export function CreateTwitForm(
 
   const onSubmit = useCallback(
     (twitText: string) => {
-      const audience = me.root?.peopleWhoCanSeeMyTwits;
+      const audience = me.root?.peopleWhoCanSeeMyContent;
       const interactors = me.root?.peopleWhoCanInteractWithMe;
       if (!audience || !interactors) return;
 
@@ -39,14 +39,16 @@ export function CreateTwitForm(
         twit.set({ isReplyTo: props.inReplyTo.id });
       }
 
-      Promise.all(pics.map(pic => createImage(pic, twit.group, 1024))).then(createdPics => {
-        twit.set({ images: audience.createList<ListOfImages>(createdPics.map(pic => pic.id)).id });
-      });
+      if (pics.length > 0) {
+        Promise.all(pics.map(pic => createImage(pic, twit.group, 1024))).then(createdPics => {
+          twit.set({ images: audience.createList<ListOfImages>(createdPics.map(pic => pic.id)).id });
+        });
+      }
 
       setPics([]);
       props.onSubmit?.();
     },
-    [me.profile?.twits, me.root?.peopleWhoCanSeeMyTwits, me.root?.peopleWhoCanInteractWithMe, props, pics]
+    [me.profile?.twits, me.root?.peopleWhoCanSeeMyContent, me.root?.peopleWhoCanInteractWithMe, props, pics, allTwits]
   );
 
   const [picPreviews, setPicPreviews] = React.useState<string[]>([]);

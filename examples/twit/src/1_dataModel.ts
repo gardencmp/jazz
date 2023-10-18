@@ -29,38 +29,30 @@ export type TwitProfile = Profile<
 >;
 
 export type TwitAccountRoot = CoMap<{
-  peopleWhoCanSeeMyTwits: Group['id'];
-  peopleWhoCanSeeMyFollows: Group['id'];
-  peopleWhoCanFollowMe: Group['id'];
+  peopleWhoCanSeeMyContent: Group['id'];
   peopleWhoCanInteractWithMe: Group['id'];
 }>;
 
-export const ALL_TWEETS_LIST_ID = "co_zXMevg2GxcvTRrbN1hAjLpoSNc8" as ListOfTwits['id'];
+export const ALL_TWEETS_LIST_ID = "co_zMxZ2fq96EvRTzQS4Jm1A7FXmS1" as ListOfTwits['id'];
 
 export const migration: AccountMigration<TwitProfile, TwitAccountRoot> = (account, profile) => {
   if (!account.get('root')) {
-    const peopleWhoCanSeeMyTwits = account.createGroup();
-    const peopleWhoCanSeeMyFollows = account.createGroup();
-    const peopleWhoCanFollowMe = account.createGroup();
+    const peopleWhoCanSeeMyContent = account.createGroup();
     const peopleWhoCanInteractWithMe = account.createGroup();
 
-    peopleWhoCanFollowMe?.addMember(EVERYONE, 'writer');
-    peopleWhoCanSeeMyTwits?.addMember(EVERYONE, 'reader');
-    peopleWhoCanSeeMyFollows?.addMember(EVERYONE, 'reader');
+    peopleWhoCanSeeMyContent?.addMember(EVERYONE, 'reader');
     peopleWhoCanInteractWithMe?.addMember(EVERYONE, 'writer');
 
     const root = account.createMap<TwitAccountRoot>({
-      peopleWhoCanSeeMyTwits: peopleWhoCanSeeMyTwits.id,
-      peopleWhoCanSeeMyFollows: peopleWhoCanSeeMyFollows.id,
-      peopleWhoCanFollowMe: peopleWhoCanFollowMe.id,
+      peopleWhoCanSeeMyContent: peopleWhoCanSeeMyContent.id,
       peopleWhoCanInteractWithMe: peopleWhoCanInteractWithMe.id
     });
 
     account.set('root', root.id);
 
-    profile.set('twits', peopleWhoCanSeeMyTwits.createList<ListOfTwits>().id, 'trusting');
-    profile.set('following', peopleWhoCanSeeMyFollows.createList<ListOfProfiles>().id, 'trusting');
-    profile.set('followers', peopleWhoCanFollowMe.createStream<StreamOfFollowers>().id, 'trusting');
+    profile.set('twits', peopleWhoCanSeeMyContent.createList<ListOfTwits>().id, 'trusting');
+    profile.set('following', peopleWhoCanSeeMyContent.createList<ListOfProfiles>().id, 'trusting');
+    profile.set('followers', peopleWhoCanInteractWithMe.createStream<StreamOfFollowers>().id, 'trusting');
     console.log('MIGRATION SUCCESSFUL!');
   }
 };

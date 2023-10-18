@@ -80,7 +80,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -92,7 +92,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -158,7 +158,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[1]!.madeAt,
                         changes: stableStringify([
                             {
@@ -170,7 +170,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -247,7 +247,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -259,7 +259,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -279,7 +279,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[1]!.madeAt,
                         changes: stableStringify([
                             {
@@ -291,7 +291,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -358,7 +358,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -370,7 +370,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -462,7 +462,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[1]!.madeAt,
                         changes: stableStringify([
                             {
@@ -474,7 +474,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -565,7 +565,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -577,7 +577,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);

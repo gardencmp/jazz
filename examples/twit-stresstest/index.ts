@@ -8,7 +8,7 @@ import {
     TwitAccountRoot,
     TwitProfile,
     migration,
-} from "./1_dataModel";
+} from "../twit/src/1_dataModel";
 import {
     websocketReadableStream,
     websocketWritableStream,
@@ -25,16 +25,6 @@ async function runner() {
     });
 
     const ws = new WebSocket("ws://localhost:4200");
-
-    // ws.on("message", (data) => {
-    //     console.log("Got", new TextDecoder().decode(data as ArrayBuffer));
-    // });
-
-    // const allTweetsGroup = (node.account as ControlledAccount).createGroup();
-    // allTweetsGroup.addMember('everyone', 'writer');
-
-    // const allTweets = allTweetsGroup.createList<ListOfTwits>();
-    // console.log("allTweets", allTweets.id);
 
     node.syncManager.addPeer({
         id: "globalMesh",
@@ -64,14 +54,18 @@ async function runner() {
         node,
         async (me) => {
             if (
-                !me?.root?.peopleWhoCanSeeMyTwits ||
+                !me?.root?.peopleWhoCanSeeMyContent ||
                 !me.root.peopleWhoCanInteractWithMe
             )
                 return;
             if (startedPosting) return;
             startedPosting = true;
             for (let i = 0; i < 10; i++) {
-                const audience = me.root.peopleWhoCanSeeMyTwits;
+                await new Promise((resolve) =>
+                    setTimeout(resolve, Math.random() * 240000)
+                    // setTimeout(resolve, Math.random() * 5000)
+                );
+                const audience = me.root.peopleWhoCanSeeMyContent;
                 const interactors = me.root.peopleWhoCanInteractWithMe;
                 if (!audience || !interactors) return;
 
@@ -86,16 +80,17 @@ async function runner() {
                 me.profile?.twits?.prepend(twit?.id as Twit["id"]);
 
                 allTwits = allTwits?.prepend(twit.id);
-                await new Promise((resolve) =>
-                    setTimeout(resolve, Math.random() * 5000)
-                );
             }
         }
     );
 
     let blackHole = 0;
 
+    let lastUpdate = Date.now()
+
     autoSub(ALL_TWEETS_LIST_ID, node, (allTwits) => {
+        if (Date.now() - lastUpdate < 33) return;
+        lastUpdate = Date.now();
         // console.log("All twits updated", new Date());
 
         // console.log(allTwits
@@ -120,6 +115,6 @@ async function runner() {
     });
 }
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 50; i++) {
     runner();
 }
