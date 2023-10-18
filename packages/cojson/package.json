@@ -5,7 +5,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.4.13",
+    "version": "0.5.0",
     "devDependencies": {
         "@noble/curves": "^1.2.0",
         "@types/jest": "^29.5.3",

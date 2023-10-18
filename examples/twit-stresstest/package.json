@@ -1,12 +1,12 @@
 {
   "name": "twit-stresstest",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "cojson": "^0.4.13",
-    "cojson-transport-nodejs-ws": "^0.4.13"
+    "cojson": "^0.5.0",
+    "cojson-transport-nodejs-ws": "^0.5.0"
   },
   "scripts": {
     "stress4": "npx concurrently \"bun --inspect index.ts\" \"bun index.ts\" \"bun index.ts\" \"bun index.ts\"",
