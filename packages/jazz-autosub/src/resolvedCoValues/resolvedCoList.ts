@@ -47,26 +47,21 @@ export class ResolvedCoList<L extends CoList> extends Array<
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return new Array(coList) as any;
         }
-        super(
+        super();
 
-        );
-
-        coList
-        .asArray()
-        .forEach(
-            (item, idx) => {
-                Object.defineProperty(this, idx, {
-                    get: () => {
-                        return autoSubContext.subscribeIfCoID(item, [
-                            coList.id,
-                        ], "idx_" + idx) as ValueOrResolvedRef<L["_item"]>
-                    },
-                    enumerable: true,
-                    configurable: true,
-                });
-            }
-
-        )
+        coList.asArray().forEach((item, idx) => {
+            Object.defineProperty(this, idx, {
+                get: () => {
+                    return autoSubContext.subscribeIfCoID(
+                        item,
+                        [coList.id],
+                        "idx_" + idx
+                    ) as ValueOrResolvedRef<L["_item"]>;
+                },
+                enumerable: true,
+                configurable: true,
+            });
+        });
 
         Object.defineProperties(this, {
             id: { value: coList.id, enumerable: false },
@@ -109,8 +104,49 @@ export class ResolvedCoList<L extends CoList> extends Array<
                 } satisfies ResolvedCoListMeta<L>,
                 enumerable: false,
             },
+            mapDeferred: {
+                value: <O>(
+                    mapper: (
+                        item: {
+                            loaded: boolean;
+                            id: L["_item"];
+                            value(): ValueOrResolvedRef<L["_item"]>;
+                        },
+                        idx: number
+                    ) => O
+                ): O[] => {
+                    return coList.asArray().map((id, idx) => {
+                        return mapper(
+                            {
+                                loaded: typeof id === "string" && !!autoSubContext.values[id as CoID<CoValue>]?.lastLoaded,
+                                id,
+                                value: () => {
+                                    return autoSubContext.subscribeIfCoID(
+                                        id,
+                                        [coList.id],
+                                        "deferredIdx_" + idx
+                                    ) as ValueOrResolvedRef<L["_item"]>
+                                }
+                            },
+                            idx
+                        );
+                    });
+                },
+                enumerable: false,
+            },
         });
     }
+
+    mapDeferred!: <O>(
+        mapper: (
+            item: {
+                loaded: boolean;
+                id: L["_item"] extends CoID<CoValue> ? L["_item"] : never;
+                value(): ValueOrResolvedRef<L["_item"]>;
+            },
+            idx: number
+        ) => O
+    ) => O[];
 
     append(
         item: L["_item"],
@@ -200,7 +236,9 @@ export class ResolvedCoList<L extends CoList> extends Array<
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     concat(..._items: any[]): ValueOrResolvedRef<L["_item"]>[] {
-        throw new Error("Array method 'concat' not supported on ResolvedCoList");
+        throw new Error(
+            "Array method 'concat' not supported on ResolvedCoList"
+        );
     }
 
     /** @internal */
@@ -232,7 +270,9 @@ export class ResolvedCoList<L extends CoList> extends Array<
         _start: number,
         _deleteCount?: number | undefined
     ): ValueOrResolvedRef<L["_item"]>[] {
-        throw new Error("Array method 'splice' not supported on ResolvedCoList");
+        throw new Error(
+            "Array method 'splice' not supported on ResolvedCoList"
+        );
     }
 
     /** @internal */

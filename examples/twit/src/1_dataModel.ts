@@ -33,7 +33,7 @@ export type TwitAccountRoot = CoMap<{
   peopleWhoCanInteractWithMe: Group['id'];
 }>;
 
-export const ALL_TWEETS_LIST_ID = "co_zMxZ2fq96EvRTzQS4Jm1A7FXmS1" as ListOfTwits['id'];
+export const ALL_TWEETS_LIST_ID = "co_zAaZZBUGKhkxLuk3Wq1r9q16FSN" as ListOfTwits['id'];
 
 export const migration: AccountMigration<TwitProfile, TwitAccountRoot> = (account, profile) => {
   if (!account.get('root')) {

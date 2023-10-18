@@ -1743,6 +1743,26 @@ TODO: document
 
 
 <details>
+<summary><b><code>.mapDeferred</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  mapDeferred: (mapper: (item: {
+    loaded: boolean,
+    id: L["_item"] extends CoID<CoValue> ? any[any] : never,
+    value((): ValueOrResolvedRef<L["_item"]>,
+  }, idx: number) => O) => O[]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
 <summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
 
 ```typescript
@@ -2733,7 +2753,7 @@ class LocalNode {
   load<T extends CoValue>(
     id: CoID<T>,
     onProgress?: (progress: number) => void
-  ): Promise<T> {...}
+  ): Promise<"unavailable" | T> {...}
 
 }
 ```
@@ -2762,7 +2782,7 @@ class LocalNode {
 
   subscribe<T extends CoValue>(
     id: CoID<T>,
-    callback: (update: T) => void
+    callback: (update: "unavailable" | T) => void
   ): () => void {...}
 
 }
@@ -2821,6 +2841,32 @@ class LocalNode {
 
 
 
+
+
+
+<details>
+<summary><b><code>.resolveAccountAgentAsync(id, expectation?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class LocalNode {
+
+  resolveAccountAgentAsync(
+    id: AgentID | AccountID,
+    expectation?: string
+  ): Promise<AgentID> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `expectation?` | TODO: document  |
+
+</details>
 
 
 
@@ -4996,6 +5042,10 @@ class CoList<Item, Meta> {
 
 
 
+
+
+
+
 ----
 
 ## `MutableCoList`
@@ -5386,6 +5436,10 @@ The `Group` this `CoValue` belongs to (determining permissions)
 <br/>
 
 ### `MutableCoList`: Other
+
+
+
+
 
 
 
@@ -8916,13 +8970,12 @@ TODO: document
 ### `CoValueCore`: Accessors
 
 <details>
-<summary><b><code>.sessions</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.sessionLogs</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  get sessions(): Readonly<{
-    [key: SessionID]: SessionLog }> {...}
+  get sessionLogs(): Map<SessionID, SessionLog> {...}
 
 }
 ```
@@ -8959,8 +9012,7 @@ class CoValueCore {
   constructor(
     header: CoValueHeader,
     node: LocalNode,
-    internalInitSessions?: {
-      [key: SessionID]: SessionLog } = {}
+    internalInitSessions?: Map<SessionID, SessionLog> = ...
   ): CoValueCore {...}
 
 }
@@ -8973,7 +9025,7 @@ TODO: document
 | ----: | ---- |
 | `header` | TODO: document  |
 | `node` | TODO: document  |
-
+| `internalInitSessions?` | TODO: document  |
 
 </details>
 
@@ -9020,6 +9072,8 @@ class CoValueCore {
 TODO: document
 
 undefined</details>
+
+
 
 
 
@@ -9437,6 +9491,8 @@ TODO: document
 
 undefined</details>
 
+
+
 <br/>
 
 ### `CoValueCore`: Properties
@@ -9490,13 +9546,12 @@ TODO: document
 
 
 <details>
-<summary><b><code>._sessions</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._sessionLogs</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class CoValueCore {
 
-  _sessions: {
-    [key: SessionID]: SessionLog }
+  _sessionLogs: Map<SessionID, SessionLog>
 
 }
 ```
@@ -9546,6 +9601,70 @@ TODO: document
 class CoValueCore {
 
   _cachedContent: CoValue
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.currentlyAsyncApplyingTxDone</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class CoValueCore {
+
+  currentlyAsyncApplyingTxDone: Promise<void>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>._cachedKnownState</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class CoValueCore {
+
+  _cachedKnownState: CoValueKnownState
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>._cachedDependentOn</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class CoValueCore {
+
+  _cachedDependentOn: `co_z${string}`[]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>._cachedNewContentSinceEmpty</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class CoValueCore {
+
+  _cachedNewContentSinceEmpty: NewContentMessage[]
 
 }
 ```
@@ -9848,6 +9967,22 @@ TODO: document
 interface Peer {
 
   delayOnError: number
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.priority</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Peer {
+
+  priority: number
 
 }
 ```
@@ -11646,6 +11781,26 @@ TODO: document
 
 
 <details>
+<summary><b><code>.mapDeferred</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  mapDeferred: (mapper: (item: {
+    loaded: boolean,
+    id: L["_item"] extends CoID<CoValue> ? any[any] : never,
+    value((): ValueOrResolvedRef<L["_item"]>,
+  }, idx: number) => O) => O[]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
 <summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
 
 ```typescript
@@ -12650,14 +12805,15 @@ TODO: document
 ### `AutoSubContext`: Methods
 
 <details>
-<summary><b><code>.autoSub(valueID, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.autoSub(valueID, alsoRender, _path)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class AutoSubContext {
 
   autoSub<T extends CoValue>(
     valueID: CoID<T>,
-    alsoRender: CoID<CoValue>[]
+    alsoRender: CoID<CoValue>[],
+    _path: string
   ): undefined | Resolved<T> {...}
 
 }
@@ -12670,20 +12826,22 @@ TODO: document
 | ----: | ---- |
 | `valueID` | TODO: document  |
 | `alsoRender` | TODO: document  |
+| `_path` | TODO: document  |
 
 </details>
 
 
 
 <details>
-<summary><b><code>.subscribeIfCoID(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.subscribeIfCoID(value, alsoRender, path)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class AutoSubContext {
 
   subscribeIfCoID<T extends undefined | JsonValue>(
     value: T,
-    alsoRender: CoID<CoValue>[]
+    alsoRender: CoID<CoValue>[],
+    path: string
   ): T extends CoID<C> ? undefined | Resolved<C> : T {...}
 
 }
@@ -12696,20 +12854,22 @@ TODO: document
 | ----: | ---- |
 | `value` | TODO: document  |
 | `alsoRender` | TODO: document  |
+| `path` | TODO: document  |
 
 </details>
 
 
 
 <details>
-<summary><b><code>.valueOrResolvedRefPropertyDescriptor(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.valueOrResolvedRefPropertyDescriptor(value, alsoRender, path)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class AutoSubContext {
 
   valueOrResolvedRefPropertyDescriptor<T extends undefined | JsonValue>(
     value: T,
-    alsoRender: CoID<CoValue>[]
+    alsoRender: CoID<CoValue>[],
+    path: string
   ): T extends CoID<C>
     ? {
       get((): undefined | Resolved<C>,
@@ -12728,6 +12888,7 @@ TODO: document
 | ----: | ---- |
 | `value` | TODO: document  |
 | `alsoRender` | TODO: document  |
+| `path` | TODO: document  |
 
 </details>
 
@@ -14484,6 +14645,26 @@ TODO: document
 
 
 <details>
+<summary><b><code>.mapDeferred</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class ResolvedCoList<L> {
+
+  mapDeferred: (mapper: (item: {
+    loaded: boolean,
+    id: L["_item"] extends CoID<CoValue> ? any[any] : never,
+    value((): ValueOrResolvedRef<L["_item"]>,
+  }, idx: number) => O) => O[]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
 <summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
 
 ```typescript
@@ -15488,14 +15669,15 @@ TODO: document
 ### `AutoSubContext`: Methods
 
 <details>
-<summary><b><code>.autoSub(valueID, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.autoSub(valueID, alsoRender, _path)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class AutoSubContext {
 
   autoSub<T extends CoValue>(
     valueID: CoID<T>,
-    alsoRender: CoID<CoValue>[]
+    alsoRender: CoID<CoValue>[],
+    _path: string
   ): undefined | Resolved<T> {...}
 
 }
@@ -15508,20 +15690,22 @@ TODO: document
 | ----: | ---- |
 | `valueID` | TODO: document  |
 | `alsoRender` | TODO: document  |
+| `_path` | TODO: document  |
 
 </details>
 
 
 
 <details>
-<summary><b><code>.subscribeIfCoID(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.subscribeIfCoID(value, alsoRender, path)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class AutoSubContext {
 
   subscribeIfCoID<T extends undefined | JsonValue>(
     value: T,
-    alsoRender: CoID<CoValue>[]
+    alsoRender: CoID<CoValue>[],
+    path: string
   ): T extends CoID<C> ? undefined | Resolved<C> : T {...}
 
 }
@@ -15534,20 +15718,22 @@ TODO: document
 | ----: | ---- |
 | `value` | TODO: document  |
 | `alsoRender` | TODO: document  |
+| `path` | TODO: document  |
 
 </details>
 
 
 
 <details>
-<summary><b><code>.valueOrResolvedRefPropertyDescriptor(value, alsoRender)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.valueOrResolvedRefPropertyDescriptor(value, alsoRender, path)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 class AutoSubContext {
 
   valueOrResolvedRefPropertyDescriptor<T extends undefined | JsonValue>(
     value: T,
-    alsoRender: CoID<CoValue>[]
+    alsoRender: CoID<CoValue>[],
+    path: string
   ): T extends CoID<C>
     ? {
       get((): undefined | Resolved<C>,
@@ -15566,6 +15752,7 @@ TODO: document
 | ----: | ---- |
 | `value` | TODO: document  |
 | `alsoRender` | TODO: document  |
+| `path` | TODO: document  |
 
 </details>
 

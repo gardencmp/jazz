@@ -62,7 +62,7 @@ async function runner() {
             startedPosting = true;
             for (let i = 0; i < 10; i++) {
                 await new Promise((resolve) =>
-                    setTimeout(resolve, Math.random() * 240000)
+                    setTimeout(resolve, Math.random() * 120000)
                     // setTimeout(resolve, Math.random() * 5000)
                 );
                 const audience = me.root.peopleWhoCanSeeMyContent;

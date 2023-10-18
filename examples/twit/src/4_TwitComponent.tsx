@@ -50,7 +50,7 @@ export function TwitComponent({
             {posterProfile ? <Link to={'/' + posterProfile.id} className="font-bold hover:underline">
               {posterProfile.name}
             </Link> : <Placeholder/>}
-            <div className='ml-2 text-xs text-neutral-200 dark:text-neutral-800'>{twit?.id}</div>
+            {/* <div className='ml-2 text-xs text-neutral-200 dark:text-neutral-800'>{twit?.id}</div> */}
             <SubtleRelativeTimeAgo dateTime={twit?.meta.edits.text?.at} />
           </TwitHeader>
 

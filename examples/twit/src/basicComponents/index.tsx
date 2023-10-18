@@ -102,7 +102,7 @@ export function ProfilePicImg(props: { src?: string; size?: 'sm' | 'xxl'; linkTo
 export function SubtleRelativeTimeAgo(props: { dateTime?: Date }) {
   return (
     <div className="ml-auto text-neutral-300 text-xs whitespace-nowrap">
-      {props.dateTime ? <ReactTimeAgo date={props.dateTime} /> : <Placeholder />}
+      {props.dateTime ? <ReactTimeAgo date={props.dateTime} timeStyle="round"/> : <Placeholder />}
     </div>
   );
 }
@@ -226,7 +226,7 @@ export function QuoteContainer(props: { children: React.ReactNode }) {
 }
 
 export function MainH1(props: { children: React.ReactNode }) {
-  return <h1 className="text-2xl mb-4">{props.children}</h1>;
+  return <h1 className="text-2xl mb-4 sticky top-0 p-4 -mx-4 bg-white dark:bg-black z-20">{props.children}</h1>;
 }
 
 export function SmallInlineButton(props: { children: React.ReactNode } & ButtonProps) {
@@ -246,20 +246,20 @@ export function Placeholder() {
   );
 }
 
-export function LazyLoadRow(props: { children: React.ReactNode }) {
-  const { ref, inView, entry } = useInView({
+export function LazyLoadRow(props: { children: () => React.ReactNode, animate?: boolean }) {
+  const { ref, inView } = useInView({
     // triggerOnce: true,
-    delay: 100
+    delay: 100,
   });
-  const [height, setHeight] = useState("0");
+  const [height, setHeight] = useState(props.animate ? "0": "500px");
   useEffect(() => {
     setHeight("500px")
   },[])
   return (
     <div ref={ref} style={{
       maxHeight: height,
-      overflowX: inView ? "scroll" : "hidden",
+      overflowX: "scroll",
       transition: 'max-height 1s ease-in-out',
-    }}>{inView ? props.children : <div className="mb-[1px] h-20 bg-neutral-50 dark:bg-neutral-950" />}</div>
+    }}>{inView ? props.children() : <div className="mb-[1px] h-28 bg-neutral-50 dark:bg-neutral-950" />}</div>
   );
 }
