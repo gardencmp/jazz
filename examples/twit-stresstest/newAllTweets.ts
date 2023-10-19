@@ -16,7 +16,7 @@ const { node } = await LocalNode.withNewlyCreatedAccount({
     migration,
 });
 
-const ws = new WebSocket("ws://localhost:4200");
+const ws = new WebSocket("wss://sync.jazz.tools");
 
 const allTweetsGroup = (node.account as ControlledAccount).createGroup();
 allTweetsGroup.addMember('everyone', 'writer');
