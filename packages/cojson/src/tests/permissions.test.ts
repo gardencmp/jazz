@@ -1,6 +1,6 @@
 import { newRandomSessionID } from "../coValueCore.js";
 import { expectMap } from "../coValue.js";
-import { Group, expectGroup } from "../coValues/group.js";
+import { Group } from "../coValues/group.js";
 import {
     createdNowUnique,
     newRandomKeySecret,
@@ -18,6 +18,7 @@ import {
     groupWithTwoAdminsHighLevel,
 } from "./testUtils.js";
 import { AnonymousControlledAccount, cojsonReady } from "../index.js";
+import { expectGroup } from "../typeUtils/expectGroup.js";
 
 beforeEach(async () => {
     await cojsonReady;
@@ -34,10 +35,14 @@ test("Initial admin can add another admin to a group (high level)", () => {
 test("Added admin can add a third admin to a group", () => {
     const { groupCore, otherAdmin, node } = groupWithTwoAdmins();
 
-    let groupAsOtherAdmin = expectGroup(groupCore.testWithDifferentAccount(
-        otherAdmin,
-        newRandomSessionID(otherAdmin.id)
-    ).getCurrentContent());
+    let groupAsOtherAdmin = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                otherAdmin,
+                newRandomSessionID(otherAdmin.id)
+            )
+            .getCurrentContent()
+    );
 
     expect(groupAsOtherAdmin.get(otherAdmin.id)).toEqual("admin");
 
@@ -54,10 +59,14 @@ test("Added admin can add a third admin to a group", () => {
 test("Added adming can add a third admin to a group (high level)", () => {
     const { group, otherAdmin, node } = groupWithTwoAdminsHighLevel();
 
-    let groupAsOtherAdmin = expectGroup(group.core.testWithDifferentAccount(
-        otherAdmin,
-        newRandomSessionID(otherAdmin.id)
-    ).getCurrentContent());
+    let groupAsOtherAdmin = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                otherAdmin,
+                newRandomSessionID(otherAdmin.id)
+            )
+            .getCurrentContent()
+    );
 
     const thirdAdmin = groupAsOtherAdmin.core.node.createAccount("thirdAdmin");
 
@@ -78,10 +87,14 @@ test("Admins can't demote other admins in a group", () => {
 
     expect(groupContent.get(otherAdmin.id)).toEqual("admin");
 
-    let groupAsOtherAdmin = expectGroup(groupCore.testWithDifferentAccount(
-        otherAdmin,
-        newRandomSessionID(otherAdmin.id)
-    ).getCurrentContent());
+    let groupAsOtherAdmin = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                otherAdmin,
+                newRandomSessionID(otherAdmin.id)
+            )
+            .getCurrentContent()
+    );
 
     groupAsOtherAdmin = groupAsOtherAdmin.edit((editable) => {
         editable.set(admin.id, "writer", "trusting");
@@ -94,10 +107,14 @@ test("Admins can't demote other admins in a group", () => {
 test("Admins can't demote other admins in a group (high level)", () => {
     const { group, admin, otherAdmin } = groupWithTwoAdminsHighLevel();
 
-    const groupAsOtherAdmin = expectGroup(group.core.testWithDifferentAccount(
-        otherAdmin,
-        newRandomSessionID(otherAdmin.id)
-    ).getCurrentContent());
+    const groupAsOtherAdmin = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                otherAdmin,
+                newRandomSessionID(otherAdmin.id)
+            )
+            .getCurrentContent()
+    );
 
     expect(() =>
         groupAsOtherAdmin.addMemberInternal(admin.id, "writer")
@@ -120,11 +137,11 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
     groupContent = expectGroup(groupCore.getCurrentContent());
     expect(groupContent.get(writer.id)).toEqual("writer");
 
-    let groupAsWriter = expectGroup(groupCore.testWithDifferentAccount(
-        writer,
-        newRandomSessionID(writer.id)
-    ).getCurrentContent());
-
+    let groupAsWriter = expectGroup(
+        groupCore
+            .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
+            .getCurrentContent()
+    );
 
     expect(groupAsWriter.get(writer.id)).toEqual("writer");
 
@@ -152,10 +169,11 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
     group = group.addMember(writer.id, "writer");
     expect(group.get(writer.id)).toEqual("writer");
 
-    const groupAsWriter = expectGroup(group.core.testWithDifferentAccount(
-        writer,
-        newRandomSessionID(writer.id)
-    ).getCurrentContent());
+    const groupAsWriter = expectGroup(
+        group.core
+            .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
+            .getCurrentContent()
+    );
 
     expect(groupAsWriter.get(writer.id)).toEqual("writer");
 
@@ -188,10 +206,11 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
     groupContent = expectGroup(groupCore.getCurrentContent());
     expect(groupContent.get(reader.id)).toEqual("reader");
 
-    let groupAsReader = expectGroup(groupCore.testWithDifferentAccount(
-        reader,
-        newRandomSessionID(reader.id)
-    ).getCurrentContent());
+    let groupAsReader = expectGroup(
+        groupCore
+            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .getCurrentContent()
+    );
 
     expect(groupAsReader.get(reader.id)).toEqual("reader");
 
@@ -219,10 +238,11 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
     group = group.addMember(reader.id, "reader");
     expect(group.get(reader.id)).toEqual("reader");
 
-    const groupAsReader = expectGroup(group.core.testWithDifferentAccount(
-        reader,
-        newRandomSessionID(reader.id)
-    ).getCurrentContent());
+    const groupAsReader = expectGroup(
+        group.core
+            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .getCurrentContent()
+    );
 
     expect(groupAsReader.get(reader.id)).toEqual("reader");
 
@@ -1291,10 +1311,14 @@ test("Admins can create an adminInvite, which can add an admin", () => {
         );
     });
 
-    const groupAsInvite = expectGroup(groupCore.testWithDifferentAccount(
-        new AnonymousControlledAccount(inviteSecret),
-        newRandomSessionID(inviteID)
-    ).getCurrentContent());
+    const groupAsInvite = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(inviteSecret),
+                newRandomSessionID(inviteID)
+            )
+            .getCurrentContent()
+    );
 
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
@@ -1349,19 +1373,19 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
     const thirdAdminID = getAgentID(thirdAdmin);
 
     let groupAsInvitedAdmin = await nodeAsInvitedAdmin.load(group.id);
+    if (groupAsInvitedAdmin === "unavailable") {
+        throw new Error("groupAsInvitedAdmin is unavailable");
+    }
 
-    expect(groupAsInvitedAdmin.get(invitedAdminID)).toEqual(
+    expect(groupAsInvitedAdmin.get(invitedAdminID)).toEqual("admin");
+    expect(groupAsInvitedAdmin.core.getCurrentReadKey().secret).toBeDefined();
+
+    groupAsInvitedAdmin = groupAsInvitedAdmin.addMemberInternal(
+        thirdAdminID,
         "admin"
     );
-    expect(
-        groupAsInvitedAdmin.core.getCurrentReadKey().secret
-    ).toBeDefined();
 
-    groupAsInvitedAdmin = groupAsInvitedAdmin.addMemberInternal(thirdAdminID, "admin");
-
-    expect(groupAsInvitedAdmin.get(thirdAdminID)).toEqual(
-        "admin"
-    );
+    expect(groupAsInvitedAdmin.get(thirdAdminID)).toEqual("admin");
 });
 
 test("Admins can create a writerInvite, which can add a writer", () => {
@@ -1406,10 +1430,14 @@ test("Admins can create a writerInvite, which can add a writer", () => {
         );
     });
 
-    const groupAsInvite = expectGroup(groupCore.testWithDifferentAccount(
-        new AnonymousControlledAccount(inviteSecret),
-        newRandomSessionID(inviteID)
-    ).getCurrentContent());
+    const groupAsInvite = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(inviteSecret),
+                newRandomSessionID(inviteID)
+            )
+            .getCurrentContent()
+    );
 
     const invitedWriterSecret = newRandomAgentSecret();
     const invitedWriterID = getAgentID(invitedWriterSecret);
@@ -1461,13 +1489,12 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
     await nodeAsInvitedWriter.acceptInvite(group.id, inviteSecret);
 
     const groupAsInvitedWriter = await nodeAsInvitedWriter.load(group.id);
+    if (groupAsInvitedWriter === "unavailable") {
+        throw new Error("groupAsInvitedAdmin is unavailable");
+    }
 
-    expect(groupAsInvitedWriter.get(invitedWriterID)).toEqual(
-        "writer"
-    );
-    expect(
-        groupAsInvitedWriter.core.getCurrentReadKey().secret
-    ).toBeDefined();
+    expect(groupAsInvitedWriter.get(invitedWriterID)).toEqual("writer");
+    expect(groupAsInvitedWriter.core.getCurrentReadKey().secret).toBeDefined();
 });
 
 test("Admins can create a readerInvite, which can add a reader", () => {
@@ -1512,10 +1539,14 @@ test("Admins can create a readerInvite, which can add a reader", () => {
         );
     });
 
-    const groupAsInvite = expectGroup(groupCore.testWithDifferentAccount(
-        new AnonymousControlledAccount(inviteSecret),
-        newRandomSessionID(inviteID)
-    ).getCurrentContent());
+    const groupAsInvite = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(inviteSecret),
+                newRandomSessionID(inviteID)
+            )
+            .getCurrentContent()
+    );
 
     const invitedReaderSecret = newRandomAgentSecret();
     const invitedReaderID = getAgentID(invitedReaderSecret);
@@ -1566,15 +1597,13 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
 
     await nodeAsInvitedReader.acceptInvite(group.id, inviteSecret);
 
-    const groupAsInvitedReader =
-        await nodeAsInvitedReader.load(group.id);
+    const groupAsInvitedReader = await nodeAsInvitedReader.load(group.id);
+    if (groupAsInvitedReader === "unavailable") {
+        throw new Error("groupAsInvitedAdmin is unavailable");
+    }
 
-    expect(groupAsInvitedReader.get(invitedReaderID)).toEqual(
-        "reader"
-    );
-    expect(
-        groupAsInvitedReader.core.getCurrentReadKey().secret
-    ).toBeDefined();
+    expect(groupAsInvitedReader.get(invitedReaderID)).toEqual("reader");
+    expect(groupAsInvitedReader.core.getCurrentReadKey().secret).toBeDefined();
 });
 
 test("WriterInvites can not invite admins", () => {
@@ -1619,10 +1648,14 @@ test("WriterInvites can not invite admins", () => {
         );
     });
 
-    const groupAsInvite = expectGroup(groupCore.testWithDifferentAccount(
-        new AnonymousControlledAccount(inviteSecret),
-        newRandomSessionID(inviteID)
-    ).getCurrentContent());
+    const groupAsInvite = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(inviteSecret),
+                newRandomSessionID(inviteID)
+            )
+            .getCurrentContent()
+    );
 
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
@@ -1675,10 +1708,14 @@ test("ReaderInvites can not invite admins", () => {
         );
     });
 
-    const groupAsInvite = expectGroup(groupCore.testWithDifferentAccount(
-        new AnonymousControlledAccount(inviteSecret),
-        newRandomSessionID(inviteID)
-    ).getCurrentContent());
+    const groupAsInvite = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(inviteSecret),
+                newRandomSessionID(inviteID)
+            )
+            .getCurrentContent()
+    );
 
     const invitedAdminSecret = newRandomAgentSecret();
     const invitedAdminID = getAgentID(invitedAdminSecret);
@@ -1731,10 +1768,14 @@ test("ReaderInvites can not invite writers", () => {
         );
     });
 
-    const groupAsInvite = expectGroup(groupCore.testWithDifferentAccount(
-        new AnonymousControlledAccount(inviteSecret),
-        newRandomSessionID(inviteID)
-    ).getCurrentContent());
+    const groupAsInvite = expectGroup(
+        groupCore
+            .testWithDifferentAccount(
+                new AnonymousControlledAccount(inviteSecret),
+                newRandomSessionID(inviteID)
+            )
+            .getCurrentContent()
+    );
 
     const invitedWriterSecret = newRandomAgentSecret();
     const invitedWriterID = getAgentID(invitedWriterSecret);
@@ -1886,7 +1927,7 @@ test("Can give write permissions to 'everyone' (high-level)", async () => {
     expect(childContent2.get("foo")).toEqual("bar");
 
     childContent2.edit((editable) => {
-        console.log("Before anon set")
+        console.log("Before anon set");
         editable.set("foo", "bar2", "private");
         expect(editable.get("foo")).toEqual("bar2");
     });

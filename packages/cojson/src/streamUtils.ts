@@ -18,11 +18,11 @@ export function connectedPeers(
         peer2role?: Peer["role"];
     } = {}
 ): [Peer, Peer] {
-    const [inRx1, inTx1] = newStreamPair<SyncMessage>();
-    const [outRx1, outTx1] = newStreamPair<SyncMessage>();
+    const [inRx1, inTx1] = newStreamPair<SyncMessage>(peer1id + "_in");
+    const [outRx1, outTx1] = newStreamPair<SyncMessage>(peer1id + "_out");
 
-    const [inRx2, inTx2] = newStreamPair<SyncMessage>();
-    const [outRx2, outTx2] = newStreamPair<SyncMessage>();
+    const [inRx2, inTx2] = newStreamPair<SyncMessage>(peer2id + "_in");
+    const [outRx2, outTx2] = newStreamPair<SyncMessage>(peer2id + "_out");
 
     void outRx2
         .pipeThrough(
@@ -37,7 +37,7 @@ export function connectedPeers(
                             JSON.stringify(
                                 chunk,
                                 (k, v) =>
-                                    (k === "changes" || k === "encryptedChanges")
+                                    k === "changes" || k === "encryptedChanges"
                                         ? v.slice(0, 20) + "..."
                                         : v,
                                 2
@@ -62,7 +62,7 @@ export function connectedPeers(
                             JSON.stringify(
                                 chunk,
                                 (k, v) =>
-                                    (k === "changes" || k === "encryptedChanges")
+                                    k === "changes" || k === "encryptedChanges"
                                         ? v.slice(0, 20) + "..."
                                         : v,
                                 2
@@ -91,7 +91,10 @@ export function connectedPeers(
     return [peer1AsPeer, peer2AsPeer];
 }
 
-export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
+export function newStreamPair<T>(
+    pairName?: string
+): [ReadableStream<T>, WritableStream<T>] {
+    let queueLength = 0;
     let readerClosed = false;
 
     let resolveEnqueue: (enqueue: (item: T) => void) => void;
@@ -104,6 +107,22 @@ export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
         resolveClose = resolve;
     });
 
+    let queueWasOverflowing = false;
+
+    function maybeReportQueueLength() {
+        if (queueLength >= 100) {
+            queueWasOverflowing = true;
+            if (queueLength % 100 === 0) {
+                console.warn(pairName, "overflowing queue length", queueLength);
+            }
+        } else {
+            if (queueWasOverflowing) {
+                console.debug(pairName, "ok queue length", queueLength);
+                queueWasOverflowing = false;
+            }
+        }
+    }
+
     const readable = new ReadableStream<T>({
         async start(controller) {
             resolveEnqueue(controller.enqueue.bind(controller));
@@ -114,12 +133,26 @@ export function newStreamPair<T>(): [ReadableStream<T>, WritableStream<T>] {
             console.log("Manually closing reader");
             readerClosed = true;
         },
-    });
+    }).pipeThrough(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        new TransformStream<any, any>({
+            transform(
+                chunk: SyncMessage,
+                controller: { enqueue: (msg: SyncMessage) => void }
+            ) {
+                queueLength -= 1;
+                maybeReportQueueLength();
+                controller.enqueue(chunk);
+            },
+        })
+    ) as ReadableStream<T>;
 
     let lastWritePromise = Promise.resolve();
 
     const writable = new WritableStream<T>({
         async write(chunk) {
+            queueLength += 1;
+            maybeReportQueueLength();
             const enqueue = await enqueuePromise;
             if (readerClosed) {
                 throw new Error("Reader closed");

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
-import { Resolved, useJazz } from 'jazz-react';
+import { Resolved, useJazz, useSyncedValue } from 'jazz-react';
 import { AddTwitPicsInput, TwitImg, TwitTextInput } from './basicComponents/index.tsx';
-import { LikeStream, ListOfImages, ReplyStream, Twit, TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
+import { ALL_TWEETS_LIST_ID, LikeStream, ListOfImages, ReplyStream, Twit, TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
 import { createImage } from 'jazz-browser-media-images';
 
 export function CreateTwitForm(
@@ -12,12 +12,13 @@ export function CreateTwitForm(
   } = {}
 ) {
   const { me } = useJazz<TwitProfile, TwitAccountRoot>();
+  const allTwits = useSyncedValue(ALL_TWEETS_LIST_ID);
 
   const [pics, setPics] = React.useState<File[]>([]);
 
   const onSubmit = useCallback(
     (twitText: string) => {
-      const audience = me.root?.peopleWhoCanSeeMyTwits;
+      const audience = me.root?.peopleWhoCanSeeMyContent;
       const interactors = me.root?.peopleWhoCanInteractWithMe;
       if (!audience || !interactors) return;
 
@@ -29,19 +30,25 @@ export function CreateTwitForm(
 
       me.profile?.twits?.prepend(twit?.id as Twit['id']);
 
+      if (!props.inReplyTo) {
+        allTwits?.prepend(twit.id);
+      }
+
       if (props.inReplyTo) {
         props.inReplyTo.replies?.push(twit.id);
         twit.set({ isReplyTo: props.inReplyTo.id });
       }
 
-      Promise.all(pics.map(pic => createImage(pic, twit.group, 1024))).then(createdPics => {
-        twit.set({ images: audience.createList<ListOfImages>(createdPics.map(pic => pic.id)).id });
-      });
+      if (pics.length > 0) {
+        Promise.all(pics.map(pic => createImage(pic, twit.group, 1024))).then(createdPics => {
+          twit.set({ images: audience.createList<ListOfImages>(createdPics.map(pic => pic.id)).id });
+        });
+      }
 
       setPics([]);
       props.onSubmit?.();
     },
-    [me.profile?.twits, me.root?.peopleWhoCanSeeMyTwits, me.root?.peopleWhoCanInteractWithMe, props, pics]
+    [me.profile?.twits, me.root?.peopleWhoCanSeeMyContent, me.root?.peopleWhoCanInteractWithMe, props, pics, allTwits]
   );
 
   const [picPreviews, setPicPreviews] = React.useState<string[]>([]);

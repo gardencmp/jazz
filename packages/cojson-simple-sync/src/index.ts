@@ -1,4 +1,4 @@
-import { AnonymousControlledAccount, LocalNode, cojsonInternals } from "cojson";
+import { AnonymousControlledAccount, LocalNode, cojsonInternals, cojsonReady } from "cojson";
 import { WebSocketServer } from "ws";
 import { SQLiteStorage } from "cojson-storage-sqlite";
 import { websocketReadableStream, websocketWritableStream } from "./websocketStreams.js";
@@ -6,6 +6,10 @@ import { websocketReadableStream, websocketWritableStream } from "./websocketStr
 const wss = new WebSocketServer({ port: 4200 });
 
 console.log("COJSON sync server listening on port " + wss.options.port);
+
+await cojsonReady;
+import { webcrypto } from 'node:crypto'
+(globalThis as any).crypto = webcrypto
 
 const agentSecret = cojsonInternals.newRandomAgentSecret();
 const agentID = cojsonInternals.getAgentID(agentSecret);
@@ -39,7 +43,7 @@ wss.on("connection", function connection(ws, req) {
             ?.split(",")[0]
             ?.trim() || req.socket.remoteAddress;
 
-    const clientId = clientAddress + "@" + new Date().toISOString();
+    const clientId = clientAddress + "@" + new Date().toISOString() + Math.random().toString(36).slice(2);
 
     localNode.syncManager.addPeer({
         id: clientId,

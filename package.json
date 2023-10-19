@@ -5,7 +5,9 @@
     "packages/*",
     "examples/*"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@changesets/cli": "^2.26.2"
+  },
   "devDependencies": {
     "lerna": "^7.1.5",
     "ts-node": "^10.9.1",

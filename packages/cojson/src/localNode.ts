@@ -19,7 +19,7 @@ import {
     Group,
     secretSeedFromInviteSecret,
 } from "./coValues/group.js";
-import { Peer, SyncManager } from "./sync.js";
+import { Peer, PeerID, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID } from "./coValue.js";
 import {
@@ -153,6 +153,11 @@ export class LocalNode {
         }
 
         const account = await accountPromise;
+
+        if (account === "unavailable") {
+            throw new Error("Account unavailable from all peers");
+        }
+
         const controlledAccount = new ControlledAccount(
             account.core,
             accountSecret
@@ -199,14 +204,36 @@ export class LocalNode {
     }
 
     /** @internal */
-    loadCoValue(id: RawCoID, onProgress?: (progress: number) => void): Promise<CoValueCore> {
+    async loadCoValueCore(
+        id: RawCoID,
+        options: {
+            dontLoadFrom?: PeerID;
+            dontWaitFor?: PeerID;
+            onProgress?: (progress: number) => void;
+        } = {}
+    ): Promise<CoValueCore | "unavailable"> {
         let entry = this.coValues[id];
         if (!entry) {
-            entry = newLoadingState(onProgress);
+            const peersToWaitFor = new Set(
+                Object.values(this.syncManager.peers)
+                    .filter((peer) => peer.role === "server")
+                    .map((peer) => peer.id)
+            );
+            if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
+            entry = newLoadingState(peersToWaitFor, options.onProgress);
 
             this.coValues[id] = entry;
 
-            this.syncManager.loadFromPeers(id);
+            this.syncManager
+                .loadFromPeers(id, options.dontLoadFrom)
+                .catch((e) => {
+                    console.error(
+                        "Error loading from peers",
+                        id,
+
+                        e
+                    );
+                });
         }
         if (entry.state === "loaded") {
             return Promise.resolve(entry.coValue);
@@ -221,23 +248,36 @@ export class LocalNode {
      *
      * @category 3. Low-level
      */
-    async load<T extends CoValue>(id: CoID<T>, onProgress?: (progress: number) => void): Promise<T> {
-        return (await this.loadCoValue(id, onProgress)).getCurrentContent() as T;
+    async load<T extends CoValue>(
+        id: CoID<T>,
+        onProgress?: (progress: number) => void
+    ): Promise<T | "unavailable"> {
+        const core = await this.loadCoValueCore(id, { onProgress });
+
+        if (core === "unavailable") {
+            return "unavailable";
+        }
+
+        return core.getCurrentContent() as T;
     }
 
     /** @category 3. Low-level */
     subscribe<T extends CoValue>(
         id: CoID<T>,
-        callback: (update: T) => void
+        callback: (update: T | "unavailable") => void
     ): () => void {
         let stopped = false;
         let unsubscribe!: () => void;
 
-        console.log("Subscribing to " + id);
+        // console.log("Subscribing to " + id);
 
         this.load(id)
             .then((coValue) => {
                 if (stopped) {
+                    return;
+                }
+                if (coValue === "unavailable") {
+                    callback("unavailable");
                     return;
                 }
                 unsubscribe = coValue.subscribe(callback);
@@ -259,6 +299,12 @@ export class LocalNode {
         inviteSecret: InviteSecret
     ): Promise<void> {
         const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
+
+        if (groupOrOwnedValue === "unavailable") {
+            throw new Error(
+                "Trying to accept invite: Group/owned value unavailable from all peers"
+            );
+        }
 
         if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
@@ -325,7 +371,7 @@ export class LocalNode {
                 : "reader"
         );
 
-        group.core._sessions = groupAsInvite.core.sessions;
+        group.core._sessionLogs = groupAsInvite.core.sessionLogs;
         group.core._cachedContent = undefined;
 
         for (const groupListener of group.core.listeners) {
@@ -400,17 +446,6 @@ export class LocalNode {
                 },
             });
 
-            console.log(
-                "Creating read key",
-                getAgentSealerSecret(agentSecret),
-                getAgentSealerID(accountAgentID),
-                account.id,
-                account.core.nextTransactionID(),
-                "in session",
-                account.core.node.currentSessionID,
-                "=",
-                sealed
-            );
             editable.set(
                 `${readKey.id}_for_${accountAgentID}`,
                 sealed,
@@ -432,16 +467,13 @@ export class LocalNode {
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
-        accountOnThisNode._sessions = {
-            ...account.core.sessions,
-        };
+        accountOnThisNode._sessionLogs = new Map(account.core.sessionLogs);
+
         accountOnThisNode._cachedContent = undefined;
 
         const profileOnThisNode = this.createCoValue(profile.core.header);
 
-        profileOnThisNode._sessions = {
-            ...profile.core.sessions,
-        };
+        profileOnThisNode._sessionLogs = new Map(profile.core.sessionLogs);
         profileOnThisNode._cachedContent = undefined;
 
         return new ControlledAccount(accountOnThisNode, agentSecret);
@@ -457,6 +489,41 @@ export class LocalNode {
         }
 
         const coValue = this.expectCoValueLoaded(id, expectation);
+
+        if (
+            coValue.header.type !== "comap" ||
+            coValue.header.ruleset.type !== "group" ||
+            !coValue.header.meta ||
+            !("type" in coValue.header.meta) ||
+            coValue.header.meta.type !== "account"
+        ) {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }CoValue ${id} is not an account`
+            );
+        }
+
+        return new Account(coValue).getCurrentAgentID();
+    }
+
+    async resolveAccountAgentAsync(
+        id: AccountID | AgentID,
+        expectation?: string
+    ): Promise<AgentID> {
+        if (isAgentID(id)) {
+            return id;
+        }
+
+        const coValue = await this.loadCoValueCore(id);
+
+        if (coValue === "unavailable") {
+            throw new Error(
+                `${
+                    expectation ? expectation + ": " : ""
+                }Account ${id} is unavailable from all peers`
+            );
+        }
 
         if (
             coValue.header.type !== "comap" ||
@@ -543,7 +610,7 @@ export class LocalNode {
                 const newCoValue = new CoValueCore(
                     entry.coValue.header,
                     newNode,
-                    { ...entry.coValue.sessions }
+                    new Map(entry.coValue.sessionLogs)
                 );
 
                 newNode.coValues[coValueID as RawCoID] = {
@@ -575,17 +642,34 @@ export class LocalNode {
 type CoValueState =
     | {
           state: "loading";
-          done: Promise<CoValueCore>;
-          resolve: (coValue: CoValueCore) => void;
+          done: Promise<CoValueCore | "unavailable">;
+          resolve: (coValue: CoValueCore | "unavailable") => void;
           onProgress?: (progress: number) => void;
+          firstPeerState: {
+              [peerID: string]:
+                  | {
+                        type: "waiting";
+                        done: Promise<void>;
+                        resolve: () => void;
+                    }
+                  | { type: "available" }
+                  | { type: "unavailable" };
+          };
       }
-    | { state: "loaded"; coValue: CoValueCore; onProgress?: (progress: number) => void; };
+    | {
+          state: "loaded";
+          coValue: CoValueCore;
+          onProgress?: (progress: number) => void;
+      };
 
 /** @internal */
-export function newLoadingState(onProgress?: (progress: number) => void): CoValueState {
-    let resolve: (coValue: CoValueCore) => void;
+export function newLoadingState(
+    currentPeerIds: Set<PeerID>,
+    onProgress?: (progress: number) => void
+): CoValueState {
+    let resolve: (coValue: CoValueCore | "unavailable") => void;
 
-    const promise = new Promise<CoValueCore>((r) => {
+    const promise = new Promise<CoValueCore | "unavailable">((r) => {
         resolve = r;
     });
 
@@ -593,6 +677,15 @@ export function newLoadingState(onProgress?: (progress: number) => void): CoValu
         state: "loading",
         done: promise,
         resolve: resolve!,
-        onProgress
+        onProgress,
+        firstPeerState: Object.fromEntries(
+            [...currentPeerIds].map((id) => {
+                let resolve: () => void;
+                const done = new Promise<void>((r) => {
+                    resolve = r;
+                });
+                return [id, { type: "waiting", done, resolve: resolve! }];
+            })
+        ),
     };
 }

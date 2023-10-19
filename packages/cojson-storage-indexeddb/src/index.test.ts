@@ -61,6 +61,9 @@ test("Should be able to sync data to database and then load that from a new node
     );
 
     const map2 = await node2.load(map.id);
+    if (map2 === "unavailable") {
+        throw new Error("Map is unavailable");
+    }
 
     expect(map2.get("hello")).toBe("world");
 });

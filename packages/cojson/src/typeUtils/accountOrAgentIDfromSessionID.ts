@@ -5,5 +5,6 @@ import { AccountID } from "../coValues/account.js";
 export function accountOrAgentIDfromSessionID(
     sessionID: SessionID
 ): AccountID | AgentID {
-    return sessionID.split("_session")[0] as AccountID | AgentID;
+    const until = sessionID.indexOf("_session");
+    return sessionID.slice(0, until) as AccountID | AgentID;
 }

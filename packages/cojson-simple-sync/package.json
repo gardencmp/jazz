@@ -4,7 +4,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.4.13",
+    "version": "0.5.0",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@types/ws": "^8.5.5",
@@ -16,14 +16,16 @@
         "typescript": "5.0.2"
     },
     "dependencies": {
-        "cojson": "^0.4.13",
-        "cojson-storage-sqlite": "^0.4.13",
+        "cojson": "^0.5.0",
+        "cojson-storage-sqlite": "^0.5.0",
         "ws": "^8.13.0"
     },
     "scripts": {
         "build": "rm -rf ./dist && tsc --sourceMap --outDir dist && npm run add-shebang && chmod +x ./dist/index.js",
         "add-shebang": "echo \"#!/usr/bin/env node\" | cat - ./dist/index.js > /tmp/out && mv /tmp/out ./dist/index.js",
         "start": "node dist/index.js",
+        "inspect": "node --inspect dist/index.js",
+        "inspect-brk": "node --inspect-brk dist/index.js",
         "test": "jest",
         "prepublishOnly": "npm run build"
     },

@@ -25,7 +25,7 @@ export function FollowButton({ profile }: { profile?: Resolved<TwitProfile> }) {
   return profile?.id === me.profile?.id ? (
     <div className="ml-auto text-neutral-500">That's you!</div>
   ) : (
-    <Button onClick={followOrUnfollow} className="ml-auto" variant={alreadyFollowing ? 'ghost' : 'default'}>
+    <Button onClick={followOrUnfollow} className="ml-auto" disabled={!profile?.followers || !me.profile?.following} variant={alreadyFollowing ? 'ghost' : 'default'}>
       {alreadyFollowing ? 'Unfollow' : theyFollowMe ? 'Follow Back' : 'Follow'}
     </Button>
   );

@@ -100,7 +100,7 @@ export function WithJazz(props: {
 
             done = nodeHandle.done;
         })().catch((e) => {
-            console.log("Failed to create browser node", e);
+            console.error("Failed to create browser node", e);
         });
 
         return () => {
@@ -224,6 +224,7 @@ export function useSyncedValue<T extends CoValue>(id?: CoID<T>) {
             .load(id)
             .then((state) => {
                 if (done) return;
+                if (state === "unavailable") return;
                 unsubscribe = state.subscribe((newState) => {
                     // console.log(
                     //     "Got update",

@@ -1,5 +1,81 @@
 import { WebSocket } from "ws";
 import { WritableStream, ReadableStream } from "isomorphic-streams";
+import { SyncMessage } from "cojson";
+
+let msgsInThisInterval = 0;
+let msgsOutThisInterval = 0;
+let txsInThisInterval = 0;
+let txsOutThisInterval = 0;
+let msgsInLastInterval = 0;
+let msgsOutLastInterval = 0;
+let txsInLastInterval = 0;
+let txsOutLastInterval = 0;
+let maxMsgsInPerS = 0;
+let maxMsgsOutPerS = 0;
+let maxTxsInPerS = 0;
+let maxTxsOutPerS = 0;
+let lastInterval = Date.now();
+const interval = 1_000;
+
+setInterval(() => {
+    const dt = (Date.now() - lastInterval) / 1000;
+
+    maxMsgsInPerS = Math.max(
+        maxMsgsInPerS,
+        Math.round(msgsInThisInterval / dt)
+    );
+    maxMsgsOutPerS = Math.max(
+        maxMsgsOutPerS,
+        Math.round(msgsOutThisInterval / dt)
+    );
+    maxTxsInPerS = Math.max(maxTxsInPerS, Math.round(txsInThisInterval / dt));
+    maxTxsOutPerS = Math.max(
+        maxTxsOutPerS,
+        Math.round(txsOutThisInterval / dt)
+    );
+
+    if (
+        msgsInThisInterval ||
+        msgsOutThisInterval ||
+        txsInThisInterval ||
+        txsOutThisInterval
+    ) {
+        console.log("++++++++++++++++++++++++++++++");
+        console.log(
+            "DT",
+            dt,
+            "Msgs in:",
+            msgsInThisInterval,
+            "out:",
+            msgsOutThisInterval,
+            "txs in:",
+            txsInThisInterval,
+            "out:",
+            txsOutThisInterval
+        );
+        console.log(
+            "MAX/s",
+            "Msgs in:",
+            maxMsgsInPerS,
+            "out:",
+            maxMsgsOutPerS,
+            "txs in:",
+            maxTxsInPerS,
+            "out:",
+            maxTxsOutPerS
+        );
+    }
+
+    msgsInLastInterval = msgsInThisInterval;
+    msgsOutLastInterval = msgsOutThisInterval;
+    txsInLastInterval = txsInThisInterval;
+    txsOutLastInterval = txsOutThisInterval;
+    msgsInThisInterval = 0;
+    msgsOutThisInterval = 0;
+    txsInThisInterval = 0;
+    txsOutThisInterval = 0;
+    lastInterval = Date.now();
+}, interval);
 
 export function websocketReadableStream<T>(ws: WebSocket) {
     ws.binaryType = "arraybuffer";
@@ -13,6 +89,24 @@ export function websocketReadableStream<T>(ws: WebSocket) {
                         event.data
                     );
                 const msg = JSON.parse(event.data);
+                msgsInThisInterval++;
+                const syncMsg = msg as SyncMessage;
+                if (syncMsg.action === "content") {
+                    txsInThisInterval +=
+                        (syncMsg.header ? 1 : 0) +
+                        Object.values(syncMsg.new).reduce(
+                            (sum, sess) => sess.newTransactions.length + sum,
+                            0
+                        );
+                }
+
+                if (txsInLastInterval > 500 || txsOutLastInterval > 1_000) {
+                    ws.pause();
+                    const waitTime = Math.min(500, Math.max(txsOutLastInterval / 20, txsInLastInterval / 10));
+                    // console.log("Throttling", waitTime);
+                    setTimeout(() => ws.resume(), waitTime);
+                }
+
                 if (msg.type === "ping") {
                     // console.debug(
                     //     "Got ping from",
@@ -57,6 +151,16 @@ export function websocketWritableStream<T>(ws: WebSocket) {
         },
 
         write(chunk) {
+            msgsOutThisInterval++;
+            const syncMsg = chunk as SyncMessage;
+            if (syncMsg.action === "content") {
+                txsOutThisInterval +=
+                    (syncMsg.header ? 1 : 0) +
+                    Object.values(syncMsg.new).reduce(
+                        (sum, sess) => sess.newTransactions.length + sum,
+                        0
+                    );
+            }
             ws.send(JSON.stringify(chunk));
             // Return immediately, since the web socket gives us no easy way to tell
             // when the write completes.

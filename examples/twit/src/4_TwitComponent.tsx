@@ -13,6 +13,7 @@ import {
   TwitHeader,
   TwitBody,
   TwitText,
+  Placeholder,
 } from './basicComponents/index.tsx';
 import { Twit, TwitProfile } from './1_dataModel.ts';
 import { BrowserImage } from 'jazz-browser-media-images';
@@ -32,49 +33,53 @@ export function TwitComponent({
   const posterProfile = twit?.meta.edits.text?.by?.profile as Resolved<TwitProfile> | undefined;
   const isTopLevel = !twit?.isReplyTo || alreadyInReplies;
 
+  const loadReactions = !!posterProfile?.name;
+
   return (
     <TwitWithRepliesContainer isTopLevel={isTopLevel}>
       <TwitContainer>
         <ProfilePicImg
           src={posterProfile?.avatar?.as(BrowserImage)?.highestResSrcOrPlaceholder}
-          linkTo={'/' + posterProfile?.id}
+          linkTo={posterProfile?.id && ('/' + posterProfile.id)}
           initial={posterProfile?.name[0]}
           size={twit?.isReplyTo && "sm"}
         />
 
         <TwitBody>
           <TwitHeader>
-            <Link to={'/' + posterProfile?.id} className="font-bold hover:underline">
-              {posterProfile?.name}
-            </Link>
+            {posterProfile ? <Link to={'/' + posterProfile.id} className="font-bold hover:underline">
+              {posterProfile.name}
+            </Link> : <Placeholder/>}
+            {/* <div className='ml-2 text-xs text-neutral-200 dark:text-neutral-800'>{twit?.id}</div> */}
             <SubtleRelativeTimeAgo dateTime={twit?.meta.edits.text?.at} />
           </TwitHeader>
 
           <TwitText style={posterProfile?.twitStyle}>
-            {/* This is where the tweet text goes */}
-            {twit?.text}
+            {twit?.text || <Placeholder/>}
           </TwitText>
 
           {twit?.images && (
             <TwitImgGallery>
-              {twit.images.map(image => (
-                <TwitImg src={image?.as(BrowserImage)?.highestResSrcOrPlaceholder} key={image?.id} />
+              {twit.images.map((image, idx) => (
+                <TwitImg src={image?.as(BrowserImage)?.highestResSrcOrPlaceholder} key={image?.id || idx} />
               ))}
             </TwitImgGallery>
           )}
 
           <ReactionsContainer>
             <ButtonWithCount
-              active={twit?.likes?.me?.last === '❤️'}
+              active={loadReactions && (twit?.likes?.me?.last === '❤️')}
               onClick={() => twit?.likes?.push(twit?.likes?.me?.last ? null : '❤️')}
-              count={twit?.likes?.perAccount.filter(([, liked]) => liked.last === '❤️').length || 0}
+              count={loadReactions && (twit?.likes?.perAccount.filter(([, liked]) => liked.last === '❤️').length) || 0}
               icon={<HeartIcon size="18" />}
               activeIcon={<HeartIcon color="red" size="18" fill="red" />}
+              disabled={!loadReactions || !twit?.likes?.perAccount}
             />
             <ButtonWithCount
               onClick={() => setShowReplyForm(s => !s)}
-              count={twit?.replies?.perAccount.flatMap(([, byAccount]) => byAccount.all).length || 0}
+              count={loadReactions && (twit?.replies?.perAccount.flatMap(([, byAccount]) => byAccount.all).length) || 0}
               icon={<MessagesSquareIcon size="18" />}
+              disabled={!loadReactions || !twit?.replies?.perAccount}
             />
           </ReactionsContainer>
         </TwitBody>
@@ -89,7 +94,7 @@ export function TwitComponent({
           />
         )}
 
-        {twit?.replies?.perAccount
+        {loadReactions && twit?.replies?.perAccount
           .flatMap(([, byAccount]) => byAccount.all)
           .sort((a, b) => b.at.getTime() - a.at.getTime())
           .map(replyEntry => (

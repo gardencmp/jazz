@@ -1,4 +1,12 @@
-import { ed25519, x25519 } from "@noble/curves/ed25519";
+import {
+    initBundledOnce,
+    Ed25519SigningKey,
+    Ed25519VerifyingKey,
+    X25519StaticSecret,
+    Memory,
+    Ed25519Signature,
+    X25519PublicKey,
+} from "@hazae41/berith";
 import { xsalsa20_poly1305, xsalsa20 } from "@noble/ciphers/salsa";
 import { JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
@@ -10,7 +18,13 @@ import { createBLAKE3 } from "hash-wasm";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 
 let blake3Instance: Awaited<ReturnType<typeof createBLAKE3>>;
-let blake3HashOnce: (data: Uint8Array) => Uint8Array;
+let blake3HashOnce: (data: Uint8Array) => Uint8Array = () => {
+    throw new Error(
+        "cojson WASM dependencies not yet loaded; Make sure to import `cojsonReady` from `cojson` and await it before using any cojson functionality:\n\n" +
+            'import { cojsonReady } from "cojson";\n' +
+            "await cojsonReady;\n\n"
+    );
+};
 let blake3HashOnceWithContext: (
     data: Uint8Array,
     { context }: { context: Uint8Array }
@@ -21,29 +35,36 @@ let blake3incrementalUpdateSLOW_WITH_DEVTOOLS: (
 ) => Uint8Array;
 let blake3digestForState: (state: Uint8Array) => Uint8Array;
 
-export const cryptoReady = new Promise<void>((resolve) => {
-    createBLAKE3()
-        .then((bl3) => {
-            blake3Instance = bl3;
-            blake3HashOnce = (data) => {
-                return bl3.init().update(data).digest("binary");
-            };
-            blake3HashOnceWithContext = (data, { context }) => {
-                return bl3.init().update(context).update(data).digest("binary");
-            };
-            blake3incrementalUpdateSLOW_WITH_DEVTOOLS = (state, data) => {
-                bl3.load(state).update(data);
-                return bl3.save();
-            };
-            blake3digestForState = (state) => {
-                return bl3.load(state).digest("binary");
-            };
-            resolve();
-        })
-        .catch((e) =>
-            console.error("Failed to load cryptography dependencies", e)
-        );
-});
+export const cryptoReady = Promise.all([
+    new Promise<void>((resolve) => {
+        createBLAKE3()
+            .then((bl3) => {
+                blake3Instance = bl3;
+                blake3HashOnce = (data) => {
+                    return bl3.init().update(data).digest("binary");
+                };
+                blake3HashOnceWithContext = (data, { context }) => {
+                    return bl3
+                        .init()
+                        .update(context)
+                        .update(data)
+                        .digest("binary");
+                };
+                blake3incrementalUpdateSLOW_WITH_DEVTOOLS = (state, data) => {
+                    bl3.load(state).update(data);
+                    return bl3.save();
+                };
+                blake3digestForState = (state) => {
+                    return bl3.load(state).digest("binary");
+                };
+                resolve();
+            })
+            .catch((e) =>
+                console.error("Failed to load cryptography dependencies", e)
+            );
+    }),
+    initBundledOnce(),
+]);
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;
@@ -59,7 +80,9 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 export function newRandomSigner(): SignerSecret {
-    return `signerSecret_z${base58.encode(ed25519.utils.randomPrivateKey())}`;
+    return `signerSecret_z${base58.encode(
+        new Ed25519SigningKey().to_bytes().copyAndDispose()
+    )}`;
 }
 
 export function signerSecretToBytes(secret: SignerSecret): Uint8Array {
@@ -72,17 +95,22 @@ export function signerSecretFromBytes(bytes: Uint8Array): SignerSecret {
 
 export function getSignerID(secret: SignerSecret): SignerID {
     return `signer_z${base58.encode(
-        ed25519.getPublicKey(
-            base58.decode(secret.substring("signerSecret_z".length))
+        Ed25519SigningKey.from_bytes(
+            new Memory(base58.decode(secret.substring("signerSecret_z".length)))
         )
+            .public()
+            .to_bytes()
+            .copyAndDispose()
     )}`;
 }
 
 export function sign(secret: SignerSecret, message: JsonValue): Signature {
-    const signature = ed25519.sign(
-        textEncoder.encode(stableStringify(message)),
-        base58.decode(secret.substring("signerSecret_z".length))
-    );
+    const signature = Ed25519SigningKey.from_bytes(
+        new Memory(base58.decode(secret.substring("signerSecret_z".length)))
+    )
+        .sign(new Memory(textEncoder.encode(stableStringify(message))))
+        .to_bytes()
+        .copyAndDispose();
     return `signature_z${base58.encode(signature)}`;
 }
 
@@ -91,15 +119,20 @@ export function verify(
     message: JsonValue,
     id: SignerID
 ): boolean {
-    return ed25519.verify(
-        base58.decode(signature.substring("signature_z".length)),
-        textEncoder.encode(stableStringify(message)),
-        base58.decode(id.substring("signer_z".length))
+    return new Ed25519VerifyingKey(
+        new Memory(base58.decode(id.substring("signer_z".length)))
+    ).verify(
+        new Memory(textEncoder.encode(stableStringify(message))),
+        new Ed25519Signature(
+            new Memory(base58.decode(signature.substring("signature_z".length)))
+        )
     );
 }
 
 export function newRandomSealer(): SealerSecret {
-    return `sealerSecret_z${base58.encode(x25519.utils.randomPrivateKey())}`;
+    return `sealerSecret_z${base58.encode(
+        new X25519StaticSecret().to_bytes().copyAndDispose()
+    )}`;
 }
 
 export function sealerSecretToBytes(secret: SealerSecret): Uint8Array {
@@ -112,9 +145,12 @@ export function sealerSecretFromBytes(bytes: Uint8Array): SealerSecret {
 
 export function getSealerID(secret: SealerSecret): SealerID {
     return `sealer_z${base58.encode(
-        x25519.getPublicKey(
-            base58.decode(secret.substring("sealerSecret_z".length))
+        X25519StaticSecret.from_bytes(
+            new Memory(base58.decode(secret.substring("sealerSecret_z".length)))
         )
+            .to_public()
+            .to_bytes()
+            .copyAndDispose()
     )}`;
 }
 
@@ -180,7 +216,10 @@ export function seal<T extends JsonValue>({
 
     const plaintext = textEncoder.encode(stableStringify(message));
 
-    const sharedSecret = x25519.getSharedSecret(senderPriv, sealerPub);
+    const sharedSecret = X25519StaticSecret.from_bytes(new Memory(senderPriv))
+        .diffie_hellman(X25519PublicKey.from_bytes(new Memory(sealerPub)))
+        .to_bytes()
+        .copyAndDispose();
 
     const sealedBytes = xsalsa20_poly1305(sharedSecret, nOnce).encrypt(
         plaintext
@@ -205,7 +244,10 @@ export function unseal<T extends JsonValue>(
 
     const sealedBytes = base64URLtoBytes(sealed.substring("sealed_U".length));
 
-    const sharedSecret = x25519.getSharedSecret(sealerPriv, senderPub);
+    const sharedSecret = X25519StaticSecret.from_bytes(new Memory(sealerPriv))
+        .diffie_hellman(X25519PublicKey.from_bytes(new Memory(senderPub)))
+        .to_bytes()
+        .copyAndDispose();
 
     const plaintext = xsalsa20_poly1305(sharedSecret, nOnce).decrypt(
         sealedBytes

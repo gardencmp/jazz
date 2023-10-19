@@ -80,7 +80,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -92,7 +92,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -158,7 +158,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[1]!.madeAt,
                         changes: stableStringify([
                             {
@@ -170,7 +170,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -247,7 +247,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -259,7 +259,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -279,7 +279,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[1]!.madeAt,
                         changes: stableStringify([
                             {
@@ -291,7 +291,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -358,7 +358,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -370,7 +370,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -462,7 +462,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[1]!.madeAt,
                         changes: stableStringify([
                             {
@@ -474,7 +474,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -565,7 +565,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                 newTransactions: [
                     {
                         privacy: "trusting" as const,
-                        madeAt: map.core.sessions[node.currentSessionID]!
+                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
                             .transactions[0]!.madeAt,
                         changes: stableStringify([
                             {
@@ -577,7 +577,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                     },
                 ],
                 lastSignature:
-                    map.core.sessions[node.currentSessionID]!.lastSignature!,
+                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -853,7 +853,7 @@ test.skip("When loading a coValue on one node, the server node it is requested f
     node1.syncManager.addPeer(node2asPeer);
     node2.syncManager.addPeer(node1asPeer);
 
-    await node2.loadCoValue(map.core.id);
+    await node2.loadCoValueCore(map.core.id);
 
     expect(
         expectMap(
@@ -880,7 +880,7 @@ test("Can sync a coValue through a server to another client", async () => {
 
     const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
         peer1role: "server",
-        peer2role: "client",
+        peer2role: "client", trace: true,
     });
 
     client1.syncManager.addPeer(serverAsPeer);
@@ -891,13 +891,16 @@ test("Can sync a coValue through a server to another client", async () => {
     const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
         "server",
         "client2",
-        { peer1role: "server", peer2role: "client" }
+        { peer1role: "server", peer2role: "client", trace: true, }
     );
 
     client2.syncManager.addPeer(serverAsOtherPeer);
     server.syncManager.addPeer(client2AsPeer);
 
-    const mapOnClient2 = await client2.loadCoValue(map.core.id);
+    const mapOnClient2 = await client2.loadCoValueCore(map.core.id);
+    if (mapOnClient2 === "unavailable") {
+        throw new Error("Map is unavailable");
+    }
 
     expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
         "world"
@@ -940,7 +943,10 @@ test("Can sync a coValue with private transactions through a server to another c
     client2.syncManager.addPeer(serverAsOtherPeer);
     server.syncManager.addPeer(client2AsPeer);
 
-    const mapOnClient2 = await client2.loadCoValue(map.core.id);
+    const mapOnClient2 = await client2.loadCoValueCore(map.core.id);
+    if (mapOnClient2 === "unavailable") {
+        throw new Error("Map is unavailable");
+    }
 
     expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
         "world"
@@ -1082,13 +1088,16 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
     node1.syncManager.addPeer(node2asPeer);
 
-    const mapOnNode2Promise = node2.loadCoValue(map.core.id);
+    const mapOnNode2Promise = node2.loadCoValueCore(map.core.id);
 
     expect(node2.coValues[map.core.id]?.state).toEqual("loading");
 
     node2.syncManager.addPeer(node1asPeer);
 
     const mapOnNode2 = await mapOnNode2Promise;
+    if (mapOnNode2 === "unavailable") {
+        throw new Error("Map is unavailable");
+    }
 
     expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
         "world"

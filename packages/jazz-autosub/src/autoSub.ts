@@ -78,9 +78,10 @@ export class AutoSubContext {
         this.onUpdate = onUpdate;
     }
 
-    autoSub<T extends CoValue>(valueID: CoID<T>, alsoRender: CoID<CoValue>[]) {
+    autoSub<T extends CoValue>(valueID: CoID<T>, alsoRender: CoID<CoValue>[], _path: string) {
         let value = this.values[valueID];
         if (!value) {
+            // console.log("Auto-sub to", valueID, "from", path)
             const render = () => {
                 let newLoaded;
                 const lastUpdate = value!.lastUpdate;
@@ -138,6 +139,10 @@ export class AutoSubContext {
                 lastUpdate: undefined,
                 render,
                 unsubscribe: this.node.subscribe(valueID, (valueUpdate) => {
+                    if (valueUpdate === "unavailable") {
+                        // console.warn("Value", valueID, "is unavailable");
+                        return;
+                    }
                     value!.lastUpdate = valueUpdate;
                     value!.render();
                     this.onUpdate();
@@ -150,12 +155,14 @@ export class AutoSubContext {
 
     subscribeIfCoID<T extends JsonValue | undefined>(
         value: T,
-        alsoRender: CoID<CoValue>[]
+        alsoRender: CoID<CoValue>[],
+        path: string
     ): T extends CoID<infer C> ? Resolved<C> | undefined : T {
         if (typeof value === "string" && value.startsWith("co_")) {
             return this.autoSub(
                 value as CoID<CoValue>,
-                alsoRender
+                alsoRender,
+                path
             ) as T extends CoID<infer C> ? Resolved<C> | undefined : never;
         } else {
             return value as T extends CoID<infer C>
@@ -166,14 +173,15 @@ export class AutoSubContext {
 
     valueOrResolvedRefPropertyDescriptor<T extends JsonValue | undefined>(
         value: T,
-        alsoRender: CoID<CoValue>[]
+        alsoRender: CoID<CoValue>[],
+        path: string
     ): T extends CoID<infer C>
         ? { get(): Resolved<C> | undefined }
         : { value: T } {
         if (typeof value === "string" && value.startsWith("co_")) {
             // TODO: when we track render dirty status, we can actually return the resolved value without a getter if it's up to date
             return {
-                get: () => this.autoSub(value as CoID<CoValue>, alsoRender),
+                get: () => this.autoSub(value as CoID<CoValue>, alsoRender, path),
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any;
         } else {
@@ -201,7 +209,8 @@ export class AutoSubContext {
             Object.defineProperty(obj, key, {
                 ...this.valueOrResolvedRefPropertyDescriptor(
                     descriptor.value,
-                    alsoRender
+                    alsoRender,
+                    key
                 ),
                 enumerable: descriptor.enumerable,
             });
@@ -284,7 +293,7 @@ export function autoSub(
         callback(rootResolved);
     });
 
-    context.autoSub(effectiveId, []);
+    context.autoSub(effectiveId, [], "");
 
     function cleanup() {
         context.cleanup();

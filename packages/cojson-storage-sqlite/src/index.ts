@@ -93,7 +93,7 @@ export class SQLiteStorage {
             localNodeAsPeer.outgoing
         );
 
-        return storageAsPeer;
+        return {...storageAsPeer, priority: 100};
     }
 
     static async open(

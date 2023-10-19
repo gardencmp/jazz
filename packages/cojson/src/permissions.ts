@@ -2,10 +2,7 @@ import { CoID } from "./coValue.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { JsonValue } from "./jsonValue.js";
 import { KeyID } from "./crypto.js";
-import {
-    CoValueCore,
-    Transaction,
-} from "./coValueCore.js";
+import { CoValueCore, Transaction } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { Account, AccountID, Profile } from "./coValues/account.js";
@@ -31,19 +28,19 @@ export function determineValidTransactions(
     coValue: CoValueCore
 ): { txID: TransactionID; tx: Transaction }[] {
     if (coValue.header.ruleset.type === "group") {
-        const allTransactionsSorted = Object.entries(coValue.sessions).flatMap(
-            ([sessionID, sessionLog]) => {
-                return sessionLog.transactions.map((tx, txIndex) => ({
-                    sessionID,
-                    txIndex,
-                    tx,
-                })) as {
-                    sessionID: SessionID;
-                    txIndex: number;
-                    tx: Transaction;
-                }[];
-            }
-        );
+        const allTransactionsSorted = [
+            ...coValue.sessionLogs.entries(),
+        ].flatMap(([sessionID, sessionLog]) => {
+            return sessionLog.transactions.map((tx, txIndex) => ({
+                sessionID,
+                txIndex,
+                tx,
+            })) as {
+                sessionID: SessionID;
+                txIndex: number;
+                tx: Transaction;
+            }[];
+        });
 
         allTransactionsSorted.sort((a, b) => {
             return a.tx.madeAt - b.tx.madeAt;
@@ -242,11 +239,9 @@ export function determineValidTransactions(
             throw new Error("Group must be a map");
         }
 
-        return Object.entries(coValue.sessions).flatMap(
+        return [...coValue.sessionLogs.entries()].flatMap(
             ([sessionID, sessionLog]) => {
-                const transactor = accountOrAgentIDfromSessionID(
-                    sessionID as SessionID
-                );
+                const transactor = accountOrAgentIDfromSessionID(sessionID);
 
                 return sessionLog.transactions
                     .filter((tx) => {
@@ -266,16 +261,16 @@ export function determineValidTransactions(
                         );
                     })
                     .map((tx, txIndex) => ({
-                        txID: { sessionID: sessionID as SessionID, txIndex },
+                        txID: { sessionID: sessionID, txIndex },
                         tx,
                     }));
             }
         );
     } else if (coValue.header.ruleset.type === "unsafeAllowAll") {
-        return Object.entries(coValue.sessions).flatMap(
+        return [...coValue.sessionLogs.entries()].flatMap(
             ([sessionID, sessionLog]) => {
                 return sessionLog.transactions.map((tx, txIndex) => ({
-                    txID: { sessionID: sessionID as SessionID, txIndex },
+                    txID: { sessionID: sessionID, txIndex },
                     tx,
                 }));
             }
