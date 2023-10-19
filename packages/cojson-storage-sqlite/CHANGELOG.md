@@ -1,5 +1,11 @@
 # cojson-storage-sqlite
 
+## 0.5.1
+
+### Patch Changes
+
+- Make typedefs for better-sqlite3 a normal dependency
+
 ## 0.5.0
 
 ### Minor Changes
