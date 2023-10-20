@@ -226,7 +226,7 @@ export function QuoteContainer(props: { children: React.ReactNode }) {
 }
 
 export function MainH1(props: { children: React.ReactNode }) {
-  return <h1 className="text-2xl mb-4 sticky top-0 p-4 -mx-4 bg-white dark:bg-black z-20">{props.children}</h1>;
+  return <h1 className="text-2xl mb-4 sticky top-0 p-4 -mx-4 bg-background z-20">{props.children}</h1>;
 }
 
 export function SmallInlineButton(props: { children: React.ReactNode } & ButtonProps) {

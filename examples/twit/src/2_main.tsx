@@ -14,19 +14,19 @@ import { ProfilePage } from './5_ProfilePage.tsx';
 const appName = 'Jazz Twit Example';
 
 const auth = DemoAuth({
-  appName,
+  appName
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
+  <WithJazz auth={auth} migration={migration as AccountMigration}>
     <ThemeProvider>
       <TitleAndLogo name={appName} />
       <div className="flex flex-col h-full items-stretch justify-start gap-10 pt-10 pb-10 px-5 w-full max-w-xl mx-auto">
-        <WithJazz auth={auth} migration={migration as AccountMigration}>
-          <App />
-        </WithJazz>
+        <App />
       </div>
     </ThemeProvider>
+  </WithJazz>
   // </React.StrictMode>
 );
 
