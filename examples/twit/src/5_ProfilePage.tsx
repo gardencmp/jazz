@@ -39,7 +39,7 @@ export function ProfilePage() {
           ? null
           : twit?.isReplyTo
         : twit
-    );
+    ) || [];
   }, [profile?.twits]);
 
   const [qr, setQr] = useState<string>('');
