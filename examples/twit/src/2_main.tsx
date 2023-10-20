@@ -3,11 +3,9 @@ import { RouterProvider, createHashRouter } from 'react-router-dom';
 import './index.css';
 
 import { AccountMigration } from 'cojson';
-import { WithJazz, useJazz } from 'jazz-react';
-import { LocalAuth } from 'jazz-react-auth-local';
+import { DemoAuth, WithJazz, useJazz } from 'jazz-react';
 
 import { Button, ThemeProvider, TitleAndLogo } from './basicComponents/index.tsx';
-import { PrettyAuthUI } from './components/Auth.tsx';
 
 import { migration } from './1_dataModel.ts';
 import { AllTwitsFeed, FollowingFeed } from './3_ChronoFeed.tsx';
@@ -15,9 +13,8 @@ import { ProfilePage } from './5_ProfilePage.tsx';
 
 const appName = 'Jazz Twit Example';
 
-const auth = LocalAuth({
+const auth = DemoAuth({
   appName,
-  Component: PrettyAuthUI
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
