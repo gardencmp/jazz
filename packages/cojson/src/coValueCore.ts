@@ -50,8 +50,8 @@ export function idforHeader(header: CoValueHeader): RawCoID {
 }
 
 export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return `${accountID}_session_z${base58.encode(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).crypto.getRandomValues(new Uint8Array(8))
     )}`;
 }

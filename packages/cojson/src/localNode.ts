@@ -109,11 +109,25 @@ export class LocalNode {
 
         if (migration) {
             migration(accountOnNodeWithAccount, profile as P);
-            nodeWithAccount.account = new ControlledAccount(
-                accountOnNodeWithAccount.core,
-                accountOnNodeWithAccount.agentSecret
-            );
         }
+
+        nodeWithAccount.account = new ControlledAccount(
+            accountOnNodeWithAccount.core,
+            accountOnNodeWithAccount.agentSecret
+        );
+
+        // we shouldn't need this, but it fixes account data not syncing for new accounts
+        function syncAllCoValuesAfterCreateAccount() {
+            for (const coValueEntry of Object.values(nodeWithAccount.coValues)) {
+                if (coValueEntry.state === "loaded") {
+                    void nodeWithAccount.syncManager.syncCoValue(coValueEntry.coValue);
+                }
+            }
+        }
+
+        syncAllCoValuesAfterCreateAccount();
+
+        setTimeout(syncAllCoValuesAfterCreateAccount, 500);
 
         return {
             node: nodeWithAccount,

@@ -1,5 +1,11 @@
 # cojson
 
+## 0.5.1
+
+### Patch Changes
+
+- Fix bug where accounts, profiles and data created in migrations isn't synced on account creation
+
 ## 0.5.0
 
 ### Minor Changes

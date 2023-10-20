@@ -8,7 +8,7 @@ import {
     TwitAccountRoot,
     TwitProfile,
     migration,
-} from "../twit/src/1_dataModel";
+} from "../twit/src/1_dataModel.js";
 import {
     websocketReadableStream,
     websocketWritableStream,
@@ -16,15 +16,18 @@ import {
 import { WebSocket } from "ws";
 import { autoSub } from "jazz-autosub";
 
-await cojsonReady;
+import { webcrypto } from 'node:crypto'
+(globalThis as any).crypto = webcrypto
 
 async function runner() {
+    await cojsonReady;
+
     const { node } = await LocalNode.withNewlyCreatedAccount({
         name: "Bot_" + Math.random().toString(36).slice(2),
         migration,
     });
 
-    const ws = new WebSocket("ws://localhost:4200");
+    const ws = new WebSocket("wss://sync.jazz.tools");
 
     node.syncManager.addPeer({
         id: "globalMesh",
