@@ -25,9 +25,11 @@ import { AccountMigration, Profile } from "cojson";
  * Walkthrough: The top-level provider `<WithJazz/>`
  *
  * This shows how to use the top-level provider `<WithJazz/>`,
- * which provides the rest of the app with a `LocalNode` (used through `useJazz` later),
- * based on `LocalAuth` that uses Passkeys (aka WebAuthn) to store a user's account secret
+ * which provides the rest of the app with a controlled account (used through `useJazz` later).
+ * Here we use `LocalAuth`, which uses Passkeys (aka WebAuthn) to store a user's account secret
  * - no backend needed.
+ *
+ * `<WithJazz/>` also runs our account migration
  */
 
 const appName = "Jazz Todo List Example";

@@ -1,5 +1,11 @@
 # Overview
 
+---
+
+## These are work-in-progress API docs. <br/> To start learning Jazz, see [Getting Started](./README.md#getting-started)
+
+---
+
 ## Core packages
 
 ### `jazz-react` → [API](#jazz-react)

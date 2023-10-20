@@ -24,10 +24,15 @@ export type TodoProject = CoMap<{
 
 export type ListOfProjects = CoList<TodoProject["id"]>;
 
+/** The account root is an app-specific per-user private `CoMap`
+ *  where you can store top-level objects for that user */
 export type TodoAccountRoot = CoMap<{
     projects: ListOfProjects["id"];
 }>;
 
+/** The account migration is run on account creation and on every log-in.
+ *  You can use it to set up the account root and any other initial CoValues you need.
+ */
 export const migration: AccountMigration<Profile, TodoAccountRoot> = (account) => {
     if (!account.get("root")) {
         account.set(
