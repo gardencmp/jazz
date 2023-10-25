@@ -1,0 +1,43 @@
+{
+    "name": "jazz-nodejs",
+    "module": "dist/index.js",
+    "main": "dist/index.js",
+    "types": "src/index.ts",
+    "type": "module",
+    "license": "MIT",
+    "version": "0.5.0",
+    "dependencies": {
+        "cojson": "^0.5.0",
+        "cojson-transport-nodejs-ws": "^0.5.0",
+        "dotenv": "^16.3.1",
+        "jazz-autosub": "^0.5.0"
+    },
+    "scripts": {
+        "test": "jest",
+        "lint": "eslint src/**/*.ts",
+        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+        "prepublishOnly": "npm run build"
+    },
+    "jest": {
+        "preset": "ts-jest",
+        "testEnvironment": "node",
+        "transform": {
+            "\\.[jt]sx?$": [
+                "ts-jest",
+                {
+                    "useESM": true
+                }
+            ]
+        },
+        "moduleNameMapper": {
+            "(.+)\\.js": "$1"
+        },
+        "extensionsToTreatAsEsm": [
+            ".ts"
+        ],
+        "modulePathIgnorePatterns": [
+            "/node_modules/",
+            "/dist/"
+        ]
+    }
+}

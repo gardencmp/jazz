@@ -9,32 +9,13 @@ import {
     TwitProfile,
     migration,
 } from "../twit/src/1_dataModel.js";
-import {
-    websocketReadableStream,
-    websocketWritableStream,
-} from "cojson-transport-nodejs-ws";
-import { WebSocket } from "ws";
-import { autoSub } from "jazz-autosub";
 
-import { webcrypto } from 'node:crypto'
-(globalThis as any).crypto = webcrypto
+import { createOrResumeWorker, autoSub } from "jazz-nodejs"
 
 async function runner() {
-    await cojsonReady;
-
-    const { node } = await LocalNode.withNewlyCreatedAccount({
-        name: "Bot_" + Math.random().toString(36).slice(2),
-        migration,
-    });
-
-    const ws = new WebSocket("wss://sync.jazz.tools");
-
-    node.syncManager.addPeer({
-        id: "globalMesh",
-        role: "server",
-        incoming: websocketReadableStream(ws),
-        outgoing: websocketWritableStream(ws),
-    });
+    const { localNode: node, worker } = await createOrResumeWorker(
+        "TwitStressTestBot" + Math.random().toString(36).slice(2),
+    );
 
     console.log(
         "profile",
