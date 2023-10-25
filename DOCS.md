@@ -16006,3 +16006,52 @@ export type Resolved<T extends CoValue> = T extends CoMap
       : ResolvedAccount | ResolvedGroup | ResolvedCoMap<CoMap> | ResolvedCoList<CoList> | ResolvedCoStream<CoStream>
 ```
 TODO: doc generator not implemented yet 2097152
+
+
+# jazz-nodejs
+
+## `createOrResumeWorker(workerName, syncServer?)`
+
+<sup>(function in `jazz-nodejs`)</sup>
+
+```typescript
+export function createOrResumeWorker(workerName: string, syncServer: string): Promise<{
+  localNode: LocalNode,
+  worker: ControlledAccount<Profile<ProfileShape, ProfileMeta>, CoMap<{
+    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>,
+}>
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `workerName` | TODO: document  |
+| `syncServer?` | TODO: document  |
+
+
+
+
+
+----
+
+## `autoSub(id, node, callback)`
+
+<sup>(function in `jazz-nodejs`)</sup>
+
+```typescript
+export function autoSub<C extends CoValue>(id: undefined | CoID<C>, node: LocalNode, callback: (resolved: undefined | Resolved<C>) => void): () => void
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `node` | TODO: document  |
+
+
+
+
