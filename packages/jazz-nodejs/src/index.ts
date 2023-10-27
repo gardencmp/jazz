@@ -6,20 +6,56 @@ import { WebSocket } from "ws";
 import "dotenv/config";
 
 import { webcrypto } from "node:crypto";
-import { AccountID, AgentSecret, ControlledAccount, LocalNode, Peer, SessionID, cojsonReady } from "cojson";
+import {
+    AccountID,
+    AccountMigration,
+    AgentSecret,
+    CoMap,
+    ControlledAccount,
+    LocalNode,
+    Peer,
+    Profile,
+    SessionID,
+    cojsonReady,
+} from "cojson";
 import { newRandomSessionID } from "cojson/src/coValueCore";
-if (!("crypto" in globalThis))  {
+import { readFile, writeFile } from "node:fs/promises";
+
+if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).crypto = webcrypto;
 }
 
-import { writeFile } from "node:fs/promises"
+interface WorkerCredentialStorage {
+    load(
+        workerName: string
+    ): Promise<
+        { accountID: AccountID; accountSecret: AgentSecret } | undefined
+    >;
+    save(
+        workerName: string,
+        accountID: AccountID,
+        accountSecret: AgentSecret
+    ): Promise<void>;
+}
 
-export async function createOrResumeWorker(workerName: string, syncServer = "wss://sync.jazz.tools") {
+export async function createOrResumeWorker<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap
+>({
+    workerName,
+    credentialStorage = FileCredentialStorage,
+    syncServer = "wss://sync.jazz.tools",
+    migration,
+}: {
+    workerName: string;
+    credentialStorage?: WorkerCredentialStorage;
+    syncServer?: string;
+    migration?: AccountMigration<P, R>;
+}) {
     await cojsonReady;
 
-    const existingID = process.env.JAZZ_WORKER_ID;
-    const existingSecret = process.env.JAZZ_WORKER_SECRET;
+    const existingCredentials = await credentialStorage.load(workerName);
 
     let localNode: LocalNode;
 
@@ -32,36 +68,95 @@ export async function createOrResumeWorker(workerName: string, syncServer = "wss
         outgoing: websocketWritableStream(ws),
     };
 
-    if (existingID && existingSecret) {
+    if (existingCredentials) {
         // TODO: locked sessions similar to browser
-        const sessionID = process.env.JAZZ_WORKER_SESSION || newRandomSessionID(existingID as AccountID);
+        const sessionID =
+            process.env.JAZZ_WORKER_SESSION ||
+            newRandomSessionID(existingCredentials.accountID);
 
-        console.log("Loading worker", existingID);
+        console.log("Loading worker", existingCredentials.accountID);
 
         localNode = await LocalNode.withLoadedAccount({
-            accountID: existingID as AccountID,
-            accountSecret: existingSecret as AgentSecret,
+            accountID: existingCredentials.accountID,
+            accountSecret: existingCredentials.accountSecret,
             sessionID: sessionID as SessionID,
-            peersToLoadFrom: [wsPeer]
+            migration,
+            peersToLoadFrom: [wsPeer],
         });
 
-        console.log("Resuming worker", existingID, localNode.expectProfileLoaded(localNode.account.id as AccountID).get("name"));
+        console.log(
+            "Resuming worker",
+            existingCredentials.accountID,
+            localNode
+                .expectProfileLoaded(localNode.account.id as AccountID)
+                .get("name")
+        );
     } else {
         const newWorker = await LocalNode.withNewlyCreatedAccount({
             name: workerName,
+            migration,
         });
 
         localNode = newWorker.node;
 
         localNode.syncManager.addPeer(wsPeer);
 
-        await writeFile(".env", `JAZZ_WORKER_ID=${newWorker.accountID}\nJAZZ_WORKER_SECRET=${newWorker.accountSecret}\n`);
+        await credentialStorage.save(
+            workerName,
+            newWorker.accountID,
+            newWorker.accountSecret
+        );
 
         console.log("Created worker", newWorker.accountID, workerName);
-        console.log("!!! Make sure to exclude .env from git, as it now contains your worker's credentials !!!")
     }
 
-    return { localNode, worker: localNode.account as ControlledAccount };
+    return { localNode, worker: localNode.account as ControlledAccount<P, R> };
 }
 
 export { autoSub } from "jazz-autosub";
+
+export const FileCredentialStorage: WorkerCredentialStorage = {
+    async load(workerName: string): Promise<
+        | {
+              accountID: AccountID;
+              accountSecret: `sealerSecret_z${string}/signerSecret_z${string}`;
+          }
+        | undefined
+    > {
+        try {
+            const credentials = await readFile(
+                `${workerName}Credentials.json`,
+                "utf-8"
+            );
+            return JSON.parse(credentials);
+        } catch (e) {
+            return undefined;
+        }
+    },
+
+    async save(
+        workerName: string,
+        accountID: AccountID,
+        accountSecret: `sealerSecret_z${string}/signerSecret_z${string}`
+    ): Promise<void> {
+        await writeFile(
+            `${workerName}Credentials.json`,
+            JSON.stringify({ accountID, accountSecret }, undefined, 2)
+        );
+        console.log(
+            `Saved credentials for ${workerName} to ${workerName}Credentials.json`
+        );
+        try {
+            const gitginore = await readFile(".gitignore", "utf-8");
+            if (!gitginore.includes(`${workerName}Credentials.json`)) {
+                await writeFile(
+                    ".gitignore",
+                    gitginore + `\n${workerName}Credentials.json`
+                );
+                console.log(`Added ${workerName}Credentials.json to .gitignore`);
+            }
+        } catch (e) {
+            console.warn(`Couldn't add ${workerName}Credentials.json to .gitignore, please add it yourself.`)
+        }
+    },
+};

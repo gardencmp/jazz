@@ -10,12 +10,12 @@ import {
     migration,
 } from "../twit/src/1_dataModel.js";
 
-import { createOrResumeWorker, autoSub } from "jazz-nodejs"
+import { createOrResumeWorker, autoSub } from "jazz-nodejs";
 
 async function runner() {
-    const { localNode: node, worker } = await createOrResumeWorker(
-        "TwitStressTestBot" + Math.random().toString(36).slice(2),
-    );
+    const { localNode: node, worker } = await createOrResumeWorker({
+        workerName: "TwitStressTestBot" + Math.random().toString(36).slice(2),
+    });
 
     console.log(
         "profile",
@@ -45,8 +45,8 @@ async function runner() {
             if (startedPosting) return;
             startedPosting = true;
             for (let i = 0; i < 10; i++) {
-                await new Promise((resolve) =>
-                    setTimeout(resolve, Math.random() * 120000)
+                await new Promise(
+                    (resolve) => setTimeout(resolve, Math.random() * 120000)
                     // setTimeout(resolve, Math.random() * 5000)
                 );
                 const audience = me.root.peopleWhoCanSeeMyContent;
@@ -70,7 +70,7 @@ async function runner() {
 
     let blackHole = 0;
 
-    let lastUpdate = Date.now()
+    let lastUpdate = Date.now();
 
     autoSub(ALL_TWEETS_LIST_ID, node, (allTwits) => {
         if (Date.now() - lastUpdate < 33) return;
