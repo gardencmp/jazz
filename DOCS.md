@@ -16010,15 +16010,19 @@ TODO: doc generator not implemented yet 2097152
 
 # jazz-nodejs
 
-## `createOrResumeWorker(workerName, syncServer?)`
+## `createOrResumeWorker({workerName, syncServer?, migration?})`
 
 <sup>(function in `jazz-nodejs`)</sup>
 
 ```typescript
-export function createOrResumeWorker(workerName: string, syncServer: string): Promise<{
+export function createOrResumeWorker<P extends Profile<ProfileShape, ProfileMeta>, R extends CoMap<{
+  [key: string]: JsonValue | undefined }, null | JsonObject>>({
+  workerName: string,
+  syncServer?: string,
+  migration?: AccountMigration<P, R>,
+}): Promise<{
   localNode: LocalNode,
-  worker: ControlledAccount<Profile<ProfileShape, ProfileMeta>, CoMap<{
-    [key: string]: JsonValue | undefined }, null | JsonObject>, AccountMeta>,
+  worker: ControlledAccount<P, R, AccountMeta>,
 }>
 ```
 TODO: document
@@ -16027,8 +16031,9 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `workerName` | TODO: document  |
-| `syncServer?` | TODO: document  |
+| `__namedParameters.workerName` | TODO: document |
+| `__namedParameters.syncServer?` | TODO: document |
+| `__namedParameters.migration?` | TODO: document |
 
 
 

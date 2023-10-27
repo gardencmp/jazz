@@ -6,9 +6,10 @@ import {
 import { createOrResumeWorker, autoSub } from "jazz-nodejs"
 
 
-const { localNode: node, worker } = await createOrResumeWorker(
-    "TwitAllTwitsCreator"
-);
+const { localNode: node, worker } = await createOrResumeWorker({
+    workerName: "TwitAllTwitsCreator",
+    migration
+});
 
 const allTweetsGroup = worker.createGroup();
 allTweetsGroup.addMember('everyone', 'writer');

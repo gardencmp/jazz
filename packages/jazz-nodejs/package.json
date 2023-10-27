@@ -5,11 +5,10 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "dependencies": {
         "cojson": "^0.5.0",
         "cojson-transport-nodejs-ws": "^0.5.0",
-        "dotenv": "^16.3.1",
         "jazz-autosub": "^0.5.0"
     },
     "scripts": {

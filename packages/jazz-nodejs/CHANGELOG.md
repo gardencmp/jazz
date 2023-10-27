@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.5.2
+
+### Patch Changes
+
+- Expose migration for jazz-nodejs
+
 ## 0.5.1
 
 ### Patch Changes
