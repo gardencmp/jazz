@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.5.3
+
+### Patch Changes
+
+- Allow account migrations to be async
+- Updated dependencies
+  - cojson@0.5.2
+
 ## 0.5.2
 
 ### Patch Changes

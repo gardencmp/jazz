@@ -64,10 +64,10 @@ export interface GeneralizedControlledAccount {
 
 /** @hidden */
 export class ControlledAccount<
-P extends Profile = Profile,
-R extends CoMap = CoMap,
-Meta extends AccountMeta = AccountMeta
->
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >
     extends Account<P, R, Meta>
     implements GeneralizedControlledAccount
 {
@@ -158,10 +158,16 @@ export type ProfileShape = {
 };
 export type ProfileMeta = { type: "profile" };
 
-export class Profile<Shape extends ProfileShape = ProfileShape, Meta extends ProfileMeta = ProfileMeta> extends CoMap<Shape, Meta> {
+export class Profile<
+    Shape extends ProfileShape = ProfileShape,
+    Meta extends ProfileMeta = ProfileMeta
+> extends CoMap<Shape, Meta> {}
 
-}
-
-export type AccountMigration< P extends Profile = Profile,
-R extends CoMap = CoMap,
-Meta extends AccountMeta = AccountMeta> = (account: ControlledAccount<P, R, Meta>, profile: P) => void;
+export type AccountMigration<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+> = (
+    account: ControlledAccount<P, R, Meta>,
+    profile: P
+) => void | Promise<void>;

@@ -1,5 +1,13 @@
 # twit-stresstest
 
+## 0.1.1
+
+### Patch Changes
+
+- Allow account migrations to be async
+- Updated dependencies
+  - jazz-nodejs@0.5.3
+
 ## 0.1.0
 
 ### Minor Changes

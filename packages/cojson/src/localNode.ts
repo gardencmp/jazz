@@ -68,7 +68,7 @@ export class LocalNode {
     }
 
     /** @category 2. Node Creation */
-    static withNewlyCreatedAccount<
+    static async withNewlyCreatedAccount<
         P extends Profile = Profile,
         R extends CoMap = CoMap,
         Meta extends AccountMeta = AccountMeta
@@ -80,12 +80,12 @@ export class LocalNode {
         name: string;
         migration?: AccountMigration<P, R, Meta>;
         initialAgentSecret?: AgentSecret;
-    }): {
+    }): Promise<{
         node: LocalNode;
         accountID: AccountID;
         accountSecret: AgentSecret;
         sessionID: SessionID;
-    } {
+    }> {
         const throwawayAgent = newRandomAgentSecret();
         const setupNode = new LocalNode(
             new AnonymousControlledAccount(throwawayAgent),
@@ -108,7 +108,7 @@ export class LocalNode {
         );
 
         if (migration) {
-            migration(accountOnNodeWithAccount, profile as P);
+            await migration(accountOnNodeWithAccount, profile as P);
         }
 
         nodeWithAccount.account = new ControlledAccount(
@@ -194,7 +194,7 @@ export class LocalNode {
         const profile = await node.load(profileID);
 
         if (migration) {
-            migration(
+            await migration(
                 controlledAccount as ControlledAccount<P, R, Meta>,
                 profile as P
             );

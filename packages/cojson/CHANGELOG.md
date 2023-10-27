@@ -1,5 +1,11 @@
 # cojson
 
+## 0.5.2
+
+### Patch Changes
+
+- Allow account migrations to be async
+
 ## 0.5.1
 
 ### Patch Changes

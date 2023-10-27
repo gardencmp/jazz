@@ -110,7 +110,7 @@ async function signUp(
     const secretSeed = cojsonInternals.newRandomSecretSeed();
 
     const { node, accountID, accountSecret } =
-        LocalNode.withNewlyCreatedAccount({
+        await LocalNode.withNewlyCreatedAccount({
             name: username,
             initialAgentSecret: agentSecretFromSecretSeed(secretSeed),
             migration,
