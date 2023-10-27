@@ -17,7 +17,7 @@ import {
     groupWithTwoAdmins,
     groupWithTwoAdminsHighLevel,
 } from "./testUtils.js";
-import { AnonymousControlledAccount, cojsonReady } from "../index.js";
+import { ControlledAgent, cojsonReady } from "../index.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 
 beforeEach(async () => {
@@ -70,7 +70,7 @@ test("Added adming can add a third admin to a group (high level)", () => {
 
     const thirdAdmin = groupAsOtherAdmin.core.node.createAccount("thirdAdmin");
 
-    groupAsOtherAdmin = groupAsOtherAdmin.addMember(thirdAdmin.id, "admin");
+    groupAsOtherAdmin = groupAsOtherAdmin.addMember(thirdAdmin, "admin");
 
     expect(groupAsOtherAdmin.get(thirdAdmin.id)).toEqual("admin");
 });
@@ -166,7 +166,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
     const writer = node.createAccount("writer");
 
-    group = group.addMember(writer.id, "writer");
+    group = group.addMember(writer, "writer");
     expect(group.get(writer.id)).toEqual("writer");
 
     const groupAsWriter = expectGroup(
@@ -179,13 +179,13 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
     const otherAgent = groupAsWriter.core.node.createAccount("otherAgent");
 
-    expect(() => groupAsWriter.addMember(otherAgent.id, "admin")).toThrow(
+    expect(() => groupAsWriter.addMember(otherAgent, "admin")).toThrow(
         "Failed to set role"
     );
-    expect(() => groupAsWriter.addMember(otherAgent.id, "writer")).toThrow(
+    expect(() => groupAsWriter.addMember(otherAgent, "writer")).toThrow(
         "Failed to set role"
     );
-    expect(() => groupAsWriter.addMember(otherAgent.id, "reader")).toThrow(
+    expect(() => groupAsWriter.addMember(otherAgent, "reader")).toThrow(
         "Failed to set role"
     );
 
@@ -235,7 +235,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 
     const reader = node.createAccount("reader");
 
-    group = group.addMember(reader.id, "reader");
+    group = group.addMember(reader, "reader");
     expect(group.get(reader.id)).toEqual("reader");
 
     const groupAsReader = expectGroup(
@@ -248,13 +248,13 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 
     const otherAgent = groupAsReader.core.node.createAccount("otherAgent");
 
-    expect(() => groupAsReader.addMember(otherAgent.id, "admin")).toThrow(
+    expect(() => groupAsReader.addMember(otherAgent, "admin")).toThrow(
         "Failed to set role"
     );
-    expect(() => groupAsReader.addMember(otherAgent.id, "writer")).toThrow(
+    expect(() => groupAsReader.addMember(otherAgent, "writer")).toThrow(
         "Failed to set role"
     );
-    expect(() => groupAsReader.addMember(otherAgent.id, "reader")).toThrow(
+    expect(() => groupAsReader.addMember(otherAgent, "reader")).toThrow(
         "Failed to set role"
     );
 
@@ -337,7 +337,7 @@ test("Writers can write to an object that is owned by their group (high level)",
 
     const writer = node.createAccount("writer");
 
-    group.addMember(writer.id, "writer");
+    group.addMember(writer, "writer");
 
     const childObject = group.createMap();
 
@@ -396,7 +396,7 @@ test("Readers can not write to an object that is owned by their group (high leve
 
     const reader = node.createAccount("reader");
 
-    group.addMember(reader.id, "reader");
+    group.addMember(reader, "reader");
 
     const childObject = group.createMap();
 
@@ -548,7 +548,7 @@ test("Admins can set group read key and then writers can use it to create and re
 
     const writer = node.createAccount("writer");
 
-    group.addMember(writer.id, "writer");
+    group.addMember(writer, "writer");
 
     const childObject = group.createMap();
 
@@ -637,7 +637,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const reader = node.createAccount("reader");
 
-    group.addMember(reader.id, "reader");
+    group.addMember(reader, "reader");
 
     let childObject = group.createMap();
 
@@ -757,7 +757,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const reader2 = node.createAccount("reader2");
 
-    group.addMember(reader1.id, "reader");
+    group.addMember(reader1, "reader");
 
     let childObject = group.createMap();
 
@@ -774,7 +774,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     expect(childContentAsReader1.get("foo")).toEqual("bar");
 
-    group.addMember(reader2.id, "reader");
+    group.addMember(reader2, "reader");
 
     const childContentAsReader2 = expectMap(
         childObject.core
@@ -1013,7 +1013,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     const reader = node.createAccount("reader");
 
-    group.addMember(reader.id, "reader");
+    group.addMember(reader, "reader");
 
     childObject = childObject.edit((editable) => {
         editable.set("foo2", "bar2", "private");
@@ -1210,8 +1210,8 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     const reader2 = node.createAccount("reader2");
 
-    group.addMember(reader.id, "reader");
-    group.addMember(reader2.id, "reader");
+    group.addMember(reader, "reader");
+    group.addMember(reader2, "reader");
 
     childObject = childObject.edit((editable) => {
         editable.set("foo2", "bar2", "private");
@@ -1314,7 +1314,7 @@ test("Admins can create an adminInvite, which can add an admin", () => {
     const groupAsInvite = expectGroup(
         groupCore
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(inviteSecret),
+                new ControlledAgent(inviteSecret),
                 newRandomSessionID(inviteID)
             )
             .getCurrentContent()
@@ -1363,7 +1363,7 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
     const invitedAdminID = getAgentID(invitedAdminSecret);
 
     const nodeAsInvitedAdmin = node.testWithDifferentAccount(
-        new AnonymousControlledAccount(invitedAdminSecret),
+        new ControlledAgent(invitedAdminSecret),
         newRandomSessionID(invitedAdminID)
     );
 
@@ -1433,7 +1433,7 @@ test("Admins can create a writerInvite, which can add a writer", () => {
     const groupAsInvite = expectGroup(
         groupCore
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(inviteSecret),
+                new ControlledAgent(inviteSecret),
                 newRandomSessionID(inviteID)
             )
             .getCurrentContent()
@@ -1482,7 +1482,7 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
     const invitedWriterID = getAgentID(invitedWriterSecret);
 
     const nodeAsInvitedWriter = node.testWithDifferentAccount(
-        new AnonymousControlledAccount(invitedWriterSecret),
+        new ControlledAgent(invitedWriterSecret),
         newRandomSessionID(invitedWriterID)
     );
 
@@ -1542,7 +1542,7 @@ test("Admins can create a readerInvite, which can add a reader", () => {
     const groupAsInvite = expectGroup(
         groupCore
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(inviteSecret),
+                new ControlledAgent(inviteSecret),
                 newRandomSessionID(inviteID)
             )
             .getCurrentContent()
@@ -1591,7 +1591,7 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
     const invitedReaderID = getAgentID(invitedReaderSecret);
 
     const nodeAsInvitedReader = node.testWithDifferentAccount(
-        new AnonymousControlledAccount(invitedReaderSecret),
+        new ControlledAgent(invitedReaderSecret),
         newRandomSessionID(invitedReaderID)
     );
 
@@ -1651,7 +1651,7 @@ test("WriterInvites can not invite admins", () => {
     const groupAsInvite = expectGroup(
         groupCore
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(inviteSecret),
+                new ControlledAgent(inviteSecret),
                 newRandomSessionID(inviteID)
             )
             .getCurrentContent()
@@ -1711,7 +1711,7 @@ test("ReaderInvites can not invite admins", () => {
     const groupAsInvite = expectGroup(
         groupCore
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(inviteSecret),
+                new ControlledAgent(inviteSecret),
                 newRandomSessionID(inviteID)
             )
             .getCurrentContent()
@@ -1771,7 +1771,7 @@ test("ReaderInvites can not invite writers", () => {
     const groupAsInvite = expectGroup(
         groupCore
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(inviteSecret),
+                new ControlledAgent(inviteSecret),
                 newRandomSessionID(inviteID)
             )
             .getCurrentContent()
@@ -1812,7 +1812,7 @@ test("Can give read permission to 'everyone'", () => {
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+    const newAccount = new ControlledAgent(newRandomAgentSecret());
 
     const childContent2 = expectMap(
         childObject
@@ -1840,12 +1840,12 @@ test("Can give read permissions to 'everyone' (high-level)", async () => {
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+    const newAccount = new ControlledAgent(newRandomAgentSecret());
 
     const childContent2 = expectMap(
         childObject.core
             .testWithDifferentAccount(
-                new AnonymousControlledAccount(newRandomAgentSecret()),
+                new ControlledAgent(newRandomAgentSecret()),
                 newRandomSessionID(newAccount.currentAgentID())
             )
             .getCurrentContent()
@@ -1880,7 +1880,7 @@ test("Can give write permission to 'everyone'", () => {
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+    const newAccount = new ControlledAgent(newRandomAgentSecret());
 
     const childContent2 = expectMap(
         childObject
@@ -1913,7 +1913,7 @@ test("Can give write permissions to 'everyone' (high-level)", async () => {
         expect(editable.get("foo")).toEqual("bar");
     });
 
-    const newAccount = new AnonymousControlledAccount(newRandomAgentSecret());
+    const newAccount = new ControlledAgent(newRandomAgentSecret());
 
     const childContent2 = expectMap(
         childObject.core

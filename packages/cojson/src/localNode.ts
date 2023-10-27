@@ -26,9 +26,9 @@ import {
     Account,
     AccountMeta,
     accountHeaderForInitialAgentSecret,
-    GeneralizedControlledAccount,
+    ControlledAccountOrAgent,
     ControlledAccount,
-    AnonymousControlledAccount,
+    ControlledAgent,
     AccountID,
     Profile,
     AccountMigration,
@@ -52,7 +52,7 @@ export class LocalNode {
     /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
     /** @category 3. Low-level */
-    account: GeneralizedControlledAccount;
+    account: ControlledAccountOrAgent;
     /** @category 3. Low-level */
     currentSessionID: SessionID;
     /** @category 3. Low-level */
@@ -60,7 +60,7 @@ export class LocalNode {
 
     /** @category 3. Low-level */
     constructor(
-        account: GeneralizedControlledAccount,
+        account: ControlledAccountOrAgent,
         currentSessionID: SessionID
     ) {
         this.account = account;
@@ -88,7 +88,7 @@ export class LocalNode {
     }> {
         const throwawayAgent = newRandomAgentSecret();
         const setupNode = new LocalNode(
-            new AnonymousControlledAccount(throwawayAgent),
+            new ControlledAgent(throwawayAgent),
             newRandomSessionID(getAgentID(throwawayAgent))
         );
 
@@ -156,7 +156,7 @@ export class LocalNode {
         migration?: AccountMigration<P, R, Meta>;
     }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
-            new AnonymousControlledAccount(accountSecret),
+            new ControlledAgent(accountSecret),
             newRandomSessionID(accountID)
         );
 
@@ -370,14 +370,14 @@ export class LocalNode {
         const groupAsInvite = expectGroup(
             group.core
                 .testWithDifferentAccount(
-                    new AnonymousControlledAccount(inviteAgentSecret),
+                    new ControlledAgent(inviteAgentSecret),
                     newRandomSessionID(inviteAgentID)
                 )
                 .getCurrentContent()
         );
 
         groupAsInvite.addMemberInternal(
-            this.account.id,
+            this.account,
             inviteRole === "adminInvite"
                 ? "admin"
                 : inviteRole === "writerInvite"
@@ -439,7 +439,7 @@ export class LocalNode {
         let account = expectGroup(
             this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
                 .testWithDifferentAccount(
-                    new AnonymousControlledAccount(agentSecret),
+                    new ControlledAgent(agentSecret),
                     newRandomSessionID(accountAgentID)
                 )
                 .getCurrentContent()
@@ -518,7 +518,7 @@ export class LocalNode {
             );
         }
 
-        return new Account(coValue).getCurrentAgentID();
+        return new Account(coValue).currentAgentID();
     }
 
     async resolveAccountAgentAsync(
@@ -553,7 +553,7 @@ export class LocalNode {
             );
         }
 
-        return new Account(coValue).getCurrentAgentID();
+        return new Account(coValue).currentAgentID();
     }
 
     /**
@@ -596,7 +596,7 @@ export class LocalNode {
 
     /** @internal */
     testWithDifferentAccount(
-        account: GeneralizedControlledAccount,
+        account: ControlledAccountOrAgent,
         currentSessionID: SessionID
     ): LocalNode {
         const newNode = new LocalNode(account, currentSessionID);

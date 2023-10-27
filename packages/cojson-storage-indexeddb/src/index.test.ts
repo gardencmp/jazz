@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
-import { AnonymousControlledAccount, LocalNode, cojsonInternals } from "cojson";
+import { ControlledAgent, LocalNode, cojsonInternals } from "cojson";
 import { IDBStorage } from ".";
 
 test.skip("Should be able to initialize and load from empty DB", async () => {
     const agentSecret = cojsonInternals.newRandomAgentSecret();
 
     const node = new LocalNode(
-        new AnonymousControlledAccount(agentSecret),
+        new ControlledAgent(agentSecret),
         cojsonInternals.newRandomSessionID(
             cojsonInternals.getAgentID(agentSecret)
         )
@@ -27,7 +27,7 @@ test("Should be able to sync data to database and then load that from a new node
     const agentSecret = cojsonInternals.newRandomAgentSecret();
 
     const node1 = new LocalNode(
-        new AnonymousControlledAccount(agentSecret),
+        new ControlledAgent(agentSecret),
         cojsonInternals.newRandomSessionID(
             cojsonInternals.getAgentID(agentSecret)
         )
@@ -50,7 +50,7 @@ test("Should be able to sync data to database and then load that from a new node
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const node2 = new LocalNode(
-        new AnonymousControlledAccount(agentSecret),
+        new ControlledAgent(agentSecret),
         cojsonInternals.newRandomSessionID(
             cojsonInternals.getAgentID(agentSecret)
         )

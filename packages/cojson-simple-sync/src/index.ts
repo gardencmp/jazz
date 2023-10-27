@@ -1,4 +1,4 @@
-import { AnonymousControlledAccount, LocalNode, cojsonInternals, cojsonReady } from "cojson";
+import { ControlledAgent, LocalNode, cojsonInternals, cojsonReady } from "cojson";
 import { WebSocketServer } from "ws";
 import { SQLiteStorage } from "cojson-storage-sqlite";
 import { websocketReadableStream, websocketWritableStream } from "./websocketStreams.js";
@@ -15,7 +15,7 @@ const agentSecret = cojsonInternals.newRandomAgentSecret();
 const agentID = cojsonInternals.getAgentID(agentSecret);
 
 const localNode = new LocalNode(
-    new AnonymousControlledAccount(agentSecret),
+    new ControlledAgent(agentSecret),
     cojsonInternals.newRandomSessionID(agentID)
 );
 

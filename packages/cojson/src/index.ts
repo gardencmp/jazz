@@ -27,7 +27,7 @@ import {
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import {
-    AnonymousControlledAccount,
+    ControlledAgent,
     ControlledAccount,
 } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
@@ -108,7 +108,7 @@ export {
     SessionID,
     Media,
     CoValueCore,
-    AnonymousControlledAccount,
+    ControlledAgent,
     ControlledAccount,
     cryptoReady as cojsonReady,
     MAX_RECOMMENDED_TX_SIZE,

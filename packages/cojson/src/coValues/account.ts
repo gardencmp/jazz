@@ -36,7 +36,7 @@ export class Account<
     R extends CoMap = CoMap,
     Meta extends AccountMeta = AccountMeta
 > extends Group<P, R, Meta> {
-    getCurrentAgentID(): AgentID {
+    currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
             k.startsWith("sealer_")
         );
@@ -51,7 +51,7 @@ export class Account<
     }
 }
 
-export interface GeneralizedControlledAccount {
+export interface ControlledAccountOrAgent {
     id: AccountID | AgentID;
     agentSecret: AgentSecret;
 
@@ -69,7 +69,7 @@ export class ControlledAccount<
         Meta extends AccountMeta = AccountMeta
     >
     extends Account<P, R, Meta>
-    implements GeneralizedControlledAccount
+    implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
 
@@ -116,8 +116,8 @@ export class ControlledAccount<
 }
 
 /** @hidden */
-export class AnonymousControlledAccount
-    implements GeneralizedControlledAccount
+export class ControlledAgent
+    implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
 

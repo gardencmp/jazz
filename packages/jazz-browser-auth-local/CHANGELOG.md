@@ -1,5 +1,16 @@
 # jazz-browser-auth-local
 
+## 0.5.0
+
+### Minor Changes
+
+- Make addMember and removeMember take loaded Accounts instead of just IDs
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-browser@0.6.0
+
 ## 0.4.17
 
 ### Patch Changes

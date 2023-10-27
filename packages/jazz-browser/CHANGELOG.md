@@ -1,5 +1,18 @@
 # jazz-browser
 
+## 0.6.0
+
+### Minor Changes
+
+- Make addMember and removeMember take loaded Accounts instead of just IDs
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson-storage-indexeddb@0.6.0
+  - jazz-autosub@0.6.0
+  - cojson@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes

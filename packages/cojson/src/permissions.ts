@@ -249,7 +249,7 @@ export function determineValidTransactions(
                         const effectiveTransactor =
                             transactor === groupContent.id &&
                             groupAtTime instanceof Account
-                                ? groupAtTime.getCurrentAgentID()
+                                ? groupAtTime.currentAgentID()
                                 : transactor;
                         const transactorRoleAtTxTime =
                             groupAtTime.get(effectiveTransactor) ||

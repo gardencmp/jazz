@@ -1,5 +1,16 @@
 # twit-stresstest
 
+## 0.2.0
+
+### Minor Changes
+
+- Make addMember and removeMember take loaded Accounts instead of just IDs
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-nodejs@0.6.0
+
 ## 0.1.1
 
 ### Patch Changes

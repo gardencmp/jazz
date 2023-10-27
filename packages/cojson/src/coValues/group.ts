@@ -18,7 +18,7 @@ import {
     getAgentID,
 } from "../crypto.js";
 import { AgentID, isAgentID } from "../ids.js";
-import { AccountID, Profile } from "./account.js";
+import { Account, AccountID, ControlledAccountOrAgent, Profile } from "./account.js";
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
 
@@ -94,13 +94,13 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    addMember(accountID: AccountID | Everyone, role: Role): this {
-        return this.addMemberInternal(accountID, role);
+    addMember(account: Account | ControlledAccountOrAgent | Everyone, role: Role): this {
+        return this.addMemberInternal(account, role);
     }
 
     /** @internal */
     addMemberInternal(
-        accountID: AccountID | AgentID | Everyone,
+        account: Account | ControlledAccountOrAgent | AgentID | Everyone,
         role: Role
     ): this {
         return this.mutate((mutable) => {
@@ -110,15 +110,15 @@ export class Group<
                 throw new Error("Can't add member without read key secret");
             }
 
-            if (accountID === EVERYONE) {
+            if (account === EVERYONE) {
                 if (!(role === "reader" || role === "writer")) {
                     throw new Error(
                         "Can't make everyone something other than reader or writer"
                     );
                 }
-                mutable.set(accountID, role, "trusting");
+                mutable.set(account, role, "trusting");
 
-                if (mutable.get(accountID) !== role) {
+                if (mutable.get(account) !== role) {
                     throw new Error("Failed to set role");
                 }
 
@@ -128,18 +128,16 @@ export class Group<
                     "trusting"
                 );
             } else {
-                const agent = this.core.node.resolveAccountAgent(
-                    accountID,
-                    "Expected to know agent to add them to group"
-                );
-                mutable.set(accountID, role, "trusting");
+                const memberKey = typeof account === "string" ? account : account.id;
+                const agent = typeof account === "string" ? account : account.currentAgentID();
+                mutable.set(memberKey, role, "trusting");
 
-                if (mutable.get(accountID) !== role) {
+                if (mutable.get(memberKey) !== role) {
                     throw new Error("Failed to set role");
                 }
 
                 mutable.set(
-                    `${currentReadKey.id}_for_${accountID}`,
+                    `${currentReadKey.id}_for_${memberKey}`,
                     seal({
                         message: currentReadKey.secret,
                         from: this.core.node.account.currentSealerSecret(),
@@ -225,15 +223,14 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    removeMember(accountID: AccountID): this {
-        return this.removeMemberInternal(accountID);
+    removeMember(account: Account | ControlledAccountOrAgent | Everyone): this {
+        return this.removeMemberInternal(account);
     }
 
     /** @internal */
-    removeMemberInternal(accountID: AccountID | AgentID): this {
-        const afterRevoke = this.mutate((map) => {
-            map.set(accountID, "revoked", "trusting");
-        });
+    removeMemberInternal(account: Account | ControlledAccountOrAgent | AgentID | Everyone): this {
+        const memberKey = typeof account === "string" ? account : account.id;
+        const afterRevoke = this.set(memberKey, "revoked", "trusting");
 
         return afterRevoke.rotateReadKey();
     }
