@@ -108,7 +108,7 @@ export class LocalNode {
         );
 
         if (migration) {
-            await migration(accountOnNodeWithAccount, profile as P);
+            await migration(accountOnNodeWithAccount, profile as P, nodeWithAccount);
         }
 
         nodeWithAccount.account = new ControlledAccount(
@@ -196,7 +196,8 @@ export class LocalNode {
         if (migration) {
             await migration(
                 controlledAccount as ControlledAccount<P, R, Meta>,
-                profile as P
+                profile as P,
+                node
             );
             node.account = new ControlledAccount(
                 controlledAccount.core,

@@ -1,5 +1,11 @@
 # cojson
 
+## 0.6.1
+
+### Patch Changes
+
+- Provide localNode to AccountMigrations
+
 ## 0.6.0
 
 ### Minor Changes

@@ -17,8 +17,8 @@ import {
     Profile,
     SessionID,
     cojsonReady,
+    cojsonInternals
 } from "cojson";
-import { newRandomSessionID } from "cojson/src/coValueCore";
 import { readFile, writeFile } from "node:fs/promises";
 
 if (!("crypto" in globalThis)) {
@@ -72,7 +72,7 @@ export async function createOrResumeWorker<
         // TODO: locked sessions similar to browser
         const sessionID =
             process.env.JAZZ_WORKER_SESSION ||
-            newRandomSessionID(existingCredentials.accountID);
+            cojsonInternals.newRandomSessionID(existingCredentials.accountID);
 
         console.log("Loading worker", existingCredentials.accountID);
 

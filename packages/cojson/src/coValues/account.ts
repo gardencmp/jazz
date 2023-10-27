@@ -15,6 +15,7 @@ import {
 import { AgentID } from "../ids.js";
 import { CoMap } from "./coMap.js";
 import { Group, InviteSecret } from "./group.js";
+import { LocalNode } from "../index.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret
@@ -169,5 +170,6 @@ export type AccountMigration<
     Meta extends AccountMeta = AccountMeta
 > = (
     account: ControlledAccount<P, R, Meta>,
-    profile: P
+    profile: P,
+    localNode: LocalNode
 ) => void | Promise<void>;
