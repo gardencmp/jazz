@@ -15,6 +15,7 @@ import {
 import { AgentID } from "../ids.js";
 import { CoMap } from "./coMap.js";
 import { Group, InviteSecret } from "./group.js";
+import { LocalNode } from "../index.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret
@@ -36,7 +37,7 @@ export class Account<
     R extends CoMap = CoMap,
     Meta extends AccountMeta = AccountMeta
 > extends Group<P, R, Meta> {
-    getCurrentAgentID(): AgentID {
+    currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
             k.startsWith("sealer_")
         );
@@ -51,7 +52,7 @@ export class Account<
     }
 }
 
-export interface GeneralizedControlledAccount {
+export interface ControlledAccountOrAgent {
     id: AccountID | AgentID;
     agentSecret: AgentSecret;
 
@@ -64,12 +65,12 @@ export interface GeneralizedControlledAccount {
 
 /** @hidden */
 export class ControlledAccount<
-P extends Profile = Profile,
-R extends CoMap = CoMap,
-Meta extends AccountMeta = AccountMeta
->
+        P extends Profile = Profile,
+        R extends CoMap = CoMap,
+        Meta extends AccountMeta = AccountMeta
+    >
     extends Account<P, R, Meta>
-    implements GeneralizedControlledAccount
+    implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
 
@@ -116,8 +117,8 @@ Meta extends AccountMeta = AccountMeta
 }
 
 /** @hidden */
-export class AnonymousControlledAccount
-    implements GeneralizedControlledAccount
+export class ControlledAgent
+    implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
 
@@ -158,10 +159,17 @@ export type ProfileShape = {
 };
 export type ProfileMeta = { type: "profile" };
 
-export class Profile<Shape extends ProfileShape = ProfileShape, Meta extends ProfileMeta = ProfileMeta> extends CoMap<Shape, Meta> {
+export class Profile<
+    Shape extends ProfileShape = ProfileShape,
+    Meta extends ProfileMeta = ProfileMeta
+> extends CoMap<Shape, Meta> {}
 
-}
-
-export type AccountMigration< P extends Profile = Profile,
-R extends CoMap = CoMap,
-Meta extends AccountMeta = AccountMeta> = (account: ControlledAccount<P, R, Meta>, profile: P) => void;
+export type AccountMigration<
+    P extends Profile = Profile,
+    R extends CoMap = CoMap,
+    Meta extends AccountMeta = AccountMeta
+> = (
+    account: ControlledAccount<P, R, Meta>,
+    profile: P,
+    localNode: LocalNode
+) => void | Promise<void>;

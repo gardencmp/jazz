@@ -27,7 +27,7 @@ import { Group } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { AccountID, GeneralizedControlledAccount } from "./coValues/account.js";
+import { AccountID, ControlledAccountOrAgent } from "./coValues/account.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { coreToCoValue } from "./coreToCoValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -133,7 +133,7 @@ export class CoValueCore {
     }
 
     testWithDifferentAccount(
-        account: GeneralizedControlledAccount,
+        account: ControlledAccountOrAgent,
         currentSessionID: SessionID
     ): CoValueCore {
         const newNode = this.node.testWithDifferentAccount(

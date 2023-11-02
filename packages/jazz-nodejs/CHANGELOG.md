@@ -1,5 +1,38 @@
 # jazz-autosub
 
+## 0.6.1
+
+### Patch Changes
+
+- Fix wrong import from cojson
+
+## 0.6.0
+
+### Minor Changes
+
+- Make addMember and removeMember take loaded Accounts instead of just IDs
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-autosub@0.6.0
+  - cojson@0.6.0
+  - cojson-transport-nodejs-ws@0.5.1
+
+## 0.5.3
+
+### Patch Changes
+
+- Allow account migrations to be async
+- Updated dependencies
+  - cojson@0.5.2
+
+## 0.5.2
+
+### Patch Changes
+
+- Expose migration for jazz-nodejs
+
 ## 0.5.1
 
 ### Patch Changes

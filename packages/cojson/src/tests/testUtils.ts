@@ -2,17 +2,17 @@ import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
-import { AnonymousControlledAccount } from "../coValues/account.js";
+import { ControlledAgent } from "../coValues/account.js";
 import { SessionID } from "../ids.js";
 // @ts-ignore
 import { expect } from "bun:test";
 
-export function randomAnonymousAccountAndSessionID(): [AnonymousControlledAccount, SessionID] {
+export function randomAnonymousAccountAndSessionID(): [ControlledAgent, SessionID] {
     const agentSecret = newRandomAgentSecret();
 
     const sessionID = newRandomSessionID(getAgentID(agentSecret));
 
-    return [new AnonymousControlledAccount(agentSecret), sessionID];
+    return [new ControlledAgent(agentSecret), sessionID];
 }
 
 export function newGroup() {
@@ -73,7 +73,7 @@ export function groupWithTwoAdminsHighLevel() {
 
     const otherAdmin = node.createAccount("otherAdmin");
 
-    group = group.addMember(otherAdmin.id, "admin");
+    group = group.addMember(otherAdmin, "admin");
 
     return { admin, node, group, otherAdmin };
 }

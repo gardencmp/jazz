@@ -1,12 +1,12 @@
 {
   "name": "twit-stresstest",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "dist/twit-stresstest/index.js",
-  "type":"module",
+  "type": "module",
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "jazz-nodejs": "^0.5.0"
+    "jazz-nodejs": "^0.6.0"
   },
   "scripts": {
     "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",

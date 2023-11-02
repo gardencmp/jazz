@@ -1,5 +1,5 @@
 import {
-    AccountID,
+    Account,
     BinaryCoStream,
     CoID,
     CoList,
@@ -11,6 +11,7 @@ import {
     Role,
 } from "cojson";
 import { AutoSubContext, ValueOrResolvedRef } from "../autoSub.js";
+import { ControlledAccountOrAgent } from "cojson/src/coValues/account.js";
 
 export class ResolvedGroupMeta<G extends Group> {
     coValue!: G;
@@ -55,12 +56,12 @@ export class ResolvedGroup<G extends Group = Group> {
         );
     }
 
-    addMember(accountID: AccountID | Everyone, role: Role): G {
+    addMember(accountID: Account | ControlledAccountOrAgent | Everyone, role: Role): G {
         return this.meta.group.addMember(accountID, role);
     }
 
-    removeMember(accountID: AccountID): G {
-        return this.meta.group.removeMember(accountID);
+    removeMember(account: Account | ControlledAccountOrAgent | Everyone): G {
+        return this.meta.group.removeMember(account);
     }
 
     createInvite(role: "reader" | "writer" | "admin"): InviteSecret {

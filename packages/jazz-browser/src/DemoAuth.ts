@@ -61,7 +61,7 @@ export class BrowserDemoAuth implements AuthProvider {
                     this.driver.onReady({
                         signUp: async (username) => {
                             const { node, accountID, accountSecret } =
-                                LocalNode.withNewlyCreatedAccount({
+                                await LocalNode.withNewlyCreatedAccount({
                                     name: username,
                                     migration,
                                 });

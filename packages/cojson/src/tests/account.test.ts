@@ -9,7 +9,7 @@ beforeEach(async () => {
 
 test("Can create a node while creating a new account with profile", async () => {
     const { node, accountID, accountSecret, sessionID } =
-        LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
+        await LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
 
     expect(node).not.toBeNull();
     expect(accountID).not.toBeNull();
@@ -22,7 +22,7 @@ test("Can create a node while creating a new account with profile", async () => 
 });
 
 test("A node with an account can create groups and and objects within them", async () => {
-    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+    const { node, accountID } = await LocalNode.withNewlyCreatedAccount({
         name: "Hermes Puggington",
     });
 
@@ -42,7 +42,7 @@ test("A node with an account can create groups and and objects within them", asy
 
 test("Can create account with one node, and then load it on another", async () => {
     const { node, accountID, accountSecret } =
-        LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
+        await LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
 
     const group = await node.createGroup();
     expect(group).not.toBeNull();
@@ -69,6 +69,7 @@ test("Can create account with one node, and then load it on another", async () =
     });
 
     const map2 = await node2.load(map.id);
+    if (map2 === "unavailable") throw new Error("Map unavailable");
 
     expect(map2.get("foo")).toEqual("bar");
 });
