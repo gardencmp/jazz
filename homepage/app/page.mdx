@@ -92,7 +92,7 @@ Collaborative Values (CoValues) **can be edited as if they were simple local dat
 
 CoValues also **keep their full edit history,** including author metadata and potential editing conflicts. This makes it **super simple to build collaborative and social features.**
 
-<Grid className="lg:gap-y-8">
+<Grid className="lg:gap-y-8 lg:grid-cols-2">
 
 <GridCard>
 ### `CoMap`
@@ -102,6 +102,7 @@ CoValues also **keep their full edit history,** including author metadata and po
     - Immutable JSON & IDs of other CoValues
 </div>
 </GridCard>
+
 <GridCard>
 ### `CoList`
 <div className="text-sm">
@@ -110,58 +111,32 @@ CoValues also **keep their full edit history,** including author metadata and po
     - Immutable JSON & IDs of other CoValues
 </div>
 </GridCard>
-<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0 pt-4">
-The bread and butter of datastructures, with collaboration built-in. You can build whole apps with just these.
-</GridItem>
 
 <GridCard>
-### `CoString` <ComingSoonBadge/>
+### `CoString` & `CoText` <ComingSoonBadge/>
 <div className="text-sm">
-- Collaborative plain-text
-- Implemented as a CoList of unicode graphemes
-- Supports concurrent inserts and deletes well
-</div>
-</GridCard>
-<GridCard>
-### `CoText` <ComingSoonBadge/>
-<div className="text-sm">
-- Collaborative rich-text based on `CoString` and a `CoMap` of collaborative markup ranges
+- Collaborative plain-text & rich-text
     - Gracefully prevents most editing conflicts
     - Rendered as markdown, HTML, JSX, etc.
 </div>
 </GridCard>
 
-<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0 pt-4">
-A shocking amount of UI is text editing. CoJSON offers correct, versatile primitives.
-</GridItem>
 <GridCard>
-
-### `CoStream`
+### `CoStream` & `BinaryCoStream`
 <div className="text-sm">
 - Collection of independent per-user items streams:
     - Immutable JSON & IDs of other CoValues
 - Great for presence, reactions, polls, replies etc.
+- Create, sync and store binary blobs or live-streams as just another kind of object
 </div>
 </GridCard>
-<GridCard>
-
-### `BinaryCoStream`
-<div className="text-sm">
-- A `CoStream` of binary data chunks
-- Use for files and media streams
-- Create, load, sync and store binary blobs or live-streams as just another kind of object
-</div>
-</GridCard>
-<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0 pt-4">
-Two extra tools that let you do everything you need in your app without having to integrate additional external services.
-</GridItem>
 </Grid>
 
 ### Groups & Accounts
 
 <Slogan small>First-class user identities & secure permissions.</Slogan>
 
-<Grid>
+<Grid className="lg:gap-y-8 lg:grid-cols-2">
 <GridCard>
 ### `Group`
 <div className="text-sm">
@@ -178,9 +153,6 @@ Two extra tools that let you do everything you need in your app without having t
     - Can contain arbitrary app-specific data
 </div>
 </GridCard>
-<GridItem className="col-span-full lg:col-span-1 mb-10 lg:ml-4 [&>p]:m-0 pt-4">
-A simple API to define access control from anywhere, verifiably enforced by encryption and signatures.
-</GridItem>
 </Grid>
 
 ## The Jazz Toolkit
