@@ -100,8 +100,6 @@ export async function createOrResumeWorker<
 
         localNode = newWorker.node;
 
-        localNode.syncManager.addPeer(wsPeer);
-
         await credentialStorage.save(
             workerName,
             newWorker.accountID,
