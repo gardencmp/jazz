@@ -94,12 +94,11 @@ export async function createOrResumeWorker<
     } else {
         const newWorker = await LocalNode.withNewlyCreatedAccount({
             name: workerName,
+            peersToLoadFrom: [wsPeer],
             migration,
         });
 
         localNode = newWorker.node;
-
-        localNode.syncManager.addPeer(wsPeer);
 
         await credentialStorage.save(
             workerName,
