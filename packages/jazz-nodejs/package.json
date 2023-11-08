@@ -5,9 +5,9 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "dependencies": {
-        "cojson": "^0.6.0",
+        "cojson": "^0.6.2",
         "cojson-transport-nodejs-ws": "^0.5.1",
         "jazz-autosub": "^0.6.0"
     },

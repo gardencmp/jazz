@@ -74,10 +74,12 @@ export class LocalNode {
         Meta extends AccountMeta = AccountMeta
     >({
         name,
+        peersToLoadFrom,
         migration,
         initialAgentSecret = newRandomAgentSecret(),
     }: {
         name: string;
+        peersToLoadFrom?: Peer[];
         migration?: AccountMigration<P, R, Meta>;
         initialAgentSecret?: AgentSecret;
     }): Promise<{
@@ -106,6 +108,12 @@ export class LocalNode {
             accountOnNodeWithAccount.id,
             "After creating account"
         );
+
+        if (peersToLoadFrom) {
+            for (const peer of peersToLoadFrom) {
+                nodeWithAccount.syncManager.addPeer(peer);
+            }
+        }
 
         if (migration) {
             await migration(accountOnNodeWithAccount, profile as P, nodeWithAccount);
