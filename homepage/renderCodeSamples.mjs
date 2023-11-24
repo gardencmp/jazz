@@ -22,14 +22,14 @@ await rm("./codeSamples", { recursive: true, force: true });
             (
                 await Promise.all(
                     (
-                        await readdir(path.join("../../", dir))
+                        await readdir(path.join("../", dir))
                     ).map(async (f) =>
                         (f.endsWith(".ts") && f !== "vite-env.d.ts") ||
                         f.endsWith(".tsx")
                             ? [
                                   f,
                                   await readFile(
-                                      path.join("../../", dir, f),
+                                      path.join("../", dir, f),
                                       "utf8"
                                   ),
                               ]

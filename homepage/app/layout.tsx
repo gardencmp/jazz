@@ -49,7 +49,7 @@ export default function RootLayout({
                         mainLogo={<JazzLogo className="w-24" />}
                         items={[
                             { title: "Toolkit", href: "/" },
-                            { title: "Global Mesh", href: "/mesh" },
+                            { title: "Mesh / Pricing", href: "/mesh" },
                             {
                                 title: "Docs & Guides",
                                 href: "https://github.com/gardencmp/jazz/blob/main/DOCS.md",

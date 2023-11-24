@@ -1,10 +1,18 @@
 import { ComingSoonBadge, Grid, GridCard, GridItem } from "./forMdx";
 
-export const pricePer1MtxSyncedOut = 1;
-export const pricePer1MtxStored = 2;
+export const pricePer1MtxSyncedOut = 0.1;
+export const pricePer1MtxStored = 0.2;
 
 export const pricePerTxSyncedOut = pricePer1MtxSyncedOut / 1_000_000;
 export const pricePerTxStored = pricePer1MtxStored / 1_000_000;
+
+export function fmtPrice(raw: number) {
+    return raw.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumSignificantDigits: 2,
+    });
+}
 
 export function Pricing() {
 
