@@ -75,7 +75,7 @@ jobs:
     - name: Docker Build & Push
       uses: docker/build-push-action@v4
       with:
-        context: ./homepage/homepage-jazz
+        context: ./homepage
         push: true
         tags: ghcr.io/gardencmp/${{github.event.repository.name}}-homepage-jazz:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
         cache-from: type=gha
@@ -149,4 +149,4 @@ jobs:
         envsubst '${DOCKER_USER} ${DOCKER_PASSWORD} ${DOCKER_TAG} ${BRANCH_SUFFIX} ${BRANCH_SUBDOMAIN}' < job-template.nomad > job-instance.nomad;
         cat job-instance.nomad;
         NOMAD_ADDR=${{ secrets.NOMAD_ADDR }} nomad job run job-instance.nomad;
-      working-directory: ./homepage/homepage-jazz
+      working-directory: ./homepage
