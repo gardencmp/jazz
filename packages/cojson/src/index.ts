@@ -142,4 +142,5 @@ export namespace CojsonInternalTypes {
     export type ProfileMeta = import("./coValues/account.js").ProfileMeta;
     export type SealerSecret = import("./crypto.js").SealerSecret;
     export type SignerSecret = import("./crypto.js").SignerSecret;
+    export type JsonObject = import("./jsonValue.js").JsonObject;
 }

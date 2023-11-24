@@ -2,7 +2,9 @@ import {
     AccountMigration,
     BinaryCoStream,
     CoValue,
+    ControlledAccount,
     InviteSecret,
+    ProfileMeta,
 } from "cojson";
 import { BinaryCoStreamMeta } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE } from "cojson";
@@ -21,28 +23,45 @@ import {
 import { ReadableStream, WritableStream } from "isomorphic-streams";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import { Resolved } from "jazz-autosub";
+import {
+    AppMigration,
+    ProfileSchema,
+    CoMapSchema,
+    ControlledAccountValue,
+    AccountSchema,
+    AccountClass,
+    NullSchema,
+    NativeCoValue,
+} from "jazz-schema";
 
 export * from "jazz-autosub";
 export { BrowserDemoAuth } from "./DemoAuth";
 export type { BrowserDemoAuthDriver } from "./DemoAuth";
 
-export type BrowserNodeHandle = {
-    node: LocalNode;
+export type BrowserContext<
+    Profile extends ProfileSchema,
+    Root extends CoMapSchema | NullSchema
+> = {
+    me: ControlledAccountValue<Profile, Root>;
     // TODO: Symbol.dispose?
     done: () => void;
 };
 
-export async function createBrowserNode({
+export async function createBrowserContext<
+    AccountS extends AccountSchema & AccountClass
+>({
     auth,
     syncAddress = "wss://sync.jazz.tools",
     reconnectionTimeout: initialReconnectionTimeout = 500,
+    accountSchema,
     migration,
 }: {
     auth: AuthProvider;
     syncAddress?: string;
     reconnectionTimeout?: number;
-    migration?: AccountMigration;
-}): Promise<BrowserNodeHandle> {
+    accountSchema: AccountS;
+    migration?: AppMigration<AccountS>;
+}): Promise<BrowserContext<AccountS["_profile"], AccountS["_root"]>> {
     await cojsonReady;
     let sessionDone: () => void;
 
@@ -109,7 +128,12 @@ export async function createBrowserNode({
     void websocketReconnectLoop();
 
     return {
-        node,
+        me: accountSchema.fromControlledInner(
+            node.account as ControlledAccount<
+                NativeCoValue<AccountS["_profile"], ProfileMeta>,
+                NativeCoValue<AccountS["_root"]>
+            >
+        ),
         done: () => {
             shouldTryToReconnect = false;
             window.removeEventListener("online", onOnline);
@@ -128,7 +152,7 @@ export interface AuthProvider {
     createNode(
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        migration?: AccountMigration
+        migration?: AppMigration
     ): Promise<LocalNode>;
 }
 
@@ -235,7 +259,6 @@ function websocketReadableStream<T>(ws: WebSocket) {
                         Date.now() - msg.time,
                         "ms"
                     );
-
 
                     return;
                 }
