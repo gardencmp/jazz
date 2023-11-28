@@ -34,7 +34,7 @@ Jazz is an open-source toolkit for building apps with **sync** & **secure collab
 
 <h2 className="md:mt-24">Hard things are easy now</h2>
 
-Jazz replaces APIs, DBs and message queues with **a single new abstraction: CoJSON**.
+Jazz replaces APIs, databases and message queues with **a single new abstraction: collaborative data**.
 
 This means you get **built-in capabilities** that took best-in-class apps years to build:
 
@@ -71,20 +71,7 @@ This means you get **built-in capabilities** that took best-in-class apps years 
 </Grid>
 </div>
 
-## CoJSON
-<Slogan small>The collaborative core.</Slogan>
-
-Jazz is built around **CoJSON,** a new abstraction for **sync** & **secure collaborative data.** And while it does all the heavy lifting...
-
-- **multi-device co-editing**
-- **user identities & accounts**
-- **permissions** & **roles**
-- **sync** & **caching**
-- **persistence**
-
-...its API couldn't be simpler: CoJSON makes collaboration and secure access control feel like **inherent properties of your data**.
-
-### Collaborative Values
+## Collaborative Values
 
 <Slogan small>Your new building blocks.</Slogan>
 
@@ -99,7 +86,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 <div className="text-sm">
 - Collaborative key-value map
 - Possible values:
-    - Immutable JSON & IDs of other CoValues
+    - Immutable JSON & other CoValues
 </div>
 </GridCard>
 
@@ -108,7 +95,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 <div className="text-sm">
 - Collaborative ordered list
 - Possible items:
-    - Immutable JSON & IDs of other CoValues
+    - Immutable JSON & other CoValues
 </div>
 </GridCard>
 
@@ -125,7 +112,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 ### `CoStream` & `BinaryCoStream`
 <div className="text-sm">
 - Collection of independent per-user items streams:
-    - Immutable JSON & IDs of other CoValues
+    - Immutable JSON & other CoValues
 - Great for presence, reactions, polls, replies etc.
 - Create, sync and store binary blobs or live-streams as just another kind of object
 </div>
@@ -157,7 +144,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 
 ## The Jazz Toolkit
 
-<Slogan small>Idiomatic bindings for CoJSON, with batteries included.</Slogan>
+<Slogan small>A high-level toolkit for building apps around CoValues.</Slogan>
 
 Supported environments:
 <div className="text-sm">
@@ -236,15 +223,15 @@ Supported environments:
 </GridCard>
 </Grid>
 
-## Global Mesh
+## Jazz Mesh
 
 <Slogan small>Serverless sync & storage for Jazz apps</Slogan>
 
-To give you sync & secure collaborative data instantly on a global scale, we're running Global Mesh. It works with any CoJSON-based app, requires no setup and has straightforward, scale-to-zero pricing.
+To give you sync and secure collaborative data instantly on a global scale, we're running Jazz Mesh. It works with any Jazz-based app, requires no setup and has straightforward, scale-to-zero pricing.
 
-Global Mesh is currently free &mdash; and it's set up as the default sync & storage peer in Jazz, letting you start building multi-user apps with persistence right away, no backend needed.
+Jazz Mesh is currently free &mdash; and it's set up as the default sync & storage peer in Jazz, letting you start building multi-user apps with persistence right away, no backend needed.
 
-<Link href="/mesh" target="_blank">Learn more about Global Mesh</Link>
+<Link href="/mesh" target="_blank">Learn more about Jazz Mesh</Link>
 
 ## Get Started
 

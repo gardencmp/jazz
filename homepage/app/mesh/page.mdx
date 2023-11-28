@@ -1,12 +1,12 @@
 import { Slogan, Grid, GridCard, GridItem, ComingSoonBadge } from '@/components/forMdx';
-import { pricePer1MtxSyncedOut, pricePerTxSyncedOut, pricePer1MtxStored, pricePerTxStored } from '@/components/pricing';
+import { fmtPrice, pricePer1MtxSyncedOut, pricePerTxSyncedOut, pricePer1MtxStored, pricePerTxStored } from '@/components/pricing';
 
 export const metadata = {
-    title: "jazz - Global Mesh",
+    title: "jazz - Jazz Mesh",
     description: "Serverless sync & storage for Jazz apps.",
 };
 
-# Jazz Global Mesh
+# Jazz Mesh
 
 <Slogan>Serverless sync & storage for Jazz apps.</Slogan>
 
@@ -39,36 +39,73 @@ Store files and media streams as idiomatic `CoValues` without S3.
 
 <Slogan small></Slogan>
 
-### Free Tier
-<span className="text-lg font-medium bg-emerald-200 dark:bg-emerald-800 px-2 py-1 rounded">Until we implement billing all usage of Global Mesh is free!</span>
-<p className="text-sm">Later, any usage under $1/mo will be free.</p>
+<Grid>
+<GridCard>
+### Mesh Free
+<span className="text-2xl">$0</span>
 
+- Unlimited projects
+- For individual developers
+- Low-latency sync
+- Egress/mo: 5 million ops <span className="text-xs">or 50GB blobs</span>
+- Storage: 2.5 million ops <span className="text-xs">or 25GB blobs</span>
+</GridCard>
+<GridCard>
+### Mesh Starter <ComingSoonBadge/>
+<span className="text-2xl">$9</span>/developer/mo
+
+- Unlimited projects
+- Up to 3 developers
+- Low-latency sync
+- Egress/mo: 50 million ops <span className="text-xs">or 500GB blobs</span>
+- Storage: 25 million ops <span className="text-xs">or 250GB blobs</span>
+
+<div className="text-xs">
+- Extra egress: {fmtPrice(10 * pricePer1MtxSyncedOut)} per 10 million ops or 100GB blobs
+- Extra storage: {fmtPrice(10 * pricePer1MtxStored)} per 10 million ops or 100GB blobs
+</div>
+</GridCard>
+<GridCard>
+### Mesh Pro <ComingSoonBadge/>
+<span className="text-2xl">$19</span>/developer/mo
+
+- Unlimited projects
+- Up to 50 developers, SSO/SAML
+- Ultra-low-latency sync
+- Egress/mo: 100 million ops <span className="text-xs">or 1TB blobs</span>
+- Storage: 50 million ops <span className="text-xs">or 500GB blobs</span>
+
+<div className="text-xs">
+- Extra egress: {fmtPrice(10 * pricePer1MtxSyncedOut)} per 10 million ops or 100GB blobs
+- Extra storage: {fmtPrice(10 * pricePer1MtxStored)} per 10 million ops or 100GB blobs
+</div>
+</GridCard>
+{/*<GridCard>
+### Mesh Enterprise <ComingSoonBadge/>
+
+<span className="text-2xl">Custom</span>
+- Custom SLA
+- Custom cloud deployment
+- Dedicated support
+- Audit logs
+</GridCard>*/}
+</Grid>
+
+An operation represents an **individual user action**, or **10KB of data** for blobs/streams.
 
 
 <Grid>
-<GridItem className="md:col-span-2">
-### Unlimited <ComingSoonBadge/>
-
-
-<div className="lg:text-2xl border rounded-lg px-1 py-3 text-center">${pricePer1MtxSyncedOut} <small>per 1M TXs synced out</small> + ${pricePer1MtxStored}<small>/mo per 1M TXs stored</small></div>
-
-<p><small>$6/mo minimum usage</small></p>
-
-A TX (transaction) represents an **individual user action**, or **up to 100KB of binary data**.
-</GridItem>
-
 <GridItem className="col-start-1">
-#### Transactions synced out:
+#### Egress:
 <div className="text-sm">
-- Transactions sent out from Global Mesh, each counted once for every device it is synced out to.
-- Depending on cache behavior each transaction should only be synced out once per connection, ideally once per device requesting it.
+- Operations sent out from Jazz Mesh, each counted once for every device it is synced out to.
+- Depending on cache behavior each op should only be synced out once per connection, ideally once per device requesting it.
 </div>
 </GridItem>
 <GridItem>
-#### Transactions stored:
+#### Operations stored:
 <div className="text-sm">
-- Transactions that are continuously persisted.
-- Counted per second.
+- Operations that are continuously persisted.
 - Includes backups, hot storage and edge caches.
 </div>
 </GridItem>
@@ -76,21 +113,30 @@ A TX (transaction) represents an **individual user action**, or **up to 100KB of
 
 **Examples:**
 
-The number of transactions generated is highly app-specific and depends on user behaviour, but here are some examples:
+The number of ops generated is highly app-specific and depends on user behaviour, but here are some examples:
 
 <div className="text-sm">
-- 4 users co-editing 10 pages of text, typing them out as individual character inserts:
-  - 3,000 inserts/page &times; 10 pages = 30,000 transactions
-  - 30,000 transactions stored = ${30000 * pricePerTxStored} / mo
-  - 3 &times; 30,000 transactions synced out = ${3 * 30000 * pricePerTxSyncedOut} one-time
-- 4 users collaborating on a canvas, moving shapes around at 10 FPS for 10s/min for 2h/day for a month
-    - 4 users &times; 10 FPS &times; 10s/min &times; 60min/h * 2h/day &times; 30days = 1.44M transactions
-    - 1.44M transactions stored = ${1440000 * pricePerTxStored} / mo = ${1440000 * pricePerTxStored / 4} / mo / user
-    - 3 &times; 1.44M transactions synced out =  ${(3 * 1440000 * pricePerTxSyncedOut).toLocaleString("en-US", { maximumSignificantDigits: 3, })} one-time = ${(3 * 1440000 * pricePerTxSyncedOut / 4).toLocaleString("en-US", { maximumSignificantDigits: 3, })} one-time / user
-- A livestreamer streaming video (1GB total) to 100 viewers (combined live & on-demand)
-  - 1GB = 10,000 transactions (100KB each)
-  - 10,000 transactions stored = ${10000 * pricePerTxStored} / mo (= ${10000 * 1000 * pricePerTxStored} per 1TB stored)
-  - 100 &times; 10,000 transaction synced out = ${100 * 10000 * pricePerTxSyncedOut} one-time (= ${10000 * 1000 * pricePerTxSyncedOut} per 1TB egress)
+- **Session A: 4 users co-oping 10 pages of text, typing them out as individual character inserts:**
+  - 3,000 inserts/page &times; 10 pages = 30,000 ops -> 30k ops stored
+  - 30,000 ops, each synced out to 3 other users -> 90k ops egress (one-time)
+  - **You could have ~50 such sessions/mo within Mesh Free** and you can keep storing ~80 such texts.
+  - **You could have ~500 such sessions/mo within Mesh Starter included usage** and you can keep storing ~800 such texts.
+  - **You could have ~1000 such sessions/mo within Mesh Pro included usage** and you can keep storing ~1600 such texts.
+  - Each further such session would cost you about {fmtPrice(90000 * pricePerTxSyncedOut)} and {fmtPrice(30000 * pricePerTxStored)} per month to keep storing the text.
+- **Session B: 3 users collaborating on a canvas, moving shapes around at 10 FPS for 10s/min for 5 hours**
+    - 3 users &times; 10 FPS &times; 10s/min &times; 60min/h &times; 5h = 90k ops -> 90k ops stored
+    - 90k ops, each synced out to 2 other users -> 180k ops egress (one-time)
+    - **You could have ~20 such sessions/mo within Mesh Free** and you can keep storing 20 such canvases.
+    - **You could have ~250 such sessions/mo within Mesh Starter included usage** and you can keep storing 250 such canvases.
+    - **You could have ~500 such sessions/mo within Mesh Pro included usage** and you can keep storing 500 such canvases.
+    - Each further such session would cost you about {fmtPrice(180000 * pricePerTxSyncedOut)} and {fmtPrice(90000 * pricePerTxStored)} per month to keep storing the canvas.
+- **Session C: A livestreamer streaming video (1GB total) to 25 viewers (combined live & on-demand)**
+  - 1GB = 100,000 ops (10KB each) -> 100k ops stored
+  - 100,000 ops, each synced out to 25 viewers -> 2.5M ops egress (one-time)
+  - **You could have ~2 such livestreams/mo within Mesh Free** and you can keep storing 25 such videos.
+  - **You could have ~20 such livestreams/mo within Mesh Starter included usage** and you can keep storing 250 such videos.
+  - **You could have ~40 such livestreams/mo within Mesh Pro included usage** and you can keep storing 500 such videos.
+  - Each further such livestream would cost you about {fmtPrice(2500000 * pricePerTxSyncedOut)} and {fmtPrice(100000 * pricePerTxStored)} per month to keep storing the video.
 </div>
 
 ## Global Footprint
@@ -156,34 +202,34 @@ Let's talk: <a href="mailto:hello@gcmp.io">hello@gcmp.io</a>
 
 ## Custom Deployment Scenarios
 
-<Slogan>You can rely on Global Mesh. But you don't have to.</Slogan>
+<Slogan>You can rely on Jazz Mesh. But you don't have to.</Slogan>
 
 <p>Because Jazz is open-source, you can optionally run your own sync nodes &mdash; in a variety of setups.</p>
 
 <Grid>
 <GridCard>
-#### Global Mesh + Data Backup Node.
+#### Jazz Mesh + Data Backup Node.
 
-<p className="no-prose text-base">Connect your users to Global Mesh for all its benefits, but also run and connect your own data backup node (just in case.)</p>
+<p className="no-prose text-base">Connect your users to Jazz Mesh for all its benefits, but also run and connect your own data backup node (just in case.)</p>
 
 <div className="text-sm">
 Extra costs:
 - Instance costs for the backup node.
 - Moderate self-hosted storage costs.
-- Every transaction is additionally synced to your backup node and counted as synced out.
+- Every op is additionally synced to your backup node and counted as synced out.
 </div>
 </GridCard>
 <GridCard>
-#### Global Mesh + DIY Mesh.
+#### Jazz Mesh + DIY Mesh.
 
-<p className="no-prose text-base">Connect your users to Global Mesh, or your own nodes as a lower-performance fallback. The two networks stay in constant sync.</p>
+<p className="no-prose text-base">Connect your users to Jazz Mesh, or your own nodes as a lower-performance fallback. The two networks stay in constant sync.</p>
 
 <div className="text-sm">
 Extra costs:
 - N × instance cost for your sync nodes.
 - Typically moderate self-hosted egress costs.
 - High self-hosted storage costs.
-- Every transaction is additionally synced to your DIY mesh and counted as synced out.
+- Every op is additionally synced to your DIY mesh and counted as synced out.
 </div>
 </GridCard>
 <GridCard>
