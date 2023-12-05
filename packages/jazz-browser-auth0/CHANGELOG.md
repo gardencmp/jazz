@@ -1,5 +1,11 @@
 # jazz-browser-auth-local
 
+## 0.6.1
+
+### Patch Changes
+
+- Initial implementation
+
 ## 0.5.0
 
 ### Minor Changes
