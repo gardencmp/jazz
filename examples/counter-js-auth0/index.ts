@@ -1,17 +1,22 @@
 import * as auth0 from "@auth0/auth0-spa-js";
+import { Account, CoID, CoList, CoMap, Profile } from "cojson";
 import {
-    Account,
-    CoID,
-    CoList,
-    CoMap,
-    Profile,
-} from "cojson";
-import { ResolvedAccount, autoSub, autoSubResolution, createBrowserNode } from "jazz-browser";
+    ResolvedAccount,
+    autoSub,
+    autoSubResolution,
+    createBrowserNode,
+} from "jazz-browser";
 import { BrowserAuth0 } from "jazz-browser-auth0";
 
 const auth0options = {
     domain: "dev-12uyj8w4t4yjzkwa.us.auth0.com",
     clientId: "TcYtq9an3PDyInQJvD1k8PtqupYG4PnA",
+};
+
+const authorizationParams = {
+    redirect_uri: window.location.origin,
+    audience: `https://${auth0options.domain}/api/v2/`,
+    scope: "read:current_user update:current_user_metadata",
 };
 
 window.onload = async () => {
@@ -26,31 +31,26 @@ window.onload = async () => {
             .getElementById("login")
             ?.addEventListener("click", async () => {
                 await auth0Client.loginWithRedirect({
-                    authorizationParams: {
-                        redirect_uri: window.location.origin,
-                        audience: `https://${auth0options.domain}/api/v2/`,
-                        scope: "read:current_user update:current_user_metadata",
-                    },
+                    authorizationParams,
                 });
             });
     }
 
-    if (!await auth0Client.isAuthenticated()) {
+    if (!(await auth0Client.isAuthenticated())) {
         return;
     }
 
-
     let accessToken: string | undefined;
     try {
-        accessToken = await auth0Client.getTokenSilently();
+        accessToken = await auth0Client.getTokenSilently({
+            authorizationParams,
+        });
     } catch (e) {
-        alert("Failed to get access token silently, creating popup - this should only happen on localhost. Otherwise, check that allowed callback URLs are set correctly.")
+        alert(
+            "Failed to get access token silently, creating popup - this should only happen on localhost. Otherwise, check that allowed callback URLs are set correctly."
+        );
         accessToken = await auth0Client.getTokenWithPopup({
-            authorizationParams: {
-                redirect_uri: window.location.origin,
-                audience: `https://${auth0options.domain}/api/v2/`,
-                scope: "read:current_user update:current_user_metadata",
-            }
+            authorizationParams,
         });
     }
 
@@ -92,9 +92,20 @@ window.onload = async () => {
         }
     );
 
-    const increments = await autoSubResolution("me", (me: ResolvedAccount<Account<Profile, CoMap<{ countIncrements: CoID<CoList<number>> }>>>) => {
-        return me?.root?.countIncrements;
-    }, node)
+    const increments = await autoSubResolution(
+        "me",
+        (
+            me: ResolvedAccount<
+                Account<
+                    Profile,
+                    CoMap<{ countIncrements: CoID<CoList<number>> }>
+                >
+            >
+        ) => {
+            return me?.root?.countIncrements;
+        },
+        node
+    );
 
     document.getElementById("increment")!.addEventListener("click", () => {
         increments.append(1);
