@@ -60,7 +60,21 @@ export class BrowserAuth0 implements AuthProvider {
             });
         });
 
-        const existingCredentialString = user.user_metadata?.["jazz_credential"];
+        const management = new Management({
+            token: this.accessToken,
+            domain: this.auth0domain,
+        });
+
+        const metadata = await new Promise<Record<string, string>>(
+            (resolve, reject) => {
+                management.getUser(user.sub, (err, profile) => {
+                    if (err) reject(err);
+                    else resolve(profile.user_metadata);
+                });
+            }
+        );
+
+        const existingCredentialString = metadata?.["jazz_credential"];
 
         if (existingCredentialString) {
             const existingCredential = JSON.parse(
@@ -75,10 +89,7 @@ export class BrowserAuth0 implements AuthProvider {
                 migration,
             });
         } else {
-            const management = new Management({
-                token: this.accessToken,
-                domain: this.auth0domain,
-            });
+
 
             const username =
                 user.nickname || user.name || user.email || user.sub;
