@@ -33,10 +33,8 @@ export function accountHeaderForInitialAgentSecret(
 }
 
 export class Account<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
     Meta extends AccountMeta = AccountMeta
-> extends Group<P, R, Meta> {
+> extends Group<Meta> {
     currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
             k.startsWith("sealer_")
@@ -64,12 +62,8 @@ export interface ControlledAccountOrAgent {
 }
 
 /** @hidden */
-export class ControlledAccount<
-        P extends Profile = Profile,
-        R extends CoMap = CoMap,
-        Meta extends AccountMeta = AccountMeta
-    >
-    extends Account<P, R, Meta>
+export class ControlledAccount<Meta extends AccountMeta = AccountMeta>
+    extends Account<Meta>
     implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
@@ -117,9 +111,7 @@ export class ControlledAccount<
 }
 
 /** @hidden */
-export class ControlledAgent
-    implements ControlledAccountOrAgent
-{
+export class ControlledAgent implements ControlledAccountOrAgent {
     agentSecret: AgentSecret;
 
     constructor(agentSecret: AgentSecret) {
@@ -164,12 +156,8 @@ export class Profile<
     Meta extends ProfileMeta = ProfileMeta
 > extends CoMap<Shape, Meta> {}
 
-export type AccountMigration<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
-    Meta extends AccountMeta = AccountMeta
-> = (
-    account: ControlledAccount<P, R, Meta>,
-    profile: P,
+export type AccountMigration<Meta extends AccountMeta = AccountMeta> = (
+    account: ControlledAccount<Meta>,
+    profile: CoMap,
     localNode: LocalNode
 ) => void | Promise<void>;

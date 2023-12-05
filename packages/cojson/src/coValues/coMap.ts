@@ -259,7 +259,7 @@ export class CoMap<
     extends CoMapView<Shape, Meta>
     implements CoValue
 {
-    /** Returns a new version of this CoMap with a new value for the given key.
+    /** Set a new value for the given key.
      *
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -271,13 +271,13 @@ export class CoMap<
         key: K,
         value: Shape[K],
         privacy?: "private" | "trusting"
-    ): this;
+    ): void ;
     set(
         kv: {
             [K in keyof Shape & string]?: Shape[K];
         },
         privacy?: "private" | "trusting"
-    ): this;
+    ): void ;
     set<K extends keyof Shape & string>(
         ...args:
             | [
@@ -287,7 +287,7 @@ export class CoMap<
                   ("private" | "trusting")?
               ]
             | [K, Shape[K], ("private" | "trusting")?]
-    ): this {
+    ): void {
         if (typeof args[0] === "string") {
             const [key, value, privacy = "private"] = args;
             this.core.makeTransaction(
@@ -324,10 +324,12 @@ export class CoMap<
             }
         }
 
-        return new CoMap(this.core) as this;
+        const after = new CoMap(this.core) as this;
+
+        this.ops = after.ops;
     }
 
-    /** Returns a new version of this CoMap with the given key deleted (setting it to undefined).
+    /** Delete the given key (setting it to undefined).
      *
      * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -338,7 +340,7 @@ export class CoMap<
     delete(
         key: keyof Shape & string,
         privacy: "private" | "trusting" = "private"
-    ): this {
+    ) {
         this.core.makeTransaction(
             [
                 {
@@ -349,71 +351,10 @@ export class CoMap<
             privacy
         );
 
-        return new CoMap(this.core) as this;
-    }
+        const after = new CoMap(this.core) as this;
 
-    /** @category 2. Editing */
-    mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
-        const mutable = new MutableCoMap<Shape, Meta>(this.core);
-        mutator(mutable);
-        return new (this.constructor as new (core: CoValueCore) => this)(
-            this.core
-        );
-    }
-
-    /** @deprecated Use `mutate` instead. */
-    edit(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
-        return this.mutate(mutator);
-    }
-}
-
-export class MutableCoMap<
-        Shape extends { [key: string]: JsonValue | undefined } = {
-            [key: string]: JsonValue | undefined;
-        },
-        Meta extends JsonObject | null = JsonObject | null
-    >
-    extends CoMapView<Shape, Meta>
-    implements CoValue
-{
-    /** Sets a new value for the given key.
-     *
-     * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     *
-     * @category 2. Mutation
-     */
-    set<K extends keyof Shape & string>(
-        key: K,
-        value: Shape[K],
-        privacy: "private" | "trusting" = "private"
-    ): void {
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        const after = (CoMap.prototype.set as Function).call(
-            this,
-            key,
-            value,
-            privacy
-        ) as CoMap<Shape, Meta>;
         this.ops = after.ops;
     }
 
-    /** Deletes the value for the given key (setting it to undefined).
-     *
-     * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     * @category 2. Mutation
-     */
-    delete(
-        key: keyof Shape & string,
-        privacy: "private" | "trusting" = "private"
-    ): void {
-        const after = CoMap.prototype.delete.call(this, key, privacy) as CoMap<
-            Shape,
-            Meta
-        >;
-        this.ops = after.ops;
-    }
+
 }

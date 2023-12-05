@@ -95,9 +95,7 @@ export class CoStreamView<
         }
     }
 
-    getSingleStream():
-        | (Item)[]
-        | undefined {
+    getSingleStream(): Item[] | undefined {
         if (Object.keys(this.items).length === 0) {
             return undefined;
         } else if (Object.keys(this.items).length !== 1) {
@@ -114,7 +112,11 @@ export class CoStreamView<
     }
 
     accounts(): Set<AccountID> {
-        return new Set(this.sessions().map(accountOrAgentIDfromSessionID).filter(isAccountID));
+        return new Set(
+            this.sessions()
+                .map(accountOrAgentIDfromSessionID)
+                .filter(isAccountID)
+        );
     }
 
     nthItemIn(
@@ -224,7 +226,7 @@ export class CoStreamView<
     }
 
     toJSON(): {
-        [key: SessionID]: (Item )[];
+        [key: SessionID]: Item[];
     } {
         return Object.fromEntries(
             Object.entries(this.items).map(([sessionID, items]) => [
@@ -248,37 +250,7 @@ export class CoStream<
     extends CoStreamView<Item, Meta>
     implements CoValue
 {
-    push(
-        item: Item,
-        privacy: "private" | "trusting" = "private"
-    ): this {
-        this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
-        return new CoStream(this.core) as this;
-    }
-
-    mutate(mutator: (mutable: MutableCoStream<Item, Meta>) => void): this {
-        const mutable = new MutableCoStream<Item, Meta>(this.core);
-        mutator(mutable);
-        return new CoStream(this.core) as this;
-    }
-
-    /** @deprecated Use `mutate` instead. */
-    edit(mutator: (mutable: MutableCoStream<Item, Meta>) => void): this {
-        return this.mutate(mutator);
-    }
-}
-
-export class MutableCoStream<
-        Item extends JsonValue,
-        Meta extends JsonObject | null = JsonObject | null
-    >
-    extends CoStreamView<Item, Meta>
-    implements CoValue
-{
-    push(
-        item: Item,
-        privacy: "private" | "trusting" = "private"
-    ) {
+    push(item: Item, privacy: "private" | "trusting" = "private"): void {
         this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
         this.fillFromCoValue();
     }
@@ -293,7 +265,7 @@ export class BinaryCoStreamView<
     implements CoValue
 {
     getBinaryChunks(
-        allowUnfinished?: boolean,
+        allowUnfinished?: boolean
     ):
         | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
@@ -367,26 +339,12 @@ export class BinaryCoStream<
     /** @internal */
     push(
         item: BinaryStreamItem,
-        privacy?: "private" | "trusting",
-    ): this
-    push(
-        item: BinaryStreamItem,
-        privacy: "private" | "trusting",
-        returnNewStream: true
-    ): this
-    push(
-        item: BinaryStreamItem,
-        privacy: "private" | "trusting",
-        returnNewStream: false
-    ): void
-    push(
-        item: BinaryStreamItem,
         privacy: "private" | "trusting" = "private",
-        returnNewStream: boolean = true
-    ): this | void {
+        updateView: boolean = true
+    ): void {
         this.core.makeTransaction([item], privacy);
-        if (returnNewStream) {
-            return new BinaryCoStream(this.core) as this;
+        if (updateView) {
+            this.fillFromCoValue();
         }
     }
 
@@ -394,7 +352,7 @@ export class BinaryCoStream<
         settings: BinaryStreamInfo,
         privacy: "private" | "trusting" = "private"
     ): void {
-        return this.push(
+        this.push(
             {
                 type: "start",
                 ...settings,
@@ -409,78 +367,13 @@ export class BinaryCoStream<
         privacy: "private" | "trusting" = "private"
     ): void {
         // const before = performance.now();
-        return this.push(
+        this.push(
             {
                 type: "chunk",
                 chunk: `binary_U${bytesToBase64url(chunk)}`,
             } satisfies BinaryStreamChunk,
             privacy,
             false
-        );
-        // const after = performance.now();
-        // console.log(
-        //     "pushBinaryStreamChunk bandwidth in MB/s",
-        //     (1000 * chunk.length) / (after - before) / (1024 * 1024)
-        // );
-    }
-
-    endBinaryStream(privacy: "private" | "trusting" = "private"): this {
-        return this.push(
-            {
-                type: "end",
-            } satisfies BinaryStreamEnd,
-            privacy,
-            true
-        );
-    }
-
-    mutate(mutator: (mutable: MutableBinaryCoStream<Meta>) => void): this {
-        const mutable = new MutableBinaryCoStream<Meta>(this.core);
-        mutator(mutable);
-        return new BinaryCoStream(this.core) as this;
-    }
-
-    /** @deprecated Use `mutate` instead. */
-    edit(mutator: (mutable: MutableBinaryCoStream<Meta>) => void): this {
-        return this.mutate(mutator);
-    }
-}
-
-export class MutableBinaryCoStream<
-        Meta extends BinaryCoStreamMeta = { type: "binary" }
-    >
-    extends BinaryCoStreamView<Meta>
-    implements CoValue
-{
-    /** @internal */
-    push(item: BinaryStreamItem, privacy: "private" | "trusting" = "private") {
-        MutableCoStream.prototype.push.call(this, item, privacy);
-    }
-
-    startBinaryStream(
-        settings: BinaryStreamInfo,
-        privacy: "private" | "trusting" = "private"
-    ) {
-        this.push(
-            {
-                type: "start",
-                ...settings,
-            } satisfies BinaryStreamStart,
-            privacy
-        );
-    }
-
-    pushBinaryStreamChunk(
-        chunk: Uint8Array,
-        privacy: "private" | "trusting" = "private"
-    ) {
-        // const before = performance.now();
-        this.push(
-            {
-                type: "chunk",
-                chunk: `binary_U${bytesToBase64url(chunk)}`,
-            } satisfies BinaryStreamChunk,
-            privacy
         );
         // const after = performance.now();
         // console.log(
@@ -494,7 +387,8 @@ export class MutableBinaryCoStream<
             {
                 type: "end",
             } satisfies BinaryStreamEnd,
-            privacy
+            privacy,
+            true
         );
     }
 }

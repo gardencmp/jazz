@@ -1,108 +1,103 @@
-import { CoList, CojsonInternalTypes } from "cojson";
-import { ID, Schema, SchemaToPrimitiveOrID, SyncState } from ".";
-import { CoMapSchema } from "./coMap.js";
-import { AccountValue, GroupValue, ControlledAccountValue } from "./group.js";
+import { CoList as RawCoList } from "cojson";
+import { Schema, PrimitiveOrRawID, ID, RawType, CoValueClassBase, CoValue } from ".";
+import { Group } from "./group.js";
+import { Account } from "./account.js";
 
-export class CoListSchema<Item extends Schema = Schema> extends Schema<
-    CoListValue<Item>
-> {
-    _item: Item;
-
-    constructor(item: Item) {
-        super();
-        this._item = item;
-    }
+export interface CoList<Item extends Schema = Schema>
+    extends Array<Item["_Value"]> {
+    id: ID<CoList<Item>>;
+    meta: {};
 }
 
-type CoListInsert<Item extends Schema> = {
-    by?: AccountValue;
-    tx: CojsonInternalTypes.TransactionID;
-    at: Date;
-    value: Item["_value"];
-};
+export interface CoListClass<Item extends Schema = Schema>
+    extends Schema<CoList<Item>>, CoValueClassBase {
+    _Type: "colist";
+    _Item: Item;
 
-type CoListDelete = {
-    by?: AccountValue;
-    tx: CojsonInternalTypes.TransactionID;
-    at: Date;
-};
-
-export type CoListValue<Item extends Schema = Schema> = Item["_value"][] & {
-    _type: "colist";
-    _inner: CoList<SchemaToPrimitiveOrID<Item>>;
-    id: ID<CoListValue<Item>>;
-    meta: {
-        inserts: CoListInsert<Item>[];
-        deletes: CoListDelete[];
-        sync: SyncState &
-            (Item extends CoMapSchema | CoListSchema ? SyncState[] : {});
-        refs: Item extends CoMapSchema | CoListSchema
-            ? ID<SchemaToPrimitiveOrID<Item>>[]
-            : {};
-    };
-};
-export type CoListClass<Item extends Schema> = {
     new (
-        init: Item["_value"][],
-        { owner }: { owner: AccountValue | GroupValue }
-    ): CoListValue<Item["_value"]>;
-    new ({ owner }: { owner: AccountValue | GroupValue }): CoListValue<
-        Item["_value"]
-    >;
+        init: Item["_Value"],
+        options: { owner: Account | Group }
+    ): CoList<Item>;
+    new (
+        init: undefined,
+        options: { fromRaw: RawType<CoListClass<Item>> }
+    ): CoList<Item>;
 
-    load(
-        id: ID<CoListValue<Item>>,
-        { as }: { as: ControlledAccountValue }
-    ): Promise<CoListValue<Item>>;
-};
-export function isCoList(value: any): value is CoListValue {
+    fromRaw(raw: RawType<CoListClass<Item>>, onGetRef?: (id: ID<CoValue>) => void): CoList<Item>;
+}
+
+export function isCoListClass(value: any): value is CoListClass {
     return (
-        typeof value === "object" &&
-        value instanceof CoListSchema &&
-        "id" in value
+        typeof value === "object" && value !== null && value._Type === "colist"
     );
 }
-export const createCoListSchema = <Item extends Schema>(
-    item: Item
-): CoListSchema<Item> & CoListClass<Item> => {
-    const CoListSchemaInstance = new CoListSchema<Item>(item);
 
-    class CoListMeta {
-        _inner!: CoList<SchemaToPrimitiveOrID<Item>>;
+export function isCoList(value: any): value is CoList {
+    return isCoListClass(value) && "id" in value;
+}
 
-        constructor(_inner: CoList<SchemaToPrimitiveOrID<Item>>) {
-            this._inner = _inner;
+export function CoListOf<Item extends Schema>(
+    ItemSchema: Item
+): CoListClass<Item> {
+    return class CoListClassForItem extends Array<Item["_Value"]> {
+        static _Type = "colist" as const;
+        static _Item = ItemSchema;
+        static _Value: CoList<Item> = "CoList<Item>" as any;
+
+        _raw!: RawType<CoListClass<Item>>;
+        id!: ID<CoList<Item>>;
+        meta = {};
+
+        constructor(init: Item["_Value"], options: { owner: Account | Group });
+        constructor(
+            init: undefined,
+            options: { fromRaw: RawType<CoListClass<Item>> }
+        );
+        constructor(
+            init: Item["_Value"] | undefined,
+            options:
+                | { owner: Account | Group }
+                | { fromRaw: RawType<CoListClass<Item>> }
+        ) {
+            super();
+
+            let raw: RawType<CoListClass<Item>>;
+
+            if ("fromRaw" in options) {
+                raw = options.fromRaw;
+            } else if (init && "owner" in options) {
+                const rawOwner = options.owner._raw;
+                raw = rawOwner.createList<RawType<CoListClass<Item>>>(
+                    isCoListSchema(ItemSchema)
+                        ? init.map((item: Item["_Value"]) => item.id)
+                        : init
+                );
+            } else {
+                if (typeof init === "number") {
+                    // this might be called from an intrinsic, like map, trying to create an empty array
+                    // passing `0` as the only parameter
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return new Array(init) as any;
+                } else {
+                    throw new Error("Expected init and owner");
+                }
+            }
+
+            this._raw = raw;
+            this.id = raw.id as any;
+
+            raw.asArray().forEach((item, idx) => {
+                Object.defineProperty(this, idx, {
+                    get: () => {
+                        // TODO
+                    },
+                    set(value) {
+                        // TODO
+                    },
+                    enumerable: true,
+                    configurable: true,
+                });
+            });
         }
-    }
-
-    class CoListFromSchema extends Array {
-        id!: ID<CoListValue<Item>>;
-        _inner!: CoList<SchemaToPrimitiveOrID<Item>>;
-        meta!: CoListMeta;
-
-        static fromInner(
-            _inner: CoList<SchemaToPrimitiveOrID<Item>>,
-            onGetRef?: (key: number, schema: Item) => void,
-            onSetRef?: (
-                key: number,
-                schema: Item,
-                value: Item["_value"]
-            ) => void
-        ): CoListFromSchema {
-            const instance = Object.create(
-                CoListFromSchema.prototype
-            ) as CoListFromSchema;
-
-            instance._inner = _inner;
-            instance.meta = new CoListMeta(_inner);
-            instance.id = _inner.id as unknown as ID<CoListValue<Item>>;
-
-            return instance;
-        }
-    }
-
-    Object.setPrototypeOf(CoListFromSchema.prototype, CoListSchemaInstance);
-
-    return CoListFromSchema as unknown as CoListSchema<Item> &
-        CoListClass<Item>;
-};
+    } satisfies CoListClass<Item>;
+}

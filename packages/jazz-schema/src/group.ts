@@ -1,74 +1,82 @@
-import { Account, ControlledAccount, Group, ProfileMeta } from "cojson";
-import { ID, NativeCoValue, NullSchema, StringSchema, SyncState } from ".";
-import { CoMapSchema } from "./coMap.js";
+import { Group as RawGroup } from "cojson";
+import { CoValue, ID, NullSchema, RawType, Schema } from ".";
+import { CoMapClass } from "./coMap.js";
 
-export type ProfileSchema = CoMapSchema<{ name: StringSchema }>;
-
-export class GroupSchema<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> extends CoMapSchema<{ profile: Profile; root: Root }> {
-    readonly _profile!: Profile;
-    readonly _root!: Root;
+export interface Group<
+    ProfileSchema extends CoMapClass | NullSchema = CoMapClass | NullSchema,
+    RootSchema extends CoMapClass | NullSchema = CoMapClass | NullSchema
+> {
+    _raw: RawGroup;
+    id: ID<Group<ProfileSchema, RootSchema>>;
+    profile: ProfileSchema["_Value"] | undefined;
+    root: RootSchema["_Value"] | undefined;
 }
 
-export type GroupValue<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> = {
-    _type: "group";
-    _inner: Group<NativeCoValue<Profile, ProfileMeta>, NativeCoValue<Root>>;
+export interface GroupClass<
+    ProfileSchema extends CoMapClass | NullSchema = CoMapClass | NullSchema,
+    RootSchema extends CoMapClass | NullSchema = CoMapClass | NullSchema
+> extends Schema<Group<ProfileSchema, RootSchema>> {
+    _Type: "group";
+    _Profile: ProfileSchema;
+    _Root: RootSchema;
 
-    id: ID<GroupValue<Profile, Root>>;
+    new (opts: { admin: any }): Group<ProfileSchema, RootSchema>;
+    new (opts: { fromInner: RawGroup }): Group<ProfileSchema, RootSchema>;
 
-    profile: Profile["_value"];
-    root: Root["_value"];
+    fromRaw(raw: RawGroup, onGetRef?: (id: ID<CoValue>) => void): Group<ProfileSchema, RootSchema>;
+}
 
-    sync: SyncState & {
-        profile: SyncState;
-    };
-};
+export function isGroupClass(value: any): value is GroupClass {
+    return typeof value === "object" && value !== null && value._Type === "group";
+}
 
-export type GroupClass<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> = {
-    new (options: {
-        admin: ControlledAccountValue;
-        createProfile?: (group: GroupValue) => Profile["_value"];
-        createRoot?: (group: GroupValue) => Root["_value"];
-    }): GroupValue<Profile, Root>;
-};
+export function isGroup(value: any): value is Group {
+    return isGroupClass(value) && "id" in value;
+}
 
-export class AccountSchema<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> extends GroupSchema<Profile, Root> {}
+export function GroupFor<
+    ProfileSchema extends CoMapClass | NullSchema = CoMapClass | NullSchema,
+    RootSchema extends CoMapClass | NullSchema = CoMapClass | NullSchema
+>(
+    ProfileSchema: ProfileSchema,
+    RootSchema: RootSchema
+): GroupClass<ProfileSchema, RootSchema> {
+    return class GroupClass {
+        static _Type = "group" as const;
+        static _Profile = ProfileSchema;
+        static _Root = RootSchema;
+        static _Value: Group<ProfileSchema, RootSchema>;
 
-export type AccountValue<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> = GroupValue<Profile, Root> & {
-    _type: "account";
-    _inner: Account<NativeCoValue<Profile, ProfileMeta>, NativeCoValue<Root>>;
-    id: ID<AccountValue<Profile, Root>>;
-    isMe: boolean;
-};
+        _raw: RawGroup;
+        id: ID<Group<ProfileSchema, RootSchema>>;
 
-export type ControlledAccountValue<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> = GroupValue<Profile, Root> & {
-    _type: "account";
-    _inner: Account<NativeCoValue<Profile, ProfileMeta>, NativeCoValue<Root>>;
-    id: ID<AccountValue<Profile, Root>>;
-    isMe: boolean;
-};
+        constructor(opts: { admin: any });
+        constructor(opts: { fromInner: RawGroup });
+        constructor(opts: { admin: any } | { fromInner: RawGroup }) {
+            if ("fromInner" in opts) {
+                this._raw = opts.fromInner;
+            } else {
+            }
+        }
 
-export type AccountClass<
-    Profile extends ProfileSchema = ProfileSchema,
-    Root extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> = {
-    fromInner(nativeAccount: Account<NativeCoValue<Profile, ProfileMeta>, NativeCoValue<Root>>) : AccountValue<Profile, Root>;
-    fromControlledInner(nativeAccount: ControlledAccount<NativeCoValue<Profile, ProfileMeta>, NativeCoValue<Root>>) : ControlledAccountValue<Profile, Root>;
-};
+        get profile() {
+            const id = this._raw.get("profile");
+
+            if (!id) {
+                return null;
+            } else {
+                // TODO
+            }
+        }
+
+        get root() {
+            const id = this._raw.get("root");
+
+            if (!id) {
+                return null;
+            } else {
+                // TODO
+            }
+        }
+    } satisfies GroupClass<ProfileSchema, RootSchema>;
+}

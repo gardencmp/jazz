@@ -25,9 +25,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     const map = group.createMap();
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -91,8 +89,8 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -106,10 +104,8 @@ test("Node replies with only new tx to subscribe with some known state", async (
 
     const map = group.createMap();
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-        editable.set("goodbye", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
+    map.set("goodbye", "world", "trusting");
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -169,8 +165,8 @@ test("Node replies with only new tx to subscribe with some known state", async (
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -232,9 +228,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         new: {},
     } satisfies SyncMessage);
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const mapEditMsg1 = await reader.read();
 
@@ -258,15 +252,13 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
 
-    map.edit((editable) => {
-        editable.set("goodbye", "world", "trusting");
-    });
+    map.set("goodbye", "world", "trusting");
 
     const mapEditMsg2 = await reader.read();
 
@@ -290,8 +282,8 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -305,9 +297,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
 
     const map = group.createMap();
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const [inRx, inTx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
@@ -369,8 +359,8 @@ test("Client replies with known new content to tellKnownState from server", asyn
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -428,13 +418,9 @@ test("No matter the optimistic known state, node respects invalid known state me
         new: {},
     } satisfies SyncMessage);
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
-    map.edit((editable) => {
-        editable.set("goodbye", "world", "trusting");
-    });
+    map.set("goodbye", "world", "trusting");
 
     const _mapEditMsgs = await reader.read();
 
@@ -473,8 +459,8 @@ test("No matter the optimistic known state, node respects invalid known state me
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -498,9 +484,7 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
         role: "peer",
     });
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const reader = outRx.getReader();
 
@@ -546,9 +530,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
         sessions: {},
     } satisfies SyncMessage);
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
     expect((await reader.read()).value).toMatchObject(groupContentEx(group));
@@ -576,8 +558,8 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
                         ]),
                     },
                 ],
-                lastSignature:
-                    map.core.sessionLogs.get(node.currentSessionID)!.lastSignature!,
+                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
+                    .lastSignature!,
             },
         },
     } satisfies SyncMessage);
@@ -769,9 +751,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     expect(groupTellKnownStateMsg.value).toMatchObject(groupStateEx(group));
 
     expect(
-        node2.syncManager.peers["test1"]!.optimisticKnownStates[
-            group.core.id
-        ]
+        node2.syncManager.peers["test1"]!.optimisticKnownStates[group.core.id]
     ).toBeDefined();
 
     // await to1.write(adminTellKnownStateMsg.value!);
@@ -816,9 +796,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
     await to2.write(mapNewContentMsg.value!);
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const mapEditMsg = await from1.read();
 
@@ -842,9 +820,7 @@ test.skip("When loading a coValue on one node, the server node it is requested f
     const group = node1.createGroup();
 
     const map = group.createMap();
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const node2 = new LocalNode(admin, newRandomSessionID(admin.id));
 
@@ -870,9 +846,7 @@ test("Can sync a coValue through a server to another client", async () => {
     const group = client1.createGroup();
 
     const map = group.createMap();
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const [serverUser, serverSession] = randomAnonymousAccountAndSessionID();
 
@@ -880,7 +854,8 @@ test("Can sync a coValue through a server to another client", async () => {
 
     const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
         peer1role: "server",
-        peer2role: "client", trace: true,
+        peer2role: "client",
+        trace: true,
     });
 
     client1.syncManager.addPeer(serverAsPeer);
@@ -891,7 +866,7 @@ test("Can sync a coValue through a server to another client", async () => {
     const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
         "server",
         "client2",
-        { peer1role: "server", peer2role: "client", trace: true, }
+        { peer1role: "server", peer2role: "client", trace: true }
     );
 
     client2.syncManager.addPeer(serverAsOtherPeer);
@@ -915,9 +890,7 @@ test("Can sync a coValue with private transactions through a server to another c
     const group = client1.createGroup();
 
     const map = group.createMap();
-    map.edit((editable) => {
-        editable.set("hello", "world", "private");
-    });
+    map.set("hello", "world", "private");
 
     const [serverUser, serverSession] = randomAnonymousAccountAndSessionID();
 
@@ -1057,9 +1030,7 @@ test("When a peer's outgoing/writable stream closes, we remove the peer", async 
     reader.releaseLock();
     await outRx.cancel();
 
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -1074,9 +1045,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
     const group = node1.createGroup();
 
     const map = group.createMap();
-    map.edit((editable) => {
-        editable.set("hello", "world", "trusting");
-    });
+    map.set("hello", "world", "trusting");
 
     const node2 = new LocalNode(admin, newRandomSessionID(admin.id));
 

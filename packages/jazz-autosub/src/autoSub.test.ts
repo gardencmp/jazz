@@ -1,66 +1,67 @@
-import { CoList, CoMap, CoStream, Group, LocalNode, cojsonReady } from "cojson";
+import { cojsonReady } from "cojson";
 import { autoSub } from ".";
+import { SimpleAccount, SimpleGroup, co, im } from "jazz-schema";
+import { GroupSchema } from "jazz-schema/src/group";
 
 beforeEach(async () => {
     await cojsonReady;
 });
 
 test("Queries with maps work", async () => {
-    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+    const { me } = await new SimpleAccount({
         name: "Hermes Puggington",
     });
 
-    const group = node.createGroup();
+    const group = new SimpleGroup({ admin: me });
 
-    let map = group.createMap<
-        CoMap<{
-            hello: "world";
-            subMap: CoMap<{
-                hello: "world" | "moon" | "sun";
-                id: string;
-            }>["id"];
-        }>
-    >();
+    class SubMap extends co
+        .map({
+            hello: im.const("world").or(im.const("moon")).or(im.const("sun")),
+            id: im.string,
+        })
+        .partial() {}
+
+    class Map extends co
+        .map({
+            hello: im.string,
+            subMap: SubMap,
+        })
+        .partial() {}
+
+    let map = new Map({}, { owner: group });
 
     const done = new Promise<void>((resolve) => {
-        const unsubQuery = autoSub(map.id, node, (resolvedMap) => {
+        const unsubQuery = autoSub(map.id, { as: me }, (resolvedMap) => {
             // console.log("update", update);
             if (resolvedMap) {
-                expect(resolvedMap.coValueType).toBe("comap");
+                expect(resolvedMap._type).toBe("comap");
                 expect(resolvedMap.id).toEqual(map.id);
-                expect(resolvedMap.meta.group).toBeInstanceOf(Group);
-                expect(resolvedMap.meta.group.id).toBe(group.id);
+                expect(resolvedMap.meta.owner).toBeInstanceOf(SimpleGroup);
+                expect(resolvedMap.meta.owner.id).toBe(group.id);
                 expect(resolvedMap.meta.headerMeta).toBe(null);
                 expect(resolvedMap.hello).toBe("world");
                 expect(Object.keys(resolvedMap)).toEqual(["hello", "subMap"]);
                 if (resolvedMap.meta.edits.hello?.by?.profile?.name) {
-                    expect(resolvedMap.meta.edits.hello.by.id).toEqual(
-                        accountID
-                    );
+                    expect(resolvedMap.meta.edits.hello.by.id).toEqual(me.id);
                     expect(resolvedMap.meta.edits.hello.by.profile.id).toEqual(
-                        node.expectProfileLoaded(accountID).id
+                        me.profile.id
                     );
                     expect(
                         resolvedMap.meta.edits.hello.by.profile.name
                     ).toEqual("Hermes Puggington");
                     expect(resolvedMap.meta.edits.hello.by.isMe).toBe(true);
-                    expect(resolvedMap.meta.edits.hello.tx).toEqual(
-                        map.lastEditAt("hello")!.tx
-                    );
-                    expect(resolvedMap.meta.edits.hello.at).toEqual(
-                        new Date(map.lastEditAt("hello")!.at)
-                    );
+
                     if (resolvedMap.subMap) {
-                        expect(resolvedMap.subMap.coValueType).toBe("comap");
+                        expect(resolvedMap.subMap._type).toBe("comap");
                         expect(resolvedMap.subMap.id).toEqual("foreignID");
-                        expect(resolvedMap.subMap.meta.group).toBeInstanceOf(
-                            Group
+                        expect(resolvedMap.subMap.meta.owner).toBeInstanceOf(
+                            SimpleGroup
                         );
-                        expect(resolvedMap.subMap.meta.group.id).toBe(group.id);
-                        expect(resolvedMap.subMap.meta.headerMeta).toBe(null);
+                        expect(resolvedMap.subMap.meta.owner.id).toBe(group.id);
+                        expect(resolvedMap.subMap.meta.header).toBe(null);
                         if (resolvedMap.subMap.hello === "moon") {
                             // console.log("got to 'moon'");
-                            resolvedMap.subMap.set("hello", "sun");
+                            resolvedMap.subMap.hello = "sun";
                         } else if (
                             resolvedMap.subMap.hello === "sun" &&
                             resolvedMap.subMap.meta.edits.hello?.by?.profile
@@ -76,63 +77,57 @@ test("Queries with maps work", async () => {
         });
     });
 
-    map = map.set("hello", "world");
+    map.hello = "world";
 
-    let subMap = group.createMap<
-        CoMap<{
-            hello: "world" | "moon" | "sun";
-            id: string;
-        }>
-    >();
+    let subMap = new SubMap({}, { owner: group });
 
-    map = map.set("subMap", subMap.id);
+    map.subMap = subMap;
 
-    subMap = subMap.mutate((subMap) => {
-        subMap.set("hello", "world");
-        subMap.set("id", "foreignID");
-    });
+    subMap.hello = "world";
+    subMap.id = "foreignID";
 
-    subMap = subMap.set("hello", "moon");
+    subMap.hello = "moon";
 
     await done;
 });
 
-test("Queries with lists work", () => {
-    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+test("Queries with lists work", async () => {
+    const { me } = await new SimpleAccount({
         name: "Hermes Puggington",
     });
 
-    const group = node.createGroup();
+    const group = new SimpleGroup({ admin: me });
 
-    let list = group.createList<CoList<string>>();
+    class StringList extends co.list(im.string) {}
+
+    let list = new StringList([], { owner: group });
 
     const done = new Promise<void>((resolve) => {
-        const unsubQuery = autoSub(list.id, node, (resolvedList) => {
+        const unsubQuery = autoSub(list.id, { as: me }, (resolvedList) => {
             if (resolvedList) {
                 // console.log("update", resolvedList, resolvedList.meta.edits);
-                expect(resolvedList.coValueType).toBe("colist");
+                expect(resolvedList._type).toBe("colist");
                 expect(resolvedList.id).toEqual(list.id);
-                expect(resolvedList.meta.group).toBeInstanceOf(Group);
-                expect(resolvedList.meta.group.id).toBe(group.id);
+                expect(resolvedList.meta.owner).toBeInstanceOf(SimpleGroup);
+                expect(resolvedList.meta.owner.id).toBe(group.id);
                 expect(resolvedList.meta.headerMeta).toBe(null);
                 expect(resolvedList[0]).toBe("hello");
                 expect(resolvedList[1]).toBe("world");
                 expect(resolvedList[2]).toBe("moon");
-                if (resolvedList.meta.edits[2]?.by?.profile?.name) {
-                    expect(resolvedList.meta.edits[2].by.id).toEqual(accountID);
-                    expect(resolvedList.meta.edits[2].by.profile.id).toEqual(
-                        node.expectProfileLoaded(accountID).id
+                if (resolvedList.meta.inserts[2]?.by?.profile?.name) {
+                    expect(resolvedList.meta.inserts[2].by.id).toEqual(me.id);
+                    expect(
+                        resolvedList.meta.inserts[2].by.profile.name
+                    ).toEqual("Hermes Puggington");
+                    expect(resolvedList.meta.inserts[2].by.isMe).toBe(true);
+                    expect(resolvedList.meta.inserts[2].at).toBeInstanceOf(
+                        Date
                     );
-                    expect(resolvedList.meta.edits[2].by.profile.name).toEqual(
-                        "Hermes Puggington"
-                    );
-                    expect(resolvedList.meta.edits[2].by.isMe).toBe(true);
-                    expect(resolvedList.meta.edits[2].at).toBeInstanceOf(Date);
                     if (resolvedList.length === 3) {
-                        resolvedList.append("sun");
+                        resolvedList.push("sun");
                     } else if (
                         resolvedList.length === 4 &&
-                        resolvedList.meta.edits[3]?.by?.profile?.name ===
+                        resolvedList.meta.inserts[3]?.by?.profile?.name ===
                             "Hermes Puggington"
                     ) {
                         expect(resolvedList[3]).toBe("sun");
@@ -145,31 +140,34 @@ test("Queries with lists work", () => {
         });
     });
 
-    list = list.mutate((list) => {
-        list.append("hello");
-        list.append("world");
-        list.append("moon");
-    });
+    list.push("hello");
+    list.push("world");
+    list.push("moon");
 
     return done;
 });
 
-test("List of nested maps works", () => {
-    const { node } = LocalNode.withNewlyCreatedAccount({
+test("List of nested maps works", async () => {
+    const { me } = await new SimpleAccount({
         name: "Hermes Puggington",
     });
 
-    const group = node.createGroup();
+    const group = new SimpleGroup({ admin: me });
 
-    let list = group.createList<CoList<CoMap<{ hello: "world" }>["id"]>>();
+    class ListOfMaps extends co.list(
+        co.map({
+            hello: im.const("world"),
+        })
+    ) {}
+
+    let list = new ListOfMaps([], { owner: group });
 
     const done = new Promise<void>((resolve) => {
-        const unsubQuery = autoSub(list.id, node, (resolvedList) => {
+        const unsubQuery = autoSub(list.id, { as: me }, (resolvedList) => {
             if (resolvedList && resolvedList[0]) {
                 // console.log("update", resolvedList);
                 expect(resolvedList[0]).toMatchObject({
                     hello: "world",
-                    id: list.get(0)!,
                 });
                 // console.log("final update", resolvedList);
                 resolve();
@@ -178,27 +176,32 @@ test("List of nested maps works", () => {
         });
     });
 
-    list = list.append(
-        group.createMap<CoMap<{ hello: "world" }>>({
-            hello: "world",
-        }).id
+    list.push(
+        new ListOfMaps._item(
+            {
+                hello: "world",
+            },
+            { owner: group }
+        )
     );
 
     return done;
 });
 
-test("Can call .map on a quieried coList", async () => {
-    const { node } = LocalNode.withNewlyCreatedAccount({
+test("Can call .map on a coList", async () => {
+    const { me } = await new SimpleAccount({
         name: "Hermes Puggington",
     });
 
-    const group = node.createGroup();
+    const group = new SimpleGroup({ admin: me });
 
-    let list = group.createList<CoList<string>>();
+    class ListOfStrings extends co.list(im.string) {}
+
+    let list = new ListOfStrings([], { owner: group });
 
     const done = new Promise<void>((resolve) => {
-        const unsubQuery = autoSub(list.id, node, (resolvedList) => {
-            if (resolvedList && resolvedList[0]) {
+        const unsubQuery = autoSub(list.id, { as: me }, (resolvedList) => {
+            if (resolvedList && resolvedList[0] && resolvedList[1]) {
                 // console.log("update", resolvedList);
                 expect(resolvedList.map((item) => item + "!!!")).toEqual([
                     "hello!!!",
@@ -211,22 +214,22 @@ test("Can call .map on a quieried coList", async () => {
         });
     });
 
-    list = list.mutate((list) => {
-        list.append("hello");
-        list.append("world");
-    });
+    list.push("hello");
+    list.push("world");
 
     await done;
 });
 
-test("Queries with streams work", () => {
-    const { node, accountID } = LocalNode.withNewlyCreatedAccount({
+test("Queries with streams work", async () => {
+    const { me } = await new SimpleAccount({
         name: "Hermes Puggington",
     });
 
-    const group = node.createGroup();
+    const group = new SimpleGroup({ admin: me });
 
-    let stream = group.createStream<CoStream<string>>();
+    class StringStream extends co.stream(im.string) {}
+
+    let stream = new StringStream({ owner: group });
 
     const done = new Promise<void>((resolve) => {
         const unsubQuery = autoSub(stream.id, node, (resolvedStream) => {

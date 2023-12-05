@@ -69,8 +69,6 @@ export class LocalNode {
 
     /** @category 2. Node Creation */
     static async withNewlyCreatedAccount<
-        P extends Profile = Profile,
-        R extends CoMap = CoMap,
         Meta extends AccountMeta = AccountMeta
     >({
         name,
@@ -80,7 +78,7 @@ export class LocalNode {
     }: {
         name: string;
         peersToLoadFrom?: Peer[];
-        migration?: AccountMigration<P, R, Meta>;
+        migration?: AccountMigration<Meta>;
         initialAgentSecret?: AgentSecret;
     }): Promise<{
         node: LocalNode;
@@ -102,7 +100,7 @@ export class LocalNode {
         );
 
         const accountOnNodeWithAccount =
-            nodeWithAccount.account as ControlledAccount<P, R, Meta>;
+            nodeWithAccount.account as ControlledAccount<Meta>;
 
         const profile = nodeWithAccount.expectProfileLoaded(
             accountOnNodeWithAccount.id,
@@ -116,7 +114,7 @@ export class LocalNode {
         }
 
         if (migration) {
-            await migration(accountOnNodeWithAccount, profile as P, nodeWithAccount);
+            await migration(accountOnNodeWithAccount, profile, nodeWithAccount);
         }
 
         nodeWithAccount.account = new ControlledAccount(
@@ -126,9 +124,13 @@ export class LocalNode {
 
         // we shouldn't need this, but it fixes account data not syncing for new accounts
         function syncAllCoValuesAfterCreateAccount() {
-            for (const coValueEntry of Object.values(nodeWithAccount.coValues)) {
+            for (const coValueEntry of Object.values(
+                nodeWithAccount.coValues
+            )) {
                 if (coValueEntry.state === "loaded") {
-                    void nodeWithAccount.syncManager.syncCoValue(coValueEntry.coValue);
+                    void nodeWithAccount.syncManager.syncCoValue(
+                        coValueEntry.coValue
+                    );
                 }
             }
         }
@@ -146,11 +148,7 @@ export class LocalNode {
     }
 
     /** @category 2. Node Creation */
-    static async withLoadedAccount<
-        P extends Profile = Profile,
-        R extends CoMap = CoMap,
-        Meta extends AccountMeta = AccountMeta
-    >({
+    static async withLoadedAccount<Meta extends AccountMeta = AccountMeta>({
         accountID,
         accountSecret,
         sessionID,
@@ -161,7 +159,7 @@ export class LocalNode {
         accountSecret: AgentSecret;
         sessionID: SessionID;
         peersToLoadFrom: Peer[];
-        migration?: AccountMigration<P, R, Meta>;
+        migration?: AccountMigration<Meta>;
     }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
             new ControlledAgent(accountSecret),
@@ -201,10 +199,14 @@ export class LocalNode {
         }
         const profile = await node.load(profileID);
 
+        if (profile === "unavailable") {
+            throw new Error("Profile unavailable from all peers");
+        }
+
         if (migration) {
             await migration(
-                controlledAccount as ControlledAccount<P, R, Meta>,
-                profile as P,
+                controlledAccount as ControlledAccount<Meta>,
+                profile,
                 node
             );
             node.account = new ControlledAccount(
@@ -282,6 +284,17 @@ export class LocalNode {
         }
 
         return core.getCurrentContent() as T;
+    }
+
+    getLoaded<T extends CoValue>(id: CoID<T>): T | undefined {
+        const entry = this.coValues[id];
+        if (!entry) {
+            return undefined;
+        }
+        if (entry.state === "loaded") {
+            return entry.coValue.getCurrentContent() as T;
+        }
+        return undefined;
     }
 
     /** @category 3. Low-level */
@@ -454,29 +467,23 @@ export class LocalNode {
                 .getCurrentContent()
         );
 
-        account = account.mutate((editable) => {
-            editable.set(accountAgentID, "admin", "trusting");
+        account.set(accountAgentID, "admin", "trusting");
 
-            const readKey = newRandomKeySecret();
+        const readKey = newRandomKeySecret();
 
-            const sealed = seal({
-                message: readKey.secret,
-                from: getAgentSealerSecret(agentSecret),
-                to: getAgentSealerID(accountAgentID),
-                nOnceMaterial: {
-                    in: account.id,
-                    tx: account.core.nextTransactionID(),
-                },
-            });
-
-            editable.set(
-                `${readKey.id}_for_${accountAgentID}`,
-                sealed,
-                "trusting"
-            );
-
-            editable.set("readKey", readKey.id, "trusting");
+        const sealed = seal({
+            message: readKey.secret,
+            from: getAgentSealerSecret(agentSecret),
+            to: getAgentSealerID(accountAgentID),
+            nOnceMaterial: {
+                in: account.id,
+                tx: account.core.nextTransactionID(),
+            },
         });
+
+        account.set(`${readKey.id}_for_${accountAgentID}`, sealed, "trusting");
+
+        account.set("readKey", readKey.id, "trusting");
 
         const profile = account.createMap<Profile>(
             { name },
@@ -486,7 +493,7 @@ export class LocalNode {
             "trusting"
         );
 
-        account = account.set("profile", profile.id, "trusting");
+        account.set("profile", profile.id, "trusting");
 
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
@@ -578,27 +585,25 @@ export class LocalNode {
 
         let group = expectGroup(groupCoValue.getCurrentContent());
 
-        group = group.mutate((editable) => {
-            editable.set(this.account.id, "admin", "trusting");
+        group.set(this.account.id, "admin", "trusting");
 
-            const readKey = newRandomKeySecret();
+        const readKey = newRandomKeySecret();
 
-            editable.set(
-                `${readKey.id}_for_${this.account.id}`,
-                seal({
-                    message: readKey.secret,
-                    from: this.account.currentSealerSecret(),
-                    to: this.account.currentSealerID(),
-                    nOnceMaterial: {
-                        in: groupCoValue.id,
-                        tx: groupCoValue.nextTransactionID(),
-                    },
-                }),
-                "trusting"
-            );
+        group.set(
+            `${readKey.id}_for_${this.account.id}`,
+            seal({
+                message: readKey.secret,
+                from: this.account.currentSealerSecret(),
+                to: this.account.currentSealerID(),
+                nOnceMaterial: {
+                    in: groupCoValue.id,
+                    tx: groupCoValue.nextTransactionID(),
+                },
+            }),
+            "trusting"
+        );
 
-            editable.set("readKey", readKey.id, "trusting");
-        });
+        group.set("readKey", readKey.id, "trusting");
 
         return group;
     }
