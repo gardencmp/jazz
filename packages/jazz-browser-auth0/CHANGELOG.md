@@ -1,5 +1,11 @@
 # jazz-browser-auth-local
 
+## 0.6.2
+
+### Patch Changes
+
+- Fix bug where user_metadata wasn't received
+
 ## 0.6.1
 
 ### Patch Changes

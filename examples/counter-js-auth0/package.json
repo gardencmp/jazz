@@ -12,7 +12,7 @@
   "dependencies": {
     "@auth0/auth0-spa-js": "^2.1.2",
     "jazz-browser": "^0.6.0",
-    "jazz-browser-auth0": "^0.6.0"
+    "jazz-browser-auth0": "^0.6.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.3.2",
