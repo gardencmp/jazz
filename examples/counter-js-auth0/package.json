@@ -15,6 +15,7 @@
     "jazz-browser-auth0": "^0.6.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.3.2",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   }
