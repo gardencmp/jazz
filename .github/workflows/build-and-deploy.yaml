@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # example: ["chat", "todo", "pets", "twit", "file-drop"]
-        example: ["twit", "chat"]
+        example: ["twit", "chat", "counter-js-auth0"]
 
     steps:
     - uses: actions/checkout@v3
@@ -87,7 +87,7 @@ jobs:
     strategy:
       matrix:
         # example: ["chat", "todo", "pets", "twit", "file-drop"]
-        example: ["twit", "chat"]
+        example: ["twit", "chat", "counter-js-auth0"]
 
     steps:
     - uses: actions/checkout@v3

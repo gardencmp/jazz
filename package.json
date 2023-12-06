@@ -18,5 +18,6 @@
     "updated": "lerna updated --include-merged-tags",
     "publish-all": "yarn run gen-docs && lerna publish --include-merged-tags",
     "gen-docs": "ts-node generateDocs.ts"
-  }
+  },
+  "version": "0.0.0"
 }
