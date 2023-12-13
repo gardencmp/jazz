@@ -4,12 +4,13 @@ import { manuallyIgnore, indentEnd, indent } from "./generateDocs";
 
 export async function genDocsMd() {
     const packageDocs = Object.entries({
-        "jazz-react": "index.tsx",
-        cojson: "index.ts",
-        "jazz-browser": "index.ts",
-        "jazz-browser-media-images": "index.ts",
-        "jazz-autosub": "index.ts",
-        "jazz-nodejs": "index.ts",
+        // "jazz-react": "index.tsx",
+        // cojson: "index.ts",
+        // "jazz-browser": "index.ts",
+        // "jazz-browser-media-images": "index.ts",
+        // "jazz-autosub": "index.ts",
+        // "jazz-nodejs": "index.ts",
+        "jazz-js": "index.ts",
     }).map(async ([packageName, entryPoint]) => {
         const app = await Application.bootstrapWithPlugins({
             entryPoints: [`packages/${packageName}/src/${entryPoint}`],

@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { WithJazz, useJazz, useAcceptInvite } from "jazz-react";
+import { useAcceptInvite, createReactContext } from "jazz-react";
 import { LocalAuth } from "jazz-react-auth-local";
 
 import {
@@ -18,7 +18,12 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
-import { TodoAccountRoot, migration } from "./1_types.ts";
+import {
+    TodoAccount,
+    TodoAccountRoot,
+    TodoProject,
+    migration,
+} from "./1_schema.ts";
 import { AccountMigration, Profile } from "cojson";
 
 /**
@@ -39,14 +44,21 @@ const auth = LocalAuth({
     Component: PrettyAuthUI,
 });
 
+export const { JazzProvider, useAccount, useCoState, useAcceptInvite } =
+    createReactContext({
+        auth,
+        accountSchema: TodoAccount,
+        migration,
+    });
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <WithJazz auth={auth} migration={migration as AccountMigration}>
+                <JazzProvider>
                     <App />
-                </WithJazz>
+                </JazzProvider>
             </div>
         </ThemeProvider>
     </React.StrictMode>
@@ -62,7 +74,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 function App() {
     // logOut logs out the AuthProvider passed to `<WithJazz/>` above.
-    const { logOut } = useJazz();
+    const { logOut } = useAccount();
 
     const router = createHashRouter([
         {
@@ -81,7 +93,11 @@ function App() {
 
     // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
     // and on success calls our callback where we navigate to the project that we were just invited to.
-    useAcceptInvite((projectID) => router.navigate("/project/" + projectID));
+    useAcceptInvite({
+        invitedObjectSchema: TodoProject,
+        forValueHint: "project",
+        onAccept: (projectID) => router.navigate("/project/" + projectID),
+    });
 
     return (
         <>
@@ -98,7 +114,7 @@ function App() {
 }
 
 export function HomeScreen() {
-    const { me } = useJazz<Profile, TodoAccountRoot>();
+    const { me } = useAccount();
     const navigate = useNavigate();
 
     return (

@@ -5809,6 +5809,13 @@ javascript-time-ago@^2.5.9:
   dependencies:
     relative-time-format "^1.1.6"
 
+jazz-autosub@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/jazz-autosub/-/jazz-autosub-0.6.0.tgz#eb031d1bf779d0cc152ede98bbfabe53a3481912"
+  integrity sha512-+CeRXRLTWthYJBLVPU77x+XjVC1VQO1fOqAlKjxrN4HNvIUlu5z14BwqiSMRWQdBVPnbfd24O9WuMl+URrqp4w==
+  dependencies:
+    cojson "^0.6.0"
+
 jest-changed-files@^29.5.0:
   version "29.5.0"
   resolved "https://registry.yarnpkg.com/jest-changed-files/-/jest-changed-files-29.5.0.tgz#e88786dca8bf2aa899ec4af7644e16d9dcf9b23e"

@@ -1,4 +1,4 @@
-import { co, im } from 'jazz-schema';
+import { CoListOf, CoMapOf, imm } from 'jazz-js';
 
-export class Message extends co.Map({ text: im.string }) {}
-export class Chat extends co.List(Message) {}
+export class Message extends CoMapOf({ text: imm.string }) {}
+export class Chat extends CoListOf(Message) {}
