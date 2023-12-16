@@ -44,6 +44,7 @@ export {
     AccountSchema,
     ControlledAccount,
     ControlledAccountSchema,
+    AccountWith,
     isAccount,
     isAccountSchema,
     SimpleAccount,
@@ -72,6 +73,7 @@ export {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export abstract class Schema<Value = any> {
+    /** @category Type Hints */
     readonly _Value!: Value;
 }
 
@@ -92,6 +94,7 @@ export class NullSchema extends Schema<null> {
     static _Value: null;
 }
 
+/** @category Immutable Value Schemas */
 export const imm = {
     boolean: new BooleanSchema(),
     string: new StringSchema(),
@@ -131,6 +134,7 @@ export interface CoValueSchemaBase<
     Value extends CoValue = CoValue,
     RawValue extends RawCoValue = RawCoValue
 > extends Schema<Value> {
+    /** @category Type Hints */
     _RawValue: RawValue;
     fromRaw(raw: RawCoValue, onGetRef?: (id: ID<CoValue>) => void): Value;
     load(

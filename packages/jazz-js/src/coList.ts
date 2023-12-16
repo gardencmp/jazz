@@ -12,11 +12,15 @@ import {
 import { Group } from "./group.js";
 import { Account } from "./account.js";
 
+/** @category CoValues */
 export interface CoList<Item extends Schema = Schema>
     extends Array<Item["_Value"]>,
         CoValueBase {
+            /** @category ID */
     id: ID<CoList<Item>>;
+    /** @category Collaboration */
     meta: CoListMeta;
+    /** @hidden */
     _raw: RawCoList<RawType<Item>>;
 }
 

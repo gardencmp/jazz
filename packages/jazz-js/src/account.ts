@@ -12,6 +12,7 @@ import {
 import {
     AccountMigration,
     CoValue,
+    CoValueBase,
     CoValueSchema,
     CoValueSchemaBase,
     ID,
@@ -22,19 +23,25 @@ import {
 import { CoMapOf, CoMapSchema } from "./coMap.js";
 import { Group, GroupMeta } from "./group.js";
 
+/** @category CoValues */
 export interface Account<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> extends Group<ProfileS, RootS> {
+> {
+    /** @hidden */
     _raw: RawAccount | RawControlledAccount;
+    /** @category ID */
     id: ID<Account<ProfileS, RootS>>;
+    /** @category Collaboration */
     isMe: boolean;
 }
 
+/** @category CoValues */
 export interface ControlledAccount<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
 > extends Account<ProfileS, RootS> {
+    /** @hidden */
     _raw: RawControlledAccount;
     id: ID<ControlledAccount<ProfileS, RootS>>;
     isMe: true;
@@ -45,6 +52,7 @@ export interface ControlledAccount<
     ): Promise<S["_Value"] | undefined>;
 }
 
+/** @category CoValues */
 export interface AccountSchema<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -53,11 +61,16 @@ export interface AccountSchema<
             Account<ProfileS, RootS>,
             RawAccount | RawControlledAccount
         > {
+    /** @category Type Hints */
     _Type: "account";
+    /** @category Type Hints */
     _Profile: ProfileS;
+    /** @category Type Hints */
     _Root: RootS;
+    /** @category Type Hints */
     _RawValue: RawAccount | RawControlledAccount;
 
+    /** @hidden */
     fromRaw(
         raw: RawAccount | RawControlledAccount,
         onGetRef?: (id: ID<CoValue>) => void
@@ -65,6 +78,7 @@ export interface AccountSchema<
 
     ControlledSchema: ControlledAccountSchema<ProfileS, RootS>;
 
+    /** @category Creation */
     createControlledAccount(options: {
         name: string;
         migration?: AccountMigration<AccountSchema<ProfileS, RootS>>;
@@ -72,6 +86,7 @@ export interface AccountSchema<
         peersToLoadFrom?: Peer[];
     }): Promise<ControlledAccount<ProfileS, RootS>>;
 
+    /** @category Creation */
     loadControlledAccount(options: {
         accountID: ID<Account>;
         accountSecret: AgentSecret;
@@ -81,6 +96,7 @@ export interface AccountSchema<
     }): Promise<ControlledAccount<ProfileS, RootS>>;
 }
 
+/** @hidden */
 export interface ControlledAccountSchema<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -89,12 +105,17 @@ export interface ControlledAccountSchema<
             ControlledAccount<ProfileS, RootS>,
             RawControlledAccount
         > {
+    /** @category Type Hints */
     _Type: "account";
+    /** @category Type Hints */
     _Profile: ProfileS;
+    /** @category Type Hints */
     _Root: RootS;
+    /** @category Type Hints */
     _RawValue: RawControlledAccount;
 }
 
+/** @category CoValues */
 export function isAccountSchema(value: unknown): value is Account {
     return (
         typeof value === "object" &&
@@ -104,6 +125,7 @@ export function isAccountSchema(value: unknown): value is Account {
     );
 }
 
+/** @category CoValues */
 export function isAccount(value: unknown): value is Account {
     return (
         typeof value === "object" &&
@@ -113,6 +135,7 @@ export function isAccount(value: unknown): value is Account {
     );
 }
 
+/** @category CoValues */
 export function AccountWith<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -290,6 +313,7 @@ export function AccountWith<
     return NonControlledAccountSchemaForProfileAndRoot;
 }
 
+/** @category CoValues */
 export const SimpleAccount = AccountWith(
     CoMapOf({
         name: imm.string,

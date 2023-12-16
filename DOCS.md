@@ -111,6 +111,28 @@ TODO: document
 
 ----
 
+## `AccountWith(ProfileS, RootS)`
+
+<sup>(function in `jazz-js`)</sup>
+
+```typescript
+export function AccountWith<ProfileS extends CoMapSchema<BaseCoMapShape> | NullSchema, RootS extends CoMapSchema<BaseCoMapShape> | NullSchema>(ProfileS: ProfileS, RootS: RootS): AccountSchema<ProfileS, RootS>
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `ProfileS` | TODO: document  |
+| `RootS` | TODO: document  |
+
+
+
+
+
+----
+
 ## `isAccount(value)`
 
 <sup>(function in `jazz-js`)</sup>
@@ -288,7 +310,7 @@ export class Schema<Value> {...}
 ```
 TODO: document
 
-### `Schema`: Constructors
+### `Schema`: Other
 
 <details>
 <summary><b><code>new Schema</code></b>()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -306,7 +328,7 @@ undefined</details>
 
 <br/>
 
-### `Schema`: Properties
+### `Schema`: Type Hints
 
 <details>
 <summary><b><code>._Value</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -335,25 +357,7 @@ export class BooleanSchema extends Schema<boolean> {...}
 ```
 TODO: document
 
-### `BooleanSchema`: Constructors
-
-<details>
-<summary><b><code>new BooleanSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class BooleanSchema {
-
-  constructor(): BooleanSchema {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-<br/>
-
-### `BooleanSchema`: Properties
+### `BooleanSchema`: Other
 
 <details>
 <summary><b><code>BooleanSchema._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -388,6 +392,24 @@ TODO: document
 
 
 <details>
+<summary><b><code>new BooleanSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class BooleanSchema {
+
+  constructor(): BooleanSchema {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `BooleanSchema`: Type Hints
+
+<details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
@@ -414,25 +436,7 @@ export class StringSchema extends Schema<string> {...}
 ```
 TODO: document
 
-### `StringSchema`: Constructors
-
-<details>
-<summary><b><code>new StringSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class StringSchema {
-
-  constructor(): StringSchema {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-<br/>
-
-### `StringSchema`: Properties
+### `StringSchema`: Other
 
 <details>
 <summary><b><code>StringSchema._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -467,6 +471,24 @@ TODO: document
 
 
 <details>
+<summary><b><code>new StringSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class StringSchema {
+
+  constructor(): StringSchema {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `StringSchema`: Type Hints
+
+<details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
@@ -493,25 +515,7 @@ export class NumberSchema extends Schema<number> {...}
 ```
 TODO: document
 
-### `NumberSchema`: Constructors
-
-<details>
-<summary><b><code>new NumberSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class NumberSchema {
-
-  constructor(): NumberSchema {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-<br/>
-
-### `NumberSchema`: Properties
+### `NumberSchema`: Other
 
 <details>
 <summary><b><code>NumberSchema._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -546,6 +550,24 @@ TODO: document
 
 
 <details>
+<summary><b><code>new NumberSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class NumberSchema {
+
+  constructor(): NumberSchema {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `NumberSchema`: Type Hints
+
+<details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
@@ -572,25 +594,7 @@ export class NullSchema extends Schema<null> {...}
 ```
 TODO: document
 
-### `NullSchema`: Constructors
-
-<details>
-<summary><b><code>new NullSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-class NullSchema {
-
-  constructor(): NullSchema {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-<br/>
-
-### `NullSchema`: Properties
+### `NullSchema`: Other
 
 <details>
 <summary><b><code>NullSchema._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -623,6 +627,24 @@ TODO: document
 </details>
 
 
+
+<details>
+<summary><b><code>new NullSchema</code></b>()</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+class NullSchema {
+
+  constructor(): NullSchema {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `NullSchema`: Type Hints
 
 <details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -722,7 +744,7 @@ export interface CoValueSchemaBase<Value extends CoValue, RawValue extends RawCo
 ```
 TODO: document
 
-### `CoValueSchemaBase`: Methods
+### `CoValueSchemaBase`: Other
 
 <details>
 <summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -778,7 +800,7 @@ TODO: document
 
 <br/>
 
-### `CoValueSchemaBase`: Properties
+### `CoValueSchemaBase`: Type Hints
 
 <details>
 <summary><b><code>._RawValue</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -814,40 +836,24 @@ TODO: document
 
 ----
 
-## `Account`
+## `CoValueBase`
 
 <sup>(interface in `jazz-js`)</sup>
 
 ```typescript
-export interface Account<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> extends Group<ProfileS, RootS> {...}
+export interface CoValueBase {...}
 ```
 TODO: document
 
-### `Account`: Properties
-
-<details>
-<summary><b><code>._raw</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface Account<ProfileS, RootS> {
-
-  _raw: Account<AccountMeta> | ControlledAccount<AccountMeta>
-
-}
-```
-TODO: document
-
-</details>
-
-
+### `CoValueBase`: Properties
 
 <details>
 <summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface Account<ProfileS, RootS> {
+interface CoValueBase {
 
-  id: ID<Account<ProfileS, RootS>>
+  id: ID<CoValue>
 
 }
 ```
@@ -856,6 +862,64 @@ TODO: document
 </details>
 
 
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoValueBase {
+
+  meta: CoValueMetaBase
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `CoValueMetaBase`
+
+<sup>(interface in `jazz-js`)</sup>
+
+```typescript
+export interface CoValueMetaBase {...}
+```
+TODO: document
+
+### `CoValueMetaBase`: Properties
+
+<details>
+<summary><b><code>.owner</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoValueMetaBase {
+
+  owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+----
+
+## `Account`
+
+<sup>(interface in `jazz-js`)</sup>
+
+```typescript
+export interface Account<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> {...}
+```
+TODO: document
+
+### `Account`: Collaboration
 
 <details>
 <summary><b><code>.isMe</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -871,47 +935,17 @@ TODO: document
 
 </details>
 
+<br/>
 
+### `Account`: ID
 
 <details>
-<summary><b><code>.profile</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface Account<ProfileS, RootS> {
 
-  profile: undefined | ProfileS["_Value"]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.root</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface Account<ProfileS, RootS> {
-
-  root: undefined | RootS["_Value"]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>Group</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface Account<ProfileS, RootS> {
-
-  meta: GroupMeta<ProfileS, RootS>
+  id: ID<Account<ProfileS, RootS>>
 
 }
 ```
@@ -932,61 +966,7 @@ export interface AccountSchema<ProfileS extends CoMapSchema | NullSchema, RootS 
 ```
 TODO: document
 
-### `AccountSchema`: Constructors
-
-<details>
-<summary><b><code>new AccountSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface AccountSchema<ProfileS, RootS> {
-
-  constructor(
-    options: {
-      fromRaw: Account<AccountMeta> | ControlledAccount<AccountMeta>,
-    }
-  ): Account<ProfileS, RootS> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `options.fromRaw` | TODO: document |
-
-</details>
-
-<br/>
-
-### `AccountSchema`: Methods
-
-<details>
-<summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface AccountSchema<ProfileS, RootS> {
-
-  fromRaw(
-    raw: Account<AccountMeta> | ControlledAccount<AccountMeta>,
-    onGetRef?: (id: ID<CoValue>) => void
-  ): Account<ProfileS, RootS> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `raw` | TODO: document  |
-
-
-</details>
-
-
+### `AccountSchema`: Creation
 
 <details>
 <summary><b><code>.createControlledAccount(options)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -1052,6 +1032,24 @@ TODO: document
 
 </details>
 
+<br/>
+
+### `AccountSchema`: Other
+
+<details>
+<summary><b><code>.ControlledSchema</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AccountSchema<ProfileS, RootS> {
+
+  ControlledSchema: ControlledAccountSchema<ProfileS, RootS>
+
+}
+```
+TODO: document
+
+</details>
+
 
 
 <details>
@@ -1082,7 +1080,7 @@ TODO: document
 
 <br/>
 
-### `AccountSchema`: Properties
+### `AccountSchema`: Type Hints
 
 <details>
 <summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -1139,22 +1137,6 @@ TODO: document
 interface AccountSchema<ProfileS, RootS> {
 
   _RawValue: Account<AccountMeta> | ControlledAccount<AccountMeta>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.ControlledSchema</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface AccountSchema<ProfileS, RootS> {
-
-  ControlledSchema: ControlledAccountSchema<ProfileS, RootS>
 
 }
 ```
@@ -1224,22 +1206,6 @@ TODO: document
 ### `ControlledAccount`: Properties
 
 <details>
-<summary><b><code>._raw</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccount<ProfileS, RootS> {
-
-  _raw: ControlledAccount<AccountMeta>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
 <summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
@@ -1271,203 +1237,6 @@ TODO: document
 
 
 
-<details>
-<summary><b><code>.profile</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccount<ProfileS, RootS> {
-
-  profile: undefined | ProfileS["_Value"]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.root</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccount<ProfileS, RootS> {
-
-  root: undefined | RootS["_Value"]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.meta</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccount<ProfileS, RootS> {
-
-  meta: GroupMeta<ProfileS, RootS>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-----
-
-## `ControlledAccountSchema`
-
-<sup>(interface in `jazz-js`)</sup>
-
-```typescript
-export interface ControlledAccountSchema<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> extends Schema<ControlledAccount<ProfileS, RootS>>, CoValueSchemaBase<ControlledAccount<ProfileS, RootS>, RawControlledAccount> {...}
-```
-TODO: document
-
-### `ControlledAccountSchema`: Methods
-
-<details>
-<summary><b><code>.fromRaw(raw, onGetRef?)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  fromRaw(
-    raw: CoValue,
-    onGetRef?: (id: ID<CoValue>) => void
-  ): ControlledAccount<ProfileS, RootS> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `raw` | TODO: document  |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.load(id, {as})</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  load(
-    id: ID<ControlledAccount<ProfileS, RootS>>,
-    __namedParameters: {
-      as: ControlledAccount<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
-    }
-  ): Promise<undefined | ControlledAccount<ProfileS, RootS>> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-| `__namedParameters.as` | TODO: document |
-
-</details>
-
-<br/>
-
-### `ControlledAccountSchema`: Properties
-
-<details>
-<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  _Type: "account"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  _Profile: ProfileS
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  _Root: RootS
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._RawValue</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  _RawValue: ControlledAccount<AccountMeta>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface ControlledAccountSchema<ProfileS, RootS> {
-
-  _Value: ControlledAccount<ProfileS, RootS>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
 ----
 
 ## `Group`
@@ -1478,6 +1247,34 @@ TODO: document
 export interface Group<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> {...}
 ```
 TODO: document
+
+### `Group`: Methods
+
+<details>
+<summary><b><code>.addMember(member, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Group<ProfileS, RootS> {
+
+  addMember(
+    member: "everyone" | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
+    role: Role
+  ): Group<ProfileS, RootS> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `member` | TODO: document  |
+| `role` | TODO: document  |
+
+</details>
+
+<br/>
 
 ### `Group`: Properties
 
@@ -1572,37 +1369,39 @@ export interface CoMapSchema<Shape extends BaseCoMapShape> extends Schema<CoMap<
 ```
 TODO: document
 
-### `CoMapSchema`: Constructors
+### `CoMapSchema`: Other
 
 <details>
-<summary><b><code>new CoMapSchema</code></b>(init, opts)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoMapSchema<Shape> {
 
-  constructor(
-    init: CoMapInit<Shape>,
-    opts: {
-      owner: Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
-    }
-  ): CoMap<Shape> {...}
+  _Type: "comap"
 
 }
 ```
 TODO: document
 
-### Parameters:
+</details>
 
-| name | description |
-| ----: | ---- |
-| `init` | TODO: document  |
-| `opts.owner` | TODO: document |
+
+
+<details>
+<summary><b><code>._Shape</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoMapSchema<Shape> {
+
+  _Shape: Shape
+
+}
+```
+TODO: document
 
 </details>
 
-<br/>
 
-### `CoMapSchema`: Methods
 
 <details>
 <summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -1656,41 +1455,37 @@ TODO: document
 
 </details>
 
+
+
+<details>
+<summary><b><code>new CoMapSchema</code></b>(init, opts)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoMapSchema<Shape> {
+
+  constructor(
+    init: CoMapInit<Shape>,
+    opts: {
+      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
+    }
+  ): CoMap<Shape> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init` | TODO: document  |
+| `opts.owner` | TODO: document |
+
+</details>
+
 <br/>
 
-### `CoMapSchema`: Properties
-
-<details>
-<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoMapSchema<Shape> {
-
-  _Type: "comap"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Shape</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoMapSchema<Shape> {
-
-  _Shape: Shape
-
-}
-```
-TODO: document
-
-</details>
-
-
+### `CoMapSchema`: Type Hints
 
 <details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -1731,11 +1526,65 @@ TODO: document
 <sup>(interface in `jazz-js`)</sup>
 
 ```typescript
-export interface CoList<Item extends Schema> extends Array<Item["_Value"]> {...}
+export interface CoList<Item extends Schema> extends Array<Item["_Value"]>, CoValueBase {...}
 ```
 TODO: document
 
-### `CoList`: Methods
+### `CoList`: Collaboration
+
+<details>
+<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  meta: CoListMeta
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `CoList`: ID
+
+<details>
+<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  id: ID<CoList<Item>>
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `CoList`: Other
+
+<details>
+<summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
+
+```typescript
+interface CoList<Item> {
+
+  length: number
+
+}
+```
+Gets or sets the length of the array. This is a number one higher than the highest index in the array.
+
+
+
+</details>
+
+
 
 <details>
 <summary><b><code>.toString()</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
@@ -2915,74 +2764,6 @@ Iterator
 
 undefined</details>
 
-<br/>
-
-### `CoList`: Properties
-
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  id: ID<CoList<Item>>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  meta: CoListMeta
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._raw</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  _raw: CoList<RawType<Item>, null | JsonObject>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.length</code></b> <sub><sup>from <code>Array</code></sup></sub>  </summary>
-
-```typescript
-interface CoList<Item> {
-
-  length: number
-
-}
-```
-Gets or sets the length of the array. This is a number one higher than the highest index in the array.
-
-
-
-</details>
-
 
 
 <details>
@@ -3053,37 +2834,55 @@ export interface CoListSchema<Item extends Schema> extends Schema<CoList<Item>>,
 ```
 TODO: document
 
-### `CoListSchema`: Constructors
+### `CoListSchema`: Other
 
 <details>
-<summary><b><code>new CoListSchema</code></b>(init, options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoListSchema<Item> {
 
-  constructor(
-    init: Item["_Value"][],
-    options: {
-      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
-    }
-  ): CoList<Item> {...}
+  _Type: "colist"
 
 }
 ```
 TODO: document
 
-### Parameters:
+</details>
 
-| name | description |
-| ----: | ---- |
-| `init` | TODO: document  |
-| `options.owner` | TODO: document |
+
+
+<details>
+<summary><b><code>._Item</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoListSchema<Item> {
+
+  _Item: Item
+
+}
+```
+TODO: document
 
 </details>
 
-<br/>
 
-### `CoListSchema`: Methods
+
+<details>
+<summary><b><code>._Value</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoListSchema<Item> {
+
+  _Value: CoList<Item>
+
+}
+```
+TODO: document
+
+</details>
+
+
 
 <details>
 <summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -3137,57 +2936,37 @@ TODO: document
 
 </details>
 
+
+
+<details>
+<summary><b><code>new CoListSchema</code></b>(init, options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoListSchema<Item> {
+
+  constructor(
+    init: Item["_Value"][],
+    options: {
+      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
+    }
+  ): CoList<Item> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `init` | TODO: document  |
+| `options.owner` | TODO: document |
+
+</details>
+
 <br/>
 
-### `CoListSchema`: Properties
-
-<details>
-<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoListSchema<Item> {
-
-  _Type: "colist"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Item</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoListSchema<Item> {
-
-  _Item: Item
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Value</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoListSchema<Item> {
-
-  _Value: CoList<Item>
-
-}
-```
-TODO: document
-
-</details>
-
-
+### `CoListSchema`: Type Hints
 
 <details>
 <summary><b><code>._RawValue</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -3212,7 +2991,7 @@ TODO: document
 <sup>(interface in `jazz-js`)</sup>
 
 ```typescript
-export interface CoStream<Item extends Schema> {...}
+export interface CoStream<Item extends Schema> extends CoValueBase {...}
 ```
 TODO: document
 
@@ -3277,61 +3056,39 @@ export interface CoStreamSchema<Item extends Schema> extends Schema<CoStream<Ite
 ```
 TODO: document
 
-### `CoStreamSchema`: Constructors
+### `CoStreamSchema`: Other
 
 <details>
-<summary><b><code>new CoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoStreamSchema<Item> {
 
-  constructor(
-    options: {
-      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
-    }
-  ): CoStream<Item> {...}
+  _Type: "costream"
 
 }
 ```
 TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `options.owner` | TODO: document |
 
 </details>
 
 
 
 <details>
-<summary><b><code>new CoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Item</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoStreamSchema<Item> {
 
-  constructor(
-    options: {
-      fromRaw: CoStream<Item>,
-    }
-  ): CoStream<Item> {...}
+  _Item: Item
 
 }
 ```
 TODO: document
 
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `options.fromRaw` | TODO: document |
-
 </details>
 
-<br/>
 
-### `CoStreamSchema`: Methods
 
 <details>
 <summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -3385,41 +3142,61 @@ TODO: document
 
 </details>
 
+
+
+<details>
+<summary><b><code>new CoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStreamSchema<Item> {
+
+  constructor(
+    options: {
+      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
+    }
+  ): CoStream<Item> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.owner` | TODO: document |
+
+</details>
+
+
+
+<details>
+<summary><b><code>new CoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStreamSchema<Item> {
+
+  constructor(
+    options: {
+      fromRaw: CoStream<Item>,
+    }
+  ): CoStream<Item> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.fromRaw` | TODO: document |
+
+</details>
+
 <br/>
 
-### `CoStreamSchema`: Properties
-
-<details>
-<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoStreamSchema<Item> {
-
-  _Type: "costream"
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Item</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoStreamSchema<Item> {
-
-  _Item: Item
-
-}
-```
-TODO: document
-
-</details>
-
-
+### `CoStreamSchema`: Type Hints
 
 <details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -3460,7 +3237,7 @@ TODO: document
 <sup>(interface in `jazz-js`)</sup>
 
 ```typescript
-export interface BinaryCoStream {...}
+export interface BinaryCoStream extends CoValueBase {...}
 ```
 TODO: document
 
@@ -3628,35 +3405,23 @@ export interface BinaryCoStreamSchema<Item extends Schema> extends Schema<Binary
 ```
 TODO: document
 
-### `BinaryCoStreamSchema`: Constructors
+### `BinaryCoStreamSchema`: Other
 
 <details>
-<summary><b><code>new BinaryCoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface BinaryCoStreamSchema<Item> {
 
-  constructor(
-    options: {
-      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
-    }
-  ): BinaryCoStream {...}
+  _Type: "binarycostream"
 
 }
 ```
 TODO: document
 
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `options.owner` | TODO: document |
-
 </details>
 
-<br/>
 
-### `BinaryCoStreamSchema`: Methods
 
 <details>
 <summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -3714,25 +3479,35 @@ TODO: document
 
 </details>
 
-<br/>
 
-### `BinaryCoStreamSchema`: Properties
 
 <details>
-<summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>new BinaryCoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface BinaryCoStreamSchema<Item> {
 
-  _Type: "costream"
+  constructor(
+    options: {
+      owner: Group<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema> | Account<CoMapSchema<BaseCoMapShape> | NullSchema, CoMapSchema<BaseCoMapShape> | NullSchema>,
+    }
+  ): BinaryCoStream {...}
 
 }
 ```
 TODO: document
 
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `options.owner` | TODO: document |
+
 </details>
 
+<br/>
 
+### `BinaryCoStreamSchema`: Type Hints
 
 <details>
 <summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
@@ -3849,7 +3624,7 @@ export type CoMap<Shape extends BaseCoMapShape> = {
   id: ID<CoMap<Shape>>,
   meta: CoMapMeta<Shape>,
   subscribe: (listener: (newValue: CoMap<Shape>) => void) => () => void,
-}
+} & CoValueBase
 ```
 TODO: doc generator not implemented yet 2097152
 
