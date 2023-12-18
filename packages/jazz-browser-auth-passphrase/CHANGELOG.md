@@ -1,5 +1,11 @@
 # jazz-browser-auth-local
 
+## 0.5.1
+
+### Patch Changes
+
+- Implement passphrase based auth
+
 ## 0.5.0
 
 ### Minor Changes

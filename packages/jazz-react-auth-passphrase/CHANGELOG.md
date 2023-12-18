@@ -1,5 +1,13 @@
 # jazz-react-auth-local
 
+## 0.5.1
+
+### Patch Changes
+
+- Implement passphrase based auth
+- Updated dependencies
+  - jazz-browser-auth-passphrase@0.5.1
+
 ## 0.4.17
 
 ### Patch Changes
