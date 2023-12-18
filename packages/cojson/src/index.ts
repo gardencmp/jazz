@@ -2,6 +2,7 @@ import {
     CoValueCore,
     newRandomSessionID,
     MAX_RECOMMENDED_TX_SIZE,
+    idforHeader,
 } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { LocalNode } from "./localNode.js";
@@ -36,7 +37,7 @@ import { Group, EVERYONE } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
-import { Account, Profile } from "./coValues/account.js";
+import { Account, Profile, accountHeaderForInitialAgentSecret } from "./coValues/account.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 
@@ -80,6 +81,8 @@ export const cojsonInternals = {
     parseJSON,
     accountOrAgentIDfromSessionID,
     isAccountID,
+    accountHeaderForInitialAgentSecret,
+    idforHeader
 };
 
 export {
