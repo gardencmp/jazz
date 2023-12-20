@@ -1,5 +1,11 @@
 # cojson-storage-indexeddb
 
+## 0.6.2
+
+### Patch Changes
+
+- Fix TypeScript lint
+
 ## 0.6.1
 
 ### Patch Changes
