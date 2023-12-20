@@ -104,6 +104,7 @@ importers:
       autoprefixer: ^10.4.14
       class-variance-authority: ^0.7.0
       clsx: ^2.0.0
+      cojson: workspace:*
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
@@ -131,12 +132,12 @@ importers:
       '@scure/bip39': 1.2.2
       class-variance-authority: 0.7.0
       clsx: 2.0.0
+      cojson: link:../../packages/cojson
       hash-slash: link:../../packages/hash-slash
       jazz-react: link:../../packages/jazz-react
       jazz-react-auth-passphrase: link:../../packages/jazz-react-auth-passphrase
       lucide-react: 0.274.0_react@18.2.0
       qrcode: 1.5.3
-      react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-router: 6.21.0_react@18.2.0
       react-router-dom: 6.21.0_biqbaboplfbrettd7655fr4n2y
@@ -156,6 +157,7 @@ importers:
       eslint-plugin-react-hooks: 4.6.0_eslint@8.56.0
       eslint-plugin-react-refresh: 0.4.5_eslint@8.56.0
       postcss: 8.4.32
+      react: 18.2.0
       tailwindcss: 3.4.0
       typescript: 5.3.3
       vite: 4.5.1
@@ -164,12 +166,14 @@ importers:
     specifiers:
       '@auth0/auth0-spa-js': ^2.1.2
       '@vitejs/plugin-react-swc': ^3.3.2
-      jazz-browser: ^0.6.0
-      jazz-browser-auth0: ^0.6.2
+      cojson: workspace:*
+      jazz-browser: workspace:*
+      jazz-browser-auth0: workspace:*
       typescript: ^5.0.2
       vite: ^4.4.5
     dependencies:
       '@auth0/auth0-spa-js': 2.1.3
+      cojson: link:../../packages/cojson
       jazz-browser: link:../../packages/jazz-browser
       jazz-browser-auth0: link:../../packages/jazz-browser-auth0
     devDependencies:
@@ -191,9 +195,11 @@ importers:
       autoprefixer: ^10.4.14
       class-variance-authority: ^0.7.0
       clsx: ^2.0.0
+      cojson: workspace:*
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
+      jazz-browser: workspace:*
       jazz-react: workspace:*
       jazz-react-auth-local: workspace:*
       lucide-react: ^0.274.0
@@ -216,6 +222,8 @@ importers:
       '@types/qrcode': 1.5.5
       class-variance-authority: 0.7.0
       clsx: 2.0.0
+      cojson: link:../../packages/cojson
+      jazz-browser: link:../../packages/jazz-browser
       jazz-react: link:../../packages/jazz-react
       jazz-react-auth-local: link:../../packages/jazz-react-auth-local
       lucide-react: 0.274.0_react@18.2.0
@@ -256,10 +264,11 @@ importers:
       autoprefixer: ^10.4.14
       class-variance-authority: ^0.7.0
       clsx: ^2.0.0
+      cojson: workspace:*
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
-      jazz-browser-media-images: ^0.5.0
+      jazz-browser-media-images: workspace:*
       jazz-react: workspace:*
       jazz-react-auth-local: workspace:*
       lucide-react: ^0.274.0
@@ -282,6 +291,7 @@ importers:
       '@types/qrcode': 1.5.5
       class-variance-authority: 0.7.0
       clsx: 2.0.0
+      cojson: link:../../packages/cojson
       jazz-browser-media-images: link:../../packages/jazz-browser-media-images
       jazz-react: link:../../packages/jazz-react
       jazz-react-auth-local: link:../../packages/jazz-react-auth-local
@@ -703,6 +713,7 @@ importers:
       '@types/react': ^18.2.19
       jazz-browser-auth-local: workspace:*
       jazz-react: workspace:*
+      react: ^18.2.0
       typescript: ^5.1.6
     dependencies:
       jazz-browser-auth-local: link:../jazz-browser-auth-local
@@ -710,6 +721,7 @@ importers:
       typescript: 5.3.3
     devDependencies:
       '@types/react': 18.2.45
+      react: 18.2.0
 
   packages/jazz-react-auth-passphrase:
     specifiers:
@@ -718,6 +730,7 @@ importers:
       cojson: workspace:*
       jazz-browser-auth-passphrase: workspace:*
       jazz-react: workspace:*
+      react: ^18.2.0
       typescript: ^5.1.6
     dependencies:
       '@scure/bip39': 1.2.2
@@ -727,6 +740,7 @@ importers:
       typescript: 5.3.3
     devDependencies:
       '@types/react': 18.2.45
+      react: 18.2.0
 
 packages:
 

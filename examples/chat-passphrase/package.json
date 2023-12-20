@@ -16,12 +16,12 @@
     "@scure/bip39": "^1.2.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "cojson": "workspace:*",
     "hash-slash": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-react-auth-passphrase": "workspace:*",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
-    "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.16.0",
     "react-router-dom": "^6.16.0",
@@ -31,9 +31,9 @@
     "uniqolor": "^1.1.0"
   },
   "devDependencies": {
+    "@types/qrcode": "^1.5.1",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
-    "@types/qrcode": "^1.5.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react-swc": "^3.3.2",
@@ -42,6 +42,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "postcss": "^8.4.27",
+    "react": "^18.2.0",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
