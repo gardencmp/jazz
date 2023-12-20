@@ -195,7 +195,7 @@ export class SyncManager {
                     return await this.handleKnownState(msg, peer);
                 }
             case "content":
-                await new Promise<void>((resolve) => setTimeout(resolve, 0));
+                // await new Promise<void>((resolve) => setTimeout(resolve, 0));
                 return await this.handleNewContent(msg, peer);
             case "done":
                 return await this.handleUnsubscribe(msg);
@@ -355,9 +355,9 @@ export class SyncManager {
                                 e
                             );
                         });
-                        await new Promise<void>((resolve) => {
-                            setTimeout(resolve, 0);
-                        });
+                        // await new Promise<void>((resolve) => {
+                        //     setTimeout(resolve, 0);
+                        // });
                     } catch (e) {
                         console.error(
                             new Date(),

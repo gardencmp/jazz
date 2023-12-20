@@ -288,9 +288,16 @@ export function autoSub(
 
     if (!effectiveId) return () => {};
 
+    // const ctxId = Math.random().toString(16).slice(2);
+    // let updateN = 0;
+
     const context = new AutoSubContext(node, () => {
         const rootResolved = context.values[effectiveId]?.lastLoaded;
+        // const n = updateN;
+        // updateN++;
+        // console.time("AutoSubContext.onUpdate " + n + " " + ctxId);
         callback(rootResolved);
+        // console.timeEnd("AutoSubContext.onUpdate " + n + " " + ctxId);
     });
 
     context.autoSub(effectiveId, [], "");
