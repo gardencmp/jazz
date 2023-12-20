@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.6.3
+
+### Patch Changes
+
+- IndexedDB & timer perf improvements
+- Updated dependencies
+  - cojson@0.6.4
+
 ## 0.6.2
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.5.2
+
+### Patch Changes
+
+- IndexedDB & timer perf improvements
+- Updated dependencies
+  - cojson@0.6.4
+  - jazz-browser@0.6.1
+
 ## 0.5.1
 
 ### Patch Changes
