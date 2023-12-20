@@ -94,6 +94,7 @@ importers:
       '@radix-ui/react-checkbox': ^1.0.4
       '@radix-ui/react-slot': ^1.0.2
       '@radix-ui/react-toast': ^1.1.4
+      '@scure/bip39': ^1.2.2
       '@types/qrcode': ^1.5.1
       '@types/react': ^18.2.15
       '@types/react-dom': ^18.2.7
@@ -108,7 +109,7 @@ importers:
       eslint-plugin-react-refresh: ^0.4.3
       hash-slash: workspace:*
       jazz-react: workspace:*
-      jazz-react-auth-passphrase: ^0.5.1
+      jazz-react-auth-passphrase: workspace:*
       lucide-react: ^0.274.0
       postcss: ^8.4.27
       qrcode: ^1.5.3
@@ -127,7 +128,7 @@ importers:
       '@radix-ui/react-checkbox': 1.0.4_y25r3j74y2ixp3wwje7zxg74ra
       '@radix-ui/react-slot': 1.0.2_qinpt5tsrh57s4kh6guy25fqdq
       '@radix-ui/react-toast': 1.1.5_y25r3j74y2ixp3wwje7zxg74ra
-      '@types/qrcode': 1.5.5
+      '@scure/bip39': 1.2.2
       class-variance-authority: 0.7.0
       clsx: 2.0.0
       hash-slash: link:../../packages/hash-slash
@@ -144,6 +145,7 @@ importers:
       tailwindcss-animate: 1.0.7_tailwindcss@3.4.0
       uniqolor: 1.1.1
     devDependencies:
+      '@types/qrcode': 1.5.5
       '@types/react': 18.2.45
       '@types/react-dom': 18.2.18
       '@typescript-eslint/eslint-plugin': 6.15.0_6airgfur4cim7d6dzxc5qxbguu
@@ -3586,7 +3588,6 @@ packages:
     resolution: {integrity: sha512-CdfBi/e3Qk+3Z/fXYShipBT13OJ2fDO2Q2w5CIP5anLTLIndQG9z6P1cnm+8zCWSpm5dnxMFd/uREtb0EXuQzg==}
     dependencies:
       '@types/node': 20.10.5
-    dev: false
 
   /@types/react-dom/18.2.18:
     resolution: {integrity: sha512-TJxDm6OfAX2KJWJdMEVTwWke5Sc/E/RlnPGvGfS0W7+6ocy2xhDVQVh/KvC2Uf7kACs+gDytdusDSdWfWkaNzw==}
