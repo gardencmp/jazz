@@ -32,12 +32,13 @@ importers:
       autoprefixer: ^10.4.14
       class-variance-authority: ^0.7.0
       clsx: ^2.0.0
+      cojson: workspace:*
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
-      hash-slash: ^0.1.3
-      jazz-react: ^0.5.0
-      jazz-react-auth-local: ^0.4.16
+      hash-slash: workspace:*
+      jazz-react: workspace:*
+      jazz-react-auth-local: workspace:*
       lucide-react: ^0.274.0
       postcss: ^8.4.27
       qrcode: ^1.5.3
@@ -59,6 +60,7 @@ importers:
       '@types/qrcode': 1.5.5
       class-variance-authority: 0.7.0
       clsx: 2.0.0
+      cojson: link:../../packages/cojson
       hash-slash: link:../../packages/hash-slash
       jazz-react: link:../../packages/jazz-react
       jazz-react-auth-local: link:../../packages/jazz-react-auth-local
@@ -104,8 +106,8 @@ importers:
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
-      hash-slash: ^0.1.3
-      jazz-react: ^0.5.0
+      hash-slash: workspace:*
+      jazz-react: workspace:*
       jazz-react-auth-passphrase: ^0.5.1
       lucide-react: ^0.274.0
       postcss: ^8.4.27
@@ -190,8 +192,8 @@ importers:
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
-      jazz-react: ^0.5.0
-      jazz-react-auth-local: ^0.4.16
+      jazz-react: workspace:*
+      jazz-react-auth-local: workspace:*
       lucide-react: ^0.274.0
       postcss: ^8.4.27
       qrcode: ^1.5.3
@@ -256,8 +258,8 @@ importers:
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
       jazz-browser-media-images: ^0.5.0
-      jazz-react: ^0.5.0
-      jazz-react-auth-local: ^0.4.16
+      jazz-react: workspace:*
+      jazz-react-auth-local: workspace:*
       lucide-react: ^0.274.0
       postcss: ^8.4.27
       qrcode: ^1.5.3
@@ -319,6 +321,7 @@ importers:
       autoprefixer: ^10.4.14
       class-variance-authority: ^0.7.0
       clsx: ^2.0.0
+      cojson: workspace:*
       eslint: ^8.45.0
       eslint-plugin-react-hooks: ^4.6.0
       eslint-plugin-react-refresh: ^0.4.3
@@ -344,6 +347,7 @@ importers:
       '@types/qrcode': 1.5.5
       class-variance-authority: 0.7.0
       clsx: 2.0.0
+      cojson: link:../../packages/cojson
       jazz-react: link:../../packages/jazz-react
       jazz-react-auth-local: link:../../packages/jazz-react-auth-local
       lucide-react: 0.274.0_react@18.2.0
@@ -497,8 +501,8 @@ importers:
       '@types/ws': ^8.5.5
       '@typescript-eslint/eslint-plugin': ^6.2.1
       '@typescript-eslint/parser': ^6.2.1
-      cojson: ^0.6.0
-      cojson-storage-sqlite: ^0.5.2
+      cojson: workspace:*
+      cojson-storage-sqlite: workspace:*
       eslint: ^8.46.0
       isomorphic-streams: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
       jest: ^29.6.2
@@ -523,7 +527,7 @@ importers:
   packages/cojson-storage-indexeddb:
     specifiers:
       '@vitest/browser': ^0.34.1
-      cojson: ^0.6.4
+      cojson: workspace:*
       isomorphic-streams: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
       typescript: ^5.1.6
       vitest: ^0.34.1
@@ -541,7 +545,7 @@ importers:
     specifiers:
       '@types/better-sqlite3': ^7.6.4
       better-sqlite3: ^8.5.2
-      cojson: ^0.6.0
+      cojson: workspace:*
       isomorphic-streams: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
       typescript: ^5.1.6
     dependencies:
@@ -555,7 +559,7 @@ importers:
   packages/cojson-transport-nodejs-ws:
     specifiers:
       '@types/ws': ^8.5.5
-      cojson: ^0.6.0
+      cojson: workspace:*
       isomorphic-streams: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
       typescript: ^5.1.6
       ws: ^8.14.2
@@ -709,7 +713,7 @@ importers:
     specifiers:
       '@scure/bip39': ^1.2.2
       '@types/react': ^18.2.19
-      cojson: workspace:^0.6.4
+      cojson: workspace:*
       jazz-browser-auth-passphrase: workspace:*
       jazz-react: workspace:*
       typescript: ^5.1.6

@@ -16,8 +16,8 @@
         "typescript": "5.0.2"
     },
     "dependencies": {
-        "cojson": "^0.6.0",
-        "cojson-storage-sqlite": "^0.5.2",
+        "cojson": "workspace:*",
+        "cojson-storage-sqlite": "workspace:*",
         "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae",
         "ws": "^8.13.0"
     },
