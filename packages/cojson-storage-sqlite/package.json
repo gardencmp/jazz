@@ -9,9 +9,13 @@
     "better-sqlite3": "^8.5.2",
     "cojson": "^0.6.0",
     "typescript": "^5.1.6",
+    "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+  },
+  "devDependencies": {
     "@types/better-sqlite3": "^7.6.4"
   },
   "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist",
     "lint": "eslint src/**/*.ts",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"

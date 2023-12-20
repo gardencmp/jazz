@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2018",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "importHelpers": false,
+    "noEmitHelpers": false,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "baseUrl": "./packages"
+  },
+  "exclude": ["node_modules", "target"]
+}

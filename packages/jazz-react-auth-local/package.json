@@ -5,8 +5,8 @@
     "types": "src/index.tsx",
     "license": "MIT",
     "dependencies": {
-        "jazz-browser-auth-local": "^0.5.0",
-        "jazz-react": "^0.5.1",
+        "jazz-browser-auth-local": "workspace:*",
+        "jazz-react": "workspace:*",
         "typescript": "^5.1.6"
     },
     "devDependencies": {
@@ -16,6 +16,7 @@
         "react": "17 - 18"
     },
     "scripts": {
+        "dev": "tsc --watch --sourceMap --outDir dist",
         "lint": "eslint src/**/*.tsx",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
