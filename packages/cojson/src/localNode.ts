@@ -168,11 +168,11 @@ export class LocalNode {
             newRandomSessionID(accountID)
         );
 
-        const accountPromise = loadingNode.load(accountID);
-
         for (const peer of peersToLoadFrom) {
             loadingNode.syncManager.addPeer(peer);
         }
+
+        const accountPromise = loadingNode.load(accountID);
 
         const account = await accountPromise;
 
