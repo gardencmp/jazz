@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.5.3
+
+### Patch Changes
+
+- Fix loading of accounts
+- Updated dependencies
+  - cojson@0.6.5
+  - jazz-browser@0.6.2
+
 ## 0.5.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.6.1
+
+### Patch Changes
+
+- Fix loading of accounts
+- Updated dependencies
+  - cojson@0.6.5
+
 ## 0.6.0
 
 ### Minor Changes
