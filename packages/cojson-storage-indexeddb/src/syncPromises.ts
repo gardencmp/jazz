@@ -187,7 +187,7 @@ export class SyncPromise<T> {
   }
 
   public static reject<U>(reason?: any) {
-    return new SyncPromise<U>((resolve, reject) => {
+    return new SyncPromise<U>((_resolve, reject) => {
       return reject(reason);
     });
   }
