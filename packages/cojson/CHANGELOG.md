@@ -1,5 +1,17 @@
 # cojson
 
+## 0.6.4
+
+### Patch Changes
+
+- IndexedDB & timer perf improvements
+
+## 0.6.3
+
+### Patch Changes
+
+- Implement passphrase based auth
+
 ## 0.6.2
 
 ### Patch Changes

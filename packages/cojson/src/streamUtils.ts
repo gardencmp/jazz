@@ -160,10 +160,8 @@ export function newStreamPair<T>(
                 // make sure write resolves before corresponding read, but make sure writes are still in order
                 await lastWritePromise;
                 lastWritePromise = new Promise((resolve) => {
-                    setTimeout(() => {
-                        enqueue(chunk);
-                        resolve();
-                    });
+                    enqueue(chunk);
+                    resolve();
                 });
             }
         },

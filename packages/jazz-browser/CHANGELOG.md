@@ -1,5 +1,14 @@
 # jazz-browser
 
+## 0.6.1
+
+### Patch Changes
+
+- IndexedDB & timer perf improvements
+- Updated dependencies
+  - cojson@0.6.4
+  - cojson-storage-indexeddb@0.6.1
+
 ## 0.6.0
 
 ### Minor Changes
