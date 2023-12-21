@@ -1,5 +1,11 @@
 # cojson
 
+## 0.6.5
+
+### Patch Changes
+
+- Fix loading of accounts
+
 ## 0.6.4
 
 ### Patch Changes

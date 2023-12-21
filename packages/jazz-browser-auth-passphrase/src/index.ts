@@ -9,12 +9,12 @@ import {
 import { agentSecretFromSecretSeed } from "cojson/src/crypto";
 import { AuthProvider, SessionProvider } from "jazz-browser";
 
-type SessionStorageData = {
+type LocalStorageData = {
     accountID: AccountID;
     accountSecret: AgentSecret;
 };
 
-const sessionStorageKey = "jazz-logged-in-secret";
+const localStorageKey = "jazz-logged-in-secret";
 
 export interface BrowserPassphraseAuthDriver {
     onReady: (next: {
@@ -48,16 +48,16 @@ export class BrowserPassphraseAuth implements AuthProvider {
         initialPeers: Peer[],
         migration?: AccountMigration
     ): Promise<LocalNode> {
-        if (sessionStorage[sessionStorageKey]) {
-            const sessionStorageData = JSON.parse(
-                sessionStorage[sessionStorageKey]
-            ) as SessionStorageData;
+        if (localStorage[localStorageKey]) {
+            const localStorageData = JSON.parse(
+                localStorage[localStorageKey]
+            ) as LocalStorageData;
 
-            const sessionID = await getSessionFor(sessionStorageData.accountID);
+            const sessionID = await getSessionFor(localStorageData.accountID);
 
             const node = await LocalNode.withLoadedAccount({
-                accountID: sessionStorageData.accountID,
-                accountSecret: sessionStorageData.accountSecret,
+                accountID: localStorageData.accountID,
+                accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
                 migration,
@@ -127,10 +127,10 @@ async function signUp(
             migration,
         });
 
-    sessionStorage[sessionStorageKey] = JSON.stringify({
+    localStorage[localStorageKey] = JSON.stringify({
         accountID,
         accountSecret,
-    } satisfies SessionStorageData);
+    } satisfies LocalStorageData);
 
     node.currentSessionID = await getSessionFor(accountID);
 
@@ -156,10 +156,10 @@ async function logIn(
 
     const accountID = cojsonInternals.idforHeader(cojsonInternals.accountHeaderForInitialAgentSecret(accountSecret)) as AccountID;
 
-    sessionStorage[sessionStorageKey] = JSON.stringify({
+    localStorage[localStorageKey] = JSON.stringify({
         accountID,
         accountSecret,
-    } satisfies SessionStorageData);
+    } satisfies LocalStorageData);
 
     const node = await LocalNode.withLoadedAccount({
         accountID,
@@ -173,5 +173,5 @@ async function logIn(
 }
 
 function logOut() {
-    delete sessionStorage[sessionStorageKey];
+    delete localStorage[localStorageKey];
 }

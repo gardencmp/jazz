@@ -1,5 +1,14 @@
 # jazz-browser
 
+## 0.6.2
+
+### Patch Changes
+
+- Fix loading of accounts
+- Updated dependencies
+  - cojson@0.6.5
+  - jazz-autosub@0.6.1
+
 ## 0.6.1
 
 ### Patch Changes
