@@ -37,9 +37,9 @@ jobs:
         username: gardencmp
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Yarn Build
+    - name: Pnpm Build
       run: |
-        pnpm install
+        pnpm ci
         pnpm turbo build;
       working-directory: ./examples/${{ matrix.example }}
 
