@@ -18,6 +18,10 @@ jobs:
       with:
         submodules: true
 
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
     - uses: actions/setup-node@v3
       with:
         node-version: 16
