@@ -17,6 +17,8 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "dev-chat": "turbo dev --filter jazz-example-chat...",
+    "dev-chat-passphrase": "turbo dev --filter jazz-example-chat-passphrase...",
+    "dev-todo": "turbo dev --filter jazz-example-todo...",
     "build-all": "lerna run build",
     "updated": "lerna updated --include-merged-tags",
     "publish-all": "yarn run gen-docs && lerna publish --include-merged-tags",
