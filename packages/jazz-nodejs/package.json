@@ -7,11 +7,17 @@
     "license": "MIT",
     "version": "0.6.3",
     "dependencies": {
-        "cojson": "^0.6.4",
-        "cojson-transport-nodejs-ws": "^0.5.1",
-        "jazz-autosub": "^0.6.0"
+        "cojson": "workspace:*",
+        "cojson-transport-nodejs-ws": "workspace:*",
+        "jazz-autosub": "workspace:*",
+        "ws": "^8.14.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3",
+        "@types/ws": "^8.5.5"
     },
     "scripts": {
+        "dev": "tsc --watch --sourceMap --outDir dist",
         "test": "jest",
         "lint": "eslint src/**/*.ts",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
