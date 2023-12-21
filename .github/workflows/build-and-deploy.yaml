@@ -39,7 +39,7 @@ jobs:
 
     - name: Pnpm Build
       run: |
-        pnpm ci
+        pnpm install
         pnpm turbo build;
       working-directory: ./examples/${{ matrix.example }}
 
