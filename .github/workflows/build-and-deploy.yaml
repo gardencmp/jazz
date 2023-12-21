@@ -3,9 +3,8 @@ name: Build and Deploy
 on:
   push:
     branches: [ "main" ]
-  pull_request_target:
+  pull_request:
     branches: [ "main" ]
-    types: [assigned, edited, opened, synchronize, reopened]
 
 jobs:
   build-examples:
@@ -36,7 +35,7 @@ jobs:
       with:
         registry: ghcr.io
         username: gardencmp
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.DOCKER_PUSH_PAT }}
 
     - name: Pnpm Build
       run: |
@@ -69,7 +68,7 @@ jobs:
       with:
         registry: ghcr.io
         username: gardencmp
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.DOCKER_PUSH_PAT }}
 
     - name: Docker Build & Push
       uses: docker/build-push-action@v4
