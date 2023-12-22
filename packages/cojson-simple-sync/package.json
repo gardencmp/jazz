@@ -13,10 +13,12 @@
         "ts-jest": "^29.1.1"
     },
     "dependencies": {
-        "cojson": "workspace:^",
-        "cojson-storage-sqlite": "workspace:^",
         "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae",
         "ws": "^8.13.0"
+    },
+    "peerDependencies": {
+        "cojson": "workspace:^",
+        "cojson-storage-sqlite": "workspace:^"
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",

@@ -5,7 +5,9 @@
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "auth0-js": "^9.23.3",
+    "auth0-js": "^9.23.3"
+  },
+  "peerDependencies": {
     "cojson": "workspace:^",
     "jazz-browser": "workspace:^"
   },

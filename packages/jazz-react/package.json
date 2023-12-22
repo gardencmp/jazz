@@ -4,16 +4,14 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
-  "dependencies": {
-    "cojson": "workspace:^",
-    "jazz-autosub": "workspace:^",
-    "jazz-browser": "workspace:^"
-  },
   "devDependencies": {
     "@types/react": "^18.2.19",
     "react": "^18.2.0"
   },
   "peerDependencies": {
+    "cojson": "workspace:^",
+    "jazz-autosub": "workspace:^",
+    "jazz-browser": "workspace:^",
     "react": "^17.0.0 || ^18.0.0"
   },
   "scripts": {

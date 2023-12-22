@@ -4,7 +4,7 @@
     "main": "dist/index.js",
     "types": "src/index.ts",
     "license": "MIT",
-    "dependencies": {
+    "peerDependencies": {
         "cojson": "workspace:^",
         "jazz-browser": "workspace:^"
     },

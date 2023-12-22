@@ -5,7 +5,9 @@
     "types": "src/index.ts",
     "license": "MIT",
     "dependencies": {
-        "@scure/bip39": "^1.2.2",
+        "@scure/bip39": "^1.2.2"
+    },
+    "peerDependencies": {
         "cojson": "workspace:^",
         "jazz-browser": "workspace:^"
     },

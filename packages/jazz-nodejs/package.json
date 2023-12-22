@@ -7,13 +7,15 @@
     "license": "MIT",
     "version": "0.6.3",
     "dependencies": {
-        "cojson": "workspace:^",
-        "cojson-transport-nodejs-ws": "workspace:^",
-        "jazz-autosub": "workspace:^",
         "ws": "^8.14.2"
     },
     "devDependencies": {
         "@types/ws": "^8.5.5"
+    },
+    "peerDependencies": {
+        "cojson": "workspace:^",
+        "cojson-transport-nodejs-ws": "workspace:^",
+        "jazz-autosub": "workspace:^"
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",
