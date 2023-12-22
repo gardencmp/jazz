@@ -8,8 +8,7 @@
         "@scure/bip39": "^1.2.2",
         "cojson": "workspace:^",
         "jazz-browser-auth-passphrase": "workspace:^",
-        "jazz-react": "workspace:^",
-        "typescript": "^5.1.6"
+        "jazz-react": "workspace:^"
     },
     "devDependencies": {
         "@types/react": "^18.2.19",

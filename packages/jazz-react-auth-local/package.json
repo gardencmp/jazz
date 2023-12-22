@@ -6,8 +6,7 @@
     "license": "MIT",
     "dependencies": {
         "jazz-browser-auth-local": "workspace:^",
-        "jazz-react": "workspace:^",
-        "typescript": "^5.1.6"
+        "jazz-react": "workspace:^"
     },
     "devDependencies": {
         "@types/react": "^18.2.19",

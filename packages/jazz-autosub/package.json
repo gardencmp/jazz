@@ -36,8 +36,5 @@
             "/node_modules/",
             "/dist/"
         ]
-    },
-    "devDependencies": {
-        "typescript": "^5.3.3"
     }
 }
