@@ -6,8 +6,8 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "jazz-nodejs": "workspace:*",
-    "cojson": "workspace:*"
+    "jazz-nodejs": "workspace:^",
+    "cojson": "workspace:^"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

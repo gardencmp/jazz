@@ -5,10 +5,10 @@
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "workspace:*",
-    "cojson-storage-indexeddb": "workspace:*",
+    "cojson": "workspace:^",
+    "cojson-storage-indexeddb": "workspace:^",
     "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae",
-    "jazz-autosub": "workspace:*",
+    "jazz-autosub": "workspace:^",
     "typescript": "^5.1.6"
   },
   "scripts": {

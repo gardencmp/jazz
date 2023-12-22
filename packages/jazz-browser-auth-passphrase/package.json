@@ -6,8 +6,8 @@
     "license": "MIT",
     "dependencies": {
         "@scure/bip39": "^1.2.2",
-        "cojson": "workspace:*",
-        "jazz-browser": "workspace:*",
+        "cojson": "workspace:^",
+        "jazz-browser": "workspace:^",
         "typescript": "^5.1.6"
     },
     "scripts": {

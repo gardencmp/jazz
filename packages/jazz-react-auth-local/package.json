@@ -5,8 +5,8 @@
     "types": "src/index.tsx",
     "license": "MIT",
     "dependencies": {
-        "jazz-browser-auth-local": "workspace:*",
-        "jazz-react": "workspace:*",
+        "jazz-browser-auth-local": "workspace:^",
+        "jazz-react": "workspace:^",
         "typescript": "^5.1.6"
     },
     "devDependencies": {

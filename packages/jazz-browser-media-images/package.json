@@ -6,10 +6,10 @@
   "license": "MIT",
   "dependencies": {
     "@types/image-blob-reduce": "^4.1.1",
-    "cojson": "workspace:*",
+    "cojson": "workspace:^",
     "image-blob-reduce": "^4.1.0",
-    "jazz-autosub": "workspace:*",
-    "jazz-browser": "workspace:*",
+    "jazz-autosub": "workspace:^",
+    "jazz-browser": "workspace:^",
     "pica": "^9.0.1",
     "typescript": "^5.1.6"
   },

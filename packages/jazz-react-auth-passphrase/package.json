@@ -6,9 +6,9 @@
     "license": "MIT",
     "dependencies": {
         "@scure/bip39": "^1.2.2",
-        "cojson": "workspace:*",
-        "jazz-browser-auth-passphrase": "workspace:*",
-        "jazz-react": "workspace:*",
+        "cojson": "workspace:^",
+        "jazz-browser-auth-passphrase": "workspace:^",
+        "jazz-react": "workspace:^",
         "typescript": "^5.1.6"
     },
     "devDependencies": {

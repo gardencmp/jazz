@@ -7,7 +7,7 @@
     "license": "MIT",
     "version": "0.6.1",
     "dependencies": {
-        "cojson": "workspace:*"
+        "cojson": "workspace:^"
     },
     "scripts": {
         "test": "jest",

@@ -6,8 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "auth0-js": "^9.23.3",
-    "cojson": "workspace:*",
-    "jazz-browser": "workspace:*",
+    "cojson": "workspace:^",
+    "jazz-browser": "workspace:^",
     "typescript": "^5.1.6"
   },
   "scripts": {

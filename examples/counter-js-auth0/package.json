@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^2.1.2",
-    "jazz-browser": "workspace:*",
-    "jazz-browser-auth0": "workspace:*",
-    "cojson": "workspace:*"
+    "jazz-browser": "workspace:^",
+    "jazz-browser-auth0": "workspace:^",
+    "cojson": "workspace:^"
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.3.2",

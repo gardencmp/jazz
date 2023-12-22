@@ -7,9 +7,9 @@
     "license": "MIT",
     "version": "0.6.3",
     "dependencies": {
-        "cojson": "workspace:*",
-        "cojson-transport-nodejs-ws": "workspace:*",
-        "jazz-autosub": "workspace:*",
+        "cojson": "workspace:^",
+        "cojson-transport-nodejs-ws": "workspace:^",
+        "jazz-autosub": "workspace:^",
         "ws": "^8.14.2"
     },
     "devDependencies": {
