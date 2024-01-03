@@ -42,7 +42,7 @@ export function FollowerList({ profile }: { profile?: Resolved<TwitProfile> }) {
         return (
           <div key={followerProfile.id} className="flex items-center">
             <ProfilePicImg
-              src={followerProfile?.avatar?.as(BrowserImage)?.highestResSrcOrPlaceholder}
+              src={followerProfile?.avatar?.as(BrowserImage())?.highestResSrcOrPlaceholder}
               linkTo={'/' + followerProfile?.id}
               initial={followerProfile?.name[0]}
             />
@@ -64,7 +64,7 @@ export function FollowingList({ profile }: { profile?: Resolved<TwitProfile> }) 
         return (
           <div key={followingProfile?.id} className="flex items-center">
             <ProfilePicImg
-              src={followingProfile?.avatar?.as(BrowserImage)?.highestResSrcOrPlaceholder}
+              src={followingProfile?.avatar?.as(BrowserImage())?.highestResSrcOrPlaceholder}
               linkTo={'/' + followingProfile?.id}
               initial={followingProfile?.name[0]}
             />

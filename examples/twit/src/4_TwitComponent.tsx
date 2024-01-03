@@ -39,7 +39,7 @@ export function TwitComponent({
     <TwitWithRepliesContainer isTopLevel={isTopLevel}>
       <TwitContainer>
         <ProfilePicImg
-          src={posterProfile?.avatar?.as(BrowserImage)?.highestResSrcOrPlaceholder}
+          src={posterProfile?.avatar?.as(BrowserImage())?.highestResSrcOrPlaceholder}
           linkTo={posterProfile?.id && ('/' + posterProfile.id)}
           initial={posterProfile?.name[0]}
           size={twit?.isReplyTo && "sm"}
@@ -61,7 +61,7 @@ export function TwitComponent({
           {twit?.images && (
             <TwitImgGallery>
               {twit.images.map((image, idx) => (
-                <TwitImg src={image?.as(BrowserImage)?.highestResSrcOrPlaceholder} key={image?.id || idx} />
+                <TwitImg src={image?.as(BrowserImage())?.highestResSrcOrPlaceholder} key={image?.id || idx} />
               ))}
             </TwitImgGallery>
           )}

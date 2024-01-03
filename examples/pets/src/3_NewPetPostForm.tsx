@@ -87,7 +87,7 @@ export function NewPetPostForm() {
                 <img
                     className="w-80 max-w-full rounded"
                     src={
-                        newPetPost?.image.as(BrowserImage)
+                        newPetPost?.image.as(BrowserImage())
                             ?.highestResSrcOrPlaceholder
                     }
                 />

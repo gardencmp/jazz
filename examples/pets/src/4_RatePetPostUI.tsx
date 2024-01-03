@@ -37,7 +37,7 @@ export function RatePetPostUI() {
                 <img
                     className="w-80 max-w-full rounded"
                     src={
-                        petPost.image.as(BrowserImage)
+                        petPost.image.as(BrowserImage())
                             ?.highestResSrcOrPlaceholder
                     }
                 />
