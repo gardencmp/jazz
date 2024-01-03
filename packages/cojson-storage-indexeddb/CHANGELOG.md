@@ -1,5 +1,11 @@
 # cojson-storage-indexeddb
 
+## 0.6.3
+
+### Patch Changes
+
+- Fix ordering bugs with indexeddb
+
 ## 0.6.2
 
 ### Patch Changes
