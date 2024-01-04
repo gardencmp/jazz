@@ -1,5 +1,11 @@
 # jazz-browser-media-images
 
+## 0.6.0
+
+### Minor Changes
+
+- Parametrize BrowserImage for maxWidth
+
 ## 0.5.1
 
 ### Patch Changes

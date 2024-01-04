@@ -194,6 +194,10 @@ export class LocalNode {
         node.syncManager.local = node;
 
         controlledAccount.core.node = node;
+        node.coValues[accountID] = {
+            state: "loaded",
+            coValue: controlledAccount.core,
+        };
 
         const profileID = account.get("profile");
         if (!profileID) {

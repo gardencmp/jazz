@@ -57,7 +57,7 @@ export function ProfilePage() {
       <div className="py-2 mb-5 flex gap-4">
         <div className="flex flex-col items-stretch">
           <ProfilePicImg
-            src={profile?.avatar?.as(BrowserImage)?.highestResSrcOrPlaceholder}
+            src={profile?.avatar?.as(BrowserImage())?.highestResSrcOrPlaceholder}
             initial={profile?.name[0]}
             size="xxl"
           />

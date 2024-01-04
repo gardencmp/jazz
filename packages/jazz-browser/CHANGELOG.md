@@ -1,5 +1,13 @@
 # jazz-browser
 
+## 0.6.3
+
+### Patch Changes
+
+- Fix migration changes being lost on loaded account
+- Updated dependencies
+  - cojson@0.6.6
+
 ## 0.6.2
 
 ### Patch Changes
