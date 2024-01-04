@@ -939,6 +939,9 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6(@vitest/browser@0.34.6)(webdriverio@8.26.3)
 
   packages/jazz-nodejs:
     dependencies:

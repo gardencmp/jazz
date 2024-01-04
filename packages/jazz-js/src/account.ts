@@ -16,10 +16,9 @@ import {
     CoValueSchema,
     CoValueSchemaBase,
     ID,
-    NullSchema,
-    Schema,
-    imm,
 } from "./index.js";
+import { Schema } from "./schema.js";
+import { NullSchema, imm } from "./primitives.js";
 import { CoMapOf, CoMapSchema } from "./coMap.js";
 import { Group, GroupMeta } from "./group.js";
 

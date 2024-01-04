@@ -10,34 +10,13 @@
         "cojson": "workspace:*"
     },
     "scripts": {
-        "test": "jest",
+        "test": "vitest",
         "lint": "eslint src/**/*.ts",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },
-    "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "transform": {
-            "\\.[jt]sx?$": [
-                "ts-jest",
-                {
-                    "useESM": true
-                }
-            ]
-        },
-        "moduleNameMapper": {
-            "(.+)\\.js": "$1"
-        },
-        "extensionsToTreatAsEsm": [
-            ".ts"
-        ],
-        "modulePathIgnorePatterns": [
-            "/node_modules/",
-            "/dist/"
-        ]
-    },
     "devDependencies": {
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "^0.34.6"
     }
 }

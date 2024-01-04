@@ -1,8 +1,6 @@
 import { CoID, CoValue as RawCoValue, CoMap as RawCoMap, Account as RawAccount } from "cojson";
 import {
-    Schema,
     ID,
-    isCoValueSchema,
     CoValue,
     CoValueSchemaBase,
     CoValueSchema,
@@ -10,6 +8,8 @@ import {
     CoValueBase,
     SimpleAccount,
 } from "./index.js";
+import { isCoValueSchema } from "./guards.js";
+import { Schema } from "./schema.js";
 import { Group } from "./group.js";
 import { Account, ControlledAccount } from "./account.js";
 
@@ -250,7 +250,7 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         } else {
             Object.defineProperty(CoMapSchemaForShape.prototype, key, {
                 get(this: CoMapSchemaForShape) {
-                    this._raw.get(key);
+                    return this._raw.get(key);
                 },
                 set(this: CoMapSchemaForShape, value) {
                     this._raw.set(key, value);

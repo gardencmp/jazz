@@ -1,18 +1,15 @@
 import {
-    InviteSecret,
     LocalNode,
     Group as RawGroup,
-    ControlledAccount as RawControlledAccount,
     Role,
 } from "cojson";
 import {
     CoValue,
     CoValueSchemaBase,
     ID,
-    NullSchema,
-    Schema,
-    imm,
 } from "./index.js";
+import { Schema } from "./schema.js";
+import { NullSchema, imm } from "./primitives.js";
 import { CoMapSchema } from "./coMap.js";
 import { Account, ControlledAccount } from "./account.js";
 

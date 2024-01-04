@@ -12,9 +12,9 @@ import {
     Group,
     ID,
     RawType,
-    Schema,
     SimpleAccount,
 } from "./index.js";
+import { Schema } from "./schema.js";
 
 export interface CoStream<Item extends Schema = Schema> extends CoValueBase {
     id: ID<CoStream<Item>>;
