@@ -134,20 +134,22 @@ export async function createImage(
     return imageDefinition;
 }
 
-export const BrowserImage: AutoSubExtension<
+export function BrowserImage(maxWidth?: number): AutoSubExtension<
     Media.ImageDefinition,
     LoadingImageInfo
-> = {
-    id: "BrowserImage",
+> {
+    return {
+        id: "BrowserImage",
 
-    subscribe(
-        imageDef: Media.ImageDefinition,
-        autoSubContext: AutoSubContext,
-        callback: (update: LoadingImageInfo) => void
-    ): () => void {
-        return loadImage(imageDef, autoSubContext.node, callback);
-    },
-};
+        subscribe(
+            imageDef: Media.ImageDefinition,
+            autoSubContext: AutoSubContext,
+            callback: (update: LoadingImageInfo) => void
+        ): () => void {
+            return loadImage(imageDef, autoSubContext.node, callback, maxWidth);
+        },
+    }
+}
 
 export type LoadingImageInfo = {
     originalSize?: [number, number];
@@ -162,7 +164,8 @@ export function loadImage(
         | Media.ImageDefinition
         | { id: CoID<Media.ImageDefinition> },
     localNode: LocalNode,
-    progressiveCallback: (update: LoadingImageInfo) => void
+    progressiveCallback: (update: LoadingImageInfo) => void,
+    maxWidth?: number,
 ): () => void {
     let unsubscribe: (() => void) | undefined;
     let stopped = false;
@@ -218,6 +221,9 @@ export function loadImage(
                         (key): key is `${number}x${number}` =>
                             !!key.match(/\d+x\d+/)
                     )
+                    .filter((key) => {
+                        return !maxWidth || Number(key.split("x")[0]) <= maxWidth;
+                    })
                     .sort((a, b) => {
                         const widthA = Number(a.split("x")[0]);
                         const widthB = Number(b.split("x")[0]);

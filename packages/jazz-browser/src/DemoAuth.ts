@@ -12,7 +12,7 @@ type StorageData = {
     accountSecret: AgentSecret;
 };
 
-const sessionStorageKey = "demo-auth-logged-in-secret";
+const localStorageKey = "demo-auth-logged-in-secret";
 
 export interface BrowserDemoAuthDriver {
     onReady: (next: {
@@ -37,16 +37,16 @@ export class BrowserDemoAuth implements AuthProvider {
         initialPeers: Peer[],
         migration?: AccountMigration
     ): Promise<LocalNode> {
-        if (sessionStorage["demo-auth-logged-in-secret"]) {
-            const sessionStorageData = JSON.parse(
-                sessionStorage[sessionStorageKey]
+        if (localStorage["demo-auth-logged-in-secret"]) {
+            const localStorageData = JSON.parse(
+                localStorage[localStorageKey]
             ) as StorageData;
 
-            const sessionID = await getSessionFor(sessionStorageData.accountID);
+            const sessionID = await getSessionFor(localStorageData.accountID);
 
             const node = await LocalNode.withLoadedAccount({
-                accountID: sessionStorageData.accountID,
-                accountSecret: sessionStorageData.accountSecret,
+                accountID: localStorageData.accountID,
+                accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
                 migration,
@@ -69,7 +69,7 @@ export class BrowserDemoAuth implements AuthProvider {
                                 accountID,
                                 accountSecret,
                             } satisfies StorageData);
-                            sessionStorage["demo-auth-logged-in-secret"] =
+                            localStorage["demo-auth-logged-in-secret"] =
                                 storageData;
                             localStorage[
                                 "demo-auth-existing-users-" + username
@@ -97,7 +97,7 @@ export class BrowserDemoAuth implements AuthProvider {
                                 ]
                             ) as StorageData;
 
-                            sessionStorage["demo-auth-logged-in-secret"] =
+                            localStorage["demo-auth-logged-in-secret"] =
                                 JSON.stringify(storageData);
 
                             const sessionID = await getSessionFor(
@@ -125,5 +125,5 @@ export class BrowserDemoAuth implements AuthProvider {
 }
 
 function logOut() {
-    delete sessionStorage[sessionStorageKey];
+    delete localStorage[localStorageKey];
 }

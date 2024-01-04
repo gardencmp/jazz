@@ -1,5 +1,12 @@
 # jazz-example-twit
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-browser-media-images@0.6.0
+
 ## 0.1.0
 
 ### Minor Changes

@@ -6,12 +6,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/react": "^18.2.19",
+    "react": "^18.2.0",
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
     "react": "17 - 18"
   },
   "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist",
     "lint": "eslint src/**/*.tsx",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"

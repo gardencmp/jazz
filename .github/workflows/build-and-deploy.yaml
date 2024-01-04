@@ -18,11 +18,14 @@ jobs:
       with:
         submodules: true
 
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
     - uses: actions/setup-node@v3
       with:
         node-version: 16
-        cache: 'yarn'
-        cache-dependency-path: yarn.lock
+        cache: 'pnpm'
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -34,14 +37,10 @@ jobs:
         username: gardencmp
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Nuke Workspace
+    - name: Pnpm Build
       run: |
-        rm package.json yarn.lock;
-
-    - name: Yarn Build
-      run: |
-        yarn install --frozen-lockfile;
-        yarn build;
+        pnpm install
+        pnpm turbo build;
       working-directory: ./examples/${{ matrix.example }}
 
     - name: Docker Build & Push

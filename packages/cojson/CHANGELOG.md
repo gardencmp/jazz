@@ -1,5 +1,17 @@
 # cojson
 
+## 0.6.6
+
+### Patch Changes
+
+- Fix migration changes being lost on loaded account
+
+## 0.6.5
+
+### Patch Changes
+
+- Fix loading of accounts
+
 ## 0.6.4
 
 ### Patch Changes

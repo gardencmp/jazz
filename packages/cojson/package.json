@@ -5,7 +5,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.6.4",
+    "version": "0.6.6",
     "devDependencies": {
         "@noble/curves": "^1.2.0",
         "@types/jest": "^29.5.3",
@@ -25,6 +25,7 @@
         "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
     },
     "scripts": {
+        "dev": "tsc --watch --sourceMap --outDir dist",
         "test": "jest",
         "lint": "eslint src/**/*.ts",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",

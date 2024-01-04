@@ -166,11 +166,11 @@ export class LocalNode {
             newRandomSessionID(accountID)
         );
 
-        const accountPromise = loadingNode.load(accountID);
-
         for (const peer of peersToLoadFrom) {
             loadingNode.syncManager.addPeer(peer);
         }
+
+        const accountPromise = loadingNode.load(accountID);
 
         const account = await accountPromise;
 
@@ -192,6 +192,10 @@ export class LocalNode {
         node.syncManager.local = node;
 
         controlledAccount.core.node = node;
+        node.coValues[accountID] = {
+            state: "loaded",
+            coValue: controlledAccount.core,
+        };
 
         const profileID = account.get("profile");
         if (!profileID) {

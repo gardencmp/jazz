@@ -176,16 +176,16 @@ export class IDBStorage {
     async handleSyncMessage(msg: SyncMessage) {
         switch (msg.action) {
             case "load":
-                /*await*/ this.handleLoad(msg);
+                await this.handleLoad(msg);
                 break;
             case "content":
                 await this.handleContent(msg);
                 break;
             case "known":
-                /*await*/ this.handleKnown(msg);
+                await this.handleKnown(msg);
                 break;
             case "done":
-                /*await*/ this.handleDone(msg);
+                await this.handleDone(msg);
                 break;
         }
     }

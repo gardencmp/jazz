@@ -64,7 +64,7 @@ export function LocalAuth({
                       signUp: authState.signUp,
                   })
                 : Component({
-                      loading: false,
+                      loading: true,
                       logIn: () => {},
                       signUp: (_) => {},
                   });
