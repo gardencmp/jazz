@@ -114,8 +114,8 @@ async function signUp(
     passphrase: string,
     wordlist: string[],
     getSessionFor: SessionProvider,
-    appName: string,
-    appHostname: string,
+    _appName: string,
+    _appHostname: string,
     migration?: AccountMigration
 ): Promise<LocalNode> {
     const secretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
@@ -141,7 +141,7 @@ async function logIn(
     passphrase: string,
     wordlist: string[],
     getSessionFor: SessionProvider,
-    appHostname: string,
+    _appHostname: string,
     initialPeers: Peer[],
     migration?: AccountMigration
 ): Promise<LocalNode> {

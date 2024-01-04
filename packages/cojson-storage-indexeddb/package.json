@@ -5,8 +5,9 @@
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "^0.6.4",
-    "typescript": "^5.1.6"
+    "cojson": "workspace:*",
+    "typescript": "^5.1.6",
+    "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
   },
   "devDependencies": {
     "@vitest/browser": "^0.34.1",
@@ -14,6 +15,7 @@
     "webdriverio": "^8.15.0"
   },
   "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist",
     "test": "vitest --browser chrome",
     "lint": "eslint src/**/*.ts",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",

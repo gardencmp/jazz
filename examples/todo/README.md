@@ -4,25 +4,30 @@ Live version: https://example-todo.jazz.tools
 
 ## Installing & running the example locally
 
-Start by checking out just the example app to a folder:
+(this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
+Start by checking out `jazz`
 ```bash
-npx degit gardencmp/jazz/examples/todo jazz-example-todo
-cd jazz-example-todo
+git clone https://github.com/gardencmp/jazz.git
+cd jazz/examples/todo
+pnpm pack --pack-destination /tmp
+mkdir -p ~/jazz-examples/todo # or any other directory
+tar -xf /tmp/jazz-example-todo-* --strip-components 1 -C ~/jazz-examples/todo
+cd ~/jazz-examples/todo
 ```
 
-(This ensures that you have the example app without git history or our multi-package monorepo)
+This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
 
 Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Start the dev server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ## Structure

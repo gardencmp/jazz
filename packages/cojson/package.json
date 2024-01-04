@@ -25,6 +25,7 @@
         "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
     },
     "scripts": {
+        "dev": "tsc --watch --sourceMap --outDir dist",
         "test": "jest",
         "lint": "eslint src/**/*.ts",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",

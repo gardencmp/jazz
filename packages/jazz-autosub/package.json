@@ -7,7 +7,7 @@
     "license": "MIT",
     "version": "0.6.1",
     "dependencies": {
-        "cojson": "^0.6.5"
+        "cojson": "workspace:*"
     },
     "scripts": {
         "test": "jest",
@@ -36,5 +36,8 @@
             "/node_modules/",
             "/dist/"
         ]
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3"
     }
 }
