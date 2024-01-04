@@ -13,16 +13,25 @@ import { NullSchema, imm } from "./primitives.js";
 import { CoMapSchema } from "./coMap.js";
 import { Account, ControlledAccount } from "./account.js";
 
+/** @category CoValues - Group */
 export interface Group<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
 > {
+    /** @hidden */
     _raw: RawGroup;
+    /** @category Collaboration */
     id: ID<Group<ProfileS, RootS>>;
-    profile: ProfileS["_Value"] | undefined;
-    root: RootS["_Value"] | undefined;
+
+    /** @category Collaboration */
     meta: GroupMeta<ProfileS, RootS>;
 
+    /** @category Data Roots */
+    profile: ProfileS["_Value"] | undefined;
+    /** @category Data Roots */
+    root: RootS["_Value"] | undefined;
+
+    /** @category Mutation */
     addMember(member: Account | "everyone", role: Role): this;
 }
 
@@ -37,6 +46,7 @@ export class GroupMeta<
     }
 }
 
+/** @category CoValues - Group */
 export interface GroupSchema<
     P extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -52,6 +62,7 @@ export interface GroupSchema<
     fromRaw(raw: RawGroup, onGetRef?: (id: ID<CoValue>) => void): Group<P, R>;
 }
 
+/** @category CoValues - Group */
 export function isGroupSchema(value: unknown): value is GroupSchema {
     return (
         typeof value === "object" &&
@@ -61,6 +72,7 @@ export function isGroupSchema(value: unknown): value is GroupSchema {
     );
 }
 
+/** @category CoValues - Group */
 export function isGroup(value: unknown): value is Group {
     return (
         typeof value === "object" &&
@@ -70,6 +82,7 @@ export function isGroup(value: unknown): value is Group {
     );
 }
 
+/** @category CoValues - Group */
 export function GroupWith<
     P extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -152,4 +165,5 @@ export function GroupWith<
     } satisfies GroupSchema<P, R>;
 }
 
+/** @category CoValues - Group */
 export const Group = GroupWith(imm.null, imm.null);

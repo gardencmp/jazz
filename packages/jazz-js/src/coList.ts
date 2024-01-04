@@ -13,24 +13,187 @@ import { Group } from "./group.js";
 import { Account } from "./account.js";
 import { isCoValueSchema } from "./guards.js";
 
-/** @category CoValues */
+/** @category CoValues - CoList */
 export interface CoList<Item extends Schema = Schema>
     extends Array<Item["_Value"]>,
         CoValueBase {
-    /** @category ID */
+    /** @category Collaboration */
     id: ID<CoList<Item>>;
     /** @category Collaboration */
     meta: CoListMeta;
     /** @hidden */
     _raw: RawCoList<RawType<Item>>;
 
+    /** @category Properties */
+    length: number;
+
+    /** @category Reading */
+    [index: number]: Item["_Value"];
+
+    /** @category Reading */
+    at(index: number): Item["_Value"];
+
+    /** @category Reading */
+    indexOf(searchElement: Item["_Value"], fromIndex?: number): number;
+
+    /** @category Reading */
+    lastIndexOf(searchElement: Item["_Value"], fromIndex?: number): number;
+
+    /** @category Reading */
+    includes(searchElement: Item["_Value"], fromIndex?: number): boolean;
+
+    /** @category Reading */
+    slice(start?: number, end?: number): Item["_Value"][];
+
+    /** @category Reading */
+    concat(...items: Item["_Value"][][]): Item["_Value"][];
+
+    /** @category Reading */
+    join(separator?: string): string;
+
+    /** @category Reading */
+    toString(): string;
+
+    /** @category Reading */
+    toLocaleString(): string;
+
+    /** @category Reading */
+    entries(): IterableIterator<[number, Item["_Value"]]>;
+
+    /** @category Reading */
+    keys(): IterableIterator<number>;
+
+    /** @category Reading */
+    values(): IterableIterator<Item["_Value"]>;
+
+    /** @category Reading */
+    [Symbol.iterator](): IterableIterator<Item["_Value"]>;
+
+    /** @category Reading */
+    forEach(
+        callbackfn: (
+            value: Item["_Value"],
+            index: number,
+            array: Item["_Value"][]
+        ) => void,
+        thisArg?: unknown
+    ): void;
+
+    /** @category Reading */
+    filter(
+        callbackfn: (
+            value: Item["_Value"],
+            index: number,
+            array: Item["_Value"][]
+        ) => boolean,
+        thisArg?: unknown
+    ): Item["_Value"][];
+
+    /** @category Reading */
+    map<U>(
+        callbackfn: (
+            value: Item["_Value"],
+            index: number,
+            array: Item["_Value"][]
+        ) => U,
+        thisArg?: unknown
+    ): U[];
+
+    /** @category Reading */
+    find(
+        predicate: (
+            value: Item["_Value"],
+            index: number,
+            obj: Item["_Value"][]
+        ) => boolean,
+        thisArg?: unknown
+    ): Item["_Value"] | undefined;
+
+    /** @category Reading */
+    findIndex(
+        predicate: (
+            value: Item["_Value"],
+            index: number,
+            obj: Item["_Value"][]
+        ) => boolean,
+        thisArg?: unknown
+    ): number;
+
+    /** @category Reading */
+    reduce<U>(
+        callbackfn: (
+            previousValue: U,
+            currentValue: Item["_Value"],
+            currentIndex: number,
+            array: Item["_Value"][]
+        ) => U,
+        initialValue: U
+    ): U;
+
+    /** @category Reading */
+    reduce(
+        callbackfn: (
+            previousValue: Item["_Value"],
+            currentValue: Item["_Value"],
+            currentIndex: number,
+            array: Item["_Value"][]
+        ) => Item["_Value"]
+    ): Item["_Value"];
+
+    /** @category Reading */
+    reduceRight<U>(
+        callbackfn: (
+            previousValue: U,
+            currentValue: Item["_Value"],
+            currentIndex: number,
+            array: Item["_Value"][]
+        ) => U,
+        initialValue: U
+    ): U;
+
+    /** @category Reading */
+    reduceRight(
+        callbackfn: (
+            previousValue: Item["_Value"],
+            currentValue: Item["_Value"],
+            currentIndex: number,
+            array: Item["_Value"][]
+        ) => Item["_Value"]
+    ): Item["_Value"];
+
+    /** @category Reading */
+    some(
+        callbackfn: (
+            value: Item["_Value"],
+            index: number,
+            array: Item["_Value"][]
+        ) => unknown,
+        thisArg?: unknown
+    ): boolean;
+
+    /** @category Reading */
+    every(
+        callbackfn: (
+            value: Item["_Value"],
+            index: number,
+            array: Item["_Value"][]
+        ) => unknown,
+        thisArg?: unknown
+    ): boolean;
+
+    /** @category Mutation */
     push(...items: Item["_Value"][]): number;
+    /** @category Mutation */
     unshift(..._items: Item["_Value"][]): number;
 
+    /** @category Mutation */
     splice(start: number, deleteCount: 1): [Item["_Value"]];
+
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     splice(start: number, deleteCount?: number | undefined): Item["_Value"][];
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     splice(
         start: number,
         deleteCount: number,
@@ -38,15 +201,19 @@ export interface CoList<Item extends Schema = Schema>
     ): Item["_Value"][];
 
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     pop(): Item["_Value"] | undefined;
 
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     shift(): Item["_Value"] | undefined;
 
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     reverse(): Item["_Value"][];
 
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     sort(
         _compareFn?:
             | ((a: Item["_Value"], b: Item["_Value"]) => number)
@@ -54,6 +221,7 @@ export interface CoList<Item extends Schema = Schema>
     ): this;
 
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     copyWithin(
         _target: number,
         _start: number,
@@ -61,6 +229,7 @@ export interface CoList<Item extends Schema = Schema>
     ): this;
 
     /** @deprecated Not yet implemented in CoList */
+    /** @category Mutation - unimplemented */
     fill(
         _value: Item["_Value"],
         _start?: number | undefined,
@@ -82,24 +251,31 @@ export class CoListMeta {
     }
 }
 
+/** @category CoValues - CoList */
 export interface CoListSchema<Item extends Schema = Schema>
     extends Schema<CoList<Item>>,
         CoValueSchemaBase<CoList<Item>, RawCoList<RawType<Item>>> {
+    /** @category Type Tag */
     _Type: "colist";
+    /** @category Type Hints */
     _Item: Item;
+    /** @category Type Hints */
     _Value: CoList<Item>;
 
+    /** @category Value Creation */
     new (
         init: Item["_Value"][],
         options: { owner: Account | Group }
     ): CoList<Item>;
 
+    /** @hidden */
     fromRaw(
         raw: RawCoList<RawType<Item>>,
         onGetRef?: (id: ID<CoValue>) => void
     ): CoList<Item>;
 }
 
+/** @category CoValues - CoList */
 export function isCoListSchema(value: unknown): value is CoListSchema {
     return (
         typeof value === "object" &&
@@ -109,6 +285,7 @@ export function isCoListSchema(value: unknown): value is CoListSchema {
     );
 }
 
+/** @category CoValues - CoList */
 export function isCoList(value: unknown): value is CoList {
     return (
         typeof value === "object" &&
@@ -118,6 +295,7 @@ export function isCoList(value: unknown): value is CoList {
     );
 }
 
+/** @category CoValues - CoList */
 export function CoListOf<Item extends Schema>(
     ItemSchema: Item
 ): CoListSchema<Item> {

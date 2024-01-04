@@ -17,7 +17,9 @@ import {
 import { Schema } from "./schema.js";
 
 export interface CoStream<Item extends Schema = Schema> extends CoValueBase {
+    /** @category Collaboration */
     id: ID<CoStream<Item>>;
+    /** @category Collaboration */
     meta: CoStreamMeta;
     _raw: RawCoStream<RawType<Item>>;
 }

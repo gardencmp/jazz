@@ -38,8 +38,10 @@ export function Category({
 
     return (
         <>
-            <HElemem className="mb-2 mt-0 uppercase tracking-wide font-bold text-sm">{category.title}</HElemem>
-            <div className={level > 2 ? "flex gap-2 flex-wrap" : ""}>
+            <HElemem className="mb-2 mt-0 uppercase tracking-wide font-bold text-sm">
+                {category.title}
+            </HElemem>
+            <div className={level > 2 ? "flex gap-2 mb-8 " + ((category.children?.length || 0) > 5 ? "flex-col items-start" : "") : ""}>
                 {category.children?.map((childId) => (
                     <Item
                         key={childId}
@@ -66,8 +68,12 @@ export function Item({
     const HElemem = `h${level}` as keyof JSX.IntrinsicElements;
 
     return (
-        <div className={"mb-2 mt-2 " + (level < 4 ? "border p-2": "")}>
-            <HElemem className="mb-2 mt-0">
+        <div
+            className={
+                level < 4 ? "border border-neutral-500/10 p-2 mb-2 mt-2" : "px-1 bg-stone-500/10 rounded text-base"
+            }
+        >
+            <HElemem className={level < 4 ? "mb-2 mt-0" : ""}>
                 <code className="">
                     <ItemName item={item} />
                 </code>

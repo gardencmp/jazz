@@ -22,20 +22,20 @@ import { NullSchema, imm } from "./primitives.js";
 import { CoMapOf, CoMapSchema } from "./coMap.js";
 import { Group, GroupMeta } from "./group.js";
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export interface Account<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
 > {
     /** @hidden */
     _raw: RawAccount | RawControlledAccount;
-    /** @category ID */
+    /** @category Collaboration */
     id: ID<Account<ProfileS, RootS>>;
     /** @category Collaboration */
     isMe: boolean;
 }
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export interface ControlledAccount<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -51,7 +51,7 @@ export interface ControlledAccount<
     ): Promise<S["_Value"] | undefined>;
 }
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export interface AccountSchema<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -114,7 +114,7 @@ export interface ControlledAccountSchema<
     _RawValue: RawControlledAccount;
 }
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export function isAccountSchema(value: unknown): value is Account {
     return (
         typeof value === "object" &&
@@ -124,7 +124,7 @@ export function isAccountSchema(value: unknown): value is Account {
     );
 }
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export function isAccount(value: unknown): value is Account {
     return (
         typeof value === "object" &&
@@ -134,7 +134,7 @@ export function isAccount(value: unknown): value is Account {
     );
 }
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export function AccountWith<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -312,7 +312,7 @@ export function AccountWith<
     return NonControlledAccountSchemaForProfileAndRoot;
 }
 
-/** @category CoValues */
+/** @category CoValues - Account */
 export const SimpleAccount = AccountWith(
     CoMapOf({
         name: imm.string,

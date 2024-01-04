@@ -16,6 +16,7 @@ import { Account, ControlledAccount } from "./account.js";
 // type BaseCoMapShape = { [key: string]: Schema };
 type BaseCoMapShape = Record<string, Schema>;
 
+/** @category CoValues - CoMap */
 export type CoMap<Shape extends BaseCoMapShape = BaseCoMapShape> = {
     [Key in keyof Shape]: Shape[Key]["_Value"] extends CoValue
         ? Shape[Key]["_Value"] | undefined
@@ -30,6 +31,7 @@ type RawShape<Shape extends BaseCoMapShape> = {
     [Key in keyof Shape]: RawType<Shape[Key]>;
 };
 
+/** @category CoValues - CoMap */
 export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
     extends Schema<CoMap<Shape>>,
         CoValueSchemaBase<CoMap<Shape>, RawCoMap<RawShape<Shape>>> {
@@ -44,6 +46,7 @@ export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
     ): CoMap<Shape>;
 }
 
+/** @category CoValues - CoMap */
 export function isCoMapSchema(value: unknown): value is CoMapSchema {
     return (
         typeof value === "object" &&
@@ -53,6 +56,7 @@ export function isCoMapSchema(value: unknown): value is CoMapSchema {
     );
 }
 
+/** @category CoValues - CoMap */
 export function isCoMap(value: unknown): value is CoMap {
     return typeof value === "object" &&
     value !== null && isCoMapSchema(value.constructor) && "id" in value;
@@ -76,6 +80,7 @@ export type CoMapInit<Shape extends BaseCoMapShape> = Record<
     ? CoMapInitBase<Shape> | undefined
     : CoMapInitBase<Shape>;
 
+/** @category CoValues - CoMap */
 export function CoMapOf<Shape extends BaseCoMapShape>(
     SchemaShape: Shape
 ): CoMapSchema<Shape> {
