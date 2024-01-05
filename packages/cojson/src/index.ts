@@ -7,13 +7,11 @@ import {
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { LocalNode } from "./localNode.js";
 import type { CoValue } from "./coValue.js";
-import { CoMap, MutableCoMap } from "./coValues/coMap.js";
-import { CoList, MutableCoList } from "./coValues/coList.js";
+import { CoMap } from "./coValues/coMap.js";
+import { CoList } from "./coValues/coList.js";
 import {
     CoStream,
-    MutableCoStream,
     BinaryCoStream,
-    MutableBinaryCoStream,
 } from "./coValues/coStream.js";
 import {
     agentSecretFromBytes,
@@ -92,13 +90,9 @@ export {
     EVERYONE,
     Everyone,
     CoMap,
-    MutableCoMap,
     CoList,
-    MutableCoList,
     CoStream,
-    MutableCoStream,
     BinaryCoStream,
-    MutableBinaryCoStream,
     CoValue,
     CoID,
     AnyCoValue,
@@ -145,4 +139,5 @@ export namespace CojsonInternalTypes {
     export type ProfileMeta = import("./coValues/account.js").ProfileMeta;
     export type SealerSecret = import("./crypto.js").SealerSecret;
     export type SignerSecret = import("./crypto.js").SignerSecret;
+    export type JsonObject = import("./jsonValue.js").JsonObject;
 }

@@ -29,10 +29,8 @@ export function newGroup() {
 
     const group = expectGroup(groupCore.getCurrentContent());
 
-    group.mutate((editable) => {
-        editable.set(admin.id, "admin", "trusting");
-        expect(editable.get(admin.id)).toEqual("admin");
-    });
+    group.set(admin.id, "admin", "trusting");
+        expect(group.get(admin.id)).toEqual("admin");
 
     return { node, groupCore, admin };
 }
@@ -44,10 +42,8 @@ export function groupWithTwoAdmins() {
 
     let group = expectGroup(groupCore.getCurrentContent());
 
-    group = group.mutate((mutable) => {
-        mutable.set(otherAdmin.id, "admin", "trusting");
-        expect(mutable.get(otherAdmin.id)).toEqual("admin");
-    });
+        group.set(otherAdmin.id, "admin", "trusting");
+        expect(group.get(otherAdmin.id)).toEqual("admin");
 
     if (group.type !== "comap") {
         throw new Error("Expected map");
@@ -73,7 +69,7 @@ export function groupWithTwoAdminsHighLevel() {
 
     const otherAdmin = node.createAccount("otherAdmin");
 
-    group = group.addMember(otherAdmin, "admin");
+    group.addMember(otherAdmin, "admin");
 
     return { admin, node, group, otherAdmin };
 }

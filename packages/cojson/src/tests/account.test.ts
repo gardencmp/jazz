@@ -29,14 +29,9 @@ test("A node with an account can create groups and and objects within them", asy
     const group = await node.createGroup();
     expect(group).not.toBeNull();
 
-    let map = group.createMap();
-    map = map.edit((edit) => {
-        edit.set("foo", "bar", "private");
-        expect(edit.get("foo")).toEqual("bar");
-    });
-
+    const map = group.createMap();
+    map.set("foo", "bar", "private");
     expect(map.get("foo")).toEqual("bar");
-
     expect(map.lastEditAt("foo")?.by).toEqual(accountID);
 });
 
@@ -47,11 +42,9 @@ test("Can create account with one node, and then load it on another", async () =
     const group = await node.createGroup();
     expect(group).not.toBeNull();
 
-    let map = group.createMap();
-    map = map.edit((edit) => {
-        edit.set("foo", "bar", "private");
-        expect(edit.get("foo")).toEqual("bar");
-    });
+    const map = group.createMap();
+    map.set("foo", "bar", "private");
+    expect(map.get("foo")).toEqual("bar");
 
     const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {
         trace: true,

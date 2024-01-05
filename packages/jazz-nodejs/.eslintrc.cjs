@@ -8,6 +8,7 @@ module.exports = {
     plugins: ["@typescript-eslint", "require-extensions"],
     parserOptions: {
         project: "./tsconfig.json",
+        tsconfigRootDir: __dirname,
     },
     ignorePatterns: [".eslint.cjs", "**/tests/*"],
     root: true,

@@ -52,8 +52,7 @@ export default function RootLayout({
                             { title: "Mesh / Pricing", href: "/mesh" },
                             {
                                 title: "Docs & Guides",
-                                href: "https://github.com/gardencmp/jazz/blob/main/DOCS.md",
-                                newTab: true,
+                                href: "/docs",
                             },
                             {
                                 title: "Blog",

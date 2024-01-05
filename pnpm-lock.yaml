@@ -838,16 +838,6 @@ importers:
         specifier: ^5.1.6
         version: 5.3.3
 
-  packages/jazz-autosub:
-    dependencies:
-      cojson:
-        specifier: workspace:*
-        version: link:../cojson
-    devDependencies:
-      typescript:
-        specifier: ^5.3.3
-        version: 5.3.3
-
   packages/jazz-browser:
     dependencies:
       cojson:
@@ -859,9 +849,9 @@ importers:
       isomorphic-streams:
         specifier: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
         version: github.com/sgwilym/isomorphic-streams/aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
-      jazz-autosub:
+      jazz-js:
         specifier: workspace:*
-        version: link:../jazz-autosub
+        version: link:../jazz-js
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -923,12 +913,12 @@ importers:
       image-blob-reduce:
         specifier: ^4.1.0
         version: 4.1.0
-      jazz-autosub:
-        specifier: workspace:*
-        version: link:../jazz-autosub
       jazz-browser:
         specifier: workspace:*
         version: link:../jazz-browser
+      jazz-js:
+        specifier: workspace:*
+        version: link:../jazz-js
       pica:
         specifier: ^9.0.1
         version: 9.0.1
@@ -940,6 +930,19 @@ importers:
         specifier: ^9.0.4
         version: 9.0.4
 
+  packages/jazz-js:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6(@vitest/browser@0.34.6)(webdriverio@8.26.3)
+
   packages/jazz-nodejs:
     dependencies:
       cojson:
@@ -948,9 +951,9 @@ importers:
       cojson-transport-nodejs-ws:
         specifier: workspace:*
         version: link:../cojson-transport-nodejs-ws
-      jazz-autosub:
+      jazz-js:
         specifier: workspace:*
-        version: link:../jazz-autosub
+        version: link:../jazz-js
       ws:
         specifier: ^8.14.2
         version: 8.15.1
@@ -967,12 +970,12 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      jazz-autosub:
-        specifier: workspace:*
-        version: link:../jazz-autosub
       jazz-browser:
         specifier: workspace:*
         version: link:../jazz-browser
+      jazz-js:
+        specifier: workspace:*
+        version: link:../jazz-js
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
