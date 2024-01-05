@@ -13,7 +13,11 @@ import { Group } from "./group.js";
 import { Account } from "./account.js";
 import { isCoValueSchema } from "./guards.js";
 
-/** @category CoValues - CoList */
+/** A collaborative list of values that behaves mostly like an `Array`.
+ *
+ * Can be created by instatiating a `CoListSchema`.
+ *
+ * @category CoValues - CoList */
 export interface CoList<Item extends Schema = Schema>
     extends Array<Item["_Value"]>,
         CoValueBase {
@@ -27,49 +31,49 @@ export interface CoList<Item extends Schema = Schema>
     /** @category Properties */
     length: number;
 
-    /** @category Reading */
+    /** @category Access & Finding */
     [index: number]: Item["_Value"];
 
-    /** @category Reading */
+    /** @category Access & Finding */
     at(index: number): Item["_Value"];
 
-    /** @category Reading */
+    /** @category Access & Finding */
     indexOf(searchElement: Item["_Value"], fromIndex?: number): number;
 
-    /** @category Reading */
+    /** @category Access & Finding */
     lastIndexOf(searchElement: Item["_Value"], fromIndex?: number): number;
 
-    /** @category Reading */
+    /** @category Access & Finding */
     includes(searchElement: Item["_Value"], fromIndex?: number): boolean;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     slice(start?: number, end?: number): Item["_Value"][];
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     concat(...items: Item["_Value"][][]): Item["_Value"][];
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     join(separator?: string): string;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     toString(): string;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     toLocaleString(): string;
 
-    /** @category Reading */
+    /** @category Iteration */
     entries(): IterableIterator<[number, Item["_Value"]]>;
 
-    /** @category Reading */
+    /** @category Iteration */
     keys(): IterableIterator<number>;
 
-    /** @category Reading */
+    /** @category Iteration */
     values(): IterableIterator<Item["_Value"]>;
 
-    /** @category Reading */
+    /** @category Iteration */
     [Symbol.iterator](): IterableIterator<Item["_Value"]>;
 
-    /** @category Reading */
+    /** @category Iteration */
     forEach(
         callbackfn: (
             value: Item["_Value"],
@@ -79,7 +83,7 @@ export interface CoList<Item extends Schema = Schema>
         thisArg?: unknown
     ): void;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     filter(
         callbackfn: (
             value: Item["_Value"],
@@ -89,7 +93,7 @@ export interface CoList<Item extends Schema = Schema>
         thisArg?: unknown
     ): Item["_Value"][];
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     map<U>(
         callbackfn: (
             value: Item["_Value"],
@@ -99,7 +103,7 @@ export interface CoList<Item extends Schema = Schema>
         thisArg?: unknown
     ): U[];
 
-    /** @category Reading */
+    /** @category Access & Finding */
     find(
         predicate: (
             value: Item["_Value"],
@@ -109,7 +113,7 @@ export interface CoList<Item extends Schema = Schema>
         thisArg?: unknown
     ): Item["_Value"] | undefined;
 
-    /** @category Reading */
+    /** @category Access & Finding */
     findIndex(
         predicate: (
             value: Item["_Value"],
@@ -119,7 +123,7 @@ export interface CoList<Item extends Schema = Schema>
         thisArg?: unknown
     ): number;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     reduce<U>(
         callbackfn: (
             previousValue: U,
@@ -130,7 +134,7 @@ export interface CoList<Item extends Schema = Schema>
         initialValue: U
     ): U;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     reduce(
         callbackfn: (
             previousValue: Item["_Value"],
@@ -140,7 +144,7 @@ export interface CoList<Item extends Schema = Schema>
         ) => Item["_Value"]
     ): Item["_Value"];
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     reduceRight<U>(
         callbackfn: (
             previousValue: U,
@@ -151,7 +155,7 @@ export interface CoList<Item extends Schema = Schema>
         initialValue: U
     ): U;
 
-    /** @category Reading */
+    /** @category Mapping & Transformation */
     reduceRight(
         callbackfn: (
             previousValue: Item["_Value"],
@@ -161,7 +165,7 @@ export interface CoList<Item extends Schema = Schema>
         ) => Item["_Value"]
     ): Item["_Value"];
 
-    /** @category Reading */
+    /** @category Access & Finding */
     some(
         callbackfn: (
             value: Item["_Value"],
@@ -171,7 +175,7 @@ export interface CoList<Item extends Schema = Schema>
         thisArg?: unknown
     ): boolean;
 
-    /** @category Reading */
+    /** @category Access & Finding */
     every(
         callbackfn: (
             value: Item["_Value"],

@@ -1036,7 +1036,219 @@ TODO: document
 ```typescript
 export interface CoList<Item extends Schema> extends Array<Item["_Value"]>, CoValueBase {...}
 ```
+A collaborative list of values that behaves mostly like an `Array`.
+
+Can be created by instatiating a `CoListSchema`.
+
+
+
+### `CoList`: Access & Finding
+
+<details>
+<summary><b><code>.at(index)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  at(
+    index: number
+  ): Item["_Value"] {...}
+
+}
+```
 TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `index` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.indexOf(searchElement, fromIndex?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  indexOf(
+    searchElement: Item["_Value"],
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | TODO: document  |
+| `fromIndex?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.lastIndexOf(searchElement, fromIndex?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  lastIndexOf(
+    searchElement: Item["_Value"],
+    fromIndex?: number
+  ): number {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | TODO: document  |
+| `fromIndex?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.includes(searchElement, fromIndex?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  includes(
+    searchElement: Item["_Value"],
+    fromIndex?: number
+  ): boolean {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `searchElement` | TODO: document  |
+| `fromIndex?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.find(predicate, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  find(
+    predicate: (value: Item["_Value"], index: number, obj: Item["_Value"][]) => boolean,
+    thisArg?: unknown
+  ): undefined | Item["_Value"] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.findIndex(predicate, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  findIndex(
+    predicate: (value: Item["_Value"], index: number, obj: Item["_Value"][]) => boolean,
+    thisArg?: unknown
+  ): number {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.some(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  some(
+    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => unknown,
+    thisArg?: unknown
+  ): boolean {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.every(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  every(
+    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => unknown,
+    thisArg?: unknown
+  ): boolean {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+<br/>
 
 ### `CoList`: Collaboration
 
@@ -1067,6 +1279,358 @@ interface CoList<Item> {
 }
 ```
 TODO: document
+
+</details>
+
+<br/>
+
+### `CoList`: Iteration
+
+<details>
+<summary><b><code>.entries()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  entries(): IterableIterator<[number, Item["_Value"]]> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.keys()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  keys(): IterableIterator<number> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.values()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  values(): IterableIterator<Item["_Value"]> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.forEach(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  forEach(
+    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => void,
+    thisArg?: unknown
+  ): void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[iterator]()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  [iterator](): IterableIterator<Item["_Value"]> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+<br/>
+
+### `CoList`: Mapping & Transformation
+
+<details>
+<summary><b><code>.slice(start?, end?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  slice(
+    start?: number,
+    end?: number
+  ): Item["_Value"][] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `start?` | TODO: document  |
+| `end?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.concat(items)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  concat(
+    items: Item["_Value"][][]
+  ): Item["_Value"][] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `items` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.join(separator?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  join(
+    separator?: string
+  ): string {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `separator?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.toString()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  toString(): string {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toLocaleString()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  toLocaleString(): string {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.filter(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  filter(
+    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => boolean,
+    thisArg?: unknown
+  ): Item["_Value"][] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.map(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  map<U>(
+    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => U,
+    thisArg?: unknown
+  ): U[] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `thisArg?` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn, initialValue)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  reduce<U>(
+    callbackfn: (previousValue: U, currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduce(callbackfn)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  reduce(
+    callbackfn: (previousValue: Item["_Value"], currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => Item["_Value"]
+  ): Item["_Value"] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  reduceRight<U>(
+    callbackfn: (previousValue: U, currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => U,
+    initialValue: U
+  ): U {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+| `initialValue` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.reduceRight(callbackfn)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  reduceRight(
+    callbackfn: (previousValue: Item["_Value"], currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => Item["_Value"]
+  ): Item["_Value"] {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
 
 </details>
 
@@ -1769,562 +2333,6 @@ interface CoList<Item> {
 TODO: document
 
 </details>
-
-<br/>
-
-### `CoList`: Reading
-
-<details>
-<summary><b><code>.at(index)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  at(
-    index: number
-  ): Item["_Value"] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `index` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.indexOf(searchElement, fromIndex?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  indexOf(
-    searchElement: Item["_Value"],
-    fromIndex?: number
-  ): number {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `searchElement` | TODO: document  |
-| `fromIndex?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.lastIndexOf(searchElement, fromIndex?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  lastIndexOf(
-    searchElement: Item["_Value"],
-    fromIndex?: number
-  ): number {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `searchElement` | TODO: document  |
-| `fromIndex?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.includes(searchElement, fromIndex?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  includes(
-    searchElement: Item["_Value"],
-    fromIndex?: number
-  ): boolean {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `searchElement` | TODO: document  |
-| `fromIndex?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.slice(start?, end?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  slice(
-    start?: number,
-    end?: number
-  ): Item["_Value"][] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `start?` | TODO: document  |
-| `end?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.concat(items)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  concat(
-    items: Item["_Value"][][]
-  ): Item["_Value"][] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `items` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.join(separator?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  join(
-    separator?: string
-  ): string {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `separator?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.toString()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  toString(): string {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.toLocaleString()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  toLocaleString(): string {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.entries()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  entries(): IterableIterator<[number, Item["_Value"]]> {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.keys()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  keys(): IterableIterator<number> {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.values()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  values(): IterableIterator<Item["_Value"]> {...}
-
-}
-```
-TODO: document
-
-undefined</details>
-
-
-
-<details>
-<summary><b><code>.forEach(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  forEach(
-    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => void,
-    thisArg?: unknown
-  ): void {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.filter(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  filter(
-    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => boolean,
-    thisArg?: unknown
-  ): Item["_Value"][] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.map(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  map<U>(
-    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => U,
-    thisArg?: unknown
-  ): U[] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.find(predicate, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  find(
-    predicate: (value: Item["_Value"], index: number, obj: Item["_Value"][]) => boolean,
-    thisArg?: unknown
-  ): undefined | Item["_Value"] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.findIndex(predicate, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  findIndex(
-    predicate: (value: Item["_Value"], index: number, obj: Item["_Value"][]) => boolean,
-    thisArg?: unknown
-  ): number {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduce(callbackfn, initialValue)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  reduce<U>(
-    callbackfn: (previousValue: U, currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => U,
-    initialValue: U
-  ): U {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `initialValue` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduce(callbackfn)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  reduce(
-    callbackfn: (previousValue: Item["_Value"], currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => Item["_Value"]
-  ): Item["_Value"] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduceRight(callbackfn, initialValue)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  reduceRight<U>(
-    callbackfn: (previousValue: U, currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => U,
-    initialValue: U
-  ): U {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `initialValue` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.reduceRight(callbackfn)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  reduceRight(
-    callbackfn: (previousValue: Item["_Value"], currentValue: Item["_Value"], currentIndex: number, array: Item["_Value"][]) => Item["_Value"]
-  ): Item["_Value"] {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-
-</details>
-
-
-
-<details>
-<summary><b><code>.some(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  some(
-    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => unknown,
-    thisArg?: unknown
-  ): boolean {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.every(callbackfn, thisArg?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  every(
-    callbackfn: (value: Item["_Value"], index: number, array: Item["_Value"][]) => unknown,
-    thisArg?: unknown
-  ): boolean {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-
-| `thisArg?` | TODO: document  |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.[iterator]()</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoList<Item> {
-
-  [iterator](): IterableIterator<Item["_Value"]> {...}
-
-}
-```
-TODO: document
-
-undefined</details>
 
 
 
