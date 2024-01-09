@@ -15,6 +15,8 @@ import {
     SimpleAccount,
 } from "./index.js";
 import { Schema } from "./schema.js";
+import { Effect } from "effect";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 
 export interface CoStream<Item extends Schema = Schema> extends CoValueBase {
     /** @category Collaboration */
@@ -166,6 +168,16 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
         }: { as: ControlledAccount; onProgress?: (progress: number) => void }
     ): Promise<BinaryCoStream | undefined> {
         throw new Error("Method not implemented.");
+    }
+
+    static loadEf(
+        id: ID<BinaryCoStream>,
+    ): Effect.Effect<
+        ControlledAccount,
+        CoValueUnavailableError | UnknownCoValueLoadError,
+        BinaryCoStream
+    > {
+        throw new Error("Not implemented");
     }
 
     start(options: {

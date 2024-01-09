@@ -322,6 +322,30 @@ TODO: document
 
 </details>
 
+
+
+<details>
+<summary><b><code>.loadEf(id)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoValueSchemaBase<Value, RawValue> {
+
+  loadEf(
+    id: ID<Value>
+  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, Value> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+</details>
+
 <br/>
 
 ### `CoValueSchemaBase`: Type Hints
@@ -597,6 +621,30 @@ TODO: document
 | ----: | ---- |
 | `id` | TODO: document  |
 | `__namedParameters.as` | TODO: document |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.loadEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AccountSchema<ProfileS, RootS> {
+
+  loadEf(
+    id: ID<Account<ProfileS, RootS>>
+  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, Account<ProfileS, RootS>> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
 
 </details>
 
@@ -938,34 +986,6 @@ TODO: document
 
 
 <details>
-<summary><b><code>.loadEf(id, {as})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoMapSchema<Shape> {
-
-  loadEf(
-    id: ID<CoMap<Shape>>,
-    __namedParameters: {
-      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    }
-  ): Effect<never, CoValueUnavailableError | UnknownCoValueLoadError, CoMap<Shape>> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-| `__namedParameters.as` | TODO: document |
-
-</details>
-
-
-
-<details>
 <summary><b><code>.load(id, {as})</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
@@ -988,6 +1008,30 @@ TODO: document
 | ----: | ---- |
 | `id` | TODO: document  |
 | `__namedParameters.as` | TODO: document |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.loadEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoMapSchema<Shape> {
+
+  loadEf(
+    id: ID<CoMap<Shape>>
+  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, CoMap<Shape>> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
 
 </details>
 
@@ -2403,6 +2447,30 @@ TODO: document
 
 </details>
 
+
+
+<details>
+<summary><b><code>.loadEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoListSchema<Item> {
+
+  loadEf(
+    id: ID<CoList<Item>>
+  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, CoList<Item>> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+</details>
+
 <br/>
 
 ### `CoListSchema`: Type Hints
@@ -2660,6 +2728,30 @@ TODO: document
 | ----: | ---- |
 | `id` | TODO: document  |
 | `__namedParameters.as` | TODO: document |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.loadEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStreamSchema<Item> {
+
+  loadEf(
+    id: ID<CoStream<Item>>
+  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, CoStream<Item>> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
 
 </details>
 
@@ -2997,6 +3089,30 @@ TODO: document
 | `id` | TODO: document  |
 | `__namedParameters.as` | TODO: document |
 | `__namedParameters.onProgress?` | TODO: document |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.loadEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStreamSchema<Item> {
+
+  loadEf(
+    id: ID<BinaryCoStream>
+  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, BinaryCoStream> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
 
 </details>
 

@@ -11,6 +11,7 @@ import {
 } from "cojson";
 import {
     AccountMigration,
+    BinaryCoStream,
     CoValue,
     CoValueBase,
     CoValueSchema,
@@ -21,6 +22,8 @@ import { Schema } from "./schema.js";
 import { NullSchema, imm } from "./primitives.js";
 import { CoMapOf, CoMapSchema } from "./coMap.js";
 import { Group, GroupMeta } from "./group.js";
+import { Effect } from "effect";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 
 /** @category CoValues - Account */
 export interface Account<
@@ -208,6 +211,16 @@ export function AccountWith<
             throw new Error("Not implemented");
         }
 
+        static loadEf(
+            id: ID<ControlledAccount<ProfileS, RootS>>,
+        ): Effect.Effect<
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount<ProfileS, RootS>
+        > {
+            throw new Error("Not implemented");
+        }
+
         async acceptInvite<S extends CoValueSchemaBase>(
             invitedObjectID: ID<S["_Value"]>,
             secret: InviteSecret,
@@ -247,6 +260,16 @@ export function AccountWith<
             id: ID<ControlledAccount<ProfileS, RootS>>,
             { as }: { as: ControlledAccount }
         ): Promise<ControlledAccount<ProfileS, RootS>> {
+            throw new Error("Not implemented");
+        }
+
+        static loadEf(
+            id: ID<ControlledAccount<ProfileS, RootS>>,
+        ): Effect.Effect<
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount<ProfileS, RootS>
+        > {
             throw new Error("Not implemented");
         }
 

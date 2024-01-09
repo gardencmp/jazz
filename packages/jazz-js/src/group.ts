@@ -12,6 +12,8 @@ import { Schema } from "./schema.js";
 import { NullSchema, imm } from "./primitives.js";
 import { CoMapSchema } from "./coMap.js";
 import { Account, ControlledAccount } from "./account.js";
+import { Effect } from "effect";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 
 /** @category CoValues - Group */
 export interface Group<
@@ -131,6 +133,16 @@ export function GroupWith<
             id: ID<Group<P, R>>,
             { as }: { as: ControlledAccount }
         ): Promise<Group<P, R>> {
+            throw new Error("Not implemented");
+        }
+
+        static loadEf(
+            id: ID<Group<P, R>>
+        ): Effect.Effect<
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            Group<P, R>
+        > {
             throw new Error("Not implemented");
         }
 

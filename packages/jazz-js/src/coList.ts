@@ -12,6 +12,8 @@ import { Schema } from "./schema.js";
 import { Group } from "./group.js";
 import { Account } from "./account.js";
 import { isCoValueSchema } from "./guards.js";
+import { Effect } from "effect";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 
 /** A collaborative list of values that behaves mostly like an `Array`.
  *
@@ -405,6 +407,16 @@ export function CoListOf<Item extends Schema>(
             id: ID<CoList<Item>>,
             { as }: { as: ControlledAccount }
         ): Promise<CoList<Item>> {
+            throw new Error("Not implemented");
+        }
+
+        static loadEf(
+            id: ID<CoList<Item>>,
+        ): Effect.Effect<
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            CoList<Item>
+        > {
             throw new Error("Not implemented");
         }
 
