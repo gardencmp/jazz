@@ -65,7 +65,7 @@ export interface GroupSchema<
 /** @category CoValues - Group */
 export function isGroupSchema(value: unknown): value is GroupSchema {
     return (
-        typeof value === "object" &&
+        typeof value === "function" &&
         value !== null &&
         "_Type" in value &&
         value._Type === "group"

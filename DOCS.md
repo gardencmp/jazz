@@ -938,6 +938,34 @@ TODO: document
 
 
 <details>
+<summary><b><code>.loadEf(id, {as})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoMapSchema<Shape> {
+
+  loadEf(
+    id: ID<CoMap<Shape>>,
+    __namedParameters: {
+      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
+    }
+  ): Effect<never, CoValueUnavailableError | UnknownCoValueLoadError, CoMap<Shape>> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `__namedParameters.as` | TODO: document |
+
+</details>
+
+
+
+<details>
 <summary><b><code>.load(id, {as})</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript

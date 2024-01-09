@@ -282,7 +282,7 @@ export interface CoListSchema<Item extends Schema = Schema>
 /** @category CoValues - CoList */
 export function isCoListSchema(value: unknown): value is CoListSchema {
     return (
-        typeof value === "object" &&
+        typeof value === "function" &&
         value !== null &&
         "_Type" in value &&
         value._Type === "colist"

@@ -1,4 +1,9 @@
-import { CoID, CoValue as RawCoValue, CoMap as RawCoMap, Account as RawAccount } from "cojson";
+import {
+    CoID,
+    CoValue as RawCoValue,
+    CoMap as RawCoMap,
+    Account as RawAccount,
+} from "cojson";
 import {
     ID,
     CoValue,
@@ -12,6 +17,9 @@ import { isCoValueSchema } from "./guards.js";
 import { Schema } from "./schema.js";
 import { Group } from "./group.js";
 import { Account, ControlledAccount } from "./account.js";
+import { Effect, pipe } from "effect";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
+import { ControlledAccountCtx } from "./services.js";
 
 // type BaseCoMapShape = { [key: string]: Schema };
 type BaseCoMapShape = Record<string, Schema>;
@@ -38,7 +46,10 @@ export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
     _Type: "comap";
     _Shape: Shape;
 
-    new (init: CoMapInit<Shape>, opts: { owner: Account | Group }): CoMap<Shape>;
+    new (
+        init: CoMapInit<Shape>,
+        opts: { owner: Account | Group }
+    ): CoMap<Shape>;
 
     fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(
         raw: Raw,
@@ -49,7 +60,7 @@ export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
 /** @category CoValues - CoMap */
 export function isCoMapSchema(value: unknown): value is CoMapSchema {
     return (
-        typeof value === "object" &&
+        typeof value === "function" &&
         value !== null &&
         "_Type" in value &&
         value._Type === "comap"
@@ -58,8 +69,12 @@ export function isCoMapSchema(value: unknown): value is CoMapSchema {
 
 /** @category CoValues - CoMap */
 export function isCoMap(value: unknown): value is CoMap {
-    return typeof value === "object" &&
-    value !== null && isCoMapSchema(value.constructor) && "id" in value;
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        isCoMapSchema(value.constructor) &&
+        "id" in value
+    );
 }
 
 type CoMapInitBase<Shape extends BaseCoMapShape> = {
@@ -160,7 +175,41 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
             id: ID<CoMap<Shape>>,
             { as }: { as: ControlledAccount }
         ): Promise<CoMap<Shape>> {
-            throw new Error("not yet implemented");
+            return Effect.runPromise(
+                Effect.provideService(
+                    this.loadEf(id),
+                    ControlledAccountCtx,
+                    ControlledAccountCtx.of(as)
+                )
+            );
+        }
+
+        static loadEf(
+            id: ID<CoMap<Shape>>
+        ): Effect.Effect<
+            ControlledAccountCtx,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            CoMap<Shape>
+        > {
+            return Effect.gen(function* ($) {
+                const as = yield* $(ControlledAccountCtx);
+                const raw = yield* $(
+                    Effect.tryPromise({
+                        try: () =>
+                            as._raw.core.node.load(
+                                id as unknown as CoID<RawCoMap<RawShape<Shape>>>
+                            ),
+                        catch: (cause) =>
+                            new UnknownCoValueLoadError({ cause }),
+                    })
+                );
+
+                if (raw === "unavailable") {
+                    return yield* $(Effect.fail(new CoValueUnavailableError()));
+                }
+
+                return CoMapSchemaForShape.fromRaw(raw);
+            });
         }
 
         subscribe(listener: (newValue: CoMap<Shape>) => void): () => void {

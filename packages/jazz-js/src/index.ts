@@ -23,6 +23,8 @@ import {
     CoStreamSchema,
 } from "./coStream.js";
 import { Schema } from "./schema.js";
+import { Effect } from "effect";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 
 export { imm, Primitive } from "./primitives.js";
 
@@ -87,6 +89,13 @@ export interface CoValueSchemaBase<
         id: ID<Value>,
         { as }: { as: ControlledAccount }
     ): Promise<Value | undefined>;
+    loadEf(
+        id: ID<Value>,
+    ): Effect.Effect<
+        ControlledAccount,
+        CoValueUnavailableError | UnknownCoValueLoadError,
+        Value
+    >
 }
 
 export interface CoValueBase {

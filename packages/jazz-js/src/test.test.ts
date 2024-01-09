@@ -2,6 +2,8 @@ import { expect, describe, test, beforeEach } from "vitest";
 import { CoListOf, CoMapOf, SimpleAccount, imm, jazzReady } from "./index.js";
 
 import { webcrypto } from "node:crypto";
+import { connectedPeers } from "cojson/src/streamUtils.js";
+import { newRandomSessionID } from "cojson/src/coValueCore.js";
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).crypto = webcrypto;
@@ -40,6 +42,64 @@ describe("Simple CoMap operations", async () => {
             expect(map.color).toEqual("blue");
             expect(map.meta._raw.get("color")).toEqual("blue");
         });
+    });
+});
+
+describe("CoMap resolution", async () => {
+    const me = await SimpleAccount.createControlledAccount({
+        name: "Hermes Puggington",
+    });
+
+    class NestedMap extends CoMapOf({
+        name: imm.string,
+    }) {}
+
+    class TestMap extends CoMapOf({
+        color: imm.string,
+        height: imm.number,
+        nested: NestedMap,
+    }) {}
+
+    const map = new TestMap(
+        {
+            color: "red",
+            height: 10,
+            nested: new NestedMap({ name: "nested" }, { owner: me }),
+        },
+        { owner: me }
+    );
+
+    test("Construction", () => {
+        expect(map.color).toEqual("red");
+        expect(map.height).toEqual(10);
+        expect(map.nested?.name).toEqual("nested");
+    });
+
+    test("Loading and availability", async () => {
+        const [initialAsPeer, otherAsPeer] = connectedPeers(
+            "initial",
+            "second",
+            { trace: true, peer1role: "server", peer2role: "client" }
+        );
+        me._raw.core.node.syncManager.addPeer(otherAsPeer);
+        const meElswehere = await SimpleAccount.loadControlledAccount({
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.id as any),
+        });
+
+        const loadedMap = await TestMap.load(map.id, { as: meElswehere });
+
+        expect(loadedMap?.color).toEqual("red");
+        expect(loadedMap?.height).toEqual(10);
+        expect(loadedMap?.nested).toEqual(undefined);
+
+        const _loadedNestedMap = await NestedMap.load(map.nested!.id, {
+            as: meElswehere,
+        });
+
+        expect(loadedMap?.nested?.name).toEqual("nested");
     });
 });
 
@@ -156,7 +216,7 @@ describe("Simple CoList operations", async () => {
         });
 
         test("concat() works", () => {
-            expect(list.concat("green")).toEqual(["red", "blue", "green"]);
+            expect(list.concat(["green"])).toEqual(["red", "blue", "green"]);
         });
 
         test("Symbol.iterator works", () => {

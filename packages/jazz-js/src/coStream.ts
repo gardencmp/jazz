@@ -59,7 +59,7 @@ export interface CoStreamSchema<Item extends Schema = Schema>
 
 export function isCoStreamSchema(value: unknown): value is CoStreamSchema {
     return (
-        typeof value === "object" &&
+        typeof value === "function" &&
         value !== null &&
         "_Type" in value &&
         value._Type === "costream"
@@ -196,7 +196,7 @@ export function isBinaryCoStreamSchema(
     value: unknown
 ): value is BinaryCoStreamSchema {
     return (
-        typeof value === "object" &&
+        typeof value === "function" &&
         value !== null &&
         "_Type" in value &&
         value._Type === "binarycostream"

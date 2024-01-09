@@ -117,7 +117,7 @@ export interface ControlledAccountSchema<
 /** @category CoValues - Account */
 export function isAccountSchema(value: unknown): value is Account {
     return (
-        typeof value === "object" &&
+        typeof value === "function" &&
         value !== null &&
         "_Type" in value &&
         value._Type === "account"
