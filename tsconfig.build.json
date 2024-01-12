@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [],
+  "references": [
+    { "path": "packages/cojson/tsconfig.build.json" },
+    { "path": "packages/cojson-simple-sync/tsconfig.build.json" },
+    { "path": "packages/cojson-storage-indexeddb/tsconfig.build.json" },
+    { "path": "packages/cojson-storage-sqlite/tsconfig.build.json" },
+    { "path": "packages/cojson-transport-nodejs-ws/tsconfig.build.json" },
+    { "path": "packages/hash-slash/tsconfig.build.json" },
+    { "path": "packages/jazz-autosub/tsconfig.build.json" },
+    { "path": "packages/jazz-browser/tsconfig.build.json" },
+    { "path": "packages/jazz-browser-auth-local/tsconfig.build.json" },
+    { "path": "packages/jazz-browser-auth-passphrase/tsconfig.build.json" },
+    { "path": "packages/jazz-browser-auth0/tsconfig.build.json" },
+    { "path": "packages/jazz-browser-media-images/tsconfig.build.json" },
+    { "path": "packages/jazz-nodejs/tsconfig.build.json" },
+    { "path": "packages/jazz-react/tsconfig.build.json" },
+    { "path": "packages/jazz-react-auth-local/tsconfig.build.json" },
+    { "path": "packages/jazz-react-auth-passphrase/tsconfig.build.json" }
+  ]
+}

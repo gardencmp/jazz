@@ -1,24 +1,14 @@
 {
   "name": "cojson-storage-sqlite",
-  "type": "module",
   "version": "0.5.2",
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "type": "module",
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^8.5.2",
     "cojson": "workspace:*",
-    "typescript": "^5.1.6",
     "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.4"
-  },
-  "scripts": {
-    "dev": "tsc --watch --sourceMap --outDir dist",
-    "lint": "eslint src/**/*.ts",
-    "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-    "prepublishOnly": "npm run build"
-  },
-  "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
+  }
 }

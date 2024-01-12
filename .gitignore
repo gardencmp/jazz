@@ -1,6 +1,9 @@
-node_modules
-yarn-error.log
-lerna-debug.log
-docsTmp
 .DS_Store
-.turbo
+
+.direnv/
+node_modules/
+build/
+
+*.tsbuildinfo
+*.db
+*.db-*

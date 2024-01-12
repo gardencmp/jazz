@@ -64,7 +64,7 @@ export const cryptoReady = Promise.all([
             );
     }),
     initBundledOnce(),
-]);
+]).then(() => true);
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;

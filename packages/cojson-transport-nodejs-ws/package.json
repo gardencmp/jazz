@@ -1,21 +1,11 @@
 {
   "name": "cojson-transport-nodejs-ws",
-  "type": "module",
   "version": "0.5.1",
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "type": "module",
   "license": "MIT",
   "dependencies": {
-    "cojson": "workspace:*",
-    "typescript": "^5.1.6",
     "ws": "^8.14.2",
     "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
-  },
-  "scripts": {
-    "dev": "tsc --watch --sourceMap --outDir dist",
-    "lint": "eslint src/**/*.ts",
-    "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/ws": "^8.5.5"

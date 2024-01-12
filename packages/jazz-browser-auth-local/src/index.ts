@@ -6,7 +6,6 @@ import {
     LocalNode,
     Peer,
 } from "cojson";
-import { agentSecretFromSecretSeed } from "cojson/src/crypto";
 import { AuthProvider, SessionProvider } from "jazz-browser";
 
 type LocalStorageData = {
@@ -112,7 +111,7 @@ async function signUp(
     const { node, accountID, accountSecret } =
         await LocalNode.withNewlyCreatedAccount({
             name: username,
-            initialAgentSecret: agentSecretFromSecretSeed(secretSeed),
+            initialAgentSecret: cojsonInternals.agentSecretFromSecretSeed(secretSeed),
             migration,
         });
 
@@ -194,7 +193,7 @@ async function logIn(
         )
     ) as AccountID;
 
-    const accountSecret = agentSecretFromSecretSeed(accountSecretSeed);
+    const accountSecret = cojsonInternals.agentSecretFromSecretSeed(accountSecretSeed);
 
     if (!accountSecret) {
         throw new Error("Invalid credential");

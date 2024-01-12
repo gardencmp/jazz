@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.src.json",
+  "references": [
+    { "path": "../jazz-autosub/tsconfig.build.json" },
+    { "path": "../cojson-storage-indexeddb/tsconfig.build.json" }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "stripInternal": true
+  }
+}

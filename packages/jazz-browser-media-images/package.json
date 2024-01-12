@@ -1,24 +1,17 @@
 {
   "name": "jazz-browser-media-images",
+  "type": "module",
   "version": "0.6.0",
-  "main": "dist/index.js",
-  "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "@types/image-blob-reduce": "^4.1.1",
     "cojson": "workspace:*",
     "image-blob-reduce": "^4.1.0",
     "jazz-autosub": "workspace:*",
     "jazz-browser": "workspace:*",
-    "pica": "^9.0.1",
-    "typescript": "^5.1.6"
-  },
-  "scripts": {
-    "lint": "eslint src/**/*.ts",
-    "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-    "prepublishOnly": "npm run build"
+    "pica": "^9.0.1"
   },
   "devDependencies": {
+    "@types/image-blob-reduce": "^4.1.1",
     "@types/pica": "^9.0.4"
   }
 }

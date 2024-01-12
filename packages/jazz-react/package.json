@@ -1,14 +1,12 @@
 {
   "name": "jazz-react",
   "version": "0.5.4",
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "type": "module",
   "license": "MIT",
   "dependencies": {
     "cojson": "workspace:*",
     "jazz-autosub": "workspace:*",
-    "jazz-browser": "workspace:*",
-    "typescript": "^5.1.6"
+    "jazz-browser": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.2.19",
@@ -16,12 +14,5 @@
   },
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0"
-  },
-  "scripts": {
-    "dev": "tsc --watch --sourceMap --outDir dist",
-    "lint": "eslint src/**/*.tsx",
-    "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-    "prepublishOnly": "npm run build"
-  },
-  "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
+  }
 }

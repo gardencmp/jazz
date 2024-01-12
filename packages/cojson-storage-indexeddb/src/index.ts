@@ -13,7 +13,7 @@ import {
     ReadableStreamDefaultReader,
     WritableStreamDefaultWriter,
 } from "isomorphic-streams";
-import { SyncPromise } from "./syncPromises";
+import { SyncPromise } from "./syncPromises.js";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;

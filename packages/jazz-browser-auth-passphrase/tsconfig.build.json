@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.src.json",
+  "references": [
+    { "path": "../cojson/tsconfig.build.json" },
+    { "path": "../jazz-browser/tsconfig.build.json" }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "stripInternal": true
+  }
+}

@@ -1,48 +1,18 @@
 {
-    "name": "jazz-nodejs",
-    "module": "dist/index.js",
-    "main": "dist/index.js",
-    "types": "src/index.ts",
-    "type": "module",
-    "license": "MIT",
-    "version": "0.6.4",
-    "dependencies": {
-        "cojson": "workspace:*",
-        "cojson-transport-nodejs-ws": "workspace:*",
-        "jazz-autosub": "workspace:*",
-        "ws": "^8.14.2"
-    },
-    "devDependencies": {
-        "typescript": "^5.3.3",
-        "@types/ws": "^8.5.5"
-    },
-    "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist",
-        "test": "jest",
-        "lint": "eslint src/**/*.ts",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "transform": {
-            "\\.[jt]sx?$": [
-                "ts-jest",
-                {
-                    "useESM": true
-                }
-            ]
-        },
-        "moduleNameMapper": {
-            "(.+)\\.js": "$1"
-        },
-        "extensionsToTreatAsEsm": [
-            ".ts"
-        ],
-        "modulePathIgnorePatterns": [
-            "/node_modules/",
-            "/dist/"
-        ]
-    }
+  "name": "jazz-nodejs",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "version": "0.6.4",
+  "dependencies": {
+    "cojson": "workspace:*",
+    "cojson-transport-nodejs-ws": "workspace:*",
+    "jazz-autosub": "workspace:*",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.5"
+  }
 }

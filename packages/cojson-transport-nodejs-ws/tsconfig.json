@@ -1,15 +1,5 @@
 {
-  "compilerOptions": {
-    "lib": ["ESNext"],
-    "module": "esnext",
-    "target": "ES2020",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-  },
-  "include": ["./src/**/*"],
+  "extends": "../../tsconfig.base.json",
+  "include": [],
+  "references": [{ "path": "tsconfig.src.json" }]
 }
