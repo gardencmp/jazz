@@ -1,14 +1,22 @@
 {
-  "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "strict": true,
-    "importHelpers": false,
-    "noEmitHelpers": false,
-    "skipLibCheck": true,
-    "outDir": "./dist",
-    "baseUrl": "./packages"
-  },
-  "exclude": ["node_modules", "target"]
+  "extends": "./tsconfig.base.json",
+  "include": [],
+  "references": [
+    { "path": "packages/cojson" },
+    { "path": "packages/cojson-simple-sync" },
+    { "path": "packages/cojson-storage-indexeddb" },
+    { "path": "packages/cojson-storage-sqlite" },
+    { "path": "packages/cojson-transport-nodejs-ws" },
+    { "path": "packages/hash-slash" },
+    { "path": "packages/jazz-autosub" },
+    { "path": "packages/jazz-browser" },
+    { "path": "packages/jazz-browser-auth-local" },
+    { "path": "packages/jazz-browser-auth-passphrase" },
+    { "path": "packages/jazz-browser-auth0" },
+    { "path": "packages/jazz-browser-media-images" },
+    { "path": "packages/jazz-nodejs" },
+    { "path": "packages/jazz-react" },
+    { "path": "packages/jazz-react-auth-local" },
+    { "path": "packages/jazz-react-auth-passphrase" }
+  ]
 }

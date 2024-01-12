@@ -1,28 +1,19 @@
 {
-    "name": "jazz-react-auth-passphrase",
-    "version": "0.5.1",
-    "main": "dist/index.js",
-    "types": "src/index.tsx",
-    "license": "MIT",
-    "dependencies": {
-        "@scure/bip39": "^1.2.2",
-        "cojson": "workspace:*",
-        "jazz-browser-auth-passphrase": "workspace:*",
-        "jazz-react": "workspace:*",
-        "typescript": "^5.1.6"
-    },
-    "devDependencies": {
-        "@types/react": "^18.2.19",
-        "react": "^18.2.0"
-    },
-    "peerDependencies": {
-        "react": "17 - 18"
-    },
-    "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist",
-        "lint": "eslint src/**/*.tsx",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
+  "name": "jazz-react-auth-passphrase",
+  "version": "0.5.1",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@scure/bip39": "^1.2.2",
+    "cojson": "workspace:*",
+    "jazz-browser-auth-passphrase": "workspace:*",
+    "jazz-react": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.19",
+    "react": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "17 - 18"
+  }
 }

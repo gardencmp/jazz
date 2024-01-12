@@ -8,8 +8,10 @@ const wss = new WebSocketServer({ port: 4200 });
 console.log("COJSON sync server listening on port " + wss.options.port);
 
 await cojsonReady;
-import { webcrypto } from 'node:crypto'
-(globalThis as any).crypto = webcrypto
+
+// TODO(fubhy): This is a bad idea.
+// import { webcrypto } from 'node:crypto'
+// (globalThis as any).crypto = webcrypto
 
 const agentSecret = cojsonInternals.newRandomAgentSecret();
 const agentID = cojsonInternals.getAgentID(agentSecret);

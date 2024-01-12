@@ -5,7 +5,7 @@ import {
     LocalNode,
     Peer,
 } from "cojson";
-import { AuthProvider, SessionProvider } from ".";
+import { AuthProvider, SessionProvider } from "./index.js";
 
 type StorageData = {
     accountID: AccountID;

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.src.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts"
+    // TODO(fubhy): Currently, jazz-autosub uses internals from `cojson`.
+    // "stripInternal": true
+  }
+}

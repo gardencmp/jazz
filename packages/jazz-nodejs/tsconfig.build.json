@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.src.json",
+  "references": [
+    { "path": "../cojson/tsconfig.build.json" },
+    { "path": "../cojson-transport-nodejs-ws/tsconfig.build.json" },
+    { "path": "../jazz-autosub/tsconfig.build.json" }
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "stripInternal": true
+  }
+}

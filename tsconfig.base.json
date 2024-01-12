@@ -1,0 +1,103 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    // TODO(fubhy): Enable this.
+    // "exactOptionalPropertyTypes": true,
+    "moduleDetection": "force",
+    "composite": true,
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": false,
+    "declaration": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": [],
+    "isolatedModules": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "noImplicitReturns": false,
+    // TODO(fubhy): Enable this.
+    // "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": false,
+    "noErrorTruncation": false,
+    "allowJs": false,
+    "checkJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUncheckedIndexedAccess": false,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "target": "ES2022",
+    "module": "NodeNext",
+    "incremental": true,
+    "removeComments": false,
+    "paths": {
+      "cojson": ["./packages/cojson/src/index.js"],
+      "cojson/*": ["./packages/cojson/src/*.js"],
+      "cojson-simple-sync": ["./packages/cojson-simple-sync/src/index.js"],
+      "cojson-simple-sync/*": ["./packages/cojson-simple-sync/src/*.js"],
+      "cojson-storage-indexeddb": [
+        "./packages/cojson-storage-indexeddb/src/index.js"
+      ],
+      "cojson-storage-indexeddb/*": [
+        "./packages/cojson-storage-indexeddb/src/*.js"
+      ],
+      "cojson-storage-sqlite": [
+        "./packages/cojson-storage-sqlite/src/index.js"
+      ],
+      "cojson-storage-sqlite/*": ["./packages/cojson-storage-sqlite/src/*.js"],
+      "cojson-transport-nodejs-ws": [
+        "./packages/cojson-transport-nodejs-ws/src/index.js"
+      ],
+      "cojson-transport-nodejs-ws/*": [
+        "./packages/cojson-transport-nodejs-ws/src/*.js"
+      ],
+      "hash-slash": ["./packages/hash-slash/src/index.js"],
+      "hash-slash/*": ["./packages/hash-slash/src/*.js"],
+      "jazz-autosub": ["./packages/jazz-autosub/src/index.js"],
+      "jazz-autosub/*": ["./packages/jazz-autosub/src/*.js"],
+      "jazz-browser": ["./packages/jazz-browser/src/index.js"],
+      "jazz-browser/*": ["./packages/jazz-browser/src/*.js"],
+      "jazz-browser-auth-local": [
+        "./packages/jazz-browser-auth-local/src/index.js"
+      ],
+      "jazz-browser-auth-local/*": [
+        "./packages/jazz-browser-auth-local/src/*.js"
+      ],
+      "jazz-browser-auth-passphrase": [
+        "./packages/jazz-browser-auth-passphrase/src/index.js"
+      ],
+      "jazz-browser-auth-passphrase/*": [
+        "./packages/jazz-browser-auth-passphrase/src/*.js"
+      ],
+      "jazz-browser-auth0": ["./packages/jazz-browser-auth0/src/index.js"],
+      "jazz-browser-auth0/*": ["./packages/jazz-browser-auth0/src/*.js"],
+      "jazz-browser-media-images": [
+        "./packages/jazz-browser-media-images/src/index.js"
+      ],
+      "jazz-browser-media-images/*": [
+        "./packages/jazz-browser-media-images/src/*.js"
+      ],
+      "jazz-nodejs": ["./packages/jazz-nodejs/src/index.js"],
+      "jazz-nodejs/*": ["./packages/jazz-nodejs/src/*.js"],
+      "jazz-react": ["./packages/jazz-react/src/index.js"],
+      "jazz-react/*": ["./packages/jazz-react/src/*.js"],
+      "jazz-react-auth-local": [
+        "./packages/jazz-react-auth-local/src/index.js"
+      ],
+      "jazz-react-auth-local/*": ["./packages/jazz-react-auth-local/src/*.js"],
+      "jazz-react-auth-passphrase": [
+        "./packages/jazz-react-auth-passphrase/src/index.js"
+      ],
+      "jazz-react-auth-passphrase/*": [
+        "./packages/jazz-react-auth-passphrase/src/*.js"
+      ]
+    }
+  }
+}

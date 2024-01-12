@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src"],
+  "references": [
+    { "path": "../jazz-browser-auth-local/tsconfig.src.json" },
+    { "path": "../jazz-react/tsconfig.src.json" }
+  ],
+  "compilerOptions": {
+    "outDir": "build/src",
+    "tsBuildInfoFile": ".tsbuildinfo/src.tsbuildinfo",
+    "rootDir": "src",
+    "jsx": "preserve"
+  }
+}
