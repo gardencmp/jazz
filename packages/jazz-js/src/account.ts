@@ -29,7 +29,7 @@ import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 export interface Account<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> {
+>  extends CoValueBase {
     /** @hidden */
     _raw: RawAccount | RawControlledAccount;
     /** @category Collaboration */

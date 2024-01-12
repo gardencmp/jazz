@@ -1,4 +1,4 @@
-import { CoID, CoList as RawCoList, Account as RawAccount } from "cojson";
+import { CoID, CoList as RawCoList, Account as RawAccount, CoValueCore } from "cojson";
 import {
     ID,
     CoValueSchemaBase,
@@ -7,6 +7,7 @@ import {
     RawType,
     CoValueBase,
     SimpleAccount,
+    CoValueMetaBase,
 } from "./index.js";
 import { Schema } from "./schema.js";
 import { Group } from "./group.js";
@@ -243,9 +244,11 @@ export interface CoList<Item extends Schema = Schema>
     ): this;
 }
 
-export class CoListMeta {
+export class CoListMeta implements CoValueMetaBase{
     owner: Account | Group;
     _raw: RawCoList;
+    core: CoValueCore;
+    loadedAs: ControlledAccount;
     constructor(raw: RawCoList) {
         const rawOwner = raw.core.getGroup();
         if (rawOwner instanceof RawAccount) {
@@ -254,6 +257,7 @@ export class CoListMeta {
             this.owner = Group.fromRaw(rawOwner);
         }
         this._raw = raw;
+        this.core = raw.core;
     }
 }
 

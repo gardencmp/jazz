@@ -2,12 +2,14 @@ import {
     CoStream as RawCoStream,
     BinaryCoStream as RawBinaryCoStream,
     Account as RawAccount,
+    CoValueCore,
 } from "cojson";
 import { ControlledAccount } from "./account.js";
 import {
     Account,
     CoValue,
     CoValueBase,
+    CoValueMetaBase,
     CoValueSchemaBase,
     Group,
     ID,
@@ -26,8 +28,10 @@ export interface CoStream<Item extends Schema = Schema> extends CoValueBase {
     _raw: RawCoStream<RawType<Item>>;
 }
 
-class CoStreamMeta {
+class CoStreamMeta implements CoValueMetaBase {
     owner: Account | Group;
+    core: CoValueCore;
+    loadedAs: ControlledAccount;
 
     constructor(raw: RawCoStream) {
         const rawOwner = raw.core.getGroup();
@@ -36,6 +40,7 @@ class CoStreamMeta {
         } else {
             this.owner = Group.fromRaw(rawOwner);
         }
+        this.core = raw.core;
     }
 }
 

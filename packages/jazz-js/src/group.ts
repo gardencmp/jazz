@@ -1,10 +1,13 @@
 import {
+    CoValueCore,
     LocalNode,
     Group as RawGroup,
     Role,
 } from "cojson";
 import {
     CoValue,
+    CoValueBase,
+    CoValueMetaBase,
     CoValueSchemaBase,
     ID,
 } from "./index.js";
@@ -19,7 +22,7 @@ import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 export interface Group<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> {
+> extends CoValueBase {
     /** @hidden */
     _raw: RawGroup;
     /** @category Collaboration */
@@ -40,11 +43,15 @@ export interface Group<
 export class GroupMeta<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> {
+> implements CoValueMetaBase {
     node: LocalNode;
+    core: CoValueCore;
+    owner: Account | Group;
+    loadedAs: ControlledAccount;
 
     constructor(raw: RawGroup) {
         this.node = raw.core.node;
+        this.core = raw.core;
     }
 }
 

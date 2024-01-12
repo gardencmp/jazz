@@ -1,20 +1,7 @@
-import {
-    CojsonInternalTypes,
-    CoValue as RawCoValue,
-} from "cojson";
-import {
-    CoList,
-    CoListSchema,
-} from "./coList.js";
-import {
-    CoMap,
-    CoMapSchema,
-} from "./coMap.js";
-import {
-    Account,
-    AccountSchema,
-    ControlledAccount,
-} from "./account.js";
+import { CoValueCore, CojsonInternalTypes, CoValue as RawCoValue } from "cojson";
+import { CoList, CoListSchema } from "./coList.js";
+import { CoMap, CoMapSchema } from "./coMap.js";
+import { Account, AccountSchema, ControlledAccount } from "./account.js";
 import { Group, GroupSchema } from "./group.js";
 import {
     BinaryCoStream,
@@ -23,12 +10,14 @@ import {
     CoStreamSchema,
 } from "./coStream.js";
 import { Schema } from "./schema.js";
-import { Effect } from "effect";
+import { Effect, Stream } from "effect";
 import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
+import { ControlledAccountCtx } from "./services.js";
+import { SubscriptionScope } from "./subscriptionScope.js";
 
 export { imm, Primitive } from "./primitives.js";
 
-export {cojsonReady as jazzReady} from "cojson";
+export { cojsonReady as jazzReady } from "cojson";
 
 export {
     Account,
@@ -80,31 +69,60 @@ export type CoValue =
 
 export interface CoValueSchemaBase<
     Value extends CoValue = CoValue,
-    RawValue extends RawCoValue = RawCoValue
+    RawValue extends RawCoValue = RawCoValue,
 > extends Schema<Value> {
     /** @category Type Hints */
     _RawValue: RawValue;
+
     fromRaw(raw: RawCoValue, onGetRef?: (id: ID<CoValue>) => void): Value;
+
     load(
         id: ID<Value>,
         { as }: { as: ControlledAccount }
     ): Promise<Value | undefined>;
+
     loadEf(
-        id: ID<Value>,
+        id: ID<Value>
     ): Effect.Effect<
-        ControlledAccount,
+        ControlledAccountCtx,
         CoValueUnavailableError | UnknownCoValueLoadError,
         Value
-    >
+    >;
+
+    subscribe(
+        id: ID<Value>,
+        { as }: { as: ControlledAccount },
+        onUpdate: (value: Value) => void
+    ): () => void;
+
+    subscribeEf(
+        id: ID<Value>
+    ): Stream.Stream<
+        ControlledAccountCtx,
+        CoValueUnavailableError | UnknownCoValueLoadError,
+        Value
+    >;
 }
 
 export interface CoValueBase {
     id: ID<CoValue>;
     meta: CoValueMetaBase;
+
+    subscribe(onUpdate: (value: this) => void): () => void;
+
+    subscribeEf(): Stream.Stream<never, never, this>;
+
+    toJSON(): Record<string, unknown> | unknown[];
+
+    [subscriptionScopeSym]?: SubscriptionScope;
 }
+
+export const subscriptionScopeSym = Symbol("subscriptionScope");
 
 export interface CoValueMetaBase {
     owner: Account | Group;
+    core: CoValueCore;
+    loadedAs: ControlledAccount;
 }
 
 export type ID<T> = CojsonInternalTypes.RawCoID & {

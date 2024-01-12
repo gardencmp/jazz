@@ -3,6 +3,7 @@ import {
     CoValue as RawCoValue,
     CoMap as RawCoMap,
     Account as RawAccount,
+    ControlledAccount as RawControlledAccount,
 } from "cojson";
 import {
     ID,
@@ -12,14 +13,18 @@ import {
     RawType,
     CoValueBase,
     SimpleAccount,
+    CoValueMetaBase,
+    subscriptionScopeSym,
 } from "./index.js";
 import { isCoValueSchema } from "./guards.js";
 import { Schema } from "./schema.js";
 import { Group } from "./group.js";
 import { Account, ControlledAccount } from "./account.js";
-import { Effect, pipe } from "effect";
+import { Chunk, Effect, Scope, Stream, pipe } from "effect";
 import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
 import { ControlledAccountCtx } from "./services.js";
+import { ValueRef } from "./valueRef.js";
+import { SubscriptionScope } from "./subscriptionScope.js";
 
 // type BaseCoMapShape = { [key: string]: Schema };
 type BaseCoMapShape = Record<string, Schema>;
@@ -33,6 +38,7 @@ export type CoMap<Shape extends BaseCoMapShape = BaseCoMapShape> = {
     id: ID<CoMap<Shape>>;
     meta: CoMapMeta<Shape>;
     subscribe: (listener: (newValue: CoMap<Shape>) => void) => () => void;
+    [subscriptionScopeSym]?: SubscriptionScope;
 } & CoValueBase;
 
 type RawShape<Shape extends BaseCoMapShape> = {
@@ -51,10 +57,7 @@ export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
         opts: { owner: Account | Group }
     ): CoMap<Shape>;
 
-    fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(
-        raw: Raw,
-        onGetRef?: (id: ID<CoValue>) => void
-    ): CoMap<Shape>;
+    fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(raw: Raw): CoMap<Shape>;
 }
 
 /** @category CoValues - CoMap */
@@ -80,7 +83,7 @@ export function isCoMap(value: unknown): value is CoMap {
 type CoMapInitBase<Shape extends BaseCoMapShape> = {
     [Key in keyof Shape as null extends Shape[Key]["_Value"]
         ? never
-        : Key]?: Shape[Key]["_Value"];
+        : Key]: Shape[Key]["_Value"];
 } & {
     [Key in keyof Shape as null extends Shape[Key]["_Value"] ? Key : never]?:
         | Shape[Key]["_Value"]
@@ -99,6 +102,16 @@ export type CoMapInit<Shape extends BaseCoMapShape> = Record<
 export function CoMapOf<Shape extends BaseCoMapShape>(
     SchemaShape: Shape
 ): CoMapSchema<Shape> {
+    class RefsForShape {
+        raw: RawCoMap<RawShape<Shape>>;
+        as: ControlledAccount;
+
+        constructor(raw: RawCoMap<RawShape<Shape>>, as: ControlledAccount) {
+            this.raw = raw;
+            this.as = as;
+        }
+    }
+
     class CoMapSchemaForShape {
         static _Type = "comap" as const;
         static _Shape = SchemaShape;
@@ -106,8 +119,8 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         static _RawValue: RawCoMap<RawShape<Shape>>;
 
         _raw: RawCoMap<RawShape<Shape>>;
-        _refs: { [key in keyof Shape]?: Shape[key]["_Value"] };
-        _onGetRef?: (id: ID<CoValue>) => void;
+        _refs: RefsShape<Shape>;
+        [subscriptionScopeSym]?: SubscriptionScope;
         id: ID<CoMap<Shape>>;
         meta: CoMapMeta<Shape>;
 
@@ -116,7 +129,6 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
             init: undefined,
             options: {
                 fromRaw: RawCoMap<RawShape<Shape>>;
-                onGetRef?: (id: ID<CoValue>) => void;
             }
         );
         constructor(
@@ -125,14 +137,12 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                 | { owner: Group | Account }
                 | {
                       fromRaw: RawCoMap<RawShape<Shape>>;
-                      onGetRef?: (id: ID<CoValue>) => void;
                   }
         ) {
             let raw: RawCoMap<RawShape<Shape>>;
 
             if ("fromRaw" in options) {
                 raw = options.fromRaw;
-                this._onGetRef = options.onGetRef;
             } else if (init && options.owner) {
                 const rawOwner = options.owner._raw;
 
@@ -157,17 +167,18 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
 
             this._raw = raw;
             this.id = raw.id as unknown as ID<CoMap<Shape>>;
-            this.meta = new CoMapMeta<Shape>(raw);
-            this._refs = {};
+            this._refs = new RefsForShape(
+                raw,
+                SimpleAccount.ControlledSchema.fromRaw(
+                    raw.core.node.account as RawControlledAccount
+                )
+            ) as unknown as RefsShape<Shape>;
+            this.meta = new CoMapMeta<Shape>(raw, this._refs);
         }
 
-        static fromRaw(
-            raw: RawCoMap<RawShape<Shape>>,
-            onGetRef?: (id: ID<CoValue>) => void
-        ): CoMap<Shape> {
+        static fromRaw(raw: RawCoMap<RawShape<Shape>>): CoMap<Shape> {
             return new CoMapSchemaForShape(undefined, {
                 fromRaw: raw,
-                onGetRef,
             }) as CoMap<Shape>;
         }
 
@@ -212,49 +223,92 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
             });
         }
 
-        subscribe(listener: (newValue: CoMap<Shape>) => void): () => void {
-            const refSubscriptions: Map<ID<CoValue>, () => void> = new Map();
+        static subscribeEf(
+            id: ID<CoMap<Shape>>
+        ): Stream.Stream<
+            ControlledAccountCtx,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            CoMap<Shape>
+        > {
+            throw new Error(
+                "TODO: implement somehow with Scope and Stream.asyncScoped"
+            );
+        }
 
-            const render = () => {
-                return CoMapSchemaForShape.fromRaw(
-                    this._raw.core.getCurrentContent() as typeof this._raw,
-                    (accessedRefID) => {
-                        if (!refSubscriptions.get(accessedRefID)) {
-                            const unsusbscribeRef =
-                                this._raw.core.node.subscribe(
-                                    accessedRefID as unknown as CoID<RawCoValue>,
-                                    scheduleNotify
-                                );
-
-                            refSubscriptions.set(
-                                accessedRefID,
-                                unsusbscribeRef
-                            );
-                        }
-                    }
-                );
+        static subscribe(
+            id: ID<CoMap<Shape>>,
+            { as }: { as: ControlledAccount },
+            onUpdate: (value: CoMap<Shape>) => void
+        ): () => void {
+            let unsub: () => void = () => {
+                stopImmediately = true;
             };
-
-            let scheduled = false;
-
-            const scheduleNotify = () => {
-                if (!scheduled) {
-                    scheduled = true;
-                    void Promise.resolve().then(() => {
-                        scheduled = false;
-                        listener(render());
-                    });
+            let stopImmediately = false;
+            void this.load(id, { as }).then((value) => {
+                unsub = value.subscribe(onUpdate);
+                if (stopImmediately) {
+                    unsub();
                 }
-            };
-
-            const unsubscribeThis = this._raw.core.subscribe(scheduleNotify);
+            });
 
             return () => {
-                unsubscribeThis();
-                refSubscriptions.forEach((unsubscribeRef) => {
-                    unsubscribeRef();
-                });
+                unsub();
             };
+        }
+
+        subscribeEf(): Stream.Stream<never, never, CoMap<Shape>> {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const self = this;
+            return Stream.asyncScoped((emit) => {
+                return Effect.scoped(
+                    Effect.gen(function* ($) {
+                        const unsub = self.subscribe((value) => {
+                            void emit(Effect.succeed(Chunk.of(value)));
+                        });
+
+                        yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
+                    })
+                );
+            });
+        }
+
+        subscribe(listener: (newValue: CoMap<Shape>) => void): () => void {
+            const subscribable = CoMapSchemaForShape.fromRaw(this._raw);
+            const scope = new SubscriptionScope(subscribable, (scope) => {
+                const updatedValue = CoMapSchemaForShape.fromRaw(this._raw);
+                updatedValue[subscriptionScopeSym] = scope;
+                listener(updatedValue);
+            });
+
+            return () => {
+                scope.unsubscribeAll();
+            };
+        }
+
+        toJSON() {
+            const json: Record<string, unknown> = {};
+
+            for (const key in SchemaShape) {
+                const keySchema = SchemaShape[key];
+
+                if (isCoValueSchema(keySchema)) {
+                    const ref = this._refs[key];
+                    if (ref?.loaded) {
+                        json[key] = ref.value.toJSON();
+                    }
+                } else {
+                    json[key] = this._raw.get(key);
+                }
+            }
+
+            return json;
+        }
+
+        [Symbol.for("nodejs.util.inspect.custom")](
+            _depth: number,
+            _opts: unknown
+        ) {
+            return this.toJSON();
         }
     }
 
@@ -262,43 +316,57 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         const KeySchema = SchemaShape[key];
 
         if (isCoValueSchema(KeySchema)) {
-            const KeyCoValueSchema = KeySchema as CoValueSchemaBase;
+            const KeyCoValueSchema = KeySchema as CoValueSchema;
             Object.defineProperty(CoMapSchemaForShape.prototype, key, {
                 get(this: CoMapSchemaForShape) {
-                    let ref = this._refs[key];
+                    const ref = this._refs[key]!;
 
-                    if (!ref) {
-                        const id = this._raw.get(key);
-
-                        if (!id) {
-                            // TODO: mark as not available in this view of the comap, even if it loads and we access it again?
-                            return undefined;
-                        }
-
-                        const raw = this._raw.core.node.getLoaded(
-                            id as unknown as CoID<
-                                (typeof KeyCoValueSchema)["_RawValue"]
-                            >
+                    if (this[subscriptionScopeSym]) {
+                        this[subscriptionScopeSym].onRefAccessedOrSet(
+                            this.id,
+                            key,
+                            ref.id,
+                            KeyCoValueSchema
                         );
-
-                        if (!raw) {
-                            return undefined;
-                        } else {
-                            ref = KeyCoValueSchema.fromRaw(
-                                raw as unknown as (typeof KeyCoValueSchema)["_RawValue"],
-                                this._onGetRef
-                            ) as Shape[keyof Shape]["_Value"];
-
-                            this._refs[key] = ref;
-                        }
                     }
 
-                    this._onGetRef?.(ref.id);
-
-                    return ref;
+                    if (ref.loaded) {
+                        ref.value[subscriptionScopeSym] = this[subscriptionScopeSym];
+                        return ref.value;
+                    }
                 },
-                set(this: CoMapSchemaForShape, _value) {
-                    // TODO
+                set(this: CoMapSchemaForShape, value) {
+                    this._raw.set(key, value?.id);
+                    this[subscriptionScopeSym]?.onRefRemovedOrReplaced(
+                        this.id,
+                        key
+                    );
+                    if (value) {
+                        this[subscriptionScopeSym]?.onRefAccessedOrSet(
+                            this.id,
+                            key,
+                            value?.id,
+                            KeyCoValueSchema
+                        );
+                    }
+                },
+            });
+
+            Object.defineProperty(RefsForShape.prototype, key, {
+                get(this: RefsForShape) {
+                    const id = this.raw.get(key);
+
+                    if (!id) {
+                        return undefined;
+                    }
+
+                    const value = ValueRef(
+                        id as unknown as ID<CoMap<Shape>>,
+                        KeyCoValueSchema,
+                        this.as
+                    );
+
+                    return value;
                 },
             });
         } else {
@@ -316,17 +384,33 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
     return CoMapSchemaForShape as CoMapSchema<Shape>;
 }
 
-class CoMapMeta<Shape extends BaseCoMapShape> {
+class CoMapMeta<Shape extends BaseCoMapShape> implements CoValueMetaBase {
     _raw: RawCoMap<RawShape<Shape>>;
     owner: Account | Group;
+    refs: RefsShape<Shape>;
+    loadedAs: ControlledAccount;
 
-    constructor(raw: RawCoMap<RawShape<Shape>>) {
+    constructor(raw: RawCoMap<RawShape<Shape>>, refs: RefsShape<Shape>) {
         this._raw = raw;
+        this.refs = refs;
         const rawOwner = raw.core.getGroup();
         if (rawOwner instanceof RawAccount) {
             this.owner = SimpleAccount.fromRaw(rawOwner);
         } else {
             this.owner = Group.fromRaw(rawOwner);
         }
+        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+            this._raw.core.node.account as RawControlledAccount
+        );
     }
+
+    get core() {
+        return this._raw.core;
+    }
+}
+
+type RefsShape<Shape extends BaseCoMapShape> = {
+    [Key in keyof Shape]?: Shape[Key]["_Value"] extends CoValue
+        ? ValueRef<Shape[Key]["_Value"]>
+        : never;
 }
