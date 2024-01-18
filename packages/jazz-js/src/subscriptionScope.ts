@@ -25,10 +25,10 @@ export class SubscriptionScope {
     ) {
         this.entries = new Map();
         const entry = {
-            state: "loaded",
+            state: "loaded" as const,
             value: root,
             rawUnsub: () => {}, // placeholder
-        } as const;
+        };
         this.entries.set(root.id, entry);
         root[subscriptionScopeSym] = this;
         this.subscriber = root.meta.loadedAs;
@@ -68,7 +68,7 @@ export class SubscriptionScope {
                     ) {
                         return;
                     }
-                    console.log("ref load", fullPath, refValue);
+                    console.log("ref load", fullPath, refValue?.id);
                     if (refValue) {
                         const rawUnsub = refValue.meta.core.subscribe(() => {
                             console.log("ref update", fullPath);

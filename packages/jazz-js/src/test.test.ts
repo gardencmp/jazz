@@ -1,10 +1,18 @@
 import { expect, describe, test, beforeEach } from "vitest";
-import { CoListOf, CoMapOf, SimpleAccount, imm, jazzReady, subscriptionScopeSym } from "./index.js";
+import {
+    CoListOf,
+    CoMapOf,
+    SimpleAccount,
+    imm,
+    jazzReady,
+    subscriptionScopeSym,
+} from "./index.js";
 
 import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
-import { Deferred, Effect, Queue } from "effect";
+import { Effect, Queue } from "effect";
+
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).crypto = webcrypto;
@@ -85,11 +93,11 @@ describe("CoMap resolution", async () => {
             { owner: me }
         );
 
-        return {me, map}
-    }
+        return { me, map };
+    };
 
     test("Construction", async () => {
-        const {map} = await initNodeAndMap();
+        const { map } = await initNodeAndMap();
         expect(map.color).toEqual("red");
         expect(map.height).toEqual(10);
         expect(map.nested?.name).toEqual("nested");
@@ -97,7 +105,7 @@ describe("CoMap resolution", async () => {
     });
 
     test("Loading and availability", async () => {
-        const {me, map} = await initNodeAndMap();
+        const { me, map } = await initNodeAndMap();
         const [initialAsPeer, secondPeer] = connectedPeers(
             "initial",
             "second",
@@ -159,7 +167,7 @@ describe("CoMap resolution", async () => {
     });
 
     test("Subscription & auto-resolution", async () => {
-        const {me, map} = await initNodeAndMap();
+        const { me, map } = await initNodeAndMap();
 
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
@@ -180,12 +188,17 @@ describe("CoMap resolution", async () => {
             Effect.gen(function* ($) {
                 const queue = yield* $(Queue.unbounded<TestMap>());
 
-                TestMap.subscribe(map.id, { as: meOnSecondPeer }, (subscribedMap: TestMap) => {
-                    console.log("subscribedMap.nested?.twiceNested?.taste", subscribedMap.nested?.twiceNested?.taste);
-                    Effect.runPromise(
-                        Queue.offer(queue, subscribedMap)
-                    );
-                });
+                TestMap.subscribe(
+                    map.id,
+                    { as: meOnSecondPeer },
+                    (subscribedMap: TestMap) => {
+                        console.log(
+                            "subscribedMap.nested?.twiceNested?.taste",
+                            subscribedMap.nested?.twiceNested?.taste
+                        );
+                        Effect.runPromise(Queue.offer(queue, subscribedMap));
+                    }
+                );
 
                 const update1 = yield* $(Queue.take(queue));
                 expect(update1.nested).toEqual(undefined);
@@ -201,8 +214,13 @@ describe("CoMap resolution", async () => {
 
                 const oldTwiceNested = update3a.nested!.twiceNested;
                 expect(oldTwiceNested?.taste).toEqual("sour");
-                expect((oldTwiceNested as any)[subscriptionScopeSym]).toBeDefined();
-                console.log('oldTwiceNested[subscriptionScopeSym]', (oldTwiceNested as any)[subscriptionScopeSym]);
+                expect(
+                    (oldTwiceNested as any)[subscriptionScopeSym]
+                ).toBeDefined();
+                console.log(
+                    "oldTwiceNested[subscriptionScopeSym]",
+                    (oldTwiceNested as any)[subscriptionScopeSym]
+                );
 
                 // When assigning a new nested value, we get an update
                 const newTwiceNested = new TwiceNestedMap(
@@ -213,7 +231,7 @@ describe("CoMap resolution", async () => {
                 update3a.nested = new NestedMap(
                     {
                         name: "newNested",
-                        twiceNested: newTwiceNested
+                        twiceNested: newTwiceNested,
                     },
                     { owner: meOnSecondPeer }
                 );
@@ -233,10 +251,14 @@ describe("CoMap resolution", async () => {
                 // ...but we don't get updates on the old nested value anymore
                 oldTwiceNested!.taste = "bitter";
                 console.log("after set");
-                yield* $(Effect.raceFirst(
-                    Effect.flatMap(Queue.take(queue), (update) => Effect.fail({err:"Unexpected update", update})),
-                    Effect.sleep(100),
-                ));
+                yield* $(
+                    Effect.raceFirst(
+                        Effect.flatMap(Queue.take(queue), (update) =>
+                            Effect.fail({ err: "Unexpected update", update })
+                        ),
+                        Effect.sleep(100)
+                    )
+                );
 
                 console.log("got here");
 
@@ -244,7 +266,7 @@ describe("CoMap resolution", async () => {
                 const update6 = yield* $(Queue.take(queue));
                 expect(update6.nested?.twiceNested?.taste).toEqual("umami");
 
-                console.log('yes');
+                console.log("yes");
             })
         );
     });
@@ -267,7 +289,7 @@ describe("Simple CoList operations", async () => {
 
     describe("Reading", () => {
         test("map() works", () => {
-            expect(list.map((item) => item.toUpperCase())).toEqual([
+            expect(list.map((item) => item.toUpperCase())). toEqual([
                 "RED",
                 "BLUE",
             ]);
@@ -435,5 +457,179 @@ describe("Simple CoList operations", async () => {
             expect(list.meta._raw.get(6)).toEqual("yellow");
             expect(list.length).toEqual(7);
         });
+    });
+});
+
+describe("CoList resolution", async () => {
+    class TwiceNestedList extends CoListOf(imm.string) {}
+    class NestedList extends CoListOf(TwiceNestedList) {}
+    class TestList extends CoListOf(NestedList) {}
+
+    const initNodeAndList = async () => {
+        const me = await SimpleAccount.createControlledAccount({
+            name: "Hermes Puggington",
+        });
+
+        const list = new TestList(
+            [
+                new NestedList(
+                    [
+                        new TwiceNestedList(["sour"], { owner: me }),
+                        new TwiceNestedList(["sweet"], { owner: me }),
+                    ],
+                    { owner: me }
+                ),
+            ],
+            { owner: me }
+        );
+
+        return { me, list };
+    };
+
+    test("Construction", async () => {
+        const { list } = await initNodeAndList();
+        expect(list[0][0][0]).toEqual("sour");
+        expect(list[0][0].length).toEqual(1);
+        expect(list[0][1][0]).toEqual("sweet");
+    });
+
+    test("Loading and availability", async () => {
+        const { me, list } = await initNodeAndList();
+        const [initialAsPeer, secondPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+        me._raw.core.node.syncManager.addPeer(secondPeer);
+        const meOnSecondPeer = await SimpleAccount.loadControlledAccount({
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.id as any),
+        });
+
+        const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
+
+        expect(loadedList?.[0]).toEqual(undefined);
+        expect(loadedList?.meta.refs[0]?.id).toEqual(list[0].id);
+        expect(loadedList?.meta.refs[0]?.loaded).toEqual(false);
+
+        const loadedNestedList = await NestedList.load(list[0].id, {
+            as: meOnSecondPeer,
+        });
+
+        expect(loadedList?.[0]).toBeDefined();
+        expect(loadedList?.meta.refs[0]?.loaded).toEqual(true);
+        expect(loadedList?.meta.refs[0]?.value).toEqual(loadedNestedList);
+        expect(loadedList?.[0][0]).toEqual(undefined);
+
+        const loadedTwiceNestedList = await TwiceNestedList.load(
+            list[0][0].id,
+            { as: meOnSecondPeer }
+        );
+
+        expect(loadedList?.[0][0][0]).toEqual("sour");
+        expect(loadedList?.[0].meta.refs[0]?.value).toEqual(
+            loadedTwiceNestedList
+        );
+    });
+
+    test("Subscription & auto-resolution", async () => {
+        const { me, list } = await initNodeAndList();
+
+        const [initialAsPeer, secondAsPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+
+        me._raw.core.node.syncManager.addPeer(secondAsPeer);
+
+        const meOnSecondPeer = await SimpleAccount.loadControlledAccount({
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.id as any),
+        });
+
+        await Effect.runPromise(
+            Effect.gen(function* ($) {
+                const queue = yield* $(Queue.unbounded<TestList>());
+
+                TestList.subscribe(
+                    list.id,
+                    { as: meOnSecondPeer },
+                    (subscribedList: TestList) => {
+                        console.log(
+                            "subscribedList[0]?.[0]?.[0]",
+                            subscribedList[0]?.[0]?.[0]
+                        );
+                        Effect.runPromise(Queue.offer(queue, subscribedList));
+                    }
+                );
+
+                const update1 = yield* $(Queue.take(queue));
+                expect(update1[0]).toEqual(undefined);
+
+                const update2 = yield* $(Queue.take(queue));
+                expect(update2[0]).toBeDefined();
+                expect(update2[0][0]).toEqual(undefined);
+
+                const update3 = yield* $(Queue.take(queue));
+                expect(update3[0][0][0]).toEqual("sour");
+                expect(update3[0][0].length).toEqual(1);
+
+                update3[0][0][0] = "salty";
+
+                const update4 = yield* $(Queue.take(queue));
+                expect(update4[0][0][0]).toEqual("salty");
+                expect(update4[0][0].length).toEqual(1);
+
+                const oldTwiceNested = update4[0][0];
+
+                // When assigning a new nested value, we get an update
+                const newNested = new NestedList(
+                    [new TwiceNestedList(["umami"], { owner: meOnSecondPeer })],
+                    {
+                        owner: meOnSecondPeer,
+                    }
+                );
+
+                update4[0] = newNested;
+
+                const update5 = yield* $(Queue.take(queue));
+                expect(update5[0][0][0]).toEqual("umami");
+                expect(update5[0][0].length).toEqual(1);
+
+                // we get updates when the new nested value changes
+                update5[0][0][0] = "bitter";
+
+                const update6 = yield* $(Queue.take(queue));
+                expect(update6[0][0][0]).toEqual("bitter");
+                expect(update6[0][0].length).toEqual(1);
+                yield* $(Queue.take(queue));
+                yield* $(Queue.take(queue));
+                yield* $(Queue.take(queue));
+
+                // ...but we don't get updates on the old nested value anymore
+                oldTwiceNested[0] = "sweet";
+                console.log("after set");
+
+                yield* $(
+                    Effect.raceFirst(
+                        Effect.flatMap(Queue.take(queue), (update) =>
+                            Effect.fail({ err: "Unexpected update", update })
+                        ),
+                        Effect.sleep(100)
+                    )
+                );
+
+                console.log("got here");
+
+                newNested[0][0] = "sour";
+                const update7 = yield* $(Queue.take(queue));
+                expect(update7[0][0][0]).toEqual("sour");
+            })
+        );
     });
 });

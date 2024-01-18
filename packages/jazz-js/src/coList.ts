@@ -1,4 +1,10 @@
-import { CoID, CoList as RawCoList, Account as RawAccount, CoValueCore } from "cojson";
+import {
+    CoList as RawCoList,
+    Account as RawAccount,
+    CoValueCore,
+    ControlledAccount as RawControlledAccount,
+    CoID,
+} from "cojson";
 import {
     ID,
     CoValueSchemaBase,
@@ -8,13 +14,18 @@ import {
     CoValueBase,
     SimpleAccount,
     CoValueMetaBase,
+    CoValueSchema,
+    subscriptionScopeSym,
 } from "./index.js";
 import { Schema } from "./schema.js";
 import { Group } from "./group.js";
 import { Account } from "./account.js";
 import { isCoValueSchema } from "./guards.js";
-import { Effect } from "effect";
+import { Chunk, Effect, Stream } from "effect";
 import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
+import { ValueRef } from "./valueRef.js";
+import { ControlledAccountCtx } from "./services.js";
+import { SubscriptionScope } from "./subscriptionScope.js";
 
 /** A collaborative list of values that behaves mostly like an `Array`.
  *
@@ -27,7 +38,7 @@ export interface CoList<Item extends Schema = Schema>
     /** @category Collaboration */
     id: ID<CoList<Item>>;
     /** @category Collaboration */
-    meta: CoListMeta;
+    meta: CoListMeta<Item>;
     /** @hidden */
     _raw: RawCoList<RawType<Item>>;
 
@@ -244,12 +255,13 @@ export interface CoList<Item extends Schema = Schema>
     ): this;
 }
 
-export class CoListMeta implements CoValueMetaBase{
+export class CoListMeta<Item extends Schema> implements CoValueMetaBase {
     owner: Account | Group;
     _raw: RawCoList;
     core: CoValueCore;
     loadedAs: ControlledAccount;
-    constructor(raw: RawCoList) {
+    refs: ValueRef<Item["_Value"]>[];
+    constructor(raw: RawCoList, refs: ValueRef<Item["_Value"]>[]) {
         const rawOwner = raw.core.getGroup();
         if (rawOwner instanceof RawAccount) {
             this.owner = SimpleAccount.fromRaw(rawOwner);
@@ -258,6 +270,10 @@ export class CoListMeta implements CoValueMetaBase{
         }
         this._raw = raw;
         this.core = raw.core;
+        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+            this._raw.core.node.account as RawControlledAccount
+        );
+        this.refs = refs;
     }
 }
 
@@ -309,6 +325,40 @@ export function isCoList(value: unknown): value is CoList {
 export function CoListOf<Item extends Schema>(
     ItemSchema: Item
 ): CoListSchema<Item> {
+    class RefsForItem {
+        raw: RawCoList<RawType<Item>>;
+        as: ControlledAccount;
+
+        constructor(raw: RawCoList<RawType<Item>>, as: ControlledAccount) {
+            this.raw = raw;
+            this.as = as;
+
+            if (!isCoValueSchema(ItemSchema)) {
+                return;
+            }
+            const length = raw.asArray().length;
+            for (let idx = 0; idx < length; idx++) {
+                Object.defineProperty(this, idx, {
+                    get(this: RefsForItem) {
+                        const id = this.raw.get(idx);
+
+                        if (!id) {
+                            return undefined;
+                        }
+
+                        const value = ValueRef(
+                            id as unknown as ID<CoList<Item>>,
+                            ItemSchema as unknown as CoValueSchema,
+                            this.as
+                        );
+
+                        return value;
+                    },
+                });
+            }
+        }
+    }
+
     return class CoListSchemaForItem extends Array<Item["_Value"]> {
         static _Type = "colist" as const;
         static _RawValue: RawCoList<RawType<Item>>;
@@ -317,7 +367,9 @@ export function CoListOf<Item extends Schema>(
 
         _raw!: RawCoList<RawType<Item>>;
         id!: ID<CoList<Item>>;
-        meta!: CoListMeta;
+        meta!: CoListMeta<Item>;
+        _refs!: ValueRef<Item["_Value"]>[];
+        [subscriptionScopeSym]?: SubscriptionScope;
 
         constructor(
             init: Item["_Value"][],
@@ -359,42 +411,120 @@ export function CoListOf<Item extends Schema>(
 
             this._raw = raw;
             this.id = raw.id as unknown as ID<CoList<Item>>;
-            this.meta = new CoListMeta(raw);
+            this._refs = new RefsForItem(
+                raw,
+                SimpleAccount.ControlledSchema.fromRaw(
+                    raw.core.node.account as RawControlledAccount
+                )
+            ) as unknown as ValueRef<Item["_Value"]>[];
+            this.meta = new CoListMeta(raw, this._refs);
 
-            if (isCoValueSchema(ItemSchema)) {
-                raw.asArray().forEach((item, idx) => {
-                    this.addCoValueAccessorForIndex(idx);
-                });
-            } else {
-                raw.asArray().forEach((item, idx) => {
-                    this.addPrimitiveAccessorForIndex(idx);
-                });
-            }
-        }
+            return new Proxy(this, {
+                get(target, prop, receiver) {
+                    if (typeof prop === "string") {
+                        if (!isNaN(+prop)) {
+                            const idx = +prop;
+                            if (
+                                idx >= 0 &&
+                                idx < target._raw.asArray().length
+                            ) {
+                                if (isCoValueSchema(ItemSchema)) {
+                                    const ref = target._refs[idx]!;
 
-        private addCoValueAccessorForIndex(idx: number) {
-            Object.defineProperty(this, idx, {
-                get: () => {
-                    throw new Error("TODO: implement CoValue get in CoList");
-                },
-                set(_value) {
-                    throw new Error("TODO: implement CoValue set in CoList");
-                },
-                enumerable: true,
-                configurable: true,
-            });
-        }
+                                    if (target[subscriptionScopeSym]) {
+                                        target[
+                                            subscriptionScopeSym
+                                        ].onRefAccessedOrSet(
+                                            target.id,
+                                            idx,
+                                            ref.id,
+                                            ItemSchema as unknown as CoValueSchema
+                                        );
+                                    }
 
-        private addPrimitiveAccessorForIndex(idx: number) {
-            Object.defineProperty(this, idx, {
-                get: () => {
-                    return this._raw.get(idx);
+                                    if (ref.loaded) {
+                                        ref.value[subscriptionScopeSym] =
+                                            target[subscriptionScopeSym];
+                                        return ref.value;
+                                    }
+                                } else {
+                                    return target._raw.get(idx);
+                                }
+                            }
+                        } else if (prop === "length") {
+                            return target._raw.asArray().length;
+                        } else if (prop === "constructor") {
+                            return CoListSchemaForItem;
+                        } else {
+                            const value = Reflect.get(target, prop, receiver);
+                            if (typeof value === "function") {
+                                value.bind(receiver);
+                            } else {
+                                return value;
+                            }
+                        }
+                    }
+
+                    return Reflect.get(target, prop, receiver);
                 },
-                set(_value) {
-                    throw new Error("TODO: implement primitive set in CoList");
+                set(target, prop, value, receiver) {
+                    if (typeof prop === "string") {
+                        if (!isNaN(+prop)) {
+                            const idx = +prop;
+                            if (
+                                idx >= 0 &&
+                                idx < target._raw.asArray().length
+                            ) {
+                                if (isCoValueSchema(ItemSchema)) {
+                                    target._raw.append(value?.id, idx);
+                                    target._raw.delete(idx);
+                                    target[
+                                        subscriptionScopeSym
+                                    ]?.onRefRemovedOrReplaced(target.id, idx);
+                                    if (value) {
+                                        target[
+                                            subscriptionScopeSym
+                                        ]?.onRefAccessedOrSet(
+                                            target.id,
+                                            idx,
+                                            value?.id,
+                                            ItemSchema
+                                        );
+                                    }
+                                } else {
+                                    target._raw.append(value, idx);
+                                    target._raw.delete(idx);
+                                }
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            return Reflect.set(target, prop, value, receiver);
+                        }
+                    }
+
+                    return Reflect.set(target, prop, value, receiver);
                 },
-                enumerable: true,
-                configurable: true,
+                has(target, prop) {
+                    if (typeof prop === "string") {
+                        if (!isNaN(+prop)) {
+                            const idx = +prop;
+                            if (
+                                idx >= 0 &&
+                                idx < target._raw.asArray().length
+                            ) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            return Reflect.has(target, prop);
+                        }
+                    }
+
+                    return Reflect.has(target, prop);
+                }
             });
         }
 
@@ -411,34 +541,121 @@ export function CoListOf<Item extends Schema>(
             id: ID<CoList<Item>>,
             { as }: { as: ControlledAccount }
         ): Promise<CoList<Item>> {
-            throw new Error("Not implemented");
+            return Effect.runPromise(
+                Effect.provideService(
+                    this.loadEf(id),
+                    ControlledAccountCtx,
+                    ControlledAccountCtx.of(as)
+                )
+            );
         }
 
         static loadEf(
-            id: ID<CoList<Item>>,
+            id: ID<CoList<Item>>
         ): Effect.Effect<
-            ControlledAccount,
+            ControlledAccountCtx,
             CoValueUnavailableError | UnknownCoValueLoadError,
             CoList<Item>
         > {
-            throw new Error("Not implemented");
+            return Effect.gen(function* ($) {
+                const as = yield* $(ControlledAccountCtx);
+                const raw = yield* $(
+                    Effect.tryPromise({
+                        try: () =>
+                            as._raw.core.node.load(
+                                id as unknown as CoID<RawCoList<RawType<Item>>>
+                            ),
+                        catch: (cause) =>
+                            new UnknownCoValueLoadError({ cause }),
+                    })
+                );
+
+                if (raw === "unavailable") {
+                    return yield* $(Effect.fail(new CoValueUnavailableError()));
+                }
+
+                return CoListSchemaForItem.fromRaw(raw);
+            });
+        }
+
+        static subscribeEf(
+            id: ID<CoList<Item>>
+        ): Stream.Stream<
+            ControlledAccountCtx,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            CoList<Item>
+        > {
+            throw new Error(
+                "TODO: implement somehow with Scope and Stream.asyncScoped"
+            );
+        }
+
+        static subscribe(
+            id: ID<CoList<Item>>,
+            { as }: { as: ControlledAccount },
+            onUpdate: (value: CoList<Item>) => void
+        ): () => void {
+            let unsub: () => void = () => {
+                stopImmediately = true;
+            };
+            let stopImmediately = false;
+            void this.load(id, { as }).then((value) => {
+                unsub = value.subscribe(onUpdate);
+                if (stopImmediately) {
+                    unsub();
+                }
+            });
+
+            return () => {
+                unsub();
+            };
+        }
+
+        subscribeEf(): Stream.Stream<never, never, CoList<Item>> {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const self = this;
+            return Stream.asyncScoped((emit) =>
+                Effect.gen(function* ($) {
+                    const unsub = self.subscribe((value) => {
+                        void emit(Effect.succeed(Chunk.of(value)));
+                    });
+
+                    yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
+                })
+            );
+        }
+
+        subscribe(listener: (newValue: CoList<Item>) => void): () => void {
+            const subscribable = CoListSchemaForItem.fromRaw(this._raw);
+            const scope = new SubscriptionScope(subscribable, (scope) => {
+                const updatedValue = CoListSchemaForItem.fromRaw(this._raw);
+                updatedValue[subscriptionScopeSym] = scope;
+                listener(updatedValue);
+            });
+
+            return () => {
+                scope.unsubscribeAll();
+            };
+        }
+
+        toJSON(): Item["_Value"][] {
+            const items = [];
+
+            for (let i = 0; i < this.length; i++) {
+                items.push(this[i]!);
+            }
+
+            return items;
         }
 
         push(...items: Item["_Value"][]): number {
-            let nextIdx = this.length;
             if (isCoValueSchema(ItemSchema)) {
                 for (const item of items) {
                     this._raw.append(item.id);
-                    const idx = nextIdx;
-                    this.addCoValueAccessorForIndex(idx);
-                    nextIdx++;
                 }
             } else {
                 for (const item of items) {
                     this._raw.append(item);
-                    const idx = nextIdx;
-                    this.addPrimitiveAccessorForIndex(idx);
-                    nextIdx++;
                 }
             }
             return this.length;
@@ -484,22 +701,15 @@ export function CoListOf<Item extends Schema>(
         }
 
         unshift(...items: Item["_Value"][]): number {
-            let nextIdx = this.length;
             if (isCoValueSchema(ItemSchema)) {
                 for (let i = items.length - 1; i >= 0; i--) {
                     const item = items[i]!;
                     this._raw.prepend(item.id);
-                    const idx = nextIdx;
-                    this.addCoValueAccessorForIndex(idx);
-                    nextIdx++;
                 }
             } else {
                 for (let i = items.length - 1; i >= 0; i--) {
                     const item = items[i]!;
                     this._raw.prepend(item);
-                    const idx = nextIdx;
-                    this.addPrimitiveAccessorForIndex(idx);
-                    nextIdx++;
                 }
             }
             return this.length;

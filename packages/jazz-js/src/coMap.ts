@@ -259,17 +259,15 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         subscribeEf(): Stream.Stream<never, never, CoMap<Shape>> {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
-            return Stream.asyncScoped((emit) => {
-                return Effect.scoped(
-                    Effect.gen(function* ($) {
-                        const unsub = self.subscribe((value) => {
-                            void emit(Effect.succeed(Chunk.of(value)));
-                        });
+            return Stream.asyncScoped((emit) =>
+                Effect.gen(function* ($) {
+                    const unsub = self.subscribe((value) => {
+                        void emit(Effect.succeed(Chunk.of(value)));
+                    });
 
-                        yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
-                    })
-                );
-            });
+                    yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
+                })
+            );
         }
 
         subscribe(listener: (newValue: CoMap<Shape>) => void): () => void {
@@ -331,7 +329,8 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                     }
 
                     if (ref.loaded) {
-                        ref.value[subscriptionScopeSym] = this[subscriptionScopeSym];
+                        ref.value[subscriptionScopeSym] =
+                            this[subscriptionScopeSym];
                         return ref.value;
                     }
                 },
@@ -413,4 +412,4 @@ type RefsShape<Shape extends BaseCoMapShape> = {
     [Key in keyof Shape]?: Shape[Key]["_Value"] extends CoValue
         ? ValueRef<Shape[Key]["_Value"]>
         : never;
-}
+};
