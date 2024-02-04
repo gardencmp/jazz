@@ -1,11 +1,11 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { AgentID, TransactionID } from "../ids.js";
-import { CoID, CoValue } from "../coValue.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AccountID } from "./account.js";
-import type { Group } from "./group.js";
+import type { RawGroup } from "./group.js";
 
 type MapOp<K extends string, V extends JsonValue | undefined> = {
     txID: TransactionID;
@@ -25,12 +25,12 @@ export type MapOpPayload<K extends string, V extends JsonValue | undefined> =
           key: K;
       };
 
-export class CoMapView<
+export class RawCoMapView<
     Shape extends { [key: string]: JsonValue | undefined } = {
         [key: string]: JsonValue | undefined;
     },
     Meta extends JsonObject | null = JsonObject | null
-> implements CoValue
+> implements RawCoValue
 {
     /** @category 6. Meta */
     id: CoID<this>;
@@ -88,7 +88,7 @@ export class CoMapView<
     }
 
     /** @category 6. Meta */
-    get group(): Group {
+    get group(): RawGroup {
         return this.core.getGroup();
     }
 
@@ -250,14 +250,14 @@ export class CoMapView<
 }
 
 /** A collaborative map with precise shape `Shape` and optional static metadata `Meta` */
-export class CoMap<
+export class RawCoMap<
         Shape extends { [key: string]: JsonValue | undefined } = {
             [key: string]: JsonValue | undefined;
         },
         Meta extends JsonObject | null = JsonObject | null
     >
-    extends CoMapView<Shape, Meta>
-    implements CoValue
+    extends RawCoMapView<Shape, Meta>
+    implements RawCoValue
 {
     /** Set a new value for the given key.
      *
@@ -303,7 +303,7 @@ export class CoMap<
         } else {
             const [kv, privacy = "private"] = args as [
                 {
-                    [K in keyof Shape & string]: Shape[K] extends CoValue
+                    [K in keyof Shape & string]: Shape[K] extends RawCoValue
                         ? Shape[K] | CoID<Shape[K]>
                         : Shape[K];
                 },
@@ -324,7 +324,7 @@ export class CoMap<
             }
         }
 
-        const after = new CoMap(this.core) as this;
+        const after = new RawCoMap(this.core) as this;
 
         this.ops = after.ops;
     }
@@ -351,7 +351,7 @@ export class CoMap<
             privacy
         );
 
-        const after = new CoMap(this.core) as this;
+        const after = new RawCoMap(this.core) as this;
 
         this.ops = after.ops;
     }

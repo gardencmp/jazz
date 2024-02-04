@@ -1,8 +1,8 @@
 import { CoID } from "../coValue.js";
-import { CoMap } from "./coMap.js";
-import { CoList } from "./coList.js";
+import { RawCoMap } from "./coMap.js";
+import { RawCoList } from "./coList.js";
 import { JsonObject } from "../jsonValue.js";
-import { BinaryCoStream, CoStream } from "./coStream.js";
+import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
 import {
     Encrypted,
     KeyID,
@@ -19,7 +19,7 @@ import {
 } from "../crypto.js";
 import { AgentID, isAgentID } from "../ids.js";
 import {
-    Account,
+    RawAccount,
     AccountID,
     ControlledAccountOrAgent,
 } from "./account.js";
@@ -30,8 +30,8 @@ export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
 
 export type GroupShape = {
-    profile: CoID<CoMap> | null;
-    root: CoID<CoMap> | null;
+    profile: CoID<RawCoMap> | null;
+    root: CoID<RawCoMap> | null;
     [key: AccountID | AgentID]: Role;
     [EVERYONE]?: Role;
     readKey?: KeyID;
@@ -64,9 +64,9 @@ export type GroupShape = {
  *  const localNode.createGroup();
  *  ```
  * */
-export class Group<
+export class RawGroup<
     Meta extends JsonObject | null = JsonObject | null
-> extends CoMap<GroupShape, Meta> {
+> extends RawCoMap<GroupShape, Meta> {
     /**
      * Returns the current role of a given account.
      *
@@ -97,7 +97,7 @@ export class Group<
      * @category 2. Role changing
      */
     addMember(
-        account: Account | ControlledAccountOrAgent | Everyone,
+        account: RawAccount | ControlledAccountOrAgent | Everyone,
         role: Role
     ) {
         this.addMemberInternal(account, role);
@@ -105,7 +105,7 @@ export class Group<
 
     /** @internal */
     addMemberInternal(
-        account: Account | ControlledAccountOrAgent | AgentID | Everyone,
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
         role: Role
     ) {
             const currentReadKey = this.core.getCurrentReadKey();
@@ -228,13 +228,13 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    removeMember(account: Account | ControlledAccountOrAgent | Everyone) {
+    removeMember(account: RawAccount | ControlledAccountOrAgent | Everyone) {
         this.removeMemberInternal(account);
     }
 
     /** @internal */
     removeMemberInternal(
-        account: Account | ControlledAccountOrAgent | AgentID | Everyone
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone
     ) {
         const memberKey = typeof account === "string" ? account : account.id;
          this.set(memberKey, "revoked", "trusting");
@@ -265,7 +265,7 @@ export class Group<
      *
      * @category 3. Value creation
      */
-    createMap<M extends CoMap>(
+    createMap<M extends RawCoMap>(
         init?: M["_shape"],
         meta?: M["headerMeta"],
         initPrivacy: "trusting" | "private" = "private"
@@ -297,7 +297,7 @@ export class Group<
      *
      * @category 3. Value creation
      */
-    createList<L extends CoList>(
+    createList<L extends RawCoList>(
         init?: L["_item"][],
         meta?: L["headerMeta"],
         initPrivacy: "trusting" | "private" = "private"
@@ -324,7 +324,7 @@ export class Group<
     }
 
     /** @category 3. Value creation */
-    createStream<C extends CoStream>(meta?: C["headerMeta"]): C {
+    createStream<C extends RawCoStream>(meta?: C["headerMeta"]): C {
         return this.core.node
             .createCoValue({
                 type: "costream",
@@ -339,7 +339,7 @@ export class Group<
     }
 
     /** @category 3. Value creation */
-    createBinaryStream<C extends BinaryCoStream>(
+    createBinaryStream<C extends RawBinaryCoStream>(
         meta: C["headerMeta"] = { type: "binary" }
     ): C {
         return this.core.node

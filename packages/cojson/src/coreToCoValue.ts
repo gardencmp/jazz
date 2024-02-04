@@ -1,10 +1,10 @@
 import type { CoValueCore } from "./coValueCore.js";
-import { Account } from "./coValues/account.js";
-import { Group } from "./coValues/group.js";
-import { CoMap } from "./coValues/coMap.js";
-import { CoList } from "./coValues/coList.js";
-import { CoStream } from "./coValues/coStream.js";
-import { BinaryCoStream } from "./coValues/coStream.js";
+import { RawAccount } from "./coValues/account.js";
+import { RawGroup } from "./coValues/group.js";
+import { RawCoMap } from "./coValues/coMap.js";
+import { RawCoList } from "./coValues/coList.js";
+import { RawCoStream } from "./coValues/coStream.js";
+import { RawBinaryCoStream } from "./coValues/coStream.js";
 
 export function coreToCoValue(
     core: CoValueCore,
@@ -16,20 +16,20 @@ export function coreToCoValue(
                 core.header.meta?.type === "account" &&
                 !options?.ignorePrivateTransactions
             ) {
-                return new Account(core);
+                return new RawAccount(core);
             } else {
-                return new Group(core, options);
+                return new RawGroup(core, options);
             }
         } else {
-            return new CoMap(core);
+            return new RawCoMap(core);
         }
     } else if (core.header.type === "colist") {
-        return new CoList(core);
+        return new RawCoList(core);
     } else if (core.header.type === "costream") {
         if (core.header.meta && core.header.meta.type === "binary") {
-            return new BinaryCoStream(core);
+            return new RawBinaryCoStream(core);
         } else {
-            return new CoStream(core);
+            return new RawCoStream(core);
         }
     } else {
         throw new Error(`Unknown coValue type ${core.header.type}`);

@@ -16,25 +16,25 @@ import {
 } from "./coValueCore.js";
 import {
     InviteSecret,
-    Group,
+    RawGroup,
     secretSeedFromInviteSecret,
 } from "./coValues/group.js";
 import { Peer, PeerID, SyncManager } from "./sync.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { CoID } from "./coValue.js";
 import {
-    Account,
+    RawAccount,
     AccountMeta,
     accountHeaderForInitialAgentSecret,
     ControlledAccountOrAgent,
-    ControlledAccount,
+    RawControlledAccount,
     ControlledAgent,
     AccountID,
     Profile,
-    AccountMigration,
+    RawAccountMigration,
 } from "./coValues/account.js";
-import { CoMap } from "./coValues/coMap.js";
-import { CoValue } from "./index.js";
+import { RawCoMap } from "./coValues/coMap.js";
+import { RawCoValue } from "./index.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
@@ -78,7 +78,7 @@ export class LocalNode {
     }: {
         name: string;
         peersToLoadFrom?: Peer[];
-        migration?: AccountMigration<Meta>;
+        migration?: RawAccountMigration<Meta>;
         initialAgentSecret?: AgentSecret;
     }): Promise<{
         node: LocalNode;
@@ -100,7 +100,7 @@ export class LocalNode {
         );
 
         const accountOnNodeWithAccount =
-            nodeWithAccount.account as ControlledAccount<Meta>;
+            nodeWithAccount.account as RawControlledAccount<Meta>;
 
         const profile = nodeWithAccount.expectProfileLoaded(
             accountOnNodeWithAccount.id,
@@ -117,7 +117,7 @@ export class LocalNode {
             await migration(accountOnNodeWithAccount, profile, nodeWithAccount);
         }
 
-        nodeWithAccount.account = new ControlledAccount(
+        nodeWithAccount.account = new RawControlledAccount(
             accountOnNodeWithAccount.core,
             accountOnNodeWithAccount.agentSecret
         );
@@ -159,7 +159,7 @@ export class LocalNode {
         accountSecret: AgentSecret;
         sessionID: SessionID;
         peersToLoadFrom: Peer[];
-        migration?: AccountMigration<Meta>;
+        migration?: RawAccountMigration<Meta>;
     }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
             new ControlledAgent(accountSecret),
@@ -178,7 +178,7 @@ export class LocalNode {
             throw new Error("Account unavailable from all peers");
         }
 
-        const controlledAccount = new ControlledAccount(
+        const controlledAccount = new RawControlledAccount(
             account.core,
             accountSecret
         );
@@ -209,11 +209,11 @@ export class LocalNode {
 
         if (migration) {
             await migration(
-                controlledAccount as ControlledAccount<Meta>,
+                controlledAccount as RawControlledAccount<Meta>,
                 profile,
                 node
             );
-            node.account = new ControlledAccount(
+            node.account = new RawControlledAccount(
                 controlledAccount.core,
                 controlledAccount.agentSecret
             );
@@ -277,7 +277,7 @@ export class LocalNode {
      *
      * @category 3. Low-level
      */
-    async load<T extends CoValue>(
+    async load<T extends RawCoValue>(
         id: CoID<T>,
         onProgress?: (progress: number) => void
     ): Promise<T | "unavailable"> {
@@ -290,7 +290,7 @@ export class LocalNode {
         return core.getCurrentContent() as T;
     }
 
-    getLoaded<T extends CoValue>(id: CoID<T>): T | undefined {
+    getLoaded<T extends RawCoValue>(id: CoID<T>): T | undefined {
         const entry = this.coValues[id];
         if (!entry) {
             return undefined;
@@ -302,7 +302,7 @@ export class LocalNode {
     }
 
     /** @category 3. Low-level */
-    subscribe<T extends CoValue>(
+    subscribe<T extends RawCoValue>(
         id: CoID<T>,
         callback: (update: T | "unavailable") => void
     ): () => void {
@@ -334,7 +334,7 @@ export class LocalNode {
     }
 
     /** @deprecated Use Account.acceptInvite instead */
-    async acceptInvite<T extends CoValue>(
+    async acceptInvite<T extends RawCoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
     ): Promise<void> {
@@ -348,7 +348,7 @@ export class LocalNode {
 
         if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
-                groupOrOwnedValue.core.header.ruleset.group as CoID<Group>,
+                groupOrOwnedValue.core.header.ruleset.group as CoID<RawGroup>,
                 inviteSecret
             );
         } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
@@ -460,7 +460,7 @@ export class LocalNode {
     createAccount(
         name: string,
         agentSecret = newRandomAgentSecret()
-    ): ControlledAccount {
+    ): RawControlledAccount {
         const accountAgentID = getAgentID(agentSecret);
         let account = expectGroup(
             this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
@@ -510,7 +510,7 @@ export class LocalNode {
         profileOnThisNode._sessionLogs = new Map(profile.core.sessionLogs);
         profileOnThisNode._cachedContent = undefined;
 
-        return new ControlledAccount(accountOnThisNode, agentSecret);
+        return new RawControlledAccount(accountOnThisNode, agentSecret);
     }
 
     /** @internal */
@@ -538,7 +538,7 @@ export class LocalNode {
             );
         }
 
-        return new Account(coValue).currentAgentID();
+        return new RawAccount(coValue).currentAgentID();
     }
 
     async resolveAccountAgentAsync(
@@ -573,13 +573,13 @@ export class LocalNode {
             );
         }
 
-        return new Account(coValue).currentAgentID();
+        return new RawAccount(coValue).currentAgentID();
     }
 
     /**
      * @deprecated use Account.createGroup() instead
      */
-    createGroup(): Group {
+    createGroup(): RawGroup {
         const groupCoValue = this.createCoValue({
             type: "comap",
             ruleset: { type: "group", initialAdmin: this.account.id },
@@ -654,9 +654,9 @@ export class LocalNode {
             }
         }
 
-        if (account instanceof ControlledAccount) {
+        if (account instanceof RawControlledAccount) {
             // To make sure that when we edit the account, we're modifying the correct sessions
-            const accountInNode = new ControlledAccount(
+            const accountInNode = new RawControlledAccount(
                 newNode.expectCoValueLoaded(account.id),
                 account.agentSecret
             );

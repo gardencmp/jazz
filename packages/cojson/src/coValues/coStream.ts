@@ -1,10 +1,10 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoValue, CoID } from "../coValue.js";
+import { RawCoValue, CoID } from "../coValue.js";
 import { isAccountID } from "../typeUtils/isAccountID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
-import { Group } from "./group.js";
+import { RawGroup } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
 import { AccountID } from "./account.js";
@@ -41,10 +41,10 @@ export type CoStreamItem<Item extends JsonValue> = {
     madeAt: number;
 };
 
-export class CoStreamView<
+export class RawCoStreamView<
     Item extends JsonValue = JsonValue,
     Meta extends JsonObject | null = JsonObject | null
-> implements CoValue
+> implements RawCoValue
 {
     id: CoID<this>;
     type = "costream" as const;
@@ -65,7 +65,7 @@ export class CoStreamView<
         return this.core.header.meta as Meta;
     }
 
-    get group(): Group {
+    get group(): RawGroup {
         return this.core.getGroup();
     }
 
@@ -243,12 +243,12 @@ export class CoStreamView<
     }
 }
 
-export class CoStream<
+export class RawCoStream<
         Item extends JsonValue = JsonValue,
         Meta extends JsonObject | null = JsonObject | null
     >
-    extends CoStreamView<Item, Meta>
-    implements CoValue
+    extends RawCoStreamView<Item, Meta>
+    implements RawCoValue
 {
     push(item: Item, privacy: "private" | "trusting" = "private"): void {
         this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
@@ -258,11 +258,11 @@ export class CoStream<
 
 const binary_U_prefixLength = 8; // "binary_U".length;
 
-export class BinaryCoStreamView<
+export class RawBinaryCoStreamView<
         Meta extends BinaryCoStreamMeta = { type: "binary" }
     >
-    extends CoStreamView<BinaryStreamItem, Meta>
-    implements CoValue
+    extends RawCoStreamView<BinaryStreamItem, Meta>
+    implements RawCoValue
 {
     getBinaryChunks(
         allowUnfinished?: boolean
@@ -330,11 +330,11 @@ export class BinaryCoStreamView<
     }
 }
 
-export class BinaryCoStream<
+export class RawBinaryCoStream<
         Meta extends BinaryCoStreamMeta = { type: "binary" }
     >
-    extends BinaryCoStreamView<Meta>
-    implements CoValue
+    extends RawBinaryCoStreamView<Meta>
+    implements RawCoValue
 {
     /** @internal */
     push(

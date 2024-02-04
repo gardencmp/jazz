@@ -1,4 +1,4 @@
-import { AnyCoValue, CoValue } from "./coValue.js";
+import { AnyRawCoValue, RawCoValue } from "./coValue.js";
 import {
     Encrypted,
     Hash,
@@ -23,7 +23,7 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Group } from "./coValues/group.js";
+import { RawGroup } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
@@ -37,7 +37,7 @@ import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromS
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
 export type CoValueHeader = {
-    type: AnyCoValue["type"];
+    type: AnyRawCoValue["type"];
     ruleset: RulesetDef;
     meta: JsonObject | null;
     createdAt: `2${string}` | null;
@@ -95,8 +95,8 @@ export class CoValueCore {
     node: LocalNode;
     header: CoValueHeader;
     _sessionLogs: Map<SessionID, SessionLog>;
-    _cachedContent?: CoValue;
-    listeners: Set<(content?: CoValue) => void> = new Set();
+    _cachedContent?: RawCoValue;
+    listeners: Set<(content?: RawCoValue) => void> = new Set();
     _decryptionCache: {
         [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined;
     } = {};
@@ -409,7 +409,7 @@ export class CoValueCore {
         }
     }
 
-    subscribe(listener: (content?: CoValue) => void): () => void {
+    subscribe(listener: (content?: RawCoValue) => void): () => void {
         this.listeners.add(listener);
         listener(this.getCurrentContent());
 
@@ -533,7 +533,7 @@ export class CoValueCore {
         return success;
     }
 
-    getCurrentContent(options?: { ignorePrivateTransactions: true }): CoValue {
+    getCurrentContent(options?: { ignorePrivateTransactions: true }): RawCoValue {
         if (!options?.ignorePrivateTransactions && this._cachedContent) {
             return this._cachedContent;
         }
@@ -741,7 +741,7 @@ export class CoValueCore {
         }
     }
 
-    getGroup(): Group {
+    getGroup(): RawGroup {
         if (this.header.ruleset.type !== "ownedByGroup") {
             throw new Error("Only values owned by groups have groups");
         }

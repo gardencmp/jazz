@@ -1,4 +1,4 @@
-import { CoValueCore, CojsonInternalTypes, CoValue as RawCoValue } from "cojson";
+import { CoValueCore, CojsonInternalTypes, RawCoValue as RawCoValue } from "cojson";
 import { CoList, CoListSchema } from "./coList.js";
 import { CoMap, CoMapSchema } from "./coMap.js";
 import { Account, AccountSchema, ControlledAccount } from "./account.js";
@@ -47,8 +47,13 @@ export {
 export {
     CoStream,
     CoStreamSchema,
+    CoStreamOf,
+    isCoStream,
+    isCoStreamSchema,
     BinaryCoStream,
     BinaryCoStreamSchema,
+    isBinaryCoStream,
+    isBinaryCoStreamSchema,
 } from "./coStream.js";
 
 export type CoValueSchema =

@@ -1,9 +1,9 @@
 import {
     CoID,
-    CoValue as RawCoValue,
-    CoMap as RawCoMap,
-    Account as RawAccount,
-    ControlledAccount as RawControlledAccount,
+    RawCoValue as RawCoValue,
+    RawCoMap as RawCoMap,
+    RawAccount as RawAccount,
+    RawControlledAccount as RawControlledAccount,
 } from "cojson";
 import {
     ID,

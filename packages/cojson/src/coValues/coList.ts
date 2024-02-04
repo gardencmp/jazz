@@ -1,11 +1,11 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoID, CoValue } from "../coValue.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { AccountID } from "./account.js";
-import { Group } from "./group.js";
+import { RawGroup } from "./group.js";
 
 type OpID = TransactionID & { changeIdx: number };
 
@@ -41,10 +41,10 @@ type DeletionEntry = {
     deletionID: OpID;
 } & DeletionOpPayload;
 
-export class CoListView<
+export class RawCoListView<
     Item extends JsonValue = JsonValue,
     Meta extends JsonObject | null = null
-> implements CoValue
+> implements RawCoValue
 {
     /** @category 6. Meta */
     id: CoID<this>;
@@ -209,7 +209,7 @@ export class CoListView<
     }
 
     /** @category 6. Meta */
-    get group(): Group {
+    get group(): RawGroup {
         return this.core.getGroup();
     }
 
@@ -393,12 +393,12 @@ export class CoListView<
     }
 }
 
-export class CoList<
+export class RawCoList<
         Item extends JsonValue = JsonValue,
         Meta extends JsonObject | null = JsonObject | null
     >
-    extends CoListView<Item, Meta>
-    implements CoValue
+    extends RawCoListView<Item, Meta>
+    implements RawCoValue
 {
     /** Appends `item` after the item currently at index `after`.
      *
@@ -444,7 +444,7 @@ export class CoList<
             privacy
         );
 
-        const listAfter = new CoList(this.core) as this;
+        const listAfter = new RawCoList(this.core) as this;
 
         this.afterStart = listAfter.afterStart;
         this.beforeEnd = listAfter.beforeEnd;
@@ -497,7 +497,7 @@ export class CoList<
             privacy
         );
 
-        const listAfter = new CoList(this.core) as this;
+        const listAfter = new RawCoList(this.core) as this;
 
         this.afterStart = listAfter.afterStart;
         this.beforeEnd = listAfter.beforeEnd;
@@ -530,7 +530,7 @@ export class CoList<
             privacy
         );
 
-        const listAfter = new CoList(this.core) as this;
+        const listAfter = new RawCoList(this.core) as this;
 
         this.afterStart = listAfter.afterStart;
         this.beforeEnd = listAfter.beforeEnd;

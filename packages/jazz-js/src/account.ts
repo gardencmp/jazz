@@ -2,12 +2,12 @@ import {
     AgentSecret,
     Peer,
     SessionID,
-    Account as RawAccount,
-    ControlledAccount as RawControlledAccount,
+    RawAccount as RawAccount,
+    RawControlledAccount as RawControlledAccount,
     LocalNode,
     CoID,
     InviteSecret,
-    CoValue as RawCoValue,
+    RawCoValue as RawCoValue,
 } from "cojson";
 import {
     AccountMigration,

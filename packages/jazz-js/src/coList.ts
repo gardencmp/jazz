@@ -1,8 +1,8 @@
 import {
-    CoList as RawCoList,
-    Account as RawAccount,
+    RawCoList as RawCoList,
+    RawAccount as RawAccount,
     CoValueCore,
-    ControlledAccount as RawControlledAccount,
+    RawControlledAccount as RawControlledAccount,
     CoID,
 } from "cojson";
 import {

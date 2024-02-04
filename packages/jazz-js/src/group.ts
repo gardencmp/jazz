@@ -1,7 +1,7 @@
 import {
     CoValueCore,
     LocalNode,
-    Group as RawGroup,
+    RawGroup as RawGroup,
     Role,
 } from "cojson";
 import {
