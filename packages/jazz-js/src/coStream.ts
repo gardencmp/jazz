@@ -7,6 +7,8 @@ import {
     CojsonInternalTypes,
     AccountID,
     CoID,
+    RawControlledAccount,
+    AgentID,
 } from "cojson";
 import { ControlledAccount } from "./account.js";
 import {
@@ -28,10 +30,11 @@ import { ValueRef } from "./valueRef.js";
 import { SubscriptionScope } from "./subscriptionScope.js";
 import { isCoValueSchema } from "./guards.js";
 import { ControlledAccountCtx } from "./services.js";
-import { CoStreamItem } from "cojson/src/coValues/coStream.js";
 
 export interface CoStreamEntry<Item extends Schema = Schema> {
-    value: Item["_Value"];
+    value: Item["_Value"] extends CoValue
+        ? Item["_Value"] | undefined
+        : Item["_Value"];
     ref: Item["_Value"] extends CoValue ? ValueRef<Item["_Value"]> : undefined;
     tx: CojsonInternalTypes.TransactionID;
     at: Date;
@@ -68,6 +71,9 @@ class CoStreamMeta implements CoValueMetaBase {
             this.owner = Group.fromRaw(rawOwner);
         }
         this.core = raw.core;
+        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+            raw.core.node.account as RawControlledAccount
+        );
     }
 }
 
@@ -78,12 +84,8 @@ export interface CoStreamSchema<Item extends Schema = Schema>
     _Item: Item;
 
     new (options: { owner: Account | Group }): CoStream<Item>;
-    new (options: { fromRaw: RawType<CoStreamSchema<Item>> }): CoStream<Item>;
 
-    fromRaw(
-        raw: RawCoStream<RawType<Item>>,
-        onGetRef?: (id: ID<CoValue>) => void
-    ): CoStream<Item>;
+    fromRaw(raw: RawCoStream<RawType<Item>>): CoStream<Item>;
 
     load(
         id: ID<CoStream<Item>>,
@@ -112,29 +114,102 @@ export function isCoStream(value: unknown): value is CoStream {
 export function CoStreamOf<Item extends Schema>(
     ItemSchema: Item
 ): CoStreamSchema<Item> {
-    class CoStreamStreamImpl implements CoStreamStream<Item> {
-        constructor() {
+    class CoStreamSessionStream implements CoStreamStream<Item> {
+        parent: CoStreamSchemaForItem;
+        sessionID: SessionID;
+        loadedAs: ControlledAccount;
 
+        constructor(parent: CoStreamSchemaForItem, sessionID: SessionID) {
+            this.parent = parent;
+            this.sessionID = sessionID;
+            this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+                parent._raw.core.node.account as RawControlledAccount
+            );
         }
 
-        get last(): CoStreamEntry<Item> {
-            const rawItem = raw.lastItemIn(sessionID);
+        get last(): CoStreamEntry<Item> | undefined {
+            const rawItem = this.parent._raw.lastItemIn(this.sessionID);
 
             if (!rawItem) return;
 
-                    let value;
-                    let ref;
-
-                    if (isCoValueSchema(ItemSchema)) {
-                        ref = new ValueRef(rawItem.value, ItemSchema, as: );
-                        value = ItemSchema.fromRaw(rawItem.value);
-                    } else {
-                        value = rawItem.value;
-                    }
+            return itemFor(this.parent, rawItem, this.loadedAs);
         }
 
         get all(): CoStreamEntry<Item>[] {
+            return [...this.parent._raw.itemsIn(this.sessionID)].map(
+                (rawItem) => itemFor(this.parent, rawItem, this.loadedAs)
+            );
+        }
+    }
 
+    class CoStreamAccountStream implements CoStreamStream<Item> {
+        parent: CoStreamSchemaForItem;
+        accountID: AccountID | AgentID;
+        loadedAs: ControlledAccount;
+
+        constructor(parent: CoStreamSchemaForItem, accountID: AccountID) {
+            this.parent = parent;
+            this.accountID = accountID;
+            this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+                parent._raw.core.node.account as RawControlledAccount
+            );
+        }
+
+        get last(): CoStreamEntry<Item> | undefined {
+            const rawItem = this.parent._raw.lastItemBy(this.accountID);
+
+            if (!rawItem) return;
+
+            return itemFor(this.parent, rawItem, this.loadedAs);
+        }
+
+        get all(): CoStreamEntry<Item>[] {
+            return [...this.parent._raw.itemsBy(this.accountID)].map(
+                (rawItem) => itemFor(this.parent, rawItem, this.loadedAs)
+            );
+        }
+    }
+
+    function itemFor(
+        inStream: CoStreamSchemaForItem,
+        rawItem: {
+            by: AccountID | AgentID;
+            tx: CojsonInternalTypes.TransactionID;
+            at: Date;
+            value: RawType<Item>;
+        },
+        as: ControlledAccount
+    ): CoStreamEntry<Item> {
+        if (isCoValueSchema(ItemSchema)) {
+            const ref = ValueRef(rawItem.value, ItemSchema, as);
+            const value = ref.value as Item["_Value"] | undefined;
+            return {
+                get value() {
+                    if (inStream[subscriptionScopeSym]) {
+                        inStream[subscriptionScopeSym]?.onRefAccessedOrSet(
+                            inStream.id,
+                            rawItem.tx.sessionID + "_" + rawItem.tx.txIndex,
+                            ref.id,
+                            ItemSchema
+                        );
+                    }
+                    return value;
+                },
+                ref: ref as Item["_Value"] extends CoValue
+                    ? ValueRef<Item["_Value"]>
+                    : undefined,
+                tx: rawItem.tx,
+                at: rawItem.at,
+            };
+        } else {
+            return {
+                value: rawItem.value,
+                ref: undefined as Item["_Value"] extends CoValue
+                    ? ValueRef<Item["_Value"]>
+                    : undefined,
+                tx: rawItem.tx,
+                at: rawItem.at,
+            };
         }
     }
 
@@ -319,11 +394,19 @@ export function CoStreamOf<Item extends Schema>(
         }
 
         get bySession(): [SessionID, CoStreamStream<Item>][] {
-            return this._raw.sessions().map((sessionID) => [sessionID, new CoStreamStreamImpl()])
+            return this._raw
+                .sessions()
+                .map((sessionID) => [
+                    sessionID,
+                    new CoStreamSessionStream(this, sessionID),
+                ]);
         }
 
         get byAccount(): [AccountID, CoStreamStream<Item>][] {
-            return [...this._raw.accounts()].map((accountID) => [accountID, new CoStreamStreamImpl()])
+            return [...this._raw.accounts()].map((accountID) => [
+                accountID,
+                new CoStreamAccountStream(this, accountID),
+            ]);
         }
     }
 
@@ -369,10 +452,7 @@ export interface BinaryCoStreamSchema<Item extends Schema = Schema>
 
     new (options: { owner: Account | Group }): BinaryCoStream;
 
-    fromRaw(
-        raw: RawBinaryCoStream,
-        onGetRef?: (id: ID<CoValue>) => void
-    ): BinaryCoStream;
+    fromRaw(raw: RawBinaryCoStream): BinaryCoStream;
 
     load(
         id: ID<BinaryCoStream>,
@@ -410,10 +490,7 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
         this.meta = new BinaryCoStreamMeta(raw);
     }
 
-    static fromRaw(
-        raw: RawBinaryCoStream,
-        onGetRef?: (id: ID<CoValue>) => void
-    ): BinaryCoStream {
+    static fromRaw(raw: RawBinaryCoStream): BinaryCoStream {
         throw new Error("Method not implemented.");
     }
 

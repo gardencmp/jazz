@@ -79,7 +79,7 @@ export interface CoValueSchemaBase<
     /** @category Type Hints */
     _RawValue: RawValue;
 
-    fromRaw(raw: RawCoValue, onGetRef?: (id: ID<CoValue>) => void): Value;
+    fromRaw(raw: RawCoValue): Value;
 
     load(
         id: ID<Value>,

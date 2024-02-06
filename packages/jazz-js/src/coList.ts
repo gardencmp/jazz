@@ -297,7 +297,6 @@ export interface CoListSchema<Item extends Schema = Schema>
     /** @hidden */
     fromRaw(
         raw: RawCoList<RawType<Item>>,
-        onGetRef?: (id: ID<CoValue>) => void
     ): CoList<Item>;
 }
 
@@ -530,7 +529,6 @@ export function CoListOf<Item extends Schema>(
 
         static fromRaw(
             raw: RawCoList<RawType<Item>>,
-            _onGetRef?: (id: ID<CoValue>) => void
         ): CoList<Item> {
             return new CoListSchemaForItem(undefined, {
                 fromRaw: raw,

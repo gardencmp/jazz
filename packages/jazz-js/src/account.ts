@@ -75,7 +75,6 @@ export interface AccountSchema<
     /** @hidden */
     fromRaw(
         raw: RawAccount | RawControlledAccount,
-        onGetRef?: (id: ID<CoValue>) => void
     ): Account<ProfileS, RootS>;
 
     ControlledSchema: ControlledAccountSchema<ProfileS, RootS>;
@@ -197,7 +196,6 @@ export function AccountWith<
 
         static fromRaw(
             raw: RawControlledAccount,
-            _onGetRef?: (id: ID<CoValue>) => void
         ): ControlledAccount<ProfileS, RootS> {
             return new ControlledAccountSchemaForProfileAndRoot({
                 fromRaw: raw,
@@ -249,7 +247,6 @@ export function AccountWith<
 
         static fromRaw(
             raw: RawAccount | RawControlledAccount,
-            _onGetRef?: (id: ID<CoValue>) => void
         ): Account<ProfileS, RootS> {
             return new NonControlledAccountSchemaForProfileAndRoot({
                 fromRaw: raw,

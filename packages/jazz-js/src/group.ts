@@ -131,7 +131,6 @@ export function GroupWith<
 
         static fromRaw(
             raw: RawGroup,
-            _onGetRef?: (id: ID<CoValue>) => void
         ): Group<P, R> {
             return new this({ fromRaw: raw });
         }
