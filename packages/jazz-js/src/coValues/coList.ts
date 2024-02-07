@@ -16,16 +16,16 @@ import {
     CoValueMetaBase,
     CoValueSchema,
     subscriptionScopeSym,
-} from "./index.js";
-import { Schema } from "./schema.js";
+} from "../index.js";
+import { Schema } from "../schema.js";
 import { Group } from "./group.js";
 import { Account } from "./account.js";
-import { isCoValueSchema } from "./guards.js";
+import { isCoValueSchema } from "../guards.js";
 import { Chunk, Effect, Stream } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
-import { ValueRef } from "./valueRef.js";
-import { ControlledAccountCtx } from "./services.js";
-import { SubscriptionScope } from "./subscriptionScope.js";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
+import { ValueRef } from "../valueRef.js";
+import { ControlledAccountCtx } from "../services.js";
+import { SubscriptionScope } from "../subscriptionScope.js";
 
 /** A collaborative list of values that behaves mostly like an `Array`.
  *

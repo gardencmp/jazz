@@ -1,14 +1,16 @@
 import { CoValueCore, CojsonInternalTypes, RawCoValue as RawCoValue } from "cojson";
-import { CoList, CoListSchema } from "./coList.js";
-import { CoMap, CoMapSchema } from "./coMap.js";
-import { Account, AccountSchema, ControlledAccount } from "./account.js";
-import { Group, GroupSchema } from "./group.js";
+import { CoList, CoListSchema } from "./coValues/coList.js";
+import { CoMap, CoMapSchema } from "./coValues/coMap.js";
+import { Account, AccountSchema, ControlledAccount } from "./coValues/account.js";
+import { Group, GroupSchema } from "./coValues/group.js";
 import {
-    BinaryCoStream,
-    BinaryCoStreamSchema,
     CoStream,
     CoStreamSchema,
-} from "./coStream.js";
+} from "./coValues/coStream.js";
+import {
+    BinaryCoStream,
+    BinaryCoStreamSchema
+} from "./coValues/binaryCoStream.js";
 import { Schema } from "./schema.js";
 import { Effect, Stream } from "effect";
 import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
@@ -28,22 +30,22 @@ export {
     isAccount,
     isAccountSchema,
     SimpleAccount,
-} from "./account.js";
-export { Group } from "./group.js";
+} from "./coValues/account.js";
+export { Group } from "./coValues/group.js";
 export {
     CoMap,
     CoMapSchema,
     CoMapOf,
     isCoMap,
     isCoMapSchema,
-} from "./coMap.js";
+} from "./coValues/coMap.js";
 export {
     CoList,
     CoListSchema,
     CoListOf,
     isCoList,
     isCoListSchema,
-} from "./coList.js";
+} from "./coValues/coList.js";
 export {
     CoStream,
     CoStreamSchema,
@@ -54,7 +56,7 @@ export {
     BinaryCoStreamSchema,
     isBinaryCoStream,
     isBinaryCoStreamSchema,
-} from "./coStream.js";
+} from "./coValues/coStream.js";
 
 export type CoValueSchema =
     | CoListSchema

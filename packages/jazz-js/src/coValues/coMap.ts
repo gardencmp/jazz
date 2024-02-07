@@ -15,16 +15,16 @@ import {
     SimpleAccount,
     CoValueMetaBase,
     subscriptionScopeSym,
-} from "./index.js";
-import { isCoValueSchema } from "./guards.js";
-import { Schema } from "./schema.js";
+} from "../index.js";
+import { isCoValueSchema } from "../guards.js";
+import { Schema } from "../schema.js";
 import { Group } from "./group.js";
 import { Account, ControlledAccount } from "./account.js";
 import { Chunk, Effect, Scope, Stream, pipe } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
-import { ControlledAccountCtx } from "./services.js";
-import { ValueRef } from "./valueRef.js";
-import { SubscriptionScope } from "./subscriptionScope.js";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
+import { ControlledAccountCtx } from "../services.js";
+import { ValueRef } from "../valueRef.js";
+import { SubscriptionScope } from "../subscriptionScope.js";
 
 // type BaseCoMapShape = { [key: string]: Schema };
 type BaseCoMapShape = Record<string, Schema>;

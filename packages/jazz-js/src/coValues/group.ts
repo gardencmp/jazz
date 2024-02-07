@@ -10,13 +10,13 @@ import {
     CoValueMetaBase,
     CoValueSchemaBase,
     ID,
-} from "./index.js";
-import { Schema } from "./schema.js";
-import { NullSchema, imm } from "./primitives.js";
+} from "../index.js";
+import { Schema } from "../schema.js";
+import { NullSchema, imm } from "../primitives.js";
 import { CoMapSchema } from "./coMap.js";
 import { Account, ControlledAccount } from "./account.js";
 import { Effect } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
 
 /** @category CoValues - Group */
 export interface Group<
