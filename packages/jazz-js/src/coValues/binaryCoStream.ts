@@ -1,22 +1,27 @@
 import {
     RawBinaryCoStream as RawBinaryCoStream,
-    RawAccount as RawAccount
+    RawAccount as RawAccount,
+    CoID,
+    CoValueCore,
+    RawControlledAccount,
 } from "cojson";
 import { ControlledAccount } from "./account.js";
 import {
-    Account, CoValueBase, CoValueSchemaBase,
+    Account,
+    CoValueBase,
+    CoValueSchemaBase,
     Group,
-    ID, SimpleAccount
+    ID,
+    SimpleAccount,
 } from "../index.js";
 import { Schema } from "../schema.js";
-import { Effect } from "effect";
+import { Chunk, Effect, Stream } from "effect";
 import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
-import { CoStreamMeta } from "./coStream.js";
-
+import { ControlledAccountCtx } from "../services.js";
 
 export interface BinaryCoStream extends CoValueBase {
     id: ID<BinaryCoStream>;
-    meta: CoStreamMeta;
+    meta: BinaryCoStreamMeta;
     _raw: RawBinaryCoStream;
 
     start(options: {
@@ -27,13 +32,18 @@ export interface BinaryCoStream extends CoValueBase {
     push(data: ArrayBuffer | ArrayBufferView): void;
     end(): void;
 
-    getChunks(options?: { allowUnfinished?: boolean; }): {
-        chunks: Uint8Array[];
-        mimeType?: string;
-    };
+    getChunks(options?: { allowUnfinished?: boolean }):
+        | {
+              chunks: Uint8Array[];
+              mimeType?: string;
+          }
+        | undefined;
 }
+
 class BinaryCoStreamMeta {
     owner: Account | Group;
+    core: CoValueCore;
+    loadedAs: ControlledAccount;
 
     constructor(raw: RawBinaryCoStream) {
         const rawOwner = raw.core.getGroup();
@@ -42,35 +52,42 @@ class BinaryCoStreamMeta {
         } else {
             this.owner = Group.fromRaw(rawOwner);
         }
+        this.core = raw.core;
+        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+            raw.core.node.account as RawControlledAccount
+        );
     }
 }
 
 export interface BinaryCoStreamSchema<Item extends Schema = Schema>
-    extends Schema<BinaryCoStream>, CoValueSchemaBase<BinaryCoStream, RawBinaryCoStream> {
+    extends Schema<BinaryCoStream>,
+        CoValueSchemaBase<BinaryCoStream, RawBinaryCoStream> {
     _Type: "binarycostream";
 
-    new(options: { owner: Account | Group; }): BinaryCoStream;
+    new (options: { owner: Account | Group }): BinaryCoStream;
 
     fromRaw(raw: RawBinaryCoStream): BinaryCoStream;
 
     load(
         id: ID<BinaryCoStream>,
         {
-            as, onProgress,
-        }: { as: ControlledAccount; onProgress?: (progress: number) => void; }
+            as,
+            onProgress,
+        }: { as: ControlledAccount; onProgress?: (progress: number) => void }
     ): Promise<BinaryCoStream | undefined>;
 }
 
 export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
     static _Type = "binarycostream" as const;
-    static _Value: BinaryCoStream = "BinaryCoStream" as unknown as BinaryCoStream;
+    static _Value: BinaryCoStream =
+        "BinaryCoStream" as unknown as BinaryCoStream;
     static _RawValue: RawBinaryCoStream;
     id: ID<BinaryCoStream>;
     meta: BinaryCoStreamMeta;
     _raw: RawBinaryCoStream;
 
     constructor(
-        options: { owner: Account | Group; } | { fromRaw: RawBinaryCoStream; }
+        options: { owner: Account | Group } | { fromRaw: RawBinaryCoStream }
     ) {
         let raw: RawBinaryCoStream;
         if ("fromRaw" in options) {
@@ -88,24 +105,111 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
     }
 
     static fromRaw(raw: RawBinaryCoStream): BinaryCoStream {
-        throw new Error("Method not implemented.");
+        return new BinaryCoStream({ fromRaw: raw });
     }
 
     static load(
         id: ID<BinaryCoStream>,
         {
-            as, onProgress,
-        }: { as: ControlledAccount; onProgress?: (progress: number) => void; }
+            as,
+            onProgress,
+        }: { as: ControlledAccount; onProgress?: (progress: number) => void }
     ): Promise<BinaryCoStream | undefined> {
-        throw new Error("Method not implemented.");
+        return Effect.runPromise(
+            Effect.provideService(
+                this.loadEf(id, { onProgress }),
+                ControlledAccountCtx,
+                ControlledAccountCtx.of(as)
+            )
+        );
     }
 
     static loadEf(
-        id: ID<BinaryCoStream>
+        id: ID<BinaryCoStream>,
+        options?: { onProgress?: (progress: number) => void }
     ): Effect.Effect<
-        ControlledAccount, CoValueUnavailableError | UnknownCoValueLoadError, BinaryCoStream
+        ControlledAccount,
+        CoValueUnavailableError | UnknownCoValueLoadError,
+        BinaryCoStream
     > {
-        throw new Error("Not implemented");
+        return Effect.gen(function* ($) {
+            const as = yield* $(ControlledAccountCtx);
+            const raw = yield* $(
+                Effect.tryPromise({
+                    try: () =>
+                        as._raw.core.node.load(
+                            id as unknown as CoID<RawBinaryCoStream>,
+                            options?.onProgress
+                        ),
+                    catch: (cause) => new UnknownCoValueLoadError({ cause }),
+                })
+            );
+
+            if (raw === "unavailable") {
+                return yield* $(Effect.fail(new CoValueUnavailableError()));
+            }
+
+            return BinaryCoStream.fromRaw(raw);
+        });
+    }
+
+    static subscribeEf(
+        id: ID<BinaryCoStream>
+    ): Stream.Stream<
+        ControlledAccountCtx,
+        CoValueUnavailableError | UnknownCoValueLoadError,
+        BinaryCoStream
+    > {
+        throw new Error(
+            "TODO: implement somehow with Scope and Stream.asyncScoped"
+        );
+    }
+
+    static subscribe(
+        id: ID<BinaryCoStream>,
+        { as }: { as: ControlledAccount },
+        onUpdate: (value: BinaryCoStream) => void
+    ): () => void {
+        let unsub: () => void = () => {
+            stopImmediately = true;
+        };
+        let stopImmediately = false;
+        void this.load(id, { as }).then((value) => {
+            if (!value) return;
+            unsub = value.subscribe(onUpdate);
+            if (stopImmediately) {
+                unsub();
+            }
+        });
+
+        return () => {
+            unsub();
+        };
+    }
+
+    subscribeEf(): Stream.Stream<never, never, BinaryCoStream> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return Stream.asyncScoped((emit) =>
+            Effect.gen(function* ($) {
+                const unsub = self.subscribe((value) => {
+                    void emit(Effect.succeed(Chunk.of(value)));
+                });
+
+                yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
+            })
+        );
+    }
+
+    subscribe(listener: (newValue: BinaryCoStream) => void): () => void {
+        const subscribable = BinaryCoStream.fromRaw(this._raw);
+
+        const unsub = subscribable._raw.subscribe((rawUpdate) => {
+            if (!rawUpdate) return;
+            listener(BinaryCoStream.fromRaw(rawUpdate));
+        });
+
+        return unsub;
     }
 
     start(options: {
@@ -124,11 +228,17 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
         this._raw.endBinaryStream();
     }
 
-    getChunks(options?: { allowUnfinished?: boolean; }): {
-        chunks: Uint8Array[];
-        mimeType?: string;
-    } | undefined {
+    getChunks(options?: { allowUnfinished?: boolean }):
+        | {
+              chunks: Uint8Array[];
+              mimeType?: string;
+          }
+        | undefined {
         return this._raw.getBinaryChunks(options?.allowUnfinished);
+    }
+
+    toJSON() {
+        return this.getChunks() || {};
     }
 } satisfies BinaryCoStreamSchema;
 
