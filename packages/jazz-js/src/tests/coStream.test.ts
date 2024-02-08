@@ -35,30 +35,34 @@ describe("Simple CoStream operations", async () => {
             const expectation = {
                 value: "hello",
                 at: expect.any(Date),
+                ref: undefined,
                 tx: expect.objectContaining({
-                    sessionID: stream.bySession[0][0],
+                    sessionID: stream.bySession[0].sessionID,
+                    txIndex: 0,
                 })
             };
-            expect(stream.bySession[0][1].last).toEqual(expectation);
-            expect(stream.bySession[0][1].all).toEqual([expectation]);
-            expect(stream.byAccount[0][0]).toEqual(me.id);
-            expect(stream.byAccount[0][1].last).toEqual(expectation);
-            expect(stream.byAccount[0][1].all).toEqual([expectation]);
+            expect(stream.bySession[0].last).toEqual(expectation);
+            expect(stream.bySession[0].all).toEqual([expectation]);
+            expect(stream.byAccount[0].accountID).toEqual(me.id);
+            expect(stream.byAccount[0].last).toEqual(expectation);
+            expect(stream.byAccount[0].all).toEqual([expectation]);
 
             stream.push("world");
             const expectation2 = {
                 value: "world",
                 at: expect.any(Date),
+                ref: undefined,
                 tx: expect.objectContaining({
-                    sessionID: stream.bySession[1][0],
+                    sessionID: stream.bySession[0].sessionID,
+                    txIndex: 1,
                 })
             };
 
-            expect(stream.bySession[1][1].last).toEqual(expectation2);
-            expect(stream.bySession[1][1].all).toEqual([expectation, expectation2]);
-            expect(stream.byAccount[1][0]).toEqual(me.id);
-            expect(stream.byAccount[1][1].last).toEqual(expectation2);
-            expect(stream.byAccount[1][1].all).toEqual([expectation, expectation2]);
+            expect(stream.bySession[0].last).toEqual(expectation2);
+            expect(stream.bySession[0].all).toEqual([expectation, expectation2]);
+            expect(stream.byAccount[0].accountID).toEqual(me.id);
+            expect(stream.byAccount[0].last).toEqual(expectation2);
+            expect(stream.byAccount[0].all).toEqual([expectation, expectation2]);
         });
     });
 });
@@ -87,9 +91,9 @@ describe("CoStream resolution", async () => {
     test("Construction", async () => {
         const { stream, firstMap } = await initNodeAndStream();
 
-        expect(stream.bySession[0][1].last?.value?.color).toEqual("red");
-        expect(stream.bySession[0][1].last?.ref.id).toEqual(firstMap.id);
-        expect(stream.byAccount[0][1].last?.ref.loaded).toEqual(true);
+        expect(stream.bySession[0].last?.value?.color).toEqual("red");
+        expect(stream.bySession[0].last?.ref.id).toEqual(firstMap.id);
+        expect(stream.byAccount[0].last?.ref.loaded).toEqual(true);
     });
 
     test("Loading and availability", async () => {
@@ -110,13 +114,13 @@ describe("CoStream resolution", async () => {
 
         const loadedStream = await StreamOfMaps.load(stream.id, { as: meOnSecondPeer });
 
-        expect(loadedStream.bySession[0][1].last?.value?.color).toEqual(undefined);
-        expect(loadedStream.bySession[0][1].last?.ref.id).toEqual(firstMap.id);
-        expect(loadedStream.bySession[0][1].last?.ref.loaded).toEqual(false);
+        expect(loadedStream.bySession[0].last?.value?.color).toEqual(undefined);
+        expect(loadedStream.bySession[0].last?.ref.id).toEqual(firstMap.id);
+        expect(loadedStream.bySession[0].last?.ref.loaded).toEqual(false);
 
-        const _loadedNestedMap = await SimpleMap.load(loadedStream.bySession[0][1].last!.ref.id, { as: meOnSecondPeer });
-        expect(loadedStream.bySession[0][1].last?.value?.color).toEqual("red");
-        expect(loadedStream.bySession[0][1].last?.ref.loaded).toEqual(true);
+        const _loadedNestedMap = await SimpleMap.load(loadedStream.bySession[0].last!.ref.id, { as: meOnSecondPeer });
+        expect(loadedStream.bySession[0].last?.value?.color).toEqual("red");
+        expect(loadedStream.bySession[0].last?.ref.loaded).toEqual(true);
     });
 
     test("Subscription & auto-resolution", async () => {
@@ -141,17 +145,30 @@ describe("CoStream resolution", async () => {
 
                 StreamOfMaps.subscribe(stream.id, {as: meOnSecondPeer}, (subscribedStream: StreamOfMaps) => {
                     console.log(
-                        "subscribedStream.bySession[0][1].last?.value?.color",
-                        subscribedStream.bySession[0][1].last?.value?.color
+                        "subscribedStream.bySession[0].last?.value?.color",
+                        subscribedStream.bySession[0].last?.value?.color
                     );
                     Effect.runPromise(Queue.offer(queue, subscribedStream));
                 })
 
                 const update1 = yield* $(Queue.take(queue));
-                expect(update1.bySession[0][1].last?.value?.color).toEqual(undefined);
+                expect(update1.bySession[0].last?.value?.color).toEqual(undefined);
 
                 const update2 = yield* $(Queue.take(queue));
-                expect(update2.bySession[0][1].last?.value?.color).toEqual("red");
+                expect(update2.bySession[0].last?.value?.color).toEqual("red");
+
+                stream.push(new SimpleMap({ color: "blue", height: 20 }, {owner: me}));
+                expect(stream.bySession[0].all.length).toEqual(2);
+
+                console.log("Before update 3")
+                const update3 = yield* $(Queue.take(queue));
+                expect(update3.bySession[0].all.length).toEqual(2);
+                expect(update3.bySession[0].last?.ref.loaded).toEqual(false);
+                expect(update3.bySession[0].last?.value?.color).toEqual(undefined);
+
+                const update4 = yield* $(Queue.take(queue));
+                expect(update4.bySession[0].last?.ref.loaded).toEqual(true);
+                expect(update4.bySession[0].last?.value?.color).toEqual("blue");
             })
         )
     });

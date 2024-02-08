@@ -351,8 +351,6 @@ describe("CoList resolution", async () => {
                 expect(update6[0][0][0]).toEqual("bitter");
                 expect(update6[0][0].length).toEqual(1);
                 yield* $(Queue.take(queue));
-                yield* $(Queue.take(queue));
-                yield* $(Queue.take(queue));
 
                 // ...but we don't get updates on the old nested value anymore
                 oldTwiceNested[0] = "sweet";

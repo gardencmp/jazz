@@ -43,7 +43,7 @@ type DeletionEntry = {
 
 export class RawCoListView<
     Item extends JsonValue = JsonValue,
-    Meta extends JsonObject | null = null
+    Meta extends JsonObject | null = null,
 > implements RawCoValue
 {
     /** @category 6. Meta */
@@ -395,7 +395,7 @@ export class RawCoListView<
 
 export class RawCoList<
         Item extends JsonValue = JsonValue,
-        Meta extends JsonObject | null = JsonObject | null
+        Meta extends JsonObject | null = JsonObject | null,
     >
     extends RawCoListView<Item, Meta>
     implements RawCoValue
@@ -530,6 +530,40 @@ export class RawCoList<
             privacy
         );
 
+        const listAfter = new RawCoList(this.core) as this;
+
+        this.afterStart = listAfter.afterStart;
+        this.beforeEnd = listAfter.beforeEnd;
+        this.insertions = listAfter.insertions;
+        this.deletionsByInsertion = listAfter.deletionsByInsertion;
+        this._cachedEntries = undefined;
+    }
+
+    replace(
+        at: number,
+        newItem: Item,
+        privacy: "private" | "trusting" = "private"
+    ) {
+        const entries = this.entries();
+        const entry = entries[at];
+        if (!entry) {
+            throw new Error("Invalid index " + at);
+        }
+
+        this.core.makeTransaction(
+            [
+                {
+                    op: "app",
+                    value: isCoValue(newItem) ? newItem.id : newItem,
+                    after: entry.opID,
+                },
+                {
+                    op: "del",
+                    insertion: entry.opID,
+                },
+            ],
+            privacy
+        );
         const listAfter = new RawCoList(this.core) as this;
 
         this.afterStart = listAfter.afterStart;

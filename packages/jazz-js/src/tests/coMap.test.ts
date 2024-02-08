@@ -214,13 +214,15 @@ describe("CoMap resolution", async () => {
                     { owner: meOnSecondPeer }
                 );
 
-                update3a.nested = new NestedMap(
+                const newNested = new NestedMap(
                     {
                         name: "newNested",
                         twiceNested: newTwiceNested,
                     },
                     { owner: meOnSecondPeer }
-                );
+                )
+
+                update3a.nested = newNested;
 
                 yield* $(Queue.take(queue));
                 const update4 = yield* $(Queue.take(queue));

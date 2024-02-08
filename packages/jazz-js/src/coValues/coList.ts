@@ -295,9 +295,7 @@ export interface CoListSchema<Item extends Schema = Schema>
     ): CoList<Item>;
 
     /** @hidden */
-    fromRaw(
-        raw: RawCoList<RawType<Item>>,
-    ): CoList<Item>;
+    fromRaw(raw: RawCoList<RawType<Item>>): CoList<Item>;
 }
 
 /** @category CoValues - CoList */
@@ -475,8 +473,6 @@ export function CoListOf<Item extends Schema>(
                                 idx < target._raw.asArray().length
                             ) {
                                 if (isCoValueSchema(ItemSchema)) {
-                                    target._raw.append(value?.id, idx);
-                                    target._raw.delete(idx);
                                     target[
                                         subscriptionScopeSym
                                     ]?.onRefRemovedOrReplaced(target.id, idx);
@@ -490,9 +486,9 @@ export function CoListOf<Item extends Schema>(
                                             ItemSchema
                                         );
                                     }
+                                    target._raw.replace(idx, value.id);
                                 } else {
-                                    target._raw.append(value, idx);
-                                    target._raw.delete(idx);
+                                    target._raw.replace(idx, value);
                                 }
                                 return true;
                             } else {
@@ -523,13 +519,11 @@ export function CoListOf<Item extends Schema>(
                     }
 
                     return Reflect.has(target, prop);
-                }
+                },
             });
         }
 
-        static fromRaw(
-            raw: RawCoList<RawType<Item>>,
-        ): CoList<Item> {
+        static fromRaw(raw: RawCoList<RawType<Item>>): CoList<Item> {
             return new CoListSchemaForItem(undefined, {
                 fromRaw: raw,
             });
@@ -625,11 +619,13 @@ export function CoListOf<Item extends Schema>(
 
         subscribe(listener: (newValue: CoList<Item>) => void): () => void {
             const subscribable = CoListSchemaForItem.fromRaw(this._raw);
-            const scope = new SubscriptionScope(subscribable, (scope) => {
-                const updatedValue = CoListSchemaForItem.fromRaw(this._raw);
-                updatedValue[subscriptionScopeSym] = scope;
-                listener(updatedValue);
-            });
+            const scope = new SubscriptionScope(
+                subscribable,
+                CoListSchemaForItem,
+                (update) => {
+                    listener(update);
+                }
+            );
 
             return () => {
                 scope.unsubscribeAll();
@@ -640,10 +636,21 @@ export function CoListOf<Item extends Schema>(
             const items = [];
 
             for (let i = 0; i < this.length; i++) {
-                items.push(this[i]!);
+                if (isCoValueSchema(ItemSchema)) {
+                    items.push(this[i]?.toJSON());
+                } else {
+                    items.push(this[i]);
+                }
             }
 
             return items;
+        }
+
+        [Symbol.for("nodejs.util.inspect.custom")](
+            _depth: number,
+            _opts: unknown
+        ) {
+            return this.toJSON();
         }
 
         push(...items: Item["_Value"][]): number {

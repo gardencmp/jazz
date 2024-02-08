@@ -52,11 +52,13 @@ export {
     CoStreamOf,
     isCoStream,
     isCoStreamSchema,
+} from "./coValues/coStream.js";
+export {
     BinaryCoStream,
     BinaryCoStreamSchema,
     isBinaryCoStream,
     isBinaryCoStreamSchema,
-} from "./coValues/coStream.js";
+} from "./coValues/binaryCoStream.js";
 
 export type CoValueSchema =
     | CoListSchema

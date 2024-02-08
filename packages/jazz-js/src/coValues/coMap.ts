@@ -272,11 +272,13 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
 
         subscribe(listener: (newValue: CoMap<Shape>) => void): () => void {
             const subscribable = CoMapSchemaForShape.fromRaw(this._raw);
-            const scope = new SubscriptionScope(subscribable, (scope) => {
-                const updatedValue = CoMapSchemaForShape.fromRaw(this._raw);
-                updatedValue[subscriptionScopeSym] = scope;
-                listener(updatedValue);
-            });
+            const scope = new SubscriptionScope(
+                subscribable,
+                CoMapSchemaForShape,
+                (update) => {
+                    listener(update);
+                }
+            );
 
             return () => {
                 scope.unsubscribeAll();
@@ -335,7 +337,6 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                     }
                 },
                 set(this: CoMapSchemaForShape, value) {
-                    this._raw.set(key, value?.id);
                     this[subscriptionScopeSym]?.onRefRemovedOrReplaced(
                         this.id,
                         key
@@ -348,6 +349,7 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                             KeyCoValueSchema
                         );
                     }
+                    this._raw.set(key, value?.id);
                 },
             });
 

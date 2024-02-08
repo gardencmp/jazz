@@ -59,6 +59,8 @@ export class RawCoStreamView<
         this.core = core;
         this.items = {};
         this.fillFromCoValue();
+        console.log("items at construction", this.items);
+        console.log("Valid sorted transactions at construction", this.core.getValidSortedTransactions());
     }
 
     get headerMeta(): Meta {
@@ -93,6 +95,8 @@ export class RawCoStreamView<
                 entries.push({ value: change, madeAt, tx: txID });
             }
         }
+
+        console.log("In RawCoStream", this.items, this.core.getValidSortedTransactions());
     }
 
     getSingleStream(): Item[] | undefined {

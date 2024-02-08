@@ -7,45 +7,62 @@ import {
     subscriptionScopeSym,
 } from "./index.js";
 
-export class SubscriptionScope {
+export class SubscriptionScope<
+    RootSchema extends CoValueSchemaBase = CoValueSchemaBase,
+> {
+    scopeID: string;
     subscriber: ControlledAccount;
     entries: Map<
         ID<CoValue>,
         | { state: "loading"; immediatelyUnsub?: boolean }
         | { state: "loaded"; value: CoValueBase; rawUnsub: () => void }
     >;
+    rootEntry: {
+        state: "loaded";
+        value: RootSchema["_Value"];
+        rawUnsub: () => void;
+    };
     reachableFrom: Map<ID<CoValue>, Set<`${ID<CoValue>}/${string}`>> =
         new Map();
     pathToID: Map<`${ID<CoValue>}/${string}`, ID<CoValue>> = new Map();
-    onUpdate: (scope: SubscriptionScope) => void;
+    onUpdate: (newRoot: RootSchema["_Value"]) => void;
 
     constructor(
-        root: CoValueBase,
-        onUpdate: (scope: SubscriptionScope) => void
+        root: RootSchema["_Value"],
+        rootSchema: RootSchema,
+        onUpdate: (newRoot: RootSchema["_Value"]) => void
     ) {
+        this.scopeID = `scope-${Math.random().toString(36).slice(2)}`;
         this.entries = new Map();
-        const entry = {
+        this.rootEntry = {
             state: "loaded" as const,
             value: root,
             rawUnsub: () => {}, // placeholder
         };
-        this.entries.set(root.id, entry);
+        this.entries.set(root.id, this.rootEntry);
         root[subscriptionScopeSym] = this;
         this.subscriber = root.meta.loadedAs;
         this.onUpdate = onUpdate;
-        entry.rawUnsub = root.meta.core.subscribe(() => {
-            console.log("root update");
-            onUpdate(this);
+        this.rootEntry.rawUnsub = root.meta.core.subscribe((rawUpdate) => {
+            if (!rawUpdate) return;
+            this.rootEntry.value = rootSchema.fromRaw(rawUpdate);
+            console.log("root update", this.rootEntry.value.toJSON());
+            this.rootEntry.value[subscriptionScopeSym] = this;
+            onUpdate(this.rootEntry.value);
         });
     }
 
     onRefAccessedOrSet(
         inId: ID<CoValue>,
         path: string | number,
-        accessedOrSetId: ID<CoValue>,
+        accessedOrSetId: ID<CoValue> | undefined,
         schema: CoValueSchemaBase
     ) {
-        console.log("onRefAccessedOrSet", inId, path, accessedOrSetId);
+        console.log("onRefAccessedOrSet", inId + "/" + path + " -> " + accessedOrSetId);
+
+        if (!accessedOrSetId) {
+            return;
+        }
 
         let reachableFrom = this.reachableFrom.get(accessedOrSetId);
         if (!reachableFrom) {
@@ -53,11 +70,15 @@ export class SubscriptionScope {
             this.reachableFrom.set(accessedOrSetId, reachableFrom);
         }
         const fullPath = `${inId}/${path}` as const;
+        console.log("added path", this.scopeID, fullPath + " -> " + accessedOrSetId);
         reachableFrom.add(fullPath);
         this.pathToID.set(fullPath, accessedOrSetId);
 
         if (!this.entries.has(accessedOrSetId)) {
-            const loadingEntry = { state: "loading", immediatelyUnsub: false } as const;
+            const loadingEntry = {
+                state: "loading",
+                immediatelyUnsub: false,
+            } as const;
             this.entries.set(accessedOrSetId, loadingEntry);
             void schema
                 .load(accessedOrSetId, { as: this.subscriber })
@@ -70,21 +91,37 @@ export class SubscriptionScope {
                     }
                     console.log("ref load", fullPath, refValue?.id);
                     if (refValue) {
-                        const rawUnsub = refValue.meta.core.subscribe(() => {
-                            console.log("ref update", fullPath);
-                            if (this.reachableFrom.has(accessedOrSetId)) {
-                                this.onUpdate(this);
-                            } else {
-                                console.log("spurious update on old ref");
-                                rawUnsub();
-                            }
-                        });
-                        this.entries.set(accessedOrSetId, {
-                            state: "loaded",
+                        const entry = {
+                            state: "loaded" as const,
                             value: refValue,
-                            rawUnsub,
-                        });
+                            rawUnsub: () => {}, // placeholder
+                        };
+                        this.entries.set(accessedOrSetId, entry);
                         refValue[subscriptionScopeSym] = this;
+
+                        const rawUnsub = refValue.meta.core.subscribe(
+                            (rawUpdate) => {
+                                if (!rawUpdate) return;
+                                if (this.reachableFrom.has(accessedOrSetId)) {
+                                    entry.value = schema.fromRaw(rawUpdate);
+                                    console.log(
+                                        "ref update",
+                                        this.scopeID,
+                                        fullPath,
+                                        entry.value,
+                                        accessedOrSetId,
+                                        this.reachableFrom
+                                    );
+                                    entry.value[subscriptionScopeSym] = this;
+                                    this.onUpdate(this.rootEntry.value);
+                                } else {
+                                    console.log("spurious update on old ref");
+                                    rawUnsub();
+                                }
+                            }
+                        );
+
+                        entry.rawUnsub = rawUnsub;
                     }
                 });
         }
@@ -94,11 +131,13 @@ export class SubscriptionScope {
         const fullPath = `${inId}/${path}` as const;
         const idAtPath = this.pathToID.get(fullPath);
         const entry = idAtPath && this.entries.get(idAtPath);
+        console.log("onRefRemovedOrReplaced", inId + "/" + path + " -> " + idAtPath);
 
         if (entry) {
             const reachableFrom = this.reachableFrom.get(idAtPath);
             this.pathToID.delete(fullPath);
             reachableFrom?.delete(fullPath);
+            console.log("deleted path", this.scopeID, fullPath + " -> " + idAtPath);
             if ((reachableFrom?.size || 0) === 0) {
                 if (entry.state === "loaded") {
                     entry.rawUnsub();

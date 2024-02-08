@@ -109,26 +109,26 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
     }
 
     start(options: {
-        mimeType?: string;
+        mimeType: string;
         totalSizeBytes?: number;
         fileName?: string;
     }) {
-        throw new Error("Method not implemented.");
+        this._raw.startBinaryStream(options);
     }
 
-    push(data: ArrayBuffer | ArrayBufferView) {
-        throw new Error("Method not implemented.");
+    push(data: Uint8Array) {
+        this._raw.pushBinaryStreamChunk(data);
     }
 
     end() {
-        throw new Error("Method not implemented.");
+        this._raw.endBinaryStream();
     }
 
     getChunks(options?: { allowUnfinished?: boolean; }): {
         chunks: Uint8Array[];
         mimeType?: string;
-    } {
-        throw new Error("Method not implemented.");
+    } | undefined {
+        return this._raw.getBinaryChunks(options?.allowUnfinished);
     }
 } satisfies BinaryCoStreamSchema;
 
