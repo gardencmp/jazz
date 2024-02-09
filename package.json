@@ -22,8 +22,9 @@
     "updated": "lerna updated --include-merged-tags",
     "publish-all": "yarn run gen-docs && lerna publish --include-merged-tags",
     "gen-docs": "ts-node generateDocs.ts",
-    "changeset": "pnpm changeset",
-    "release": "pnpm changeset version && pnpm publish -r"
+    "changeset": "changeset",
+    "changeset-version": "changeset version",
+    "release": "pnpm publish -r"
   },
   "version": "0.0.0"
 }

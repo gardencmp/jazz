@@ -1,5 +1,14 @@
 # jazz-react-auth-local
 
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.6.7
+  - jazz-react@0.5.5
+  - jazz-browser-auth-passphrase@0.5.2
+
 ## 0.5.1
 
 ### Patch Changes

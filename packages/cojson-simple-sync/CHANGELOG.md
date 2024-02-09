@@ -1,5 +1,13 @@
 # cojson-simple-sync
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.6.7
+  - cojson-storage-sqlite@0.5.3
+
 ## 0.6.0
 
 ### Minor Changes

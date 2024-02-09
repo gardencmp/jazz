@@ -1,5 +1,14 @@
 # jazz-browser-media-images
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.6.7
+  - jazz-browser@0.6.4
+  - jazz-autosub@0.6.2
+
 ## 0.6.0
 
 ### Minor Changes

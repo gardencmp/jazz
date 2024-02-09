@@ -1,5 +1,15 @@
 # jazz-react
 
+## 0.5.5
+
+### Patch Changes
+
+- Mute most annoying log messages
+- Updated dependencies
+  - cojson@0.6.7
+  - jazz-browser@0.6.4
+  - jazz-autosub@0.6.2
+
 ## 0.5.4
 
 ### Patch Changes

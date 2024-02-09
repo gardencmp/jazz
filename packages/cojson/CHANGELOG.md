@@ -1,5 +1,11 @@
 # cojson
 
+## 0.6.7
+
+### Patch Changes
+
+- Mute most annoying log messages
+
 ## 0.6.6
 
 ### Patch Changes

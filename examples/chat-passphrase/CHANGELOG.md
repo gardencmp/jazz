@@ -1,5 +1,14 @@
 # jazz-example-chat
 
+## 0.0.48
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.6.7
+  - jazz-react@0.5.5
+  - jazz-react-auth-passphrase@0.5.2
+
 ## 0.0.47
 
 ### Patch Changes

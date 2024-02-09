@@ -1,5 +1,15 @@
 # jazz-example-twit
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.6.7
+  - jazz-react@0.5.5
+  - jazz-browser-media-images@0.6.1
+  - jazz-react-auth-local@0.4.18
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # jazz-browser-auth-local
 
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.6.7
+  - jazz-browser@0.6.4
+
 ## 0.6.2
 
 ### Patch Changes

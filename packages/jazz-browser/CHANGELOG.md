@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.6.4
+
+### Patch Changes
+
+- Mute most annoying log messages
+- Updated dependencies
+  - cojson@0.6.7
+  - cojson-storage-indexeddb@0.6.4
+  - jazz-autosub@0.6.2
+
 ## 0.6.3
 
 ### Patch Changes
