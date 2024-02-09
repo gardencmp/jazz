@@ -1,24 +1,24 @@
 import {
     isCoList,
     isCoListSchema
-} from "./coValues/coList.js";
+} from "./coValues/coList/guards.js";
 import {
     isCoMap,
     isCoMapSchema
-} from "./coValues/coMap.js";
+} from "./coValues/coMap/guards.js";
 import {
     isAccount,
     isAccountSchema
-} from "./coValues/account.js";
-import { isGroup, isGroupSchema } from "./coValues/group.js";
+} from "./coValues/account/guards.js";
+import { isGroup, isGroupSchema } from "./coValues/group/group.js";
 import {
     isCoStream,
     isCoStreamSchema
-} from "./coValues/coStream.js";
+} from "./coValues/coStream/guards.js";
 import {
     isBinaryCoStream,
     isBinaryCoStreamSchema
-} from "./coValues/binaryCoStream.js";
+} from "./coValues/binaryCoStream/guards.js";
 import { CoValueSchema, CoValue } from "./index.js";
 
 

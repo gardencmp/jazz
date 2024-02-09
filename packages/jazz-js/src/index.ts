@@ -1,23 +1,14 @@
-import { CoValueCore, CojsonInternalTypes, RawCoValue as RawCoValue } from "cojson";
-import { CoList, CoListSchema } from "./coValues/coList.js";
-import { CoMap, CoMapSchema } from "./coValues/coMap.js";
-import { Account, AccountSchema, ControlledAccount } from "./coValues/account.js";
-import { Group, GroupSchema } from "./coValues/group.js";
-import {
-    CoStream,
-    CoStreamSchema,
-} from "./coValues/coStream.js";
+import { CoList, CoListSchema } from "./coValues/coList/coList.js";
+import { CoMap, CoMapSchema } from "./coValues/coMap/coMap.js";
+import { Account, AccountSchema } from "./coValues/account/account.js";
+import { Group, GroupSchema } from "./coValues/group/group.js";
+import { CoStream, CoStreamSchema } from "./coValues/coStream/coStream.js";
 import {
     BinaryCoStream,
-    BinaryCoStreamSchema
-} from "./coValues/binaryCoStream.js";
-import { Schema } from "./schema.js";
-import { Effect, Stream } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "./errors.js";
-import { ControlledAccountCtx } from "./services.js";
-import { SubscriptionScope } from "./subscriptionScope.js";
+    BinaryCoStreamSchema,
+} from "./coValues/binaryCoStream/binaryCoStream.js";
 
-export { imm, Primitive } from "./primitives.js";
+export { imm } from "./immutables/index.js";
 
 export { cojsonReady as jazzReady } from "cojson";
 
@@ -26,39 +17,28 @@ export {
     AccountSchema,
     ControlledAccount,
     ControlledAccountSchema,
-    AccountWith,
-    isAccount,
-    isAccountSchema,
-    SimpleAccount,
-} from "./coValues/account.js";
-export { Group } from "./coValues/group.js";
-export {
-    CoMap,
-    CoMapSchema,
-    CoMapOf,
-    isCoMap,
-    isCoMapSchema,
-} from "./coValues/coMap.js";
-export {
-    CoList,
-    CoListSchema,
-    CoListOf,
-    isCoList,
-    isCoListSchema,
-} from "./coValues/coList.js";
-export {
-    CoStream,
-    CoStreamSchema,
-    CoStreamOf,
-    isCoStream,
-    isCoStreamSchema,
-} from "./coValues/coStream.js";
+} from "./coValues/account/account.js";
+export { AccountWith } from "./coValues/account/impl.js";
+export { isAccount, isAccountSchema } from "./coValues/account/guards.js";
+export { SimpleAccount } from "./coValues/account/simpleAccount.js";
+export { SimpleGroup } from "./coValues/group/simpleGroup.js";
+export { CoMap, CoMapSchema } from "./coValues/coMap/coMap.js";
+export { CoMapOf } from "./coValues/coMap/impl.js";
+export { isCoMap, isCoMapSchema } from "./coValues/coMap/guards.js";
+export { CoList, CoListSchema } from "./coValues/coList/coList.js";
+export { CoListOf } from "./coValues/coList/impl.js";
+export { isCoList, isCoListSchema } from "./coValues/coList/guards.js";
+export { CoStream, CoStreamSchema } from "./coValues/coStream/coStream.js";
+export { CoStreamOf } from "./coValues/coStream/impl.js";
+export { isCoStream, isCoStreamSchema } from "./coValues/coStream/guards.js";
 export {
     BinaryCoStream,
     BinaryCoStreamSchema,
+} from "./coValues/binaryCoStream/binaryCoStream.js";
+export {
     isBinaryCoStream,
     isBinaryCoStreamSchema,
-} from "./coValues/binaryCoStream.js";
+} from "./coValues/binaryCoStream/guards.js";
 
 export type CoValueSchema =
     | CoListSchema
@@ -76,68 +56,6 @@ export type CoValue =
     | Group
     | Account;
 
-export interface CoValueSchemaBase<
-    Value extends CoValue = CoValue,
-    RawValue extends RawCoValue = RawCoValue,
-> extends Schema<Value> {
-    /** @category Type Hints */
-    _RawValue: RawValue;
-
-    fromRaw(raw: RawCoValue): Value;
-
-    load(
-        id: ID<Value>,
-        { as }: { as: ControlledAccount }
-    ): Promise<Value | undefined>;
-
-    loadEf(
-        id: ID<Value>
-    ): Effect.Effect<
-        ControlledAccountCtx,
-        CoValueUnavailableError | UnknownCoValueLoadError,
-        Value
-    >;
-
-    subscribe(
-        id: ID<Value>,
-        { as }: { as: ControlledAccount },
-        onUpdate: (value: Value) => void
-    ): () => void;
-
-    subscribeEf(
-        id: ID<Value>
-    ): Stream.Stream<
-        ControlledAccountCtx,
-        CoValueUnavailableError | UnknownCoValueLoadError,
-        Value
-    >;
-}
-
-export interface CoValueBase {
-    id: ID<CoValue>;
-    meta: CoValueMetaBase;
-
-    subscribe(onUpdate: (value: this) => void): () => void;
-
-    subscribeEf(): Stream.Stream<never, never, this>;
-
-    toJSON(): Record<string, unknown> | unknown[];
-
-    [subscriptionScopeSym]?: SubscriptionScope;
-}
-
-export const subscriptionScopeSym = Symbol("subscriptionScope");
-
-export interface CoValueMetaBase {
-    owner: Account | Group;
-    core: CoValueCore;
-    loadedAs: ControlledAccount;
-}
-
-export type ID<T> = CojsonInternalTypes.RawCoID & {
-    readonly __type: T;
-};
-
 export type AccountMigration<A extends AccountSchema> = (
     me: A["ControlledSchema"]["_Value"]
 ) => void | Promise<void>;
@@ -148,10 +66,3 @@ export function createAccountMigration<A extends AccountSchema>(
 ): AccountMigration<A> {
     return migration;
 }
-
-export type RawType<T extends Schema> = T extends CoValueSchemaBase<
-    infer _,
-    infer _
->
-    ? T["_RawValue"]
-    : T["_Value"];

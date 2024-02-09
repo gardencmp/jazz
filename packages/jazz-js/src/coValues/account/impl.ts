@@ -7,136 +7,20 @@ import {
     LocalNode,
     CoID,
     InviteSecret,
-    RawCoValue as RawCoValue,
+    RawCoValue as RawCoValue
 } from "cojson";
-import {
-    AccountMigration,
-    BinaryCoStream,
-    CoValue,
-    CoValueBase,
-    CoValueSchema,
-    CoValueSchemaBase,
-    ID,
-} from "../index.js";
-import { Schema } from "../schema.js";
-import { NullSchema, imm } from "../primitives.js";
-import { CoMapOf, CoMapSchema } from "./coMap.js";
-import { Group, GroupMeta } from "./group.js";
+import { AccountMigration } from "../../index.js";
+import { ID } from "../../id.js";
+import { CoValueSchemaBase } from "../../baseInterfaces.js";
+import { NullSchema } from "../../immutables/primitives.js";
+import { CoMapSchema } from "../coMap/coMap.js";
+import { GroupMeta } from "../group/group.js";
 import { Effect } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "../../errors.js";
+import { AccountSchema, Account, ControlledAccount } from "./account.js";
 
 /** @category CoValues - Account */
-export interface Account<
-    ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
->  extends CoValueBase {
-    /** @hidden */
-    _raw: RawAccount | RawControlledAccount;
-    /** @category Collaboration */
-    id: ID<Account<ProfileS, RootS>>;
-    /** @category Collaboration */
-    isMe: boolean;
-}
 
-/** @category CoValues - Account */
-export interface ControlledAccount<
-    ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> extends Account<ProfileS, RootS> {
-    /** @hidden */
-    _raw: RawControlledAccount;
-    id: ID<ControlledAccount<ProfileS, RootS>>;
-    isMe: true;
-    acceptInvite<S extends CoValueSchema>(
-        invitedObjectID: ID<S["_Value"]>,
-        secret: InviteSecret,
-        invitedObjectSchema: S
-    ): Promise<S["_Value"] | undefined>;
-}
-
-/** @category CoValues - Account */
-export interface AccountSchema<
-    ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> extends Schema<Account<ProfileS, RootS>>,
-        CoValueSchemaBase<
-            Account<ProfileS, RootS>,
-            RawAccount | RawControlledAccount
-        > {
-    /** @category Type Hints */
-    _Type: "account";
-    /** @category Type Hints */
-    _Profile: ProfileS;
-    /** @category Type Hints */
-    _Root: RootS;
-    /** @category Type Hints */
-    _RawValue: RawAccount | RawControlledAccount;
-
-    /** @hidden */
-    fromRaw(
-        raw: RawAccount | RawControlledAccount,
-    ): Account<ProfileS, RootS>;
-
-    ControlledSchema: ControlledAccountSchema<ProfileS, RootS>;
-
-    /** @category Creation */
-    createControlledAccount(options: {
-        name: string;
-        migration?: AccountMigration<AccountSchema<ProfileS, RootS>>;
-        initialAgentSecret?: AgentSecret;
-        peersToLoadFrom?: Peer[];
-    }): Promise<ControlledAccount<ProfileS, RootS>>;
-
-    /** @category Creation */
-    loadControlledAccount(options: {
-        accountID: ID<Account>;
-        accountSecret: AgentSecret;
-        sessionID: SessionID;
-        peersToLoadFrom: Peer[];
-        migration?: AccountMigration<AccountSchema<ProfileS, RootS>>;
-    }): Promise<ControlledAccount<ProfileS, RootS>>;
-}
-
-/** @hidden */
-export interface ControlledAccountSchema<
-    ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> extends Schema<ControlledAccount<ProfileS, RootS>>,
-        CoValueSchemaBase<
-            ControlledAccount<ProfileS, RootS>,
-            RawControlledAccount
-        > {
-    /** @category Type Hints */
-    _Type: "account";
-    /** @category Type Hints */
-    _Profile: ProfileS;
-    /** @category Type Hints */
-    _Root: RootS;
-    /** @category Type Hints */
-    _RawValue: RawControlledAccount;
-}
-
-/** @category CoValues - Account */
-export function isAccountSchema(value: unknown): value is Account {
-    return (
-        typeof value === "function" &&
-        value !== null &&
-        "_Type" in value &&
-        value._Type === "account"
-    );
-}
-
-/** @category CoValues - Account */
-export function isAccount(value: unknown): value is Account {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        isAccountSchema(value.constructor) &&
-        "id" in value
-    );
-}
-
-/** @category CoValues - Account */
 export function AccountWith<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
     RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
@@ -181,8 +65,8 @@ export function AccountWith<
         id: ID<ControlledAccount<ProfileS, RootS>>;
         isMe: true;
 
-        constructor(options: { fromRaw: RawControlledAccount });
-        constructor(options: { fromRaw: RawControlledAccount }) {
+        constructor(options: { fromRaw: RawControlledAccount; });
+        constructor(options: { fromRaw: RawControlledAccount; }) {
             super();
             this._raw = options.fromRaw;
             if (this._raw.id !== this._raw.core.node.account.id)
@@ -195,7 +79,7 @@ export function AccountWith<
         }
 
         static fromRaw(
-            raw: RawControlledAccount,
+            raw: RawControlledAccount
         ): ControlledAccount<ProfileS, RootS> {
             return new ControlledAccountSchemaForProfileAndRoot({
                 fromRaw: raw,
@@ -204,17 +88,15 @@ export function AccountWith<
 
         static load(
             id: ID<ControlledAccount<ProfileS, RootS>>,
-            { as }: { as: ControlledAccount }
+            { as }: { as: ControlledAccount; }
         ): Promise<ControlledAccount<ProfileS, RootS>> {
             throw new Error("Not implemented");
         }
 
         static loadEf(
-            id: ID<ControlledAccount<ProfileS, RootS>>,
+            id: ID<ControlledAccount<ProfileS, RootS>>
         ): Effect.Effect<
-            ControlledAccount,
-            CoValueUnavailableError | UnknownCoValueLoadError,
-            ControlledAccount<ProfileS, RootS>
+            ControlledAccount, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccount<ProfileS, RootS>
         > {
             throw new Error("Not implemented");
         }
@@ -236,8 +118,8 @@ export function AccountWith<
     }
 
     class NonControlledAccountSchemaForProfileAndRoot extends AccountSchemaForProfileAndRoot {
-        constructor(options: { fromRaw: RawAccount | RawControlledAccount });
-        constructor(options: { fromRaw: RawAccount | RawControlledAccount }) {
+        constructor(options: { fromRaw: RawAccount | RawControlledAccount; });
+        constructor(options: { fromRaw: RawAccount | RawControlledAccount; }) {
             super();
             this._raw = options.fromRaw;
             this.id = this._raw.id as unknown as ID<Account<ProfileS, RootS>>;
@@ -246,7 +128,7 @@ export function AccountWith<
         }
 
         static fromRaw(
-            raw: RawAccount | RawControlledAccount,
+            raw: RawAccount | RawControlledAccount
         ): Account<ProfileS, RootS> {
             return new NonControlledAccountSchemaForProfileAndRoot({
                 fromRaw: raw,
@@ -255,17 +137,15 @@ export function AccountWith<
 
         static load(
             id: ID<ControlledAccount<ProfileS, RootS>>,
-            { as }: { as: ControlledAccount }
+            { as }: { as: ControlledAccount; }
         ): Promise<ControlledAccount<ProfileS, RootS>> {
             throw new Error("Not implemented");
         }
 
         static loadEf(
-            id: ID<ControlledAccount<ProfileS, RootS>>,
+            id: ID<ControlledAccount<ProfileS, RootS>>
         ): Effect.Effect<
-            ControlledAccount,
-            CoValueUnavailableError | UnknownCoValueLoadError,
-            ControlledAccount<ProfileS, RootS>
+            ControlledAccount, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccount<ProfileS, RootS>
         > {
             throw new Error("Not implemented");
         }
@@ -280,13 +160,11 @@ export function AccountWith<
                 name: options.name,
                 initialAgentSecret: options.initialAgentSecret,
                 peersToLoadFrom: options.peersToLoadFrom,
-                migration:
-                    options.migration &&
+                migration: options.migration &&
                     (async (rawAccount) => {
-                        const account =
-                            ControlledAccountSchemaForProfileAndRoot.fromRaw(
-                                rawAccount
-                            );
+                        const account = ControlledAccountSchemaForProfileAndRoot.fromRaw(
+                            rawAccount
+                        );
 
                         await options.migration!(account);
                     }),
@@ -309,13 +187,11 @@ export function AccountWith<
                 accountSecret: options.accountSecret,
                 sessionID: options.sessionID,
                 peersToLoadFrom: options.peersToLoadFrom,
-                migration:
-                    options.migration &&
+                migration: options.migration &&
                     (async (rawAccount) => {
-                        const account =
-                            ControlledAccountSchemaForProfileAndRoot.fromRaw(
-                                rawAccount
-                            );
+                        const account = ControlledAccountSchemaForProfileAndRoot.fromRaw(
+                            rawAccount
+                        );
 
                         await options.migration!(account);
                     }),
@@ -331,11 +207,3 @@ export function AccountWith<
 
     return NonControlledAccountSchemaForProfileAndRoot;
 }
-
-/** @category CoValues - Account */
-export const SimpleAccount = AccountWith(
-    CoMapOf({
-        name: imm.string,
-    }),
-    imm.null
-);

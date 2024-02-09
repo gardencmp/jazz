@@ -1,23 +1,16 @@
-import {
-    RawBinaryCoStream as RawBinaryCoStream,
-    RawAccount as RawAccount,
-    CoID,
-    CoValueCore,
-    RawControlledAccount,
-} from "cojson";
-import { ControlledAccount } from "./account.js";
-import {
-    Account,
-    CoValueBase,
-    CoValueSchemaBase,
-    Group,
-    ID,
-    SimpleAccount,
-} from "../index.js";
-import { Schema } from "../schema.js";
+import { RawBinaryCoStream as RawBinaryCoStream, CoID } from "cojson";
+import { Account, ControlledAccount } from "../account/account.js";
+import { ID } from "../../id.js";
+import { CoValueBase, CoValueSchemaBase } from "../../baseInterfaces.js";
+import { Schema } from "../../schema.js";
 import { Chunk, Effect, Stream } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
-import { ControlledAccountCtx } from "../services.js";
+import {
+    CoValueUnavailableError,
+    UnknownCoValueLoadError,
+} from "../../errors.js";
+import { ControlledAccountCtx } from "../../services.js";
+import { Group } from "../group/group.js";
+import { BinaryCoStreamMeta } from "./meta.js";
 
 export interface BinaryCoStream extends CoValueBase {
     id: ID<BinaryCoStream>;
@@ -40,26 +33,7 @@ export interface BinaryCoStream extends CoValueBase {
         | undefined;
 }
 
-class BinaryCoStreamMeta {
-    owner: Account | Group;
-    core: CoValueCore;
-    loadedAs: ControlledAccount;
-
-    constructor(raw: RawBinaryCoStream) {
-        const rawOwner = raw.core.getGroup();
-        if (rawOwner instanceof RawAccount) {
-            this.owner = SimpleAccount.fromRaw(rawOwner);
-        } else {
-            this.owner = Group.fromRaw(rawOwner);
-        }
-        this.core = raw.core;
-        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
-            raw.core.node.account as RawControlledAccount
-        );
-    }
-}
-
-export interface BinaryCoStreamSchema<Item extends Schema = Schema>
+export interface BinaryCoStreamSchema
     extends Schema<BinaryCoStream>,
         CoValueSchemaBase<BinaryCoStream, RawBinaryCoStream> {
     _Type: "binarycostream";
@@ -242,22 +216,4 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
     }
 } satisfies BinaryCoStreamSchema;
 
-export function isBinaryCoStreamSchema(
-    value: unknown
-): value is BinaryCoStreamSchema {
-    return (
-        typeof value === "function" &&
-        value !== null &&
-        "_Type" in value &&
-        value._Type === "binarycostream"
-    );
-}
 
-export function isBinaryCoStream(value: unknown): value is BinaryCoStream {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        isBinaryCoStreamSchema(value.constructor) &&
-        "id" in value
-    );
-}

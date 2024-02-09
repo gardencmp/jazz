@@ -6,17 +6,19 @@ import {
 } from "cojson";
 import {
     CoValue,
+} from "../../index.js";
+import { ID } from "../../id.js";
+import {
     CoValueBase,
     CoValueMetaBase,
-    CoValueSchemaBase,
-    ID,
-} from "../index.js";
-import { Schema } from "../schema.js";
-import { NullSchema, imm } from "../primitives.js";
-import { CoMapSchema } from "./coMap.js";
-import { Account, ControlledAccount } from "./account.js";
+    CoValueSchemaBase
+} from "../../baseInterfaces.js";
+import { Schema } from "../../schema.js";
+import { NullSchema } from "../../immutables/primitives.js";
+import { CoMapSchema } from "../coMap/coMap.js";
+import { Account, ControlledAccount } from "../account/account.js";
 import { Effect } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
+import { CoValueUnavailableError, UnknownCoValueLoadError } from "../../errors.js";
 
 /** @category CoValues - Group */
 export interface Group<
@@ -183,5 +185,4 @@ export function GroupWith<
     } satisfies GroupSchema<P, R>;
 }
 
-/** @category CoValues - Group */
-export const Group = GroupWith(imm.null, imm.null);
+

@@ -1,11 +1,13 @@
 import {
     CoValue,
-    CoValueBase,
-    CoValueSchemaBase,
     ControlledAccount,
-    ID,
-    subscriptionScopeSym,
 } from "./index.js";
+import { subscriptionScopeSym } from "./subscriptionScopeSym.js";
+import { ID } from "./id.js";
+import {
+    CoValueBase,
+    CoValueSchemaBase
+} from "./baseInterfaces.js";
 
 export class SubscriptionScope<
     RootSchema extends CoValueSchemaBase = CoValueSchemaBase,

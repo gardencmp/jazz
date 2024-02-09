@@ -1,105 +1,30 @@
 import {
     CoID,
-    RawCoValue as RawCoValue,
     RawCoMap as RawCoMap,
-    RawAccount as RawAccount,
     RawControlledAccount as RawControlledAccount,
 } from "cojson";
+import { CoValueSchema, SimpleAccount } from "../../index.js";
+import { subscriptionScopeSym } from "../../subscriptionScopeSym.js";
+import { ID } from "../../id.js";
+import { isCoValueSchema } from "../../guards.js";
+import { Group } from "../group/group.js";
+import { Account, ControlledAccount } from "../account/account.js";
+import { Chunk, Effect, Stream } from "effect";
 import {
-    ID,
-    CoValue,
-    CoValueSchemaBase,
-    CoValueSchema,
-    RawType,
-    CoValueBase,
-    SimpleAccount,
-    CoValueMetaBase,
-    subscriptionScopeSym,
-} from "../index.js";
-import { isCoValueSchema } from "../guards.js";
-import { Schema } from "../schema.js";
-import { Group } from "./group.js";
-import { Account, ControlledAccount } from "./account.js";
-import { Chunk, Effect, Scope, Stream, pipe } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
-import { ControlledAccountCtx } from "../services.js";
-import { ValueRef } from "../valueRef.js";
-import { SubscriptionScope } from "../subscriptionScope.js";
-
-// type BaseCoMapShape = { [key: string]: Schema };
-type BaseCoMapShape = Record<string, Schema>;
+    CoValueUnavailableError,
+    UnknownCoValueLoadError,
+} from "../../errors.js";
+import { ControlledAccountCtx } from "../../services.js";
+import { ValueRef } from "../../valueRef.js";
+import { SubscriptionScope } from "../../subscriptionScope.js";
+import { RawShape } from "./rawShape.js";
+import { CoMapInit } from "./init.js";
+import { CoMapMeta } from "./meta.js";
+import { RefsShape } from "./refsShape.js";
+import { BaseCoMapShape, CoMapSchema, CoMap } from "./coMap.js";
 
 /** @category CoValues - CoMap */
-export type CoMap<Shape extends BaseCoMapShape = BaseCoMapShape> = {
-    [Key in keyof Shape]: Shape[Key]["_Value"] extends CoValue
-        ? Shape[Key]["_Value"] | undefined
-        : Shape[Key]["_Value"];
-} & {
-    id: ID<CoMap<Shape>>;
-    meta: CoMapMeta<Shape>;
-    subscribe: (listener: (newValue: CoMap<Shape>) => void) => () => void;
-    [subscriptionScopeSym]?: SubscriptionScope;
-} & CoValueBase;
 
-type RawShape<Shape extends BaseCoMapShape> = {
-    [Key in keyof Shape]: RawType<Shape[Key]>;
-};
-
-/** @category CoValues - CoMap */
-export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
-    extends Schema<CoMap<Shape>>,
-        CoValueSchemaBase<CoMap<Shape>, RawCoMap<RawShape<Shape>>> {
-    _Type: "comap";
-    _Shape: Shape;
-    _Value: CoMap<Shape>;
-
-    new (
-        init: CoMapInit<Shape>,
-        opts: { owner: Account | Group }
-    ): CoMap<Shape>;
-
-    fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(raw: Raw): CoMap<Shape>;
-}
-
-/** @category CoValues - CoMap */
-export function isCoMapSchema(value: unknown): value is CoMapSchema {
-    return (
-        typeof value === "function" &&
-        value !== null &&
-        "_Type" in value &&
-        value._Type === "comap"
-    );
-}
-
-/** @category CoValues - CoMap */
-export function isCoMap(value: unknown): value is CoMap {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        isCoMapSchema(value.constructor) &&
-        "id" in value
-    );
-}
-
-type CoMapInitBase<Shape extends BaseCoMapShape> = {
-    [Key in keyof Shape as null extends Shape[Key]["_Value"]
-        ? never
-        : Key]: Shape[Key]["_Value"];
-} & {
-    [Key in keyof Shape as null extends Shape[Key]["_Value"] ? Key : never]?:
-        | Shape[Key]["_Value"]
-        | null
-        | undefined;
-};
-
-export type CoMapInit<Shape extends BaseCoMapShape> = Record<
-    string,
-    never
-> extends CoMapInitBase<Shape>
-    ? CoMapInitBase<Shape> | undefined
-    : CoMapInitBase<Shape>;
-
-/** @category CoValues - CoMap */
 export function CoMapOf<Shape extends BaseCoMapShape>(
     SchemaShape: Shape
 ): CoMapSchema<Shape> {
@@ -385,34 +310,3 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
 
     return CoMapSchemaForShape as CoMapSchema<Shape>;
 }
-
-class CoMapMeta<Shape extends BaseCoMapShape> implements CoValueMetaBase {
-    _raw: RawCoMap<RawShape<Shape>>;
-    owner: Account | Group;
-    refs: RefsShape<Shape>;
-    loadedAs: ControlledAccount;
-
-    constructor(raw: RawCoMap<RawShape<Shape>>, refs: RefsShape<Shape>) {
-        this._raw = raw;
-        this.refs = refs;
-        const rawOwner = raw.core.getGroup();
-        if (rawOwner instanceof RawAccount) {
-            this.owner = SimpleAccount.fromRaw(rawOwner);
-        } else {
-            this.owner = Group.fromRaw(rawOwner);
-        }
-        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
-            this._raw.core.node.account as RawControlledAccount
-        );
-    }
-
-    get core() {
-        return this._raw.core;
-    }
-}
-
-type RefsShape<Shape extends BaseCoMapShape> = {
-    [Key in keyof Shape]?: Shape[Key]["_Value"] extends CoValue
-        ? ValueRef<Shape[Key]["_Value"]>
-        : never;
-};

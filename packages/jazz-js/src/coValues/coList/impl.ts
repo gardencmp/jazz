@@ -1,324 +1,32 @@
 import {
     RawCoList as RawCoList,
-    RawAccount as RawAccount,
-    CoValueCore,
     RawControlledAccount as RawControlledAccount,
     CoID,
 } from "cojson";
-import {
-    ID,
-    CoValueSchemaBase,
-    CoValue,
-    ControlledAccount,
-    RawType,
-    CoValueBase,
-    SimpleAccount,
-    CoValueMetaBase,
-    CoValueSchema,
-    subscriptionScopeSym,
-} from "../index.js";
-import { Schema } from "../schema.js";
-import { Group } from "./group.js";
-import { Account } from "./account.js";
-import { isCoValueSchema } from "../guards.js";
+import { subscriptionScopeSym } from "../../subscriptionScopeSym.js";
+import { RawType } from "../../baseInterfaces.js";
+import { ID } from "../../id.js";
+import { Schema } from "../../schema.js";
+import { Account } from "../account/account.js";
+import { isCoValueSchema } from "../../guards.js";
 import { Chunk, Effect, Stream } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../errors.js";
-import { ValueRef } from "../valueRef.js";
-import { ControlledAccountCtx } from "../services.js";
-import { SubscriptionScope } from "../subscriptionScope.js";
-
-/** A collaborative list of values that behaves mostly like an `Array`.
- *
- * Can be created by instatiating a `CoListSchema`.
- *
- * @category CoValues - CoList */
-export interface CoList<Item extends Schema = Schema>
-    extends Array<Item["_Value"]>,
-        CoValueBase {
-    /** @category Collaboration */
-    id: ID<CoList<Item>>;
-    /** @category Collaboration */
-    meta: CoListMeta<Item>;
-    /** @hidden */
-    _raw: RawCoList<RawType<Item>>;
-
-    /** @category Properties */
-    length: number;
-
-    /** @category Access & Finding */
-    [index: number]: Item["_Value"];
-
-    /** @category Access & Finding */
-    at(index: number): Item["_Value"];
-
-    /** @category Access & Finding */
-    indexOf(searchElement: Item["_Value"], fromIndex?: number): number;
-
-    /** @category Access & Finding */
-    lastIndexOf(searchElement: Item["_Value"], fromIndex?: number): number;
-
-    /** @category Access & Finding */
-    includes(searchElement: Item["_Value"], fromIndex?: number): boolean;
-
-    /** @category Mapping & Transformation */
-    slice(start?: number, end?: number): Item["_Value"][];
-
-    /** @category Mapping & Transformation */
-    concat(...items: Item["_Value"][][]): Item["_Value"][];
-
-    /** @category Mapping & Transformation */
-    join(separator?: string): string;
-
-    /** @category Mapping & Transformation */
-    toString(): string;
-
-    /** @category Mapping & Transformation */
-    toLocaleString(): string;
-
-    /** @category Iteration */
-    entries(): IterableIterator<[number, Item["_Value"]]>;
-
-    /** @category Iteration */
-    keys(): IterableIterator<number>;
-
-    /** @category Iteration */
-    values(): IterableIterator<Item["_Value"]>;
-
-    /** @category Iteration */
-    [Symbol.iterator](): IterableIterator<Item["_Value"]>;
-
-    /** @category Iteration */
-    forEach(
-        callbackfn: (
-            value: Item["_Value"],
-            index: number,
-            array: Item["_Value"][]
-        ) => void,
-        thisArg?: unknown
-    ): void;
-
-    /** @category Mapping & Transformation */
-    filter(
-        callbackfn: (
-            value: Item["_Value"],
-            index: number,
-            array: Item["_Value"][]
-        ) => boolean,
-        thisArg?: unknown
-    ): Item["_Value"][];
-
-    /** @category Mapping & Transformation */
-    map<U>(
-        callbackfn: (
-            value: Item["_Value"],
-            index: number,
-            array: Item["_Value"][]
-        ) => U,
-        thisArg?: unknown
-    ): U[];
-
-    /** @category Access & Finding */
-    find(
-        predicate: (
-            value: Item["_Value"],
-            index: number,
-            obj: Item["_Value"][]
-        ) => boolean,
-        thisArg?: unknown
-    ): Item["_Value"] | undefined;
-
-    /** @category Access & Finding */
-    findIndex(
-        predicate: (
-            value: Item["_Value"],
-            index: number,
-            obj: Item["_Value"][]
-        ) => boolean,
-        thisArg?: unknown
-    ): number;
-
-    /** @category Mapping & Transformation */
-    reduce<U>(
-        callbackfn: (
-            previousValue: U,
-            currentValue: Item["_Value"],
-            currentIndex: number,
-            array: Item["_Value"][]
-        ) => U,
-        initialValue: U
-    ): U;
-
-    /** @category Mapping & Transformation */
-    reduce(
-        callbackfn: (
-            previousValue: Item["_Value"],
-            currentValue: Item["_Value"],
-            currentIndex: number,
-            array: Item["_Value"][]
-        ) => Item["_Value"]
-    ): Item["_Value"];
-
-    /** @category Mapping & Transformation */
-    reduceRight<U>(
-        callbackfn: (
-            previousValue: U,
-            currentValue: Item["_Value"],
-            currentIndex: number,
-            array: Item["_Value"][]
-        ) => U,
-        initialValue: U
-    ): U;
-
-    /** @category Mapping & Transformation */
-    reduceRight(
-        callbackfn: (
-            previousValue: Item["_Value"],
-            currentValue: Item["_Value"],
-            currentIndex: number,
-            array: Item["_Value"][]
-        ) => Item["_Value"]
-    ): Item["_Value"];
-
-    /** @category Access & Finding */
-    some(
-        callbackfn: (
-            value: Item["_Value"],
-            index: number,
-            array: Item["_Value"][]
-        ) => unknown,
-        thisArg?: unknown
-    ): boolean;
-
-    /** @category Access & Finding */
-    every(
-        callbackfn: (
-            value: Item["_Value"],
-            index: number,
-            array: Item["_Value"][]
-        ) => unknown,
-        thisArg?: unknown
-    ): boolean;
-
-    /** @category Mutation */
-    push(...items: Item["_Value"][]): number;
-    /** @category Mutation */
-    unshift(..._items: Item["_Value"][]): number;
-
-    /** @category Mutation */
-    splice(start: number, deleteCount: 1): [Item["_Value"]];
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    splice(start: number, deleteCount?: number | undefined): Item["_Value"][];
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    splice(
-        start: number,
-        deleteCount: number,
-        ...items: Item["_Value"][]
-    ): Item["_Value"][];
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    pop(): Item["_Value"] | undefined;
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    shift(): Item["_Value"] | undefined;
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    reverse(): Item["_Value"][];
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    sort(
-        _compareFn?:
-            | ((a: Item["_Value"], b: Item["_Value"]) => number)
-            | undefined
-    ): this;
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    copyWithin(
-        _target: number,
-        _start: number,
-        _end?: number | undefined
-    ): this;
-
-    /** @deprecated Not yet implemented in CoList */
-    /** @category Mutation - unimplemented */
-    fill(
-        _value: Item["_Value"],
-        _start?: number | undefined,
-        _end?: number | undefined
-    ): this;
-}
-
-export class CoListMeta<Item extends Schema> implements CoValueMetaBase {
-    owner: Account | Group;
-    _raw: RawCoList;
-    core: CoValueCore;
-    loadedAs: ControlledAccount;
-    refs: ValueRef<Item["_Value"]>[];
-    constructor(raw: RawCoList, refs: ValueRef<Item["_Value"]>[]) {
-        const rawOwner = raw.core.getGroup();
-        if (rawOwner instanceof RawAccount) {
-            this.owner = SimpleAccount.fromRaw(rawOwner);
-        } else {
-            this.owner = Group.fromRaw(rawOwner);
-        }
-        this._raw = raw;
-        this.core = raw.core;
-        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
-            this._raw.core.node.account as RawControlledAccount
-        );
-        this.refs = refs;
-    }
-}
+import {
+    CoValueUnavailableError,
+    UnknownCoValueLoadError,
+} from "../../errors.js";
+import { ValueRef } from "../../valueRef.js";
+import { ControlledAccountCtx } from "../../services.js";
+import { SubscriptionScope } from "../../subscriptionScope.js";
+import { Group } from "../group/group.js";
+import { SimpleAccount } from "../account/simpleAccount.js";
+import { ControlledAccount } from "../account/account.js";
+import { CoValueSchema } from "../../index.js";
+import { CoListMeta } from "./meta.js";
+import { isCoListSchema } from "./guards.js";
+import { CoListSchema, CoList } from "./coList.js";
 
 /** @category CoValues - CoList */
-export interface CoListSchema<Item extends Schema = Schema>
-    extends Schema<CoList<Item>>,
-        CoValueSchemaBase<CoList<Item>, RawCoList<RawType<Item>>> {
-    /** @category Type Tag */
-    _Type: "colist";
-    /** @category Type Hints */
-    _Item: Item;
-    /** @category Type Hints */
-    _Value: CoList<Item>;
 
-    /** @category Value Creation */
-    new (
-        init: Item["_Value"][],
-        options: { owner: Account | Group }
-    ): CoList<Item>;
-
-    /** @hidden */
-    fromRaw(raw: RawCoList<RawType<Item>>): CoList<Item>;
-}
-
-/** @category CoValues - CoList */
-export function isCoListSchema(value: unknown): value is CoListSchema {
-    return (
-        typeof value === "function" &&
-        value !== null &&
-        "_Type" in value &&
-        value._Type === "colist"
-    );
-}
-
-/** @category CoValues - CoList */
-export function isCoList(value: unknown): value is CoList {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        isCoListSchema(value.constructor) &&
-        "id" in value
-    );
-}
-
-/** @category CoValues - CoList */
 export function CoListOf<Item extends Schema>(
     ItemSchema: Item
 ): CoListSchema<Item> {
@@ -696,7 +404,6 @@ export function CoListOf<Item extends Schema>(
         }
 
         // provide mock implementation of all other array mutating methods which throw "TODO: implement ... "
-
         pop(): Item["_Value"] | undefined {
             throw new Error("TODO: implement pop in CoList");
         }

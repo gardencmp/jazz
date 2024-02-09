@@ -2,10 +2,10 @@ import { CoID } from "cojson";
 import {
     CoValue,
     CoValueSchema,
-    CoValueSchemaBase,
     ControlledAccount,
-    ID,
 } from "./index.js";
+import { ID } from "./id.js";
+import { CoValueSchemaBase } from "./baseInterfaces.js";
 
 export type ValueRef<V extends CoValue> = {
     id: ID<V>;
