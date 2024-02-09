@@ -275,11 +275,11 @@ export class IDBStorage {
                     pendingRequests: [],
                 };
 
-                console.time("IndexedDB TX" + txEntry.id);
+                // console.time("IndexedDB TX" + txEntry.id);
 
-                txEntry.tx.oncomplete = () => {
-                    console.timeEnd("IndexedDB TX" + txEntry!.id);
-                };
+                // txEntry.tx.oncomplete = () => {
+                //     console.timeEnd("IndexedDB TX" + txEntry!.id);
+                // };
 
                 this.currentTx = txEntry;
 
