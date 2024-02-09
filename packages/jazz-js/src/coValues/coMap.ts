@@ -51,6 +51,7 @@ export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
         CoValueSchemaBase<CoMap<Shape>, RawCoMap<RawShape<Shape>>> {
     _Type: "comap";
     _Shape: Shape;
+    _Value: CoMap<Shape>;
 
     new (
         init: CoMapInit<Shape>,

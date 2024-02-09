@@ -20,6 +20,18 @@ export class NullSchema extends Schema<null> {
     static _Value: null;
 }
 
+export class TupleSchema<T extends Schema[]> extends Schema<
+    { [K in keyof T]: T[K]["_Value"] }
+> {
+    static _Type = "tuple";
+    _Items: T;
+
+    constructor(items: T) {
+        super();
+        this._Items = items;
+    }
+}
+
 export class ConstSchema<Value extends Primitive> extends Schema<Value> {
     static _Type = "const";
     _Value: Value;
@@ -36,6 +48,7 @@ export const imm = {
     string: new StringSchema(),
     number: new NumberSchema(),
     null: new NullSchema(),
+    tuple: <T extends Schema[]>(...items: T) => new TupleSchema(items),
 };
 
 export type Primitive = string | number | boolean | null;
