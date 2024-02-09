@@ -1,17 +1,17 @@
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { RawCoID } from "./ids.js";
-import { CoMap } from "./coValues/coMap.js";
-import { BinaryCoStream, CoStream } from "./coValues/coStream.js";
-import { CoList } from "./coValues/coList.js";
+import { RawCoMap } from "./coValues/coMap.js";
+import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
+import { RawCoList } from "./coValues/coList.js";
 import { CoValueCore } from "./coValueCore.js";
-import { Group } from "./coValues/group.js";
-import { Account, Profile } from "./index.js";
+import { RawGroup } from "./coValues/group.js";
+import { RawAccount, Profile } from "./index.js";
 
-export type CoID<T extends CoValue> = RawCoID & {
+export type CoID<T extends RawCoValue> = RawCoID & {
     readonly __type: T;
 };
 
-export interface CoValue {
+export interface RawCoValue {
     /** The `CoValue`'s (precisely typed) `CoID` */
     id: CoID<this>;
     core: CoValueCore;
@@ -20,7 +20,7 @@ export interface CoValue {
     /** The `CoValue`'s (precisely typed) static metadata */
     headerMeta: JsonObject | null;
     /** The `Group` this `CoValue` belongs to (determining permissions) */
-    group: Group;
+    group: RawGroup;
     /** Returns an immutable JSON presentation of this `CoValue` */
     toJSON(): JsonValue;
     atTime(time: number): this;
@@ -34,35 +34,35 @@ export interface CoValue {
     subscribe(listener: (coValue: this) => void): () => void;
 }
 
-export type AnyCoValue =
-    | CoMap
-    | Group
-    | Account
+export type AnyRawCoValue =
+    | RawCoMap
+    | RawGroup
+    | RawAccount
     | Profile
-    | CoList
-    | CoStream
-    | BinaryCoStream;
+    | RawCoList
+    | RawCoStream
+    | RawBinaryCoStream;
 
-export function expectMap(content: CoValue): CoMap {
+export function expectMap(content: RawCoValue): RawCoMap {
     if (content.type !== "comap") {
         throw new Error("Expected map");
     }
 
-    return content as CoMap;
+    return content as RawCoMap;
 }
 
-export function expectList(content: CoValue): CoList {
+export function expectList(content: RawCoValue): RawCoList {
     if (content.type !== "colist") {
         throw new Error("Expected list");
     }
 
-    return content as CoList;
+    return content as RawCoList;
 }
 
-export function expectStream(content: CoValue): CoStream {
+export function expectStream(content: RawCoValue): RawCoStream {
     if (content.type !== "costream") {
         throw new Error("Expected stream");
     }
 
-    return content as CoStream;
+    return content as RawCoStream;
 }

@@ -1,8 +1,8 @@
-import { CoMap } from './coValues/coMap.js'
-import { BinaryCoStream } from './coValues/coStream.js'
+import { RawCoMap } from './coValues/coMap.js'
+import { RawBinaryCoStream } from './coValues/coStream.js'
 
-export type ImageDefinition = CoMap<{
+export type ImageDefinition = RawCoMap<{
     originalSize: [number, number];
     placeholderDataURL?: string;
-    [res: `${number}x${number}`]: BinaryCoStream["id"];
+    [res: `${number}x${number}`]: RawBinaryCoStream["id"];
 }>;

@@ -1,8 +1,6 @@
 import { useCallback } from "react";
 
-import { CoID } from "cojson";
-
-import { TodoProject, Task } from "./1_types";
+import { TodoProject, Task } from "./1_schema";
 
 import {
     Checkbox,
@@ -19,7 +17,8 @@ import {
 import { InviteButton } from "./components/InviteButton";
 import uniqolor from "uniqolor";
 import { useParams } from "react-router";
-import { Resolved, useAutoSub } from "jazz-react";
+import { ID } from "jazz-js";
+import { useCoState } from "./2_main";
 
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
@@ -30,13 +29,13 @@ import { Resolved, useAutoSub } from "jazz-react";
  */
 
 export function ProjectTodoTable() {
-    const projectId = useParams<{ projectId: CoID<TodoProject> }>().projectId;
+    const projectId = useParams<{ projectId: ID<TodoProject> }>().projectId;
 
     // `useAutoSub()` reactively subscribes to updates to a CoValue's
     // content - whether we create edits locally, load persisted data, or receive
     // sync updates from other devices or participants!
     // It also recursively resolves and subsribes to all referenced CoValues.
-    const project = useAutoSub(projectId);
+    const project = useCoState(TodoProject, projectId);
 
     // `createTask` is similar to `createProject` we saw earlier, creating a new CoMap
     // for a new task (in the same group as the project), and then
@@ -44,17 +43,15 @@ export function ProjectTodoTable() {
     const createTask = useCallback(
         (text: string) => {
             if (!project?.tasks || !text) return;
-            const task = project.meta.group.createMap<Task>({
+            const task = new Task({
                 done: false,
                 text,
-            });
+            }, { owner: project.meta.owner });
 
-            // project.tasks is immutable, but `append` will create an edit
-            // that will cause useAutoSub to rerender this component
-            // - here and on other devices!
-            project.tasks.append(task.id);
+            // push will cause useCoState to rerender this component, both here and on other devices
+            project.tasks.push(task);
         },
-        [project?.tasks, project?.meta.group]
+        [project?.tasks, project?.meta.owner]
     );
 
     return (
@@ -74,7 +71,7 @@ export function ProjectTodoTable() {
                         )
                     }
                 </h1>
-                <InviteButton value={project} />
+                <InviteButton value={project} valueHint="project" />
             </div>
             <Table>
                 <TableHeader>
@@ -97,7 +94,7 @@ export function ProjectTodoTable() {
     );
 }
 
-export function TaskRow({ task }: { task: Resolved<Task> | undefined }) {
+export function TaskRow({ task }: { task: Task | undefined }) {
     return (
         <TableRow>
             <TableCell>
@@ -108,7 +105,7 @@ export function TaskRow({ task }: { task: Resolved<Task> | undefined }) {
                         // Tick or untick the task
                         // Task is also immutable, but this will update all queries
                         // that include this task as a reference
-                        task?.set({ done: !!checked });
+                        if (task) task.done = !!checked;
                     }}
                 />
             </TableCell>
@@ -127,7 +124,9 @@ export function TaskRow({ task }: { task: Resolved<Task> | undefined }) {
                         task?.meta.edits.text?.by?.profile?.name ? (
                             <span
                                 className="rounded-full py-0.5 px-2 text-xs"
-                                style={uniqueColoring(task.meta.edits.text.by.id)}
+                                style={uniqueColoring(
+                                    task.meta.edits.text.by.id
+                                )}
                             >
                                 {task.meta.edits.text.by.profile.name}
                             </span>

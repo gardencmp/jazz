@@ -1,8 +1,8 @@
 import { CoID } from "../coValue.js";
-import { CoMap } from "./coMap.js";
-import { CoList } from "./coList.js";
+import { RawCoMap } from "./coMap.js";
+import { RawCoList } from "./coList.js";
 import { JsonObject } from "../jsonValue.js";
-import { BinaryCoStream, CoStream } from "./coStream.js";
+import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
 import {
     Encrypted,
     KeyID,
@@ -18,16 +18,20 @@ import {
     getAgentID,
 } from "../crypto.js";
 import { AgentID, isAgentID } from "../ids.js";
-import { Account, AccountID, ControlledAccountOrAgent, Profile } from "./account.js";
+import {
+    RawAccount,
+    AccountID,
+    ControlledAccountOrAgent,
+} from "./account.js";
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
 
 export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
 
-export type GroupShape<P extends Profile, R extends CoMap> = {
-    profile?: CoID<P> | null;
-    root?: CoID<R> | null;
+export type GroupShape = {
+    profile: CoID<RawCoMap> | null;
+    root: CoID<RawCoMap> | null;
     [key: AccountID | AgentID]: Role;
     [EVERYONE]?: Role;
     readKey?: KeyID;
@@ -60,11 +64,9 @@ export type GroupShape<P extends Profile, R extends CoMap> = {
  *  const localNode.createGroup();
  *  ```
  * */
-export class Group<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
+export class RawGroup<
     Meta extends JsonObject | null = JsonObject | null
-> extends CoMap<GroupShape<P, R>, Meta> {
+> extends RawCoMap<GroupShape, Meta> {
     /**
      * Returns the current role of a given account.
      *
@@ -94,16 +96,18 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    addMember(account: Account | ControlledAccountOrAgent | Everyone, role: Role): this {
-        return this.addMemberInternal(account, role);
+    addMember(
+        account: RawAccount | ControlledAccountOrAgent | Everyone,
+        role: Role
+    ) {
+        this.addMemberInternal(account, role);
     }
 
     /** @internal */
     addMemberInternal(
-        account: Account | ControlledAccountOrAgent | AgentID | Everyone,
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
         role: Role
-    ): this {
-        return this.mutate((mutable) => {
+    ) {
             const currentReadKey = this.core.getCurrentReadKey();
 
             if (!currentReadKey.secret) {
@@ -116,27 +120,31 @@ export class Group<
                         "Can't make everyone something other than reader or writer"
                     );
                 }
-                mutable.set(account, role, "trusting");
+                this.set(account, role, "trusting");
 
-                if (mutable.get(account) !== role) {
+                if (this.get(account) !== role) {
                     throw new Error("Failed to set role");
                 }
 
-                mutable.set(
+                this.set(
                     `${currentReadKey.id}_for_${EVERYONE}`,
                     currentReadKey.secret,
                     "trusting"
                 );
             } else {
-                const memberKey = typeof account === "string" ? account : account.id;
-                const agent = typeof account === "string" ? account : account.currentAgentID();
-                mutable.set(memberKey, role, "trusting");
+                const memberKey =
+                    typeof account === "string" ? account : account.id;
+                const agent =
+                    typeof account === "string"
+                        ? account
+                        : account.currentAgentID();
+                this.set(memberKey, role, "trusting");
 
-                if (mutable.get(memberKey) !== role) {
+                if (this.get(memberKey) !== role) {
                     throw new Error("Failed to set role");
                 }
 
-                mutable.set(
+                this.set(
                     `${currentReadKey.id}_for_${memberKey}`,
                     seal({
                         message: currentReadKey.secret,
@@ -150,11 +158,10 @@ export class Group<
                     "trusting"
                 );
             }
-        });
     }
 
     /** @internal */
-    rotateReadKey(): this {
+    rotateReadKey() {
         const currentlyPermittedReaders = this.keys().filter((key) => {
             if (key.startsWith("co_") || isAgentID(key)) {
                 const role = this.get(key);
@@ -181,14 +188,13 @@ export class Group<
 
         const newReadKey = newRandomKeySecret();
 
-        return this.mutate((mutable) => {
             for (const readerID of currentlyPermittedReaders) {
                 const reader = this.core.node.resolveAccountAgent(
                     readerID,
                     "Expected to know currently permitted reader"
                 );
 
-                mutable.set(
+                this.set(
                     `${newReadKey.id}_for_${readerID}`,
                     seal({
                         message: newReadKey.secret,
@@ -203,7 +209,7 @@ export class Group<
                 );
             }
 
-            mutable.set(
+            this.set(
                 `${currentReadKey.id}_for_${newReadKey.id}`,
                 encryptKeySecret({
                     encrypting: newReadKey,
@@ -212,8 +218,7 @@ export class Group<
                 "trusting"
             );
 
-            mutable.set("readKey", newReadKey.id, "trusting");
-        });
+            this.set("readKey", newReadKey.id, "trusting");
     }
 
     /**
@@ -223,16 +228,17 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    removeMember(account: Account | ControlledAccountOrAgent | Everyone): this {
-        return this.removeMemberInternal(account);
+    removeMember(account: RawAccount | ControlledAccountOrAgent | Everyone) {
+        this.removeMemberInternal(account);
     }
 
     /** @internal */
-    removeMemberInternal(account: Account | ControlledAccountOrAgent | AgentID | Everyone): this {
+    removeMemberInternal(
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone
+    ) {
         const memberKey = typeof account === "string" ? account : account.id;
-        const afterRevoke = this.set(memberKey, "revoked", "trusting");
-
-        return afterRevoke.rotateReadKey();
+         this.set(memberKey, "revoked", "trusting");
+        this.rotateReadKey();
     }
 
     /**
@@ -259,12 +265,12 @@ export class Group<
      *
      * @category 3. Value creation
      */
-    createMap<M extends CoMap>(
+    createMap<M extends RawCoMap>(
         init?: M["_shape"],
         meta?: M["headerMeta"],
         initPrivacy: "trusting" | "private" = "private"
     ): M {
-        let map = this.core.node
+        const map = this.core.node
             .createCoValue({
                 type: "comap",
                 ruleset: {
@@ -278,7 +284,7 @@ export class Group<
 
         if (init) {
             for (const [key, value] of Object.entries(init)) {
-                map = map.set(key, value, initPrivacy);
+                map.set(key, value, initPrivacy);
             }
         }
 
@@ -291,12 +297,12 @@ export class Group<
      *
      * @category 3. Value creation
      */
-    createList<L extends CoList>(
+    createList<L extends RawCoList>(
         init?: L["_item"][],
         meta?: L["headerMeta"],
         initPrivacy: "trusting" | "private" = "private"
     ): L {
-        let list = this.core.node
+        const list = this.core.node
             .createCoValue({
                 type: "colist",
                 ruleset: {
@@ -310,7 +316,7 @@ export class Group<
 
         if (init) {
             for (const item of init) {
-                list = list.append(item, undefined, initPrivacy);
+                list.append(item, undefined, initPrivacy);
             }
         }
 
@@ -318,7 +324,7 @@ export class Group<
     }
 
     /** @category 3. Value creation */
-    createStream<C extends CoStream>(meta?: C["headerMeta"]): C {
+    createStream<C extends RawCoStream>(meta?: C["headerMeta"]): C {
         return this.core.node
             .createCoValue({
                 type: "costream",
@@ -333,7 +339,7 @@ export class Group<
     }
 
     /** @category 3. Value creation */
-    createBinaryStream<C extends BinaryCoStream>(
+    createBinaryStream<C extends RawBinaryCoStream>(
         meta: C["headerMeta"] = { type: "binary" }
     ): C {
         return this.core.node

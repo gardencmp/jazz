@@ -9,7 +9,7 @@
     "dependencies": {
         "cojson": "workspace:*",
         "cojson-transport-nodejs-ws": "workspace:*",
-        "jazz-autosub": "workspace:*",
+        "jazz-js": "workspace:*",
         "ws": "^8.14.2"
     },
     "devDependencies": {

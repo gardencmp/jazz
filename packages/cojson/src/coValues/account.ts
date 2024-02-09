@@ -1,5 +1,5 @@
 import { CoValueCore, CoValueHeader } from "../coValueCore.js";
-import { CoID, CoValue } from "../coValue.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import {
     AgentSecret,
     SealerID,
@@ -13,8 +13,8 @@ import {
     getAgentSignerSecret,
 } from "../crypto.js";
 import { AgentID } from "../ids.js";
-import { CoMap } from "./coMap.js";
-import { Group, InviteSecret } from "./group.js";
+import { RawCoMap } from "./coMap.js";
+import { RawGroup, InviteSecret } from "./group.js";
 import { LocalNode } from "../index.js";
 
 export function accountHeaderForInitialAgentSecret(
@@ -32,11 +32,9 @@ export function accountHeaderForInitialAgentSecret(
     };
 }
 
-export class Account<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
+export class RawAccount<
     Meta extends AccountMeta = AccountMeta
-> extends Group<P, R, Meta> {
+> extends RawGroup<Meta> {
     currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
             k.startsWith("sealer_")
@@ -64,12 +62,8 @@ export interface ControlledAccountOrAgent {
 }
 
 /** @hidden */
-export class ControlledAccount<
-        P extends Profile = Profile,
-        R extends CoMap = CoMap,
-        Meta extends AccountMeta = AccountMeta
-    >
-    extends Account<P, R, Meta>
+export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
+    extends RawAccount<Meta>
     implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
@@ -88,7 +82,7 @@ export class ControlledAccount<
         return this.core.node.createGroup();
     }
 
-    async acceptInvite<T extends CoValue>(
+    async acceptInvite<T extends RawCoValue>(
         groupOrOwnedValueID: CoID<T>,
         inviteSecret: InviteSecret
     ): Promise<void> {
@@ -117,9 +111,7 @@ export class ControlledAccount<
 }
 
 /** @hidden */
-export class ControlledAgent
-    implements ControlledAccountOrAgent
-{
+export class ControlledAgent implements ControlledAccountOrAgent {
     agentSecret: AgentSecret;
 
     constructor(agentSecret: AgentSecret) {
@@ -152,7 +144,7 @@ export class ControlledAgent
 }
 
 export type AccountMeta = { type: "account" };
-export type AccountID = CoID<Account>;
+export type AccountID = CoID<RawAccount>;
 
 export type ProfileShape = {
     name: string;
@@ -162,14 +154,10 @@ export type ProfileMeta = { type: "profile" };
 export class Profile<
     Shape extends ProfileShape = ProfileShape,
     Meta extends ProfileMeta = ProfileMeta
-> extends CoMap<Shape, Meta> {}
+> extends RawCoMap<Shape, Meta> {}
 
-export type AccountMigration<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
-    Meta extends AccountMeta = AccountMeta
-> = (
-    account: ControlledAccount<P, R, Meta>,
-    profile: P,
+export type RawAccountMigration<Meta extends AccountMeta = AccountMeta> = (
+    account: RawControlledAccount<Meta>,
+    profile: RawCoMap,
     localNode: LocalNode
 ) => void | Promise<void>;

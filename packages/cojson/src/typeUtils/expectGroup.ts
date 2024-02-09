@@ -1,13 +1,13 @@
-import { expectMap, type CoValue } from "../coValue.js";
-import { Group } from "../coValues/group.js";
+import { expectMap, type RawCoValue } from "../coValue.js";
+import { RawGroup } from "../coValues/group.js";
 
-export function expectGroup(content: CoValue): Group {
+export function expectGroup(content: RawCoValue): RawGroup {
     const map = expectMap(content);
     if (map.core.header.ruleset.type !== "group") {
         throw new Error("Expected group ruleset in group");
     }
 
-    if (!(map instanceof Group)) {
+    if (!(map instanceof RawGroup)) {
         throw new Error("Expected group");
     }
 

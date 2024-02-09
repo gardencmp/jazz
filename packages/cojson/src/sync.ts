@@ -690,9 +690,9 @@ export class SyncManager {
             const done = new Promise<void>((resolve) => {
                 setTimeout(async () => {
                     delete this.requestedSyncs[coValue.id];
-                    if (entry.nRequestsThisTick >= 2) {
-                        console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
-                    }
+                    // if (entry.nRequestsThisTick >= 2) {
+                    //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
+                    // }
                     await this.actuallySyncCoValue(coValue);
                     resolve();
                 }, 0);

@@ -5,7 +5,7 @@ import { KeyID } from "./crypto.js";
 import { CoValueCore, Transaction } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { Account, AccountID, Profile } from "./coValues/account.js";
+import { RawAccount, AccountID, Profile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
 import { EVERYONE, Everyone } from "./coValues/group.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -248,7 +248,7 @@ export function determineValidTransactions(
                         const groupAtTime = groupContent.atTime(tx.madeAt);
                         const effectiveTransactor =
                             transactor === groupContent.id &&
-                            groupAtTime instanceof Account
+                            groupAtTime instanceof RawAccount
                                 ? groupAtTime.currentAgentID()
                                 : transactor;
                         const transactorRoleAtTxTime =

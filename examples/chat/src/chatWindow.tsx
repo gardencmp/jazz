@@ -1,8 +1,9 @@
-import { useAutoSub } from 'jazz-react';
-import { Chat, Message } from './dataModel.ts';
+import { ID } from 'jazz-js';
+import { Chat, Message } from './schema.ts';
+import { useCoState } from './app.tsx';
 
-export function ChatWindow(props: { chatId: Chat['id'] }) {
-  const chat = useAutoSub(props.chatId);
+export function ChatWindow(props: { chatId: ID<Chat> }) {
+  const chat = useCoState(Chat, props.chatId);
 
   return chat ? <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
     {
@@ -15,8 +16,7 @@ export function ChatWindow(props: { chatId: Chat['id'] }) {
       ))
     }
     <ChatInput onSubmit={(text) => {
-      const msg = chat.meta.group.createMap<Message>({ text });
-      chat.append(msg.id);
+      chat.push(new Message({ text }, { owner: chat.meta.owner }));
     }}/>
   </div> : <div>Loading...</div>;
 }

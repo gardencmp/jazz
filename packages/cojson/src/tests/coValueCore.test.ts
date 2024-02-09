@@ -142,9 +142,7 @@ test("New transactions in a group correctly update owned values, including subsc
 
     let map = group.createMap();
 
-    let mapAfterEdit = map.edit((map) => {
-        map.set("hello", "world");
-    });
+    map.set("hello", "world");
 
     const listener = jest.fn().mockImplementation();
 
