@@ -17,7 +17,7 @@ import {
     Profile,
     SessionID,
     cojsonReady,
-    cojsonInternals
+    cojsonInternals,
 } from "cojson";
 import { readFile, writeFile } from "node:fs/promises";
 
@@ -41,7 +41,7 @@ interface WorkerCredentialStorage {
 
 export async function createOrResumeWorker<
     P extends Profile = Profile,
-    R extends CoMap = CoMap
+    R extends CoMap = CoMap,
 >({
     workerName,
     credentialStorage = FileCredentialStorage,
@@ -62,7 +62,7 @@ export async function createOrResumeWorker<
     const ws = new WebSocket(syncServer);
 
     const wsPeer: Peer = {
-        id: "globalMesh",
+        id: "upstream",
         role: "server",
         incoming: websocketReadableStream(ws),
         outgoing: websocketWritableStream(ws),
@@ -109,6 +109,22 @@ export async function createOrResumeWorker<
         console.log("Created worker", newWorker.accountID, workerName);
     }
 
+    setInterval(() => {
+        if (!localNode.syncManager.peers["upstream"]) {
+            console.log(new Date(), "Reconnecting to upstream " + syncServer);
+            const ws = new WebSocket(syncServer);
+
+            const wsPeer: Peer = {
+                id: "upstream",
+                role: "server",
+                incoming: websocketReadableStream(ws),
+                outgoing: websocketWritableStream(ws),
+            };
+
+            localNode.syncManager.addPeer(wsPeer);
+        }
+    }, 5000);
+
     return { localNode, worker: localNode.account as ControlledAccount<P, R> };
 }
 
@@ -152,10 +168,14 @@ export const FileCredentialStorage: WorkerCredentialStorage = {
                     ".gitignore",
                     gitginore + `\n${workerName}Credentials.json`
                 );
-                console.log(`Added ${workerName}Credentials.json to .gitignore`);
+                console.log(
+                    `Added ${workerName}Credentials.json to .gitignore`
+                );
             }
         } catch (e) {
-            console.warn(`Couldn't add ${workerName}Credentials.json to .gitignore, please add it yourself.`)
+            console.warn(
+                `Couldn't add ${workerName}Credentials.json to .gitignore, please add it yourself.`
+            );
         }
     },
 };
