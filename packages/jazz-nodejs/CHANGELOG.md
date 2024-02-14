@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.6.6
+
+### Patch Changes
+
+- Simple reconnect logic
+
 ## 0.6.5
 
 ### Patch Changes

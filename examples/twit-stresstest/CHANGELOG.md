@@ -1,5 +1,12 @@
 # twit-stresstest
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-nodejs@0.6.6
+
 ## 0.2.1
 
 ### Patch Changes
