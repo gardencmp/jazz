@@ -8,7 +8,7 @@
     "version": "0.6.1",
     "dependencies": {
         "cojson": "workspace:*",
-        "effect": "^2.0.2"
+        "effect": "^2.4.0"
     },
     "scripts": {
         "test": "vitest",

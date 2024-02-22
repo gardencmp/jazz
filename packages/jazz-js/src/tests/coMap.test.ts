@@ -302,3 +302,37 @@ describe("CoMap resolution", async () => {
         );
     });
 });
+
+describe("CoMap resolution in extra keys", async () => {
+    class InnerMap extends CoMapOf({
+        color: imm.string,
+    }) {}
+
+    class TestMap extends CoMapOf({
+        height: imm.number,
+        "...": InnerMap,
+    }) {}
+
+    const initNodeAndMap = async () => {
+        const me = await SimpleAccount.createControlledAccount({
+            name: "Hermes Puggington",
+        });
+
+        const map = new TestMap(
+            {
+                height: 50,
+                innerInSomeKey: new InnerMap(
+                    {
+                        color: "blue",
+                    },
+                    { owner: me }
+                ),
+            },
+            { owner: me }
+        );
+
+        return { me, map };
+    };
+
+    test("Construction", async () => {});
+});

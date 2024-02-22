@@ -936,8 +936,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson
       effect:
-        specifier: ^2.0.2
-        version: 2.0.2
+        specifier: ^2.4.0
+        version: 2.4.0
     devDependencies:
       typescript:
         specifier: ^5.3.3
@@ -4889,8 +4889,8 @@ packages:
       which: 4.0.0
     dev: true
 
-  /effect@2.0.2:
-    resolution: {integrity: sha512-YrB7AiBsvgWbA2paV0LB47Ux4SfK46v9hWwUFceN6zDgxpEzVyWfRX3tkFEGNV4t8OvPqlfyew+dmf7YzkbDYQ==}
+  /effect@2.4.0:
+    resolution: {integrity: sha512-HAtFVAbAGYDzfGbrSrX1gzMzXym15zk1+ps72X8W1wdZY0vxq+u23w8u9DhAZjiJPHT4W9ZYL7QWQqpP4t+dSg==}
     dev: false
 
   /electron-to-chromium@1.4.615:
