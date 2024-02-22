@@ -27,9 +27,9 @@ export interface CoValueSchemaBase<
     loadEf(
         id: ID<Value>
     ): Effect.Effect<
-        ControlledAccountCtx,
+        Value,
         CoValueUnavailableError | UnknownCoValueLoadError,
-        Value
+        ControlledAccountCtx
     >;
 
     subscribe(
@@ -41,9 +41,9 @@ export interface CoValueSchemaBase<
     subscribeEf(
         id: ID<Value>
     ): Stream.Stream<
-        ControlledAccountCtx,
+        Value,
         CoValueUnavailableError | UnknownCoValueLoadError,
-        Value
+        ControlledAccountCtx
     >;
 }
 
@@ -53,7 +53,7 @@ export interface CoValueBase {
 
     subscribe(onUpdate: (value: this) => void): () => void;
 
-    subscribeEf(): Stream.Stream<never, never, this>;
+    subscribeEf(): Stream.Stream<this, never, never>;
 
     toJSON(): Record<string, unknown> | unknown[];
 

@@ -100,9 +100,9 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
         id: ID<BinaryCoStream>,
         options?: { onProgress?: (progress: number) => void }
     ): Effect.Effect<
-        ControlledAccount,
+        BinaryCoStream,
         CoValueUnavailableError | UnknownCoValueLoadError,
-        BinaryCoStream
+        ControlledAccount
     > {
         return Effect.gen(function* ($) {
             const as = yield* $(ControlledAccountCtx);
@@ -128,9 +128,9 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
     static subscribeEf(
         id: ID<BinaryCoStream>
     ): Stream.Stream<
-        ControlledAccountCtx,
+        BinaryCoStream,
         CoValueUnavailableError | UnknownCoValueLoadError,
-        BinaryCoStream
+        ControlledAccountCtx
     > {
         throw new Error(
             "TODO: implement somehow with Scope and Stream.asyncScoped"
@@ -159,13 +159,13 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
         };
     }
 
-    subscribeEf(): Stream.Stream<never, never, BinaryCoStream> {
+    subscribeEf(): Stream.Stream<BinaryCoStream, never, never> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return Stream.asyncScoped((emit) =>
             Effect.gen(function* ($) {
                 const unsub = self.subscribe((value) => {
-                    void emit(Effect.succeed(Chunk.of(value)));
+                    void emit.single(value);
                 });
 
                 yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));

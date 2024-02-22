@@ -51,11 +51,7 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         meta: CoMapMeta<Shape>;
 
         constructor(owner: Account | Group, init: CoMapInit<Shape>);
-        constructor(
-            options: {
-                fromRaw: RawCoMap<RawShape<Shape>>;
-            },
-        );
+        constructor(options: { fromRaw: RawCoMap<RawShape<Shape>> });
         constructor(
             optionsOrOwner:
                 | Group
@@ -79,10 +75,10 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
 
                     if (isCoValueSchema(keySchema)) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        initForInner[key] = (init as any)[key].id;
+                        (initForInner as any)[key] = (init as any)[key].id;
                     } else {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        initForInner[key] = (init as any)[key];
+                        (initForInner as any)[key] = (init as any)[key];
                     }
                 }
 
@@ -165,9 +161,9 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         static loadEf(
             id: ID<CoMap<Shape>>
         ): Effect.Effect<
-            ControlledAccountCtx,
+            CoMap<Shape>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            CoMap<Shape>
+            ControlledAccountCtx
         > {
             return Effect.gen(function* ($) {
                 const as = yield* $(ControlledAccountCtx);
@@ -193,9 +189,9 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         static subscribeEf(
             id: ID<CoMap<Shape>>
         ): Stream.Stream<
-            ControlledAccountCtx,
+            CoMap<Shape>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            CoMap<Shape>
+            ControlledAccountCtx
         > {
             throw new Error(
                 "TODO: implement somehow with Scope and Stream.asyncScoped"
@@ -223,13 +219,13 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
             };
         }
 
-        subscribeEf(): Stream.Stream<never, never, CoMap<Shape>> {
+        subscribeEf(): Stream.Stream<CoMap<Shape>, never, never> {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
             return Stream.asyncScoped((emit) =>
                 Effect.gen(function* ($) {
                     const unsub = self.subscribe((value) => {
-                        void emit(Effect.succeed(Chunk.of(value)));
+                        void emit.single(value);
                     });
 
                     yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
@@ -365,7 +361,8 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                     KeyCoValueSchema
                 );
             }
-            this._raw.set(key, value?.id);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this._raw.set(key as any, value?.id as any);
         };
     }
 

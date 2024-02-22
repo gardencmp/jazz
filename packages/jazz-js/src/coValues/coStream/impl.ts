@@ -203,9 +203,9 @@ export function CoStreamOf<Item extends Schema>(
         static loadEf(
             id: ID<CoStream<Item>>
         ): Effect.Effect<
-            ControlledAccount,
+            CoStream<Item>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            CoStream<Item>
+            ControlledAccount
         > {
             return Effect.gen(function* ($) {
                 const as = yield* $(ControlledAccountCtx);
@@ -233,9 +233,9 @@ export function CoStreamOf<Item extends Schema>(
         static subscribeEf(
             id: ID<CoStream<Item>>
         ): Stream.Stream<
-            ControlledAccountCtx,
+            CoStream<Item>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            CoStream<Item>
+            ControlledAccountCtx
         > {
             throw new Error(
                 "TODO: implement somehow with Scope and Stream.asyncScoped"
@@ -263,13 +263,13 @@ export function CoStreamOf<Item extends Schema>(
             };
         }
 
-        subscribeEf(): Stream.Stream<never, never, CoStream<Item>> {
+        subscribeEf(): Stream.Stream<CoStream<Item>, never, never> {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
             return Stream.asyncScoped((emit) =>
                 Effect.gen(function* ($) {
                     const unsub = self.subscribe((value) => {
-                        void emit(Effect.succeed(Chunk.of(value)));
+                        void emit.single(value);
                     });
 
                     yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));

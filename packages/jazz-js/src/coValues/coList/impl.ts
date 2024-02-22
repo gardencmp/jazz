@@ -89,7 +89,12 @@ export function CoListOf<Item extends Schema>(
 
             let raw: RawCoList<RawType<Item>>;
 
-            if ("fromRaw" in optionsOrOwner) {
+            if (typeof optionsOrOwner === "number") {
+                // this might be called from an intrinsic, like map, trying to create an empty array
+                // passing `0` as the only parameter
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return new Array(init) as any;
+            } else if ("fromRaw" in optionsOrOwner) {
                 raw = optionsOrOwner.fromRaw;
             } else if (init) {
                 const rawOwner = optionsOrOwner._raw;
@@ -99,14 +104,7 @@ export function CoListOf<Item extends Schema>(
                         : init
                 );
             } else {
-                if (typeof optionsOrOwner === "number") {
-                    // this might be called from an intrinsic, like map, trying to create an empty array
-                    // passing `0` as the only parameter
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return new Array(init) as any;
-                } else {
-                    throw new Error("Expected init and owner");
-                }
+                throw new Error("Invalid arguments");
             }
 
             this._raw = raw;
@@ -248,9 +246,9 @@ export function CoListOf<Item extends Schema>(
         static loadEf(
             id: ID<CoList<Item>>
         ): Effect.Effect<
-            ControlledAccountCtx,
+            CoList<Item>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            CoList<Item>
+            ControlledAccountCtx
         > {
             return Effect.gen(function* ($) {
                 const as = yield* $(ControlledAccountCtx);
@@ -276,9 +274,9 @@ export function CoListOf<Item extends Schema>(
         static subscribeEf(
             id: ID<CoList<Item>>
         ): Stream.Stream<
-            ControlledAccountCtx,
+            CoList<Item>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            CoList<Item>
+            ControlledAccountCtx
         > {
             throw new Error(
                 "TODO: implement somehow with Scope and Stream.asyncScoped"
@@ -306,13 +304,13 @@ export function CoListOf<Item extends Schema>(
             };
         }
 
-        subscribeEf(): Stream.Stream<never, never, CoList<Item>> {
+        subscribeEf(): Stream.Stream<CoList<Item>, never, never> {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
             return Stream.asyncScoped((emit) =>
                 Effect.gen(function* ($) {
                     const unsub = self.subscribe((value) => {
-                        void emit(Effect.succeed(Chunk.of(value)));
+                        void emit.single(value);
                     });
 
                     yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
