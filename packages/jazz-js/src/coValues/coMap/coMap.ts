@@ -21,7 +21,7 @@ export type CoMap<
         ? Shape[Key]["_Value"] | undefined
         : Shape[Key]["_Value"];
 } & {
-    [Key in Shape['...'] extends Schema ? string : never]: Shape[keyof Shape]["_Value"] | undefined
+    [Key in Shape['...'] extends Schema ? string : never]: Shape['...']["_Value"] | undefined
 } & {
     id: ID<CoMap<Shape>>;
     meta: CoMapMeta<Shape>;

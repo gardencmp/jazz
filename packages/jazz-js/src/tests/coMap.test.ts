@@ -303,5 +303,9 @@ describe("CoMap resolution in extra keys", async () => {
         return { me, map };
     };
 
-    test("Construction", async () => {});
+    test("Construction", async () => {
+        const { map } = await initNodeAndMap();
+        expect(map.height).toEqual(50);
+        expect(map.innerInSomeKey?.color).toEqual("blue");
+    });
 });

@@ -30,4 +30,5 @@ export class ConstSchema<Value extends Primitive> extends Schema<Value> {
     }
 }
 
+export type PrimitiveSchema = BooleanSchema | StringSchema | NumberSchema | NullSchema;
 export type Primitive = string | number | boolean | null;

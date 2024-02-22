@@ -71,14 +71,16 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                 const initForInner = {} as RawCoMap<RawShape<Shape>>["_shape"];
 
                 for (const key in init) {
-                    const keySchema = SchemaShape[key];
+                    const keySchema = SchemaShape[key] || SchemaShape["..."];
 
                     if (isCoValueSchema(keySchema)) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (initForInner as any)[key] = (init as any)[key].id;
-                    } else {
+                    } else if (keySchema) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (initForInner as any)[key] = (init as any)[key];
+                    } else {
+                        throw new Error(`Key ${key} not in schema`);
                     }
                 }
 
@@ -89,29 +91,64 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
 
             this._raw = raw;
             this.id = raw.id as unknown as ID<CoMap<Shape>>;
-            this._refs = new RefsForShape(
+            const refs = new RefsForShape(
                 raw,
                 SimpleAccount.ControlledSchema.fromRaw(
                     raw.core.node.account as RawControlledAccount
                 )
-            ) as unknown as RefsShape<Shape>;
+            );
+            this._refs = refs as unknown as RefsShape<Shape>;
             this.meta = new CoMapMeta<Shape>(raw, this._refs);
 
             if (SchemaShape["..."]) {
                 if (isCoValueSchema(SchemaShape["..."])) {
-                    return new Proxy(this, {
+                    this._refs = new Proxy(refs, {
                         get(target, key) {
                             if (key in target) {
                                 return Reflect.get(target, key);
                             } else {
-                                throw new Error("todo: extra key coValue get");
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const id = target.raw.get(key as any);
+
+                                if (!id) {
+                                    return undefined;
+                                }
+
+                                const value = ValueRef(
+                                    id as unknown as ID<CoMap<Shape>>,
+                                    SchemaShape["..."] as CoValueSchema,
+                                    target.as
+                                );
+
+                                return value;
+                            }
+                        },
+                    }) as unknown as RefsShape<Shape>;
+
+                    return new Proxy(this, {
+                        get(target, key) {
+                            if (key in target) {
+                                return Reflect.get(target, key);
+                            } else if (typeof key === "string") {
+                                return makeCoValueGetterForKey(
+                                    key,
+                                    SchemaShape["..."] as CoValueSchema
+                                ).call(target);
+                            } else {
+                                return undefined;
                             }
                         },
                         set(target, key, value) {
                             if (key in target) {
                                 return Reflect.set(target, key, value);
+                            } else if (typeof key === "string") {
+                                makeCoValueSetterForKey(
+                                    key,
+                                    SchemaShape["..."] as CoValueSchema
+                                ).call(target, value);
+                                return true;
                             } else {
-                                throw new Error("todo: extra key coValue get");
+                                return false;
                             }
                         },
                     });

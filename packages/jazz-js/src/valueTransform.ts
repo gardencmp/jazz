@@ -10,16 +10,9 @@ export abstract class ValueTransform<Inner extends CoValueSchemaBase = CoValueSc
 }
 
 export class ImageDefinitionInner extends CoMapOf({
-    fullSize: imm.map({
-        width: imm.number,
-        height: imm.number,
-    }),
+    originalSize: imm.tuple(imm.number, imm.number),
     placeholderDataURL: imm.string,
-    resolutions: CoListOf(imm.map({
-        width: imm.number,
-        height: imm.number,
-        stream: BinaryCoStream,
-    })),
+    "...": BinaryCoStream
 }) {}
 
 // export class ImageDefinition extends ValueTransform<typeof ImageDefinitionInner> {
