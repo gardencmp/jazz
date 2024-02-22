@@ -76,35 +76,30 @@ export function CoListOf<Item extends Schema>(
         _refs!: ValueRef<Item["_Value"]>[];
         [subscriptionScopeSym]?: SubscriptionScope;
 
+        constructor(owner: Account | Group, init: Item["_Value"][]);
+        constructor(options: { fromRaw: RawCoList<RawType<Item>> });
         constructor(
-            init: Item["_Value"][],
-            options: { owner: Account | Group }
-        );
-        constructor(
-            init: undefined,
-            options: { fromRaw: RawCoList<RawType<Item>> }
-        );
-        constructor(
-            init: Item["_Value"][] | undefined,
-            options:
-                | { owner: Account | Group }
-                | { fromRaw: RawCoList<RawType<Item>> }
+            optionsOrOwner:
+                | Account
+                | Group
+                | { fromRaw: RawCoList<RawType<Item>> },
+            init?: Item["_Value"][] | undefined
         ) {
             super();
 
             let raw: RawCoList<RawType<Item>>;
 
-            if (options && "fromRaw" in options) {
-                raw = options.fromRaw;
-            } else if (init && options && "owner" in options) {
-                const rawOwner = options.owner._raw;
+            if ("fromRaw" in optionsOrOwner) {
+                raw = optionsOrOwner.fromRaw;
+            } else if (init) {
+                const rawOwner = optionsOrOwner._raw;
                 raw = rawOwner.createList<RawCoList<RawType<Item>>>(
                     isCoListSchema(ItemSchema)
                         ? init.map((item: Item["_Value"]) => item.id)
                         : init
                 );
             } else {
-                if (typeof init === "number") {
+                if (typeof optionsOrOwner === "number") {
                     // this might be called from an intrinsic, like map, trying to create an empty array
                     // passing `0` as the only parameter
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +227,7 @@ export function CoListOf<Item extends Schema>(
         }
 
         static fromRaw(raw: RawCoList<RawType<Item>>): CoList<Item> {
-            return new CoListSchemaForItem(undefined, {
+            return new CoListSchemaForItem({
                 fromRaw: raw,
             });
         }

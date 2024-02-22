@@ -38,7 +38,7 @@ export interface BinaryCoStreamSchema
         CoValueSchemaBase<BinaryCoStream, RawBinaryCoStream> {
     _Type: "binarycostream";
 
-    new (options: { owner: Account | Group }): BinaryCoStream;
+    new (owner: Account | Group): BinaryCoStream;
 
     fromRaw(raw: RawBinaryCoStream): BinaryCoStream;
 
@@ -61,16 +61,14 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
     _raw: RawBinaryCoStream;
 
     constructor(
-        options: { owner: Account | Group } | { fromRaw: RawBinaryCoStream }
+        ownerOrOptions: Account | Group | { fromRaw: RawBinaryCoStream }
     ) {
         let raw: RawBinaryCoStream;
-        if ("fromRaw" in options) {
-            raw = options.fromRaw;
-        } else if (options.owner) {
-            const rawOwner = options.owner._raw;
-            raw = rawOwner.createBinaryStream();
+        if ("fromRaw" in ownerOrOptions) {
+            raw = ownerOrOptions.fromRaw;
         } else {
-            throw new Error("Invalid options");
+            const rawOwner = ownerOrOptions._raw;
+            raw = rawOwner.createBinaryStream();
         }
 
         this._raw = raw;
@@ -215,5 +213,3 @@ export const BinaryCoStream = class BinaryCoStream implements BinaryCoStream {
         return this.getChunks() || {};
     }
 } satisfies BinaryCoStreamSchema;
-
-

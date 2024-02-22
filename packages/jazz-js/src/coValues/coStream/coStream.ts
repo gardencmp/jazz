@@ -27,7 +27,7 @@ export interface CoStreamSchema<Item extends Schema = Schema>
     _Type: "costream";
     _Item: Item;
 
-    new (options: { owner: Account | Group }): CoStream<Item>;
+    new (owner: Account | Group): CoStream<Item>;
 
     fromRaw(raw: RawCoStream<RawType<Item>>): CoStream<Item>;
 

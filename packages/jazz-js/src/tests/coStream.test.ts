@@ -1,5 +1,11 @@
 import { expect, describe, test, beforeEach } from "vitest";
-import { CoMapOf, CoStreamOf, SimpleAccount, imm, jazzReady } from "../index.js";
+import {
+    CoMapOf,
+    CoStreamOf,
+    SimpleAccount,
+    imm,
+    jazzReady,
+} from "../index.js";
 import { webcrypto } from "node:crypto";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { connectedPeers } from "cojson/src/streamUtils.js";
@@ -21,7 +27,7 @@ describe("Simple CoStream operations", async () => {
 
     class TestStream extends CoStreamOf(imm.string) {}
 
-    const stream = new TestStream({ owner: me });
+    const stream = new TestStream(me);
 
     test("Construction", () => {
         expect(stream.meta.owner.id).toEqual(me.id);
@@ -39,7 +45,7 @@ describe("Simple CoStream operations", async () => {
                 tx: expect.objectContaining({
                     sessionID: stream.bySession[0].sessionID,
                     txIndex: 0,
-                })
+                }),
             };
             expect(stream.bySession[0].last).toEqual(expectation);
             expect(stream.bySession[0].all).toEqual([expectation]);
@@ -55,14 +61,20 @@ describe("Simple CoStream operations", async () => {
                 tx: expect.objectContaining({
                     sessionID: stream.bySession[0].sessionID,
                     txIndex: 1,
-                })
+                }),
             };
 
             expect(stream.bySession[0].last).toEqual(expectation2);
-            expect(stream.bySession[0].all).toEqual([expectation, expectation2]);
+            expect(stream.bySession[0].all).toEqual([
+                expectation,
+                expectation2,
+            ]);
             expect(stream.byAccount[0].accountID).toEqual(me.id);
             expect(stream.byAccount[0].last).toEqual(expectation2);
-            expect(stream.byAccount[0].all).toEqual([expectation, expectation2]);
+            expect(stream.byAccount[0].all).toEqual([
+                expectation,
+                expectation2,
+            ]);
         });
     });
 });
@@ -80,13 +92,13 @@ describe("CoStream resolution", async () => {
             name: "Hermes Puggington",
         });
 
-        const stream = new StreamOfMaps({ owner: me });
-        const firstMap = new SimpleMap({ color: "red", height: 10 }, {owner: me})
+        const stream = new StreamOfMaps(me);
+        const firstMap = new SimpleMap(me, { color: "red", height: 10 });
 
         stream.push(firstMap);
 
         return { me, stream, firstMap };
-    }
+    };
 
     test("Construction", async () => {
         const { stream, firstMap } = await initNodeAndStream();
@@ -112,13 +124,18 @@ describe("CoStream resolution", async () => {
             sessionID: newRandomSessionID(me.id as any),
         });
 
-        const loadedStream = await StreamOfMaps.load(stream.id, { as: meOnSecondPeer });
+        const loadedStream = await StreamOfMaps.load(stream.id, {
+            as: meOnSecondPeer,
+        });
 
         expect(loadedStream.bySession[0].last?.value?.color).toEqual(undefined);
         expect(loadedStream.bySession[0].last?.ref.id).toEqual(firstMap.id);
         expect(loadedStream.bySession[0].last?.ref.loaded).toEqual(false);
 
-        const _loadedNestedMap = await SimpleMap.load(loadedStream.bySession[0].last!.ref.id, { as: meOnSecondPeer });
+        const _loadedNestedMap = await SimpleMap.load(
+            loadedStream.bySession[0].last!.ref.id,
+            { as: meOnSecondPeer }
+        );
         expect(loadedStream.bySession[0].last?.value?.color).toEqual("red");
         expect(loadedStream.bySession[0].last?.ref.loaded).toEqual(true);
     });
@@ -143,33 +160,41 @@ describe("CoStream resolution", async () => {
             Effect.gen(function* ($) {
                 const queue = yield* $(Queue.unbounded<StreamOfMaps>());
 
-                StreamOfMaps.subscribe(stream.id, {as: meOnSecondPeer}, (subscribedStream: StreamOfMaps) => {
-                    console.log(
-                        "subscribedStream.bySession[0].last?.value?.color",
-                        subscribedStream.bySession[0].last?.value?.color
-                    );
-                    Effect.runPromise(Queue.offer(queue, subscribedStream));
-                })
+                StreamOfMaps.subscribe(
+                    stream.id,
+                    { as: meOnSecondPeer },
+                    (subscribedStream: StreamOfMaps) => {
+                        console.log(
+                            "subscribedStream.bySession[0].last?.value?.color",
+                            subscribedStream.bySession[0].last?.value?.color
+                        );
+                        Effect.runPromise(Queue.offer(queue, subscribedStream));
+                    }
+                );
 
                 const update1 = yield* $(Queue.take(queue));
-                expect(update1.bySession[0].last?.value?.color).toEqual(undefined);
+                expect(update1.bySession[0].last?.value?.color).toEqual(
+                    undefined
+                );
 
                 const update2 = yield* $(Queue.take(queue));
                 expect(update2.bySession[0].last?.value?.color).toEqual("red");
 
-                stream.push(new SimpleMap({ color: "blue", height: 20 }, {owner: me}));
+                stream.push(new SimpleMap(me, { color: "blue", height: 20 }));
                 expect(stream.bySession[0].all.length).toEqual(2);
 
-                console.log("Before update 3")
+                console.log("Before update 3");
                 const update3 = yield* $(Queue.take(queue));
                 expect(update3.bySession[0].all.length).toEqual(2);
                 expect(update3.bySession[0].last?.ref.loaded).toEqual(false);
-                expect(update3.bySession[0].last?.value?.color).toEqual(undefined);
+                expect(update3.bySession[0].last?.value?.color).toEqual(
+                    undefined
+                );
 
                 const update4 = yield* $(Queue.take(queue));
                 expect(update4.bySession[0].last?.ref.loaded).toEqual(true);
                 expect(update4.bySession[0].last?.value?.color).toEqual("blue");
             })
-        )
+        );
     });
 });

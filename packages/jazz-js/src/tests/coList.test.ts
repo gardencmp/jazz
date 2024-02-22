@@ -22,7 +22,7 @@ describe("Simple CoList operations", async () => {
 
     class TestList extends CoListOf(imm.string) {}
 
-    const list = new TestList(["red", "blue"], { owner: me });
+    const list = new TestList(me, ["red", "blue"]);
 
     test("Construction", () => {
         expect(list[0]).toEqual("red");
@@ -213,18 +213,12 @@ describe("CoList resolution", async () => {
             name: "Hermes Puggington",
         });
 
-        const list = new TestList(
-            [
-                new NestedList(
-                    [
-                        new TwiceNestedList(["sour"], { owner: me }),
-                        new TwiceNestedList(["sweet"], { owner: me }),
-                    ],
-                    { owner: me }
-                ),
-            ],
-            { owner: me }
-        );
+        const list = new TestList(me, [
+            new NestedList(me, [
+                new TwiceNestedList(me, ["sour"]),
+                new TwiceNestedList(me, ["sweet"]),
+            ]),
+        ]);
 
         return { me, list };
     };
@@ -331,12 +325,9 @@ describe("CoList resolution", async () => {
                 const oldTwiceNested = update4[0][0];
 
                 // When assigning a new nested value, we get an update
-                const newNested = new NestedList(
-                    [new TwiceNestedList(["umami"], { owner: meOnSecondPeer })],
-                    {
-                        owner: meOnSecondPeer,
-                    }
-                );
+                const newNested = new NestedList(meOnSecondPeer, [
+                    new TwiceNestedList(meOnSecondPeer, ["umami"]),
+                ]);
 
                 update4[0] = newNested;
 

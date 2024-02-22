@@ -5,7 +5,7 @@ import {
     AccountID,
     CoID,
     RawControlledAccount,
-    AgentID
+    AgentID,
 } from "cojson";
 import { Account, ControlledAccount } from "../account/account.js";
 import { RawType } from "../../baseInterfaces.js";
@@ -13,7 +13,10 @@ import { ID } from "../../id.js";
 import { CoValueBase } from "../../baseInterfaces.js";
 import { Schema } from "../../schema.js";
 import { Chunk, Effect, Stream } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../../errors.js";
+import {
+    CoValueUnavailableError,
+    UnknownCoValueLoadError,
+} from "../../errors.js";
 import { ValueRef } from "../../valueRef.js";
 import { SubscriptionScope } from "../../subscriptionScope.js";
 import { isCoValueSchema } from "../../guards.js";
@@ -21,10 +24,13 @@ import { ControlledAccountCtx } from "../../services.js";
 import { Group } from "../group/group.js";
 import { SimpleAccount } from "../account/simpleAccount.js";
 import { subscriptionScopeSym } from "../../subscriptionScopeSym.js";
-import { CoStreamSessionEntries, CoStreamAccountEntries, CoStreamEntry } from "./entries.js";
+import {
+    CoStreamSessionEntries,
+    CoStreamAccountEntries,
+    CoStreamEntry,
+} from "./entries.js";
 import { CoStreamMeta } from "./meta.js";
 import { CoStreamSchema, CoStream } from "./coStream.js";
-
 
 export function CoStreamOf<Item extends Schema>(
     ItemSchema: Item
@@ -126,14 +132,18 @@ export function CoStreamOf<Item extends Schema>(
                     }
                     return value;
                 },
-                ref: ref as Item["_Value"] extends CoValueBase ? ValueRef<Item["_Value"]> : undefined,
+                ref: ref as Item["_Value"] extends CoValueBase
+                    ? ValueRef<Item["_Value"]>
+                    : undefined,
                 tx: rawItem.tx,
                 at: rawItem.at,
             };
         } else {
             return {
                 value: rawItem.value,
-                ref: undefined as Item["_Value"] extends CoValueBase ? ValueRef<Item["_Value"]> : undefined,
+                ref: undefined as Item["_Value"] extends CoValueBase
+                    ? ValueRef<Item["_Value"]>
+                    : undefined,
                 tx: rawItem.tx,
                 at: rawItem.at,
             };
@@ -151,18 +161,20 @@ export function CoStreamOf<Item extends Schema>(
         meta: CoStreamMeta;
         [subscriptionScopeSym]?: SubscriptionScope;
 
-        constructor(options: { owner: Account | Group; });
-        constructor(options: { fromRaw: RawCoStream<RawType<Item>>; });
+        constructor(owner: Account | Group);
+        constructor(options: { fromRaw: RawCoStream<RawType<Item>> });
         constructor(
-            options: { owner: Account | Group; } |
-            { fromRaw: RawCoStream<RawType<Item>>; }
+            ownerOrOptions:
+                | Account
+                | Group
+                | { fromRaw: RawCoStream<RawType<Item>> }
         ) {
             let raw: RawCoStream<RawType<Item>>;
 
-            if ("fromRaw" in options) {
-                raw = options.fromRaw;
+            if ("fromRaw" in ownerOrOptions) {
+                raw = ownerOrOptions.fromRaw;
             } else {
-                const rawOwner = options.owner._raw;
+                const rawOwner = ownerOrOptions._raw;
                 raw = rawOwner.createStream<RawCoStream<RawType<Item>>>();
             }
 
@@ -177,7 +189,7 @@ export function CoStreamOf<Item extends Schema>(
 
         static load(
             id: ID<CoStream<Item>>,
-            { as }: { as: ControlledAccount; }
+            { as }: { as: ControlledAccount }
         ): Promise<CoStream<Item>> {
             return Effect.runPromise(
                 Effect.provideService(
@@ -191,18 +203,22 @@ export function CoStreamOf<Item extends Schema>(
         static loadEf(
             id: ID<CoStream<Item>>
         ): Effect.Effect<
-            ControlledAccount, CoValueUnavailableError | UnknownCoValueLoadError, CoStream<Item>
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            CoStream<Item>
         > {
             return Effect.gen(function* ($) {
                 const as = yield* $(ControlledAccountCtx);
                 const raw = yield* $(
                     Effect.tryPromise({
-                        try: () => as._raw.core.node.load(
-                            id as unknown as CoID<
-                                RawCoStream<RawType<Item>>
-                            >
-                        ),
-                        catch: (cause) => new UnknownCoValueLoadError({ cause }),
+                        try: () =>
+                            as._raw.core.node.load(
+                                id as unknown as CoID<
+                                    RawCoStream<RawType<Item>>
+                                >
+                            ),
+                        catch: (cause) =>
+                            new UnknownCoValueLoadError({ cause }),
                     })
                 );
 
@@ -217,7 +233,9 @@ export function CoStreamOf<Item extends Schema>(
         static subscribeEf(
             id: ID<CoStream<Item>>
         ): Stream.Stream<
-            ControlledAccountCtx, CoValueUnavailableError | UnknownCoValueLoadError, CoStream<Item>
+            ControlledAccountCtx,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            CoStream<Item>
         > {
             throw new Error(
                 "TODO: implement somehow with Scope and Stream.asyncScoped"
@@ -226,7 +244,7 @@ export function CoStreamOf<Item extends Schema>(
 
         static subscribe(
             id: ID<CoStream<Item>>,
-            { as }: { as: ControlledAccount; },
+            { as }: { as: ControlledAccount },
             onUpdate: (value: CoStream<Item>) => void
         ): () => void {
             let unsub: () => void = () => {
@@ -248,13 +266,14 @@ export function CoStreamOf<Item extends Schema>(
         subscribeEf(): Stream.Stream<never, never, CoStream<Item>> {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
-            return Stream.asyncScoped((emit) => Effect.gen(function* ($) {
-                const unsub = self.subscribe((value) => {
-                    void emit(Effect.succeed(Chunk.of(value)));
-                });
+            return Stream.asyncScoped((emit) =>
+                Effect.gen(function* ($) {
+                    const unsub = self.subscribe((value) => {
+                        void emit(Effect.succeed(Chunk.of(value)));
+                    });
 
-                yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
-            })
+                    yield* $(Effect.addFinalizer(() => Effect.sync(unsub)));
+                })
             );
         }
 
@@ -294,7 +313,8 @@ export function CoStreamOf<Item extends Schema>(
                 this._raw.push(item.id);
                 const currentSessionID = this._raw.core.node.currentSessionID;
                 // TODO: this might not be atomic?
-                const refIdx = currentSessionID +
+                const refIdx =
+                    currentSessionID +
                     "_" +
                     (this._raw.core.sessionLogs.get(currentSessionID)
                         ?.transactions.length || 0);
@@ -317,13 +337,15 @@ export function CoStreamOf<Item extends Schema>(
             return this._raw
                 .sessions()
                 .map(
-                    (sessionID) => new CoStreamSessionEntriesForItem(this, sessionID)
+                    (sessionID) =>
+                        new CoStreamSessionEntriesForItem(this, sessionID)
                 );
         }
 
         get byAccount(): CoStreamAccountEntries<Item>[] {
             return [...this._raw.accounts()].map(
-                (accountID) => new CoStreamAccountEntriesForItem(this, accountID)
+                (accountID) =>
+                    new CoStreamAccountEntriesForItem(this, accountID)
             );
         }
     }

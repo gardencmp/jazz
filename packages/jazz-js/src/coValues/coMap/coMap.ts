@@ -39,8 +39,8 @@ export interface CoMapSchema<
     _Value: CoMap<Shape>;
 
     new (
+        owner: Account | Group,
         init: CoMapInit<Shape>,
-        opts: { owner: Account | Group }
     ): CoMap<Shape>;
 
     fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(raw: Raw): CoMap<Shape>;

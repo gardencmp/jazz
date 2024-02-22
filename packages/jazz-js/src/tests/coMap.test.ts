@@ -25,13 +25,10 @@ describe("Simple CoMap operations", async () => {
         height: imm.number,
     }) {}
 
-    const map = new TestMap(
-        {
-            color: "red",
-            height: 10,
-        },
-        { owner: me }
-    );
+    const map = new TestMap(me, {
+        color: "red",
+        height: 10,
+    });
 
     test("Construction", () => {
         expect(map.color).toEqual("red");
@@ -58,15 +55,12 @@ describe("CoMap with rest keys operations", async () => {
         "...": imm.boolean,
     }) {}
 
-    const map = new TestMap(
-        {
-            color: "red",
-            height: 10,
-            extra: true,
-            otherExtra: false,
-        },
-        { owner: me }
-    );
+    const map = new TestMap(me, {
+        color: "red",
+        height: 10,
+        extra: true,
+        otherExtra: false,
+    });
 
     test("Construction", () => {
         expect(map.color).toEqual("red");
@@ -111,23 +105,14 @@ describe("CoMap resolution", async () => {
             name: "Hermes Puggington",
         });
 
-        const map = new TestMap(
-            {
-                color: "red",
-                height: 10,
-                nested: new NestedMap(
-                    {
-                        name: "nested",
-                        twiceNested: new TwiceNestedMap(
-                            { taste: "sour" },
-                            { owner: me }
-                        ),
-                    },
-                    { owner: me }
-                ),
-            },
-            { owner: me }
-        );
+        const map = new TestMap(me, {
+            color: "red",
+            height: 10,
+            nested: new NestedMap(me, {
+                name: "nested",
+                twiceNested: new TwiceNestedMap(me, { taste: "sour" }),
+            }),
+        });
 
         return { me, map };
     };
@@ -182,16 +167,10 @@ describe("CoMap resolution", async () => {
             loadedTwiceNestedMap
         );
 
-        const otherNestedMap = new NestedMap(
-            {
-                name: "otherNested",
-                twiceNested: new TwiceNestedMap(
-                    { taste: "sweet" },
-                    { owner: meOnSecondPeer }
-                ),
-            },
-            { owner: meOnSecondPeer }
-        );
+        const otherNestedMap = new NestedMap(meOnSecondPeer, {
+            name: "otherNested",
+            twiceNested: new TwiceNestedMap(meOnSecondPeer, { taste: "sweet" }),
+        });
 
         loadedMap!.nested = otherNestedMap;
         expect(loadedMap?.nested?.name).toEqual("otherNested");
@@ -252,18 +231,14 @@ describe("CoMap resolution", async () => {
                 expect(oldTwiceNested?.taste).toEqual("sour");
 
                 // When assigning a new nested value, we get an update
-                const newTwiceNested = new TwiceNestedMap(
-                    { taste: "sweet" },
-                    { owner: meOnSecondPeer }
-                );
+                const newTwiceNested = new TwiceNestedMap(meOnSecondPeer, {
+                    taste: "sweet",
+                });
 
-                const newNested = new NestedMap(
-                    {
-                        name: "newNested",
-                        twiceNested: newTwiceNested,
-                    },
-                    { owner: meOnSecondPeer }
-                );
+                const newNested = new NestedMap(meOnSecondPeer, {
+                    name: "newNested",
+                    twiceNested: newTwiceNested,
+                });
 
                 update3a.nested = newNested;
 
@@ -318,18 +293,12 @@ describe("CoMap resolution in extra keys", async () => {
             name: "Hermes Puggington",
         });
 
-        const map = new TestMap(
-            {
-                height: 50,
-                innerInSomeKey: new InnerMap(
-                    {
-                        color: "blue",
-                    },
-                    { owner: me }
-                ),
-            },
-            { owner: me }
-        );
+        const map = new TestMap(me, {
+            height: 50,
+            innerInSomeKey: new InnerMap(me, {
+                color: "blue",
+            }),
+        });
 
         return { me, map };
     };

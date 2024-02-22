@@ -248,8 +248,8 @@ export interface CoListSchema<Item extends Schema = Schema>
 
     /** @category Value Creation */
     new (
+        owner: Account | Group,
         init: Item["_Value"][],
-        options: { owner: Account | Group }
     ): CoList<Item>;
 
     /** @hidden */

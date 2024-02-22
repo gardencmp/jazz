@@ -27,7 +27,7 @@ describe("Simple BinaryCoStream operations", async () => {
         name: "Hermes Puggington",
     });
 
-    const stream = new BinaryCoStream({ owner: me });
+    const stream = new BinaryCoStream(me);
 
     test("Construction", () => {
         expect(stream.meta.owner.id).toEqual(me.id);
@@ -66,7 +66,7 @@ describe("Loading & subscription", async () => {
             name: "Hermes Puggington",
         });
 
-        const stream = new BinaryCoStream({ owner: me });
+        const stream = new BinaryCoStream(me);
 
         stream.start({
             mimeType: "text/plain",

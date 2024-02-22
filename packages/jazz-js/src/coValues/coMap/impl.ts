@@ -50,27 +50,27 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         id: ID<CoMap<Shape>>;
         meta: CoMapMeta<Shape>;
 
-        constructor(init: CoMapInit<Shape>, opts: { owner: Account });
+        constructor(owner: Account | Group, init: CoMapInit<Shape>);
         constructor(
-            init: undefined,
             options: {
                 fromRaw: RawCoMap<RawShape<Shape>>;
-            }
+            },
         );
         constructor(
-            init: CoMapInit<Shape> | undefined,
-            options:
-                | { owner: Group | Account }
+            optionsOrOwner:
+                | Group
+                | Account
                 | {
                       fromRaw: RawCoMap<RawShape<Shape>>;
-                  }
+                  },
+            init?: CoMapInit<Shape> | undefined
         ) {
             let raw: RawCoMap<RawShape<Shape>>;
 
-            if ("fromRaw" in options) {
-                raw = options.fromRaw;
-            } else if (init && options.owner) {
-                const rawOwner = options.owner._raw;
+            if ("fromRaw" in optionsOrOwner) {
+                raw = optionsOrOwner.fromRaw;
+            } else if (init) {
+                const rawOwner = optionsOrOwner._raw;
 
                 const initForInner = {} as RawCoMap<RawShape<Shape>>["_shape"];
 
@@ -144,7 +144,7 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         }
 
         static fromRaw(raw: RawCoMap<RawShape<Shape>>): CoMap<Shape> {
-            return new CoMapSchemaForShape(undefined, {
+            return new CoMapSchemaForShape({
                 fromRaw: raw,
             }) as CoMap<Shape>;
         }
