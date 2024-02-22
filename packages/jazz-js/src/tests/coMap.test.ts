@@ -47,6 +47,49 @@ describe("Simple CoMap operations", async () => {
     });
 });
 
+describe("CoMap with rest keys operations", async () => {
+    const me = await SimpleAccount.createControlledAccount({
+        name: "Hermes Puggington",
+    });
+
+    class TestMap extends CoMapOf({
+        color: imm.string,
+        height: imm.number,
+        "...": imm.boolean,
+    }) {}
+
+    const map = new TestMap(
+        {
+            color: "red",
+            height: 10,
+            extra: true,
+            otherExtra: false,
+        },
+        { owner: me }
+    );
+
+    test("Construction", () => {
+        expect(map.color).toEqual("red");
+        expect(map.height).toEqual(10);
+        expect(map.extra).toEqual(true);
+        expect(map.otherExtra).toEqual(false);
+    });
+
+    describe("Mutation", () => {
+        test("assignment", () => {
+            map.color = "blue";
+            expect(map.color).toEqual("blue");
+            expect(map.meta._raw.get("color")).toEqual("blue");
+        });
+
+        test("rest key assignment", () => {
+            map.extra = false;
+            expect(map.extra).toEqual(false);
+            expect(map.meta._raw.get("extra")).toEqual(false);
+        });
+    });
+});
+
 describe("CoMap resolution", async () => {
     class TwiceNestedMap extends CoMapOf({
         taste: imm.string,
@@ -220,7 +263,7 @@ describe("CoMap resolution", async () => {
                         twiceNested: newTwiceNested,
                     },
                     { owner: meOnSecondPeer }
-                )
+                );
 
                 update3a.nested = newNested;
 

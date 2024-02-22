@@ -9,7 +9,7 @@ import { ID } from "../../id.js";
 import { isCoValueSchema } from "../../guards.js";
 import { Group } from "../group/group.js";
 import { Account, ControlledAccount } from "../account/account.js";
-import { Chunk, Effect, Stream } from "effect";
+import { Chunk, Effect, Ref, Stream } from "effect";
 import {
     CoValueUnavailableError,
     UnknownCoValueLoadError,
@@ -100,6 +100,47 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                 )
             ) as unknown as RefsShape<Shape>;
             this.meta = new CoMapMeta<Shape>(raw, this._refs);
+
+            if (SchemaShape["..."]) {
+                if (isCoValueSchema(SchemaShape["..."])) {
+                    return new Proxy(this, {
+                        get(target, key) {
+                            if (key in target) {
+                                return Reflect.get(target, key);
+                            } else {
+                                throw new Error("todo: extra key coValue get");
+                            }
+                        },
+                        set(target, key, value) {
+                            if (key in target) {
+                                return Reflect.set(target, key, value);
+                            } else {
+                                throw new Error("todo: extra key coValue get");
+                            }
+                        },
+                    });
+                } else {
+                    return new Proxy(this, {
+                        get(target, key) {
+                            if (key in target) {
+                                return Reflect.get(target, key);
+                            } else {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                return target._raw.get(key as any);
+                            }
+                        },
+                        set(target, key, value) {
+                            if (key in target) {
+                                return Reflect.set(target, key, value);
+                            } else {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                target._raw.set(key as any, value);
+                                return true;
+                            }
+                        },
+                    });
+                }
+            }
         }
 
         static fromRaw(raw: RawCoMap<RawShape<Shape>>): CoMap<Shape> {
@@ -223,7 +264,8 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                         json[key] = ref.value.toJSON();
                     }
                 } else {
-                    json[key] = this._raw.get(key);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    json[key] = this._raw.get(key as any);
                 }
             }
 
@@ -239,49 +281,22 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
     }
 
     for (const key in SchemaShape) {
+        if (key === "...") {
+            continue;
+        }
         const KeySchema = SchemaShape[key];
 
         if (isCoValueSchema(KeySchema)) {
             const KeyCoValueSchema = KeySchema as CoValueSchema;
             Object.defineProperty(CoMapSchemaForShape.prototype, key, {
-                get(this: CoMapSchemaForShape) {
-                    const ref = this._refs[key]!;
-
-                    if (this[subscriptionScopeSym]) {
-                        this[subscriptionScopeSym].onRefAccessedOrSet(
-                            this.id,
-                            key,
-                            ref.id,
-                            KeyCoValueSchema
-                        );
-                    }
-
-                    if (ref.loaded) {
-                        ref.value[subscriptionScopeSym] =
-                            this[subscriptionScopeSym];
-                        return ref.value;
-                    }
-                },
-                set(this: CoMapSchemaForShape, value) {
-                    this[subscriptionScopeSym]?.onRefRemovedOrReplaced(
-                        this.id,
-                        key
-                    );
-                    if (value) {
-                        this[subscriptionScopeSym]?.onRefAccessedOrSet(
-                            this.id,
-                            key,
-                            value?.id,
-                            KeyCoValueSchema
-                        );
-                    }
-                    this._raw.set(key, value?.id);
-                },
+                get: makeCoValueGetterForKey(key, KeyCoValueSchema),
+                set: makeCoValueSetterForKey(key, KeyCoValueSchema),
             });
 
             Object.defineProperty(RefsForShape.prototype, key, {
                 get(this: RefsForShape) {
-                    const id = this.raw.get(key);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const id = this.raw.get(key as any);
 
                     if (!id) {
                         return undefined;
@@ -299,13 +314,59 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         } else {
             Object.defineProperty(CoMapSchemaForShape.prototype, key, {
                 get(this: CoMapSchemaForShape) {
-                    return this._raw.get(key);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return this._raw.get(key as any);
                 },
                 set(this: CoMapSchemaForShape, value) {
-                    this._raw.set(key, value);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    this._raw.set(key as any, value);
                 },
             });
         }
+    }
+
+    function makeCoValueGetterForKey(
+        key: string,
+        KeyCoValueSchema: CoValueSchema
+    ) {
+        return function coValueGetterForKey(this: CoMapSchemaForShape) {
+            const ref = this._refs[key]!;
+
+            if (this[subscriptionScopeSym]) {
+                this[subscriptionScopeSym].onRefAccessedOrSet(
+                    this.id,
+                    key,
+                    ref.id,
+                    KeyCoValueSchema
+                );
+            }
+
+            if (ref.loaded) {
+                ref.value[subscriptionScopeSym] = this[subscriptionScopeSym];
+                return ref.value;
+            }
+        };
+    }
+
+    function makeCoValueSetterForKey(
+        key: string,
+        KeyCoValueSchema: CoValueSchema
+    ) {
+        return function coValueSetterForKey(
+            this: CoMapSchemaForShape,
+            value: CoValueSchema["_Value"]
+        ) {
+            this[subscriptionScopeSym]?.onRefRemovedOrReplaced(this.id, key);
+            if (value) {
+                this[subscriptionScopeSym]?.onRefAccessedOrSet(
+                    this.id,
+                    key,
+                    value?.id,
+                    KeyCoValueSchema
+                );
+            }
+            this._raw.set(key, value?.id);
+        };
     }
 
     return CoMapSchemaForShape as CoMapSchema<Shape>;
