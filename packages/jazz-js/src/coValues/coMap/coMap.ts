@@ -14,14 +14,17 @@ import { CoMapMeta } from "./meta.js";
 export type BaseCoMapShape = Record<string, Schema>;
 
 /** @category CoValues - CoMap */
-export type CoMap<
-    Shape extends BaseCoMapShape = BaseCoMapShape,
-> = {
-    [Key in Exclude<keyof Shape, '...'>]: Shape[Key]["_Value"] extends CoValueBase
+export type CoMap<Shape extends BaseCoMapShape = BaseCoMapShape> = {
+    [Key in Exclude<
+        keyof Shape,
+        "..."
+    >]: Shape[Key]["_Value"] extends CoValueBase
         ? Shape[Key]["_Value"] | undefined
         : Shape[Key]["_Value"];
 } & {
-    [Key in Shape['...'] extends Schema ? string : never]: Shape['...']["_Value"] | undefined
+    [Key in Shape["..."] extends Schema ? string : never]:
+        | Shape["..."]["_Value"]
+        | undefined;
 } & {
     id: ID<CoMap<Shape>>;
     meta: CoMapMeta<Shape>;
@@ -30,18 +33,24 @@ export type CoMap<
 } & CoValueBase;
 
 /** @category CoValues - CoMap */
-export interface CoMapSchema<
-    Shape extends BaseCoMapShape = BaseCoMapShape,
-> extends Schema<CoMap<Shape>>,
+export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
+    extends Schema<CoMap<Shape>>,
         CoValueSchemaBase<CoMap<Shape>, RawCoMap<RawShape<Shape>>> {
     _Type: "comap";
     _Shape: Shape;
     _Value: CoMap<Shape>;
 
-    new (
-        owner: Account | Group,
-        init: CoMapInit<Shape>,
-    ): CoMap<Shape>;
+    // new (
+    //     owner: Account | Group,
+    //     init: CoMapInit<Shape>,
+    // ): CoMap<Shape>;
 
     fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(raw: Raw): CoMap<Shape>;
+}
+
+/** @category CoValues - CoMap */
+export interface CoMapConstructor<
+    Shape extends BaseCoMapShape = BaseCoMapShape,
+> {
+    new (owner: Account | Group, init: CoMapInit<Shape>): CoMap<Shape>;
 }

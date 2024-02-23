@@ -246,12 +246,12 @@ export interface CoListSchema<Item extends Schema = Schema>
     /** @category Type Hints */
     _Value: CoList<Item>;
 
-    /** @category Value Creation */
-    new (
-        owner: Account | Group,
-        init: Item["_Value"][],
-    ): CoList<Item>;
-
     /** @hidden */
     fromRaw(raw: RawCoList<RawType<Item>>): CoList<Item>;
+}
+
+/** @category CoValues - CoList */
+export interface CoListConstructor<Item extends Schema = Schema> {
+    /** @category Value Creation */
+    new (owner: Account | Group, init: Item["_Value"][]): CoList<Item>;
 }

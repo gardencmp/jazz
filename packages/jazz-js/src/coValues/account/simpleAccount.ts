@@ -4,9 +4,11 @@ import { NullSchema, StringSchema } from "../../immutables/primitives.js";
 
 /** @category CoValues - Account */
 
-export const SimpleAccount = AccountWith(
-    CoMapOf({
-        name: new StringSchema(),
-    }),
+class SimpleAccountProfile extends CoMapOf({
+    name: new StringSchema(),
+}) {}
+
+export const SimpleAccount = AccountWith<typeof SimpleAccountProfile, NullSchema>(
+    SimpleAccountProfile,
     new NullSchema()
 );

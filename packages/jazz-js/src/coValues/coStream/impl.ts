@@ -30,11 +30,11 @@ import {
     CoStreamEntry,
 } from "./entries.js";
 import { CoStreamMeta } from "./meta.js";
-import { CoStreamSchema, CoStream } from "./coStream.js";
+import { CoStreamSchema, CoStream, CoStreamConstructor } from "./coStream.js";
 
 export function CoStreamOf<Item extends Schema>(
     ItemSchema: Item
-): CoStreamSchema<Item> {
+): CoStreamSchema<Item> & CoStreamConstructor<Item> {
     class CoStreamSessionEntriesForItem
         implements CoStreamSessionEntries<Item>
     {
@@ -350,5 +350,6 @@ export function CoStreamOf<Item extends Schema>(
         }
     }
 
-    return CoStreamSchemaForItem as CoStreamSchema<Item>;
+    return CoStreamSchemaForItem as CoStreamSchema<Item> &
+        CoStreamConstructor<Item>;
 }

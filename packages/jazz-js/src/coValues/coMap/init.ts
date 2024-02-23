@@ -10,16 +10,9 @@ type AllowOmitNull<T extends Record<string, unknown>> = {
         | undefined;
 };
 
-type CoMapInitBase<Shape extends BaseCoMapShape> = AllowOmitNull<{
+export type CoMapInit<Shape extends BaseCoMapShape> = AllowOmitNull<{
     [Key in Exclude<keyof Shape, "...">]: Shape[Key]["_Value"];
 }> &
     (Shape["..."] extends Schema
         ? AllowOmitNull<{ [Key in Exclude<string, Exclude<keyof Shape, '...'>>]: Shape[keyof Shape]["_Value"] }>
         : Record<never, never>);
-
-export type CoMapInit<Shape extends BaseCoMapShape> = Record<
-    string,
-    never
-> extends CoMapInitBase<Shape>
-    ? CoMapInitBase<Shape> | undefined
-    : CoMapInitBase<Shape>;

@@ -21,13 +21,13 @@ import { RawShape } from "./rawShape.js";
 import { CoMapInit } from "./init.js";
 import { CoMapMeta } from "./meta.js";
 import { RefsShape } from "./refsShape.js";
-import { BaseCoMapShape, CoMapSchema, CoMap } from "./coMap.js";
+import { BaseCoMapShape, CoMapSchema, CoMap, CoMapConstructor } from "./coMap.js";
 
 /** @category CoValues - CoMap */
 
 export function CoMapOf<Shape extends BaseCoMapShape>(
     SchemaShape: Shape
-): CoMapSchema<Shape> {
+): CoMapSchema<Shape> & CoMapConstructor<Shape> {
     class RefsForShape {
         raw: RawCoMap<RawShape<Shape>>;
         as: ControlledAccount;
@@ -403,5 +403,5 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
         };
     }
 
-    return CoMapSchemaForShape as CoMapSchema<Shape>;
+    return CoMapSchemaForShape as CoMapSchema<Shape> & CoMapConstructor<Shape>;
 }

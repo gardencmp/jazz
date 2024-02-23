@@ -7,7 +7,7 @@ import {
     LocalNode,
     CoID,
     InviteSecret,
-    RawCoValue as RawCoValue
+    RawCoValue as RawCoValue,
 } from "cojson";
 import { AccountMigration } from "../../index.js";
 import { ID } from "../../id.js";
@@ -16,14 +16,17 @@ import { NullSchema } from "../../immutables/primitives.js";
 import { CoMapSchema } from "../coMap/coMap.js";
 import { GroupMeta } from "../group/group.js";
 import { Effect } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../../errors.js";
+import {
+    CoValueUnavailableError,
+    UnknownCoValueLoadError,
+} from "../../errors.js";
 import { AccountSchema, Account, ControlledAccount } from "./account.js";
 
 /** @category CoValues - Account */
 
 export function AccountWith<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
+    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
 >(ProfileS: ProfileS, RootS: RootS): AccountSchema<ProfileS, RootS> {
     abstract class AccountSchemaForProfileAndRoot {
         static _Type = "account" as const;
@@ -37,7 +40,7 @@ export function AccountWith<
         isMe!: boolean;
         meta!: GroupMeta<ProfileS, RootS>;
 
-        get profile() {
+        get profile(): ProfileS["_Value"] | undefined {
             const id = this._raw.get("profile");
 
             if (!id) {
@@ -47,7 +50,7 @@ export function AccountWith<
             }
         }
 
-        get root() {
+        get root(): RootS["_Value"] | undefined {
             const id = this._raw.get("root");
 
             if (!id) {
@@ -65,8 +68,8 @@ export function AccountWith<
         id: ID<ControlledAccount<ProfileS, RootS>>;
         isMe: true;
 
-        constructor(options: { fromRaw: RawControlledAccount; });
-        constructor(options: { fromRaw: RawControlledAccount; }) {
+        constructor(options: { fromRaw: RawControlledAccount });
+        constructor(options: { fromRaw: RawControlledAccount }) {
             super();
             this._raw = options.fromRaw;
             if (this._raw.id !== this._raw.core.node.account.id)
@@ -88,7 +91,7 @@ export function AccountWith<
 
         static load(
             id: ID<ControlledAccount<ProfileS, RootS>>,
-            { as }: { as: ControlledAccount; }
+            { as }: { as: ControlledAccount }
         ): Promise<ControlledAccount<ProfileS, RootS>> {
             throw new Error("Not implemented");
         }
@@ -96,9 +99,45 @@ export function AccountWith<
         static loadEf(
             id: ID<ControlledAccount<ProfileS, RootS>>
         ): Effect.Effect<
-            ControlledAccount, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccount<ProfileS, RootS>
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount<ProfileS, RootS>
         > {
             throw new Error("Not implemented");
+        }
+
+        static subscribe(
+            id: ID<ControlledAccount<ProfileS, RootS>>,
+            { as }: { as: ControlledAccount },
+            onUpdate: (value: ControlledAccount<ProfileS, RootS>) => void
+        ): () => void {
+            throw new Error("Not implemented");
+        }
+
+        static subscribeEf(
+            id: ID<ControlledAccount<ProfileS, RootS>>
+        ): Effect.Effect<
+            ControlledAccount<ProfileS, RootS>,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount
+        > {
+            throw new Error("Not implemented");
+        }
+
+        subscribe(onUpdate: (value: this) => void): () => void {
+            throw new Error("Not implemented");
+        }
+
+        subscribeEf(): Effect.Effect<this, never, never> {
+            throw new Error("Not implemented");
+        }
+
+        toJSON() {
+            return {
+                id: this.id,
+                profile: this.profile?.toJSON(),
+                root: this.root?.toJSON(),
+            };
         }
 
         async acceptInvite<S extends CoValueSchemaBase>(
@@ -118,8 +157,8 @@ export function AccountWith<
     }
 
     class NonControlledAccountSchemaForProfileAndRoot extends AccountSchemaForProfileAndRoot {
-        constructor(options: { fromRaw: RawAccount | RawControlledAccount; });
-        constructor(options: { fromRaw: RawAccount | RawControlledAccount; }) {
+        constructor(options: { fromRaw: RawAccount | RawControlledAccount });
+        constructor(options: { fromRaw: RawAccount | RawControlledAccount }) {
             super();
             this._raw = options.fromRaw;
             this.id = this._raw.id as unknown as ID<Account<ProfileS, RootS>>;
@@ -137,7 +176,7 @@ export function AccountWith<
 
         static load(
             id: ID<ControlledAccount<ProfileS, RootS>>,
-            { as }: { as: ControlledAccount; }
+            { as }: { as: ControlledAccount }
         ): Promise<ControlledAccount<ProfileS, RootS>> {
             throw new Error("Not implemented");
         }
@@ -145,8 +184,36 @@ export function AccountWith<
         static loadEf(
             id: ID<ControlledAccount<ProfileS, RootS>>
         ): Effect.Effect<
-            ControlledAccount, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccount<ProfileS, RootS>
+            ControlledAccount,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount<ProfileS, RootS>
         > {
+            throw new Error("Not implemented");
+        }
+
+        static subscribe(
+            id: ID<ControlledAccount<ProfileS, RootS>>,
+            { as }: { as: ControlledAccount },
+            onUpdate: (value: ControlledAccount<ProfileS, RootS>) => void
+        ): () => void {
+            throw new Error("Not implemented");
+        }
+
+        static subscribeEf(
+            id: ID<ControlledAccount<ProfileS, RootS>>
+        ): Effect.Effect<
+            ControlledAccount<ProfileS, RootS>,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount
+        > {
+            throw new Error("Not implemented");
+        }
+
+        subscribe(onUpdate: (value: this) => void): () => void {
+            throw new Error("Not implemented");
+        }
+
+        subscribeEf(): Effect.Effect<this, never, never> {
             throw new Error("Not implemented");
         }
 
@@ -160,11 +227,13 @@ export function AccountWith<
                 name: options.name,
                 initialAgentSecret: options.initialAgentSecret,
                 peersToLoadFrom: options.peersToLoadFrom,
-                migration: options.migration &&
+                migration:
+                    options.migration &&
                     (async (rawAccount) => {
-                        const account = ControlledAccountSchemaForProfileAndRoot.fromRaw(
-                            rawAccount
-                        );
+                        const account =
+                            ControlledAccountSchemaForProfileAndRoot.fromRaw(
+                                rawAccount
+                            );
 
                         await options.migration!(account);
                     }),
@@ -187,11 +256,13 @@ export function AccountWith<
                 accountSecret: options.accountSecret,
                 sessionID: options.sessionID,
                 peersToLoadFrom: options.peersToLoadFrom,
-                migration: options.migration &&
+                migration:
+                    options.migration &&
                     (async (rawAccount) => {
-                        const account = ControlledAccountSchemaForProfileAndRoot.fromRaw(
-                            rawAccount
-                        );
+                        const account =
+                            ControlledAccountSchemaForProfileAndRoot.fromRaw(
+                                rawAccount
+                            );
 
                         await options.migration!(account);
                     }),
@@ -200,6 +271,14 @@ export function AccountWith<
             return ControlledAccountSchemaForProfileAndRoot.fromRaw(
                 node.account as RawControlledAccount
             );
+        }
+
+        toJSON() {
+            return {
+                id: this.id,
+                profile: this.profile?.toJSON(),
+                root: this.root?.toJSON(),
+            };
         }
 
         static ControlledSchema = ControlledAccountSchemaForProfileAndRoot;

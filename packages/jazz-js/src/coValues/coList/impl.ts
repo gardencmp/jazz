@@ -23,13 +23,13 @@ import { ControlledAccount } from "../account/account.js";
 import { CoValueSchema } from "../../index.js";
 import { CoListMeta } from "./meta.js";
 import { isCoListSchema } from "./guards.js";
-import { CoListSchema, CoList } from "./coList.js";
+import { CoListSchema, CoList, CoListConstructor } from "./coList.js";
 
 /** @category CoValues - CoList */
 
 export function CoListOf<Item extends Schema>(
     ItemSchema: Item
-): CoListSchema<Item> {
+): CoListSchema<Item> & CoListConstructor<Item> {
     class RefsForItem {
         raw: RawCoList<RawType<Item>>;
         as: ControlledAccount;
@@ -447,5 +447,5 @@ export function CoListOf<Item extends Schema>(
         ): this {
             throw new Error("TODO: implement fill in CoList");
         }
-    } satisfies CoListSchema<Item>;
+    } satisfies CoListSchema<Item> & CoListConstructor<Item>;
 }

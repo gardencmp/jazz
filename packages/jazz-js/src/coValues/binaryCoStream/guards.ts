@@ -1,4 +1,4 @@
-import { BinaryCoStreamSchema, BinaryCoStream, BinaryCoStream } from "./binaryCoStream.js";
+import { BinaryCoStreamSchema, BinaryCoStream } from "./binaryCoStream.js";
 
 
 export function isBinaryCoStreamSchema(

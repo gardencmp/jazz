@@ -1,29 +1,32 @@
 import {
     CoValueCore,
     LocalNode,
+    RawAccount,
+    RawControlledAccount,
     RawGroup as RawGroup,
     Role,
 } from "cojson";
-import {
-    CoValue,
-} from "../../index.js";
+import { CoValue, SimpleAccount } from "../../index.js";
 import { ID } from "../../id.js";
 import {
     CoValueBase,
     CoValueMetaBase,
-    CoValueSchemaBase
+    CoValueSchemaBase,
 } from "../../baseInterfaces.js";
 import { Schema } from "../../schema.js";
 import { NullSchema } from "../../immutables/primitives.js";
 import { CoMapSchema } from "../coMap/coMap.js";
 import { Account, ControlledAccount } from "../account/account.js";
 import { Effect } from "effect";
-import { CoValueUnavailableError, UnknownCoValueLoadError } from "../../errors.js";
+import {
+    CoValueUnavailableError,
+    UnknownCoValueLoadError,
+} from "../../errors.js";
 
 /** @category CoValues - Group */
 export interface Group<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
+    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
 > extends CoValueBase {
     /** @hidden */
     _raw: RawGroup;
@@ -44,23 +47,33 @@ export interface Group<
 
 export class GroupMeta<
     ProfileS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
-> implements CoValueMetaBase {
+    RootS extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
+> implements CoValueMetaBase
+{
     node: LocalNode;
     core: CoValueCore;
-    owner: Account | Group;
+    owner: Account;
     loadedAs: ControlledAccount;
 
     constructor(raw: RawGroup) {
         this.node = raw.core.node;
         this.core = raw.core;
+        const rawOwner = raw.core.getGroup();
+        if (rawOwner instanceof RawAccount) {
+            this.owner = SimpleAccount.fromRaw(rawOwner);
+        } else {
+            throw new Error("Group owner must be an account");
+        }
+        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+            raw.core.node.account as RawControlledAccount
+        );
     }
 }
 
 /** @category CoValues - Group */
 export interface GroupSchema<
     P extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
+    R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
 > extends Schema<Group<P, R>>,
         CoValueSchemaBase<Group<P, R>, RawGroup> {
     _Type: "group";
@@ -68,9 +81,14 @@ export interface GroupSchema<
     _Root: R;
     _RawValue: RawGroup;
 
-    new (options: { admin: ControlledAccount }): Group<P, R>;
-
     fromRaw(raw: RawGroup, onGetRef?: (id: ID<CoValue>) => void): Group<P, R>;
+}
+
+export interface GroupConstructor<
+    P extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
+    R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
+> {
+    new (options: { admin: ControlledAccount }): Group<P, R>;
 }
 
 /** @category CoValues - Group */
@@ -96,7 +114,7 @@ export function isGroup(value: unknown): value is Group {
 /** @category CoValues - Group */
 export function GroupWith<
     P extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
-    R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema
+    R extends CoMapSchema | NullSchema = CoMapSchema | NullSchema,
 >(ProfileS: P, RootS: R): GroupSchema<P, R> {
     return class GroupSchema {
         static _Type = "group" as const;
@@ -131,9 +149,7 @@ export function GroupWith<
             this.meta = new GroupMeta(this._raw);
         }
 
-        static fromRaw(
-            raw: RawGroup,
-        ): Group<P, R> {
+        static fromRaw(raw: RawGroup): Group<P, R> {
             return new this({ fromRaw: raw });
         }
 
@@ -147,14 +163,40 @@ export function GroupWith<
         static loadEf(
             id: ID<Group<P, R>>
         ): Effect.Effect<
-            ControlledAccount,
+            Group<P, R>,
             CoValueUnavailableError | UnknownCoValueLoadError,
-            Group<P, R>
+            ControlledAccount
         > {
             throw new Error("Not implemented");
         }
 
-        get profile() {
+        static subscribe(
+            id: ID<Group<P, R>>,
+            { as }: { as: ControlledAccount },
+            onUpdate: (value: Group<P, R>) => void
+        ): () => void {
+            throw new Error("Not implemented");
+        }
+
+        static subscribeEf(
+            id: ID<Group<P, R>>
+        ): Effect.Effect<
+            Group<P, R>,
+            CoValueUnavailableError | UnknownCoValueLoadError,
+            ControlledAccount
+        > {
+            throw new Error("Not implemented");
+        }
+
+        subscribe(onUpdate: (value: Group<P, R>) => void): () => void {
+            throw new Error("Not implemented");
+        }
+
+        subscribeEf(): Effect.Effect<Group<P, R>, never, never> {
+            throw new Error("Not implemented");
+        }
+
+        get profile(): P["_Value"] | undefined {
             const id = this._raw.get("profile");
 
             if (!id) {
@@ -164,7 +206,7 @@ export function GroupWith<
             }
         }
 
-        get root() {
+        get root(): R["_Value"] | undefined {
             const id = this._raw.get("root");
 
             if (!id) {
@@ -182,7 +224,12 @@ export function GroupWith<
             }
             return this;
         }
+
+        toJSON() {
+            return {
+                profile: this.profile?.toJSON(),
+                root: this.root?.toJSON(),
+            };
+        }
     } satisfies GroupSchema<P, R>;
 }
-
-
