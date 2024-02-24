@@ -52,21 +52,20 @@ export class GroupMeta<
 {
     node: LocalNode;
     core: CoValueCore;
-    owner: Account;
+    owner: Account | Group;
     loadedAs: ControlledAccount;
 
-    constructor(raw: RawGroup) {
+    constructor(raw: RawGroup, selfOwnedAs: Account | Group) {
         this.node = raw.core.node;
         this.core = raw.core;
-        const rawOwner = raw.core.getGroup();
-        if (rawOwner instanceof RawAccount) {
-            this.owner = SimpleAccount.fromRaw(rawOwner);
+        this.owner = selfOwnedAs;
+        if (selfOwnedAs._raw.id === (raw.core.node.account as RawControlledAccount).id) {
+            this.loadedAs = selfOwnedAs as ControlledAccount
         } else {
-            throw new Error("Group owner must be an account");
+            this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
+               raw.core.node.account as RawControlledAccount
+           );
         }
-        this.loadedAs = SimpleAccount.ControlledSchema.fromRaw(
-            raw.core.node.account as RawControlledAccount
-        );
     }
 }
 
@@ -146,7 +145,7 @@ export function GroupWith<
                 this._raw = rawAdmin.createGroup();
             }
             this.id = this._raw.id as unknown as ID<Group<P, R>>;
-            this.meta = new GroupMeta(this._raw);
+            this.meta = new GroupMeta(this._raw, this);
         }
 
         static fromRaw(raw: RawGroup): Group<P, R> {

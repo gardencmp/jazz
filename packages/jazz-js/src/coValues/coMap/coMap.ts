@@ -40,11 +40,6 @@ export interface CoMapSchema<Shape extends BaseCoMapShape = BaseCoMapShape>
     _Shape: Shape;
     _Value: CoMap<Shape>;
 
-    // new (
-    //     owner: Account | Group,
-    //     init: CoMapInit<Shape>,
-    // ): CoMap<Shape>;
-
     fromRaw<Raw extends RawCoMap<RawShape<Shape>>>(raw: Raw): CoMap<Shape>;
 }
 

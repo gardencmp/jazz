@@ -78,7 +78,7 @@ export function AccountWith<
                 ControlledAccount<ProfileS, RootS>
             >;
             this.isMe = true;
-            this.meta = new GroupMeta(this._raw);
+            this.meta = new GroupMeta(this._raw, this);
         }
 
         static fromRaw(
@@ -163,7 +163,7 @@ export function AccountWith<
             this._raw = options.fromRaw;
             this.id = this._raw.id as unknown as ID<Account<ProfileS, RootS>>;
             this.isMe = this._raw.id == this._raw.core.node.account.id;
-            this.meta = new GroupMeta(this._raw);
+            this.meta = new GroupMeta(this._raw, this);
         }
 
         static fromRaw(

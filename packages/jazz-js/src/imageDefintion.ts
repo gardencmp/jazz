@@ -5,9 +5,6 @@ import { CoListOf } from "./coValues/coList/impl.js";
 import { BinaryCoStream } from "./coValues/binaryCoStream/binaryCoStream.js";
 import { CoValueSchemaBase } from "./baseInterfaces.js";
 
-export abstract class ValueTransform<Inner extends CoValueSchemaBase = CoValueSchemaBase> extends Schema {
-
-}
 
 export class ImageDefinitionInner extends CoMapOf({
     originalSize: imm.tuple(imm.number, imm.number),
@@ -15,6 +12,12 @@ export class ImageDefinitionInner extends CoMapOf({
     "...": BinaryCoStream
 }) {}
 
-// export class ImageDefinition extends ValueTransform<typeof ImageDefinitionInner> {
+export class ImageDefinition extends CoListOf(ImageDefinitionInner) {
+    get resolutions() {
 
-// }
+    }
+
+    highestAvailableResolution() {
+
+    }
+}

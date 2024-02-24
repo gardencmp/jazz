@@ -67,6 +67,9 @@ describe("CoMap with rest keys operations", async () => {
         expect(map.height).toEqual(10);
         expect(map.extra).toEqual(true);
         expect(map.otherExtra).toEqual(false);
+        expect(new Set(Object.keys(map))).toEqual(
+            new Set(["color", "height", "extra", "otherExtra", "meta", "id"])
+        );
     });
 
     describe("Mutation", () => {

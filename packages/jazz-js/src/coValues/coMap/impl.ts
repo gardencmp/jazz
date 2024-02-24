@@ -324,6 +324,7 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
             Object.defineProperty(CoMapSchemaForShape.prototype, key, {
                 get: makeCoValueGetterForKey(key, KeyCoValueSchema),
                 set: makeCoValueSetterForKey(key, KeyCoValueSchema),
+                enumerable: true,
             });
 
             Object.defineProperty(RefsForShape.prototype, key, {
@@ -354,6 +355,7 @@ export function CoMapOf<Shape extends BaseCoMapShape>(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     this._raw.set(key as any, value);
                 },
+                enumerable: true,
             });
         }
     }
