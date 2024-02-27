@@ -138,7 +138,7 @@ TODO: document
 <sup>(function in `jazz-js`)</sup>
 
 ```typescript
-export function CoMapOf<Shape extends BaseCoMapShape>(SchemaShape: Shape): CoMapSchema<Shape>
+export function CoMapOf<Shape extends BaseCoMapShape>(SchemaShape: Shape): CoMapSchema<Shape> & CoMapConstructor<Shape>
 ```
 TODO: document
 
@@ -201,7 +201,7 @@ TODO: document
 <sup>(function in `jazz-js`)</sup>
 
 ```typescript
-export function CoListOf<Item extends Schema<any>>(ItemSchema: Item): CoListSchema<Item>
+export function CoListOf<Item extends Schema<any>>(ItemSchema: Item): CoListSchema<Item> & CoListConstructor<Item>
 ```
 TODO: document
 
@@ -259,29 +259,12 @@ TODO: document
 
 ----
 
-## `CoValueSchemaBase`
+## `CoStreamOf(ItemSchema)`
 
-<sup>(interface in `jazz-js`)</sup>
-
-```typescript
-export interface CoValueSchemaBase<Value extends CoValue, RawValue extends RawCoValue> extends Schema<Value> {...}
-```
-TODO: document
-
-### `CoValueSchemaBase`: Other
-
-<details>
-<summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<sup>(function in `jazz-js`)</sup>
 
 ```typescript
-interface CoValueSchemaBase<Value, RawValue> {
-
-  fromRaw(
-    raw: CoValue,
-    onGetRef?: (id: ID<CoValue>) => void
-  ): Value {...}
-
-}
+export function CoStreamOf<Item extends Schema<any>>(ItemSchema: Item): CoStreamSchema<Item> & CoStreamConstructor<Item>
 ```
 TODO: document
 
@@ -289,170 +272,93 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `raw` | TODO: document  |
+| `ItemSchema` | TODO: document  |
 
 
-</details>
-
-
-
-<details>
-<summary><b><code>.load(id, {as})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoValueSchemaBase<Value, RawValue> {
-
-  load(
-    id: ID<Value>,
-    __namedParameters: {
-      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    }
-  ): Promise<undefined | Value> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-| `__namedParameters.as` | TODO: document |
-
-</details>
-
-
-
-<details>
-<summary><b><code>.loadEf(id)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoValueSchemaBase<Value, RawValue> {
-
-  loadEf(
-    id: ID<Value>
-  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, Value> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `id` | TODO: document  |
-
-</details>
-
-<br/>
-
-### `CoValueSchemaBase`: Type Hints
-
-<details>
-<summary><b><code>._RawValue</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoValueSchemaBase<Value, RawValue> {
-
-  _RawValue: RawValue
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoValueSchemaBase<Value, RawValue> {
-
-  _Value: Value
-
-}
-```
-TODO: document
-
-</details>
 
 
 
 ----
 
-## `CoValueBase`
+## `isCoStream(value)`
 
-<sup>(interface in `jazz-js`)</sup>
+<sup>(function in `jazz-js`)</sup>
 
 ```typescript
-export interface CoValueBase {...}
+export function isCoStream(value: unknown): COMPLEX_TYPE_predicate
 ```
 TODO: document
 
-### `CoValueBase`: Properties
+### Parameters:
 
-<details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoValueBase {
-
-  id: ID<CoValue>
-
-}
-```
-TODO: document
-
-</details>
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
 
 
-
-<details>
-<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoValueBase {
-
-  meta: CoValueMetaBase
-
-}
-```
-TODO: document
-
-</details>
 
 
 
 ----
 
-## `CoValueMetaBase`
+## `isCoStreamSchema(value)`
 
-<sup>(interface in `jazz-js`)</sup>
+<sup>(function in `jazz-js`)</sup>
 
 ```typescript
-export interface CoValueMetaBase {...}
+export function isCoStreamSchema(value: unknown): COMPLEX_TYPE_predicate
 ```
 TODO: document
 
-### `CoValueMetaBase`: Properties
+### Parameters:
 
-<details>
-<summary><b><code>.owner</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+
+
+
+
+
+----
+
+## `isBinaryCoStream(value)`
+
+<sup>(function in `jazz-js`)</sup>
 
 ```typescript
-interface CoValueMetaBase {
-
-  owner: Group<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>> | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>
-
-}
+export function isBinaryCoStream(value: unknown): COMPLEX_TYPE_predicate
 ```
 TODO: document
 
-</details>
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+
+
+
+
+
+----
+
+## `isBinaryCoStreamSchema(value)`
+
+<sup>(function in `jazz-js`)</sup>
+
+```typescript
+export function isBinaryCoStreamSchema(value: unknown): COMPLEX_TYPE_predicate
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `value` | TODO: document  |
+
+
 
 
 
@@ -463,7 +369,7 @@ TODO: document
 <sup>(interface in `jazz-js`)</sup>
 
 ```typescript
-export interface Account<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> {...}
+export interface Account<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> extends CoValueBase {...}
 ```
 TODO: document
 
@@ -492,6 +398,96 @@ TODO: document
 interface Account<ProfileS, RootS> {
 
   isMe: boolean
+
+}
+```
+TODO: document
+
+</details>
+
+<br/>
+
+### `Account`: Other
+
+<details>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Account<ProfileS, RootS> {
+
+  meta: CoValueMetaBase
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribe(onUpdate)</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Account<ProfileS, RootS> {
+
+  subscribe(
+    onUpdate: (value: Account<ProfileS, RootS>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Account<ProfileS, RootS> {
+
+  subscribeEf(): Stream<Account<ProfileS, RootS>, never, never> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Account<ProfileS, RootS> {
+
+  toJSON(): unknown[] | Record<string, unknown> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.[subscriptionScopeSym]</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface Account<ProfileS, RootS> {
+
+  [subscriptionScopeSym]: SubscriptionScope<CoValueSchemaBase<CoValue, RawCoValue>>
 
 }
 ```
@@ -634,7 +630,61 @@ interface AccountSchema<ProfileS, RootS> {
 
   loadEf(
     id: ID<Account<ProfileS, RootS>>
-  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, Account<ProfileS, RootS>> {...}
+  ): Effect<Account<ProfileS, RootS>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribe(id, {as}, onUpdate)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AccountSchema<ProfileS, RootS> {
+
+  subscribe(
+    id: ID<Account<ProfileS, RootS>>,
+    __namedParameters: {
+      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
+    },
+    onUpdate: (value: Account<ProfileS, RootS>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `__namedParameters.as` | TODO: document |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface AccountSchema<ProfileS, RootS> {
+
+  subscribeEf(
+    id: ID<Account<ProfileS, RootS>>
+  ): Stream<Account<ProfileS, RootS>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
 
 }
 ```
@@ -706,7 +756,7 @@ TODO: document
 ```typescript
 interface AccountSchema<ProfileS, RootS> {
 
-  _RawValue: Account<AccountMeta> | ControlledAccount<AccountMeta>
+  _RawValue: RawAccount<AccountMeta> | RawControlledAccount<AccountMeta>
 
 }
 ```
@@ -717,7 +767,7 @@ TODO: document
 
 
 <details>
-<summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface AccountSchema<ProfileS, RootS> {
@@ -771,6 +821,62 @@ TODO: document
 
 </details>
 
+
+
+<details>
+<summary><b><code>.subscribe(onUpdate)</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface ControlledAccount<ProfileS, RootS> {
+
+  subscribe(
+    onUpdate: (value: ControlledAccount<ProfileS, RootS>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf()</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface ControlledAccount<ProfileS, RootS> {
+
+  subscribeEf(): Stream<ControlledAccount<ProfileS, RootS>, never, never> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface ControlledAccount<ProfileS, RootS> {
+
+  toJSON(): unknown[] | Record<string, unknown> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
 <br/>
 
 ### `ControlledAccount`: Properties
@@ -807,26 +913,13 @@ TODO: document
 
 
 
-----
-
-## `Group`
-
-<sup>(interface in `jazz-js`)</sup>
-
-```typescript
-export interface Group<ProfileS extends CoMapSchema | NullSchema, RootS extends CoMapSchema | NullSchema> {...}
-```
-TODO: document
-
-### `Group`: Collaboration
-
 <details>
-<summary><b><code>.id</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.meta</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface Group<ProfileS, RootS> {
+interface ControlledAccount<ProfileS, RootS> {
 
-  id: ID<Group<ProfileS, RootS>>
+  meta: CoValueMetaBase
 
 }
 ```
@@ -837,78 +930,16 @@ TODO: document
 
 
 <details>
-<summary><b><code>.meta</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.[subscriptionScopeSym]</code></b> <sub><sup>from <code>Account</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface Group<ProfileS, RootS> {
+interface ControlledAccount<ProfileS, RootS> {
 
-  meta: GroupMeta<ProfileS, RootS>
+  [subscriptionScopeSym]: SubscriptionScope<CoValueSchemaBase<CoValue, RawCoValue>>
 
 }
 ```
 TODO: document
-
-</details>
-
-<br/>
-
-### `Group`: Data Roots
-
-<details>
-<summary><b><code>.profile</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface Group<ProfileS, RootS> {
-
-  profile: undefined | ProfileS["_Value"]
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
-<summary><b><code>.root</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface Group<ProfileS, RootS> {
-
-  root: undefined | RootS["_Value"]
-
-}
-```
-TODO: document
-
-</details>
-
-<br/>
-
-### `Group`: Mutation
-
-<details>
-<summary><b><code>.addMember(member, role)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface Group<ProfileS, RootS> {
-
-  addMember(
-    member: "everyone" | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    role: Role
-  ): Group<ProfileS, RootS> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `member` | TODO: document  |
-| `role` | TODO: document  |
 
 </details>
 
@@ -960,14 +991,29 @@ TODO: document
 
 
 <details>
-<summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Value</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoMapSchema<Shape> {
 
-  fromRaw<Raw extends CoMap<RawShape<Shape>, null | JsonObject>>(
-    raw: Raw,
-    onGetRef?: (id: ID<CoValue>) => void
+  _Value: CoMap<Shape>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.fromRaw(raw)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoMapSchema<Shape> {
+
+  fromRaw<Raw extends RawCoMap<RawShape<Shape>, null | JsonObject>>(
+    raw: Raw
   ): CoMap<Shape> {...}
 
 }
@@ -979,7 +1025,6 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `raw` | TODO: document  |
-
 
 </details>
 
@@ -1021,7 +1066,7 @@ interface CoMapSchema<Shape> {
 
   loadEf(
     id: ID<CoMap<Shape>>
-  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, CoMap<Shape>> {...}
+  ): Effect<CoMap<Shape>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
 
 }
 ```
@@ -1038,17 +1083,18 @@ TODO: document
 
 
 <details>
-<summary><b><code>new CoMapSchema</code></b>(init, opts)</code></b> <sub><sup>from <code>Schema<CoMap<Shape>></code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.subscribe(id, {as}, onUpdate)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoMapSchema<Shape> {
 
-  constructor(
-    init: CoMapInit<Shape>,
-    opts: {
-      owner: Group<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>> | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    }
-  ): CoMap<Shape> {...}
+  subscribe(
+    id: ID<CoMap<Shape>>,
+    __namedParameters: {
+      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
+    },
+    onUpdate: (value: CoMap<Shape>) => void
+  ): () => void {...}
 
 }
 ```
@@ -1058,8 +1104,33 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `init` | TODO: document  |
-| `opts.owner` | TODO: document |
+| `id` | TODO: document  |
+| `__namedParameters.as` | TODO: document |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoMapSchema<Shape> {
+
+  subscribeEf(
+    id: ID<CoMap<Shape>>
+  ): Stream<CoMap<Shape>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
 
 </details>
 
@@ -1068,28 +1139,12 @@ TODO: document
 ### `CoMapSchema`: Type Hints
 
 <details>
-<summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoMapSchema<Shape> {
-
-  _Value: CoMap<Shape>
-
-}
-```
-TODO: document
-
-</details>
-
-
-
-<details>
 <summary><b><code>._RawValue</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoMapSchema<Shape> {
 
-  _RawValue: CoMap<RawShape<Shape>, null | JsonObject>
+  _RawValue: RawCoMap<RawShape<Shape>, null | JsonObject>
 
 }
 ```
@@ -1346,7 +1401,7 @@ TODO: document
 ```typescript
 interface CoList<Item> {
 
-  meta: CoListMeta
+  meta: CoListMeta<Item>
 
 }
 ```
@@ -2388,6 +2443,78 @@ when they will be absent when used in a 'with' statement.
 
 </details>
 
+
+
+<details>
+<summary><b><code>.subscribe(onUpdate)</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  subscribe(
+    onUpdate: (value: CoList<Item>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  subscribeEf(): Stream<CoList<Item>, never, never> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  toJSON(): unknown[] | Record<string, unknown> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.[subscriptionScopeSym]</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoList<Item> {
+
+  [subscriptionScopeSym]: SubscriptionScope<CoValueSchemaBase<CoValue, RawCoValue>>
+
+}
+```
+TODO: document
+
+</details>
+
 <br/>
 
 ### `CoList`: Properties
@@ -2457,7 +2584,61 @@ interface CoListSchema<Item> {
 
   loadEf(
     id: ID<CoList<Item>>
-  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, CoList<Item>> {...}
+  ): Effect<CoList<Item>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribe(id, {as}, onUpdate)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoListSchema<Item> {
+
+  subscribe(
+    id: ID<CoList<Item>>,
+    __namedParameters: {
+      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
+    },
+    onUpdate: (value: CoList<Item>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `__namedParameters.as` | TODO: document |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoListSchema<Item> {
+
+  subscribeEf(
+    id: ID<CoList<Item>>
+  ): Stream<CoList<Item>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
 
 }
 ```
@@ -2513,7 +2694,7 @@ TODO: document
 ```typescript
 interface CoListSchema<Item> {
 
-  _RawValue: CoList<RawType<Item>, null | JsonObject>
+  _RawValue: RawCoList<RawType<Item>, null | JsonObject>
 
 }
 ```
@@ -2536,36 +2717,6 @@ interface CoListSchema<Item> {
 }
 ```
 TODO: document
-
-</details>
-
-<br/>
-
-### `CoListSchema`: Value Creation
-
-<details>
-<summary><b><code>new CoListSchema</code></b>(init, options)</code></b> <sub><sup>from <code>Schema<CoList<Item>></code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
-
-```typescript
-interface CoListSchema<Item> {
-
-  constructor(
-    init: Item["_Value"][],
-    options: {
-      owner: Group<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>> | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    }
-  ): CoList<Item> {...}
-
-}
-```
-TODO: document
-
-### Parameters:
-
-| name | description |
-| ----: | ---- |
-| `init` | TODO: document  |
-| `options.owner` | TODO: document |
 
 </details>
 
@@ -2624,7 +2775,135 @@ TODO: document
 ```typescript
 interface CoStream<Item> {
 
-  _raw: CoStream<RawType<Item>, null | JsonObject>
+  _raw: RawCoStream<RawType<Item>, null | JsonObject>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.bySession</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  bySession: CoStreamSessionEntries<Item>[]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.byAccount</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  byAccount: CoStreamAccountEntries<Item>[]
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.push(item)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  push(
+    item: Item["_Value"]
+  ): void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `item` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribe(onUpdate)</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  subscribe(
+    onUpdate: (value: CoStream<Item>) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  subscribeEf(): Stream<CoStream<Item>, never, never> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  toJSON(): unknown[] | Record<string, unknown> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.[subscriptionScopeSym]</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface CoStream<Item> {
+
+  [subscriptionScopeSym]: SubscriptionScope<CoValueSchemaBase<CoValue, RawCoValue>>
 
 }
 ```
@@ -2680,14 +2959,13 @@ TODO: document
 
 
 <details>
-<summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.fromRaw(raw)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoStreamSchema<Item> {
 
   fromRaw(
-    raw: CoStream<RawType<Item>, null | JsonObject>,
-    onGetRef?: (id: ID<CoValue>) => void
+    raw: RawCoStream<RawType<Item>, null | JsonObject>
   ): CoStream<Item> {...}
 
 }
@@ -2699,7 +2977,6 @@ TODO: document
 | name | description |
 | ----: | ---- |
 | `raw` | TODO: document  |
-
 
 </details>
 
@@ -2741,7 +3018,7 @@ interface CoStreamSchema<Item> {
 
   loadEf(
     id: ID<CoStream<Item>>
-  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, CoStream<Item>> {...}
+  ): Effect<CoStream<Item>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
 
 }
 ```
@@ -2758,16 +3035,18 @@ TODO: document
 
 
 <details>
-<summary><b><code>new CoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema<CoStream<Item>></code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.subscribe(id, {as}, onUpdate)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoStreamSchema<Item> {
 
-  constructor(
-    options: {
-      owner: Group<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>> | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    }
-  ): CoStream<Item> {...}
+  subscribe(
+    id: ID<CoStream<Item>>,
+    __namedParameters: {
+      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
+    },
+    onUpdate: (value: CoStream<Item>) => void
+  ): () => void {...}
 
 }
 ```
@@ -2777,23 +3056,23 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `options.owner` | TODO: document |
+| `id` | TODO: document  |
+| `__namedParameters.as` | TODO: document |
+
 
 </details>
 
 
 
 <details>
-<summary><b><code>new CoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema<CoStream<Item>></code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.subscribeEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoStreamSchema<Item> {
 
-  constructor(
-    options: {
-      fromRaw: CoStream<Item>,
-    }
-  ): CoStream<Item> {...}
+  subscribeEf(
+    id: ID<CoStream<Item>>
+  ): Stream<CoStream<Item>, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
 
 }
 ```
@@ -2803,7 +3082,7 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `options.fromRaw` | TODO: document |
+| `id` | TODO: document  |
 
 </details>
 
@@ -2812,7 +3091,7 @@ TODO: document
 ### `CoStreamSchema`: Type Hints
 
 <details>
-<summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
 interface CoStreamSchema<Item> {
@@ -2833,7 +3112,7 @@ TODO: document
 ```typescript
 interface CoStreamSchema<Item> {
 
-  _RawValue: CoStream<RawType<Item>, null | JsonObject>
+  _RawValue: RawCoStream<RawType<Item>, null | JsonObject>
 
 }
 ```
@@ -2936,7 +3215,7 @@ interface BinaryCoStream {
     options?: {
       allowUnfinished?: boolean,
     }
-  ): {
+  ): undefined | {
     chunks: Uint8Array[],
     mimeType?: string,
   } {...}
@@ -2952,6 +3231,62 @@ TODO: document
 | `options.allowUnfinished?` | TODO: document |
 
 </details>
+
+
+
+<details>
+<summary><b><code>.subscribe(onUpdate)</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStream {
+
+  subscribe(
+    onUpdate: (value: BinaryCoStream) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStream {
+
+  subscribeEf(): Stream<BinaryCoStream, never, never> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
+
+
+
+<details>
+<summary><b><code>.toJSON()</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStream {
+
+  toJSON(): unknown[] | Record<string, unknown> {...}
+
+}
+```
+TODO: document
+
+undefined</details>
 
 <br/>
 
@@ -2979,7 +3314,7 @@ TODO: document
 ```typescript
 interface BinaryCoStream {
 
-  meta: CoStreamMeta
+  meta: BinaryCoStreamMeta
 
 }
 ```
@@ -2995,9 +3330,25 @@ TODO: document
 ```typescript
 interface BinaryCoStream {
 
-  _raw: BinaryCoStream<{
+  _raw: RawBinaryCoStream<{
     type: "binary",
   }>
+
+}
+```
+TODO: document
+
+</details>
+
+
+
+<details>
+<summary><b><code>.[subscriptionScopeSym]</code></b> <sub><sup>from <code>CoValueBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStream {
+
+  [subscriptionScopeSym]: SubscriptionScope<CoValueSchemaBase<CoValue, RawCoValue>>
 
 }
 ```
@@ -3014,7 +3365,7 @@ TODO: document
 <sup>(interface in `jazz-js`)</sup>
 
 ```typescript
-export interface BinaryCoStreamSchema<Item extends Schema> extends Schema<BinaryCoStream>, CoValueSchemaBase<BinaryCoStream, RawBinaryCoStream> {...}
+export interface BinaryCoStreamSchema extends Schema<BinaryCoStream>, CoValueSchemaBase<BinaryCoStream, RawBinaryCoStream> {...}
 ```
 TODO: document
 
@@ -3024,7 +3375,7 @@ TODO: document
 <summary><b><code>._Type</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
 
   _Type: "binarycostream"
 
@@ -3037,16 +3388,15 @@ TODO: document
 
 
 <details>
-<summary><b><code>.fromRaw(raw, onGetRef?)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.fromRaw(raw)</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
 
   fromRaw(
-    raw: BinaryCoStream<{
+    raw: RawBinaryCoStream<{
       type: "binary",
-    }>,
-    onGetRef?: (id: ID<CoValue>) => void
+    }>
   ): BinaryCoStream {...}
 
 }
@@ -3059,7 +3409,6 @@ TODO: document
 | ----: | ---- |
 | `raw` | TODO: document  |
 
-
 </details>
 
 
@@ -3068,7 +3417,7 @@ TODO: document
 <summary><b><code>.load(id, {as, onProgress?})</code></b>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
 
   load(
     id: ID<BinaryCoStream>,
@@ -3098,11 +3447,11 @@ TODO: document
 <summary><b><code>.loadEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
 
   loadEf(
     id: ID<BinaryCoStream>
-  ): Effect<ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>, CoValueUnavailableError | UnknownCoValueLoadError, BinaryCoStream> {...}
+  ): Effect<BinaryCoStream, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
 
 }
 ```
@@ -3119,15 +3468,67 @@ TODO: document
 
 
 <details>
-<summary><b><code>new BinaryCoStreamSchema</code></b>(options)</code></b> <sub><sup>from <code>Schema<BinaryCoStream></code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>.subscribe(id, {as}, onUpdate)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
+
+  subscribe(
+    id: ID<BinaryCoStream>,
+    __namedParameters: {
+      as: ControlledAccount<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
+    },
+    onUpdate: (value: BinaryCoStream) => void
+  ): () => void {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+| `__namedParameters.as` | TODO: document |
+
+
+</details>
+
+
+
+<details>
+<summary><b><code>.subscribeEf(id)</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStreamSchema {
+
+  subscribeEf(
+    id: ID<BinaryCoStream>
+  ): Stream<BinaryCoStream, CoValueUnavailableError | UnknownCoValueLoadError, ControlledAccountCtx> {...}
+
+}
+```
+TODO: document
+
+### Parameters:
+
+| name | description |
+| ----: | ---- |
+| `id` | TODO: document  |
+
+</details>
+
+
+
+<details>
+<summary><b><code>new BinaryCoStreamSchema</code></b>(owner)</code></b> <sub><sup>from <code>Schema<BinaryCoStream></code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+
+```typescript
+interface BinaryCoStreamSchema {
 
   constructor(
-    options: {
-      owner: Group<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>> | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>,
-    }
+    owner: Group<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>> | Account<NullSchema | CoMapSchema<BaseCoMapShape>, NullSchema | CoMapSchema<BaseCoMapShape>>
   ): BinaryCoStream {...}
 
 }
@@ -3138,7 +3539,7 @@ TODO: document
 
 | name | description |
 | ----: | ---- |
-| `options.owner` | TODO: document |
+| `owner` | TODO: document  |
 
 </details>
 
@@ -3147,10 +3548,10 @@ TODO: document
 ### `BinaryCoStreamSchema`: Type Hints
 
 <details>
-<summary><b><code>._Value</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
+<summary><b><code>._Value</code></b> <sub><sup>from <code>Schema</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
 
   _Value: BinaryCoStream
 
@@ -3166,9 +3567,9 @@ TODO: document
 <summary><b><code>._RawValue</code></b> <sub><sup>from <code>CoValueSchemaBase</code></sup></sub>  <sub><sup>(undocumented)</sup></sub></summary>
 
 ```typescript
-interface BinaryCoStreamSchema<Item> {
+interface BinaryCoStreamSchema {
 
-  _RawValue: BinaryCoStream<{
+  _RawValue: RawBinaryCoStream<{
     type: "binary",
   }>
 
@@ -3204,19 +3605,6 @@ TODO: doc generator not implemented yet 2097152
 
 ----
 
-## `ID`
-
-<sup>(type alias in `jazz-js`)</sup>
-
-```typescript
-export type ID<T> = CojsonInternalTypes.RawCoID & {
-  __type: T,
-}
-```
-TODO: doc generator not implemented yet 2097152
-
-----
-
 ## `AccountMigration`
 
 <sup>(type alias in `jazz-js`)</sup>
@@ -3228,39 +3616,20 @@ TODO: doc generator not implemented yet 2097152
 
 ----
 
-## `RawType`
-
-<sup>(type alias in `jazz-js`)</sup>
-
-```typescript
-export type RawType<T extends Schema> = T extends CoValueSchemaBase<infer _, infer _> ? T["_RawValue"] : T["_Value"]
-```
-TODO: doc generator not implemented yet 2097152
-
-----
-
-## `Primitive`
-
-<sup>(type alias in `jazz-js`)</sup>
-
-```typescript
-export type Primitive = string | number | boolean | null
-```
-TODO: doc generator not implemented yet 2097152
-
-----
-
 ## `CoMap`
 
 <sup>(type alias in `jazz-js`)</sup>
 
 ```typescript
 export type CoMap<Shape extends BaseCoMapShape> = {
-  [Key in keyof Shape]: Shape[Key]["_Value"] extends CoValue ? Shape[Key]["_Value"] | undefined : Shape[Key]["_Value"]
+  [Key in Exclude<keyof Shape, "...">]: Shape[Key]["_Value"] extends CoValueBase ? Shape[Key]["_Value"] | undefined : Shape[Key]["_Value"]
+} & {
+  [Key in Shape["..."] extends Schema ? string : never]: Shape["..."]["_Value"] | undefined
 } & {
   id: ID<CoMap<Shape>>,
   meta: CoMapMeta<Shape>,
   subscribe: (listener: (newValue: CoMap<Shape>) => void) => () => void,
+  [subscriptionScopeSym]?: SubscriptionScope,
 } & CoValueBase
 ```
 TODO: doc generator not implemented yet 2097152
@@ -3300,12 +3669,12 @@ TODO: doc generator not implemented yet 32
 
 ----
 
-## `Group`
+## `SimpleGroup`
 
 <sup>(variable in `jazz-js`)</sup>
 
 ```typescript
-export  Group
+export  SimpleGroup
 ```
 TODO: doc generator not implemented yet 32
 
