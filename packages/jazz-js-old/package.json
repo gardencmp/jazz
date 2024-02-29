@@ -1,5 +1,5 @@
 {
-    "name": "jazz-js",
+    "name": "jazz-js-old",
     "module": "dist/index.js",
     "main": "dist/index.js",
     "types": "src/index.ts",
