@@ -24,16 +24,22 @@ describe("Simple CoMap operations", async () => {
     class TestMap extends Co.map({
         color: S.string,
         height: S.number,
+        birthday: S.Date
     }) {}
+
+    const birthday = new Date();
 
     const map = new TestMap(me, {
         color: "red",
         height: 10,
+        birthday: birthday
     });
 
     test("Construction", () => {
         expect(map.color).toEqual("red");
         expect(map.height).toEqual(10);
+        expect(map.birthday).toEqual(birthday);
+        expect(map[rawCoValueSym].get("birthday")).toEqual(birthday.toISOString());
     });
 
     describe("Mutation", () => {

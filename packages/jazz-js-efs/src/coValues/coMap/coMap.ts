@@ -36,7 +36,7 @@ export type CoMapFields = {
 export type CoMapInit<Fields extends CoMapFields> = {
     [Key in keyof Fields]?: Fields[Key] extends CoValueSchema
         ? Fields[Key][valueOfSchemaSym]
-        : S.Schema.From<Fields[Key]>;
+        : S.Schema.To<Fields[Key]>;
 };
 
 export type CoMapMeta<Fields extends CoMapFields> = {
