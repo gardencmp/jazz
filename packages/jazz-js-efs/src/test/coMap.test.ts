@@ -47,6 +47,10 @@ describe("Simple CoMap operations", async () => {
             map.color = "blue";
             expect(map.color).toEqual("blue");
             expect(map[rawCoValueSym].get("color")).toEqual("blue");
+            const newBirthday = new Date();
+            map.birthday = newBirthday;
+            expect(map.birthday).toEqual(newBirthday);
+            expect(map[rawCoValueSym].get("birthday")).toEqual(newBirthday.toISOString());
         });
     });
 });
