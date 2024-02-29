@@ -14,6 +14,7 @@ import {
     SessionID,
 } from "cojson";
 import { AccountMigration } from "./migration.js";
+import { Context } from "effect";
 
 export type ProfileBaseSchema = CoMapSchema<{
     name: S.Schema<string>;
@@ -31,15 +32,18 @@ export type Account<
 export type ControlledAccount<
     P extends ProfileBaseSchema = ProfileBaseSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
-> = Account<P, R> & {
-    isMe: true;
-};
+> = Account<P, R> &
+    CoValue<"Account", RawControlledAccount> & {
+        isMe: true;
+    };
 
 export interface AccountConstructor<
     P extends ProfileBaseSchema = ProfileBaseSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
 > {
-    new (options: { fromRaw: RawAccount }): Account<P, R> | ControlledAccount<P, R>;
+    new (options: {
+        fromRaw: RawAccount;
+    }): Account<P, R>;
 
     create(options: {
         name: string;
@@ -67,3 +71,7 @@ export interface AccountSchema<
     readonly [controlledAccountSym]: ControlledAccount<P, R>;
 }
 
+export class ControlledAccountCtx extends Context.Tag("ControlledAccount")<
+    ControlledAccountCtx,
+    ControlledAccount
+>() {}

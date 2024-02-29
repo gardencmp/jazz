@@ -14,9 +14,17 @@ import {
 } from "../../coValueInterfaces.js";
 import { CoMapFields, CoMapConstructor, CoMap, CoMapMeta } from "./coMap.js";
 import { ValueRef, makeRefs } from "../../refs.js";
-import { JsonValue, RawCoMap } from "cojson";
+import { CoID, JsonValue, RawCoMap, RawCoValue, RawControlledAccount } from "cojson";
 import { Group } from "../group/group.js";
-import { Account } from "../account/account.js";
+import {
+    Account,
+    ControlledAccount,
+    ControlledAccountCtx,
+} from "../account/account.js";
+import { Effect } from "effect";
+import { AST } from "@effect/schema";
+import { SimpleAccount, controlledAccountFromNode } from "../account/accountOf.js";
+import { UnavailableError } from "../../errors.js";
 
 export function CoMapOf<Fields extends CoMapFields>(
     fields: Fields
@@ -27,7 +35,7 @@ export function CoMapOf<Fields extends CoMapFields>(
         never
     >;
 
-    class CoMapForS {
+    class CoMapOfFields {
         static ast = struct.ast;
         static [S.TypeId] = struct[S.TypeId];
         static pipe = struct.pipe;
@@ -40,9 +48,11 @@ export function CoMapOf<Fields extends CoMapFields>(
         id: ID<this>;
         meta: CoMapMeta<Fields>;
 
+        constructor(options: { fromRaw: RawCoMap });
+        constructor(owner: Account | Group, init: CoMapInit<Fields>);
         constructor(
             optionsOrOwner: Account | Group | { fromRaw: RawCoMap },
-            init: CoMapInit<Fields>
+            init?: CoMapInit<Fields>
         ) {
             if (!isTypeLiteral(struct.ast)) {
                 throw new Error("CoMap AST must be type literal");
@@ -66,7 +76,7 @@ export function CoMapOf<Fields extends CoMapFields>(
                         );
                     const initValue = init[key];
 
-                    if (isCoValueSchema(propertySignature)) {
+                    if (isCoValueSchema(fields[key])) {
                         // TOOD: check for alignment of actual value with schema
                         if (isCoValue(initValue)) {
                             rawInit[key] = initValue.id;
@@ -96,37 +106,58 @@ export function CoMapOf<Fields extends CoMapFields>(
             for (const propertySignature of struct.ast.propertySignatures) {
                 const key = propertySignature.name;
                 if (typeof key !== "string") continue;
-                const schemaAtKey = S.make<
-                    unknown,
-                    JsonValue | undefined,
-                    never
-                >(propertySignature.type);
 
-                Object.defineProperty(this, key, {
-                    get(this: CoMapForS) {
-                        return S.decodeSync(schemaAtKey)(this[rawCoValueSym].get(key));
-                    },
-                    set(this: CoMapForS, value) {
-                        this[rawCoValueSym].set(
-                            key,
-                            S.encodeSync(schemaAtKey)(value)
-                        );
-                    },
-                    enumerable: true,
-                });
+                // TODO: deal with stuff like optional refs - by manually traversing the ast etc
+                if (isCoValueSchema(fields[key])) {
+                    Object.defineProperty(this, key, {
+                        get(this: CoMapOfFields) {
+                            return this.meta.refs[key]?.value;
+                        },
+                        set(this: CoMapOfFields, value) {
+                            this[rawCoValueSym].set(key, value.id);
+                        },
+                        enumerable: true,
+                    });
+                } else {
+                    const schemaAtKey = S.make<
+                        unknown,
+                        JsonValue | undefined,
+                        never
+                    >(propertySignature.type);
+
+                    Object.defineProperty(this, key, {
+                        get(this: CoMapOfFields) {
+                            return S.decodeSync(schemaAtKey)(
+                                this[rawCoValueSym].get(key)
+                            );
+                        },
+                        set(this: CoMapOfFields, value) {
+                            this[rawCoValueSym].set(
+                                key,
+                                S.encodeSync(schemaAtKey)(value)
+                            );
+                        },
+                        enumerable: true,
+                    });
+                }
             }
+
+            // TODO: deal with index signatures
+            const keysWithIds = Object.entries(fields).filter(([key, value]) => isCoValueSchema(value)).map(([key]) => key);
 
             const refs = makeRefs<{
                 [Key in keyof Fields]: Fields[Key] extends CoValueSchema
-                    ? ValueRef<Fields[Key][typeof valueOfSchemaSym]>
+                    ? Fields[Key][valueOfSchemaSym]
                     : never;
             }>(
                 (key) => {
-                    throw new Error("Not implemented");
+                    return this[rawCoValueSym].get(key as string) as ID<(Fields[typeof key] & CoValueSchema)[valueOfSchemaSym]> | undefined;
                 },
                 () => {
-                    throw new Error("Not implemented");
-                }
+                    return keysWithIds;
+                },
+                controlledAccountFromNode(this[rawCoValueSym].core.node),
+                (key) => fields[key]
             );
 
             this.meta = {
@@ -136,9 +167,25 @@ export function CoMapOf<Fields extends CoMapFields>(
             if (struct.ast.indexSignatures.length > 0) {
             }
         }
+
+        static loadEf(
+            id: ID<CoMapOfFields>
+        ): Effect.Effect<CoMapOfFields, UnavailableError, ControlledAccountCtx> {
+            return Effect.gen(function* (_) {
+                const controlledAccount = yield* _(ControlledAccountCtx);
+                return yield* _(new ValueRef(id, controlledAccount, CoMapOfFields).loadEf())
+            })
+        }
+
+        static load(
+            id: ID<CoMapOfFields>,
+            options: {as: ControlledAccount}
+        ): Promise<CoMapOfFields | "unavailable"> {
+            return new ValueRef(id, options.as, CoMapOfFields).load();
+        }
     }
 
-    return CoMapForS as typeof CoMapForS &
+    return CoMapOfFields as typeof CoMapOfFields &
         CoMapConstructor<Fields> satisfies CoValueSchema<
         "CoMap",
         CoMap<Fields>

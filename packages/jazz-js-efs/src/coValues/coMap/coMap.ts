@@ -3,13 +3,20 @@ import { Simplify } from "effect/Types";
 import {
     CoValue,
     CoValueSchema,
+    ID,
     valueOfSchemaSym,
 } from "../../coValueInterfaces.js";
 import { JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Group } from "../group/group.js";
-import { Account } from "../account/account.js";
+import {
+    Account,
+    ControlledAccount,
+    ControlledAccountCtx,
+} from "../account/account.js";
+import { UnavailableError } from "../../errors.js";
+import { Effect } from "effect";
 
 export type CoMap<Fields extends CoMapFields> = {
     [Key in keyof Fields]: Fields[Key] extends CoValueSchema
@@ -27,6 +34,13 @@ export type CoMapSchema<Fields extends CoMapFields> = CoValueSchema<
 export interface CoMapConstructor<Fields extends CoMapFields> {
     new (options: { fromRaw: RawCoMap }): CoMap<Fields>;
     new (owner: Account | Group, init: CoMapInit<Fields>): CoMap<Fields>;
+    load(
+        id: ID<CoMap<Fields>>,
+        as: ControlledAccount
+    ): Promise<CoMap<Fields> | "unavailable">;
+    loadEf(
+        id: ID<CoMap<Fields>>
+    ): Effect.Effect<CoMap<Fields>, UnavailableError, ControlledAccountCtx>;
 }
 
 export type CoMapFields = {

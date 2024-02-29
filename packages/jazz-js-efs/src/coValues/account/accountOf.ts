@@ -112,7 +112,7 @@ export function AccountOf<
             peersToLoadFrom: Peer[];
             migration?: AccountMigration<AccountSchema<P, R>>;
         }): Promise<AccountOfProfileAndRoot & ControlledAccount<P, R>> {
-            // TODO
+            throw new Error("Not implemented");
         }
     }
 
@@ -121,6 +121,18 @@ export function AccountOf<
         S.Schema<any, any, never>;
 }
 
-export const BaseProfile = CoMapOf({ name: S.string });
+export class BaseProfile extends CoMapOf({ name: S.string }) {}
 
-export const SimpleAccount = AccountOf({ profile: BaseProfile, root: S.null });
+export class SimpleAccount extends AccountOf({
+    profile: BaseProfile,
+    root: S.null,
+}) {}
+
+export function controlledAccountFromNode(node: LocalNode) {
+    console.log("RawControlledAccount", RawControlledAccount);
+    if (!(node.account instanceof RawControlledAccount)) {
+        throw new Error("Expected a controlled account");
+    }
+    return new SimpleAccount({ fromRaw: node.account }) as SimpleAccount &
+        ControlledAccount;
+}
