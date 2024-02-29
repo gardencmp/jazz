@@ -23,21 +23,23 @@ export class ValueRef<V extends CoValue> {
     constructor(id: ID<V>, as: ControlledAccount) {
         this.id = id;
         this.as = as;
-        this.deferred = (() => {throw new Error("Not implemented")})();
+        this.deferred = (() => {
+            throw new Error("Not implemented");
+        })();
     }
 }
 
-export function makeRefs<F extends {[key: string | number]: CoValue}>(
-    getIdForKey: <K extends keyof F>(key: K) => ID<F[K]> | undefined,
-    getKeysWithIds: () => ( keyof F)[]
-): {[K in keyof F]: ValueRef<F[K]>} {
-    const refs = {} as {[K in keyof F]: ValueRef<F[K]>};
+export function makeRefs<F extends { [key: string | number]: ValueRef<CoValue> }>(
+    getIdForKey: <K extends keyof F>(key: K) => F[K]['id'] | undefined,
+    getKeysWithIds: () => (keyof F)[]
+): F {
+    const refs = {} as F;
     return new Proxy(refs, {
         get(target, key) {
             throw new Error("Not implemented");
         },
         ownKeys() {
             return getKeysWithIds().map((key) => key.toString());
-        }
+        },
     });
 }
