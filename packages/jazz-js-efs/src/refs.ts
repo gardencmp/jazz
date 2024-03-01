@@ -13,7 +13,7 @@ export class ValueRef<V extends CoValue> {
     id: ID<V>;
     private controlledAccount: ControlledAccount;
     ValueSchema: {
-        new (options: { fromRaw: V[rawCoValueSym] }): V;
+        new (_: undefined, options: { fromRaw: V[rawCoValueSym] }): V;
     };
 
     get value() {
@@ -21,7 +21,7 @@ export class ValueRef<V extends CoValue> {
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            return new this.ValueSchema({ fromRaw: raw })
+            return new this.ValueSchema(undefined, { fromRaw: raw })
         }
     }
 
@@ -44,7 +44,7 @@ export class ValueRef<V extends CoValue> {
         if (raw === "unavailable") {
             return "unavailable";
         } else {
-            return new this.ValueSchema({ fromRaw: raw });
+            return new this.ValueSchema(undefined, { fromRaw: raw });
         }
     }
 
@@ -52,7 +52,7 @@ export class ValueRef<V extends CoValue> {
         id: ID<V>,
         controlledAccount: ControlledAccount,
         ValueSchema: {
-            new (options: { fromRaw: V[rawCoValueSym] }): V;
+            new (_: undefined, options: { fromRaw: V[rawCoValueSym] }): V;
         }
     ) {
         this.id = id;

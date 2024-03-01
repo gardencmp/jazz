@@ -48,20 +48,20 @@ export function CoMapOf<Fields extends CoMapFields>(
         id: ID<this>;
         meta: CoMapMeta<Fields>;
 
-        constructor(options: { fromRaw: RawCoMap });
-        constructor(owner: Account | Group, init: CoMapInit<Fields>);
+        constructor(_init: undefined, options: { fromRaw: RawCoMap });
+        constructor(init: CoMapInit<Fields>, options: {owner: Account | Group}, );
         constructor(
-            optionsOrOwner: Account | Group | { fromRaw: RawCoMap },
-            init?: CoMapInit<Fields>
+            init: CoMapInit<Fields> | undefined,
+            options: {owner: Account | Group} | { fromRaw: RawCoMap },
         ) {
             if (!isTypeLiteral(struct.ast)) {
                 throw new Error("CoMap AST must be type literal");
             }
 
-            if ("fromRaw" in optionsOrOwner) {
-                this[rawCoValueSym] = optionsOrOwner.fromRaw;
+            if ("fromRaw" in options) {
+                this[rawCoValueSym] = options.fromRaw;
             } else {
-                const rawOwner = optionsOrOwner[rawCoValueSym];
+                const rawOwner = options.owner[rawCoValueSym];
 
                 const rawInit = {} as {
                     [key in Extract<keyof Fields, string>]:

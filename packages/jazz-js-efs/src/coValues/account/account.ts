@@ -52,7 +52,7 @@ export interface AccountConstructor<
         peersToLoadFrom?: Peer[];
     }): Promise<ControlledAccount<P, R>>;
 
-    load(options: {
+    become(options: {
         accountID: ID<Account<P, R>>;
         accountSecret: AgentSecret;
         sessionID: SessionID;

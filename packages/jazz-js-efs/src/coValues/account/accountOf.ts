@@ -1,5 +1,6 @@
 import {
     AgentSecret,
+    CoID,
     LocalNode,
     Peer,
     RawAccount,
@@ -76,7 +77,7 @@ export function AccountOf<
         constructor(options: { fromRaw: RawAccount | RawControlledAccount });
         constructor(options: { fromRaw: RawAccount | RawControlledAccount }) {
             this[rawCoValueSym] = options.fromRaw;
-            this.id = options.fromRaw as unknown as ID<Account<P, R>>;
+            this.id = options.fromRaw.id as unknown as ID<Account<P, R>>;
             this.isMe =
                 options.fromRaw.id == options.fromRaw.core.node.account.id;
         }
@@ -105,14 +106,32 @@ export function AccountOf<
             }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
         }
 
-        static async load(options: {
+        static async become(options: {
             accountID: ID<Account<P, R>>;
             accountSecret: AgentSecret;
             sessionID: SessionID;
             peersToLoadFrom: Peer[];
             migration?: AccountMigration<AccountSchema<P, R>>;
         }): Promise<AccountOfProfileAndRoot & ControlledAccount<P, R>> {
-            throw new Error("Not implemented");
+            const node = await LocalNode.withLoadedAccount({
+                accountID: options.accountID as unknown as CoID<RawAccount>,
+                accountSecret: options.accountSecret,
+                sessionID: options.sessionID,
+                peersToLoadFrom: options.peersToLoadFrom,
+                migration:
+                    options.migration &&
+                    (async (rawAccount) => {
+                        const account = new AccountOfProfileAndRoot({
+                            fromRaw: rawAccount,
+                        }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
+
+                        await options.migration!(account);
+                    }),
+            });
+
+            return new AccountOfProfileAndRoot({
+                fromRaw: node.account as RawControlledAccount,
+            }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
         }
     }
 
@@ -129,7 +148,6 @@ export class SimpleAccount extends AccountOf({
 }) {}
 
 export function controlledAccountFromNode(node: LocalNode) {
-    console.log("RawControlledAccount", RawControlledAccount);
     if (!(node.account instanceof RawControlledAccount)) {
         throw new Error("Expected a controlled account");
     }

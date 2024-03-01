@@ -24,22 +24,27 @@ describe("Simple CoMap operations", async () => {
     class TestMap extends Co.map({
         color: S.string,
         height: S.number,
-        birthday: S.Date
+        birthday: S.Date,
     }) {}
 
     const birthday = new Date();
 
-    const map = new TestMap(me, {
-        color: "red",
-        height: 10,
-        birthday: birthday
-    });
+    const map = new TestMap(
+        {
+            color: "red",
+            height: 10,
+            birthday: birthday,
+        },
+        { owner: me }
+    );
 
     test("Construction", () => {
         expect(map.color).toEqual("red");
         expect(map.height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
-        expect(map[rawCoValueSym].get("birthday")).toEqual(birthday.toISOString());
+        expect(map[rawCoValueSym].get("birthday")).toEqual(
+            birthday.toISOString()
+        );
     });
 
     describe("Mutation", () => {
@@ -50,7 +55,9 @@ describe("Simple CoMap operations", async () => {
             const newBirthday = new Date();
             map.birthday = newBirthday;
             expect(map.birthday).toEqual(newBirthday);
-            expect(map[rawCoValueSym].get("birthday")).toEqual(newBirthday.toISOString());
+            expect(map[rawCoValueSym].get("birthday")).toEqual(
+                newBirthday.toISOString()
+            );
         });
     });
 });
@@ -76,14 +83,23 @@ describe("CoMap resolution", async () => {
             name: "Hermes Puggington",
         });
 
-        const map = new TestMap(me, {
-            color: "red",
-            height: 10,
-            nested: new NestedMap(me, {
-                name: "nested",
-                twiceNested: new TwiceNestedMap(me, { taste: "sour" }),
-            }),
-        });
+        const map = new TestMap(
+            {
+                color: "red",
+                height: 10,
+                nested: new NestedMap(
+                    {
+                        name: "nested",
+                        twiceNested: new TwiceNestedMap(
+                            { taste: "sour" },
+                            { owner: me }
+                        ),
+                    },
+                    { owner: me }
+                ),
+            },
+            { owner: me }
+        );
 
         return { me, map };
     };
@@ -105,7 +121,7 @@ describe("CoMap resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
         me[rawCoValueSym].core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await SimpleAccount.load({
+        const meOnSecondPeer = await SimpleAccount.become({
             accountID: me.id,
             accountSecret: me[rawCoValueSym].agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -118,14 +134,13 @@ describe("CoMap resolution", async () => {
         expect(loadedMap?.height).toEqual(10);
         expect(loadedMap?.nested).toEqual(undefined);
         expect(loadedMap?.meta.refs.nested?.id).toEqual(map.nested?.id);
-        expect(loadedMap?.meta.refs.nested?.loaded).toEqual(false);
+        expect(loadedMap?.meta.refs.nested?.value).toEqual(undefined);
 
         const loadedNestedMap = await NestedMap.load(map.nested!.id, {
             as: meOnSecondPeer,
         });
 
         expect(loadedMap?.nested?.name).toEqual("nested");
-        expect(loadedMap?.meta.refs.nested?.loaded).toEqual(true);
         expect(loadedMap?.meta.refs.nested?.value).toEqual(loadedNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual(undefined);
 
@@ -139,17 +154,22 @@ describe("CoMap resolution", async () => {
             loadedTwiceNestedMap
         );
 
-        const otherNestedMap = new NestedMap(meOnSecondPeer, {
-            name: "otherNested",
-            twiceNested: new TwiceNestedMap(meOnSecondPeer, { taste: "sweet" }),
-        });
+        const otherNestedMap = new NestedMap(
+            {
+                name: "otherNested",
+                twiceNested: new TwiceNestedMap(
+                    { taste: "sweet" },
+                    { owner: meOnSecondPeer }
+                ),
+            },
+            { owner: meOnSecondPeer }
+        );
 
         loadedMap!.nested = otherNestedMap;
         expect(loadedMap?.nested?.name).toEqual("otherNested");
-        expect(loadedMap?.meta.refs.nested?.loaded).toEqual(true);
         expect(loadedMap?.meta.refs.nested?.id).toEqual(otherNestedMap.id);
         expect(loadedMap?.meta.refs.nested?.value).toEqual(otherNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sweet");
-        expect(loadedMap?.nested?.meta.refs.twiceNested?.loaded).toEqual(true);
+        expect(loadedMap?.nested?.meta.refs.twiceNested?.value).toBeDefined();
     });
 });

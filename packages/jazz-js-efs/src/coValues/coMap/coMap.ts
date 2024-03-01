@@ -32,12 +32,15 @@ export type CoMapSchema<Fields extends CoMapFields> = CoValueSchema<
 >;
 
 export interface CoMapConstructor<Fields extends CoMapFields> {
-    new (options: { fromRaw: RawCoMap }): CoMap<Fields>;
-    new (owner: Account | Group, init: CoMapInit<Fields>): CoMap<Fields>;
+    new (init: undefined, options: { fromRaw: RawCoMap }): CoMap<Fields>;
+    new (
+        init: CoMapInit<Fields>,
+        options: { owner: Account | Group }
+    ): CoMap<Fields>;
     load(
         id: ID<CoMap<Fields>>,
-        as: ControlledAccount
-    ): Promise<CoMap<Fields> | "unavailable">;
+        options: { as: ControlledAccount }
+    ): Promise<CoMap<Fields> | undefined>;
     loadEf(
         id: ID<CoMap<Fields>>
     ): Effect.Effect<CoMap<Fields>, UnavailableError, ControlledAccountCtx>;
