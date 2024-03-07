@@ -18,3 +18,11 @@ export type SchemaWithInputAndOutput<A, I> = S.Schema<any, any, never> & {
         _I: (_: any) => I;
     };
 };
+
+export type PropertySignatureWithOutput<I> = S.PropertySignature<any, boolean, any, boolean, never> & {
+    [S.TypeId]: {
+        _I: (_: any) => I | undefined;
+    };
+};
+
+export type PropDef<I> = S.Schema<I> | S.PropertySignature<I, boolean, I, boolean, never>;

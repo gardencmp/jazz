@@ -256,4 +256,46 @@ describe("CoMap resolution", async () => {
             })
         );
     });
+
+    class TestMapWithOptionalRef extends Co.map({
+        color: S.string,
+        nested: S.optional(NestedMap),
+    }) {}
+
+    test("Construction with optional", async () => {
+        const me = await SimpleAccount.create({
+            name: "Hermes Puggington",
+        });
+
+        const mapWithout = new TestMapWithOptionalRef(
+            {
+                color: "red",
+            },
+            { owner: me }
+        );
+
+        expect(mapWithout.color).toEqual("red");
+        expect(mapWithout.nested).toEqual(undefined);
+
+        const mapWith = new TestMapWithOptionalRef(
+            {
+                color: "red",
+                nested: new NestedMap(
+                    {
+                        name: "wow!",
+                        twiceNested: new TwiceNestedMap(
+                            { taste: "sour" },
+                            { owner: me }
+                        ),
+                    },
+                    { owner: me }
+                ),
+            },
+            { owner: me }
+        );
+
+        expect(mapWith.color).toEqual("red");
+        expect(mapWith.nested?.name).toEqual("wow!");
+        expect(mapWith.nested?.[rawSym]).toBeDefined();
+    });
 });

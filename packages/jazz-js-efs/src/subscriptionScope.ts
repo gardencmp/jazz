@@ -3,8 +3,10 @@ import { CoValue, CoValueSchema, ID, rawSym } from "./coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
 import { RawCoValue } from "cojson";
 
-
-export const subscriptionsScopes = new WeakMap<CoValue, SubscriptionScope<any>>();
+export const subscriptionsScopes = new WeakMap<
+    CoValue,
+    SubscriptionScope<any>
+>();
 
 export class SubscriptionScope<
     RootSchema extends CoValueSchema = CoValueSchema,
@@ -63,13 +65,7 @@ export class SubscriptionScope<
         }
     }
 
-    onRefAccessedOrSet(
-        path: string,
-        accessedOrSetId: ID<CoValue> | undefined,
-        schema: CoValueSchema
-    ) {
-        // console.log("onRefAccessedOrSet", path, this.scopeID, accessedOrSetId);
-
+    onRefAccessedOrSet(accessedOrSetId: ID<CoValue> | undefined) {
         if (!accessedOrSetId) {
             return;
         }
@@ -80,27 +76,27 @@ export class SubscriptionScope<
                 immediatelyUnsub: false,
             } as const;
             this.entries.set(accessedOrSetId, loadingEntry);
-            void schema
-                .load(accessedOrSetId, { as: this.subscriber })
-                .then((refValue) => {
+            this.subscriber[rawSym].core.node
+                .loadCoValueCore(accessedOrSetId)
+                .then((core) => {
                     if (
                         loadingEntry.state === "loading" &&
                         loadingEntry.immediatelyUnsub
                     ) {
                         return;
                     }
-                    if (refValue) {
+                    if (core !== "unavailable") {
                         const entry = {
                             state: "loaded" as const,
                             rawUnsub: () => {}, // placeholder
                         };
                         this.entries.set(accessedOrSetId, entry);
 
-                        const rawUnsub = refValue.meta.core.subscribe(
+                        const rawUnsub = core.subscribe(
                             (rawUpdate) => {
                                 // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
                                 if (!rawUpdate) return;
-                                this.scheduleUpdate()
+                                this.scheduleUpdate();
                             }
                         );
 

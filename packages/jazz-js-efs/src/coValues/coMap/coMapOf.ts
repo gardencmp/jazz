@@ -27,13 +27,18 @@ import {
     ControlledAccount,
     ControlledAccountCtx,
 } from "../account/account.js";
-import { Effect, Scope, Sink, Stream } from "effect";
+import { Effect, Sink, Stream } from "effect";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { UnavailableError } from "../../errors.js";
 import {
     SubscriptionScope,
     subscriptionsScopes,
 } from "../../subscriptionScope.js";
+import { AST } from "@effect/schema";
+import {
+    constructorOfSchemaSym,
+    propertyIsCoValueSchema,
+} from "../resolution.js";
 
 export function CoMapOf<Fields extends CoMapFields>(
     fields: Fields
@@ -47,7 +52,11 @@ export function CoMapOf<Fields extends CoMapFields>(
     const CoMapOfFields: CoMapSchema<Fields> = class CoMapOfFields
         implements CoValue<"CoMap", RawCoMap>
     {
-        static ast = struct.ast;
+        static ast = AST.setAnnotation(
+            struct.ast,
+            constructorOfSchemaSym,
+            this
+        );
         static [S.TypeId] = struct[S.TypeId];
         static pipe = struct.pipe;
         static [schemaTagSym] = "CoMap" as const;
@@ -88,8 +97,9 @@ export function CoMapOf<Fields extends CoMapFields>(
                             (signature) => signature.name === key
                         );
                     const initValue = init[key];
+                    const field = fields[key];
 
-                    if (isCoValueSchema(fields[key])) {
+                    if (field && propertyIsCoValueSchema(field)) {
                         // TOOD: check for alignment of actual value with schema
                         if (isCoValue(initValue)) {
                             rawInit[key] = initValue.id;
@@ -122,23 +132,18 @@ export function CoMapOf<Fields extends CoMapFields>(
 
                 // TODO: deal with stuff like optional refs - by manually traversing the ast etc
                 const fieldSchema = fields[key];
-                if (isCoValueSchema(fieldSchema)) {
+                if (fieldSchema && propertyIsCoValueSchema(fieldSchema)) {
                     Object.defineProperty(this, key, {
                         get(this: CoMapOfFields) {
                             const ref = this.meta.refs[key];
                             if (!ref) {
-                                throw new Error(
-                                    "Expected ref for CoValueSchema field"
-                                );
+                                // TODO: check if this allowed to be undefined
+                                return undefined;
                             }
 
                             const subScope = subscriptionsScopes.get(this);
 
-                            subScope?.onRefAccessedOrSet(
-                                key,
-                                ref.id,
-                                fieldSchema
-                            );
+                            subScope?.onRefAccessedOrSet(ref.id);
 
                             if (ref.value && subScope) {
                                 subscriptionsScopes.set(ref.value, subScope);
@@ -150,11 +155,7 @@ export function CoMapOf<Fields extends CoMapFields>(
                             this[rawSym].set(key, value.id);
                             subscriptionsScopes
                                 .get(this)
-                                ?.onRefAccessedOrSet(
-                                    key,
-                                    value.id,
-                                    fieldSchema
-                                );
+                                ?.onRefAccessedOrSet(value.id);
                         },
                         enumerable: true,
                     });

@@ -2,7 +2,7 @@ import * as S from "@effect/schema/Schema";
 import { CoValue, CoValueSchema, ID } from "../../coValueInterfaces.js";
 import { CoValueCore, JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
-import { SchemaWithOutput } from "../../schemaHelpers.js";
+import { PropertySignatureWithOutput, SchemaWithOutput } from "../../schemaHelpers.js";
 import { ControlledAccount } from "../account/account.js";
 
 export interface CoMapBase<Fields extends CoMapFields>
@@ -22,7 +22,10 @@ export type CoMapSchema<Fields extends CoMapFields> = CoValueSchema<
     S.Schema<CoMap<Fields>, CoMap<Fields>, never>;
 
 export type CoMapFields = {
-    [key: string]: CoValueSchema | SchemaWithOutput<JsonValue>;
+    [key: string]:
+        | CoValueSchema
+        | SchemaWithOutput<JsonValue>
+        | PropertySignatureWithOutput<CoValue>;
 };
 
 export type CoMapInit<Fields> = {
