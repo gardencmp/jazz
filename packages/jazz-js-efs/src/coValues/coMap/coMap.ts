@@ -1,65 +1,40 @@
 import * as S from "@effect/schema/Schema";
-import { Simplify } from "effect/Types";
-import {
-    CoValue,
-    CoValueSchema,
-    ID,
-    valueOfSchemaSym,
-} from "../../coValueInterfaces.js";
-import { JsonValue, RawCoMap } from "cojson";
+import { CoValue, CoValueSchema, ID } from "../../coValueInterfaces.js";
+import { CoValueCore, JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { Group } from "../group/group.js";
-import {
-    Account,
-    ControlledAccount,
-    ControlledAccountCtx,
-} from "../account/account.js";
-import { UnavailableError } from "../../errors.js";
-import { Effect } from "effect";
+import { ControlledAccount } from "../account/account.js";
+
+export interface CoMapBase<Fields extends CoMapFields>
+    extends CoValue<"CoMap", RawCoMap> {
+    meta: CoMapMeta<Fields>;
+}
 
 export type CoMap<Fields extends CoMapFields> = {
-    [Key in keyof Fields]: Fields[Key] extends CoValueSchema
-        ? Fields[Key][valueOfSchemaSym] | undefined
-        : S.Schema.To<Fields[Key]>;
-} & {
-    meta: CoMapMeta<Fields>;
-} & CoValue<"CoMap", RawCoMap>;
+    [Key in keyof Fields]: S.Schema.To<Fields[Key]>;
+} & CoMapBase<Fields>;
 
 export type CoMapSchema<Fields extends CoMapFields> = CoValueSchema<
     "CoMap",
-    CoMap<Fields>
->;
-
-export interface CoMapConstructor<Fields extends CoMapFields> {
-    new (init: undefined, options: { fromRaw: RawCoMap }): CoMap<Fields>;
-    new (
-        init: CoMapInit<Fields>,
-        options: { owner: Account | Group }
-    ): CoMap<Fields>;
-    load(
-        id: ID<CoMap<Fields>>,
-        options: { as: ControlledAccount }
-    ): Promise<CoMap<Fields> | undefined>;
-    loadEf(
-        id: ID<CoMap<Fields>>
-    ): Effect.Effect<CoMap<Fields>, UnavailableError, ControlledAccountCtx>;
-}
+    CoMap<Fields>,
+    CoMapInit<Fields>
+> &
+    S.Schema<CoMap<Fields>, CoMap<Fields>, never>;
 
 export type CoMapFields = {
     [key: string]: CoValueSchema | SchemaWithOutput<JsonValue>;
 };
 
-export type CoMapInit<Fields extends CoMapFields> = {
-    [Key in keyof Fields]?: Fields[Key] extends CoValueSchema
-        ? Fields[Key][valueOfSchemaSym]
-        : S.Schema.To<Fields[Key]>;
+export type CoMapInit<Fields> = {
+    [Key in keyof Fields]?: S.Schema.To<Fields[Key]>;
 };
 
 export type CoMapMeta<Fields extends CoMapFields> = {
+    readonly loadedAs: ControlledAccount;
+    readonly core: CoValueCore;
     readonly refs: {
         [Key in keyof Fields]: Fields[Key] extends CoValueSchema
-            ? ValueRef<Fields[Key][valueOfSchemaSym]>
+            ? ValueRef<S.Schema.To<Fields[Key]>>
             : never;
     };
 };

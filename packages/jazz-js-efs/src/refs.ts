@@ -3,7 +3,7 @@ import {
     CoValue,
     CoValueSchema,
     ID,
-    rawCoValueSym,
+    rawSym,
 } from "./coValueInterfaces.js";
 import { ControlledAccount } from "./coValues/account/account.js";
 import { CoID, RawCoValue } from "cojson";
@@ -12,16 +12,21 @@ import { UnavailableError } from "./errors.js";
 export class ValueRef<V extends CoValue> {
     id: ID<V>;
     private controlledAccount: ControlledAccount;
+    private cachedValue: V | undefined;
     ValueSchema: {
-        new (_: undefined, options: { fromRaw: V[rawCoValueSym] }): V;
+        new (_: undefined, options: { fromRaw: V[rawSym] }): V;
     };
 
     get value() {
-        const raw = this.controlledAccount[rawCoValueSym].core.node.getLoaded(
+        if (this.cachedValue) return this.cachedValue;
+        // TODO: cache it for object identity!!!
+        const raw = this.controlledAccount[rawSym].core.node.getLoaded(
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            return new this.ValueSchema(undefined, { fromRaw: raw })
+            const value = new this.ValueSchema(undefined, { fromRaw: raw })
+            this.cachedValue = value;
+            return value;
         }
     }
 
@@ -40,7 +45,7 @@ export class ValueRef<V extends CoValue> {
     }
 
     async load(): Promise<V | "unavailable"> {
-        const raw = await this.controlledAccount[rawCoValueSym].core.node.load(this.id as unknown as CoID<RawCoValue>)
+        const raw = await this.controlledAccount[rawSym].core.node.load(this.id as unknown as CoID<RawCoValue>)
         if (raw === "unavailable") {
             return "unavailable";
         } else {

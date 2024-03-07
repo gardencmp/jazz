@@ -5,7 +5,7 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
-import { rawCoValueSym } from "../coValueInterfaces";
+import { rawSym } from "../coValueInterfaces";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,20 +42,18 @@ describe("Simple CoMap operations", async () => {
         expect(map.color).toEqual("red");
         expect(map.height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
-        expect(map[rawCoValueSym].get("birthday")).toEqual(
-            birthday.toISOString()
-        );
+        expect(map[rawSym].get("birthday")).toEqual(birthday.toISOString());
     });
 
     describe("Mutation", () => {
         test("assignment", () => {
             map.color = "blue";
             expect(map.color).toEqual("blue");
-            expect(map[rawCoValueSym].get("color")).toEqual("blue");
+            expect(map[rawSym].get("color")).toEqual("blue");
             const newBirthday = new Date();
             map.birthday = newBirthday;
             expect(map.birthday).toEqual(newBirthday);
-            expect(map[rawCoValueSym].get("birthday")).toEqual(
+            expect(map[rawSym].get("birthday")).toEqual(
                 newBirthday.toISOString()
             );
         });
@@ -120,10 +118,10 @@ describe("CoMap resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" }
         );
-        me[rawCoValueSym].core.node.syncManager.addPeer(secondPeer);
+        me[rawSym].core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await SimpleAccount.become({
             accountID: me.id,
-            accountSecret: me[rawCoValueSym].agentSecret,
+            accountSecret: me[rawSym].agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
         });
@@ -171,5 +169,91 @@ describe("CoMap resolution", async () => {
         expect(loadedMap?.meta.refs.nested?.value).toEqual(otherNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sweet");
         expect(loadedMap?.nested?.meta.refs.twiceNested?.value).toBeDefined();
+    });
+
+    test("Subscription & auto-resolution", async () => {
+        const { me, map } = await initNodeAndMap();
+
+        const [initialAsPeer, secondAsPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+
+        me[rawSym].core.node.syncManager.addPeer(secondAsPeer);
+
+        const meOnSecondPeer = await SimpleAccount.become({
+            accountID: me.id,
+            accountSecret: me[rawSym].agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.id as any),
+        });
+
+        await Effect.runPromise(
+            Effect.gen(function* ($) {
+                const queue = yield* $(Queue.unbounded<TestMap>());
+
+                TestMap.subscribe(
+                    map.id,
+                    { as: meOnSecondPeer },
+                    (subscribedMap: TestMap) => {
+                        console.log(
+                            "subscribedMap.nested?.twiceNested?.taste",
+                            subscribedMap.nested?.twiceNested?.taste
+                        );
+                        Effect.runPromise(Queue.offer(queue, subscribedMap));
+                    }
+                );
+
+                const update1 = yield* $(Queue.take(queue));
+                expect(update1.nested).toEqual(undefined);
+
+                const update2 = yield* $(Queue.take(queue));
+                expect(update2.nested?.name).toEqual("nested");
+
+                map.nested!.name = "nestedUpdated";
+
+                const _ = yield* $(Queue.take(queue));
+                const update3 = yield* $(Queue.take(queue));
+                expect(update3.nested?.name).toEqual("nestedUpdated");
+
+                const oldTwiceNested = update3.nested!.twiceNested;
+                expect(oldTwiceNested?.taste).toEqual("sour");
+
+                // When assigning a new nested value, we get an update
+                const newTwiceNested = new TwiceNestedMap(
+                    {
+                        taste: "sweet",
+                    },
+                    { owner: meOnSecondPeer }
+                );
+
+                const newNested = new NestedMap(
+                    {
+                        name: "newNested",
+                        twiceNested: newTwiceNested,
+                    },
+                    { owner: meOnSecondPeer }
+                );
+
+                update3.nested = newNested;
+
+                yield* $(Queue.take(queue));
+                // const update4 = yield* $(Queue.take(queue));
+                const update4b = yield* $(Queue.take(queue));
+
+                expect(update4b.nested?.name).toEqual("newNested");
+                expect(update4b.nested?.twiceNested?.taste).toEqual("sweet");
+
+                // we get updates when the new nested value changes
+                newTwiceNested.taste = "salty";
+                const update5 = yield* $(Queue.take(queue));
+                expect(update5.nested?.twiceNested?.taste).toEqual("salty");
+
+                newTwiceNested.taste = "umami";
+                const update6 = yield* $(Queue.take(queue));
+                expect(update6.nested?.twiceNested?.taste).toEqual("umami");
+            })
+        );
     });
 });

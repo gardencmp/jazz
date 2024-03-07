@@ -10,30 +10,30 @@ import {
 import {
     CoValueSchema,
     ID,
-    coValueSym,
-    rawCoValueSym,
+    tagSym,
+    rawSym,
     schemaTagSym,
-    valueOfSchemaSym,
 } from "../../coValueInterfaces.js";
 import { CoMapOf } from "../coMap/coMapOf.js";
 import {
     Account,
-    AccountConstructor,
     AccountSchema,
     ControlledAccount,
+    ControlledAccountCtx,
     ProfileBaseSchema,
     controlledAccountSym,
 } from "./account.js";
 import * as S from "@effect/schema/Schema";
 import { AccountMigration } from "./migration.js";
+import { toJSON } from "effect/Inspectable";
+import { ValueRef } from "../../refs.js";
+import { UnavailableError } from "../../errors.js";
+import { Effect } from "effect";
 
 export function AccountOf<
     P extends ProfileBaseSchema = ProfileBaseSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
->(fields: {
-    profile: P;
-    root: R;
-}): AccountConstructor<P, R> & AccountSchema<P, R> {
+>(fields: { profile: P; root: R }): AccountSchema<P, R> {
     const struct = S.struct(fields);
 
     class AccountOfProfileAndRoot {
@@ -41,19 +41,16 @@ export function AccountOf<
         static [S.TypeId] = struct[S.TypeId];
         static pipe = struct.pipe;
         static [schemaTagSym] = "Account" as const;
-        static [valueOfSchemaSym]: AccountOfProfileAndRoot;
         static [controlledAccountSym]: AccountOfProfileAndRoot &
             ControlledAccount<P, R>;
 
-        [coValueSym] = "Account" as const;
-        [rawCoValueSym]: RawAccount | RawControlledAccount;
+        [tagSym] = "Account" as const;
+        [rawSym]: RawAccount | RawControlledAccount;
         id: ID<Account<P, R>>;
         isMe: boolean;
 
-        get profile(): P extends CoValueSchema
-            ? P[valueOfSchemaSym] | undefined
-            : null {
-            const id = this[rawCoValueSym].get("profile");
+        get profile(): S.Schema.To<P> {
+            const id = this[rawSym].get("profile");
 
             if (!id) {
                 return undefined;
@@ -62,10 +59,8 @@ export function AccountOf<
             }
         }
 
-        get root(): R extends CoValueSchema
-            ? R[valueOfSchemaSym] | undefined
-            : null {
-            const id = this[rawCoValueSym].get("root");
+        get root(): S.Schema.To<R> {
+            const id = this[rawSym].get("root");
 
             if (!id) {
                 return undefined;
@@ -76,10 +71,32 @@ export function AccountOf<
 
         constructor(options: { fromRaw: RawAccount | RawControlledAccount });
         constructor(options: { fromRaw: RawAccount | RawControlledAccount }) {
-            this[rawCoValueSym] = options.fromRaw;
+            this[rawSym] = options.fromRaw;
             this.id = options.fromRaw.id as unknown as ID<Account<P, R>>;
             this.isMe =
                 options.fromRaw.id == options.fromRaw.core.node.account.id;
+        }
+
+        static loadEf(
+            id: ID<AccountOfProfileAndRoot>
+        ): Effect.Effect<
+            AccountOfProfileAndRoot,
+            UnavailableError,
+            ControlledAccountCtx
+        > {
+            return Effect.gen(function* (_) {
+                const controlledAccount = yield* _(ControlledAccountCtx);
+                return yield* _(
+                    new ValueRef(id, controlledAccount, AccountOfProfileAndRoot).loadEf()
+                );
+            });
+        }
+
+        static load(
+            id: ID<AccountOfProfileAndRoot>,
+            options: { as: ControlledAccount }
+        ): Promise<(AccountOfProfileAndRoot) | undefined> {
+            return new ValueRef(id, options.as, AccountOfProfileAndRoot).load();
         }
 
         static async create(options: {
@@ -133,11 +150,17 @@ export function AccountOf<
                 fromRaw: node.account as RawControlledAccount,
             }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
         }
+
+        toJSON() {
+            return {
+                id: this.id,
+                profile: toJSON(this.profile),
+                root: toJSON(this.root),
+            };
+        }
     }
 
-    return AccountOfProfileAndRoot as typeof AccountOfProfileAndRoot &
-        // TS infers Context<P> and Context<R> as unknown, even though they have to be never
-        S.Schema<any, any, never>;
+    return AccountOfProfileAndRoot;
 }
 
 export class BaseProfile extends CoMapOf({ name: S.string }) {}

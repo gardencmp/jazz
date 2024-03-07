@@ -1,10 +1,5 @@
 import * as S from "@effect/schema/Schema";
-import {
-    CoValue,
-    CoValueSchema,
-    ID,
-    valueOfSchemaSym,
-} from "../../coValueInterfaces.js";
+import { CoValue, CoValueSchema, ID } from "../../coValueInterfaces.js";
 import { CoMapSchema } from "../coMap/coMap.js";
 import {
     AgentSecret,
@@ -20,14 +15,14 @@ export type ProfileBaseSchema = CoMapSchema<{
     name: S.Schema<string>;
 }>;
 
-export type Account<
+export interface Account<
     P extends ProfileBaseSchema = ProfileBaseSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
-> = {
-    profile: P extends CoValueSchema ? P[valueOfSchemaSym] | undefined : null;
-    root: R extends CoValueSchema ? R[valueOfSchemaSym] | undefined : null;
+> extends CoValue<"Account", RawAccount> {
+    profile: S.Schema.To<P>;
+    root: S.Schema.To<R>;
     isMe: boolean;
-} & CoValue<"Account", RawAccount>;
+}
 
 export type ControlledAccount<
     P extends ProfileBaseSchema = ProfileBaseSchema,
@@ -37,13 +32,17 @@ export type ControlledAccount<
         isMe: true;
     };
 
-export interface AccountConstructor<
+export interface AccountSchema<
     P extends ProfileBaseSchema = ProfileBaseSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
-> {
-    new (options: {
-        fromRaw: RawAccount;
-    }): Account<P, R>;
+> extends CoValueSchema<
+        "Account",
+        Account<P, R> | ControlledAccount<P, R>,
+        never
+    > {
+    readonly [controlledAccountSym]: ControlledAccount<P, R>;
+
+    new (options: { fromRaw: RawAccount }): Account<P, R>;
 
     create(options: {
         name: string;
@@ -63,13 +62,6 @@ export interface AccountConstructor<
 
 export const controlledAccountSym = Symbol("@jazz/controlledAccount");
 export type controlledAccountSym = typeof controlledAccountSym;
-
-export interface AccountSchema<
-    P extends ProfileBaseSchema = ProfileBaseSchema,
-    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
-> extends CoValueSchema<"Account", Account<P, R> | ControlledAccount<P, R>> {
-    readonly [controlledAccountSym]: ControlledAccount<P, R>;
-}
 
 export class ControlledAccountCtx extends Context.Tag("ControlledAccount")<
     ControlledAccountCtx,
