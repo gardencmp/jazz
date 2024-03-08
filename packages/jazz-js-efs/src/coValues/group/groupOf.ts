@@ -6,6 +6,8 @@ import { GroupSchema } from "./group.js";
 export function GroupOf<
     P extends ProfileBaseSchema | S.Schema<null> = S.Schema<null>,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
->(options: { profile: P; root: R }): GroupSchema<P, R> {}
+>(_options: { profile: P; root: R }): GroupSchema<P, R> {
+    // throw new Error("GroupOf not implemented");
+}
 
 export const SimpleGroup = GroupOf({ profile: S.null, root: S.null });

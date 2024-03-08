@@ -37,12 +37,12 @@ export interface AccountSchema<
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
 > extends CoValueSchema<
         "Account",
-        Account<P, R> | ControlledAccount<P, R>,
+        Account<P, R>,
         never
     > {
     readonly [controlledAccountSym]: ControlledAccount<P, R>;
 
-    new (options: { fromRaw: RawAccount }): Account<P, R>;
+    new (init: undefined, options: { fromRaw: RawAccount }): Account<P, R>;
 
     create(options: {
         name: string;

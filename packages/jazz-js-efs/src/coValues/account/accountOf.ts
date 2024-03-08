@@ -36,7 +36,7 @@ export function AccountOf<
 >(fields: { profile: P; root: R }): AccountSchema<P, R> {
     const struct = S.struct(fields);
 
-    class AccountOfProfileAndRoot {
+    class AccountOfProfileAndRoot implements Account<P, R> {
         static ast = struct.ast;
         static [S.TypeId] = struct[S.TypeId];
         static pipe = struct.pipe;
@@ -46,33 +46,37 @@ export function AccountOf<
 
         [tagSym] = "Account" as const;
         [rawSym]: RawAccount | RawControlledAccount;
-        id: ID<Account<P, R>>;
+        id: ID<this>;
         isMe: boolean;
 
         get profile(): S.Schema.To<P> {
             const id = this[rawSym].get("profile");
 
-            if (!id) {
-                return undefined;
-            } else {
-                // TODO
-            }
+            throw new Error("Not implemented");
         }
 
         get root(): S.Schema.To<R> {
             const id = this[rawSym].get("root");
 
-            if (!id) {
-                return undefined;
-            } else {
-                // TODO
-            }
+            throw new Error("Not implemented");
         }
 
-        constructor(options: { fromRaw: RawAccount | RawControlledAccount });
-        constructor(options: { fromRaw: RawAccount | RawControlledAccount }) {
+        constructor(
+            init: Record<string, never>,
+            options: Record<string, never>
+        );
+        constructor(
+            init: undefined,
+            options: { fromRaw: RawAccount | RawControlledAccount }
+        );
+        constructor(
+            init: undefined | Record<string, never>,
+            options:
+                | { fromRaw: RawAccount | RawControlledAccount }
+                | Record<string, never>
+        ) {
             this[rawSym] = options.fromRaw;
-            this.id = options.fromRaw.id as unknown as ID<Account<P, R>>;
+            this.id = options.fromRaw.id as unknown as ID<this>;
             this.isMe =
                 options.fromRaw.id == options.fromRaw.core.node.account.id;
         }
@@ -87,7 +91,11 @@ export function AccountOf<
             return Effect.gen(function* (_) {
                 const controlledAccount = yield* _(ControlledAccountCtx);
                 return yield* _(
-                    new ValueRef(id, controlledAccount, AccountOfProfileAndRoot).loadEf()
+                    new ValueRef(
+                        id,
+                        controlledAccount,
+                        AccountOfProfileAndRoot
+                    ).loadEf()
                 );
             });
         }
@@ -95,7 +103,7 @@ export function AccountOf<
         static load(
             id: ID<AccountOfProfileAndRoot>,
             options: { as: ControlledAccount }
-        ): Promise<(AccountOfProfileAndRoot) | undefined> {
+        ): Promise<AccountOfProfileAndRoot | undefined> {
             return new ValueRef(id, options.as, AccountOfProfileAndRoot).load();
         }
 
@@ -118,7 +126,7 @@ export function AccountOf<
                     }),
             });
 
-            return new AccountOfProfileAndRoot({
+            return new AccountOfProfileAndRoot(undefined, {
                 fromRaw: node.account as RawControlledAccount,
             }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
         }
@@ -138,7 +146,7 @@ export function AccountOf<
                 migration:
                     options.migration &&
                     (async (rawAccount) => {
-                        const account = new AccountOfProfileAndRoot({
+                        const account = new AccountOfProfileAndRoot(undefined, {
                             fromRaw: rawAccount,
                         }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
 
@@ -146,7 +154,7 @@ export function AccountOf<
                     }),
             });
 
-            return new AccountOfProfileAndRoot({
+            return new AccountOfProfileAndRoot(undefined, {
                 fromRaw: node.account as RawControlledAccount,
             }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
         }
@@ -174,6 +182,7 @@ export function controlledAccountFromNode(node: LocalNode) {
     if (!(node.account instanceof RawControlledAccount)) {
         throw new Error("Expected a controlled account");
     }
-    return new SimpleAccount({ fromRaw: node.account }) as SimpleAccount &
-        ControlledAccount;
+    return new SimpleAccount(undefined, {
+        fromRaw: node.account,
+    }) as SimpleAccount & ControlledAccount;
 }

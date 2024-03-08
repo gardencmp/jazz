@@ -1,6 +1,4 @@
 import { isTypeLiteral } from "@effect/schema/AST";
-import * as S from "@effect/schema/Schema";
-import { Simplify } from "effect/Types";
 import {
     CoValueSchema,
     ID,
@@ -34,7 +32,7 @@ import {
     SubscriptionScope,
     subscriptionsScopes,
 } from "../../subscriptionScope.js";
-import { AST } from "@effect/schema";
+import { AST, Schema } from "@effect/schema";
 import {
     constructorOfSchemaSym,
     propertyIsCoValueSchema,
@@ -43,21 +41,19 @@ import {
 export function CoMapOf<Fields extends CoMapFields>(
     fields: Fields
 ): CoMapSchema<Fields> {
-    const struct = S.struct(fields) as S.Schema<
-        Simplify<S.ToStruct<Fields>>,
-        Simplify<S.FromStruct<Fields>>,
+    const struct = Schema.struct(fields) as unknown as Schema.Schema<
+        CoMap<Fields> & Schema.ToStruct<Fields>,
+        Schema.FromStruct<Fields>,
         never
     >;
 
-    const CoMapOfFields: CoMapSchema<Fields> = class CoMapOfFields
-        implements CoValue<"CoMap", RawCoMap>
-    {
+    class CoMapOfFields implements CoValue<"CoMap", RawCoMap> {
         static ast = AST.setAnnotation(
             struct.ast,
             constructorOfSchemaSym,
             this
         );
-        static [S.TypeId] = struct[S.TypeId];
+        static [Schema.TypeId] = struct[Schema.TypeId];
         static pipe = struct.pipe;
         static [schemaTagSym] = "CoMap" as const;
 
@@ -86,40 +82,44 @@ export function CoMapOf<Fields extends CoMapFields>(
                 const rawOwner = options.owner[rawSym];
 
                 const rawInit = {} as {
-                    [key in Extract<keyof Fields, string>]:
-                        | JsonValue
-                        | undefined;
+                    [key in keyof CoMapInit<Fields>]: JsonValue | undefined;
                 };
 
-                for (const key in init) {
-                    const propertySignature =
-                        struct.ast.propertySignatures.find(
-                            (signature) => signature.name === key
-                        );
-                    const initValue = init[key];
-                    const field = fields[key];
-
-                    if (field && propertyIsCoValueSchema(field)) {
-                        // TOOD: check for alignment of actual value with schema
-                        if (isCoValue(initValue)) {
-                            rawInit[key] = initValue.id;
-                        } else {
-                            throw new Error(
-                                `Expected covalue in ${key} but got ${initValue}`
+                if (init)
+                    for (const key of Object.keys(
+                        init
+                    ) as (keyof CoMapInit<Fields>)[]) {
+                        const propertySignature =
+                            struct.ast.propertySignatures.find(
+                                (signature) => signature.name === key
                             );
+                        const initValue = init[key];
+                        const field = fields[key];
+
+                        if (field && propertyIsCoValueSchema(field)) {
+                            // TOOD: check for alignment of actual value with schema
+                            if (isCoValue(initValue)) {
+                                rawInit[key] = initValue.id;
+                            } else {
+                                throw new Error(
+                                    `Expected covalue in ${String(
+                                        key
+                                    )} but got ${initValue}`
+                                );
+                            }
+                        } else if (propertySignature) {
+                            const schemaAtKey = Schema.make<
+                                unknown,
+                                JsonValue | undefined,
+                                never
+                            >(propertySignature.type);
+                            rawInit[key] =
+                                Schema.encodeSync(schemaAtKey)(initValue);
+                        } else {
+                            // TODO: check index signatures
+                            throw new Error(`Key ${String(key)} not in schema`);
                         }
-                    } else if (propertySignature) {
-                        const schemaAtKey = S.make<
-                            unknown,
-                            JsonValue | undefined,
-                            never
-                        >(propertySignature.type);
-                        rawInit[key] = S.encodeSync(schemaAtKey)(initValue);
-                    } else {
-                        // TODO: check index signatures
-                        throw new Error(`Key ${key} not in schema`);
                     }
-                }
 
                 this[rawSym] = rawOwner.createMap(rawInit);
             }
@@ -160,7 +160,7 @@ export function CoMapOf<Fields extends CoMapFields>(
                         enumerable: true,
                     });
                 } else {
-                    const schemaAtKey = S.make<
+                    const schemaAtKey = Schema.make<
                         unknown,
                         JsonValue | undefined,
                         never
@@ -168,14 +168,16 @@ export function CoMapOf<Fields extends CoMapFields>(
 
                     Object.defineProperty(this, key, {
                         get(this: CoMapOfFields) {
-                            return S.decodeSync(schemaAtKey)(
+                            return Schema.decodeSync(schemaAtKey)(
                                 this[rawSym].get(key)
                             );
                         },
                         set(this: CoMapOfFields, value) {
                             this[rawSym].set(
                                 key,
-                                S.encodeSync(schemaAtKey)(value)
+                                Schema.encodeSync(schemaAtKey)(value) as
+                                    | JsonValue
+                                    | undefined
                             );
                         },
                         enumerable: true,
@@ -190,19 +192,23 @@ export function CoMapOf<Fields extends CoMapFields>(
 
             const refs = makeRefs<{
                 [Key in keyof Fields]: Fields[Key] extends CoValueSchema
-                    ? S.Schema.To<Fields[Key]>
+                    ? Schema.Schema.To<Fields[Key]>
                     : never;
             }>(
                 (key) => {
                     return this[rawSym].get(key as string) as
-                        | ID<S.Schema.To<Fields[typeof key] & CoValueSchema>>
+                        | ID<
+                              Schema.Schema.To<
+                                  Fields[typeof key] & CoValueSchema
+                              >
+                          >
                         | undefined;
                 },
                 () => {
                     return keysThatAreRefs;
                 },
                 controlledAccountFromNode(this[rawSym].core.node),
-                (key) => fields[key]
+                (key) => fields[key]!
             );
 
             Object.defineProperty(this, "meta", {
@@ -228,16 +234,31 @@ export function CoMapOf<Fields extends CoMapFields>(
             return Effect.gen(function* (_) {
                 const controlledAccount = yield* _(ControlledAccountCtx);
                 return yield* _(
-                    new ValueRef(id, controlledAccount, CoMapOfFields).loadEf()
+                    new ValueRef(
+                        id as ID<CoMapOfFields & CoMap<Fields>>,
+                        controlledAccount,
+                        CoMapOfFields as typeof CoMapOfFields &
+                            CoMapSchema<Fields>
+                    ).loadEf()
                 );
             });
         }
 
-        static load(
+        static async load(
             id: ID<CoMapOfFields>,
             options: { as: ControlledAccount }
         ): Promise<(CoMapOfFields & CoMap<Fields>) | undefined> {
-            return new ValueRef(id, options.as, CoMapOfFields).load();
+            const value = await new ValueRef(
+                id as ID<CoMapOfFields & CoMap<Fields>>,
+                options.as,
+                CoMapOfFields as typeof CoMapOfFields & CoMapSchema<Fields>
+            ).load();
+
+            if (value === "unavailable") {
+                return undefined;
+            } else {
+                return value;
+            }
         }
 
         static subscribe(
@@ -276,9 +297,10 @@ export function CoMapOf<Fields extends CoMapFields>(
                         Effect.gen(function* (_) {
                             const subscription = new SubscriptionScope(
                                 value,
-                                CoMapOfFields,
+                                CoMapOfFields as typeof CoMapOfFields &
+                                    CoMapSchema<Fields>,
                                 (update) => {
-                                    emit.single(update);
+                                    void emit.single(update);
                                 }
                             );
 
@@ -308,7 +330,19 @@ export function CoMapOf<Fields extends CoMapFields>(
         [inspect]() {
             return this.toJSON();
         }
-    };
+    }
 
-    return CoMapOfFields;
+    const TypedCoMapOfFields: CoMapSchema<Fields> =
+        CoMapOfFields as typeof CoMapOfFields & {
+            new (
+                init: CoMapInit<Fields>,
+                options: { owner: Account | Group }
+            ): CoMapOfFields & CoMap<Fields>;
+            new (
+                init: undefined,
+                options: { fromRaw: RawCoMap }
+            ): CoMapOfFields & CoMap<Fields>;
+        };
+
+    return TypedCoMapOfFields;
 }

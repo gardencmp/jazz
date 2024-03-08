@@ -1,4 +1,3 @@
-import * as S from "@effect/schema/Schema";
 import { RawCoID } from "cojson/src/ids";
 import { ControlledAccount, ControlledAccountCtx } from "./coValues/account/account.js";
 import { CoValueCore } from "cojson";
@@ -18,8 +17,9 @@ export type schemaTagSym = typeof schemaTagSym;
 export interface CoValueSchema<
     Tag extends string = string,
     Value extends CoValue = CoValue,
+    Decoded = any,
     Init = any,
-> extends SchemaWithInputAndOutput<Value, Value> {
+> extends SchemaWithInputAndOutput<Value, Decoded> {
     readonly [schemaTagSym]: Tag;
 
     new (init: undefined, options: { fromRaw: Value[rawSym] }): Value;

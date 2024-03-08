@@ -29,7 +29,7 @@ export class RawCoMapView<
     Shape extends { [key: string]: JsonValue | undefined } = {
         [key: string]: JsonValue | undefined;
     },
-    Meta extends JsonObject | null = JsonObject | null
+    Meta extends JsonObject | null = JsonObject | null,
 > implements RawCoValue
 {
     /** @category 6. Meta */
@@ -254,7 +254,7 @@ export class RawCoMap<
         Shape extends { [key: string]: JsonValue | undefined } = {
             [key: string]: JsonValue | undefined;
         },
-        Meta extends JsonObject | null = JsonObject | null
+        Meta extends JsonObject | null = JsonObject | null,
     >
     extends RawCoMapView<Shape, Meta>
     implements RawCoValue
@@ -270,59 +270,18 @@ export class RawCoMap<
     set<K extends keyof Shape & string>(
         key: K,
         value: Shape[K],
-        privacy?: "private" | "trusting"
-    ): void ;
-    set(
-        kv: {
-            [K in keyof Shape & string]?: Shape[K];
-        },
-        privacy?: "private" | "trusting"
-    ): void ;
-    set<K extends keyof Shape & string>(
-        ...args:
-            | [
-                  {
-                      [K in keyof Shape & string]?: Shape[K];
-                  },
-                  ("private" | "trusting")?
-              ]
-            | [K, Shape[K], ("private" | "trusting")?]
+        privacy: "private" | "trusting" = "private"
     ): void {
-        if (typeof args[0] === "string") {
-            const [key, value, privacy = "private"] = args;
-            this.core.makeTransaction(
-                [
-                    {
-                        op: "set",
-                        key,
-                        value: isCoValue(value) ? value.id : value,
-                    },
-                ],
-                privacy
-            );
-        } else {
-            const [kv, privacy = "private"] = args as [
+        this.core.makeTransaction(
+            [
                 {
-                    [K in keyof Shape & string]: Shape[K] extends RawCoValue
-                        ? Shape[K] | CoID<Shape[K]>
-                        : Shape[K];
+                    op: "set",
+                    key,
+                    value: isCoValue(value) ? value.id : value,
                 },
-                "private" | "trusting" | undefined
-            ];
-
-            for (const [key, value] of Object.entries(kv)) {
-                this.core.makeTransaction(
-                    [
-                        {
-                            op: "set",
-                            key,
-                            value: isCoValue(value) ? value.id : value,
-                        },
-                    ],
-                    privacy
-                );
-            }
-        }
+            ],
+            privacy
+        );
 
         const after = new RawCoMap(this.core) as this;
 
@@ -355,6 +314,4 @@ export class RawCoMap<
 
         this.ops = after.ops;
     }
-
-
 }
