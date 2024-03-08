@@ -28,9 +28,7 @@ export type CoMapFields = {
         | PropertySignatureWithOutput<CoValue>;
 };
 
-export type CoMapInit<Fields> = {
-    [Key in keyof Fields]?: S.Schema.To<Fields[Key]>;
-};
+export type CoMapInit<Fields extends CoMapFields> = S.ToStruct<Fields>
 
 export type CoMapMeta<Fields extends CoMapFields> = {
     readonly loadedAs: ControlledAccount;
