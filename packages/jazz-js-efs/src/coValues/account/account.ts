@@ -1,6 +1,11 @@
 import * as S from "@effect/schema/Schema";
-import { CoValue, CoValueSchema, ID } from "../../coValueInterfaces.js";
-import { CoMapSchema } from "../coMap/coMap.js";
+import {
+    AnyCoValueSchema,
+    CoValue,
+    ID,
+    CoValueSchema,
+} from "../../coValueInterfaces.js";
+import { AnyCoMapSchema } from "../coMap/coMap.js";
 import {
     AgentSecret,
     Peer,
@@ -10,14 +15,15 @@ import {
 } from "cojson";
 import { AccountMigration } from "./migration.js";
 import { Context } from "effect";
+import { Schema } from "@effect/schema";
 
-export type ProfileBaseSchema = CoMapSchema<{
+export type AnyProfileSchema = AnyCoMapSchema<{
     name: S.Schema<string>;
 }>;
 
 export interface Account<
-    P extends ProfileBaseSchema = ProfileBaseSchema,
-    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
+    P extends AnyProfileSchema = AnyProfileSchema,
+    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
 > extends CoValue<"Account", RawAccount> {
     profile: S.Schema.To<P>;
     root: S.Schema.To<R>;
@@ -25,19 +31,25 @@ export interface Account<
 }
 
 export type ControlledAccount<
-    P extends ProfileBaseSchema = ProfileBaseSchema,
-    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
+    P extends AnyProfileSchema = AnyProfileSchema,
+    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
 > = Account<P, R> &
     CoValue<"Account", RawControlledAccount> & {
         isMe: true;
     };
 
 export interface AccountSchema<
-    P extends ProfileBaseSchema = ProfileBaseSchema,
-    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
+    Self = any,
+    P extends AnyProfileSchema = AnyProfileSchema,
+    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
 > extends CoValueSchema<
+        Self,
         "Account",
         Account<P, R>,
+        Schema.FromStruct<{
+            profile: P;
+            root: R;
+        }>,
         never
     > {
     readonly [controlledAccountSym]: ControlledAccount<P, R>;
@@ -46,7 +58,7 @@ export interface AccountSchema<
 
     create(options: {
         name: string;
-        migration?: AccountMigration<AccountSchema<P, R>>;
+        migration?: AccountMigration<AccountSchema<Self, P, R>>;
         initialAgentSecret?: AgentSecret;
         peersToLoadFrom?: Peer[];
     }): Promise<ControlledAccount<P, R>>;
@@ -56,7 +68,7 @@ export interface AccountSchema<
         accountSecret: AgentSecret;
         sessionID: SessionID;
         peersToLoadFrom: Peer[];
-        migration?: AccountMigration<AccountSchema<P, R>>;
+        migration?: AccountMigration<AccountSchema<Self, P, R>>;
     }): Promise<ControlledAccount<P, R>>;
 }
 

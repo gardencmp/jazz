@@ -1,4 +1,8 @@
-import { CoValue, CoValueSchema } from "../../coValueInterfaces.js";
+import {
+    AnyCoValueSchema,
+    CoValue,
+    CoValueSchema,
+} from "../../coValueInterfaces.js";
 import { CoValueCore, JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import {
@@ -17,16 +21,26 @@ export type CoMap<Fields extends CoMapFields> = {
     [Key in keyof Fields]: Schema.Schema.To<Fields[Key]>;
 } & CoMapBase<Fields>;
 
-export interface CoMapSchema<Fields extends CoMapFields> extends CoValueSchema<
-    "CoMap",
-    CoMap<Fields>,
-    Schema.FromStruct<Fields>,
-    CoMapInit<Fields>
-> {}
+export interface AnyCoMapSchema<Fields extends CoMapFields>
+    extends AnyCoValueSchema<
+        "CoMap",
+        CoMap<Fields>,
+        Schema.FromStruct<Fields>,
+        CoMapInit<Fields>
+    > {}
+
+export interface CoMapSchema<Self, Fields extends CoMapFields>
+    extends CoValueSchema<
+        Self,
+        "CoMap",
+        CoMap<Fields>,
+        Schema.FromStruct<Fields>,
+        CoMapInit<Fields>
+    > {}
 
 export type CoMapFields = {
     [key: string]:
-        | CoValueSchema
+        | AnyCoValueSchema
         | SchemaWithOutput<JsonValue>
         | PropertySignatureWithInput<CoValue>;
 };
@@ -37,8 +51,11 @@ export type CoMapMeta<Fields extends CoMapFields> = {
     readonly loadedAs: ControlledAccount;
     readonly core: CoValueCore;
     readonly refs: {
-        [Key in keyof Fields]: Fields[Key] extends CoValueSchema
-            ? ValueRef<Schema.Schema.To<Fields[Key]>>
+        [Key in keyof Fields]: Fields[Key] extends AnyCoValueSchema<
+            infer _,
+            infer Value
+        >
+            ? ValueRef<Value>
             : never;
     };
 };

@@ -1,6 +1,5 @@
 import { isTypeLiteral } from "@effect/schema/AST";
 import {
-    CoValueSchema,
     ID,
     schemaTagSym,
     tagSym,
@@ -9,6 +8,7 @@ import {
     isCoValue,
     CoValue,
     inspect,
+    AnyCoValueSchema,
 } from "../../coValueInterfaces.js";
 import {
     CoMapFields,
@@ -38,11 +38,9 @@ import {
     propertyIsCoValueSchema,
 } from "../resolution.js";
 
-export function CoMapOf<Fields extends CoMapFields>(
-    fields: Fields
-): CoMapSchema<Fields> {
+export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
     const struct = Schema.struct(fields) as unknown as Schema.Schema<
-        CoMap<Fields> & Schema.ToStruct<Fields>,
+        CoMapOfFields,
         Schema.FromStruct<Fields>,
         never
     >;
@@ -191,15 +189,15 @@ export function CoMapOf<Fields extends CoMapFields>(
                 .map(([key]) => key);
 
             const refs = makeRefs<{
-                [Key in keyof Fields]: Fields[Key] extends CoValueSchema
-                    ? Schema.Schema.To<Fields[Key]>
+                [Key in keyof Fields]: Fields[Key] extends AnyCoValueSchema
+                    ? Exclude<Schema.Schema.To<Fields[Key]>, undefined>
                     : never;
             }>(
                 (key) => {
                     return this[rawSym].get(key as string) as
                         | ID<
                               Schema.Schema.To<
-                                  Fields[typeof key] & CoValueSchema
+                                  Fields[typeof key] & AnyCoValueSchema
                               >
                           >
                         | undefined;
@@ -238,7 +236,7 @@ export function CoMapOf<Fields extends CoMapFields>(
                         id as ID<CoMapOfFields & CoMap<Fields>>,
                         controlledAccount,
                         CoMapOfFields as typeof CoMapOfFields &
-                            CoMapSchema<Fields>
+                            CoMapSchema<CoMapOfFields, Fields>
                     ).loadEf()
                 );
             });
@@ -251,7 +249,8 @@ export function CoMapOf<Fields extends CoMapFields>(
             const value = await new ValueRef(
                 id as ID<CoMapOfFields & CoMap<Fields>>,
                 options.as,
-                CoMapOfFields as typeof CoMapOfFields & CoMapSchema<Fields>
+                CoMapOfFields as typeof CoMapOfFields &
+                    CoMapSchema<CoMapOfFields, Fields>
             ).load();
 
             if (value === "unavailable") {
@@ -298,7 +297,7 @@ export function CoMapOf<Fields extends CoMapFields>(
                             const subscription = new SubscriptionScope(
                                 value,
                                 CoMapOfFields as typeof CoMapOfFields &
-                                    CoMapSchema<Fields>,
+                                    CoMapSchema<CoMap<Fields>, Fields>,
                                 (update) => {
                                     void emit.single(update);
                                 }
@@ -330,19 +329,13 @@ export function CoMapOf<Fields extends CoMapFields>(
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<Self extends any>(): CoMapSchema<Self, Fields> {
+            return CoMapOfFields as unknown as CoMapSchema<Self, Fields>;
+        }
     }
 
-    const TypedCoMapOfFields: CoMapSchema<Fields> =
-        CoMapOfFields as typeof CoMapOfFields & {
-            new (
-                init: CoMapInit<Fields>,
-                options: { owner: Account | Group }
-            ): CoMapOfFields & CoMap<Fields>;
-            new (
-                init: undefined,
-                options: { fromRaw: RawCoMap }
-            ): CoMapOfFields & CoMap<Fields>;
-        };
-
-    return TypedCoMapOfFields;
+    return CoMapOfFields as CoMapSchema<CoMap<Fields>, Fields> & {
+        as<Self extends any>(): CoMapSchema<Self, Fields>;
+    };
 }

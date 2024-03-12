@@ -6,6 +6,7 @@ import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
 import { rawSym } from "../coValueInterfaces";
+import { TypeId } from "@effect/schema/Schema";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,7 +26,13 @@ describe("Simple CoMap operations", async () => {
         color: S.string,
         height: S.number,
         birthday: S.Date,
-    }) {}
+    }).as<TestMap>() {
+        get roughColor() {
+            return this.color + "ish";
+        }
+    }
+
+    const t = TestMap[TypeId];
 
     const birthday = new Date();
 
@@ -40,6 +47,7 @@ describe("Simple CoMap operations", async () => {
 
     test("Construction", () => {
         expect(map.color).toEqual("red");
+        expect(map.roughColor).toEqual("redish");
         expect(map.height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
         expect(map[rawSym].get("birthday")).toEqual(birthday.toISOString());
@@ -63,18 +71,26 @@ describe("Simple CoMap operations", async () => {
 describe("CoMap resolution", async () => {
     class TwiceNestedMap extends Co.map({
         taste: S.string,
-    }) {}
+    }).as<TwiceNestedMap>() {}
 
     class NestedMap extends Co.map({
         name: S.string,
         twiceNested: TwiceNestedMap,
-    }) {}
+    }).as<NestedMap>() {
+        get fancyName() {
+            return "Sir " + this.name;
+        }
+    }
 
     class TestMap extends Co.map({
         color: S.string,
         height: S.number,
         nested: NestedMap,
-    }) {}
+    }).as<TestMap>() {
+        get roughColor() {
+            return this.color + "ish";
+        }
+    }
 
     const initNodeAndMap = async () => {
         const me = await SimpleAccount.create({
@@ -104,9 +120,14 @@ describe("CoMap resolution", async () => {
 
     test("Construction", async () => {
         const { map } = await initNodeAndMap();
+
+        // const test: Schema.Schema.To<typeof NestedMap>
+
         expect(map.color).toEqual("red");
+        expect(map.roughColor).toEqual("redish");
         expect(map.height).toEqual(10);
         expect(map.nested?.name).toEqual("nested");
+        expect(map.nested?.fancyName).toEqual("Sir nested");
         expect(map.nested?.id).toBeDefined();
         expect(map.nested?.twiceNested?.taste).toEqual("sour");
     });
@@ -139,6 +160,7 @@ describe("CoMap resolution", async () => {
         });
 
         expect(loadedMap?.nested?.name).toEqual("nested");
+        expect(loadedMap?.nested.fancyName).toEqual("Sir nested");
         expect(loadedMap?.meta.refs.nested?.value).toEqual(loadedNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual(undefined);
 
@@ -196,7 +218,7 @@ describe("CoMap resolution", async () => {
                 TestMap.subscribe(
                     map.id,
                     { as: meOnSecondPeer },
-                    (subscribedMap: TestMap) => {
+                    (subscribedMap) => {
                         console.log(
                             "subscribedMap.nested?.twiceNested?.taste",
                             subscribedMap.nested?.twiceNested?.taste
@@ -260,7 +282,7 @@ describe("CoMap resolution", async () => {
     class TestMapWithOptionalRef extends Co.map({
         color: S.string,
         nested: S.optional(NestedMap),
-    }) {}
+    }).as<TestMapWithOptionalRef>() {}
 
     test("Construction with optional", async () => {
         const me = await SimpleAccount.create({
@@ -296,6 +318,7 @@ describe("CoMap resolution", async () => {
 
         expect(mapWith.color).toEqual("red");
         expect(mapWith.nested?.name).toEqual("wow!");
+        expect(mapWith.nested?.fancyName).toEqual("Sir wow!");
         expect(mapWith.nested?.[rawSym]).toBeDefined();
     });
 });
