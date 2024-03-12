@@ -46,11 +46,9 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
     >;
 
     class CoMapOfFields implements CoValue<"CoMap", RawCoMap> {
-        static ast = AST.setAnnotation(
-            struct.ast,
-            constructorOfSchemaSym,
-            this
-        );
+        static get ast() {
+            return AST.setAnnotation(struct.ast, constructorOfSchemaSym, this);
+        }
         static [Schema.TypeId] = struct[Schema.TypeId];
         static pipe = struct.pipe;
         static [schemaTagSym] = "CoMap" as const;
