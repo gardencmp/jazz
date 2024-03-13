@@ -16,6 +16,7 @@ import {
     CoMapMeta,
     CoMapInit,
     CoMapSchema,
+    CoMapFieldValue,
 } from "./coMap.js";
 import { ValueRef, makeRefs } from "../../refs.js";
 import { JsonValue, RawCoMap } from "cojson";
@@ -37,13 +38,21 @@ import {
     constructorOfSchemaSym,
     propertyIsCoValueSchema,
 } from "../resolution.js";
+import { JsonObject } from "cojson/src/jsonValue.js";
 
-export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
-    const struct = Schema.struct(fields) as unknown as Schema.Schema<
-        CoMapOfFields,
-        Schema.FromStruct<Fields>,
-        never
-    >;
+export function CoMapOf<
+    Fields extends CoMapFields,
+    IndexSignature extends {
+        key: Schema.Schema<string>;
+        value: CoMapFieldValue;
+    },
+>(fields: Fields, indexSignature?: IndexSignature) {
+    const structSchema = Schema.struct(fields)as unknown as Schema.Schema<
+    CoMapOfFields,
+    Schema.FromStruct<Fields>,
+    never
+>
+    const struct = indexSignature ? Schema.extend(structSchema)(Schema.record(indexSignature.key, indexSignature.value)) : structSchema;
 
     class CoMapOfFields implements CoValue<"CoMap", RawCoMap> {
         static get ast() {
@@ -85,14 +94,18 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                     for (const key of Object.keys(
                         init
                     ) as (keyof CoMapInit<Fields>)[]) {
-                        const propertySignature =
-                            struct.ast.propertySignatures.find(
-                                (signature) => signature.name === key
-                            );
                         const initValue = init[key];
-                        const field = fields[key];
+                        const field =
+                            fields[key] ||
+                            (indexSignature &&
+                                Schema.is(indexSignature.key)(key) &&
+                                indexSignature.value);
 
-                        if (field && propertyIsCoValueSchema(field)) {
+                        if (!field) {
+                            throw new Error(`Key ${String(key)} not in schema`);
+                        }
+
+                        if (propertyIsCoValueSchema(field)) {
                             // TOOD: check for alignment of actual value with schema
                             if (isCoValue(initValue)) {
                                 rawInit[key] = initValue.id;
@@ -103,17 +116,20 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                                     )} but got ${initValue}`
                                 );
                             }
-                        } else if (propertySignature) {
-                            const schemaAtKey = Schema.make<
-                                unknown,
-                                JsonValue | undefined,
-                                never
-                            >(propertySignature.type);
-                            rawInit[key] =
-                                Schema.encodeSync(schemaAtKey)(initValue);
                         } else {
-                            // TODO: check index signatures
-                            throw new Error(`Key ${String(key)} not in schema`);
+                            const fieldSchema = (
+                                "propertySignatureAST" in field
+                                    ? Schema.make<JsonObject, any, never>(
+                                          (
+                                              field.propertySignatureAST as {
+                                                  from: AST.AST;
+                                              }
+                                          ).from
+                                      )
+                                    : field
+                            ) as Schema.Schema<JsonObject, any, never>;
+                            rawInit[key] =
+                                Schema.encodeSync(fieldSchema)(initValue);
                         }
                     }
 
@@ -126,32 +142,14 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                 const key = propertySignature.name;
                 if (typeof key !== "string") continue;
 
-                // TODO: deal with stuff like optional refs - by manually traversing the ast etc
                 const fieldSchema = fields[key];
                 if (fieldSchema && propertyIsCoValueSchema(fieldSchema)) {
                     Object.defineProperty(this, key, {
                         get(this: CoMapOfFields) {
-                            const ref = this.meta.refs[key];
-                            if (!ref) {
-                                // TODO: check if this allowed to be undefined
-                                return undefined;
-                            }
-
-                            const subScope = subscriptionsScopes.get(this);
-
-                            subScope?.onRefAccessedOrSet(ref.id);
-
-                            if (ref.value && subScope) {
-                                subscriptionsScopes.set(ref.value, subScope);
-                            }
-
-                            return ref.value;
+                            return this.getCoValueAtKey(key);
                         },
                         set(this: CoMapOfFields, value) {
-                            this[rawSym].set(key, value.id);
-                            subscriptionsScopes
-                                .get(this)
-                                ?.onRefAccessedOrSet(value.id);
+                            this.setCoValueAtKey(key, value);
                         },
                         enumerable: true,
                     });
@@ -164,25 +162,17 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
 
                     Object.defineProperty(this, key, {
                         get(this: CoMapOfFields) {
-                            return Schema.decodeSync(schemaAtKey)(
-                                this[rawSym].get(key)
-                            );
+                            return this.getPrimitiveAtKey(key, schemaAtKey);
                         },
                         set(this: CoMapOfFields, value) {
-                            this[rawSym].set(
-                                key,
-                                Schema.encodeSync(schemaAtKey)(value) as
-                                    | JsonValue
-                                    | undefined
-                            );
+                            this.setPrimitiveAtKey(key, value, schemaAtKey);
                         },
                         enumerable: true,
                     });
                 }
             }
 
-            // TODO: deal with index signatures
-            const keysThatAreRefs = Object.entries(fields)
+            const fieldsThatAreRefs = Object.entries(fields)
                 .filter(([_, value]) => isCoValueSchema(value))
                 .map(([key]) => key);
 
@@ -201,10 +191,28 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                         | undefined;
                 },
                 () => {
-                    return keysThatAreRefs;
+                    if (indexSignature) {
+                        return this[rawSym]
+                            .keys()
+                            .filter(
+                                (key) =>
+                                    fieldsThatAreRefs.includes(key) ||
+                                    Schema.is(indexSignature.key)(key)
+                            );
+                    } else {
+                        return fieldsThatAreRefs;
+                    }
                 },
                 controlledAccountFromNode(this[rawSym].core.node),
-                (key) => fields[key]!
+                (key) =>
+                    fields[key] ||
+                    (indexSignature
+                        ? indexSignature.value
+                        : (() => {
+                              throw new Error(
+                                  "Expected " + String(key) + " to be valid"
+                              );
+                          })())
             );
 
             Object.defineProperty(this, "meta", {
@@ -216,8 +224,90 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                 enumerable: false,
             });
 
-            if (struct.ast.indexSignatures.length > 0) {
+            if (indexSignature) {
+                return new Proxy(this, {
+                    get(target, key) {
+                        if (key in target) {
+                            return Reflect.get(target, key);
+                        } else {
+                            if (Schema.is(indexSignature.key)(key as string)) {
+                                if (
+                                    propertyIsCoValueSchema(
+                                        indexSignature.value
+                                    )
+                                ) {
+                                    return target.getCoValueAtKey(
+                                        key as string
+                                    );
+                                } else {
+                                    return target.getPrimitiveAtKey(
+                                        key as string,
+                                        indexSignature.value
+                                    );
+                                }
+                            } else {
+                                throw new Error(
+                                    "No such key " + String(key) + " in CoMap"
+                                );
+                            }
+                        }
+                    },
+                    set(target, key, value) {
+                        if (key in target) {
+                            return Reflect.set(target, key, value);
+                        } else if (
+                            Schema.is(indexSignature.key)(key as string)
+                        ) {
+                            if (propertyIsCoValueSchema(indexSignature.value)) {
+                                target.setCoValueAtKey(key as string, value);
+                            } else {
+                                target.setPrimitiveAtKey(
+                                    key as string,
+                                    value,
+                                    indexSignature.value
+                                );
+                            }
+                            return true;
+                        } else {
+                            throw new Error(
+                                "No such key " + String(key) + " in CoMap"
+                            );
+                        }
+                    },
+                    ownKeys(target) {
+                        const keys = Reflect.ownKeys(target);
+                        for (const key of target[rawSym].keys()) {
+                            if (!keys.includes(key)) {
+                                if (
+                                    Schema.is(indexSignature.key)(key as string)
+                                ) {
+                                    keys.push(key);
+                                }
+                            }
+                        }
+                        return keys;
+                    },
+                    getOwnPropertyDescriptor(target, key) {
+                        if (key in target) {
+                            return Reflect.getOwnPropertyDescriptor(
+                                target,
+                                key
+                            );
+                        } else if (
+                            Schema.is(indexSignature.key)(key as string)
+                        ) {
+                            return {
+                                enumerable: true,
+                                configurable: true,
+                            };
+                        }
+                    },
+                });
             }
+        }
+
+        static fromRaw(raw: RawCoMap): CoMapOfFields {
+            return new CoMapOfFields(undefined, { fromRaw: raw });
         }
 
         static loadEf(
@@ -295,9 +385,25 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                             const subscription = new SubscriptionScope(
                                 value,
                                 CoMapOfFields as typeof CoMapOfFields &
-                                    CoMapSchema<CoMap<Fields>, Fields>,
+                                    CoMapSchema<
+                                        CoMap<
+                                            Fields,
+                                            IndexSignature["key"],
+                                            IndexSignature["value"]
+                                        >,
+                                        Fields,
+                                        IndexSignature["key"],
+                                        IndexSignature["value"]
+                                    >,
                                 (update) => {
-                                    void emit.single(update);
+                                    void emit.single(
+                                        update as CoMapOfFields &
+                                            CoMap<
+                                                Fields,
+                                                IndexSignature["key"],
+                                                IndexSignature["value"]
+                                            >
+                                    );
                                 }
                             );
 
@@ -311,6 +417,47 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
                         })
                     )
                 )
+            );
+        }
+
+        private getCoValueAtKey(key: string) {
+            const ref = this.meta.refs[key];
+            if (!ref) {
+                // TODO: check if this allowed to be undefined
+                return undefined;
+            }
+
+            const subScope = subscriptionsScopes.get(this);
+
+            subScope?.onRefAccessedOrSet(ref.id);
+
+            if (ref.value && subScope) {
+                subscriptionsScopes.set(ref.value, subScope);
+            }
+
+            return ref.value;
+        }
+
+        private setCoValueAtKey(key: string, value: CoValue) {
+            this[rawSym].set(key, value.id);
+            subscriptionsScopes.get(this)?.onRefAccessedOrSet(value.id);
+        }
+
+        private getPrimitiveAtKey(
+            key: string,
+            schemaAtKey: Schema.Schema<any, JsonValue | undefined, never>
+        ) {
+            return Schema.decodeSync(schemaAtKey)(this[rawSym].get(key));
+        }
+
+        private setPrimitiveAtKey(
+            key: string,
+            value: any,
+            schemaAtKey: Schema.Schema<any, JsonValue | undefined, never>
+        ) {
+            this[rawSym].set(
+                key,
+                Schema.encodeSync(schemaAtKey)(value) as JsonValue | undefined
             );
         }
 
@@ -328,12 +475,32 @@ export function CoMapOf<Fields extends CoMapFields>(fields: Fields) {
             return this.toJSON();
         }
 
-        static as<Self extends any>(): CoMapSchema<Self, Fields> {
-            return CoMapOfFields as unknown as CoMapSchema<Self, Fields>;
+        static as<Self extends any>(): CoMapSchema<
+            Self,
+            Fields,
+            IndexSignature["key"],
+            IndexSignature["value"]
+        > {
+            return CoMapOfFields as unknown as CoMapSchema<
+                Self,
+                Fields,
+                IndexSignature["key"],
+                IndexSignature["value"]
+            >;
         }
     }
 
-    return CoMapOfFields as CoMapSchema<CoMap<Fields>, Fields> & {
-        as<Self extends any>(): CoMapSchema<Self, Fields>;
+    return CoMapOfFields as CoMapSchema<
+        CoMap<Fields, IndexSignature["key"], IndexSignature["value"]>,
+        Fields,
+        IndexSignature["key"],
+        IndexSignature["value"]
+    > & {
+        as<Self extends any>(): CoMapSchema<
+            Self,
+            Fields,
+            IndexSignature["key"],
+            IndexSignature["value"]
+        >;
     };
 }

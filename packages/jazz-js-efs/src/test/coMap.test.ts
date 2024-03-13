@@ -7,6 +7,7 @@ import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
 import { rawSym } from "../coValueInterfaces";
 import { TypeId } from "@effect/schema/Schema";
+import { CoMapInit, CoMapSchema } from "../coValues/coMap/coMap";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -320,5 +321,41 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?.name).toEqual("wow!");
         expect(mapWith.nested?.fancyName).toEqual("Sir wow!");
         expect(mapWith.nested?.[rawSym]).toBeDefined();
+    });
+
+    class TestRecord extends Co.map(
+        { color: S.string },
+        { key: S.string, value: S.string }
+    ).as<TestRecord>() {}
+
+    type T = typeof TestRecord extends CoMapSchema<
+        infer _,
+        infer F,
+        infer K,
+        infer V
+    >
+        ? [F, K, V]
+        : never;
+
+    type I = CoMapInit<T[0], T[1], T[2]>;
+
+    test("Construction with index signature", async () => {
+        const me = await SimpleAccount.create({
+            name: "Hermes Puggington",
+        });
+
+        const record = new TestRecord(
+            {
+                color: "red",
+                other: "wild",
+            },
+            { owner: me }
+        );
+
+        expect(record.color).toEqual("red");
+        expect(record[rawSym].get("color")).toEqual("red");
+        expect(record.other).toEqual("wild");
+        expect(record[rawSym].get("other")).toEqual("wild");
+        expect(Object.keys(record)).toEqual(["id", "color", "other"]);
     });
 });

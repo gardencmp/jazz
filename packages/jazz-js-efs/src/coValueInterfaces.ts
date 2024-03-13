@@ -18,38 +18,39 @@ export type rawSym = typeof rawSym;
 export const schemaTagSym = Symbol.for("@jazz/schemaTag");
 export type schemaTagSym = typeof schemaTagSym;
 
-export type SchemaOf<T> = { new (...args: any[]): T, [schemaTagSym]: string };
+export type SubclassedConstructor<T> = { new (...args: any[]): T, [schemaTagSym]: string };
 
-export interface CoValueSchemaBase<
+export interface CoValueConstructor<
     Tag extends string = string,
     Value extends CoValue = CoValue,
     Init = any,
 > {
     readonly [schemaTagSym]: Tag;
 
-    new (init: undefined, options: { fromRaw: Value[rawSym] }): Value;
-    new (init: Init, options: { owner: ControlledAccount }): Value;
+    new(init: Init, options: { owner: ControlledAccount }): Value;
+
+    fromRaw(raw: Value[rawSym]): Value;
 
     load<V extends Value>(
-        this: SchemaOf<V>,
+        this: SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount }
     ): Promise<V | undefined>;
 
     loadEf<V extends Value>(
-        this: SchemaOf<V>,
+        this: SubclassedConstructor<V>,
         id: ID<V>
     ): Effect.Effect<V, UnavailableError, ControlledAccountCtx>;
 
     subscribe<V extends Value>(
-        this: SchemaOf<V>,
+        this: SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount },
         onUpdate: (value: V) => void
     ): Promise<void>;
 
     subscribeEf<V extends Value>(
-        this: SchemaOf<V>,
+        this: SubclassedConstructor<V>,
         id: ID<V>
     ): Stream.Stream<V, UnavailableError, ControlledAccountCtx>;
 }
@@ -59,7 +60,7 @@ export interface AnyCoValueSchema<
     Value extends CoValue = CoValue,
     Decoded = any,
     Init = any,
-> extends CoValueSchemaBase<Tag, Value, Init>,
+> extends CoValueConstructor<Tag, Value, Init>,
         SchemaWithInputAndOutput<Value, Decoded> {}
 
 export interface CoValueSchema<
@@ -68,7 +69,7 @@ export interface CoValueSchema<
     Value extends CoValue,
     Decoded,
     Init,
-> extends CoValueSchemaBase<Tag, Value, Init>,
+> extends CoValueConstructor<Tag, Value, Init>,
         Schema.Schema<Self, Decoded> {}
 
 export function isCoValueSchema(value: any): value is AnyCoValueSchema {

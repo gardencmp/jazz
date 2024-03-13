@@ -1,5 +1,5 @@
 import { ControlledAccount } from "./coValues/account/account.js";
-import { CoValue, CoValueSchema, ID, rawSym } from "./coValueInterfaces.js";
+import { AnyCoValueSchema, CoValue, ID, rawSym } from "./coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
 import { RawCoValue } from "cojson";
 
@@ -9,7 +9,7 @@ export const subscriptionsScopes = new WeakMap<
 >();
 
 export class SubscriptionScope<
-    RootSchema extends CoValueSchema = CoValueSchema,
+    RootSchema extends AnyCoValueSchema = AnyCoValueSchema,
 > {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
     subscriber: ControlledAccount;
@@ -43,11 +43,11 @@ export class SubscriptionScope<
         this.subscriber = root.meta.loadedAs;
         this.onUpdate = onUpdate;
         this.rootEntry.rawUnsub = root.meta.core.subscribe(
-            (rawUpdate: RawCoValue) => {
+            (rawUpdate: RawCoValue | undefined) => {
                 if (!rawUpdate) return;
-                this.rootEntry.value = new rootSchema(undefined, {
-                    fromRaw: rawUpdate,
-                }) as S.Schema.To<RootSchema>;
+                this.rootEntry.value = rootSchema.fromRaw(
+                    rawUpdate
+                ) as S.Schema.To<RootSchema>;
                 // console.log("root update", this.rootEntry.value.toJSON());
                 subscriptionsScopes.set(this.rootEntry.value, this);
                 this.scheduleUpdate();
@@ -92,13 +92,11 @@ export class SubscriptionScope<
                         };
                         this.entries.set(accessedOrSetId, entry);
 
-                        const rawUnsub = core.subscribe(
-                            (rawUpdate) => {
-                                // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
-                                if (!rawUpdate) return;
-                                this.scheduleUpdate();
-                            }
-                        );
+                        const rawUnsub = core.subscribe((rawUpdate) => {
+                            // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
+                            if (!rawUpdate) return;
+                            this.scheduleUpdate();
+                        });
 
                         entry.rawUnsub = rawUnsub;
                     }
