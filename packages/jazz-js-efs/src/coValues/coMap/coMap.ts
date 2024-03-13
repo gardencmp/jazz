@@ -58,7 +58,7 @@ export interface CoMapSchema<
 export type CoMapFieldValue =
     | AnyCoValueSchema
     | SchemaWithOutput<JsonValue>
-    | PropertySignatureWithInput<CoValue>;
+    | PropertySignatureWithInput<CoValue | JsonValue>;
 
 export type CoMapFields = {
     [key: string]: CoMapFieldValue;
