@@ -18,27 +18,19 @@ import {
     CoMapSchema,
     CoMapFieldValue,
 } from "./coMap.js";
-import { ValueRef, makeRefs } from "../../refs.js";
+import { makeRefs } from "../../refs.js";
 import { JsonValue, RawCoMap } from "cojson";
 import { Group } from "../group/group.js";
-import {
-    Account,
-    ControlledAccount,
-    ControlledAccountCtx,
-} from "../account/account.js";
-import { Effect, Sink, Stream } from "effect";
+import { Account } from "../account/account.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
-import { UnavailableError } from "../../errors.js";
-import {
-    SubscriptionScope,
-    subscriptionsScopes,
-} from "../../subscriptionScope.js";
+import { subscriptionsScopes } from "../../subscriptionScope.js";
 import { AST, Schema } from "@effect/schema";
 import {
     constructorOfSchemaSym,
     propertyIsCoValueSchema,
 } from "../resolution.js";
 import { JsonObject } from "cojson/src/jsonValue.js";
+import { SharedCoValueConstructor } from "../construction.js";
 
 export function CoMapOf<
     Fields extends CoMapFields,
@@ -47,14 +39,21 @@ export function CoMapOf<
         value: CoMapFieldValue;
     },
 >(fields: Fields, indexSignature?: IndexSignature) {
-    const structSchema = Schema.struct(fields)as unknown as Schema.Schema<
-    CoMapOfFields,
-    Schema.FromStruct<Fields>,
-    never
->
-    const struct = indexSignature ? Schema.extend(structSchema)(Schema.record(indexSignature.key, indexSignature.value)) : structSchema;
+    const structSchema = Schema.struct(fields) as unknown as Schema.Schema<
+        CoMapOfFields,
+        Schema.FromStruct<Fields>,
+        never
+    >;
+    const struct = indexSignature
+        ? Schema.extend(structSchema)(
+              Schema.record(indexSignature.key, indexSignature.value)
+          )
+        : structSchema;
 
-    class CoMapOfFields implements CoValue<"CoMap", RawCoMap> {
+    class CoMapOfFields
+        extends SharedCoValueConstructor
+        implements CoValue<"CoMap", RawCoMap>
+    {
         static get ast() {
             return AST.setAnnotation(struct.ast, constructorOfSchemaSym, this);
         }
@@ -77,6 +76,8 @@ export function CoMapOf<
             init: CoMapInit<Fields> | undefined,
             options: { owner: Account | Group } | { fromRaw: RawCoMap }
         ) {
+            super();
+
             if (!isTypeLiteral(struct.ast)) {
                 throw new Error("CoMap AST must be type literal");
             }
@@ -308,116 +309,6 @@ export function CoMapOf<
 
         static fromRaw(raw: RawCoMap): CoMapOfFields {
             return new CoMapOfFields(undefined, { fromRaw: raw });
-        }
-
-        static loadEf(
-            id: ID<CoMapOfFields>
-        ): Effect.Effect<
-            CoMapOfFields & CoMap<Fields>,
-            UnavailableError,
-            ControlledAccountCtx
-        > {
-            return Effect.gen(function* (_) {
-                const controlledAccount = yield* _(ControlledAccountCtx);
-                return yield* _(
-                    new ValueRef(
-                        id as ID<CoMapOfFields & CoMap<Fields>>,
-                        controlledAccount,
-                        CoMapOfFields as typeof CoMapOfFields &
-                            CoMapSchema<CoMapOfFields, Fields>
-                    ).loadEf()
-                );
-            });
-        }
-
-        static async load(
-            id: ID<CoMapOfFields>,
-            options: { as: ControlledAccount }
-        ): Promise<(CoMapOfFields & CoMap<Fields>) | undefined> {
-            const value = await new ValueRef(
-                id as ID<CoMapOfFields & CoMap<Fields>>,
-                options.as,
-                CoMapOfFields as typeof CoMapOfFields &
-                    CoMapSchema<CoMapOfFields, Fields>
-            ).load();
-
-            if (value === "unavailable") {
-                return undefined;
-            } else {
-                return value;
-            }
-        }
-
-        static subscribe(
-            id: ID<CoMapOfFields>,
-            options: { as: ControlledAccount },
-            onUpdate: (value: CoMapOfFields & CoMap<Fields>) => void
-        ): Promise<void> {
-            return Effect.runPromise(
-                Effect.provideService(
-                    CoMapOfFields.subscribeEf(id).pipe(
-                        Stream.run(
-                            Sink.forEach((update) =>
-                                Effect.sync(() => onUpdate(update))
-                            )
-                        )
-                    ),
-                    ControlledAccountCtx,
-                    options.as
-                )
-            );
-        }
-
-        static subscribeEf(
-            id: ID<CoMapOfFields>
-        ): Stream.Stream<
-            CoMapOfFields & CoMap<Fields>,
-            UnavailableError,
-            ControlledAccountCtx
-        > {
-            return Stream.fromEffect(CoMapOfFields.loadEf(id)).pipe(
-                Stream.flatMap((value) =>
-                    Stream.asyncScoped<
-                        CoMapOfFields & CoMap<Fields>,
-                        UnavailableError
-                    >((emit) =>
-                        Effect.gen(function* (_) {
-                            const subscription = new SubscriptionScope(
-                                value,
-                                CoMapOfFields as typeof CoMapOfFields &
-                                    CoMapSchema<
-                                        CoMap<
-                                            Fields,
-                                            IndexSignature["key"],
-                                            IndexSignature["value"]
-                                        >,
-                                        Fields,
-                                        IndexSignature["key"],
-                                        IndexSignature["value"]
-                                    >,
-                                (update) => {
-                                    void emit.single(
-                                        update as CoMapOfFields &
-                                            CoMap<
-                                                Fields,
-                                                IndexSignature["key"],
-                                                IndexSignature["value"]
-                                            >
-                                    );
-                                }
-                            );
-
-                            yield* _(
-                                Effect.addFinalizer(() =>
-                                    Effect.sync(() =>
-                                        subscription.unsubscribeAll()
-                                    )
-                                )
-                            );
-                        })
-                    )
-                )
-            );
         }
 
         private getCoValueAtKey(key: string) {

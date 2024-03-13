@@ -22,18 +22,14 @@ import {
     AccountSchema,
     AnyProfileSchema,
     ControlledAccount,
-    ControlledAccountCtx,
     controlledAccountSym,
 } from "./account.js";
 import * as S from "@effect/schema/Schema";
 import { AccountMigration } from "./migration.js";
 import { toJSON } from "effect/Inspectable";
-import { ValueRef } from "../../refs.js";
-import { UnavailableError } from "../../errors.js";
-import { Effect, Sink, Stream } from "effect";
 import { Schema } from "@effect/schema";
-import { SubscriptionScope } from "../../subscriptionScope.js";
 import { Group } from "../group/group.js";
+import { SharedCoValueConstructor } from "../construction.js";
 
 export function AccountOf<
     P extends AnyProfileSchema,
@@ -48,7 +44,10 @@ export function AccountOf<
         never
     >;
 
-    class AccountOfProfileAndRoot implements Account<P, R> {
+    class AccountOfProfileAndRoot
+        extends SharedCoValueConstructor
+        implements Account<P, R>
+    {
         static ast = struct.ast;
         static [S.TypeId] = struct[S.TypeId];
         static pipe = struct.pipe;
@@ -91,6 +90,7 @@ export function AccountOf<
                 | { fromRaw: RawAccount | RawControlledAccount }
                 | { owner: ControlledAccount | Group }
         ) {
+            super();
             if (!("fromRaw" in options)) {
                 throw new Error(
                     "Can only construct account from raw or with .create()"
@@ -107,97 +107,6 @@ export function AccountOf<
                         : controlledAccountFromNode(options.fromRaw.core.node),
                 core: options.fromRaw.core,
             };
-        }
-
-        static loadEf(
-            id: ID<AccountOfProfileAndRoot>
-        ): Effect.Effect<
-            AccountOfProfileAndRoot,
-            UnavailableError,
-            ControlledAccountCtx
-        > {
-            return Effect.gen(function* (_) {
-                const controlledAccount = yield* _(ControlledAccountCtx);
-                return yield* _(
-                    new ValueRef(
-                        id,
-                        controlledAccount,
-                        AccountOfProfileAndRoot
-                    ).loadEf()
-                );
-            });
-        }
-
-        static async load(
-            id: ID<AccountOfProfileAndRoot>,
-            options: { as: ControlledAccount }
-        ): Promise<AccountOfProfileAndRoot | undefined> {
-            const value = await new ValueRef(
-                id,
-                options.as,
-                AccountOfProfileAndRoot
-            ).load();
-
-            if (value === "unavailable") {
-                return Promise.resolve(undefined);
-            } else {
-                return Promise.resolve(value);
-            }
-        }
-
-        static subscribe(
-            id: ID<AccountOfProfileAndRoot>,
-            options: { as: ControlledAccount },
-            onUpdate: (value: AccountOfProfileAndRoot) => void
-        ): Promise<void> {
-            return Effect.runPromise(
-                Effect.provideService(
-                    AccountOfProfileAndRoot.subscribeEf(id).pipe(
-                        Stream.run(
-                            Sink.forEach((update) =>
-                                Effect.sync(() => onUpdate(update))
-                            )
-                        )
-                    ),
-                    ControlledAccountCtx,
-                    options.as
-                )
-            );
-        }
-
-        static subscribeEf(
-            id: ID<AccountOfProfileAndRoot>
-        ): Stream.Stream<
-            AccountOfProfileAndRoot,
-            UnavailableError,
-            ControlledAccountCtx
-        > {
-            return Stream.fromEffect(AccountOfProfileAndRoot.loadEf(id)).pipe(
-                Stream.flatMap((value) =>
-                    Stream.asyncScoped<
-                        AccountOfProfileAndRoot,
-                        UnavailableError
-                    >((emit) =>
-                        Effect.gen(function* (_) {
-                            const subscription = new SubscriptionScope(
-                                value,
-                                AccountOfProfileAndRoot,
-                                (update) => {
-                                    void emit.single(update);
-                                }
-                            );
-
-                            yield* _(
-                                Effect.addFinalizer(() =>
-                                    Effect.sync(() =>
-                                        subscription.unsubscribeAll()
-                                    )
-                                )
-                            );
-                        })
-                    )
-                )
-            );
         }
 
         static async create(options: {
