@@ -200,10 +200,10 @@ test("Can append, prepend, delete and replace items in CoList", () => {
     expect(content.toJSON()).toEqual(["hello", "beautiful", "world"]);
     content.prepend("hooray", 3, "trusting");
     expect(content.toJSON()).toEqual(["hello", "beautiful", "world", "hooray"]);
+    content.replace(2, "universe", "trusting");
+    expect(content.toJSON()).toEqual(["hello", "beautiful", "universe", "hooray"]);
     content.delete(2, "trusting");
     expect(content.toJSON()).toEqual(["hello", "beautiful", "hooray"]);
-    content.replace(1, "stunning", "trusting");
-    expect(content.toJSON()).toEqual(["hello", "stunning", "hooray"]);
 });
 
 test("Push is equivalent to append after last item", () => {

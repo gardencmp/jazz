@@ -222,6 +222,7 @@ export function CoMapOf<
                     core: this[rawSym].core,
                     refs: refs,
                 },
+                writable: false,
                 enumerable: false,
             });
 

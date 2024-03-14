@@ -306,7 +306,9 @@ export class RawCoListView<
                 opID,
             });
         }
-        for (const successor of entry.successors) {
+        // traverse successors in reverse for correct insertion behavior
+        for (let i = entry.successors.length - 1; i >= 0; i--) {
+            const successor = entry.successors[i]!;
             this.fillArrayFromOpID(successor, arr);
         }
     }

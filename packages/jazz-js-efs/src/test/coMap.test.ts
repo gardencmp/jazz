@@ -33,8 +33,6 @@ describe("Simple CoMap operations", async () => {
         }
     }
 
-    const t = TestMap[TypeId];
-
     const birthday = new Date();
 
     const map = new TestMap(

@@ -1,5 +1,6 @@
 import { RawCoID } from "cojson/src/ids";
 import {
+    Account,
     ControlledAccount,
     ControlledAccountCtx,
 } from "./coValues/account/account.js";
@@ -8,6 +9,7 @@ import { SchemaWithInputAndOutput } from "./schemaHelpers.js";
 import { Effect, Stream } from "effect";
 import { UnavailableError } from "./errors.js";
 import { Schema } from "@effect/schema";
+import { Group } from "./coValues/group/group.js";
 
 export const tagSym = Symbol.for("@jazz/tag");
 export type tagSym = typeof tagSym;
@@ -27,7 +29,7 @@ export interface CoValueConstructor<
 > {
     readonly [schemaTagSym]: Tag;
 
-    new(init: Init, options: { owner: ControlledAccount }): Value;
+    new(init: Init, options: { owner: Account | Group }): Value;
 
     fromRaw(raw: Value[rawSym]): Value;
 
