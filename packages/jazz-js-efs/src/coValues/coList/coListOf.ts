@@ -195,6 +195,31 @@ export function CoListOf<
             return first;
         }
 
+        splice(start: number, deleteCount: number, ...items: Schema.Schema.To<Item>[]): Schema.Schema.To<Item>[] {
+            const deleted = this.slice(start, start + deleteCount);
+
+            for (let idxToDelete = start + deleteCount; idxToDelete > start; idxToDelete--) {
+                this[rawSym].delete(idxToDelete);
+            }
+
+            let rawItems;
+            if (propertyIsCoValueSchema(itemSchema)) {
+                rawItems = items.map((item) => item.id);
+            } else {
+                rawItems = items.map((item) =>
+                    Schema.encodeSync(itemSchema)(item)
+                );
+            }
+
+            let appendAfter = start;
+            for (const item of rawItems) {
+                this[rawSym].append(item, appendAfter);
+                appendAfter++;
+            }
+
+            return deleted;
+        }
+
         toJSON() {
             return this.map((item) =>
                 typeof item === "object" &&
