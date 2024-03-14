@@ -9,21 +9,33 @@ import {
 } from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { CoList, CoListSchema } from "./coList.js";
-import { Schema } from "@effect/schema";
+import { AST, Schema } from "@effect/schema";
 import { Account, ControlledAccount } from "../account/account.js";
 import { Group } from "../group/group.js";
-import { propertyIsCoValueSchema } from "../resolution.js";
+import {
+    constructorOfSchemaSym,
+    propertyIsCoValueSchema,
+} from "../resolution.js";
 import { ValueRef, makeRefs } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
 
 export function CoListOf<
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
->(itemSchema: Item): CoListSchema<CoList<Item>, Item> {
-    return class CoListOfItem
+>(itemSchema: Item) {
+    const listS = Schema.array(itemSchema);
+
+    class CoListOfItem
         extends Array<Schema.Schema.To<Item>>
         implements CoValue<"CoList", RawCoList>
     {
+        static get ast() {
+            return AST.setAnnotation(listS.ast, constructorOfSchemaSym, this);
+        }
+        static [Schema.TypeId] = listS[Schema.TypeId];
+        static pipe = listS.pipe;
+        static [tagSym] = "CoList" as const;
+
         [tagSym] = "CoList" as const;
         [rawSym]!: RawCoList;
 
@@ -146,9 +158,7 @@ export function CoListOf<
         push(...items: Schema.Schema.To<Item>[]): number {
             let rawItems;
             if (propertyIsCoValueSchema(itemSchema)) {
-                 rawItems = items.map((item) => item.id);
-
-
+                rawItems = items.map((item) => item.id);
             } else {
                 rawItems = items.map((item) =>
                     Schema.encodeSync(itemSchema)(item)
@@ -195,10 +205,18 @@ export function CoListOf<
             return first;
         }
 
-        splice(start: number, deleteCount: number, ...items: Schema.Schema.To<Item>[]): Schema.Schema.To<Item>[] {
+        splice(
+            start: number,
+            deleteCount: number,
+            ...items: Schema.Schema.To<Item>[]
+        ): Schema.Schema.To<Item>[] {
             const deleted = this.slice(start, start + deleteCount);
 
-            for (let idxToDelete = start + deleteCount; idxToDelete > start; idxToDelete--) {
+            for (
+                let idxToDelete = start + deleteCount;
+                idxToDelete > start;
+                idxToDelete--
+            ) {
                 this[rawSym].delete(idxToDelete);
             }
 
@@ -233,6 +251,14 @@ export function CoListOf<
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<Self extends any>(): CoListSchema<Self, Item> {
+            return CoListOfItem as unknown as CoListSchema<Self, Item>;
+        }
+    }
+
+    return CoListOfItem as CoListSchema<CoList<Item>, Item> & {
+        as<Self extends any>(): CoListSchema<Self, Item>;
     };
 }
 

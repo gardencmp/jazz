@@ -44,7 +44,7 @@ export function CoMapOf<
         Schema.FromStruct<Fields>,
         never
     >;
-    const struct = indexSignature
+    const structS = indexSignature
         ? Schema.extend(structSchema)(
               Schema.record(indexSignature.key, indexSignature.value)
           )
@@ -55,10 +55,10 @@ export function CoMapOf<
         implements CoValue<"CoMap", RawCoMap>
     {
         static get ast() {
-            return AST.setAnnotation(struct.ast, constructorOfSchemaSym, this);
+            return AST.setAnnotation(structS.ast, constructorOfSchemaSym, this);
         }
-        static [Schema.TypeId] = struct[Schema.TypeId];
-        static pipe = struct.pipe;
+        static [Schema.TypeId] = structS[Schema.TypeId];
+        static pipe = structS.pipe;
         static [schemaTagSym] = "CoMap" as const;
 
         [tagSym] = "CoMap" as const;
@@ -78,7 +78,7 @@ export function CoMapOf<
         ) {
             super();
 
-            if (!isTypeLiteral(struct.ast)) {
+            if (!isTypeLiteral(structS.ast)) {
                 throw new Error("CoMap AST must be type literal");
             }
 
@@ -139,7 +139,7 @@ export function CoMapOf<
 
             this.id = this[rawSym].id as unknown as ID<this>;
 
-            for (const propertySignature of struct.ast.propertySignatures) {
+            for (const propertySignature of structS.ast.propertySignatures) {
                 const key = propertySignature.name;
                 if (typeof key !== "string") continue;
 

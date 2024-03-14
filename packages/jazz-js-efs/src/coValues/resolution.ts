@@ -20,7 +20,7 @@ export function propertyIsCoValueSchema(
 }
 
 function astIsCoValueSchema(ast: AST.AST): boolean {
-    if (ast._tag === "TypeLiteral" && ast.annotations[constructorOfSchemaSym]) {
+    if ((ast._tag === "TypeLiteral" || ast._tag === "Tuple") && ast.annotations[constructorOfSchemaSym]) {
         return true;
     } else if (ast._tag === "Union") {
         return ast.types.every(
@@ -74,7 +74,7 @@ function getCoValueConstructorInAST(
 ):
     | (new (init: undefined, options: { fromRaw: RawCoValue }) => CoValue)
     | undefined {
-    if (ast._tag === "TypeLiteral" && ast.annotations[constructorOfSchemaSym]) {
+    if ((ast._tag === "TypeLiteral" || ast._tag === "Tuple") && ast.annotations[constructorOfSchemaSym]) {
         return ast.annotations[constructorOfSchemaSym] as new (
             init: undefined,
             options: { fromRaw: RawCoValue }
