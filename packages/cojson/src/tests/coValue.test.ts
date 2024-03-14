@@ -1,10 +1,17 @@
+import { expect, test, beforeEach } from "vitest";
 import { expectList, expectMap, expectStream } from "../coValue.js";
-import { BinaryCoStream } from "../coValues/coStream.js";
+import { RawBinaryCoStream } from "../coValues/coStream.js";
 import { createdNowUnique } from "../crypto.js";
 import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;
@@ -173,7 +180,7 @@ test("Empty CoList works", () => {
     expect(content.toJSON()).toEqual([]);
 });
 
-test("Can append, prepend and delete items to CoList", () => {
+test("Can append, prepend, delete and replace items in CoList", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -195,6 +202,8 @@ test("Can append, prepend and delete items to CoList", () => {
     expect(content.toJSON()).toEqual(["hello", "beautiful", "world", "hooray"]);
     content.delete(2, "trusting");
     expect(content.toJSON()).toEqual(["hello", "beautiful", "hooray"]);
+    content.replace(1, "stunning", "trusting");
+    expect(content.toJSON()).toEqual(["hello", "stunning", "hooray"]);
 });
 
 test("Push is equivalent to append after last item", () => {
@@ -280,7 +289,7 @@ test("Can push into CoStream", () => {
     ]);
 });
 
-test("Empty BinaryCoStream works", () => {
+test("Empty RawBinaryCoStream works", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -295,7 +304,7 @@ test("Empty BinaryCoStream works", () => {
     if (
         content.type !== "costream" ||
         content.headerMeta?.type !== "binary" ||
-        !(content instanceof BinaryCoStream)
+        !(content instanceof RawBinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
     }
@@ -306,7 +315,7 @@ test("Empty BinaryCoStream works", () => {
     expect(content.getBinaryChunks()).toEqual(undefined);
 });
 
-test("Can push into BinaryCoStream", () => {
+test("Can push into RawBinaryCoStream", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const coValue = node.createCoValue({
@@ -321,7 +330,7 @@ test("Can push into BinaryCoStream", () => {
     if (
         content.type !== "costream" ||
         content.headerMeta?.type !== "binary" ||
-        !(content instanceof BinaryCoStream)
+        !(content instanceof RawBinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
     }
@@ -369,7 +378,7 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
     if (
         content.type !== "costream" ||
         content.headerMeta?.type !== "binary" ||
-        !(content instanceof BinaryCoStream)
+        !(content instanceof RawBinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
     }
@@ -439,7 +448,7 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
     if (
         content.type !== "costream" ||
         content.headerMeta?.type !== "binary" ||
-        !(content instanceof BinaryCoStream)
+        !(content instanceof RawBinaryCoStream)
     ) {
         throw new Error("Expected binary stream");
     }

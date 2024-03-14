@@ -1,3 +1,4 @@
+import { expect, test, beforeEach } from "vitest";
 import { Transaction } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "../crypto.js";
@@ -6,6 +7,12 @@ import { MapOpPayload } from "../coValues/coMap.js";
 import { Role } from "../permissions.js";
 import { cojsonReady } from "../index.js";
 import { stableStringify } from "../jsonStringify.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;

@@ -1,9 +1,10 @@
+import { expect, test, beforeEach } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { SyncMessage } from "../sync.js";
 import { expectMap } from "../coValue.js";
 import { MapOpPayload } from "../coValues/coMap.js";
-import { Group } from "../coValues/group.js";
+import { RawGroup } from "../coValues/group.js";
 import {
     randomAnonymousAccountAndSessionID,
     shouldNotResolve,
@@ -12,6 +13,12 @@ import { connectedPeers, newStreamPair } from "../streamUtils.js";
 import { AccountID } from "../coValues/account.js";
 import { cojsonReady } from "../index.js";
 import { stableStringify } from "../jsonStringify.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;
@@ -1073,7 +1080,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
     );
 });
 
-function groupContentEx(group: Group) {
+function groupContentEx(group: RawGroup) {
     return {
         action: "content",
         id: group.core.id,
@@ -1087,7 +1094,7 @@ function admContEx(adminID: AccountID) {
     };
 }
 
-function groupStateEx(group: Group) {
+function groupStateEx(group: RawGroup) {
     return {
         action: "known",
         id: group.core.id,

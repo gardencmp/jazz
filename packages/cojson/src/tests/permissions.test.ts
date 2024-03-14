@@ -1,6 +1,7 @@
+import { expect, test, beforeEach } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
 import { expectMap } from "../coValue.js";
-import { Group } from "../coValues/group.js";
+import { RawGroup } from "../coValues/group.js";
 import {
     createdNowUnique,
     newRandomKeySecret,
@@ -19,6 +20,12 @@ import {
 } from "./testUtils.js";
 import { ControlledAgent, cojsonReady } from "../index.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;

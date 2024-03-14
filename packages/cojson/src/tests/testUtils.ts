@@ -1,11 +1,10 @@
+import { expect } from "vitest";
 import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import { ControlledAgent } from "../coValues/account.js";
 import { SessionID } from "../ids.js";
-// @ts-ignore
-import { expect } from "bun:test";
 
 export function randomAnonymousAccountAndSessionID(): [ControlledAgent, SessionID] {
     const agentSecret = newRandomAgentSecret();

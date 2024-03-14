@@ -1,7 +1,14 @@
+import { expect, test, beforeEach } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
 import { cojsonReady } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;

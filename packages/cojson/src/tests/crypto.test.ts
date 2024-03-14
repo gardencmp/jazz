@@ -1,3 +1,4 @@
+import { expect, test, beforeEach } from "vitest";
 import {
     getSealerID,
     getSignerID,
@@ -22,6 +23,12 @@ import { blake3 } from "@noble/hashes/blake3";
 import stableStringify from "fast-json-stable-stringify";
 import { SessionID } from "../ids.js";
 import { cojsonReady } from "../index.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;

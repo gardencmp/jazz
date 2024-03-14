@@ -1,11 +1,18 @@
-import { LocalNode, CoMap, CoList, CoStream, BinaryCoStream, cojsonReady } from "../index";
+import { expect, test, beforeEach } from "vitest";
+import { LocalNode, RawCoMap, RawCoList, RawCoStream, RawBinaryCoStream, cojsonReady } from "../index";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+
+import { webcrypto } from "node:crypto";
+if (!("crypto" in globalThis)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).crypto = webcrypto;
+}
 
 beforeEach(async () => {
     await cojsonReady;
 });
 
-test("Can create a CoMap in a group", () => {
+test("Can create a RawCoMap in a group", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID());
 
     const group = node.createGroup();
@@ -13,7 +20,7 @@ test("Can create a CoMap in a group", () => {
     const map = group.createMap();
 
     expect(map.core.getCurrentContent().type).toEqual("comap");
-    expect(map instanceof CoMap).toEqual(true);
+    expect(map instanceof RawCoMap).toEqual(true);
 });
 
 test("Can create a CoList in a group", () => {
@@ -24,7 +31,7 @@ test("Can create a CoList in a group", () => {
     const list = group.createList();
 
     expect(list.core.getCurrentContent().type).toEqual("colist");
-    expect(list instanceof CoList).toEqual(true);
+    expect(list instanceof RawCoList).toEqual(true);
 })
 
 test("Can create a CoStream in a group", () => {
@@ -35,7 +42,7 @@ test("Can create a CoStream in a group", () => {
     const stream = group.createStream();
 
     expect(stream.core.getCurrentContent().type).toEqual("costream");
-    expect(stream instanceof CoStream).toEqual(true);
+    expect(stream instanceof RawCoStream).toEqual(true);
 });
 
 test("Can create a BinaryCoStream in a group", () => {
@@ -47,5 +54,5 @@ test("Can create a BinaryCoStream in a group", () => {
 
     expect(stream.core.getCurrentContent().type).toEqual("costream");
     expect(stream.headerMeta.type).toEqual("binary");
-    expect(stream instanceof BinaryCoStream).toEqual(true);
+    expect(stream instanceof RawBinaryCoStream).toEqual(true);
 })
