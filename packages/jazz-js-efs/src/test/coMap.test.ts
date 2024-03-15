@@ -23,11 +23,11 @@ describe("Simple CoMap operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestMap extends Co.map({
+    class TestMap extends Co.map<TestMap>()({
         color: S.string,
         height: S.number,
         birthday: S.Date,
-    }).as<TestMap>() {
+    }) {
         get roughColor() {
             return this.color + "ish";
         }
@@ -68,24 +68,24 @@ describe("Simple CoMap operations", async () => {
 });
 
 describe("CoMap resolution", async () => {
-    class TwiceNestedMap extends Co.map({
+    class TwiceNestedMap extends Co.map<TwiceNestedMap>()({
         taste: S.string,
-    }).as<TwiceNestedMap>() {}
+    }) {}
 
-    class NestedMap extends Co.map({
+    class NestedMap extends Co.map<NestedMap>()({
         name: S.string,
         twiceNested: TwiceNestedMap,
-    }).as<NestedMap>() {
+    }) {
         get fancyName() {
             return "Sir " + this.name;
         }
     }
 
-    class TestMap extends Co.map({
+    class TestMap extends Co.map<TestMap>()({
         color: S.string,
         height: S.number,
         nested: NestedMap,
-    }).as<TestMap>() {
+    }) {
         get roughColor() {
             return this.color + "ish";
         }
@@ -278,10 +278,10 @@ describe("CoMap resolution", async () => {
         );
     });
 
-    class TestMapWithOptionalRef extends Co.map({
+    class TestMapWithOptionalRef extends Co.map<TestMapWithOptionalRef>()({
         color: S.string,
         nested: S.optional(NestedMap),
-    }).as<TestMapWithOptionalRef>() {}
+    }) {}
 
     test("Construction with optional", async () => {
         const me = await SimpleAccount.create({
@@ -321,10 +321,10 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?.[rawSym]).toBeDefined();
     });
 
-    class TestRecord extends Co.map(
+    class TestRecord extends Co.map<TestRecord>()(
         { color: S.string },
         { key: S.string, value: S.string }
-    ).as<TestRecord>() {}
+    ) {}
 
     type T = typeof TestRecord extends CoMapSchema<
         infer _,

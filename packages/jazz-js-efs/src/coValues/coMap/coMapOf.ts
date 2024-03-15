@@ -32,7 +32,8 @@ import {
 import { JsonObject } from "cojson/src/jsonValue.js";
 import { SharedCoValueConstructor } from "../construction.js";
 
-export function CoMapOf<
+export function CoMapOfHelper<
+    Self,
     Fields extends CoMapFields,
     IndexSignature extends {
         key: Schema.Schema<string>;
@@ -366,33 +367,24 @@ export function CoMapOf<
         [inspect]() {
             return this.toJSON();
         }
-
-        static as<Self extends any>(): CoMapSchema<
-            Self,
-            Fields,
-            IndexSignature["key"],
-            IndexSignature["value"]
-        > {
-            return CoMapOfFields as unknown as CoMapSchema<
-                Self,
-                Fields,
-                IndexSignature["key"],
-                IndexSignature["value"]
-            >;
-        }
     }
 
     return CoMapOfFields as CoMapSchema<
-        CoMap<Fields, IndexSignature["key"], IndexSignature["value"]>,
+        Self,
         Fields,
         IndexSignature["key"],
         IndexSignature["value"]
-    > & {
-        as<Self extends any>(): CoMapSchema<
-            Self,
-            Fields,
-            IndexSignature["key"],
-            IndexSignature["value"]
-        >;
-    };
+    >
+}
+
+export function CoMapOf<Self>() {
+    return function narrowed<
+        Fields extends CoMapFields,
+        IndexSignature extends {
+            key: Schema.Schema<string>;
+            value: CoMapFieldValue;
+        },
+    >(fields: Fields, indexSignature?: IndexSignature) {
+        return CoMapOfHelper<Self, Fields, IndexSignature>(fields, indexSignature);
+    }
 }

@@ -5,10 +5,11 @@ import {
     ID,
     inspect,
     rawSym,
+    schemaTagSym,
     tagSym,
 } from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { CoList, CoListSchema } from "./coList.js";
+import { CoList, CoListMeta, CoListSchema } from "./coList.js";
 import { AST, Schema } from "@effect/schema";
 import { Account, ControlledAccount } from "../account/account.js";
 import { Group } from "../group/group.js";
@@ -19,11 +20,17 @@ import {
 import { ValueRef, makeRefs } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
+import { SharedCoValueConstructor } from "../construction.js";
 
-export function CoListOf<
+export function CoListOfHelper<
+    Self,
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
 >(itemSchema: Item) {
-    const listS = Schema.array(itemSchema);
+    const listS = Schema.mutable(Schema.array(itemSchema)) as unknown as Schema.Schema<
+        CoList<Item>,
+        Schema.Schema.From<Item>[],
+        never
+    >;
 
     class CoListOfItem
         extends Array<Schema.Schema.To<Item>>
@@ -34,7 +41,7 @@ export function CoListOf<
         }
         static [Schema.TypeId] = listS[Schema.TypeId];
         static pipe = listS.pipe;
-        static [tagSym] = "CoList" as const;
+        static [schemaTagSym] = "CoList" as const;
 
         [tagSym] = "CoList" as const;
         [rawSym]!: RawCoList;
@@ -112,7 +119,7 @@ export function CoListOf<
                                 return undefined;
                             }
 
-                            const subScope = subscriptionsScopes.get(target);
+                            const subScope = subscriptionsScopes.get(receiver);
 
                             subScope?.onRefAccessedOrSet(ref.id);
 
@@ -131,12 +138,12 @@ export function CoListOf<
                     }
                     return Reflect.get(target, key, receiver);
                 },
-                set(target, key, value) {
+                set(target, key, value, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
                         if (itemsAreCoValues) {
                             target[rawSym].replace(Number(key), value.id);
                             subscriptionsScopes
-                                .get(target)
+                                .get(receiver)
                                 ?.onRefAccessedOrSet(value.id);
                             return true;
                         } else {
@@ -153,6 +160,10 @@ export function CoListOf<
                     }
                 },
             });
+        }
+
+        static fromRaw(raw: RawCoList): CoListOfItem {
+            return new CoListOfItem(undefined, { fromRaw: raw });
         }
 
         push(...items: Schema.Schema.To<Item>[]): number {
@@ -238,6 +249,11 @@ export function CoListOf<
             return deleted;
         }
 
+        static load = SharedCoValueConstructor.load;
+        static loadEf = SharedCoValueConstructor.loadEf;
+        static subscribe = SharedCoValueConstructor.subscribe;
+        static subscribeEf = SharedCoValueConstructor.subscribeEf;
+
         toJSON() {
             return this.map((item) =>
                 typeof item === "object" &&
@@ -251,21 +267,15 @@ export function CoListOf<
         [inspect]() {
             return this.toJSON();
         }
-
-        static as<Self extends any>(): CoListSchema<Self, Item> {
-            return CoListOfItem as unknown as CoListSchema<Self, Item>;
-        }
     }
 
-    return CoListOfItem as CoListSchema<CoList<Item>, Item> & {
-        as<Self extends any>(): CoListSchema<Self, Item>;
-    };
+    return CoListOfItem as CoListSchema<Self, Item>
 }
 
-export interface CoListMeta<
-    Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
-> {
-    loadedAs: ControlledAccount;
-    core: CoValueCore;
-    refs: ValueRef<Schema.Schema.To<Item>>[];
+export function CoListOf<Self>() {
+    return function narrowed<Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>>(
+        itemSchema: Item
+    ) {
+        return CoListOfHelper<Self, Item>(itemSchema);
+    }
 }

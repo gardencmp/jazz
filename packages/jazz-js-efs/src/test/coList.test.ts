@@ -23,7 +23,7 @@ describe("Simple CoList operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestList extends Co.list(S.string) {}
+    class TestList extends Co.list<TestList>()(S.string) {}
 
     const list = new TestList(["bread", "butter", "onion"], { owner: me });
 
@@ -112,15 +112,15 @@ describe("Simple CoList operations", async () => {
 });
 
 describe("CoList resolution", async () => {
-    class TwiceNestedList extends Co.list(S.string).as<TwiceNestedList>() {
+    class TwiceNestedList extends Co.list<TwiceNestedList>()(S.string) {
         joined() {
             return this.join(",");
         }
     }
 
-    class NestedList extends Co.list(TwiceNestedList).as<NestedList>() {}
+    class NestedList extends Co.list<NestedList>()(TwiceNestedList) {}
 
-    class TestList extends Co.list(NestedList).as<TestList>() {}
+    class TestList extends Co.list<TestList>()(NestedList) {}
 
     const initNodeAndList = async () => {
         const me = await SimpleAccount.create({
@@ -151,5 +151,131 @@ describe("CoList resolution", async () => {
         expect(list[0][0].joined()).toBe("a,b");
         expect(list[0][0].id).toBeDefined();
         expect(list[1][0][0]).toBe("c");
+    });
+
+    test("Loading and availability", async () => {
+        const { me, list } = await initNodeAndList();
+
+        const [initialAsPeer, secondPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+        me[rawSym].core.node.syncManager.addPeer(secondPeer);
+        const meOnSecondPeer = await SimpleAccount.become({
+            accountID: me.id,
+            accountSecret: me[rawSym].agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.id as any),
+        });
+
+        const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
+
+        expect(loadedList?.[0]).toBe(undefined);
+        expect(loadedList?.meta.refs[0].id).toEqual(list[0].id);
+
+        const loadedNestedList = await NestedList.load(list[0].id, {
+            as: meOnSecondPeer,
+        });
+
+        expect(loadedList?.[0]).toBeDefined();
+        expect(loadedList?.[0][0]).toBeUndefined();
+        expect(loadedList?.[0].meta.refs[0].id).toEqual(list[0][0].id);
+        expect(loadedList?.meta.refs[0].value).toEqual(loadedNestedList);
+
+        const loadedTwiceNestedList = await TwiceNestedList.load(
+            list[0][0].id,
+            { as: meOnSecondPeer }
+        );
+
+        expect(loadedList?.[0]?.[0]).toBeDefined();
+        expect(loadedList?.[0]?.[0][0]).toBe("a");
+        expect(loadedList?.[0]?.[0].joined()).toBe("a,b");
+        expect(loadedList?.[0]?.meta.refs[0].id).toEqual(list[0][0].id);
+        expect(loadedList?.[0]?.meta.refs[0].value).toEqual(
+            loadedTwiceNestedList
+        );
+
+        const otherNestedList = new NestedList(
+            [new TwiceNestedList(["e", "f"], { owner: meOnSecondPeer })],
+            { owner: meOnSecondPeer }
+        );
+
+        loadedList![0] = otherNestedList;
+        expect(loadedList?.[0]).toEqual(otherNestedList);
+        expect(loadedList?.meta.refs[0].id).toEqual(otherNestedList.id);
+    });
+
+    test("Subscription & auto-resolution", async () => {
+        const { me, list } = await initNodeAndList();
+
+        const [initialAsPeer, secondPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+        me[rawSym].core.node.syncManager.addPeer(secondPeer);
+        const meOnSecondPeer = await SimpleAccount.become({
+            accountID: me.id,
+            accountSecret: me[rawSym].agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.id as any),
+        });
+
+        await Effect.runPromise(
+            Effect.gen(function* ($) {
+                const queue = yield* $(Queue.unbounded<TestList>());
+
+                TestList.subscribe(
+                    list.id,
+                    { as: meOnSecondPeer },
+                    (subscribedList) => {
+                        console.log(
+                            "subscribedList?.[0]?.[0]?.[0]",
+                            subscribedList?.[0]?.[0]?.[0]
+                        );
+                        Effect.runPromise(Queue.offer(queue, subscribedList));
+                    }
+                );
+
+                const update1 = yield* $(Queue.take(queue));
+                expect(update1?.[0]).toEqual(undefined);
+
+                const update2 = yield* $(Queue.take(queue));
+                expect(update2?.[0]).toBeDefined();
+                expect(update2?.[0]?.[0]).toBeUndefined();
+
+                const update3 = yield* $(Queue.take(queue));
+                expect(update3?.[0]?.[0]).toBeDefined();
+                expect(update3?.[0]?.[0]?.[0]).toBe("a");
+                expect(update3?.[0]?.[0]?.joined()).toBe("a,b");
+
+                update3[0][0][0] = "x";
+
+                const update4 = yield* $(Queue.take(queue));
+                expect(update4?.[0]?.[0]?.[0]).toBe("x");
+
+                // When assigning a new nested value, we get an update
+
+                const newTwiceNestedList = new TwiceNestedList(["y", "z"], {
+                    owner: meOnSecondPeer,
+                });
+
+                const newNestedList = new NestedList([newTwiceNestedList], {
+                    owner: meOnSecondPeer,
+                });
+
+                update4[0] = newNestedList;
+
+                const update5 = yield* $(Queue.take(queue));
+                expect(update5?.[0]?.[0]?.[0]).toBe("y");
+                expect(update5?.[0]?.[0]?.joined()).toBe("y,z");
+
+                // we get updates when the new nested value changes
+                newTwiceNestedList[0] = "w";
+                const update6 = yield* $(Queue.take(queue));
+                expect(update6?.[0]?.[0]?.[0]).toBe("w");
+            })
+        );
     });
 });
