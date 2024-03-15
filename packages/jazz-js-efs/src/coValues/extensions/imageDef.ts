@@ -5,5 +5,5 @@ export class ImageDefinition extends Co.map<ImageDefinition>()({
     placeholderDataURL: S.optional(S.string),
 }, {
     key: S.templateLiteral(S.string, S.literal("x"), S.string),
-    value: BinaryCoStream
+    value: Co.binaryStream,
 }) {}
