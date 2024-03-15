@@ -1,15 +1,15 @@
 import {
     AnyCoValueSchema,
     CoValue,
+    CoValueCo,
     CoValueSchema,
 } from "../../coValueInterfaces.js";
-import { CoValueCore, JsonValue, RawCoMap } from "cojson";
+import {  JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import {
     PropertySignatureWithInput,
     SchemaWithOutput,
 } from "../../schemaHelpers.js";
-import { ControlledAccount } from "../account/account.js";
 import { Schema } from "@effect/schema";
 import { Simplify } from "effect/Types";
 
@@ -18,7 +18,7 @@ export interface CoMapBase<
     IdxKey extends Schema.Schema<string> = never,
     IdxVal extends CoMapFieldValue = never,
 > extends CoValue<"CoMap", RawCoMap> {
-    meta: CoMapMeta<Fields, IdxKey, IdxVal>;
+    co: CoMapCo<this, Fields, IdxKey, IdxVal>;
 }
 
 export type CoMap<
@@ -72,13 +72,12 @@ export type CoMapInit<
     [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal>;
 };
 
-export type CoMapMeta<
+export type CoMapCo<
+    Self extends CoValue,
     Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string> = never,
-    IdxVal extends CoMapFieldValue = never,
-> = {
-    readonly loadedAs: ControlledAccount;
-    readonly core: CoValueCore;
+    IdxKey extends Schema.Schema<string>,
+    IdxVal extends CoMapFieldValue,
+> = CoValueCo<"CoMap", Self, RawCoMap> & {
     readonly refs: {
         [Key in keyof Fields]: Fields[Key] extends AnyCoValueSchema<
             infer _,

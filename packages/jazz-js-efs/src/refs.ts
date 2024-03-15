@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { CoValue, ID, rawSym } from "./coValueInterfaces.js";
+import { CoValue, ID } from "./coValueInterfaces.js";
 import { ControlledAccount } from "./coValues/account/account.js";
 import { CoID, RawCoValue } from "cojson";
 import { UnavailableError } from "./errors.js";
@@ -18,7 +18,7 @@ export class ValueRef<V extends CoValue> {
     get value() {
         if (this.cachedValue) return this.cachedValue;
         // TODO: cache it for object identity!!!
-        const raw = this.controlledAccount[rawSym].core.node.getLoaded(
+        const raw = this.controlledAccount.co.core.node.getLoaded(
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
@@ -54,7 +54,7 @@ export class ValueRef<V extends CoValue> {
     }
 
     async load(): Promise<V | "unavailable"> {
-        const raw = await this.controlledAccount[rawSym].core.node.load(
+        const raw = await this.controlledAccount.co.core.node.load(
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw === "unavailable") {
@@ -67,7 +67,7 @@ export class ValueRef<V extends CoValue> {
 }
 
 export function makeRefs<F extends { [key: string | number]: CoValue }>(
-    getIdForKey: <K extends keyof F>(key: K) => F[K]["id"] | undefined,
+    getIdForKey: <K extends keyof F>(key: K) => F[K]["co"]["id"] | undefined,
     getKeysWithIds: () => (keyof F)[],
     controlledAccount: ControlledAccount,
     propDefForKey: <K extends keyof F>(key: K) => PropDef<F[K]>

@@ -5,7 +5,6 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
-import { rawSym } from "../coValueInterfaces";
 import { TypeId } from "@effect/schema/Schema";
 import { CoMapInit, CoMapSchema } from "../coValues/coMap/coMap";
 
@@ -31,7 +30,7 @@ describe("Simple CoList operations", async () => {
         expect(list[0]).toBe("bread");
         expect(list[1]).toBe("butter");
         expect(list[2]).toBe("onion");
-        expect(list[rawSym].asArray()).toEqual(["bread", "butter", "onion"]);
+        expect(list.co.raw.asArray()).toEqual(["bread", "butter", "onion"]);
         expect(list.length).toBe(3);
     });
 
@@ -41,7 +40,7 @@ describe("Simple CoList operations", async () => {
                 owner: me,
             });
             list[1] = "margarine";
-            expect(list[rawSym].asArray()).toEqual([
+            expect(list.co.raw.asArray()).toEqual([
                 "bread",
                 "margarine",
                 "onion",
@@ -55,7 +54,7 @@ describe("Simple CoList operations", async () => {
             });
             list.push("cheese");
             expect(list[3]).toBe("cheese");
-            expect(list[rawSym].asArray()).toEqual([
+            expect(list.co.raw.asArray()).toEqual([
                 "bread",
                 "butter",
                 "onion",
@@ -69,7 +68,7 @@ describe("Simple CoList operations", async () => {
             });
             list.unshift("lettuce");
             expect(list[0]).toBe("lettuce");
-            expect(list[rawSym].asArray()).toEqual([
+            expect(list.co.raw.asArray()).toEqual([
                 "lettuce",
                 "bread",
                 "butter",
@@ -83,7 +82,7 @@ describe("Simple CoList operations", async () => {
             });
             expect(list.pop()).toBe("onion");
             expect(list.length).toBe(2);
-            expect(list[rawSym].asArray()).toEqual(["bread", "butter"]);
+            expect(list.co.raw.asArray()).toEqual(["bread", "butter"]);
         });
 
         test("shift", () => {
@@ -92,7 +91,7 @@ describe("Simple CoList operations", async () => {
             });
             expect(list.shift()).toBe("bread");
             expect(list.length).toBe(2);
-            expect(list[rawSym].asArray()).toEqual(["butter", "onion"]);
+            expect(list.co.raw.asArray()).toEqual(["butter", "onion"]);
         });
 
         test("splice", () => {
@@ -101,7 +100,7 @@ describe("Simple CoList operations", async () => {
             });
             list.splice(1, 1, "salt", "pepper");
             expect(list.length).toBe(4);
-            expect(list[rawSym].asArray()).toEqual([
+            expect(list.co.raw.asArray()).toEqual([
                 "bread",
                 "salt",
                 "pepper",
@@ -149,7 +148,7 @@ describe("CoList resolution", async () => {
 
         expect(list[0][0][0]).toBe("a");
         expect(list[0][0].joined()).toBe("a,b");
-        expect(list[0][0].id).toBeDefined();
+        expect(list[0][0].co.id).toBeDefined();
         expect(list[1][0][0]).toBe("c");
     });
 
@@ -161,38 +160,38 @@ describe("CoList resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" }
         );
-        me[rawSym].core.node.syncManager.addPeer(secondPeer);
+        me.co.raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.id,
-            accountSecret: me[rawSym].agentSecret,
+            accountID: me.co.id,
+            accountSecret: me.co.raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.id as any),
+            sessionID: newRandomSessionID(me.co.id as any),
         });
 
-        const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
+        const loadedList = await TestList.load(list.co.id, { as: meOnSecondPeer });
 
         expect(loadedList?.[0]).toBe(undefined);
-        expect(loadedList?.meta.refs[0].id).toEqual(list[0].id);
+        expect(loadedList?.co.refs[0].id).toEqual(list[0].co.id);
 
-        const loadedNestedList = await NestedList.load(list[0].id, {
+        const loadedNestedList = await NestedList.load(list[0].co.id, {
             as: meOnSecondPeer,
         });
 
         expect(loadedList?.[0]).toBeDefined();
         expect(loadedList?.[0][0]).toBeUndefined();
-        expect(loadedList?.[0].meta.refs[0].id).toEqual(list[0][0].id);
-        expect(loadedList?.meta.refs[0].value).toEqual(loadedNestedList);
+        expect(loadedList?.[0].co.refs[0].id).toEqual(list[0][0].co.id);
+        expect(loadedList?.co.refs[0].value).toEqual(loadedNestedList);
 
         const loadedTwiceNestedList = await TwiceNestedList.load(
-            list[0][0].id,
+            list[0][0].co.id,
             { as: meOnSecondPeer }
         );
 
         expect(loadedList?.[0]?.[0]).toBeDefined();
         expect(loadedList?.[0]?.[0][0]).toBe("a");
         expect(loadedList?.[0]?.[0].joined()).toBe("a,b");
-        expect(loadedList?.[0]?.meta.refs[0].id).toEqual(list[0][0].id);
-        expect(loadedList?.[0]?.meta.refs[0].value).toEqual(
+        expect(loadedList?.[0]?.co.refs[0].id).toEqual(list[0][0].co.id);
+        expect(loadedList?.[0]?.co.refs[0].value).toEqual(
             loadedTwiceNestedList
         );
 
@@ -203,7 +202,7 @@ describe("CoList resolution", async () => {
 
         loadedList![0] = otherNestedList;
         expect(loadedList?.[0]).toEqual(otherNestedList);
-        expect(loadedList?.meta.refs[0].id).toEqual(otherNestedList.id);
+        expect(loadedList?.co.refs[0].id).toEqual(otherNestedList.co.id);
     });
 
     test("Subscription & auto-resolution", async () => {
@@ -214,12 +213,12 @@ describe("CoList resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" }
         );
-        me[rawSym].core.node.syncManager.addPeer(secondPeer);
+        me.co.raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.id,
-            accountSecret: me[rawSym].agentSecret,
+            accountID: me.co.id,
+            accountSecret: me.co.raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.id as any),
+            sessionID: newRandomSessionID(me.co.id as any),
         });
 
         await Effect.runPromise(
@@ -227,7 +226,7 @@ describe("CoList resolution", async () => {
                 const queue = yield* $(Queue.unbounded<TestList>());
 
                 TestList.subscribe(
-                    list.id,
+                    list.co.id,
                     { as: meOnSecondPeer },
                     (subscribedList) => {
                         console.log(

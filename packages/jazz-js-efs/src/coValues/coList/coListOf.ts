@@ -1,23 +1,20 @@
-import { CoValueCore, JsonValue, RawCoList } from "cojson";
+import { JsonValue, RawCoList } from "cojson";
 import {
     AnyCoValueSchema,
     CoValue,
     ID,
     inspect,
-    rawSym,
-    schemaTagSym,
-    tagSym,
 } from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { CoList, CoListMeta, CoListSchema } from "./coList.js";
+import { CoListCo, CoListSchema } from "./coList.js";
 import { AST, Schema } from "@effect/schema";
-import { Account, ControlledAccount } from "../account/account.js";
+import { Account } from "../account/account.js";
 import { Group } from "../group/group.js";
 import {
     constructorOfSchemaSym,
     propertyIsCoValueSchema,
 } from "../resolution.js";
-import { ValueRef, makeRefs } from "../../refs.js";
+import { makeRefs } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
 import { SharedCoValueConstructor } from "../construction.js";
@@ -26,11 +23,9 @@ export function CoListOfHelper<
     Self,
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
 >(itemSchema: Item) {
-    const listS = Schema.mutable(Schema.array(itemSchema)) as unknown as Schema.Schema<
-        CoList<Item>,
-        Schema.Schema.From<Item>[],
-        never
-    >;
+    const listS = Schema.mutable(
+        Schema.array(itemSchema)
+    ) as unknown as Schema.Schema<Self, Schema.Schema.From<Item>[], never>;
 
     class CoListOfItem
         extends Array<Schema.Schema.To<Item>>
@@ -41,13 +36,10 @@ export function CoListOfHelper<
         }
         static [Schema.TypeId] = listS[Schema.TypeId];
         static pipe = listS.pipe;
-        static [schemaTagSym] = "CoList" as const;
-
-        [tagSym] = "CoList" as const;
-        [rawSym]!: RawCoList;
+        static type = "CoList" as const;
 
         id!: ID<this>;
-        meta!: CoListMeta<Item>;
+        co!: CoListCo<this, Item>;
 
         constructor(_init: undefined, options: { fromRaw: RawCoList });
         constructor(
@@ -74,37 +66,40 @@ export function CoListOfHelper<
                 throw new Error("Must provide options");
             }
 
+            let raw: RawCoList;
+
             if ("fromRaw" in options) {
-                this[rawSym] = options.fromRaw;
+                raw = options.fromRaw;
             } else {
-                const rawOwner = options.owner[rawSym];
+                const rawOwner = options.owner.co.raw;
 
                 const rawInit = itemsAreCoValues
-                    ? init?.map((item) => item.id)
+                    ? init?.map((item) => item.co.id)
                     : init?.map((item) => Schema.encodeSync(itemSchema)(item));
 
-                this[rawSym] = rawOwner.createList(rawInit);
+                raw = rawOwner.createList(rawInit);
             }
 
-            this.id = this[rawSym].id as unknown as ID<this>;
-
-            Object.defineProperty(this, "meta", {
+            Object.defineProperty(this, "co", {
                 value: {
-                    loadedAs: controlledAccountFromNode(this[rawSym].core.node),
-                    core: this[rawSym].core,
+                    id: raw.id as unknown as ID<this>,
+                    type: "CoList",
+                    raw,
+                    loadedAs: controlledAccountFromNode(raw.core.node),
+                    core: raw.core,
                     refs: itemsAreCoValues
                         ? makeRefs<{ [key: number]: Schema.Schema.To<Item> }>(
-                              (idx) => this[rawSym].get(idx),
+                              (idx) => raw.get(idx),
                               () =>
                                   Array.from(
-                                      { length: this[rawSym].entries().length },
+                                      { length: raw.entries().length },
                                       (_, idx) => idx
                                   ),
-                              controlledAccountFromNode(this[rawSym].core.node),
+                              controlledAccountFromNode(raw.core.node),
                               (_idx) => itemSchema
                           )
                         : [],
-                },
+                } satisfies CoListCo<this, Item>,
                 writable: false,
                 enumerable: false,
             });
@@ -113,7 +108,7 @@ export function CoListOfHelper<
                 get(target, key, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
                         if (itemsAreCoValues) {
-                            const ref = target.meta.refs[Number(key)];
+                            const ref = target.co.refs[Number(key)];
                             if (!ref) {
                                 // TODO: check if this allowed to be undefined
                                 return undefined;
@@ -130,24 +125,24 @@ export function CoListOfHelper<
                             return ref.value;
                         } else {
                             return Schema.decodeSync(itemSchema)(
-                                target[rawSym].get(Number(key))
+                                raw.get(Number(key))
                             );
                         }
                     } else if (key === "length") {
-                        return target[rawSym].entries().length;
+                        return raw.entries().length;
                     }
                     return Reflect.get(target, key, receiver);
                 },
                 set(target, key, value, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
                         if (itemsAreCoValues) {
-                            target[rawSym].replace(Number(key), value.id);
+                            raw.replace(Number(key), value.co.id);
                             subscriptionsScopes
                                 .get(receiver)
-                                ?.onRefAccessedOrSet(value.id);
+                                ?.onRefAccessedOrSet(value.co.id);
                             return true;
                         } else {
-                            target[rawSym].replace(
+                            raw.replace(
                                 Number(key),
                                 Schema.encodeSync(itemSchema)(
                                     value
@@ -177,10 +172,10 @@ export function CoListOfHelper<
             }
 
             for (const item of rawItems) {
-                this[rawSym].append(item);
+                this.co.raw.append(item);
             }
 
-            return this[rawSym].entries().length;
+            return this.co.raw.entries().length;
         }
 
         unshift(...items: Schema.Schema.To<Item>[]): number {
@@ -194,16 +189,16 @@ export function CoListOfHelper<
             }
 
             for (const item of rawItems) {
-                this[rawSym].prepend(item);
+                this.co.raw.prepend(item);
             }
 
-            return this[rawSym].entries().length;
+            return this.co.raw.entries().length;
         }
 
         pop(): Schema.Schema.To<Item> | undefined {
             const last = this[this.length - 1];
 
-            this[rawSym].delete(this.length - 1);
+            this.co.raw.delete(this.length - 1);
 
             return last;
         }
@@ -211,7 +206,7 @@ export function CoListOfHelper<
         shift(): Schema.Schema.To<Item> | undefined {
             const first = this[0];
 
-            this[rawSym].delete(0);
+            this.co.raw.delete(0);
 
             return first;
         }
@@ -228,7 +223,7 @@ export function CoListOfHelper<
                 idxToDelete > start;
                 idxToDelete--
             ) {
-                this[rawSym].delete(idxToDelete);
+                this.co.raw.delete(idxToDelete);
             }
 
             let rawItems;
@@ -242,7 +237,7 @@ export function CoListOfHelper<
 
             let appendAfter = start;
             for (const item of rawItems) {
-                this[rawSym].append(item, appendAfter);
+                this.co.raw.append(item, appendAfter);
                 appendAfter++;
             }
 
@@ -269,13 +264,13 @@ export function CoListOfHelper<
         }
     }
 
-    return CoListOfItem as CoListSchema<Self, Item>
+    return CoListOfItem as CoListSchema<Self, Item>;
 }
 
 export function CoListOf<Self>() {
-    return function narrowed<Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>>(
-        itemSchema: Item
-    ) {
+    return function narrowed<
+        Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
+    >(itemSchema: Item) {
         return CoListOfHelper<Self, Item>(itemSchema);
-    }
+    };
 }

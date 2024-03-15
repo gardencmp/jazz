@@ -1,5 +1,5 @@
 import { ControlledAccount } from "./coValues/account/account.js";
-import { AnyCoValueSchema, CoValue, ID, rawSym } from "./coValueInterfaces.js";
+import { AnyCoValueSchema, CoValue, ID } from "./coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
 import { RawCoValue } from "cojson";
 
@@ -36,13 +36,13 @@ export class SubscriptionScope<
             value: root,
             rawUnsub: () => {}, // placeholder
         };
-        this.entries.set(root.id, this.rootEntry);
+        this.entries.set(root.co.id, this.rootEntry);
 
         subscriptionsScopes.set(root, this);
 
-        this.subscriber = root.meta.loadedAs;
+        this.subscriber = root.co.loadedAs;
         this.onUpdate = onUpdate;
-        this.rootEntry.rawUnsub = root.meta.core.subscribe(
+        this.rootEntry.rawUnsub = root.co.core.subscribe(
             (rawUpdate: RawCoValue | undefined) => {
                 if (!rawUpdate) return;
                 this.rootEntry.value = rootSchema.fromRaw(
@@ -77,7 +77,7 @@ export class SubscriptionScope<
                 immediatelyUnsub: false,
             } as const;
             this.entries.set(accessedOrSetId, loadingEntry);
-            this.subscriber[rawSym].core.node
+            this.subscriber.co.core.node
                 .loadCoValueCore(accessedOrSetId)
                 .then((core) => {
                     if (

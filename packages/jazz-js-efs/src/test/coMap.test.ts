@@ -5,7 +5,6 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
-import { rawSym } from "../coValueInterfaces";
 import { TypeId } from "@effect/schema/Schema";
 import { CoMapInit, CoMapSchema } from "../coValues/coMap/coMap";
 
@@ -49,18 +48,18 @@ describe("Simple CoMap operations", async () => {
         expect(map.roughColor).toEqual("redish");
         expect(map.height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
-        expect(map[rawSym].get("birthday")).toEqual(birthday.toISOString());
+        expect(map.co.raw.get("birthday")).toEqual(birthday.toISOString());
     });
 
     describe("Mutation", () => {
         test("assignment", () => {
             map.color = "blue";
             expect(map.color).toEqual("blue");
-            expect(map[rawSym].get("color")).toEqual("blue");
+            expect(map.co.raw.get("color")).toEqual("blue");
             const newBirthday = new Date();
             map.birthday = newBirthday;
             expect(map.birthday).toEqual(newBirthday);
-            expect(map[rawSym].get("birthday")).toEqual(
+            expect(map.co.raw.get("birthday")).toEqual(
                 newBirthday.toISOString()
             );
         });
@@ -127,7 +126,7 @@ describe("CoMap resolution", async () => {
         expect(map.height).toEqual(10);
         expect(map.nested?.name).toEqual("nested");
         expect(map.nested?.fancyName).toEqual("Sir nested");
-        expect(map.nested?.id).toBeDefined();
+        expect(map.nested?.co.id).toBeDefined();
         expect(map.nested?.twiceNested?.taste).toEqual("sour");
     });
 
@@ -138,38 +137,38 @@ describe("CoMap resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" }
         );
-        me[rawSym].core.node.syncManager.addPeer(secondPeer);
+        me.co.raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.id,
-            accountSecret: me[rawSym].agentSecret,
+            accountID: me.co.id,
+            accountSecret: me.co.raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.id as any),
+            sessionID: newRandomSessionID(me.co.id as any),
         });
 
-        const loadedMap = await TestMap.load(map.id, { as: meOnSecondPeer });
+        const loadedMap = await TestMap.load(map.co.id, { as: meOnSecondPeer });
 
         expect(loadedMap?.color).toEqual("red");
         expect(loadedMap?.height).toEqual(10);
         expect(loadedMap?.nested).toEqual(undefined);
-        expect(loadedMap?.meta.refs.nested?.id).toEqual(map.nested?.id);
-        expect(loadedMap?.meta.refs.nested?.value).toEqual(undefined);
+        expect(loadedMap?.co.refs.nested?.id).toEqual(map.nested?.co.id);
+        expect(loadedMap?.co.refs.nested?.value).toEqual(undefined);
 
-        const loadedNestedMap = await NestedMap.load(map.nested!.id, {
+        const loadedNestedMap = await NestedMap.load(map.nested!.co.id, {
             as: meOnSecondPeer,
         });
 
         expect(loadedMap?.nested?.name).toEqual("nested");
         expect(loadedMap?.nested.fancyName).toEqual("Sir nested");
-        expect(loadedMap?.meta.refs.nested?.value).toEqual(loadedNestedMap);
+        expect(loadedMap?.co.refs.nested?.value).toEqual(loadedNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual(undefined);
 
         const loadedTwiceNestedMap = await TwiceNestedMap.load(
-            map.nested!.twiceNested!.id,
+            map.nested!.twiceNested!.co.id,
             { as: meOnSecondPeer }
         );
 
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sour");
-        expect(loadedMap?.nested?.meta.refs.twiceNested?.value).toEqual(
+        expect(loadedMap?.nested?.co.refs.twiceNested?.value).toEqual(
             loadedTwiceNestedMap
         );
 
@@ -186,10 +185,12 @@ describe("CoMap resolution", async () => {
 
         loadedMap!.nested = otherNestedMap;
         expect(loadedMap?.nested?.name).toEqual("otherNested");
-        expect(loadedMap?.meta.refs.nested?.id).toEqual(otherNestedMap.id);
-        expect(loadedMap?.meta.refs.nested?.value).toEqual(otherNestedMap);
+        expect(loadedMap?.co.refs.nested?.id).toEqual(
+            otherNestedMap.co.id
+        );
+        expect(loadedMap?.co.refs.nested?.value).toEqual(otherNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sweet");
-        expect(loadedMap?.nested?.meta.refs.twiceNested?.value).toBeDefined();
+        expect(loadedMap?.nested?.co.refs.twiceNested?.value).toBeDefined();
     });
 
     test("Subscription & auto-resolution", async () => {
@@ -201,13 +202,13 @@ describe("CoMap resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
 
-        me[rawSym].core.node.syncManager.addPeer(secondAsPeer);
+        me.co.raw.core.node.syncManager.addPeer(secondAsPeer);
 
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.id,
-            accountSecret: me[rawSym].agentSecret,
+            accountID: me.co.id,
+            accountSecret: me.co.raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.id as any),
+            sessionID: newRandomSessionID(me.co.id as any),
         });
 
         await Effect.runPromise(
@@ -215,7 +216,7 @@ describe("CoMap resolution", async () => {
                 const queue = yield* $(Queue.unbounded<TestMap>());
 
                 TestMap.subscribe(
-                    map.id,
+                    map.co.id,
                     { as: meOnSecondPeer },
                     (subscribedMap) => {
                         console.log(
@@ -318,7 +319,7 @@ describe("CoMap resolution", async () => {
         expect(mapWith.color).toEqual("red");
         expect(mapWith.nested?.name).toEqual("wow!");
         expect(mapWith.nested?.fancyName).toEqual("Sir wow!");
-        expect(mapWith.nested?.[rawSym]).toBeDefined();
+        expect(mapWith.nested?.co.raw).toBeDefined();
     });
 
     class TestRecord extends Co.map<TestRecord>()(
@@ -351,9 +352,9 @@ describe("CoMap resolution", async () => {
         );
 
         expect(record.color).toEqual("red");
-        expect(record[rawSym].get("color")).toEqual("red");
+        expect(record.co.raw.get("color")).toEqual("red");
         expect(record.other).toEqual("wild");
-        expect(record[rawSym].get("other")).toEqual("wild");
-        expect(Object.keys(record)).toEqual(["id", "color", "other"]);
+        expect(record.co.raw.get("other")).toEqual("wild");
+        expect(Object.keys(record)).toEqual(["color", "other"]);
     });
 });

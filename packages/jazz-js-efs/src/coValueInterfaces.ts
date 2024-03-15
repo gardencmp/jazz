@@ -11,27 +11,18 @@ import { UnavailableError } from "./errors.js";
 import { Schema } from "@effect/schema";
 import { Group } from "./coValues/group/group.js";
 
-export const tagSym = Symbol.for("@jazz/tag");
-export type tagSym = typeof tagSym;
-
-export const rawSym = Symbol.for("@jazz/raw");
-export type rawSym = typeof rawSym;
-
-export const schemaTagSym = Symbol.for("@jazz/schemaTag");
-export type schemaTagSym = typeof schemaTagSym;
-
-export type SubclassedConstructor<T> = { new (...args: any[]): T, [schemaTagSym]: string };
+export type SubclassedConstructor<T> = { new (...args: any[]): T, type: string };
 
 export interface CoValueConstructor<
-    Tag extends string = string,
+    Type extends string = string,
     Value extends CoValue = CoValue,
     Init = any,
 > {
-    readonly [schemaTagSym]: Tag;
+    readonly type: Type;
 
     new(init: Init, options: { owner: Account | Group }): Value;
 
-    fromRaw(raw: Value[rawSym]): Value;
+    fromRaw(raw: Value['co']['raw']): Value;
 
     load<V extends Value>(
         this: SubclassedConstructor<V>,
@@ -58,43 +49,43 @@ export interface CoValueConstructor<
 }
 
 export interface AnyCoValueSchema<
-    Tag extends string = string,
+    Type extends string = string,
     Value extends CoValue = CoValue,
     Decoded = any,
     Init = any,
-> extends CoValueConstructor<Tag, Value, Init>,
+> extends CoValueConstructor<Type, Value, Init>,
         SchemaWithInputAndOutput<Value, Decoded> {}
 
 export interface CoValueSchema<
     Self,
-    Tag extends string,
+    Type extends string,
     Value extends CoValue,
     Decoded,
     Init,
-> extends CoValueConstructor<Tag, Value, Init>,
+> extends CoValueConstructor<Type, Value, Init>,
         Schema.Schema<Self, Decoded> {}
 
 export function isCoValueSchema(value: any): value is AnyCoValueSchema {
-    return value && value[schemaTagSym] !== undefined;
+    return value && value.type !== undefined;
 }
 
 export const inspect = Symbol.for("nodejs.util.inspect.custom");
 export type inspect = typeof inspect;
 
-export interface CoValue<Tag extends string = string, Raw = any> {
-    readonly id: ID<this>;
-    readonly meta: CoValueMeta<this>;
-    readonly [tagSym]: Tag;
-    readonly [rawSym]: Raw;
-    toJSON(): any;
+export interface CoValue<Type extends string = string, Raw = any> {
+    readonly co: CoValueCo<Type, this, Raw>;
+    toJSON(): any[] | object;
     [inspect](): any;
 }
 
 export function isCoValue(value: any): value is CoValue {
-    return value && value[tagSym] !== undefined;
+    return value && value.co !== undefined;
 }
 
-export interface CoValueMeta<Value extends CoValue> {
+export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
+    id: ID<Value>;
+    type: type;
+    raw: Raw;
     loadedAs: ControlledAccount;
     core: CoValueCore;
 }

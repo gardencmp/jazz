@@ -1,6 +1,6 @@
 import { Schema, AST } from "@effect/schema";
 import { RawCoValue } from "cojson";
-import { CoValue } from "../coValueInterfaces";
+import { CoValue } from "../coValueInterfaces.js";
 
 export const constructorOfSchemaSym = Symbol.for("@jazz/constructorOfSymbol");
 export type constructorOfSchemaSym = typeof constructorOfSchemaSym;

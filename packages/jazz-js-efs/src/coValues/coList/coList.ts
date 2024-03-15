@@ -1,19 +1,20 @@
-import { CoValueCore, JsonValue, RawCoList } from "cojson";
+import { JsonValue, RawCoList } from "cojson";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import {
     AnyCoValueSchema,
     CoValue,
+    CoValueCo,
     CoValueSchema,
 } from "../../coValueInterfaces.js";
 import { Schema } from "@effect/schema";
-import { ControlledAccount } from "../account/account.js";
 import { ValueRef } from "../../refs.js";
 
 export type CoList<
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
-> = Schema.Schema.To<Item>[] & CoValue<"CoList", RawCoList> & {
-    meta: CoListMeta<Item>;
-};
+> = Schema.Schema.To<Item>[] &
+    CoValue<"CoList", RawCoList> & {
+        co: CoListCo<CoList<Item>, Item>;
+    };
 
 export interface AnyCoListSchema<
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
@@ -35,10 +36,9 @@ export interface CoListSchema<
         Schema.Schema.To<Item>[]
     > {}
 
-export interface CoListMeta<
+export interface CoListCo<
+    Self extends CoValue,
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
-> {
-    loadedAs: ControlledAccount;
-    core: CoValueCore;
-    refs: ValueRef<Schema.Schema.To<Item>>[];
+> extends CoValueCo<"CoList", Self, RawCoList> {
+    refs: { [idx: number]: ValueRef<Schema.Schema.To<Item>> };
 }

@@ -1,9 +1,6 @@
 import { isTypeLiteral } from "@effect/schema/AST";
 import {
     ID,
-    schemaTagSym,
-    tagSym,
-    rawSym,
     isCoValueSchema,
     isCoValue,
     CoValue,
@@ -13,7 +10,7 @@ import {
 import {
     CoMapFields,
     CoMap,
-    CoMapMeta,
+    CoMapCo,
     CoMapInit,
     CoMapSchema,
     CoMapFieldValue,
@@ -60,13 +57,14 @@ export function CoMapOfHelper<
         }
         static [Schema.TypeId] = structS[Schema.TypeId];
         static pipe = structS.pipe;
-        static [schemaTagSym] = "CoMap" as const;
+        static type = "CoMap" as const;
 
-        [tagSym] = "CoMap" as const;
-        [rawSym]: RawCoMap;
-
-        id: ID<this>;
-        meta!: CoMapMeta<Fields>;
+        co!: CoMapCo<
+            this,
+            Fields,
+            IndexSignature["key"],
+            IndexSignature["value"]
+        >;
 
         constructor(_init: undefined, options: { fromRaw: RawCoMap });
         constructor(
@@ -83,10 +81,12 @@ export function CoMapOfHelper<
                 throw new Error("CoMap AST must be type literal");
             }
 
+            let raw: RawCoMap;
+
             if ("fromRaw" in options) {
-                this[rawSym] = options.fromRaw;
+                raw = options.fromRaw;
             } else {
-                const rawOwner = options.owner[rawSym];
+                const rawOwner = options.owner.co.raw;
 
                 const rawInit = {} as {
                     [key in keyof CoMapInit<Fields>]: JsonValue | undefined;
@@ -110,7 +110,7 @@ export function CoMapOfHelper<
                         if (propertyIsCoValueSchema(field)) {
                             // TOOD: check for alignment of actual value with schema
                             if (isCoValue(initValue)) {
-                                rawInit[key] = initValue.id;
+                                rawInit[key] = initValue.co.id;
                             } else {
                                 throw new Error(
                                     `Expected covalue in ${String(
@@ -135,10 +135,8 @@ export function CoMapOfHelper<
                         }
                     }
 
-                this[rawSym] = rawOwner.createMap(rawInit);
+                raw = rawOwner.createMap(rawInit);
             }
-
-            this.id = this[rawSym].id as unknown as ID<this>;
 
             for (const propertySignature of structS.ast.propertySignatures) {
                 const key = propertySignature.name;
@@ -184,7 +182,7 @@ export function CoMapOfHelper<
                     : never;
             }>(
                 (key) => {
-                    return this[rawSym].get(key as string) as
+                    return raw.get(key as string) as
                         | ID<
                               Schema.Schema.To<
                                   Fields[typeof key] & AnyCoValueSchema
@@ -194,7 +192,7 @@ export function CoMapOfHelper<
                 },
                 () => {
                     if (indexSignature) {
-                        return this[rawSym]
+                        return raw
                             .keys()
                             .filter(
                                 (key) =>
@@ -205,7 +203,7 @@ export function CoMapOfHelper<
                         return fieldsThatAreRefs;
                     }
                 },
-                controlledAccountFromNode(this[rawSym].core.node),
+                controlledAccountFromNode(raw.core.node),
                 (key) =>
                     fields[key] ||
                     (indexSignature
@@ -217,12 +215,20 @@ export function CoMapOfHelper<
                           })())
             );
 
-            Object.defineProperty(this, "meta", {
+            Object.defineProperty(this, "co", {
                 value: {
-                    loadedAs: controlledAccountFromNode(this[rawSym].core.node),
-                    core: this[rawSym].core,
+                    id: raw.id as unknown as ID<this>,
+                    type: "CoMap",
+                    loadedAs: controlledAccountFromNode(raw.core.node),
+                    raw: raw,
+                    core: raw.core,
                     refs: refs,
-                },
+                } satisfies CoMapCo<
+                    this,
+                    Fields,
+                    IndexSignature["key"],
+                    IndexSignature["value"]
+                >,
                 writable: false,
                 enumerable: false,
             });
@@ -279,7 +285,7 @@ export function CoMapOfHelper<
                     },
                     ownKeys(target) {
                         const keys = Reflect.ownKeys(target);
-                        for (const key of target[rawSym].keys()) {
+                        for (const key of target.co.raw.keys()) {
                             if (!keys.includes(key)) {
                                 if (
                                     Schema.is(indexSignature.key)(key as string)
@@ -314,7 +320,7 @@ export function CoMapOfHelper<
         }
 
         private getCoValueAtKey(key: string) {
-            const ref = this.meta.refs[key];
+            const ref = this.co.refs[key];
             if (!ref) {
                 // TODO: check if this allowed to be undefined
                 return undefined;
@@ -332,15 +338,15 @@ export function CoMapOfHelper<
         }
 
         private setCoValueAtKey(key: string, value: CoValue) {
-            this[rawSym].set(key, value.id);
-            subscriptionsScopes.get(this)?.onRefAccessedOrSet(value.id);
+            this.co.raw.set(key, value.co.id);
+            subscriptionsScopes.get(this)?.onRefAccessedOrSet(value.co.id);
         }
 
         private getPrimitiveAtKey(
             key: string,
             schemaAtKey: Schema.Schema<any, JsonValue | undefined, never>
         ) {
-            return Schema.decodeSync(schemaAtKey)(this[rawSym].get(key));
+            return Schema.decodeSync(schemaAtKey)(this.co.raw.get(key));
         }
 
         private setPrimitiveAtKey(
@@ -348,20 +354,26 @@ export function CoMapOfHelper<
             value: any,
             schemaAtKey: Schema.Schema<any, JsonValue | undefined, never>
         ) {
-            this[rawSym].set(
+            this.co.raw.set(
                 key,
                 Schema.encodeSync(schemaAtKey)(value) as JsonValue | undefined
             );
         }
 
         toJSON() {
-            return Object.fromEntries(
-                Object.entries(this).flatMap(([key, value]) =>
-                    typeof value === "object" && "toJSON" in value
-                        ? [[key, value?.toJSON()]]
-                        : [[key, value]]
-                )
-            );
+            return {
+                ...Object.fromEntries(
+                    Object.entries(this).flatMap(([key, value]) =>
+                        typeof value === "object" && "toJSON" in value
+                            ? [[key, value?.toJSON()]]
+                            : [[key, value]]
+                    )
+                ),
+                co: {
+                    id: this.co.id,
+                    type: "CoMap",
+                },
+            };
         }
 
         [inspect]() {
@@ -374,7 +386,7 @@ export function CoMapOfHelper<
         Fields,
         IndexSignature["key"],
         IndexSignature["value"]
-    >
+    >;
 }
 
 export function CoMapOf<Self>() {
@@ -385,6 +397,9 @@ export function CoMapOf<Self>() {
             value: CoMapFieldValue;
         },
     >(fields: Fields, indexSignature?: IndexSignature) {
-        return CoMapOfHelper<Self, Fields, IndexSignature>(fields, indexSignature);
-    }
+        return CoMapOfHelper<Self, Fields, IndexSignature>(
+            fields,
+            indexSignature
+        );
+    };
 }

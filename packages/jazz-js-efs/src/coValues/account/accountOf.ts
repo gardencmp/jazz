@@ -10,11 +10,9 @@ import {
 } from "cojson";
 import {
     ID,
-    tagSym,
-    rawSym,
-    schemaTagSym,
     AnyCoValueSchema,
     inspect,
+    CoValueCo,
 } from "../../coValueInterfaces.js";
 import { CoMapOf } from "../coMap/coMapOf.js";
 import {
@@ -51,27 +49,23 @@ export function AccountOf<
         static ast = struct.ast;
         static [S.TypeId] = struct[S.TypeId];
         static pipe = struct.pipe;
-        static [schemaTagSym] = "Account" as const;
+        static type = "Account" as const;
         static [controlledAccountSym]: AccountOfProfileAndRoot &
             ControlledAccount<P, R>;
 
-        [tagSym] = "Account" as const;
-        [rawSym]: RawAccount | RawControlledAccount;
-        id: ID<this>;
+
+
         isMe: boolean;
-        meta: {
-            loadedAs: ControlledAccount;
-            core: CoValueCore;
-        };
+        co: CoValueCo<"Account", this, RawAccount | RawControlledAccount>;
 
         get profile(): S.Schema.To<P> {
-            const id = this[rawSym].get("profile");
+            const id = this.co.raw.get("profile");
 
             throw new Error("Not implemented");
         }
 
         get root(): S.Schema.To<R> {
-            const id = this[rawSym].get("root");
+            const id = this.co.raw.get("root");
 
             throw new Error("Not implemented");
         }
@@ -96,17 +90,24 @@ export function AccountOf<
                     "Can only construct account from raw or with .create()"
                 );
             }
-            this[rawSym] = options.fromRaw;
-            this.id = options.fromRaw.id as unknown as ID<this>;
-            this.isMe =
-                options.fromRaw.id == options.fromRaw.core.node.account.id;
-            this.meta = {
+            this.co = {
+                id: options.fromRaw.id as unknown as ID<this>,
+                type: "Account",
+                raw: options.fromRaw,
                 loadedAs:
                     options.fromRaw.id === options.fromRaw.core.node.account.id
                         ? (this as ControlledAccount)
                         : controlledAccountFromNode(options.fromRaw.core.node),
                 core: options.fromRaw.core,
-            };
+            }
+            this.isMe =
+                options.fromRaw.id == options.fromRaw.core.node.account.id;
+        }
+
+        static fromRaw(raw: RawAccount | RawControlledAccount) {
+            return new AccountOfProfileAndRoot(undefined, {
+                fromRaw: raw,
+            });
         }
 
         static async create(options: {
@@ -163,7 +164,10 @@ export function AccountOf<
 
         toJSON() {
             return {
-                id: this.id,
+                co: {
+                    id: this.co.id,
+                    type: this.co.type,
+                },
                 profile: toJSON(this.profile),
                 root: toJSON(this.root),
             };
