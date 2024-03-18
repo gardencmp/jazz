@@ -4,7 +4,7 @@ import {
     CoValueCo,
     CoValueSchema,
 } from "../../coValueInterfaces.js";
-import {  JsonValue, RawCoMap } from "cojson";
+import { JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import {
     PropertySignatureWithInput,
@@ -34,7 +34,9 @@ export type CoMap<
 export interface AnyCoMapSchema<
     Fields extends CoMapFields,
     IdxKey extends Schema.Schema<string> = Schema.Schema<string>,
-    IdxVal extends CoMapFieldValue = CoMapFieldValue,
+    IdxVal extends AnyCoValueSchema | SchemaWithOutput<JsonValue> =
+        | AnyCoValueSchema
+        | SchemaWithOutput<JsonValue>,
 > extends AnyCoValueSchema<
         "CoMap",
         CoMap<Fields, IdxKey, IdxVal>,
@@ -46,7 +48,9 @@ export interface CoMapSchema<
     Self,
     Fields extends CoMapFields,
     IdxKey extends Schema.Schema<string> = Schema.Schema<string>,
-    IdxVal extends CoMapFieldValue = CoMapFieldValue,
+    IdxVal extends AnyCoValueSchema | SchemaWithOutput<JsonValue> =
+        | AnyCoValueSchema
+        | SchemaWithOutput<JsonValue>,
 > extends CoValueSchema<
         Self,
         "CoMap",

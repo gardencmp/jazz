@@ -24,21 +24,23 @@ export type CoStream<
 > = CoValue<"CoStream", RawCoStream> & {
     co: CoStreamCo<CoStream<Item>, Item>;
 } & {
-    [key: CoStreamKey]: Schema.Schema.To<Item>;
+    by: {[key: ID<Account>]: {latest?: Schema.Schema.To<Item>, all?: {value: Schema.Schema.To<Item>}}};
+    in: {[key: SessionID]: {latest?: Schema.Schema.To<Item>, all?: {value: Schema.Schema.To<Item>}}};
 };
-
-export type CoStreamKey =
-    | `${SessionID}-${number}`
-    | `${SessionID}-latest`
-    | `${ID<Account>}-${number}`
-    | `${ID<Account>}-latest`;
 
 export interface CoStreamCo<Self extends CoValue, Item>
     extends CoValueCo<"CoStream", Self, RawCoStream> {
     refs: {
-        [key: CoStreamKey]: Item extends AnyCoValueSchema<infer _, infer Value>
-            ? ValueRef<Value>
-            : never;
+        by: {
+            [key: ID<Account>]: Item extends AnyCoValueSchema<infer _, infer Value>
+                ? {latest: ValueRef<Value>, all: ValueRef<Value>[]}
+                : never;
+        },
+        in: {
+            [key: SessionID]: Item extends AnyCoValueSchema<infer _, infer Value>
+                ? {latest: ValueRef<Value>, all: ValueRef<Value>[]}
+                : never;
+        };
     };
 }
 

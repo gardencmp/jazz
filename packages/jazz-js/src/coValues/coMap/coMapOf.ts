@@ -7,14 +7,7 @@ import {
     inspect,
     AnyCoValueSchema,
 } from "../../coValueInterfaces.js";
-import {
-    CoMapFields,
-    CoMap,
-    CoMapCo,
-    CoMapInit,
-    CoMapSchema,
-    CoMapFieldValue,
-} from "./coMap.js";
+import { CoMapFields, CoMapCo, CoMapInit, CoMapSchema } from "./coMap.js";
 import { makeRefs } from "../../refs.js";
 import { JsonValue, RawCoMap } from "cojson";
 import { Group } from "../group/group.js";
@@ -28,13 +21,14 @@ import {
 } from "../resolution.js";
 import { JsonObject } from "cojson/src/jsonValue.js";
 import { SharedCoValueConstructor } from "../construction.js";
+import { SchemaWithOutput } from "../../schemaHelpers.js";
 
 export function CoMapOfHelper<
     Self,
     Fields extends CoMapFields,
     IndexSignature extends {
         key: Schema.Schema<string>;
-        value: CoMapFieldValue;
+        value: AnyCoValueSchema | SchemaWithOutput<JsonValue>;
     },
 >(fields: Fields, indexSignature?: IndexSignature) {
     const structSchema = Schema.struct(fields) as unknown as Schema.Schema<
@@ -394,7 +388,7 @@ export function CoMapOf<Self>() {
         Fields extends CoMapFields,
         IndexSignature extends {
             key: Schema.Schema<string>;
-            value: CoMapFieldValue;
+            value: AnyCoValueSchema | SchemaWithOutput<JsonValue>;
         },
     >(fields: Fields, indexSignature?: IndexSignature) {
         return CoMapOfHelper<Self, Fields, IndexSignature>(

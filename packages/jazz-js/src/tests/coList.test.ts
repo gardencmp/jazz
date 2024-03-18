@@ -5,8 +5,6 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
-import { TypeId } from "@effect/schema/Schema";
-import { CoMapInit, CoMapSchema } from "../coValues/coMap/coMap";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
