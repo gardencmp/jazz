@@ -40,7 +40,7 @@ export interface CoValueConstructor<
         id: ID<V>,
         options: { as: ControlledAccount },
         onUpdate: (value: V) => void
-    ): Promise<void>;
+    ): () => void;
 
     subscribeEf<V extends Value>(
         this: SubclassedConstructor<V>,
@@ -88,6 +88,8 @@ export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
     raw: Raw;
     loadedAs: ControlledAccount;
     core: CoValueCore;
+    subscribe(listener: (update: Value) => void): () => void;
+    subscirbeEf(): Stream.Stream<Value, UnavailableError, ControlledAccountCtx>;
 }
 
 export type ID<T> = RawCoID & { readonly __type: (_: never) => T };

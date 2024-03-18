@@ -1,15 +1,23 @@
-import { JsonValue, RawBinaryCoStream, RawCoStream, SessionID } from "cojson";
+import {
+    BinaryStreamInfo,
+    JsonValue,
+    RawBinaryCoStream,
+    RawCoStream,
+    SessionID,
+} from "cojson";
 import {
     AnyCoValueSchema,
     CoValue,
     CoValueCo,
     CoValueSchema,
     ID,
+    SubclassedConstructor,
 } from "../../coValueInterfaces.js";
 import { Account } from "../account/account.js";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
+import { Group } from "../group/group.js";
 
 export type CoStream<
     Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
@@ -54,6 +62,30 @@ export interface CoStreamSchema<
         Schema.Schema.To<Item>[]
     > {}
 
-export interface BinaryCoStreamI extends CoValue<'BinaryCoStream', RawBinaryCoStream> {
+export interface BinaryCoStream
+    extends CoValue<"BinaryCoStream", RawBinaryCoStream> {
+    start(options: BinaryStreamInfo): void;
+    push(data: Uint8Array): void;
+    end(): void;
+    getChunks(options?: {
+        allowUnfinished?: boolean;
+    }): BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean };
+}
 
+export interface BinaryCoStreamSchema
+    extends CoValueSchema<
+        BinaryCoStream,
+        "BinaryCoStream",
+        BinaryCoStream,
+        undefined,
+        undefined
+    > {
+    load<V extends BinaryCoStream>(
+        this: SubclassedConstructor<V>,
+        id: ID<V>,
+        options: {
+            as: Account | Group;
+            onProgress?: (progress: number) => void;
+        }
+    ): Promise<V | undefined>;
 }

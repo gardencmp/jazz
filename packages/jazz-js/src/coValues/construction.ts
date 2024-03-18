@@ -48,8 +48,8 @@ export abstract class SharedCoValueConstructor {
         id: ID<V>,
         options: { as: ControlledAccount },
         onUpdate: (value: V) => void
-    ): Promise<void> {
-        return Effect.runPromise(
+    ): () => void {
+        void Effect.runPromise(
             Effect.provideService(
                 this.subscribeEf(id).pipe(
                     Stream.run(
@@ -62,6 +62,10 @@ export abstract class SharedCoValueConstructor {
                 options.as
             )
         );
+
+        return function unsubscribe() {
+
+        }
     }
 
     static subscribeEf<V extends CoValue>(

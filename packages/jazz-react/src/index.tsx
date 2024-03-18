@@ -3,17 +3,12 @@ import {
     AuthProvider,
     consumeInviteLinkFromWindowLocation,
     createBrowserContext,
-    readBlobFromBinaryStream,
 } from "jazz-browser";
 
-import {
-    AccountSchema,
-    AccountMigration,
-    ControlledAccount,
-    CoValueSchema,
-    ID,
-} from "jazz-js";
+import { AccountSchema, AccountMigration, ID, S } from "jazz-js";
 import { DemoAuth } from "./DemoAuth";
+import { controlledAccountSym } from "jazz-js/src/coValues/account/account";
+import { AnyCoValueSchema } from "jazz-js/src/coValueInterfaces";
 
 export function createReactContext<AccountS extends AccountSchema>({
     auth: authHook,
@@ -30,15 +25,15 @@ export function createReactContext<AccountS extends AccountSchema>({
 }) {
     const JazzContext = React.createContext<
         | {
-              me: AccountS["ControlledSchema"]["_Value"];
+              me: AccountS[controlledAccountSym];
               logOut: () => void;
           }
         | undefined
     >(undefined);
 
     function Provider({ children }: { children: React.ReactNode }) {
-        const [controlledAccount, setControlledAccount] = useState<
-            AccountS["ControlledSchema"]["_Value"] | undefined
+        const [me, setMe] = useState<
+            AccountS[controlledAccountSym] | undefined
         >();
 
         const { auth, AuthUI, logOut } = authHook();
@@ -65,9 +60,12 @@ export function createReactContext<AccountS extends AccountSchema>({
                     return;
                 }
 
-                setControlledAccount(context.me);
+                const unsubMe = context.me.co.subscribe(setMe);
 
-                done = context.done;
+                done = () => {
+                    unsubMe();
+                    context.done();
+                };
             })().catch((e) => {
                 console.error("Failed to create browser node", e);
             });
@@ -78,17 +76,9 @@ export function createReactContext<AccountS extends AccountSchema>({
             };
         }, [auth, syncAddress]);
 
-        const [me, setMe] = useState<AccountS["ControlledSchema"]["_Value"]>();
-
-        useEffect(() => {
-            const unsub = controlledAccount?.subscribe((newMe) => setMe(newMe));
-
-            return unsub;
-        }, [controlledAccount]);
-
         return (
             <>
-                {controlledAccount && me && logOut ? (
+                {me && logOut ? (
                     <JazzContext.Provider
                         value={{
                             me,
@@ -114,26 +104,47 @@ export function createReactContext<AccountS extends AccountSchema>({
         return { me: context.me, logOut: context.logOut };
     }
 
-    function useCoState<S extends CoValueSchema>(
-        schema: S,
-        id: ID<S["_Value"]> | undefined
-    ): S["_Value"] | undefined {
-        return undefined;
+    function useCoState<V extends AnyCoValueSchema>(
+        Schema: V,
+        id: ID<S.Schema.To<V>> | undefined
+    ): S.Schema.To<V> | undefined {
+        const [state, setState] = useState<S.Schema.To<V> | undefined>();
+
+        useEffect(() => {
+            if (!id) return;
+            const unsub = Schema.subscribe(
+                id,
+                { as: useAccount().me },
+                (update) => setState(update as S.Schema.To<V>)
+            );
+            return unsub;
+        }, [Schema, id]);
+
+        return state;
     }
 
-    function useAcceptInvite<S extends CoValueSchema>(
-{ invitedObjectSchema, onAccept, forValueHint }: { invitedObjectSchema: S; onAccept: (projectID: ID<S['_Value']>) => void; forValueHint?: string; }    ): void {
+    function useAcceptInvite<V extends AnyCoValueSchema>({
+        invitedObjectSchema,
+        onAccept,
+        forValueHint,
+    }: {
+        invitedObjectSchema: V;
+        onAccept: (projectID: ID<S.Schema.To<V>>) => void;
+        forValueHint?: string;
+    }): void {
         const { me } = useAccount();
         useEffect(() => {
             const result = consumeInviteLinkFromWindowLocation({
                 as: me,
                 invitedObjectSchema,
-                forValueHint
+                forValueHint,
             });
 
-            result.then(result => result && onAccept(result?.valueID)).catch((e) => {
-                console.error("Failed to accept invite", e);
-            });
+            result
+                .then((result) => result && onAccept(result?.valueID))
+                .catch((e) => {
+                    console.error("Failed to accept invite", e);
+                });
         }, [onAccept]);
     }
 
@@ -141,7 +152,7 @@ export function createReactContext<AccountS extends AccountSchema>({
         JazzProvider: Provider,
         useAccount,
         useCoState,
-        useAcceptInvite
+        useAcceptInvite,
     };
 }
 
@@ -153,4 +164,4 @@ export type ReactAuthHook = () => {
 
 export { DemoAuth } from "./DemoAuth.js";
 
-export { createInviteLink } from 'jazz-browser'
+export { createInviteLink } from "jazz-browser";

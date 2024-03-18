@@ -4,10 +4,9 @@ import { GroupSchema } from "./group.js";
 import { AnyProfileSchema } from "../account/account.js";
 
 export function GroupOf<
+    Self,
     P extends AnyProfileSchema | S.Schema<null>,
     R extends AnyCoValueSchema | S.Schema<null>,
->(_options: { profile: P; root: R }): GroupSchema<P, R> {
-    // throw new Error("GroupOf not implemented");
-}
+>(_options: { profile: P; root: R }): GroupSchema<Self, P, R> {}
 
 export const SimpleGroup = GroupOf({ profile: S.null, root: S.null });

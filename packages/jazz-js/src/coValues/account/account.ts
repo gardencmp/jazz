@@ -8,6 +8,7 @@ import {
 import { AnyCoMapSchema } from "../coMap/coMap.js";
 import {
     AgentSecret,
+    InviteSecret,
     Peer,
     RawAccount,
     RawControlledAccount,
@@ -36,7 +37,28 @@ export type ControlledAccount<
 > = Account<P, R> &
     CoValue<"Account", RawControlledAccount> & {
         isMe: true;
+
+        acceptInvite<V extends AnyCoValueSchema>(
+            valueID: ID<S.Schema.To<V>>,
+            inviteSecret: InviteSecret,
+            valueSchema: V
+        ): Promise<V>;
     };
+
+export interface AnyAccountSchema<
+    P extends AnyProfileSchema = AnyProfileSchema,
+    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
+> extends AnyCoValueSchema<
+        "Account",
+        Account<P, R>,
+        Schema.FromStruct<{
+            profile: P;
+            root: R;
+        }>,
+        never
+    > {
+    readonly [controlledAccountSym]: ControlledAccount<P, R>;
+}
 
 export interface AccountSchema<
     Self = any,

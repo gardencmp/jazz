@@ -7,20 +7,23 @@ export type constructorOfSchemaSym = typeof constructorOfSchemaSym;
 
 export function propertyIsCoValueSchema(
     prop:
-        | Schema.Schema<any>
-        | Schema.PropertySignature<any, boolean, any, boolean, never>
+        | Schema.Schema<unknown>
+        | Schema.PropertySignature<unknown, boolean, unknown, boolean, never>
 ): boolean {
     if ("propertySignatureAST" in prop) {
         return astIsCoValueSchema(
-            ((prop as any).propertySignatureAST as { from: AST.AST }).from
+            (prop.propertySignatureAST as { from: AST.AST }).from
         );
     } else {
-        return astIsCoValueSchema((prop as Schema.Schema<any>).ast);
+        return astIsCoValueSchema((prop as Schema.Schema<unknown>).ast);
     }
 }
 
 function astIsCoValueSchema(ast: AST.AST): boolean {
-    if ((ast._tag === "TypeLiteral" || ast._tag === "Tuple") && ast.annotations[constructorOfSchemaSym]) {
+    if (
+        (ast._tag === "TypeLiteral" || ast._tag === "Tuple") &&
+        ast.annotations[constructorOfSchemaSym]
+    ) {
         return true;
     } else if (ast._tag === "Union") {
         return ast.types.every(
@@ -48,20 +51,20 @@ function astIsCoValueSchema(ast: AST.AST): boolean {
 
 export function getCoValueConstructorInProperty(
     prop:
-        | Schema.Schema<any>
-        | Schema.PropertySignature<any, boolean, any, boolean, never>,
+        | Schema.Schema<unknown>
+        | Schema.PropertySignature<unknown, boolean, unknown, boolean, never>,
     rawValue: RawCoValue
 ):
     | (new (init: undefined, options: { fromRaw: RawCoValue }) => CoValue)
     | undefined {
     if ("propertySignatureAST" in prop) {
         return getCoValueConstructorInAST(
-            ((prop as any).propertySignatureAST as { from: AST.AST }).from,
+            (prop.propertySignatureAST as { from: AST.AST }).from,
             rawValue
         );
     } else {
         return getCoValueConstructorInAST(
-            (prop as Schema.Schema<any>).ast,
+            (prop as Schema.Schema<unknown>).ast,
             rawValue
         );
     }
@@ -74,7 +77,10 @@ function getCoValueConstructorInAST(
 ):
     | (new (init: undefined, options: { fromRaw: RawCoValue }) => CoValue)
     | undefined {
-    if ((ast._tag === "TypeLiteral" || ast._tag === "Tuple") && ast.annotations[constructorOfSchemaSym]) {
+    if (
+        (ast._tag === "TypeLiteral" || ast._tag === "Tuple") &&
+        ast.annotations[constructorOfSchemaSym]
+    ) {
         return ast.annotations[constructorOfSchemaSym] as new (
             init: undefined,
             options: { fromRaw: RawCoValue }
