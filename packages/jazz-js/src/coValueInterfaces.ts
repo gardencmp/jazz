@@ -14,8 +14,8 @@ import { Group } from "./coValues/group/group.js";
 export type SubclassedConstructor<T> = { new (...args: any[]): T, type: string };
 
 export interface CoValueConstructor<
-    Type extends string = string,
     Value extends CoValue = CoValue,
+    Type extends string = string,
     Init = any,
 > {
     readonly type: Type;
@@ -48,24 +48,15 @@ export interface CoValueConstructor<
     ): Stream.Stream<V, UnavailableError, ControlledAccountCtx>;
 }
 
-export interface AnyCoValueSchema<
-    Type extends string = string,
-    Value extends CoValue = CoValue,
-    Decoded = any,
-    Init = any,
-> extends CoValueConstructor<Type, Value, Init>,
-        SchemaWithInputAndOutput<Value, Decoded> {}
-
 export interface CoValueSchema<
-    Self,
-    Type extends string,
-    Value extends CoValue,
-    Decoded,
-    Init,
-> extends CoValueConstructor<Type, Value, Init>,
-        Schema.Schema<Self, Decoded> {}
+    Self = any,
+    Value extends CoValue = CoValue,
+    Type extends string = string,
+    Init = any,
+> extends CoValueConstructor<Value, Type, Init>,
+        Schema.Schema<Self, Self> {}
 
-export function isCoValueSchema(value: any): value is AnyCoValueSchema {
+export function isCoValueSchema(value: any): value is CoValueSchema {
     return value && value.type !== undefined;
 }
 
@@ -89,7 +80,7 @@ export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
     loadedAs: ControlledAccount;
     core: CoValueCore;
     subscribe(listener: (update: Value) => void): () => void;
-    subscirbeEf(): Stream.Stream<Value, UnavailableError, ControlledAccountCtx>;
+    subscribeEf(): Stream.Stream<Value, UnavailableError, ControlledAccountCtx>;
 }
 
 export type ID<T> = RawCoID & { readonly __type: (_: never) => T };

@@ -35,7 +35,6 @@ export { CoList, CoListSchema } from "./coValues/coList/coList.js";
 export {
     CoStream,
     CoStreamSchema,
-    CoStreamKey,
     BinaryCoStream,
 } from "./coValues/coStream/coStream.js";
 
@@ -43,7 +42,7 @@ export {
     Account,
     ControlledAccount,
     AccountSchema,
-    AnyAccountSchema,
+    controlledAccountSym,
 } from "./coValues/account/account.js";
 export { AccountMigration } from "./coValues/account/migration.js";
 export { SimpleAccount } from "./coValues/account/accountOf.js";

@@ -1,7 +1,7 @@
 import { JsonValue, RawCoList } from "cojson";
 import {
-    AnyCoValueSchema,
     CoValue,
+    CoValueSchema,
     ID,
     inspect,
 } from "../../coValueInterfaces.js";
@@ -18,24 +18,34 @@ import { makeRefs } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
 import { SharedCoValueConstructor } from "../construction.js";
+import { pipeArguments } from "effect/Pipeable";
 
 export function CoListOfHelper<
     Self,
-    Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
+    Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 >(itemSchema: Item) {
-    const listS = Schema.mutable(
-        Schema.array(itemSchema)
-    ) as unknown as Schema.Schema<Self, Schema.Schema.From<Item>[], never>;
+    const decodeItem = Schema.decodeSync(itemSchema);
+    const encodeItem = Schema.encodeSync(itemSchema);
 
     class CoListOfItem
         extends Array<Schema.Schema.To<Item>>
         implements CoValue<"CoList", RawCoList>
     {
         static get ast() {
-            return AST.setAnnotation(listS.ast, constructorOfSchemaSym, this);
+            return AST.setAnnotation(
+                Schema.instanceOf(this).ast,
+                constructorOfSchemaSym,
+                this
+            );
         }
-        static [Schema.TypeId] = listS[Schema.TypeId];
-        static pipe = listS.pipe;
+        static [Schema.TypeId]: Schema.Schema.Variance<
+            CoListOfItem,
+            CoListOfItem,
+            never
+        >[Schema.TypeId];
+        static pipe() {
+            return pipeArguments(this, arguments);
+        }
         static type = "CoList" as const;
 
         id!: ID<this>;
@@ -75,7 +85,7 @@ export function CoListOfHelper<
 
                 const rawInit = itemsAreCoValues
                     ? init?.map((item) => item.co.id)
-                    : init?.map((item) => Schema.encodeSync(itemSchema)(item));
+                    : init?.map((item) => encodeItem(item));
 
                 raw = rawOwner.createList(rawInit);
             }
@@ -108,23 +118,9 @@ export function CoListOfHelper<
                 get(target, key, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
                         if (itemsAreCoValues) {
-                            const ref = target.co.refs[Number(key)];
-                            if (!ref) {
-                                // TODO: check if this allowed to be undefined
-                                return undefined;
-                            }
-
-                            const subScope = subscriptionsScopes.get(receiver);
-
-                            subScope?.onRefAccessedOrSet(ref.id);
-
-                            if (ref.value && subScope) {
-                                subscriptionsScopes.set(ref.value, subScope);
-                            }
-
-                            return ref.value;
+                            return target.co.refs[Number(key)]?.accessFrom(receiver)
                         } else {
-                            return Schema.decodeSync(itemSchema)(
+                            return decodeItem(
                                 raw.get(Number(key))
                             );
                         }
@@ -144,7 +140,7 @@ export function CoListOfHelper<
                         } else {
                             raw.replace(
                                 Number(key),
-                                Schema.encodeSync(itemSchema)(
+                                encodeItem(
                                     value
                                 ) as JsonValue
                             );
@@ -167,7 +163,7 @@ export function CoListOfHelper<
                 rawItems = items.map((item) => item.id);
             } else {
                 rawItems = items.map((item) =>
-                    Schema.encodeSync(itemSchema)(item)
+                    encodeItem(item)
                 );
             }
 
@@ -184,7 +180,7 @@ export function CoListOfHelper<
                 rawItems = items.map((item) => item.id);
             } else {
                 rawItems = items.map((item) =>
-                    Schema.encodeSync(itemSchema)(item)
+                    encodeItem(item)
                 );
             }
 
@@ -231,7 +227,7 @@ export function CoListOfHelper<
                 rawItems = items.map((item) => item.id);
             } else {
                 rawItems = items.map((item) =>
-                    Schema.encodeSync(itemSchema)(item)
+                    encodeItem(item)
                 );
             }
 
@@ -269,7 +265,7 @@ export function CoListOfHelper<
 
 export function CoListOf<Self>() {
     return function narrowed<
-        Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
+        Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
     >(itemSchema: Item) {
         return CoListOfHelper<Self, Item>(itemSchema);
     };

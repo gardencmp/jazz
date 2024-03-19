@@ -1,15 +1,16 @@
 import { Schema, AST } from "@effect/schema";
 import { RawCoValue } from "cojson";
-import { CoValue } from "../coValueInterfaces.js";
+import { CoValue, CoValueSchema } from "../coValueInterfaces.js";
 
+// TODO: can we get rid of this because effect schema already has an annotation for the constructor?
 export const constructorOfSchemaSym = Symbol.for("@jazz/constructorOfSymbol");
 export type constructorOfSchemaSym = typeof constructorOfSchemaSym;
 
 export function propertyIsCoValueSchema(
     prop:
-        | Schema.Schema<unknown>
-        | Schema.PropertySignature<unknown, boolean, unknown, boolean, never>
-): boolean {
+        | Schema.Schema<any>
+        | Schema.PropertySignature<any, boolean, any, boolean, never>
+): prop is CoValueSchema {
     if ("propertySignatureAST" in prop) {
         return astIsCoValueSchema(
             (prop.propertySignatureAST as { from: AST.AST }).from
@@ -21,7 +22,7 @@ export function propertyIsCoValueSchema(
 
 function astIsCoValueSchema(ast: AST.AST): boolean {
     if (
-        (ast._tag === "TypeLiteral" || ast._tag === "Tuple") &&
+        (ast._tag === "Declaration") &&
         ast.annotations[constructorOfSchemaSym]
     ) {
         return true;
@@ -78,7 +79,7 @@ function getCoValueConstructorInAST(
     | (new (init: undefined, options: { fromRaw: RawCoValue }) => CoValue)
     | undefined {
     if (
-        (ast._tag === "TypeLiteral" || ast._tag === "Tuple") &&
+        (ast._tag === "Declaration") &&
         ast.annotations[constructorOfSchemaSym]
     ) {
         return ast.annotations[constructorOfSchemaSym] as new (

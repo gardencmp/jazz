@@ -1,11 +1,10 @@
 import * as S from "@effect/schema/Schema";
 import {
-    AnyCoValueSchema,
     CoValue,
     ID,
     CoValueSchema,
 } from "../../coValueInterfaces.js";
-import { AnyCoMapSchema } from "../coMap/coMap.js";
+import { CoMapSchema } from "../coMap/coMap.js";
 import {
     AgentSecret,
     InviteSecret,
@@ -18,13 +17,13 @@ import { AccountMigration } from "./migration.js";
 import { Context } from "effect";
 import { Schema } from "@effect/schema";
 
-export type AnyProfileSchema = AnyCoMapSchema<{
+export type ProfileSchema = CoMapSchema<any, {
     name: S.Schema<string>;
 }>;
 
 export interface Account<
-    P extends AnyProfileSchema = AnyProfileSchema,
-    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
+    P extends ProfileSchema = ProfileSchema,
+    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
 > extends CoValue<"Account", RawAccount> {
     profile: S.Schema.To<P>;
     root: S.Schema.To<R>;
@@ -32,46 +31,32 @@ export interface Account<
 }
 
 export type ControlledAccount<
-    P extends AnyProfileSchema = AnyProfileSchema,
-    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
+    P extends ProfileSchema = ProfileSchema,
+    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
 > = Account<P, R> &
     CoValue<"Account", RawControlledAccount> & {
         isMe: true;
 
-        acceptInvite<V extends AnyCoValueSchema>(
+        acceptInvite<V extends CoValueSchema>(
             valueID: ID<S.Schema.To<V>>,
             inviteSecret: InviteSecret,
             valueSchema: V
         ): Promise<V>;
+
+        co: Account['co'] & {
+            sessionID: SessionID;
+        }
     };
 
-export interface AnyAccountSchema<
-    P extends AnyProfileSchema = AnyProfileSchema,
-    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
-> extends AnyCoValueSchema<
-        "Account",
-        Account<P, R>,
-        Schema.FromStruct<{
-            profile: P;
-            root: R;
-        }>,
-        never
-    > {
-    readonly [controlledAccountSym]: ControlledAccount<P, R>;
-}
 
 export interface AccountSchema<
     Self = any,
-    P extends AnyProfileSchema = AnyProfileSchema,
-    R extends AnyCoValueSchema | S.Schema<null> = S.Schema<null>,
+    P extends ProfileSchema = ProfileSchema,
+    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
 > extends CoValueSchema<
         Self,
-        "Account",
         Account<P, R>,
-        Schema.FromStruct<{
-            profile: P;
-            root: R;
-        }>,
+        "Account",
         never
     > {
     readonly [controlledAccountSym]: ControlledAccount<P, R>;

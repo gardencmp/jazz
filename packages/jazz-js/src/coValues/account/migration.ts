@@ -1,10 +1,10 @@
-import { AnyAccountSchema, controlledAccountSym } from "./account.js";
+import { AccountSchema, controlledAccountSym } from "./account.js";
 
-export type AccountMigration<A extends AnyAccountSchema> = (
+export type AccountMigration<A extends AccountSchema> = (
     me: A[controlledAccountSym]
 ) => void | Promise<void>;
 
-export function createAccountMigration<A extends AnyAccountSchema>(
+export function createAccountMigration<A extends AccountSchema>(
     accountSchema: A,
     migration: AccountMigration<A>
 ): AccountMigration<A> {

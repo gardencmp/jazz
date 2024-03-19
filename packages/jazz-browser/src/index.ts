@@ -6,12 +6,9 @@ import {
     CoValue,
     Account,
     ID,
-    CoValueSchema,
     ControlledAccount,
     BinaryCoStream,
     Group,
-    AnyAccountSchema,
-    S,
     Co,
     jazzReady,
     Peer,
@@ -21,9 +18,10 @@ import {
     cojsonInternals,
     InviteSecret,
     MAX_RECOMMENDED_TX_SIZE,
+    controlledAccountSym,
+    CoValueSchema,
+    S
 } from "jazz-js";
-import { controlledAccountSym } from "jazz-js/src/coValues/account/account";
-import { AnyCoValueSchema } from "jazz-js/src/coValueInterfaces";
 
 export * from "jazz-js";
 export { BrowserDemoAuth } from "./DemoAuth";
@@ -35,7 +33,7 @@ export type BrowserContext<A extends ControlledAccount> = {
     done: () => void;
 };
 
-export async function createBrowserContext<A extends AnyAccountSchema>({
+export async function createBrowserContext<A extends AccountSchema>({
     auth,
     syncAddress = "wss://sync.jazz.tools",
     reconnectionTimeout: initialReconnectionTimeout = 500,
@@ -133,7 +131,7 @@ export async function createBrowserContext<A extends AnyAccountSchema>({
 }
 
 export interface AuthProvider {
-    createOrLoadAccount<A extends AnyAccountSchema>(
+    createOrLoadAccount<A extends AccountSchema>(
         accountSchame: A,
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
@@ -406,7 +404,7 @@ export function parseInviteLink<C extends CoValue>(
     }
 }
 
-export function consumeInviteLinkFromWindowLocation<S extends AnyCoValueSchema>({
+export function consumeInviteLinkFromWindowLocation<S extends CoValueSchema>({
     as,
     forValueHint,
     invitedObjectSchema,

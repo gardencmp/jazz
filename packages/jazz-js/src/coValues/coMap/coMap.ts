@@ -1,5 +1,4 @@
 import {
-    AnyCoValueSchema,
     CoValue,
     CoValueCo,
     CoValueSchema,
@@ -31,36 +30,23 @@ export type CoMap<
     [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal>;
 } & CoMapBase<Fields, IdxKey, IdxVal>;
 
-export interface AnyCoMapSchema<
-    Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string> = Schema.Schema<string>,
-    IdxVal extends AnyCoValueSchema | SchemaWithOutput<JsonValue> =
-        | AnyCoValueSchema
-        | SchemaWithOutput<JsonValue>,
-> extends AnyCoValueSchema<
-        "CoMap",
-        CoMap<Fields, IdxKey, IdxVal>,
-        Schema.FromStruct<Fields>,
-        CoMapInit<Fields>
-    > {}
 
 export interface CoMapSchema<
-    Self,
+    Self extends CoValue,
     Fields extends CoMapFields,
     IdxKey extends Schema.Schema<string> = Schema.Schema<string>,
-    IdxVal extends AnyCoValueSchema | SchemaWithOutput<JsonValue> =
-        | AnyCoValueSchema
+    IdxVal extends CoValueSchema | SchemaWithOutput<JsonValue> =
+        | CoValueSchema
         | SchemaWithOutput<JsonValue>,
 > extends CoValueSchema<
         Self,
-        "CoMap",
         CoMap<Fields, IdxKey, IdxVal>,
-        Schema.FromStruct<Fields>,
+        "CoMap",
         Simplify<CoMapInit<Fields, IdxKey, IdxVal>>
     > {}
 
 export type CoMapFieldValue =
-    | AnyCoValueSchema
+    | CoValueSchema
     | SchemaWithOutput<JsonValue>
     | PropertySignatureWithInput<CoValue | JsonValue>;
 
@@ -83,18 +69,18 @@ export type CoMapCo<
     IdxVal extends CoMapFieldValue,
 > = CoValueCo<"CoMap", Self, RawCoMap> & {
     readonly refs: {
-        [Key in keyof Fields]: Fields[Key] extends AnyCoValueSchema<
-            infer _,
+        [Key in keyof Fields]: Fields[Key] extends CoValueSchema<
+            infer Self,
             infer Value
         >
-            ? ValueRef<Value>
+            ? ValueRef<Self & Value>
             : never;
     } & {
-        [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal> extends AnyCoValueSchema<
-            infer _,
+        [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal> extends CoValueSchema<
+            infer Self,
             infer Value
         >
-            ? ValueRef<Value>
+            ? ValueRef<Self & Value>
             : never;
     };
 };

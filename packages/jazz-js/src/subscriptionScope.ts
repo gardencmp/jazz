@@ -1,5 +1,5 @@
 import { ControlledAccount } from "./coValues/account/account.js";
-import { AnyCoValueSchema, CoValue, ID } from "./coValueInterfaces.js";
+import { CoValueSchema, CoValue, ID } from "./coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
 import { RawCoValue } from "cojson";
 
@@ -9,7 +9,7 @@ export const subscriptionsScopes = new WeakMap<
 >();
 
 export class SubscriptionScope<
-    RootSchema extends AnyCoValueSchema = AnyCoValueSchema,
+    RootSchema extends CoValueSchema = CoValueSchema,
 > {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
     subscriber: ControlledAccount;

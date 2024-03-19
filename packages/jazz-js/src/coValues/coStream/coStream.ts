@@ -6,7 +6,6 @@ import {
     SessionID,
 } from "cojson";
 import {
-    AnyCoValueSchema,
     CoValue,
     CoValueCo,
     CoValueSchema,
@@ -20,47 +19,38 @@ import { Schema } from "@effect/schema";
 import { Group } from "../group/group.js";
 
 export type CoStream<
-    Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
+    Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 > = CoValue<"CoStream", RawCoStream> & {
     co: CoStreamCo<CoStream<Item>, Item>;
+    push(...items: Schema.Schema.To<Item>[]): void;
 } & {
-    by: {[key: ID<Account>]: {latest?: Schema.Schema.To<Item>, all?: {value: Schema.Schema.To<Item>}}};
-    in: {[key: SessionID]: {latest?: Schema.Schema.To<Item>, all?: {value: Schema.Schema.To<Item>}}};
+    by: {[key: ID<Account>]: Schema.Schema.To<Item>};
+    in: {[key: SessionID]: Schema.Schema.To<Item>};
 };
 
 export interface CoStreamCo<Self extends CoValue, Item>
     extends CoValueCo<"CoStream", Self, RawCoStream> {
     refs: {
         by: {
-            [key: ID<Account>]: Item extends AnyCoValueSchema<infer _, infer Value>
-                ? {latest: ValueRef<Value>, all: ValueRef<Value>[]}
+            [key: ID<Account>]: Item extends CoValueSchema<infer _, infer Value>
+                ? ValueRef<Value>
                 : never;
         },
         in: {
-            [key: SessionID]: Item extends AnyCoValueSchema<infer _, infer Value>
-                ? {latest: ValueRef<Value>, all: ValueRef<Value>[]}
+            [key: SessionID]: Item extends CoValueSchema<infer _, infer Value>
+                ? ValueRef<Value>
                 : never;
         };
     };
 }
 
-export interface AnyCoStreamSchema<
-    Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
-> extends AnyCoValueSchema<
-        "CoStream",
-        CoStream<Item>,
-        Schema.Schema.From<Item>,
-        Schema.Schema.To<Item>[]
-    > {}
-
 export interface CoStreamSchema<
     Self,
-    Item extends AnyCoValueSchema | SchemaWithOutput<JsonValue>,
+    Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 > extends CoValueSchema<
         Self,
-        "CoStream",
         CoStream<Item>,
-        Schema.Schema.From<Item>,
+        "CoStream",
         Schema.Schema.To<Item>[]
     > {}
 
@@ -77,9 +67,8 @@ export interface BinaryCoStream
 export interface BinaryCoStreamSchema
     extends CoValueSchema<
         BinaryCoStream,
-        "BinaryCoStream",
         BinaryCoStream,
-        undefined,
+        "BinaryCoStream",
         undefined
     > {
     load<V extends BinaryCoStream>(

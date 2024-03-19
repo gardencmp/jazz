@@ -5,6 +5,7 @@ import { CoID, RawCoValue } from "cojson";
 import { UnavailableError } from "./errors.js";
 import { getCoValueConstructorInProperty } from "./coValues/resolution.js";
 import { PropDef } from "./schemaHelpers.js";
+import { subscriptionsScopes } from "./subscriptionScope.js";
 
 export class ValueRef<V extends CoValue> {
     private cachedValue: V | undefined;
@@ -63,6 +64,18 @@ export class ValueRef<V extends CoValue> {
             return new ValueRef(this.id, this.controlledAccount, this.propDef)
                 .value!;
         }
+    }
+
+    accessFrom(fromScopeValue: CoValue): V | undefined {
+        const subScope = subscriptionsScopes.get(fromScopeValue);
+
+        subScope?.onRefAccessedOrSet(this.id);
+
+        if (this.value && subScope) {
+            subscriptionsScopes.set(this.value, subScope);
+        }
+
+        return this.value;
     }
 }
 

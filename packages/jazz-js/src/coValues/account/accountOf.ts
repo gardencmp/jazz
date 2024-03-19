@@ -1,7 +1,6 @@
 import {
     AgentSecret,
     CoID,
-    CoValueCore,
     LocalNode,
     Peer,
     RawAccount,
@@ -10,7 +9,7 @@ import {
 } from "cojson";
 import {
     ID,
-    AnyCoValueSchema,
+    CoValueSchema,
     inspect,
     CoValueCo,
 } from "../../coValueInterfaces.js";
@@ -18,42 +17,45 @@ import { CoMapOf } from "../coMap/coMapOf.js";
 import {
     Account,
     AccountSchema,
-    AnyProfileSchema,
+    ProfileSchema,
     ControlledAccount,
     controlledAccountSym,
 } from "./account.js";
 import * as S from "@effect/schema/Schema";
 import { AccountMigration } from "./migration.js";
 import { toJSON } from "effect/Inspectable";
-import { Schema } from "@effect/schema";
+import { AST, Schema } from "@effect/schema";
 import { Group } from "../group/group.js";
 import { SharedCoValueConstructor } from "../construction.js";
+import { constructorOfSchemaSym } from "../resolution.js";
+import { pipeArguments } from "effect/Pipeable";
 
 export function AccountOf<
-    P extends AnyProfileSchema,
-    R extends AnyCoValueSchema | S.Schema<null>,
+    P extends ProfileSchema,
+    R extends CoValueSchema | S.Schema<null>,
 >(fields: { profile: P; root: R }): AccountSchema<Account<P, R>, P, R> {
-    const struct = S.struct(fields) as unknown as Schema.Schema<
-        AccountOfProfileAndRoot,
-        Schema.FromStruct<{
-            profile: P;
-            root: R;
-        }>,
-        never
-    >;
-
     class AccountOfProfileAndRoot
         extends SharedCoValueConstructor
         implements Account<P, R>
     {
-        static ast = struct.ast;
-        static [S.TypeId] = struct[S.TypeId];
-        static pipe = struct.pipe;
+        static get ast() {
+            return AST.setAnnotation(
+                Schema.instanceOf(this).ast,
+                constructorOfSchemaSym,
+                this
+            );
+        }
+        static [Schema.TypeId]: Schema.Schema.Variance<
+            AccountOfProfileAndRoot,
+            AccountOfProfileAndRoot,
+            never
+        >[Schema.TypeId];
+        static pipe() {
+            return pipeArguments(this, arguments);
+        }
         static type = "Account" as const;
         static [controlledAccountSym]: AccountOfProfileAndRoot &
             ControlledAccount<P, R>;
-
-
 
         isMe: boolean;
         co: CoValueCo<"Account", this, RawAccount | RawControlledAccount>;
@@ -99,9 +101,13 @@ export function AccountOf<
                         ? (this as ControlledAccount)
                         : controlledAccountFromNode(options.fromRaw.core.node),
                 core: options.fromRaw.core,
-            }
+            };
             this.isMe =
                 options.fromRaw.id == options.fromRaw.core.node.account.id;
+            if (this.isMe) {
+                (this.co as unknown as ControlledAccount["co"]).sessionID =
+                    options.fromRaw.core.node.currentSessionID;
+            }
         }
 
         static fromRaw(raw: RawAccount | RawControlledAccount) {

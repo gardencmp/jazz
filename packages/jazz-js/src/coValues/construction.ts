@@ -1,6 +1,6 @@
 import { Effect, Sink, Stream } from "effect";
 import {
-    AnyCoValueSchema,
+    CoValueSchema,
     CoValue,
     ID,
     SubclassedConstructor,
@@ -12,7 +12,7 @@ import { SubscriptionScope } from "../subscriptionScope.js";
 
 export abstract class SharedCoValueConstructor {
     static loadEf<V extends CoValue>(
-        this: AnyCoValueSchema &
+        this: CoValueSchema &
             SubclassedConstructor<V> &
             typeof SharedCoValueConstructor,
         id: ID<V>
@@ -26,7 +26,7 @@ export abstract class SharedCoValueConstructor {
     }
 
     static async load<V extends CoValue>(
-        this: AnyCoValueSchema &
+        this: CoValueSchema &
             SubclassedConstructor<V> &
             typeof SharedCoValueConstructor,
         id: ID<V>,
@@ -42,7 +42,7 @@ export abstract class SharedCoValueConstructor {
     }
 
     static subscribe<V extends CoValue>(
-        this: AnyCoValueSchema &
+        this: CoValueSchema &
             SubclassedConstructor<V> &
             typeof SharedCoValueConstructor,
         id: ID<V>,
@@ -69,7 +69,7 @@ export abstract class SharedCoValueConstructor {
     }
 
     static subscribeEf<V extends CoValue>(
-        this: AnyCoValueSchema &
+        this: CoValueSchema &
             SubclassedConstructor<V> &
             typeof SharedCoValueConstructor,
         id: ID<V>
