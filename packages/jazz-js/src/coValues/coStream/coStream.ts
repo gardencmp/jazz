@@ -18,15 +18,14 @@ import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
 import { Group } from "../group/group.js";
 
-export type CoStream<
-    Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
-> = CoValue<"CoStream", RawCoStream> & {
-    co: CoStreamCo<CoStream<Item>, Item>;
-    push(...items: Schema.Schema.To<Item>[]): void;
-} & {
-    by: {[key: ID<Account>]: Schema.Schema.To<Item>};
-    in: {[key: SessionID]: Schema.Schema.To<Item>};
-};
+export type CoStream<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
+    CoValue<"CoStream", RawCoStream> & {
+        co: CoStreamCo<CoStream<Item>, Item>;
+        push(...items: Schema.Schema.To<Item>[]): void;
+    } & {
+        by: { [key: ID<Account>]: Schema.Schema.To<Item> };
+        in: { [key: SessionID]: Schema.Schema.To<Item> };
+    };
 
 export interface CoStreamCo<Self extends CoValue, Item>
     extends CoValueCo<"CoStream", Self, RawCoStream> {
@@ -35,7 +34,7 @@ export interface CoStreamCo<Self extends CoValue, Item>
             [key: ID<Account>]: Item extends CoValueSchema<infer _, infer Value>
                 ? ValueRef<Value>
                 : never;
-        },
+        };
         in: {
             [key: SessionID]: Item extends CoValueSchema<infer _, infer Value>
                 ? ValueRef<Value>
@@ -61,7 +60,12 @@ export interface BinaryCoStream
     end(): void;
     getChunks(options?: {
         allowUnfinished?: boolean;
-    }): BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean };
+    }):
+        | (BinaryStreamInfo & {
+              chunks: Uint8Array[];
+              finished: boolean;
+          })
+        | undefined;
 }
 
 export interface BinaryCoStreamSchema

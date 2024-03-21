@@ -4,7 +4,15 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, Co, ID, S, SimpleAccount, jazzReady } from "..";
+import {
+    Account,
+    BinaryCoStream,
+    Co,
+    ID,
+    S,
+    SimpleAccount,
+    jazzReady,
+} from "..";
 import { Simplify } from "effect/Types";
 
 if (!("crypto" in globalThis)) {
@@ -206,12 +214,16 @@ describe("CoStream resolution", async () => {
 
                 const update3 = yield* $(Queue.take(queue));
                 expect(update3.by[me.co.id]?.by[me.co.id]).toBeDefined();
-                expect(update3.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe("milk");
+                expect(update3.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                    "milk"
+                );
 
                 update3.by[me.co.id]!.by[me.co.id]!.push("bread");
 
                 const update4 = yield* $(Queue.take(queue));
-                expect(update4.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe("bread");
+                expect(update4.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                    "bread"
+                );
 
                 // When assigning a new nested stream, we get an update
                 const newTwiceNested = new TwiceNestedStream(["butter"], {
@@ -225,12 +237,177 @@ describe("CoStream resolution", async () => {
                 update4.push(newNested);
 
                 const update5 = yield* $(Queue.take(queue));
-                expect(update5.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe("butter");
+                expect(update5.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                    "butter"
+                );
 
                 // we get updates when the new nested stream changes
                 newTwiceNested.push("jam");
                 const update6 = yield* $(Queue.take(queue));
-                expect(update6.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe("jam");
+                expect(update6.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                    "jam"
+                );
+            })
+        );
+    });
+});
+
+describe("Simple BinaryCoStream operations", async () => {
+    const me = await SimpleAccount.create({
+        name: "Hermes Puggington",
+    });
+
+    const stream = new Co.binaryStream(undefined, { owner: me });
+
+    test("Construction", () => {
+        expect(stream.getChunks()).toBeUndefined();
+    });
+
+    test("Mutation", () => {
+        stream.start({ mimeType: "text/plain" });
+        stream.push(new Uint8Array([1, 2, 3]));
+        stream.push(new Uint8Array([4, 5, 6]));
+        stream.end();
+
+        const chunks = stream.getChunks();
+        expect(chunks?.mimeType).toBe("text/plain");
+        expect(chunks?.chunks).toEqual([
+            new Uint8Array([1, 2, 3]),
+            new Uint8Array([4, 5, 6]),
+        ]);
+        expect(chunks?.finished).toBe(true);
+    });
+});
+
+describe("BinaryCoStream loading & Subscription", async () => {
+    const initNodeAndStream = async () => {
+        const me = await SimpleAccount.create({
+            name: "Hermes Puggington",
+        });
+
+        const stream = new Co.binaryStream(undefined, { owner: me });
+
+        stream.start({ mimeType: "text/plain" });
+        stream.push(new Uint8Array([1, 2, 3]));
+        stream.push(new Uint8Array([4, 5, 6]));
+        stream.end();
+
+        return { me, stream };
+    };
+
+    test("Construction", async () => {
+        const { me, stream } = await initNodeAndStream();
+        expect(stream.getChunks()).toEqual({
+            mimeType: "text/plain",
+            chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
+            finished: true,
+        });
+    });
+
+    test("Loading and availability", async () => {
+        const { me, stream } = await initNodeAndStream();
+        const [initialAsPeer, secondAsPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+        me.co.raw.core.node.syncManager.addPeer(secondAsPeer);
+        const meOnSecondPeer = await SimpleAccount.become({
+            accountID: me.co.id,
+            accountSecret: me.co.raw.agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.co.id as any),
+        });
+
+        const loadedStream = await Co.binaryStream.load(stream.co.id, {
+            as: meOnSecondPeer,
+        });
+
+        expect(loadedStream?.getChunks()).toEqual({
+            mimeType: "text/plain",
+            chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
+            finished: true,
+        });
+    });
+
+    test("Subscription", async () => {
+        const { me } = await initNodeAndStream();
+
+        const stream = new Co.binaryStream(undefined, { owner: me });
+
+        const [initialAsPeer, secondAsPeer] = connectedPeers(
+            "initial",
+            "second",
+            { peer1role: "server", peer2role: "client" }
+        );
+
+        me.co.raw.core.node.syncManager.addPeer(secondAsPeer);
+
+        const meOnSecondPeer = await SimpleAccount.become({
+            accountID: me.co.id,
+            accountSecret: me.co.raw.agentSecret,
+            peersToLoadFrom: [initialAsPeer],
+            sessionID: newRandomSessionID(me.co.id as any),
+        });
+
+        await Effect.runPromise(
+            Effect.gen(function* ($) {
+                const queue = yield* $(Queue.unbounded<BinaryCoStream>());
+
+                Co.binaryStream.subscribe(
+                    stream.co.id,
+                    { as: meOnSecondPeer },
+                    (subscribedStream) => {
+                        Effect.runPromise(Queue.offer(queue, subscribedStream));
+                    }
+                );
+
+                const update1 = yield* $(Queue.take(queue));
+                expect(update1.getChunks()).toBeUndefined();
+
+                stream.start({ mimeType: "text/plain" });
+
+                const update2 = yield* $(Queue.take(queue));
+                expect(update2.getChunks({ allowUnfinished: true })).toEqual({
+                    mimeType: "text/plain",
+                    fileName: undefined,
+                    chunks: [],
+                    totalSizeBytes: undefined,
+                    finished: false,
+                });
+
+                stream.push(new Uint8Array([1, 2, 3]));
+
+                const update3 = yield* $(Queue.take(queue));
+                expect(update3.getChunks({ allowUnfinished: true })).toEqual({
+                    mimeType: "text/plain",
+                    fileName: undefined,
+                    chunks: [new Uint8Array([1, 2, 3])],
+                    totalSizeBytes: undefined,
+                    finished: false,
+                });
+
+                stream.push(new Uint8Array([4, 5, 6]));
+
+                const update4 = yield* $(Queue.take(queue));
+                expect(update4.getChunks({ allowUnfinished: true })).toEqual({
+                    mimeType: "text/plain",
+                    fileName: undefined,
+                    chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
+                    totalSizeBytes: undefined,
+                    finished: false,
+                });
+
+                stream.end();
+
+                const update5 = yield* $(Queue.take(queue));
+                expect(update5.getChunks()).toEqual({
+                    mimeType: "text/plain",
+                    fileName: undefined,
+                    chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
+                    totalSizeBytes: undefined,
+                    finished: true,
+                });
             })
         );
     });

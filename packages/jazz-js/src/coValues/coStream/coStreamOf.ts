@@ -2,10 +2,16 @@ import {
     AccountID,
     BinaryStreamInfo,
     JsonValue,
+    RawBinaryCoStream,
     RawCoStream,
     SessionID,
 } from "cojson";
-import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
+import {
+    CoValueCo,
+    CoValueSchema,
+    ID,
+    inspect,
+} from "../../coValueInterfaces.js";
 import { Account } from "../account/account.js";
 import { Group } from "../group/group.js";
 import {
@@ -25,6 +31,7 @@ import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { is } from "effect/Match";
+import { satisfies } from "effect/Function";
 
 function CoStreamOfHelper<
     Self,
@@ -55,10 +62,10 @@ function CoStreamOfHelper<
         co!: CoStreamCo<this, Item>;
 
         by: {
-            [key: ID<Account>]: Schema.Schema.To<Item>
+            [key: ID<Account>]: Schema.Schema.To<Item>;
         };
         in: {
-            [key: SessionID]: Schema.Schema.To<Item>
+            [key: SessionID]: Schema.Schema.To<Item>;
         };
 
         constructor(
@@ -108,7 +115,7 @@ function CoStreamOfHelper<
                         in: inRefs,
                     },
                     core: raw.core,
-                } satisfies CoStreamCo<CoStreamOfItem, Item>
+                } satisfies CoStreamCo<CoStreamOfItem, Item>,
             });
 
             if (init !== undefined) {
@@ -265,28 +272,95 @@ export function CoStreamOf<Self>() {
     };
 }
 
-class BinaryCoStreamImplClass implements BinaryCoStream {
+class BinaryCoStreamImplClass
+    extends SharedCoValueConstructor
+    implements BinaryCoStream
+{
+    static ast = AST.setAnnotation(
+        Schema.instanceOf(this).ast,
+        constructorOfSchemaSym,
+        this
+    );
+    static [Schema.TypeId]: Schema.Schema.Variance<
+        BinaryCoStreamImplClass,
+        BinaryCoStreamImplClass,
+        never
+    >[Schema.TypeId];
+    static pipe() {
+        return pipeArguments(this, arguments);
+    }
+    static type = "BinaryCoStream" as const;
+    co!: CoValueCo<"BinaryCoStream", this, RawBinaryCoStream>;
     constructor(
         init: [] | undefined,
-        options: {
-            owner: Account | Group;
-        }
-    ) {}
+        options:
+            | {
+                  owner: Account | Group;
+              }
+            | {
+                  fromRaw: RawBinaryCoStream;
+              }
+    ) {
+        super();
 
-    static load(
-        id: ID<BinaryCoStreamImplClass>,
-        options: { as: Account; onProgress?: (progress: number) => void }
-    ): Promise<BinaryCoStreamImplClass | "unavailable"> {}
+        let raw: RawBinaryCoStream;
+
+        if ("fromRaw" in options) {
+            raw = options.fromRaw;
+        } else {
+            const rawOwner = options.owner.co.raw;
+
+            raw = rawOwner.createBinaryStream();
+        }
+
+        Object.defineProperty(this, "co", {
+            value: {
+                id: raw.id as unknown as ID<this>,
+                type: "BinaryCoStream",
+                raw,
+                loadedAs: controlledAccountFromNode(raw.core.node),
+                core: raw.core,
+            } satisfies CoValueCo<"BinaryCoStream", this, RawBinaryCoStream>,
+        });
+    }
+
+    static fromRaw(raw: RawBinaryCoStream) {
+        return new BinaryCoStreamImplClass(undefined, { fromRaw: raw });
+    }
 
     getChunks(options?: {
         allowUnfinished?: boolean;
-    }): BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean } {}
+    }):
+        | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
+        | undefined {
+        return this.co.raw.getBinaryChunks(options?.allowUnfinished);
+    }
 
-    start(options: BinaryStreamInfo): void {}
+    start(options: BinaryStreamInfo): void {
+        this.co.raw.startBinaryStream(options);
+    }
 
-    push(data: Uint8Array): void {}
+    push(data: Uint8Array): void {
+        this.co.raw.pushBinaryStreamChunk(data);
+    }
 
-    end(): void {}
+    end(): void {
+        this.co.raw.endBinaryStream();
+    }
+
+    toJSON(): object | any[] {
+        return {
+            ...this.getChunks(),
+            co: {
+                id: this.co.id,
+                type: "BinaryCoStream",
+            },
+        };
+    }
+
+    [inspect]() {
+        return this.toJSON();
+    }
 }
 
 export const BinaryCoStreamImpl =

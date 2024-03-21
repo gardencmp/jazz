@@ -13,8 +13,7 @@ import { SubscriptionScope } from "../subscriptionScope.js";
 export abstract class SharedCoValueConstructor {
     static loadEf<V extends CoValue>(
         this: CoValueSchema &
-            SubclassedConstructor<V> &
-            typeof SharedCoValueConstructor,
+            SubclassedConstructor<V>,
         id: ID<V>
     ): Effect.Effect<V, UnavailableError, ControlledAccountCtx> {
         return Effect.gen(this, function* (_) {
@@ -27,8 +26,7 @@ export abstract class SharedCoValueConstructor {
 
     static async load<V extends CoValue>(
         this: CoValueSchema &
-            SubclassedConstructor<V> &
-            typeof SharedCoValueConstructor,
+            SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount }
     ): Promise<V | undefined> {
@@ -43,8 +41,7 @@ export abstract class SharedCoValueConstructor {
 
     static subscribe<V extends CoValue>(
         this: CoValueSchema &
-            SubclassedConstructor<V> &
-            typeof SharedCoValueConstructor,
+            SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount },
         onUpdate: (value: V) => void
@@ -70,8 +67,7 @@ export abstract class SharedCoValueConstructor {
 
     static subscribeEf<V extends CoValue>(
         this: CoValueSchema &
-            SubclassedConstructor<V> &
-            typeof SharedCoValueConstructor,
+            SubclassedConstructor<V>,
         id: ID<V>
     ): Stream.Stream<V, UnavailableError, ControlledAccountCtx> {
         return Stream.fromEffect(this.loadEf(id)).pipe(
