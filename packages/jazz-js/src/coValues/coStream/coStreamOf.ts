@@ -82,7 +82,7 @@ function CoStreamOfHelper<
                     infer _,
                     infer Value
                 >
-                    ? { latest: ValueRef<Value>; all: ValueRef<Value>[] }
+                    ? ValueRef<Value>
                     : never;
             } = {};
             const inRefs: {
@@ -90,7 +90,7 @@ function CoStreamOfHelper<
                     infer _,
                     infer Value
                 >
-                    ? { latest: ValueRef<Value>; all: ValueRef<Value>[] }
+                    ? ValueRef<Value>
                     : never;
             } = {};
 
@@ -107,7 +107,8 @@ function CoStreamOfHelper<
                         by: byRefs,
                         in: inRefs,
                     },
-                },
+                    core: raw.core,
+                } satisfies CoStreamCo<CoStreamOfItem, Item>
             });
 
             if (init !== undefined) {

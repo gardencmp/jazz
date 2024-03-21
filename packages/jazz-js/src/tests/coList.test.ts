@@ -144,10 +144,10 @@ describe("CoList resolution", async () => {
     test("Construction", async () => {
         const { list } = await initNodeAndList();
 
-        expect(list[0][0][0]).toBe("a");
-        expect(list[0][0].joined()).toBe("a,b");
-        expect(list[0][0].co.id).toBeDefined();
-        expect(list[1][0][0]).toBe("c");
+        expect(list[0]?.[0]?.[0]).toBe("a");
+        expect(list[0]?.[0]?.joined()).toBe("a,b");
+        expect(list[0]?.[0]?.co.id).toBeDefined();
+        expect(list[1]?.[0]?.[0]).toBe("c");
     });
 
     test("Loading and availability", async () => {
@@ -169,27 +169,27 @@ describe("CoList resolution", async () => {
         const loadedList = await TestList.load(list.co.id, { as: meOnSecondPeer });
 
         expect(loadedList?.[0]).toBe(undefined);
-        expect(loadedList?.co.refs[0].id).toEqual(list[0].co.id);
+        expect(loadedList?.co.refs[0]?.id).toEqual(list[0]!.co.id);
 
-        const loadedNestedList = await NestedList.load(list[0].co.id, {
+        const loadedNestedList = await NestedList.load(list[0]!.co.id, {
             as: meOnSecondPeer,
         });
 
         expect(loadedList?.[0]).toBeDefined();
-        expect(loadedList?.[0][0]).toBeUndefined();
-        expect(loadedList?.[0].co.refs[0].id).toEqual(list[0][0].co.id);
-        expect(loadedList?.co.refs[0].value).toEqual(loadedNestedList);
+        expect(loadedList?.[0]?.[0]).toBeUndefined();
+        expect(loadedList?.[0]?.co.refs[0]?.id).toEqual(list[0]![0]!.co.id);
+        expect(loadedList?.co.refs[0]?.value).toEqual(loadedNestedList);
 
         const loadedTwiceNestedList = await TwiceNestedList.load(
-            list[0][0].co.id,
+            list[0]![0]!.co.id,
             { as: meOnSecondPeer }
         );
 
         expect(loadedList?.[0]?.[0]).toBeDefined();
-        expect(loadedList?.[0]?.[0][0]).toBe("a");
-        expect(loadedList?.[0]?.[0].joined()).toBe("a,b");
-        expect(loadedList?.[0]?.co.refs[0].id).toEqual(list[0][0].co.id);
-        expect(loadedList?.[0]?.co.refs[0].value).toEqual(
+        expect(loadedList?.[0]?.[0]?.[0]).toBe("a");
+        expect(loadedList?.[0]?.[0]?.joined()).toBe("a,b");
+        expect(loadedList?.[0]?.co.refs[0]?.id).toEqual(list[0]?.[0]?.co.id);
+        expect(loadedList?.[0]?.co.refs[0]?.value).toEqual(
             loadedTwiceNestedList
         );
 
@@ -200,7 +200,7 @@ describe("CoList resolution", async () => {
 
         loadedList![0] = otherNestedList;
         expect(loadedList?.[0]).toEqual(otherNestedList);
-        expect(loadedList?.co.refs[0].id).toEqual(otherNestedList.co.id);
+        expect(loadedList?.co.refs[0]?.id).toEqual(otherNestedList.co.id);
     });
 
     test("Subscription & auto-resolution", async () => {
@@ -247,7 +247,7 @@ describe("CoList resolution", async () => {
                 expect(update3?.[0]?.[0]?.[0]).toBe("a");
                 expect(update3?.[0]?.[0]?.joined()).toBe("a,b");
 
-                update3[0][0][0] = "x";
+                update3[0]![0]![0] = "x";
 
                 const update4 = yield* $(Queue.take(queue));
                 expect(update4?.[0]?.[0]?.[0]).toBe("x");

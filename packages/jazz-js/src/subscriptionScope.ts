@@ -66,7 +66,7 @@ export class SubscriptionScope<
     }
 
     onRefAccessedOrSet(accessedOrSetId: ID<CoValue> | undefined) {
-        // console.log("onRefAccessedOrSet", this.scopeID, accessedOrSetId);
+        console.log("onRefAccessedOrSet", this.scopeID, accessedOrSetId);
         if (!accessedOrSetId) {
             return;
         }
