@@ -17,7 +17,7 @@ import {
 import { makeRefs } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
-import { SharedCoValueConstructor } from "../construction.js";
+import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
 import { pipeArguments } from "effect/Pipeable";
 
 export function CoListOfHelper<
@@ -39,11 +39,12 @@ export function CoListOfHelper<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            CoListOfItem,
-            CoListOfItem,
+            Self & CoListOfItem,
+            Self & CoListOfItem,
             never
         >[Schema.TypeId];
         static pipe() {
+            // eslint-disable-next-line prefer-rest-params
             return pipeArguments(this, arguments);
         }
         static type = "CoList" as const;
@@ -91,13 +92,12 @@ export function CoListOfHelper<
             }
 
             Object.defineProperty(this, "co", {
-                value: {
-                    id: raw.id as unknown as ID<this>,
-                    type: "CoList",
+                value: new CoValueCoImpl(
+                    raw.id as unknown as ID<this>,
+                    "CoList",
                     raw,
-                    loadedAs: controlledAccountFromNode(raw.core.node),
-                    core: raw.core,
-                    refs: itemsAreCoValues
+                    this.constructor as CoListSchema<this, Item>,
+                    itemsAreCoValues
                         ? makeRefs<{ [key: number]: Schema.Schema.To<Item> }>(
                               (idx) => raw.get(idx),
                               () =>
@@ -108,8 +108,8 @@ export function CoListOfHelper<
                               controlledAccountFromNode(raw.core.node),
                               (_idx) => itemSchema
                           )
-                        : [],
-                } satisfies CoListCo<this, Item>,
+                        : []
+                ) satisfies CoListCo<this, Item>,
                 writable: false,
                 enumerable: false,
             });

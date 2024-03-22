@@ -1,48 +1,44 @@
-import {
-    CoValue,
-    CoValueCo,
-    CoValueSchema,
-} from "../../coValueInterfaces.js";
+import { CoValue, CoValueCo, CoValueSchema } from "../../coValueInterfaces.js";
 import { JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import {
     PropertySignatureWithInput,
+    SchemaWithInputAndOutput,
     SchemaWithOutput,
 } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
 import { Simplify } from "effect/Types";
 
+export type IndexSignature = {
+    key: SchemaWithInputAndOutput<string, string>;
+    value: CoMapFieldValue;
+};
+
 export interface CoMapBase<
     Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string> = never,
-    IdxVal extends CoMapFieldValue = never,
+    IdxSig extends IndexSignature = never,
 > extends CoValue<"CoMap", RawCoMap> {
-    co: CoMapCo<this, Fields, IdxKey, IdxVal>;
+    co: CoMapCo<this, Fields, IdxSig>;
 }
 
 export type CoMap<
     Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string> = never,
-    IdxVal extends CoMapFieldValue = never,
+    IdxSig extends IndexSignature = never,
 > = {
     [Key in keyof Fields]: Schema.Schema.To<Fields[Key]>;
 } & {
-    [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal>;
-} & CoMapBase<Fields, IdxKey, IdxVal>;
-
+    [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
+} & CoMapBase<Fields, IdxSig>;
 
 export interface CoMapSchema<
-    Self extends CoValue,
+    Self,
     Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string> = Schema.Schema<string>,
-    IdxVal extends CoValueSchema | SchemaWithOutput<JsonValue> =
-        | CoValueSchema
-        | SchemaWithOutput<JsonValue>,
+    IdxSig extends IndexSignature = never,
 > extends CoValueSchema<
         Self,
-        CoMap<Fields, IdxKey, IdxVal>,
+        CoMap<Fields, IdxSig>,
         "CoMap",
-        Simplify<CoMapInit<Fields, IdxKey, IdxVal>>
+        Simplify<CoMapInit<Fields, IdxSig>>
     > {}
 
 export type CoMapFieldValue =
@@ -56,17 +52,15 @@ export type CoMapFields = {
 
 export type CoMapInit<
     Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string> = never,
-    IdxVal extends CoMapFieldValue = never,
+    IdxSig extends IndexSignature = never,
 > = Schema.ToStruct<Fields> & {
-    [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal>;
+    [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
 };
 
 export type CoMapCo<
     Self extends CoValue,
     Fields extends CoMapFields,
-    IdxKey extends Schema.Schema<string>,
-    IdxVal extends CoMapFieldValue,
+    IdxSig extends IndexSignature = never,
 > = CoValueCo<"CoMap", Self, RawCoMap> & {
     readonly refs: {
         [Key in keyof Fields]: Fields[Key] extends CoValueSchema<
@@ -76,10 +70,9 @@ export type CoMapCo<
             ? ValueRef<Self & Value>
             : never;
     } & {
-        [Key in Schema.Schema.To<IdxKey>]: Schema.Schema.To<IdxVal> extends CoValueSchema<
-            infer Self,
-            infer Value
-        >
+        [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<
+            IdxSig["value"]
+        > extends CoValueSchema<infer Self, infer Value>
             ? ValueRef<Self & Value>
             : never;
     };

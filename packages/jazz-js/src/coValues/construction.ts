@@ -4,16 +4,18 @@ import {
     CoValue,
     ID,
     SubclassedConstructor,
+    CoValueCo,
 } from "../coValueInterfaces.js";
 import { UnavailableError } from "../errors.js";
 import { ControlledAccount, ControlledAccountCtx } from "./account/account.js";
 import { ValueRef } from "../refs.js";
 import { SubscriptionScope } from "../subscriptionScope.js";
+import { CoValueCore, RawCoValue } from "cojson";
+import { controlledAccountFromNode } from "./account/accountOf.js";
 
 export abstract class SharedCoValueConstructor {
     static loadEf<V extends CoValue>(
-        this: CoValueSchema &
-            SubclassedConstructor<V>,
+        this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>
     ): Effect.Effect<V, UnavailableError, ControlledAccountCtx> {
         return Effect.gen(this, function* (_) {
@@ -25,8 +27,7 @@ export abstract class SharedCoValueConstructor {
     }
 
     static async load<V extends CoValue>(
-        this: CoValueSchema &
-            SubclassedConstructor<V>,
+        this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount }
     ): Promise<V | undefined> {
@@ -40,8 +41,7 @@ export abstract class SharedCoValueConstructor {
     }
 
     static subscribe<V extends CoValue>(
-        this: CoValueSchema &
-            SubclassedConstructor<V>,
+        this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount },
         onUpdate: (value: V) => void
@@ -60,14 +60,11 @@ export abstract class SharedCoValueConstructor {
             )
         );
 
-        return function unsubscribe() {
-
-        }
+        return function unsubscribe() {};
     }
 
     static subscribeEf<V extends CoValue>(
-        this: CoValueSchema &
-            SubclassedConstructor<V>,
+        this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>
     ): Stream.Stream<V, UnavailableError, ControlledAccountCtx> {
         return Stream.fromEffect(this.loadEf(id)).pipe(
@@ -90,6 +87,47 @@ export abstract class SharedCoValueConstructor {
                     })
                 )
             )
+        );
+    }
+}
+
+export class CoValueCoImpl<
+    Self extends V,
+    V extends CoValue,
+    T extends string,
+    Raw extends RawCoValue,
+    Refs,
+> implements CoValueCo<T, Self, Raw>
+{
+    core: CoValueCore;
+    loadedAs: ControlledAccount;
+    constructor(
+        public id: ID<Self>,
+        public type: T,
+        public raw: Raw,
+        public schema: CoValueSchema<Self, V>,
+        public refs: Refs,
+        loadedAs?: ControlledAccount
+    ) {
+        this.core = this.raw.core;
+        this.loadedAs = loadedAs || controlledAccountFromNode(raw.core.node);
+    }
+
+    subscribe(listener: (update: Self) => void): () => void {
+        return (this.schema as CoValueSchema<Self, Self>).subscribe<Self>(
+            this.id,
+            { as: this.loadedAs },
+            listener
+        );
+    }
+
+    subscribeEf(): Stream.Stream<Self, UnavailableError, never> {
+        return Stream.provideService(
+            (this.schema as CoValueSchema<Self, Self>).subscribeEf<Self>(
+                this.id
+            ),
+            ControlledAccountCtx,
+            this.loadedAs
         );
     }
 }

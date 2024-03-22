@@ -5,7 +5,6 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import { Co, S, SimpleAccount, jazzReady } from "..";
-import { CoMapInit, CoMapSchema } from "../coValues/coMap/coMap";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -325,17 +324,6 @@ describe("CoMap resolution", async () => {
         { color: S.string },
         { key: S.string, value: S.string }
     ) {}
-
-    type T = typeof TestRecord extends CoMapSchema<
-        infer _,
-        infer F,
-        infer K,
-        infer V
-    >
-        ? [F, K, V]
-        : never;
-
-    type I = CoMapInit<T[0], T[1], T[2]>;
 
     test("Construction with index signature", async () => {
         const me = await SimpleAccount.create({

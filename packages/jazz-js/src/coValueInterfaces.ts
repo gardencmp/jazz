@@ -5,13 +5,15 @@ import {
     ControlledAccountCtx,
 } from "./coValues/account/account.js";
 import { CoValueCore } from "cojson";
-import { SchemaWithInputAndOutput } from "./schemaHelpers.js";
 import { Effect, Stream } from "effect";
 import { UnavailableError } from "./errors.js";
 import { Schema } from "@effect/schema";
 import { Group } from "./coValues/group/group.js";
 
-export type SubclassedConstructor<T> = { new (...args: any[]): T, type: string };
+export type SubclassedConstructor<T> = {
+    new (...args: any[]): T;
+    type: string;
+};
 
 export interface CoValueConstructor<
     Value extends CoValue = CoValue,
@@ -20,9 +22,9 @@ export interface CoValueConstructor<
 > {
     readonly type: Type;
 
-    new(init: Init, options: { owner: Account | Group }): Value;
+    new (init: Init, options: { owner: Account | Group }): Value;
 
-    fromRaw(raw: Value['co']['raw']): Value;
+    fromRaw(raw: Value["co"]["raw"]): Value;
 
     load<V extends Value>(
         this: SubclassedConstructor<V>,
@@ -79,8 +81,9 @@ export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
     raw: Raw;
     loadedAs: ControlledAccount;
     core: CoValueCore;
+    schema: CoValueSchema;
     subscribe(listener: (update: Value) => void): () => void;
-    subscribeEf(): Stream.Stream<Value, UnavailableError, ControlledAccountCtx>;
+    subscribeEf(): Stream.Stream<Value, UnavailableError, never>;
 }
 
 export type ID<T> = RawCoID & { readonly __type: (_: never) => T };

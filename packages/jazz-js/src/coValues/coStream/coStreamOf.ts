@@ -7,6 +7,7 @@ import {
     SessionID,
 } from "cojson";
 import {
+    CoValue,
     CoValueCo,
     CoValueSchema,
     ID,
@@ -20,7 +21,7 @@ import {
     CoStreamCo,
     CoStreamSchema,
 } from "./coStream.js";
-import { SharedCoValueConstructor } from "../construction.js";
+import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
 import { AST, Schema } from "@effect/schema";
 import {
     constructorOfSchemaSym,
@@ -29,9 +30,6 @@ import {
 import { pipeArguments } from "effect/Pipeable";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { controlledAccountFromNode } from "../account/accountOf.js";
-import { is } from "effect/Match";
-import { satisfies } from "effect/Function";
 
 function CoStreamOfHelper<
     Self,
@@ -50,11 +48,12 @@ function CoStreamOfHelper<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            CoStreamOfItem,
-            CoStreamOfItem,
+            Self & CoStreamOfItem,
+            Self & CoStreamOfItem,
             never
         >[Schema.TypeId];
         static pipe() {
+            // eslint-disable-next-line prefer-rest-params
             return pipeArguments(this, arguments);
         }
         static type = "CoStream" as const;
@@ -105,17 +104,16 @@ function CoStreamOfHelper<
             this.in = {};
 
             Object.defineProperty(this, "co", {
-                value: {
-                    id: raw.id as unknown as ID<this>,
-                    type: "CoStream",
+                value: new CoValueCoImpl(
+                    raw.id as unknown as ID<this>,
+                    "CoStream",
                     raw,
-                    loadedAs: controlledAccountFromNode(raw.core.node),
-                    refs: {
+                    this.constructor as CoStreamSchema<this, Item>,
+                    {
                         by: byRefs,
                         in: inRefs,
-                    },
-                    core: raw.core,
-                } satisfies CoStreamCo<CoStreamOfItem, Item>,
+                    }
+                ) satisfies CoStreamCo<CoStreamOfItem, Item>,
             });
 
             if (init !== undefined) {
@@ -128,6 +126,7 @@ function CoStreamOfHelper<
         }
 
         private updateEntries() {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
             const raw = this.co.raw;
             const loadedAs = this.co.loadedAs;
@@ -267,7 +266,11 @@ function CoStreamOfHelper<
 }
 
 export function CoStreamOf<Self>() {
-    return function <Item>(itemSchema: Item) {
+    return function <
+        Item extends
+            | CoValueSchema<any, CoValue<string, any>, string, any>
+            | SchemaWithOutput<JsonValue>,
+    >(itemSchema: Item) {
         return CoStreamOfHelper<Self, Item>(itemSchema);
     };
 }
@@ -287,6 +290,7 @@ class BinaryCoStreamImplClass
         never
     >[Schema.TypeId];
     static pipe() {
+        // eslint-disable-next-line prefer-rest-params
         return pipeArguments(this, arguments);
     }
     static type = "BinaryCoStream" as const;
@@ -314,13 +318,17 @@ class BinaryCoStreamImplClass
         }
 
         Object.defineProperty(this, "co", {
-            value: {
-                id: raw.id as unknown as ID<this>,
-                type: "BinaryCoStream",
+            value: new CoValueCoImpl(
+                raw.id as unknown as ID<this>,
+                "BinaryCoStream",
                 raw,
-                loadedAs: controlledAccountFromNode(raw.core.node),
-                core: raw.core,
-            } satisfies CoValueCo<"BinaryCoStream", this, RawBinaryCoStream>,
+                this.constructor as BinaryCoStreamSchema,
+                undefined
+            ) satisfies CoValueCo<
+                "BinaryCoStream",
+                BinaryCoStream,
+                RawBinaryCoStream
+            >,
         });
     }
 

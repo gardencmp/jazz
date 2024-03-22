@@ -3,6 +3,7 @@ import {
     CoValue,
     ID,
     CoValueSchema,
+    CoValueCo,
 } from "../../coValueInterfaces.js";
 import { CoMapSchema } from "../coMap/coMap.js";
 import {
@@ -15,19 +16,36 @@ import {
 } from "cojson";
 import { AccountMigration } from "./migration.js";
 import { Context } from "effect";
-import { Schema } from "@effect/schema";
+import { ValueRef } from "../../refs.js";
 
-export type ProfileSchema = CoMapSchema<any, {
-    name: S.Schema<string>;
-}>;
+export type ProfileSchema = CoMapSchema<
+    any,
+    {
+        name: S.Schema<string>;
+    }
+>;
 
 export interface Account<
     P extends ProfileSchema = ProfileSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
 > extends CoValue<"Account", RawAccount> {
-    profile: S.Schema.To<P>;
-    root: S.Schema.To<R>;
+    profile?: S.Schema.To<P>;
+    root?: S.Schema.To<R>;
     isMe: boolean;
+    co: CoValueCo<"Account", this, RawAccount | RawControlledAccount> & {
+        refs: {
+            profile: ValueRef<S.Schema.To<P>>;
+            root: ValueRef<S.Schema.To<R>>;
+        };
+    };
+}
+
+export function isAccount(value: CoValue): value is Account {
+    return value.co.type === "Account";
+}
+
+export function isControlledAccount(value: CoValue): value is ControlledAccount {
+    return isAccount(value) && value.isMe;
 }
 
 export type ControlledAccount<
@@ -43,25 +61,17 @@ export type ControlledAccount<
             valueSchema: V
         ): Promise<V>;
 
-        co: Account['co'] & {
+        co: Account["co"] & {
             sessionID: SessionID;
-        }
+        };
     };
-
 
 export interface AccountSchema<
     Self = any,
     P extends ProfileSchema = ProfileSchema,
     R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
-> extends CoValueSchema<
-        Self,
-        Account<P, R>,
-        "Account",
-        never
-    > {
+> extends CoValueSchema<Self, Account<P, R>, "Account", undefined> {
     readonly [controlledAccountSym]: ControlledAccount<P, R>;
-
-    new (init: undefined, options: { fromRaw: RawAccount }): Account<P, R>;
 
     create(options: {
         name: string;

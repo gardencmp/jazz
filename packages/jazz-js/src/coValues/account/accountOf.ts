@@ -1,9 +1,11 @@
 import {
     AgentSecret,
     CoID,
+    InviteSecret,
     LocalNode,
     Peer,
     RawAccount,
+    RawCoValue,
     RawControlledAccount,
     SessionID,
 } from "cojson";
@@ -12,6 +14,7 @@ import {
     CoValueSchema,
     inspect,
     CoValueCo,
+    CoValue,
 } from "../../coValueInterfaces.js";
 import { CoMapOf } from "../coMap/coMapOf.js";
 import {
@@ -23,17 +26,17 @@ import {
 } from "./account.js";
 import * as S from "@effect/schema/Schema";
 import { AccountMigration } from "./migration.js";
-import { toJSON } from "effect/Inspectable";
 import { AST, Schema } from "@effect/schema";
 import { Group } from "../group/group.js";
-import { SharedCoValueConstructor } from "../construction.js";
+import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
 import { constructorOfSchemaSym } from "../resolution.js";
 import { pipeArguments } from "effect/Pipeable";
+import { ValueRef } from "../../refs.js";
 
 export function AccountOf<
     P extends ProfileSchema,
     R extends CoValueSchema | S.Schema<null>,
->(fields: { profile: P; root: R }): AccountSchema<Account<P, R>, P, R> {
+>(fields: { profile: P; root: R }) {
     class AccountOfProfileAndRoot
         extends SharedCoValueConstructor
         implements Account<P, R>
@@ -46,11 +49,12 @@ export function AccountOf<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            AccountOfProfileAndRoot,
-            AccountOfProfileAndRoot,
+            Account<P, R> & AccountOfProfileAndRoot,
+            Account<P, R> & AccountOfProfileAndRoot,
             never
         >[Schema.TypeId];
         static pipe() {
+            // eslint-disable-next-line prefer-rest-params
             return pipeArguments(this, arguments);
         }
         static type = "Account" as const;
@@ -58,22 +62,16 @@ export function AccountOf<
             ControlledAccount<P, R>;
 
         isMe: boolean;
-        co: CoValueCo<"Account", this, RawAccount | RawControlledAccount>;
-
-        get profile(): S.Schema.To<P> {
-            const id = this.co.raw.get("profile");
-
-            throw new Error("Not implemented");
-        }
-
-        get root(): S.Schema.To<R> {
-            const id = this.co.raw.get("root");
-
-            throw new Error("Not implemented");
-        }
+        co: CoValueCo<"Account", this, RawAccount | RawControlledAccount> & {
+            refs: {
+                profile: ValueRef<S.Schema.To<P>>;
+                root: ValueRef<S.Schema.To<R>>;
+            };
+            sessionID?: SessionID;
+        };
 
         constructor(
-            init: Record<string, never>,
+            init: undefined,
             options: { owner: ControlledAccount | Group }
         );
         constructor(
@@ -81,7 +79,7 @@ export function AccountOf<
             options: { fromRaw: RawAccount | RawControlledAccount }
         );
         constructor(
-            init: undefined | Record<string, never>,
+            init: undefined,
             options:
                 | { fromRaw: RawAccount | RawControlledAccount }
                 | { owner: ControlledAccount | Group }
@@ -92,18 +90,39 @@ export function AccountOf<
                     "Can only construct account from raw or with .create()"
                 );
             }
-            this.co = {
-                id: options.fromRaw.id as unknown as ID<this>,
-                type: "Account",
-                raw: options.fromRaw,
-                loadedAs:
-                    options.fromRaw.id === options.fromRaw.core.node.account.id
-                        ? (this as ControlledAccount)
-                        : controlledAccountFromNode(options.fromRaw.core.node),
-                core: options.fromRaw.core,
-            };
             this.isMe =
                 options.fromRaw.id == options.fromRaw.core.node.account.id;
+
+            const refs = {
+                get profile() {
+                    return new ValueRef(
+                        options.fromRaw.id as unknown as ID<
+                            Schema.Schema.To<P>
+                        >,
+                        controlledAccountFromNode(options.fromRaw.core.node),
+                        fields.profile
+                    );
+                },
+                get root() {
+                    return new ValueRef(
+                        options.fromRaw.id as unknown as ID<
+                            Schema.Schema.To<R>
+                        >,
+                        controlledAccountFromNode(options.fromRaw.core.node),
+                        fields.root
+                    );
+                },
+            };
+
+            this.co = new CoValueCoImpl(
+                options.fromRaw.id as unknown as ID<this>,
+                "Account",
+                options.fromRaw,
+                this.constructor as AccountSchema<this, P, R>,
+                refs,
+                this.isMe ? (this as ControlledAccount<P, R>) : undefined
+            );
+
             if (this.isMe) {
                 (this.co as unknown as ControlledAccount["co"]).sessionID =
                     options.fromRaw.core.node.currentSessionID;
@@ -168,14 +187,39 @@ export function AccountOf<
             }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
         }
 
+        async acceptInvite<V extends CoValue>(
+            valueID: ID<V>,
+            inviteSecret: InviteSecret,
+            valueSchema: CoValueSchema<V, V>
+        ): Promise<V | undefined> {
+            if (!this.isMe) {
+                throw new Error("Only a controlled account can accept invites");
+            }
+
+            await (this.co.raw as RawControlledAccount).acceptInvite(
+                valueID as unknown as CoID<RawCoValue>,
+                inviteSecret
+            );
+
+            return valueSchema.load(valueID, { as: this as ControlledAccount });
+        }
+
+        get profile(): S.Schema.To<P> | undefined {
+            return this.co.refs.profile.accessFrom(this);
+        }
+
+        get root(): S.Schema.To<R> | undefined {
+            return this.co.refs.root.accessFrom(this);
+        }
+
         toJSON() {
             return {
                 co: {
                     id: this.co.id,
                     type: this.co.type,
                 },
-                profile: toJSON(this.profile),
-                root: toJSON(this.root),
+                profile: this.profile?.toJSON(),
+                root: this.root?.toJSON(),
             };
         }
 
@@ -184,7 +228,7 @@ export function AccountOf<
         }
     }
 
-    return AccountOfProfileAndRoot as AccountSchema<Account<P, R>, P, R>;
+    return AccountOfProfileAndRoot as AccountSchema<AccountOfProfileAndRoot & Account<P, R>, P, R>;
 }
 
 export class BaseProfile extends CoMapOf<BaseProfile>()({
@@ -199,11 +243,24 @@ export class SimpleAccount extends AccountOf<
     root: S.null,
 }) {}
 
+const simpleControlledAccounts = new WeakMap<
+    RawControlledAccount,
+    SimpleAccount & ControlledAccount
+>();
+
 export function controlledAccountFromNode(node: LocalNode) {
     if (!(node.account instanceof RawControlledAccount)) {
         throw new Error("Expected a controlled account");
     }
-    return new SimpleAccount(undefined, {
-        fromRaw: node.account,
-    }) as SimpleAccount & ControlledAccount;
+    let simpleAccount;
+
+    if (simpleControlledAccounts.has(node.account)) {
+        simpleAccount = simpleControlledAccounts.get(node.account);
+    } else {
+        simpleAccount = SimpleAccount.fromRaw(node.account) as SimpleAccount &
+            ControlledAccount;
+        simpleControlledAccounts.set(node.account, simpleAccount);
+    }
+
+    return simpleAccount!;
 }
