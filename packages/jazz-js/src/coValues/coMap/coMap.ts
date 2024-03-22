@@ -21,6 +21,7 @@ export interface CoMapBase<
     co: CoMapCo<this, Fields, IdxSig>;
 }
 
+/** @category Schemas & CoValues - CoMap */
 export type CoMap<
     Fields extends CoMapFields,
     IdxSig extends IndexSignature = never,
@@ -30,6 +31,7 @@ export type CoMap<
     [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
 } & CoMapBase<Fields, IdxSig>;
 
+/** @category Schemas & CoValues - CoMap */
 export interface CoMapSchema<
     Self,
     Fields extends CoMapFields,

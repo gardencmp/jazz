@@ -50,6 +50,7 @@ export interface CoValueConstructor<
     ): Stream.Stream<V, UnavailableError, ControlledAccountCtx>;
 }
 
+/** @category Schemas & CoValues - Abstract interfaces */
 export interface CoValueSchema<
     Self = any,
     Value extends CoValue = CoValue,
@@ -65,7 +66,9 @@ export function isCoValueSchema(value: any): value is CoValueSchema {
 export const inspect = Symbol.for("nodejs.util.inspect.custom");
 export type inspect = typeof inspect;
 
+/** @category Schemas & CoValues - Abstract interfaces */
 export interface CoValue<Type extends string = string, Raw = any> {
+    /** @category Collaboration metadata */
     readonly co: CoValueCo<Type, this, Raw>;
     toJSON(): any[] | object;
     [inspect](): any;
@@ -86,4 +89,5 @@ export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
     subscribeEf(): Stream.Stream<Value, UnavailableError, never>;
 }
 
+/** @category Schemas & CoValues - Abstract interfaces */
 export type ID<T> = RawCoID & { readonly __type: (_: never) => T };
