@@ -1,21 +1,28 @@
 import { JsonValue, RawCoList } from "cojson";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import {
-    CoValue,
-    CoValueCo,
-    CoValueSchema,
-} from "../../coValueInterfaces.js";
+import { CoValue, CoValueCo, CoValueSchema } from "../../coValueInterfaces.js";
 import { Schema } from "@effect/schema";
 import { ValueRef } from "../../refs.js";
 
-export type CoList<
+/**
+ *  @category Schemas & CoValues - CoList
+ */
+export interface CoListBase<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
-> = Schema.Schema.To<Item>[] &
-    CoValue<"CoList", RawCoList> & {
-        co: CoListCo<CoList<Item>, Item>;
-    };
+> extends CoValue<"CoList", RawCoList> {
+    /** @category Collaboration metadata */
+    co: CoListCo<this, Item>;
+}
 
+/**
+ *  @category Schemas & CoValues - CoList
+ */
+export type CoList<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
+    Schema.Schema.To<Item>[] & CoListBase<Item>;
 
+/**
+ *  @category Schemas & CoValues - CoList
+ */
 export interface CoListSchema<
     Self,
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
@@ -26,6 +33,9 @@ export interface CoListSchema<
         Schema.Schema.To<Item>[]
     > {}
 
+/**
+ *  @category Schemas & CoValues - CoList
+ */
 export interface CoListCo<
     Self extends CoValue,
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,

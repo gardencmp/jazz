@@ -39,10 +39,12 @@ export function Category({
 
     return (
         <>
-            <HElemem className={cn("mt-6 mb-2 uppercase tracking-wide font-bold", {
-                "text-sm": level < 4,
-                "text-xs": level >= 4,
-            })}>
+            <HElemem
+                className={cn("mt-6 mb-2 uppercase tracking-wide font-bold", {
+                    "text-sm": level < 4,
+                    "text-xs": level >= 4,
+                })}
+            >
                 {category.title}
             </HElemem>
             <div className={level > 2 ? "flex flex-col gap-2 items-start" : ""}>
@@ -241,6 +243,12 @@ function RenderReflectionHeader({
                 {" { ... }"}
             </code>
         );
+    } else if (reflection.kind === ReflectionKind.Namespace) {
+        return (
+            <code>
+                namespace {reflection.name} {" { ... }"}
+            </code>
+        );
     } else if (reflection.kind & ReflectionKind.VariableOrProperty) {
         const prefix =
             reflection.kind === ReflectionKind.Property ? (
@@ -302,7 +310,8 @@ function RenderReflectionHeader({
         return (
             <code>
                 {prefix}
-                {reflection.kind !== ReflectionKind.Constructor && reflection.name}
+                {reflection.kind !== ReflectionKind.Constructor &&
+                    reflection.name}
                 {reflection.signatures?.map((signature, i) => (
                     <>
                         (

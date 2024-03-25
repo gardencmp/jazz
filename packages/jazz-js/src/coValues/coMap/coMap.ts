@@ -14,18 +14,25 @@ export type IndexSignature = {
     value: CoMapFieldValue;
 };
 
+/**
+ *  @category Schemas & CoValues - CoMap
+*/
 export interface CoMapBase<
     Fields extends CoMapFields,
     IdxSig extends IndexSignature = never,
 > extends CoValue<"CoMap", RawCoMap> {
+    /** @category Collaboration metadata */
     co: CoMapCo<this, Fields, IdxSig>;
 }
 
-/** @category Schemas & CoValues - CoMap */
+/**
+ *  @category Schemas & CoValues - CoMap
+*/
 export type CoMap<
     Fields extends CoMapFields,
     IdxSig extends IndexSignature = never,
 > = {
+    /** @category Specified fields */
     [Key in keyof Fields]: Schema.Schema.To<Fields[Key]>;
 } & {
     [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
@@ -59,6 +66,9 @@ export type CoMapInit<
     [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
 };
 
+/**
+ *  @category Schemas & CoValues - CoMap
+*/
 export type CoMapCo<
     Self extends CoValue,
     Fields extends CoMapFields,

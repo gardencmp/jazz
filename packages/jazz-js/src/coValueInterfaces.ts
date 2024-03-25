@@ -22,21 +22,26 @@ export interface CoValueConstructor<
 > {
     readonly type: Type;
 
+    /** @category Construction and loading */
     new (init: Init, options: { owner: Account | Group }): Value;
 
+    /** @ignore */
     fromRaw(raw: Value["co"]["raw"]): Value;
 
+    /** @category Construction and loading */
     load<V extends Value>(
         this: SubclassedConstructor<V>,
         id: ID<V>,
         options: { as: ControlledAccount }
     ): Promise<V | undefined>;
 
+    /** @category Construction and loading */
     loadEf<V extends Value>(
         this: SubclassedConstructor<V>,
         id: ID<V>
     ): Effect.Effect<V, UnavailableError, ControlledAccountCtx>;
 
+    /** @category Subscription */
     subscribe<V extends Value>(
         this: SubclassedConstructor<V>,
         id: ID<V>,
@@ -44,6 +49,7 @@ export interface CoValueConstructor<
         onUpdate: (value: V) => void
     ): () => void;
 
+    /** @category Subscription */
     subscribeEf<V extends Value>(
         this: SubclassedConstructor<V>,
         id: ID<V>
@@ -70,7 +76,9 @@ export type inspect = typeof inspect;
 export interface CoValue<Type extends string = string, Raw = any> {
     /** @category Collaboration metadata */
     readonly co: CoValueCo<Type, this, Raw>;
+    /** @category Stringifying & inspection */
     toJSON(): any[] | object;
+    /** @category Stringifying & inspection */
     [inspect](): any;
 }
 
@@ -78,15 +86,26 @@ export function isCoValue(value: any): value is CoValue {
     return value && value.co !== undefined;
 }
 
+/** @category Schemas & CoValues - Abstract interfaces */
 export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
+    /** @category Value identity */
     id: ID<Value>;
+    /** @category Value identity */
     type: type;
-    raw: Raw;
-    loadedAs: ControlledAccount;
-    core: CoValueCore;
-    schema: CoValueSchema;
+
+    /** @category Subscription */
     subscribe(listener: (update: Value) => void): () => void;
+    /** @category Subscription */
     subscribeEf(): Stream.Stream<Value, UnavailableError, never>;
+
+    /** @category Internals */
+    raw: Raw;
+    /** @category Internals */
+    loadedAs: ControlledAccount;
+    /** @category Internals */
+    core: CoValueCore;
+    /** @category Internals */
+    schema: CoValueSchema;
 }
 
 /** @category Schemas & CoValues - Abstract interfaces */
