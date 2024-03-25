@@ -5,6 +5,7 @@ import { MailIcon, MenuIcon, SearchIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
+import { BreadCrumb } from "./breadcrumb";
 
 export function Nav({
     mainLogo,
@@ -74,13 +75,14 @@ export function Nav({
                     {mainLogo}
                 </NavLinkLogo>
                 <button
-                    className="flex p-3 rounded-xl"
+                    className="flex p-3 rounded-xl items-center"
                     onMouseDown={() => {
                         setMenuOpen((o) => !o);
                         setSearchOpen(false);
                     }}
                 >
-                    <MenuIcon className="" />
+                    <BreadCrumb items={items}/>
+                    <MenuIcon className="ml-2" />
                 </button>
             </div>
             <div
@@ -168,16 +170,20 @@ export function Nav({
                         <SearchIcon className="" />
                     </button> */}
                     <button
-                        className="flex p-3 rounded-xl"
+                        className="flex p-3 rounded-xl items-center"
                         onMouseDown={() => {
                             setMenuOpen((o) => !o);
                             setSearchOpen(false);
                         }}
                     >
+
                         {menuOpen || searchOpen ? (
-                            <XIcon />
+                            <XIcon/>
                         ) : (
-                            <MenuIcon className="" />
+                            <>
+                            <BreadCrumb items={items}/>
+                            <MenuIcon className="ml-2" />
+                        </>
                         )}
                     </button>
                 </div>
@@ -251,8 +257,8 @@ export function NavLinkLogo({
                 path === href
                     ? "cursor-default"
                     : prominent
-                    ? "hover:opacity-50"
-                    : "opacity-60 hover:opacity-100",
+                      ? "hover:opacity-50"
+                      : "opacity-60 hover:opacity-100",
                 "text-black dark:text-white",
                 className
             )}

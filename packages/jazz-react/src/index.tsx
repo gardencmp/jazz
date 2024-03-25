@@ -5,10 +5,7 @@ import {
     createBrowserContext,
 } from "jazz-browser";
 
-import { AccountSchema, AccountMigration, ID, S } from "jazz-js";
-import { DemoAuth } from "./DemoAuth";
-import { controlledAccountSym } from "jazz-js/src/coValues/account/account";
-import { AnyCoValueSchema } from "jazz-js/src/coValueInterfaces";
+import { AccountSchema, AccountMigration, ID, S, controlledAccountSym, CoValueSchema } from "jazz-js";
 
 export function createReactContext<AccountS extends AccountSchema>({
     auth: authHook,
@@ -104,7 +101,7 @@ export function createReactContext<AccountS extends AccountSchema>({
         return { me: context.me, logOut: context.logOut };
     }
 
-    function useCoState<V extends AnyCoValueSchema>(
+    function useCoState<V extends CoValueSchema>(
         Schema: V,
         id: ID<S.Schema.To<V>> | undefined
     ): S.Schema.To<V> | undefined {
@@ -123,7 +120,7 @@ export function createReactContext<AccountS extends AccountSchema>({
         return state;
     }
 
-    function useAcceptInvite<V extends AnyCoValueSchema>({
+    function useAcceptInvite<V extends CoValueSchema>({
         invitedObjectSchema,
         onAccept,
         forValueHint,

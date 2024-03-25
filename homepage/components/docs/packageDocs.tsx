@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import JazzJSDocs from "../../../docsTmp/jazz-js.json";
 import { Application, JSONOutput, ReflectionKind, SomeType } from "typedoc";
 
-const packages = {
+export const packages = {
     "jazz-js": JazzJSDocs as JSONOutput.ProjectReflection,
 };
 

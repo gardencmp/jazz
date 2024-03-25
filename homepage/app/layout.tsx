@@ -49,9 +49,9 @@ export default function RootLayout({
                         mainLogo={<JazzLogo className="w-24" />}
                         items={[
                             { title: "Toolkit", href: "/" },
-                            { title: "Mesh / Pricing", href: "/mesh" },
+                            { title: "Sync & Storage Mesh", href: "/mesh" },
                             {
-                                title: "Docs & Guides",
+                                title: "Docs",
                                 href: "/docs",
                             },
                             {
