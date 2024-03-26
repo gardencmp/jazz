@@ -31,8 +31,7 @@ import { pipeArguments } from "effect/Pipeable";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 
-function CoStreamOfHelper<
-    Self,
+export function CoStreamOf<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 >(itemSchema: Item) {
     const decodeItem = Schema.decodeSync(itemSchema);
@@ -48,8 +47,8 @@ function CoStreamOfHelper<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            Self & CoStreamOfItem,
-            Self & CoStreamOfItem,
+            CoStreamOfItem,
+            CoStreamOfItem,
             never
         >[Schema.TypeId];
         static pipe() {
@@ -260,20 +259,18 @@ function CoStreamOfHelper<
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<SubClass>() {
+            return CoStreamOfItem as unknown as CoStreamSchema<SubClass, Item>
+        }
     }
 
-    return CoStreamOfItem as CoStreamSchema<Self, Item>;
-}
-
-export function CoStreamOf<Self>() {
-    return function <
-        Item extends
-            | CoValueSchema<any, CoValue<string, any>, string, any>
-            | SchemaWithOutput<JsonValue>,
-    >(itemSchema: Item) {
-        return CoStreamOfHelper<Self, Item>(itemSchema);
+    return CoStreamOfItem as CoStreamSchema<CoStreamOfItem, Item> & {
+        as<SubClass>(): CoStreamSchema<SubClass, Item>;
     };
 }
+
+
 
 class BinaryCoStreamImplClass
     extends SharedCoValueConstructor

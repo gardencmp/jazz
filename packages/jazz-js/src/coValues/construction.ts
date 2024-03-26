@@ -7,11 +7,19 @@ import {
     CoValueCo,
 } from "../coValueInterfaces.js";
 import { UnavailableError } from "../errors.js";
-import { ControlledAccount, ControlledAccountCtx } from "./account/account.js";
+import {
+    Account,
+    ControlledAccount,
+    ControlledAccountCtx,
+} from "./account/account.js";
 import { ValueRef } from "../refs.js";
 import { SubscriptionScope } from "../subscriptionScope.js";
-import { CoValueCore, RawCoValue } from "cojson";
-import { controlledAccountFromNode } from "./account/accountOf.js";
+import { CoValueCore, RawAccount, RawCoValue } from "cojson";
+import {
+    SimpleAccount,
+    controlledAccountFromNode,
+} from "./account/accountOf.js";
+import { Group, SimpleGroup } from "../index.js";
 
 export abstract class SharedCoValueConstructor {
     static loadEf<V extends CoValue>(
@@ -29,9 +37,14 @@ export abstract class SharedCoValueConstructor {
     static async load<V extends CoValue>(
         this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>,
-        options: { as: ControlledAccount }
+        options: {
+            as: ControlledAccount;
+            onProgress?: (progress: number) => void;
+        }
     ): Promise<V | undefined> {
-        const value = await new ValueRef(id as ID<V>, options.as, this).load();
+        const value = await new ValueRef(id as ID<V>, options.as, this).load(
+            options?.onProgress && { onProgress: options.onProgress }
+        );
 
         if (value === "unavailable") {
             return undefined;
@@ -101,6 +114,8 @@ export class CoValueCoImpl<
 {
     core: CoValueCore;
     loadedAs: ControlledAccount;
+    owner: Account | Group;
+
     constructor(
         public id: ID<Self>,
         public type: T,
@@ -111,6 +126,10 @@ export class CoValueCoImpl<
     ) {
         this.core = this.raw.core;
         this.loadedAs = loadedAs || controlledAccountFromNode(raw.core.node);
+        this.owner =
+            this.raw.group instanceof RawAccount
+                ? SimpleAccount.fromRaw(this.raw.group)
+                : SimpleGroup.fromRaw(this.raw.group);
     }
 
     subscribe(listener: (update: Self) => void): () => void {

@@ -93,6 +93,9 @@ export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
     /** @category Value identity */
     type: type;
 
+    /** @category Collaboration */
+    owner: Account | Group;
+
     /** @category Subscription */
     subscribe(listener: (update: Value) => void): () => void;
     /** @category Subscription */

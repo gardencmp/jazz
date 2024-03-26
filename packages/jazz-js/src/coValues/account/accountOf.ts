@@ -231,9 +231,9 @@ export function AccountOf<
     return AccountOfProfileAndRoot as AccountSchema<AccountOfProfileAndRoot & Account<P, R>, P, R>;
 }
 
-export class BaseProfile extends CoMapOf<BaseProfile>()({
+export class BaseProfile extends CoMapOf({
     name: S.string,
-}) {}
+}).as<BaseProfile>() {}
 
 export class SimpleAccount extends AccountOf<
     typeof BaseProfile,

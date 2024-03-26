@@ -6,7 +6,7 @@ import {
     inspect,
 } from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { CoListCo, CoListSchema } from "./coList.js";
+import { CoList, CoListCo, CoListSchema } from "./coList.js";
 import { AST, Schema } from "@effect/schema";
 import { Account } from "../account/account.js";
 import { Group } from "../group/group.js";
@@ -20,8 +20,7 @@ import { subscriptionsScopes } from "../../subscriptionScope.js";
 import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
 import { pipeArguments } from "effect/Pipeable";
 
-export function CoListOfHelper<
-    Self,
+export function CoListOf<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 >(itemSchema: Item) {
     const decodeItem = Schema.decodeSync(itemSchema);
@@ -39,8 +38,8 @@ export function CoListOfHelper<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            Self & CoListOfItem,
-            Self & CoListOfItem,
+            CoListOfItem,
+            CoListOfItem,
             never
         >[Schema.TypeId];
         static pipe() {
@@ -258,15 +257,13 @@ export function CoListOfHelper<
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<SubClass>() {
+            return CoListOfItem as unknown as CoListSchema<SubClass, Item>;
+        }
     }
 
-    return CoListOfItem as CoListSchema<Self, Item>;
-}
-
-export function CoListOf<Self>() {
-    return function narrowed<
-        Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
-    >(itemSchema: Item) {
-        return CoListOfHelper<Self, Item>(itemSchema);
+    return CoListOfItem as CoListSchema<CoListOfItem, Item> & {
+        as<SubClass>(): CoListSchema<SubClass, Item>
     };
 }

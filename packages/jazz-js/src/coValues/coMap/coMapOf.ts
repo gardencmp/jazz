@@ -34,8 +34,7 @@ import {
 } from "../../schemaHelpers.js";
 import { pipeArguments } from "effect/Pipeable";
 
-export function CoMapOfHelper<
-    Self,
+export function CoMapOf<
     Fields extends CoMapFields,
     IndexSig extends IndexSignature,
 >(fields: Fields, indexSignature?: IndexSig) {
@@ -51,8 +50,8 @@ export function CoMapOfHelper<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            Self & CoMapOfFields,
-            Self & CoMapOfFields,
+            CoMapOfFields,
+            CoMapOfFields,
             never
         >[Schema.TypeId];
         static pipe() {
@@ -397,22 +396,13 @@ export function CoMapOfHelper<
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<SubClass>() {
+            return CoMapOfFields as unknown as CoMapSchema<SubClass, Fields, IndexSig>;
+        }
     }
 
-    return CoMapOfFields as CoMapSchema<Self, Fields, IndexSig>;
-}
-
-export function CoMapOf<Self>() {
-    return function narrowed<
-        Fields extends CoMapFields,
-        IndexSignature extends {
-            key: SchemaWithInputAndOutput<string, string>;
-            value: CoValueSchema | SchemaWithOutput<JsonValue>;
-        },
-    >(fields: Fields, indexSignature?: IndexSignature) {
-        return CoMapOfHelper<Self, Fields, IndexSignature>(
-            fields,
-            indexSignature
-        );
+    return CoMapOfFields as CoMapSchema<CoMapOfFields, Fields, IndexSig> & {
+        as<SubClass>(): CoMapSchema<SubClass, Fields, IndexSig>;
     };
 }

@@ -20,11 +20,11 @@ describe("Simple CoMap operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestMap extends Co.map<TestMap>()({
+    class TestMap extends Co.map({
         color: S.string,
         height: S.number,
         birthday: S.Date,
-    }) {
+    }).as<TestMap>() {
         get roughColor() {
             return this.color + "ish";
         }
@@ -65,24 +65,24 @@ describe("Simple CoMap operations", async () => {
 });
 
 describe("CoMap resolution", async () => {
-    class TwiceNestedMap extends Co.map<TwiceNestedMap>()({
+    class TwiceNestedMap extends Co.map({
         taste: S.string,
-    }) {}
+    }).as<TwiceNestedMap>() {}
 
-    class NestedMap extends Co.map<NestedMap>()({
+    class NestedMap extends Co.map({
         name: S.string,
         twiceNested: TwiceNestedMap,
-    }) {
+    }).as<NestedMap>() {
         get fancyName() {
             return "Sir " + this.name;
         }
     }
 
-    class TestMap extends Co.map<TestMap>()({
+    class TestMap extends Co.map({
         color: S.string,
         height: S.number,
         nested: NestedMap,
-    }) {
+    }).as<TestMap>() {
         get roughColor() {
             return this.color + "ish";
         }
@@ -183,9 +183,7 @@ describe("CoMap resolution", async () => {
 
         loadedMap!.nested = otherNestedMap;
         expect(loadedMap?.nested?.name).toEqual("otherNested");
-        expect(loadedMap?.co.refs.nested?.id).toEqual(
-            otherNestedMap.co.id
-        );
+        expect(loadedMap?.co.refs.nested?.id).toEqual(otherNestedMap.co.id);
         expect(loadedMap?.co.refs.nested?.value).toEqual(otherNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sweet");
         expect(loadedMap?.nested?.co.refs.twiceNested?.value).toBeDefined();
@@ -277,10 +275,10 @@ describe("CoMap resolution", async () => {
         );
     });
 
-    class TestMapWithOptionalRef extends Co.map<TestMapWithOptionalRef>()({
+    class TestMapWithOptionalRef extends Co.map({
         color: S.string,
         nested: S.optional(NestedMap),
-    }) {}
+    }).as<TestMapWithOptionalRef>() {}
 
     test("Construction with optional", async () => {
         const me = await SimpleAccount.create({
@@ -320,10 +318,10 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?.co.raw).toBeDefined();
     });
 
-    class TestRecord extends Co.map<TestRecord>()(
+    class TestRecord extends Co.map(
         { color: S.string },
         { key: S.string, value: S.string }
-    ) {}
+    ).as<TestRecord>() {}
 
     test("Construction with index signature", async () => {
         const me = await SimpleAccount.create({

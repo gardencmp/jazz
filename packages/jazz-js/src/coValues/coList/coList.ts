@@ -3,6 +3,7 @@ import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { CoValue, CoValueCo, CoValueSchema } from "../../coValueInterfaces.js";
 import { Schema } from "@effect/schema";
 import { ValueRef } from "../../refs.js";
+import { Account } from "../account/account.js";
 
 /**
  *  @category Schemas & CoValues - CoList
@@ -41,4 +42,10 @@ export interface CoListCo<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 > extends CoValueCo<"CoList", Self, RawCoList> {
     refs: { [idx: number]: ValueRef<Schema.Schema.To<Item>> };
+    edits: { [idx: number]: {
+        value: Schema.Schema.To<Item>
+        ref: Item extends CoValueSchema ? ValueRef<Schema.Schema.To<Item>> : never;
+        by: Account
+        madeAt: Date
+    }}
 }

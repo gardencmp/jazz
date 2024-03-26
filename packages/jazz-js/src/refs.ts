@@ -54,9 +54,10 @@ export class ValueRef<V extends CoValue> {
         });
     }
 
-    async load(): Promise<V | "unavailable"> {
+    async load(options?: {onProgress: (p: number) => void}): Promise<V | "unavailable"> {
         const raw = await this.controlledAccount.co.core.node.load(
-            this.id as unknown as CoID<RawCoValue>
+            this.id as unknown as CoID<RawCoValue>,
+            options?.onProgress
         );
         if (raw === "unavailable") {
             return "unavailable";

@@ -29,7 +29,7 @@ describe("Simple CoStream operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestStream extends Co.stream<TestStream>()(S.string) {}
+    class TestStream extends Co.stream(S.string).as<TestStream>() {}
 
     const stream = new TestStream(["milk"], { owner: me });
 
@@ -52,15 +52,15 @@ describe("Simple CoStream operations", async () => {
 });
 
 describe("CoStream resolution", async () => {
-    class TwiceNestedStream extends Co.stream<TwiceNestedStream>()(S.string) {
+    class TwiceNestedStream extends Co.stream(S.string).as<TwiceNestedStream>() {
         fancyValueOf(account: ID<Account>) {
             return "Sir " + this.by[account];
         }
     }
 
-    class NestedStream extends Co.stream<NestedStream>()(TwiceNestedStream) {}
+    class NestedStream extends Co.stream(TwiceNestedStream).as<NestedStream>() {}
 
-    class TestStream extends Co.stream<TestStream>()(NestedStream) {}
+    class TestStream extends Co.stream(NestedStream).as<TestStream>() {}
 
     const initNodeAndStream = async () => {
         const me = await SimpleAccount.create({

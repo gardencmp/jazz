@@ -20,7 +20,7 @@ describe("Simple CoList operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestList extends Co.list<TestList>()(S.string) {}
+    class TestList extends Co.list(S.string).as<TestList>() {}
 
     const list = new TestList(["bread", "butter", "onion"], { owner: me });
 
@@ -109,15 +109,15 @@ describe("Simple CoList operations", async () => {
 });
 
 describe("CoList resolution", async () => {
-    class TwiceNestedList extends Co.list<TwiceNestedList>()(S.string) {
+    class TwiceNestedList extends Co.list(S.string).as<TwiceNestedList>() {
         joined() {
             return this.join(",");
         }
     }
 
-    class NestedList extends Co.list<NestedList>()(TwiceNestedList) {}
+    class NestedList extends Co.list(TwiceNestedList).as<NestedList>() {}
 
-    class TestList extends Co.list<TestList>()(NestedList) {}
+    class TestList extends Co.list(NestedList).as<TestList>() {}
 
     const initNodeAndList = async () => {
         const me = await SimpleAccount.create({
