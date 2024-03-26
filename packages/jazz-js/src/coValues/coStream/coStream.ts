@@ -7,7 +7,6 @@ import {
 } from "cojson";
 import {
     CoValue,
-    CoValueCo,
     CoValueSchema,
     ID,
     SubclassedConstructor,
@@ -20,28 +19,28 @@ import { Group } from "../group/group.js";
 
 export type CoStream<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
     CoValue<"CoStream", RawCoStream> & {
-        co: CoStreamCo<CoStream<Item>, Item>;
-        push(...items: Schema.Schema.To<Item>[]): void;
-    } & {
         by: { [key: ID<Account>]: Schema.Schema.To<Item> };
         in: { [key: SessionID]: Schema.Schema.To<Item> };
-    };
-
-export interface CoStreamCo<Self extends CoValue, Item>
-    extends CoValueCo<"CoStream", Self, RawCoStream> {
-    refs: {
-        by: {
-            [key: ID<Account>]: Item extends CoValueSchema<infer _, infer Value>
-                ? ValueRef<Value>
-                : never;
+        push(...items: Schema.Schema.To<Item>[]): void;
+        _refs: {
+            by: {
+                [key: ID<Account>]: Item extends CoValueSchema<
+                    infer _,
+                    infer Value
+                >
+                    ? ValueRef<Value>
+                    : never;
+            };
+            in: {
+                [key: SessionID]: Item extends CoValueSchema<
+                    infer _,
+                    infer Value
+                >
+                    ? ValueRef<Value>
+                    : never;
+            };
         };
-        in: {
-            [key: SessionID]: Item extends CoValueSchema<infer _, infer Value>
-                ? ValueRef<Value>
-                : never;
-        };
     };
-}
 
 export interface CoStreamSchema<
     Self,
@@ -58,9 +57,7 @@ export interface BinaryCoStream
     start(options: BinaryStreamInfo): void;
     push(data: Uint8Array): void;
     end(): void;
-    getChunks(options?: {
-        allowUnfinished?: boolean;
-    }):
+    getChunks(options?: { allowUnfinished?: boolean }):
         | (BinaryStreamInfo & {
               chunks: Uint8Array[];
               finished: boolean;

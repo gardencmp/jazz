@@ -36,13 +36,13 @@ export class SubscriptionScope<
             value: root,
             rawUnsub: () => {}, // placeholder
         };
-        this.entries.set(root.co.id, this.rootEntry);
+        this.entries.set(root.id, this.rootEntry);
 
         subscriptionsScopes.set(root, this);
 
-        this.subscriber = root.co.loadedAs;
+        this.subscriber = root._loadedAs;
         this.onUpdate = onUpdate;
-        this.rootEntry.rawUnsub = root.co.core.subscribe(
+        this.rootEntry.rawUnsub = root._raw.core.subscribe(
             (rawUpdate: RawCoValue | undefined) => {
                 if (!rawUpdate) return;
                 this.rootEntry.value = rootSchema.fromRaw(
@@ -77,7 +77,7 @@ export class SubscriptionScope<
                 immediatelyUnsub: false,
             } as const;
             this.entries.set(accessedOrSetId, loadingEntry);
-            this.subscriber.co.core.node
+            this.subscriber._raw.core.node
                 .loadCoValueCore(accessedOrSetId)
                 .then((core) => {
                     if (

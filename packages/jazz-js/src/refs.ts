@@ -19,7 +19,7 @@ export class ValueRef<V extends CoValue> {
     get value() {
         if (this.cachedValue) return this.cachedValue;
         // TODO: cache it for object identity!!!
-        const raw = this.controlledAccount.co.core.node.getLoaded(
+        const raw = this.controlledAccount._raw.core.node.getLoaded(
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
@@ -55,7 +55,7 @@ export class ValueRef<V extends CoValue> {
     }
 
     async load(options?: {onProgress: (p: number) => void}): Promise<V | "unavailable"> {
-        const raw = await this.controlledAccount.co.core.node.load(
+        const raw = await this.controlledAccount._raw.core.node.load(
             this.id as unknown as CoID<RawCoValue>,
             options?.onProgress
         );
@@ -81,7 +81,7 @@ export class ValueRef<V extends CoValue> {
 }
 
 export function makeRefs<F extends { [key: string | number]: CoValue }>(
-    getIdForKey: <K extends keyof F>(key: K) => F[K]["co"]["id"] | undefined,
+    getIdForKey: <K extends keyof F>(key: K) => F[K]["id"] | undefined,
     getKeysWithIds: () => (keyof F)[],
     controlledAccount: ControlledAccount,
     propDefForKey: <K extends keyof F>(key: K) => PropDef<F[K]>

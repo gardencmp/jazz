@@ -1,10 +1,5 @@
 import * as S from "@effect/schema/Schema";
-import {
-    CoValue,
-    ID,
-    CoValueSchema,
-    CoValueCo,
-} from "../../coValueInterfaces.js";
+import { CoValue, ID, CoValueSchema } from "../../coValueInterfaces.js";
 import { CoMapSchema } from "../coMap/coMap.js";
 import {
     AgentSecret,
@@ -32,19 +27,19 @@ export interface Account<
     profile?: S.Schema.To<P>;
     root?: S.Schema.To<R>;
     isMe: boolean;
-    co: CoValueCo<"Account", this, RawAccount | RawControlledAccount> & {
-        refs: {
-            profile: ValueRef<S.Schema.To<P>>;
-            root: ValueRef<S.Schema.To<R>>;
-        };
+    _refs: {
+        profile: ValueRef<S.Schema.To<P>>;
+        root: ValueRef<S.Schema.To<R>>;
     };
 }
 
 export function isAccount(value: CoValue): value is Account {
-    return value.co.type === "Account";
+    return value._type === "Account";
 }
 
-export function isControlledAccount(value: CoValue): value is ControlledAccount {
+export function isControlledAccount(
+    value: CoValue
+): value is ControlledAccount {
     return isAccount(value) && value.isMe;
 }
 
@@ -61,9 +56,7 @@ export type ControlledAccount<
             valueSchema: V
         ): Promise<V>;
 
-        co: Account["co"] & {
-            sessionID: SessionID;
-        };
+        sessionID: SessionID;
     };
 
 export interface AccountSchema<

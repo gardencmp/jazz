@@ -34,19 +34,19 @@ describe("Simple CoStream operations", async () => {
     const stream = new TestStream(["milk"], { owner: me });
 
     test("Construction", () => {
-        expect(stream.by[me.co.id]).toEqual("milk");
-        expect(stream.in[me.co.sessionID]).toEqual("milk");
+        expect(stream.by[me.id]).toEqual("milk");
+        expect(stream.in[me.sessionID]).toEqual("milk");
     });
 
     describe("Mutation", () => {
         test("pushing", () => {
             stream.push("bread");
-            expect(stream.by[me.co.id]).toEqual("bread");
-            expect(stream.in[me.co.sessionID]).toEqual("bread");
+            expect(stream.by[me.id]).toEqual("bread");
+            expect(stream.in[me.sessionID]).toEqual("bread");
 
             stream.push("butter");
-            expect(stream.by[me.co.id]).toEqual("butter");
-            expect(stream.in[me.co.sessionID]).toEqual("butter");
+            expect(stream.by[me.id]).toEqual("butter");
+            expect(stream.in[me.sessionID]).toEqual("butter");
         });
     });
 });
@@ -82,7 +82,7 @@ describe("CoStream resolution", async () => {
 
     test("Construction", async () => {
         const { me, stream } = await initNodeAndStream();
-        expect(stream.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toEqual("milk");
+        expect(stream.by[me.id]?.by[me.id]?.by[me.id]).toEqual("milk");
     });
 
     test("Loading and availability", async () => {
@@ -92,52 +92,52 @@ describe("CoStream resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" }
         );
-        me.co.raw.core.node.syncManager.addPeer(secondPeer);
+        me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.co.id,
-            accountSecret: me.co.raw.agentSecret,
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.co.id as any),
+            sessionID: newRandomSessionID(me.id as any),
         });
 
-        const loadedStream = await TestStream.load(stream.co.id, {
+        const loadedStream = await TestStream.load(stream.id, {
             as: meOnSecondPeer,
         });
 
-        expect(loadedStream?.by[me.co.id]).toEqual(undefined);
-        expect(loadedStream?.co.refs.by[me.co.id]?.id).toEqual(
-            stream.by[me.co.id]?.co.id
+        expect(loadedStream?.by[me.id]).toEqual(undefined);
+        expect(loadedStream?._refs.by[me.id]?.id).toEqual(
+            stream.by[me.id]?.id
         );
 
         const loadedNestedStream = await NestedStream.load(
-            stream.by[me.co.id]!.co.id,
+            stream.by[me.id]!.id,
             { as: meOnSecondPeer }
         );
 
-        expect(loadedStream?.by[me.co.id]).toEqual(loadedNestedStream);
-        expect(loadedStream?.by[me.co.id]?.by[me.co.id]).toEqual(undefined);
-        expect(loadedStream?.co.refs.by[me.co.id]?.value).toEqual(
+        expect(loadedStream?.by[me.id]).toEqual(loadedNestedStream);
+        expect(loadedStream?.by[me.id]?.by[me.id]).toEqual(undefined);
+        expect(loadedStream?._refs.by[me.id]?.value).toEqual(
             loadedNestedStream
         );
-        expect(loadedStream?.by[me.co.id]?.co.refs.by[me.co.id]?.id).toEqual(
-            stream.by[me.co.id]?.by[me.co.id]?.co.id
+        expect(loadedStream?.by[me.id]?._refs.by[me.id]?.id).toEqual(
+            stream.by[me.id]?.by[me.id]?.id
         );
 
         const loadedTwiceNestedStream = await TwiceNestedStream.load(
-            stream.by[me.co.id]!.by[me.co.id]!.co.id,
+            stream.by[me.id]!.by[me.id]!.id,
             { as: meOnSecondPeer }
         );
 
-        expect(loadedStream?.by[me.co.id]?.by[me.co.id]).toEqual(
+        expect(loadedStream?.by[me.id]?.by[me.id]).toEqual(
             loadedTwiceNestedStream
         );
         expect(
-            loadedStream?.by[me.co.id]?.by[me.co.id]?.fancyValueOf(me.co.id)
+            loadedStream?.by[me.id]?.by[me.id]?.fancyValueOf(me.id)
         ).toEqual("Sir milk");
-        expect(loadedStream?.co.refs.by[me.co.id]?.value).toEqual(
+        expect(loadedStream?._refs.by[me.id]?.value).toEqual(
             loadedNestedStream
         );
-        expect(loadedStream?.by[me.co.id]?.co.refs.by[me.co.id]?.value).toEqual(
+        expect(loadedStream?.by[me.id]?._refs.by[me.id]?.value).toEqual(
             loadedTwiceNestedStream
         );
 
@@ -146,15 +146,15 @@ describe("CoStream resolution", async () => {
             { owner: meOnSecondPeer }
         );
         loadedStream?.push(otherNestedStream);
-        expect(loadedStream?.by[me.co.id]).toEqual(otherNestedStream);
-        expect(loadedStream?.co.refs.by[me.co.id]?.value).toEqual(
+        expect(loadedStream?.by[me.id]).toEqual(otherNestedStream);
+        expect(loadedStream?._refs.by[me.id]?.value).toEqual(
             otherNestedStream
         );
-        expect(loadedStream?.by[me.co.id]?.by[me.co.id]).toEqual(
-            otherNestedStream.by[me.co.id]
+        expect(loadedStream?.by[me.id]?.by[me.id]).toEqual(
+            otherNestedStream.by[me.id]
         );
         expect(
-            loadedStream?.by[me.co.id]?.by[me.co.id]?.fancyValueOf(me.co.id)
+            loadedStream?.by[me.id]?.by[me.id]?.fancyValueOf(me.id)
         ).toEqual("Sir butter");
     });
 
@@ -167,13 +167,13 @@ describe("CoStream resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
 
-        me.co.raw.core.node.syncManager.addPeer(secondAsPeer);
+        me._raw.core.node.syncManager.addPeer(secondAsPeer);
 
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.co.id,
-            accountSecret: me.co.raw.agentSecret,
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.co.id as any),
+            sessionID: newRandomSessionID(me.id as any),
         });
 
         await Effect.runPromise(
@@ -181,21 +181,21 @@ describe("CoStream resolution", async () => {
                 const queue = yield* $(Queue.unbounded<TestStream>());
 
                 TestStream.subscribe(
-                    stream.co.id,
+                    stream.id,
                     { as: meOnSecondPeer },
                     (subscribedStream) => {
                         console.log(
-                            "subscribedStream.by[me.co.id]",
-                            subscribedStream.by[me.co.id]
+                            "subscribedStream.by[me.id]",
+                            subscribedStream.by[me.id]
                         );
                         console.log(
-                            "subscribedStream.by[me.co.id]?.by[me.co.id]",
-                            subscribedStream.by[me.co.id]?.by[me.co.id]
+                            "subscribedStream.by[me.id]?.by[me.id]",
+                            subscribedStream.by[me.id]?.by[me.id]
                         );
                         console.log(
-                            "subscribedStream.by[me.co.id]?.by[me.co.id]?.by[me.co.id]",
-                            subscribedStream.by[me.co.id]?.by[me.co.id]?.by[
-                                me.co.id
+                            "subscribedStream.by[me.id]?.by[me.id]?.by[me.id]",
+                            subscribedStream.by[me.id]?.by[me.id]?.by[
+                                me.id
                             ]
                         );
                         Effect.runPromise(Queue.offer(queue, subscribedStream));
@@ -206,22 +206,22 @@ describe("CoStream resolution", async () => {
                 const te: T = stream;
 
                 const update1 = yield* $(Queue.take(queue));
-                expect(update1.by[me.co.id]).toEqual(undefined);
+                expect(update1.by[me.id]).toEqual(undefined);
 
                 const update2 = yield* $(Queue.take(queue));
-                expect(update2.by[me.co.id]).toBeDefined();
-                expect(update2.by[me.co.id]?.by[me.co.id]).toBeUndefined();
+                expect(update2.by[me.id]).toBeDefined();
+                expect(update2.by[me.id]?.by[me.id]).toBeUndefined();
 
                 const update3 = yield* $(Queue.take(queue));
-                expect(update3.by[me.co.id]?.by[me.co.id]).toBeDefined();
-                expect(update3.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                expect(update3.by[me.id]?.by[me.id]).toBeDefined();
+                expect(update3.by[me.id]?.by[me.id]?.by[me.id]).toBe(
                     "milk"
                 );
 
-                update3.by[me.co.id]!.by[me.co.id]!.push("bread");
+                update3.by[me.id]!.by[me.id]!.push("bread");
 
                 const update4 = yield* $(Queue.take(queue));
-                expect(update4.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                expect(update4.by[me.id]?.by[me.id]?.by[me.id]).toBe(
                     "bread"
                 );
 
@@ -237,14 +237,14 @@ describe("CoStream resolution", async () => {
                 update4.push(newNested);
 
                 const update5 = yield* $(Queue.take(queue));
-                expect(update5.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                expect(update5.by[me.id]?.by[me.id]?.by[me.id]).toBe(
                     "butter"
                 );
 
                 // we get updates when the new nested stream changes
                 newTwiceNested.push("jam");
                 const update6 = yield* $(Queue.take(queue));
-                expect(update6.by[me.co.id]?.by[me.co.id]?.by[me.co.id]).toBe(
+                expect(update6.by[me.id]?.by[me.id]?.by[me.id]).toBe(
                     "jam"
                 );
             })
@@ -311,15 +311,15 @@ describe("BinaryCoStream loading & Subscription", async () => {
             "second",
             { peer1role: "server", peer2role: "client" }
         );
-        me.co.raw.core.node.syncManager.addPeer(secondAsPeer);
+        me._raw.core.node.syncManager.addPeer(secondAsPeer);
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.co.id,
-            accountSecret: me.co.raw.agentSecret,
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.co.id as any),
+            sessionID: newRandomSessionID(me.id as any),
         });
 
-        const loadedStream = await Co.binaryStream.load(stream.co.id, {
+        const loadedStream = await Co.binaryStream.load(stream.id, {
             as: meOnSecondPeer,
         });
 
@@ -341,13 +341,13 @@ describe("BinaryCoStream loading & Subscription", async () => {
             { peer1role: "server", peer2role: "client" }
         );
 
-        me.co.raw.core.node.syncManager.addPeer(secondAsPeer);
+        me._raw.core.node.syncManager.addPeer(secondAsPeer);
 
         const meOnSecondPeer = await SimpleAccount.become({
-            accountID: me.co.id,
-            accountSecret: me.co.raw.agentSecret,
+            accountID: me.id,
+            accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
-            sessionID: newRandomSessionID(me.co.id as any),
+            sessionID: newRandomSessionID(me.id as any),
         });
 
         await Effect.runPromise(
@@ -355,7 +355,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
                 const queue = yield* $(Queue.unbounded<BinaryCoStream>());
 
                 Co.binaryStream.subscribe(
-                    stream.co.id,
+                    stream.id,
                     { as: meOnSecondPeer },
                     (subscribedStream) => {
                         Effect.runPromise(Queue.offer(queue, subscribedStream));

@@ -1,24 +1,31 @@
-import { JsonValue, RawCoList } from "cojson";
 import {
-    CoValue,
-    CoValueSchema,
-    ID,
-    inspect,
-} from "../../coValueInterfaces.js";
+    CoValueCore,
+    JsonValue,
+    RawAccount,
+    RawCoList,
+    cojsonInternals,
+} from "cojson";
+import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { CoList, CoListCo, CoListSchema } from "./coList.js";
+import { CoListBase, CoListSchema } from "./coList.js";
 import { AST, Schema } from "@effect/schema";
-import { Account } from "../account/account.js";
+import { Account, ControlledAccount } from "../account/account.js";
 import { Group } from "../group/group.js";
 import {
     constructorOfSchemaSym,
     propertyIsCoValueSchema,
 } from "../resolution.js";
-import { makeRefs } from "../../refs.js";
-import { controlledAccountFromNode } from "../account/accountOf.js";
+import { ValueRef, makeRefs } from "../../refs.js";
+import {
+    SimpleAccount,
+    controlledAccountFromNode,
+} from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
-import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
+import { SharedCoValueConstructor } from "../construction.js";
 import { pipeArguments } from "effect/Pipeable";
+import { SimpleGroup } from "../group/groupOf.js";
+import { Stream } from "effect";
+import { UnavailableError } from "../../errors.js";
 
 export function CoListOf<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
@@ -28,7 +35,7 @@ export function CoListOf<
 
     class CoListOfItem
         extends Array<Schema.Schema.To<Item>>
-        implements CoValue<"CoList", RawCoList>
+        implements CoListBase<Item>
     {
         static get ast() {
             return AST.setAnnotation(
@@ -49,7 +56,13 @@ export function CoListOf<
         static type = "CoList" as const;
 
         id!: ID<this>;
-        co!: CoListCo<this, Item>;
+        _type!: "CoList";
+        _owner!: Account | Group;
+        _refs!: CoListBase<Item>["_refs"];
+        _edits!: CoListBase<Item>["_edits"];
+        _raw!: RawCoList;
+        _loadedAs!: ControlledAccount;
+        _schema!: typeof CoListOfItem;
 
         constructor(_init: undefined, options: { fromRaw: RawCoList });
         constructor(
@@ -81,47 +94,113 @@ export function CoListOf<
             if ("fromRaw" in options) {
                 raw = options.fromRaw;
             } else {
-                const rawOwner = options.owner.co.raw;
+                const rawOwner = options.owner._raw;
 
                 const rawInit = itemsAreCoValues
-                    ? init?.map((item) => item.co.id)
+                    ? init?.map((item) => item.id)
                     : init?.map((item) => encodeItem(item));
 
                 raw = rawOwner.createList(rawInit);
             }
 
-            Object.defineProperty(this, "co", {
-                value: new CoValueCoImpl(
-                    raw.id as unknown as ID<this>,
-                    "CoList",
-                    raw,
-                    this.constructor as CoListSchema<this, Item>,
-                    itemsAreCoValues
-                        ? makeRefs<{ [key: number]: Schema.Schema.To<Item> }>(
-                              (idx) => raw.get(idx),
-                              () =>
-                                  Array.from(
-                                      { length: raw.entries().length },
-                                      (_, idx) => idx
-                                  ),
-                              controlledAccountFromNode(raw.core.node),
-                              (_idx) => itemSchema
-                          )
-                        : []
-                ) satisfies CoListCo<this, Item>,
-                writable: false,
-                enumerable: false,
+            const refs = itemsAreCoValues
+                ? makeRefs<{ [key: number]: Schema.Schema.To<Item> }>(
+                      (idx) => raw.get(idx),
+                      () =>
+                          Array.from(
+                              { length: raw.entries().length },
+                              (_, idx) => idx
+                          ),
+                      controlledAccountFromNode(raw.core.node),
+                      (_idx) => itemSchema
+                  )
+                : [];
+
+            const getEdits = () =>
+                new Proxy(this, {
+                    get: (target, key, receiver) => {
+                        if (typeof key === "string" && !isNaN(+key)) {
+                            const rawEdit = raw.editAt(Number(key));
+                            if (!rawEdit) {
+                                return undefined;
+                            }
+
+                            return {
+                                get value() {
+                                    if (itemsAreCoValues) {
+                                        return this.ref?.accessFrom(receiver);
+                                    } else {
+                                        return (
+                                            rawEdit?.value &&
+                                            decodeItem(rawEdit?.value)
+                                        );
+                                    }
+                                },
+
+                                get ref() {
+                                    if (itemsAreCoValues) {
+                                        return (
+                                            rawEdit?.value &&
+                                            new ValueRef(
+                                                rawEdit?.value as ID<CoListOfItem>,
+                                                receiver.loadedAs,
+                                                itemSchema
+                                            )
+                                        );
+                                    }
+                                },
+
+                                get by() {
+                                    if (
+                                        cojsonInternals.isAccountID(rawEdit.by)
+                                    ) {
+                                        return new ValueRef(
+                                            rawEdit.by as unknown as ID<Account>,
+                                            receiver.loadedAs,
+                                            SimpleAccount
+                                        );
+                                    }
+                                },
+
+                                madeAt: rawEdit.at,
+                                tx: rawEdit.tx
+                            };
+                        } else if (key === "length") {
+                            return raw.entries().length;
+                        }
+                        return Reflect.get(target, key, receiver);
+                    },
+                });
+
+            Object.defineProperties(this, {
+                id: { value: raw.id, enumerable: false },
+                _type: { value: "CoList", enumerable: false },
+                _owner: {
+                    get: () =>
+                        raw.group instanceof RawAccount
+                            ? SimpleAccount.fromRaw(raw.group)
+                            : SimpleGroup.fromRaw(raw.group),
+                    enumerable: false,
+                },
+                _refs: { value: refs, enumerable: false },
+                _edits: { get: getEdits, enumerable: false },
+                _raw: { value: raw, enumerable: false },
+                _loadedAs: {
+                    get: () => controlledAccountFromNode(raw.core.node),
+                    enumerable: false,
+                },
+                _schema: { value: this.constructor, enumerable: false },
             });
 
             return new Proxy(this, {
                 get(target, key, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
                         if (itemsAreCoValues) {
-                            return target.co.refs[Number(key)]?.accessFrom(receiver)
-                        } else {
-                            return decodeItem(
-                                raw.get(Number(key))
+                            return target._refs[Number(key)]?.accessFrom(
+                                receiver
                             );
+                        } else {
+                            return decodeItem(raw.get(Number(key)));
                         }
                     } else if (key === "length") {
                         return raw.entries().length;
@@ -131,17 +210,15 @@ export function CoListOf<
                 set(target, key, value, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
                         if (itemsAreCoValues) {
-                            raw.replace(Number(key), value.co.id);
+                            raw.replace(Number(key), value.id);
                             subscriptionsScopes
                                 .get(receiver)
-                                ?.onRefAccessedOrSet(value.co.id);
+                                ?.onRefAccessedOrSet(value.id);
                             return true;
                         } else {
                             raw.replace(
                                 Number(key),
-                                encodeItem(
-                                    value
-                                ) as JsonValue
+                                encodeItem(value) as JsonValue
                             );
                             return true;
                         }
@@ -161,16 +238,14 @@ export function CoListOf<
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
             } else {
-                rawItems = items.map((item) =>
-                    encodeItem(item)
-                );
+                rawItems = items.map((item) => encodeItem(item));
             }
 
             for (const item of rawItems) {
-                this.co.raw.append(item);
+                this._raw.append(item);
             }
 
-            return this.co.raw.entries().length;
+            return this._raw.entries().length;
         }
 
         unshift(...items: Schema.Schema.To<Item>[]): number {
@@ -178,22 +253,20 @@ export function CoListOf<
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
             } else {
-                rawItems = items.map((item) =>
-                    encodeItem(item)
-                );
+                rawItems = items.map((item) => encodeItem(item));
             }
 
             for (const item of rawItems) {
-                this.co.raw.prepend(item);
+                this._raw.prepend(item);
             }
 
-            return this.co.raw.entries().length;
+            return this._raw.entries().length;
         }
 
         pop(): Schema.Schema.To<Item> | undefined {
             const last = this[this.length - 1];
 
-            this.co.raw.delete(this.length - 1);
+            this._raw.delete(this.length - 1);
 
             return last;
         }
@@ -201,7 +274,7 @@ export function CoListOf<
         shift(): Schema.Schema.To<Item> | undefined {
             const first = this[0];
 
-            this.co.raw.delete(0);
+            this._raw.delete(0);
 
             return first;
         }
@@ -218,21 +291,19 @@ export function CoListOf<
                 idxToDelete > start;
                 idxToDelete--
             ) {
-                this.co.raw.delete(idxToDelete);
+                this._raw.delete(idxToDelete);
             }
 
             let rawItems;
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
             } else {
-                rawItems = items.map((item) =>
-                    encodeItem(item)
-                );
+                rawItems = items.map((item) => encodeItem(item));
             }
 
             let appendAfter = start;
             for (const item of rawItems) {
-                this.co.raw.append(item, appendAfter);
+                this._raw.append(item, appendAfter);
                 appendAfter++;
             }
 
@@ -261,9 +332,24 @@ export function CoListOf<
         static as<SubClass>() {
             return CoListOfItem as unknown as CoListSchema<SubClass, Item>;
         }
+
+        subscribe(listener: (update: this) => void): () => void {
+            return SharedCoValueConstructor.prototype.subscribe.call(
+                this,
+                listener as unknown as (
+                    update: SharedCoValueConstructor
+                ) => void
+            );
+        }
+
+        subscribeEf() {
+            return SharedCoValueConstructor.prototype.subscribeEf.call(
+                this
+            ) as unknown as Stream.Stream<this, UnavailableError, never>;
+        }
     }
 
     return CoListOfItem as CoListSchema<CoListOfItem, Item> & {
-        as<SubClass>(): CoListSchema<SubClass, Item>
+        as<SubClass>(): CoListSchema<SubClass, Item>;
     };
 }

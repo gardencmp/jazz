@@ -1,4 +1,4 @@
-import { CoValue, CoValueCo, CoValueSchema } from "../../coValueInterfaces.js";
+import { CoValue, CoValueSchema } from "../../coValueInterfaces.js";
 import { JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import {
@@ -16,18 +16,31 @@ export type IndexSignature = {
 
 /**
  *  @category Schemas & CoValues - CoMap
-*/
+ */
 export interface CoMapBase<
     Fields extends CoMapFields,
     IdxSig extends IndexSignature = never,
 > extends CoValue<"CoMap", RawCoMap> {
-    /** @category Collaboration metadata */
-    co: CoMapCo<this, Fields, IdxSig>;
+    /** @category Referenced CoValues */
+    readonly _refs: {
+        [Key in keyof Fields]: Fields[Key] extends CoValueSchema<
+            infer Self,
+            infer Value
+        >
+            ? ValueRef<Self & Value>
+            : never;
+    } & {
+        [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<
+            IdxSig["value"]
+        > extends CoValueSchema<infer Self, infer Value>
+            ? ValueRef<Self & Value>
+            : never;
+    };
 }
 
 /**
  *  @category Schemas & CoValues - CoMap
-*/
+ */
 export type CoMap<
     Fields extends CoMapFields,
     IdxSig extends IndexSignature = never,
@@ -64,28 +77,4 @@ export type CoMapInit<
     IdxSig extends IndexSignature = never,
 > = Schema.ToStruct<Fields> & {
     [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
-};
-
-/**
- *  @category Schemas & CoValues - CoMap
-*/
-export type CoMapCo<
-    Self extends CoValue,
-    Fields extends CoMapFields,
-    IdxSig extends IndexSignature = never,
-> = CoValueCo<"CoMap", Self, RawCoMap> & {
-    readonly refs: {
-        [Key in keyof Fields]: Fields[Key] extends CoValueSchema<
-            infer Self,
-            infer Value
-        >
-            ? ValueRef<Self & Value>
-            : never;
-    } & {
-        [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<
-            IdxSig["value"]
-        > extends CoValueSchema<infer Self, infer Value>
-            ? ValueRef<Self & Value>
-            : never;
-    };
 };

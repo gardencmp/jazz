@@ -1,1 +1,1 @@
-export { CoListBase, CoListCo } from "./coList.js";
+export { CoListBase } from "./coList.js";

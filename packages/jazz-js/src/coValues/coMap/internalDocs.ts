@@ -1,1 +1,1 @@
-export { CoMapBase, CoMapCo, CoMapInit } from "./coMap.js";
+export { CoMapBase, CoMapInit } from "./coMap.js";

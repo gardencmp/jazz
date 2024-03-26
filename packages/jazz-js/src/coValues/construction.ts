@@ -4,24 +4,17 @@ import {
     CoValue,
     ID,
     SubclassedConstructor,
-    CoValueCo,
 } from "../coValueInterfaces.js";
 import { UnavailableError } from "../errors.js";
-import {
-    Account,
-    ControlledAccount,
-    ControlledAccountCtx,
-} from "./account/account.js";
+import { ControlledAccount, ControlledAccountCtx } from "./account/account.js";
 import { ValueRef } from "../refs.js";
 import { SubscriptionScope } from "../subscriptionScope.js";
-import { CoValueCore, RawAccount, RawCoValue } from "cojson";
-import {
-    SimpleAccount,
-    controlledAccountFromNode,
-} from "./account/accountOf.js";
-import { Group, SimpleGroup } from "../index.js";
 
 export abstract class SharedCoValueConstructor {
+    id!: ID<this>;
+    _schema!: CoValueSchema;
+    _loadedAs!: ControlledAccount;
+
     static loadEf<V extends CoValue>(
         this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>
@@ -102,51 +95,22 @@ export abstract class SharedCoValueConstructor {
             )
         );
     }
-}
 
-export class CoValueCoImpl<
-    Self extends V,
-    V extends CoValue,
-    T extends string,
-    Raw extends RawCoValue,
-    Refs,
-> implements CoValueCo<T, Self, Raw>
-{
-    core: CoValueCore;
-    loadedAs: ControlledAccount;
-    owner: Account | Group;
-
-    constructor(
-        public id: ID<Self>,
-        public type: T,
-        public raw: Raw,
-        public schema: CoValueSchema<Self, V>,
-        public refs: Refs,
-        loadedAs?: ControlledAccount
-    ) {
-        this.core = this.raw.core;
-        this.loadedAs = loadedAs || controlledAccountFromNode(raw.core.node);
-        this.owner =
-            this.raw.group instanceof RawAccount
-                ? SimpleAccount.fromRaw(this.raw.group)
-                : SimpleGroup.fromRaw(this.raw.group);
-    }
-
-    subscribe(listener: (update: Self) => void): () => void {
-        return (this.schema as CoValueSchema<Self, Self>).subscribe<Self>(
-            this.id,
-            { as: this.loadedAs },
-            listener
+    subscribe(listener: (update: this) => void): () => void {
+        return (this._schema as unknown as CoValueSchema).subscribe(
+            this.id as unknown as ID<CoValue>,
+            { as: this._loadedAs },
+            listener as unknown as (update: CoValue) => void
         );
     }
 
-    subscribeEf(): Stream.Stream<Self, UnavailableError, never> {
+    subscribeEf(): Stream.Stream<this, UnavailableError, never> {
         return Stream.provideService(
-            (this.schema as CoValueSchema<Self, Self>).subscribeEf<Self>(
-                this.id
+            (this._schema as unknown as CoValueSchema).subscribeEf(
+                this.id as unknown as ID<CoValue>
             ),
             ControlledAccountCtx,
-            this.loadedAs
-        );
+            this._loadedAs
+        ) as unknown as  Stream.Stream<this, UnavailableError, never>;
     }
 }

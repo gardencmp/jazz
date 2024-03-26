@@ -1,27 +1,23 @@
 import {
     AccountID,
     BinaryStreamInfo,
+    CoValueCore,
     JsonValue,
+    RawAccount,
     RawBinaryCoStream,
     RawCoStream,
     SessionID,
 } from "cojson";
-import {
-    CoValue,
-    CoValueCo,
-    CoValueSchema,
-    ID,
-    inspect,
-} from "../../coValueInterfaces.js";
-import { Account } from "../account/account.js";
+import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
+import { Account, ControlledAccount } from "../account/account.js";
 import { Group } from "../group/group.js";
 import {
     BinaryCoStream,
     BinaryCoStreamSchema,
-    CoStreamCo,
+    CoStream,
     CoStreamSchema,
 } from "./coStream.js";
-import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
+import { SharedCoValueConstructor } from "../construction.js";
 import { AST, Schema } from "@effect/schema";
 import {
     constructorOfSchemaSym,
@@ -30,6 +26,11 @@ import {
 import { pipeArguments } from "effect/Pipeable";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
+import {
+    SimpleAccount,
+    controlledAccountFromNode,
+} from "../account/accountOf.js";
+import { SimpleGroup } from "../group/groupOf.js";
 
 export function CoStreamOf<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
@@ -57,7 +58,13 @@ export function CoStreamOf<
         }
         static type = "CoStream" as const;
 
-        co!: CoStreamCo<this, Item>;
+        id!: ID<this>;
+        _type!: "CoStream";
+        _owner!: Account | Group;
+        _refs!: CoStream<Item>["_refs"];
+        _raw!: RawCoStream;
+        _loadedAs!: ControlledAccount;
+        _schema!: typeof CoStreamOfItem;
 
         by: {
             [key: ID<Account>]: Schema.Schema.To<Item>;
@@ -77,7 +84,7 @@ export function CoStreamOf<
             if ("fromRaw" in options) {
                 raw = options.fromRaw;
             } else {
-                const rawOwner = options.owner.co.raw;
+                const rawOwner = options.owner._raw;
 
                 raw = rawOwner.createStream();
             }
@@ -102,17 +109,29 @@ export function CoStreamOf<
             this.by = {};
             this.in = {};
 
-            Object.defineProperty(this, "co", {
-                value: new CoValueCoImpl(
-                    raw.id as unknown as ID<this>,
-                    "CoStream",
-                    raw,
-                    this.constructor as CoStreamSchema<this, Item>,
-                    {
+            Object.defineProperties(this, {
+                id: { value: raw.id, enumerable: false },
+                _type: { value: "CoStream", enumerable: false },
+                _owner: {
+                    get: () =>
+                        raw.group instanceof RawAccount
+                            ? SimpleAccount.fromRaw(raw.group)
+                            : SimpleGroup.fromRaw(raw.group),
+                    enumerable: false,
+                },
+                _refs: {
+                    value: {
                         by: byRefs,
                         in: inRefs,
-                    }
-                ) satisfies CoStreamCo<CoStreamOfItem, Item>,
+                    },
+                    enumerable: false,
+                },
+                _raw: { value: raw, enumerable: false },
+                _loadedAs: {
+                    get: () => controlledAccountFromNode(raw.core.node),
+                    enumerable: false,
+                },
+                _schema: { value: this.constructor, enumerable: false },
             });
 
             if (init !== undefined) {
@@ -127,12 +146,12 @@ export function CoStreamOf<
         private updateEntries() {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
-            const raw = this.co.raw;
-            const loadedAs = this.co.loadedAs;
-            const refs = this.co.refs;
+            const raw = this._raw;
+            const loadedAs = this._loadedAs;
+            const refs = this._refs;
 
             if (itemIsCoValue) {
-                for (const accountID of this.co.raw.accounts() as unknown as Set<
+                for (const accountID of this._raw.accounts() as unknown as Set<
                     ID<Account>
                 >) {
                     if (Object.hasOwn(refs.by, accountID)) continue;
@@ -219,9 +238,9 @@ export function CoStreamOf<
 
         private pushItem(item: Schema.Schema.To<Item>) {
             if (itemIsCoValue) {
-                this.co.raw.push(item.co.id);
+                this._raw.push(item.id);
             } else {
-                this.co.raw.push(encodeItem(item));
+                this._raw.push(encodeItem(item));
             }
         }
 
@@ -250,7 +269,7 @@ export function CoStreamOf<
                     ])
                 ),
                 co: {
-                    id: this.co.id,
+                    id: this.id,
                     type: "CoStream",
                 },
             };
@@ -261,7 +280,7 @@ export function CoStreamOf<
         }
 
         static as<SubClass>() {
-            return CoStreamOfItem as unknown as CoStreamSchema<SubClass, Item>
+            return CoStreamOfItem as unknown as CoStreamSchema<SubClass, Item>;
         }
     }
 
@@ -269,8 +288,6 @@ export function CoStreamOf<
         as<SubClass>(): CoStreamSchema<SubClass, Item>;
     };
 }
-
-
 
 class BinaryCoStreamImplClass
     extends SharedCoValueConstructor
@@ -282,8 +299,8 @@ class BinaryCoStreamImplClass
         this
     );
     static [Schema.TypeId]: Schema.Schema.Variance<
-        BinaryCoStreamImplClass,
-        BinaryCoStreamImplClass,
+        BinaryCoStream,
+        BinaryCoStream,
         never
     >[Schema.TypeId];
     static pipe() {
@@ -291,7 +308,14 @@ class BinaryCoStreamImplClass
         return pipeArguments(this, arguments);
     }
     static type = "BinaryCoStream" as const;
-    co!: CoValueCo<"BinaryCoStream", this, RawBinaryCoStream>;
+
+    id!: ID<this>;
+    _type!: "BinaryCoStream";
+    _owner!: Account | Group;
+    _raw!: RawBinaryCoStream;
+    _loadedAs!: ControlledAccount;
+    _schema!: typeof BinaryCoStreamImplClass;
+
     constructor(
         init: [] | undefined,
         options:
@@ -309,23 +333,27 @@ class BinaryCoStreamImplClass
         if ("fromRaw" in options) {
             raw = options.fromRaw;
         } else {
-            const rawOwner = options.owner.co.raw;
+            const rawOwner = options.owner._raw;
 
             raw = rawOwner.createBinaryStream();
         }
 
-        Object.defineProperty(this, "co", {
-            value: new CoValueCoImpl(
-                raw.id as unknown as ID<this>,
-                "BinaryCoStream",
-                raw,
-                this.constructor as BinaryCoStreamSchema,
-                undefined
-            ) satisfies CoValueCo<
-                "BinaryCoStream",
-                BinaryCoStream,
-                RawBinaryCoStream
-            >,
+        Object.defineProperties(this, {
+            id: { value: raw.id, enumerable: false },
+            _type: { value: "BinaryCoStream", enumerable: false },
+            _owner: {
+                get: () =>
+                    raw.group instanceof RawAccount
+                        ? SimpleAccount.fromRaw(raw.group)
+                        : SimpleGroup.fromRaw(raw.group),
+                enumerable: false,
+            },
+            _raw: { value: raw, enumerable: false },
+            _loadedAs: {
+                get: () => controlledAccountFromNode(raw.core.node),
+                enumerable: false,
+            },
+            _schema: { value: this.constructor, enumerable: false },
         });
     }
 
@@ -338,26 +366,26 @@ class BinaryCoStreamImplClass
     }):
         | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
-        return this.co.raw.getBinaryChunks(options?.allowUnfinished);
+        return this._raw.getBinaryChunks(options?.allowUnfinished);
     }
 
     start(options: BinaryStreamInfo): void {
-        this.co.raw.startBinaryStream(options);
+        this._raw.startBinaryStream(options);
     }
 
     push(data: Uint8Array): void {
-        this.co.raw.pushBinaryStreamChunk(data);
+        this._raw.pushBinaryStreamChunk(data);
     }
 
     end(): void {
-        this.co.raw.endBinaryStream();
+        this._raw.endBinaryStream();
     }
 
     toJSON(): object | any[] {
         return {
             ...this.getChunks(),
             co: {
-                id: this.co.id,
+                id: this.id,
                 type: "BinaryCoStream",
             },
         };

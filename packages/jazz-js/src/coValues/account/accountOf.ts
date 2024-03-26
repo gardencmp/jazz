@@ -1,6 +1,7 @@
 import {
     AgentSecret,
     CoID,
+    CoValueCore,
     InviteSecret,
     LocalNode,
     Peer,
@@ -13,7 +14,6 @@ import {
     ID,
     CoValueSchema,
     inspect,
-    CoValueCo,
     CoValue,
 } from "../../coValueInterfaces.js";
 import { CoMapOf } from "../coMap/coMapOf.js";
@@ -28,7 +28,7 @@ import * as S from "@effect/schema/Schema";
 import { AccountMigration } from "./migration.js";
 import { AST, Schema } from "@effect/schema";
 import { Group } from "../group/group.js";
-import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
+import { SharedCoValueConstructor } from "../construction.js";
 import { constructorOfSchemaSym } from "../resolution.js";
 import { pipeArguments } from "effect/Pipeable";
 import { ValueRef } from "../../refs.js";
@@ -61,18 +61,20 @@ export function AccountOf<
         static [controlledAccountSym]: AccountOfProfileAndRoot &
             ControlledAccount<P, R>;
 
+        id!: ID<this>;
+        _type!: "Account";
+        _owner!: Account | Group;
+        _refs!: Account<P, R>["_refs"];
+        _raw!: RawAccount | RawControlledAccount;
+        _loadedAs!: ControlledAccount;
+        _schema!: typeof AccountOfProfileAndRoot;
+
         isMe: boolean;
-        co: CoValueCo<"Account", this, RawAccount | RawControlledAccount> & {
-            refs: {
-                profile: ValueRef<S.Schema.To<P>>;
-                root: ValueRef<S.Schema.To<R>>;
-            };
-            sessionID?: SessionID;
-        };
+        sessionID?: SessionID;
 
         constructor(
             init: undefined,
-            options: { owner: ControlledAccount | Group }
+            options: { owner: ControlledAccount | Group | Account }
         );
         constructor(
             init: undefined,
@@ -82,7 +84,7 @@ export function AccountOf<
             init: undefined,
             options:
                 | { fromRaw: RawAccount | RawControlledAccount }
-                | { owner: ControlledAccount | Group }
+                | { owner: ControlledAccount | Group | Account }
         ) {
             super();
             if (!("fromRaw" in options)) {
@@ -114,17 +116,26 @@ export function AccountOf<
                 },
             };
 
-            this.co = new CoValueCoImpl(
-                options.fromRaw.id as unknown as ID<this>,
-                "Account",
-                options.fromRaw,
-                this.constructor as AccountSchema<this, P, R>,
-                refs,
-                this.isMe ? (this as ControlledAccount<P, R>) : undefined
-            );
+            Object.defineProperties(this, {
+                id: { value: options.fromRaw.id, enumerable: false },
+                _type: { value: "Account", enumerable: false },
+                _owner: { value: this, enumerable: false },
+                _refs: { value: refs, enumerable: false },
+                _raw: { value: options.fromRaw, enumerable: false },
+                _loadedAs: {
+                    get: () =>
+                        this.isMe
+                            ? this
+                            : controlledAccountFromNode(
+                                  options.fromRaw.core.node
+                              ),
+                    enumerable: false,
+                },
+                _schema: { value: AccountOfProfileAndRoot, enumerable: false },
+            });
 
             if (this.isMe) {
-                (this.co as unknown as ControlledAccount["co"]).sessionID =
+                (this as ControlledAccount).sessionID =
                     options.fromRaw.core.node.currentSessionID;
             }
         }
@@ -196,7 +207,7 @@ export function AccountOf<
                 throw new Error("Only a controlled account can accept invites");
             }
 
-            await (this.co.raw as RawControlledAccount).acceptInvite(
+            await (this._raw as RawControlledAccount).acceptInvite(
                 valueID as unknown as CoID<RawCoValue>,
                 inviteSecret
             );
@@ -205,19 +216,15 @@ export function AccountOf<
         }
 
         get profile(): S.Schema.To<P> | undefined {
-            return this.co.refs.profile.accessFrom(this);
+            return this._refs.profile.accessFrom(this);
         }
 
         get root(): S.Schema.To<R> | undefined {
-            return this.co.refs.root.accessFrom(this);
+            return this._refs.root.accessFrom(this);
         }
 
         toJSON() {
             return {
-                co: {
-                    id: this.co.id,
-                    type: this.co.type,
-                },
                 profile: this.profile?.toJSON(),
                 root: this.root?.toJSON(),
             };
@@ -228,7 +235,11 @@ export function AccountOf<
         }
     }
 
-    return AccountOfProfileAndRoot as AccountSchema<AccountOfProfileAndRoot & Account<P, R>, P, R>;
+    return AccountOfProfileAndRoot as AccountSchema<
+        AccountOfProfileAndRoot & Account<P, R>,
+        P,
+        R
+    >;
 }
 
 export class BaseProfile extends CoMapOf({

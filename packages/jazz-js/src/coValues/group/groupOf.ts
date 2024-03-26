@@ -1,13 +1,9 @@
-import {
-    CoValueCo,
-    CoValueSchema,
-    ID,
-    inspect,
-} from "../../coValueInterfaces.js";
+import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
 import { Group, GroupSchema } from "./group.js";
 import {
     Account,
+    ControlledAccount,
     ProfileSchema,
     isControlledAccount,
 } from "../account/account.js";
@@ -17,7 +13,7 @@ import { pipeArguments } from "effect/Pipeable";
 import { RawGroup } from "cojson";
 import { ValueRef } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
-import { CoValueCoImpl, SharedCoValueConstructor } from "../construction.js";
+import { SharedCoValueConstructor } from "../construction.js";
 
 export function GroupOf<
     Self,
@@ -46,12 +42,13 @@ export function GroupOf<
         }
         static type = "Group" as const;
 
-        co: CoValueCo<"Group", this, RawGroup> & {
-            refs: {
-                profile: ValueRef<S.Schema.To<P>>;
-                root: ValueRef<S.Schema.To<R>>;
-            };
-        };
+        id!: ID<this>;
+        _type!: "Group";
+        _owner!: Account | Group;
+        _refs!: Group<P, R>["_refs"];
+        _raw!: RawGroup;
+        _loadedAs!: ControlledAccount;
+        _schema!: typeof GroupOfProfileAndRoot;
 
         constructor(init: any, options: { fromRaw: RawGroup });
         constructor(init: undefined, options: { owner: Account | Group });
@@ -66,7 +63,7 @@ export function GroupOf<
                 raw = options.fromRaw;
             } else {
                 if (isControlledAccount(options.owner)) {
-                    const rawOwner = options.owner.co.raw;
+                    const rawOwner = options.owner._raw;
                     raw = rawOwner.createGroup();
                 } else {
                     throw new Error(
@@ -92,13 +89,18 @@ export function GroupOf<
                 },
             };
 
-            this.co = new CoValueCoImpl(
-                raw.id as unknown as ID<this>,
-                "Group",
-                raw,
-                this.constructor as GroupSchema<this, P, R>,
-                refs
-            );
+            Object.defineProperties(this, {
+                id: { value: raw.id, enumerable: false },
+                _type: { value: "Group", enumerable: false },
+                _owner: { value: this, enumerable: false },
+                _refs: { value: refs, enumerable: false },
+                _raw: { value: raw, enumerable: false },
+                _loadedAs: {
+                    get: () => controlledAccountFromNode(raw.core.node),
+                    enumerable: false,
+                },
+                _schema: { value: GroupOfProfileAndRoot, enumerable: false },
+            });
         }
 
         static fromRaw(raw: RawGroup) {
@@ -108,18 +110,18 @@ export function GroupOf<
         }
 
         get profile(): S.Schema.To<P> | undefined {
-            return this.co.refs.profile.accessFrom(this);
+            return this._refs.profile.accessFrom(this);
         }
 
         get root(): S.Schema.To<R> | undefined {
-            return this.co.refs.root.accessFrom(this);
+            return this._refs.root.accessFrom(this);
         }
 
         toJSON() {
             return {
                 co: {
-                    id: this.co.id,
-                    type: this.co.type,
+                    id: this.id,
+                    type: this._type,
                 },
                 profile: this.profile?.toJSON(),
                 root: this.root?.toJSON(),

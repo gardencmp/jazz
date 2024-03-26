@@ -32,7 +32,7 @@ export {
     MAX_RECOMMENDED_TX_SIZE,
 } from "cojson";
 
-export { ID, CoValue, CoValueSchema, CoValueCo } from "./coValueInterfaces.js";
+export { ID, CoValue, CoValueSchema } from "./coValueInterfaces.js";
 
 
 export { CoMap, CoMapSchema } from "./coValues/coMap/coMap.js";

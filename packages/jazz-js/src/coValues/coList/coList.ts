@@ -1,6 +1,6 @@
-import { JsonValue, RawCoList } from "cojson";
+import { JsonValue, RawCoList, CojsonInternalTypes } from "cojson";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { CoValue, CoValueCo, CoValueSchema } from "../../coValueInterfaces.js";
+import { CoValue, CoValueSchema } from "../../coValueInterfaces.js";
 import { Schema } from "@effect/schema";
 import { ValueRef } from "../../refs.js";
 import { Account } from "../account/account.js";
@@ -12,7 +12,14 @@ export interface CoListBase<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 > extends CoValue<"CoList", RawCoList> {
     /** @category Collaboration metadata */
-    co: CoListCo<this, Item>;
+    readonly _refs: { [idx: number]: ValueRef<Schema.Schema.To<Item>> };
+    readonly _edits: { [idx: number]: {
+        value?: Schema.Schema.To<Item>
+        ref?: Item extends CoValueSchema ? ValueRef<Schema.Schema.To<Item>> : never;
+        by?: Account
+        madeAt: Date
+        tx: CojsonInternalTypes.TransactionID
+    }}
 }
 
 /**
@@ -33,19 +40,3 @@ export interface CoListSchema<
         "CoList",
         Schema.Schema.To<Item>[]
     > {}
-
-/**
- *  @category Schemas & CoValues - CoList
- */
-export interface CoListCo<
-    Self extends CoValue,
-    Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
-> extends CoValueCo<"CoList", Self, RawCoList> {
-    refs: { [idx: number]: ValueRef<Schema.Schema.To<Item>> };
-    edits: { [idx: number]: {
-        value: Schema.Schema.To<Item>
-        ref: Item extends CoValueSchema ? ValueRef<Schema.Schema.To<Item>> : never;
-        by: Account
-        madeAt: Date
-    }}
-}

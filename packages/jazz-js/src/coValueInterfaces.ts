@@ -26,7 +26,7 @@ export interface CoValueConstructor<
     new (init: Init, options: { owner: Account | Group }): Value;
 
     /** @ignore */
-    fromRaw(raw: Value["co"]["raw"]): Value;
+    fromRaw(raw: Value["_raw"]): Value;
 
     /** @category Construction and loading */
     load<V extends Value>(
@@ -74,8 +74,22 @@ export type inspect = typeof inspect;
 
 /** @category Schemas & CoValues - Abstract interfaces */
 export interface CoValue<Type extends string = string, Raw = any> {
-    /** @category Collaboration metadata */
-    readonly co: CoValueCo<Type, this, Raw>;
+    /** @category Value identity */
+    id: ID<this>;
+    /** @category Value identity */
+    _type: Type;
+    /** @category Collaboration */
+    _owner: Account | Group;
+    /** @category Subscription */
+    subscribe(listener: (update: this) => void): () => void;
+    /** @category Subscription */
+    subscribeEf(): Stream.Stream<this, UnavailableError, never>;
+    /** @category Internals */
+    _raw: Raw;
+    /** @category Internals */
+    _loadedAs: ControlledAccount;
+    /** @category Internals */
+    _schema: CoValueSchema;
     /** @category Stringifying & inspection */
     toJSON(): any[] | object;
     /** @category Stringifying & inspection */
@@ -83,32 +97,7 @@ export interface CoValue<Type extends string = string, Raw = any> {
 }
 
 export function isCoValue(value: any): value is CoValue {
-    return value && value.co !== undefined;
-}
-
-/** @category Schemas & CoValues - Abstract interfaces */
-export interface CoValueCo<type extends string, Value extends CoValue, Raw> {
-    /** @category Value identity */
-    id: ID<Value>;
-    /** @category Value identity */
-    type: type;
-
-    /** @category Collaboration */
-    owner: Account | Group;
-
-    /** @category Subscription */
-    subscribe(listener: (update: Value) => void): () => void;
-    /** @category Subscription */
-    subscribeEf(): Stream.Stream<Value, UnavailableError, never>;
-
-    /** @category Internals */
-    raw: Raw;
-    /** @category Internals */
-    loadedAs: ControlledAccount;
-    /** @category Internals */
-    core: CoValueCore;
-    /** @category Internals */
-    schema: CoValueSchema;
+    return value && value._type !== undefined;
 }
 
 /** @category Schemas & CoValues - Abstract interfaces */

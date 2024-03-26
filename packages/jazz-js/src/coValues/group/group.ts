@@ -1,6 +1,6 @@
 import * as S from "@effect/schema/Schema";
 import { RawGroup } from "cojson";
-import { CoValue, CoValueCo, CoValueSchema } from "../../coValueInterfaces.js";
+import { CoValue, CoValueSchema } from "../../coValueInterfaces.js";
 import { ValueRef } from "../../refs.js";
 
 export interface Group<
@@ -9,11 +9,9 @@ export interface Group<
 > extends CoValue<"Group", RawGroup> {
     profile?: S.Schema.To<P>;
     root?: S.Schema.To<R>;
-    co: CoValueCo<"Group", this, RawGroup> & {
-        refs: {
-            profile: ValueRef<S.Schema.To<P>>;
-            root: ValueRef<S.Schema.To<R>>;
-        };
+    _refs: {
+        profile: ValueRef<S.Schema.To<P>>;
+        root: ValueRef<S.Schema.To<R>>;
     };
 }
 
