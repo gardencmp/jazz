@@ -32,7 +32,7 @@ export interface CoValueConstructor<
     load<V extends Value>(
         this: SubclassedConstructor<V>,
         id: ID<V>,
-        options: { as: ControlledAccount }
+        options: { as: ControlledAccount, onProgress?: (progress: number) => void }
     ): Promise<V | undefined>;
 
     /** @category Construction and loading */

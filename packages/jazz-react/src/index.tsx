@@ -1,18 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     AuthProvider,
     consumeInviteLinkFromWindowLocation,
     createBrowserContext,
 } from "jazz-browser";
 
-import { AccountSchema, AccountMigration, ID, S, controlledAccountSym, CoValueSchema } from "jazz-js";
+import {
+    AccountSchema,
+    AccountMigration,
+    ID,
+    S,
+    controlledAccountSym,
+    CoValueSchema,
+} from "jazz-js";
 
 export function createReactContext<AccountS extends AccountSchema>({
     auth: authHook,
     syncAddress,
     accountSchema,
     migration,
-    apiKey,
 }: {
     auth: ReactAuthHook;
     syncAddress?: string;
@@ -57,7 +63,7 @@ export function createReactContext<AccountS extends AccountSchema>({
                     return;
                 }
 
-                const unsubMe = context.me.co.subscribe(setMe);
+                const unsubMe = context.me.subscribe(setMe);
 
                 done = () => {
                     unsubMe();
@@ -105,19 +111,21 @@ export function createReactContext<AccountS extends AccountSchema>({
         Schema: V,
         id: ID<S.Schema.To<V>> | undefined
     ): S.Schema.To<V> | undefined {
-        const [state, setState] = useState<S.Schema.To<V> | undefined>();
+        // for some reason (at least in React 18) - if we use state directly,
+        // some updates get swallowed/UI doesn't update
+        const [_, setUpdates] = useState<number>(0);
+        const state = useRef<S.Schema.To<V> | undefined>(undefined);
+        const { me } = useAccount();
 
         useEffect(() => {
             if (!id) return;
-            const unsub = Schema.subscribe(
-                id,
-                { as: useAccount().me },
-                (update) => setState(update as S.Schema.To<V>)
-            );
-            return unsub;
-        }, [Schema, id]);
+            return Schema.subscribe(id, { as: me }, (update) => {
+                state.current = update as S.Schema.To<V>;
+                setUpdates((u) => u + 1);
+            });
+        }, [Schema, id, me]);
 
-        return state;
+        return state.current;
     }
 
     function useAcceptInvite<V extends CoValueSchema>({

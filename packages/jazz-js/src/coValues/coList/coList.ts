@@ -13,20 +13,29 @@ export interface CoListBase<
 > extends CoValue<"CoList", RawCoList> {
     /** @category Collaboration metadata */
     readonly _refs: { [idx: number]: ValueRef<Schema.Schema.To<Item>> };
-    readonly _edits: { [idx: number]: {
-        value?: Schema.Schema.To<Item>
-        ref?: Item extends CoValueSchema ? ValueRef<Schema.Schema.To<Item>> : never;
-        by?: Account
-        madeAt: Date
-        tx: CojsonInternalTypes.TransactionID
-    }}
+    readonly _edits: {
+        [idx: number]: {
+            value?: Schema.Schema.To<Item>;
+            ref?: Item extends CoValueSchema
+                ? ValueRef<Schema.Schema.To<Item>>
+                : never;
+            by?: Account;
+            madeAt: Date;
+            tx: CojsonInternalTypes.TransactionID;
+        };
+    };
 }
 
 /**
  *  @category Schemas & CoValues - CoList
  */
 export type CoList<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
-    Schema.Schema.To<Item>[] & CoListBase<Item>;
+    Array<
+        Item extends CoValueSchema
+            ? Schema.Schema.To<Item> | undefined
+            : Schema.Schema.To<Item>
+    > &
+        CoListBase<Item>;
 
 /**
  *  @category Schemas & CoValues - CoList

@@ -397,4 +397,4 @@ class BinaryCoStreamImplClass
 }
 
 export const BinaryCoStreamImpl =
-    BinaryCoStreamImplClass satisfies BinaryCoStreamSchema;
+    BinaryCoStreamImplClass as BinaryCoStreamSchema;

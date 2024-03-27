@@ -30,6 +30,11 @@ describe("Simple CoList operations", async () => {
         expect(list[2]).toBe("onion");
         expect(list._raw.asArray()).toEqual(["bread", "butter", "onion"]);
         expect(list.length).toBe(3);
+        expect(list.map((item) => item.toUpperCase())).toEqual([
+            "BREAD",
+            "BUTTER",
+            "ONION",
+        ]);
     });
 
     describe("Mutation", () => {

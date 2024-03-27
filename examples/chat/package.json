@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "hash-slash": "workspace:*",
+    "jazz-js": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-react-auth-local": "workspace:*",
     "cojson": "workspace:*",

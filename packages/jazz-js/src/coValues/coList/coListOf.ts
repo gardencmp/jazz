@@ -34,7 +34,7 @@ export function CoListOf<
     const encodeItem = Schema.encodeSync(itemSchema);
 
     class CoListOfItem
-        extends Array<Schema.Schema.To<Item>>
+        extends Array<Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>>
         implements CoListBase<Item>
     {
         static get ast() {
@@ -74,16 +74,16 @@ export function CoListOf<
             init: Schema.Schema.From<Item>[] | undefined | number,
             options?: { owner: Account | Group } | { fromRaw: RawCoList }
         ) {
-            super();
-
-            const itemsAreCoValues = propertyIsCoValueSchema(itemSchema);
-
             if (typeof init === "number") {
                 // this might be called from an intrinsic, like map, trying to create an empty array
                 // passing `0` as the only parameter
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return new Array(init) as any;
             }
+
+            super();
+
+            const itemsAreCoValues = propertyIsCoValueSchema(itemSchema);
 
             if (!options) {
                 throw new Error("Must provide options");
@@ -163,7 +163,7 @@ export function CoListOf<
                                 },
 
                                 madeAt: rawEdit.at,
-                                tx: rawEdit.tx
+                                tx: rawEdit.tx,
                             };
                         } else if (key === "length") {
                             return raw.entries().length;
@@ -205,7 +205,11 @@ export function CoListOf<
                     } else if (key === "length") {
                         return raw.entries().length;
                     }
-                    return Reflect.get(target, key, receiver);
+                    const prop = Reflect.get(target, key, receiver);
+                    if (typeof prop === "function") {
+                        return prop.bind(receiver);
+                    }
+                    return prop;
                 },
                 set(target, key, value, receiver) {
                     if (typeof key === "string" && !isNaN(+key)) {
@@ -226,6 +230,14 @@ export function CoListOf<
                         return Reflect.set(target, key, value);
                     }
                 },
+                has(target, key) {
+                    if (typeof key === "string" && !isNaN(+key)) {
+                        return Number(key) < raw.entries().length;
+                    } else {
+                        return Reflect.has(target, key);
+
+                    }
+                }
             });
         }
 
@@ -233,7 +245,7 @@ export function CoListOf<
             return new CoListOfItem(undefined, { fromRaw: raw });
         }
 
-        push(...items: Schema.Schema.To<Item>[]): number {
+        push(...items: (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[]): number {
             let rawItems;
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
@@ -248,7 +260,7 @@ export function CoListOf<
             return this._raw.entries().length;
         }
 
-        unshift(...items: Schema.Schema.To<Item>[]): number {
+        unshift(...items: (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[]): number {
             let rawItems;
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
@@ -282,8 +294,8 @@ export function CoListOf<
         splice(
             start: number,
             deleteCount: number,
-            ...items: Schema.Schema.To<Item>[]
-        ): Schema.Schema.To<Item>[] {
+            ...items: (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[]
+        ): (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[] {
             const deleted = this.slice(start, start + deleteCount);
 
             for (

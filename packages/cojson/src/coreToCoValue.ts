@@ -1,5 +1,5 @@
 import type { CoValueCore } from "./coValueCore.js";
-import { RawAccount } from "./coValues/account.js";
+import { RawAccount, RawControlledAccount } from "./coValues/account.js";
 import { RawGroup } from "./coValues/group.js";
 import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoList } from "./coValues/coList.js";
@@ -16,7 +16,11 @@ export function coreToCoValue(
                 core.header.meta?.type === "account" &&
                 !options?.ignorePrivateTransactions
             ) {
-                return new RawAccount(core);
+                if (core.id === core.node.account.id) {
+                    return new RawControlledAccount(core, core.node.account.agentSecret);
+                } else {
+                    return new RawAccount(core);
+                }
             } else {
                 return new RawGroup(core, options);
             }

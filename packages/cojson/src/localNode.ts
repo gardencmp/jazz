@@ -117,10 +117,17 @@ export class LocalNode {
             await migration(accountOnNodeWithAccount, profile, nodeWithAccount);
         }
 
-        nodeWithAccount.account = new RawControlledAccount(
+        const controlledAccount = new RawControlledAccount(
             accountOnNodeWithAccount.core,
             accountOnNodeWithAccount.agentSecret
         );
+
+        nodeWithAccount.account = controlledAccount
+        nodeWithAccount.coValues[controlledAccount.id] = {
+            state: "loaded",
+            coValue: controlledAccount.core,
+        };
+        controlledAccount.core._cachedContent = undefined;
 
         // we shouldn't need this, but it fixes account data not syncing for new accounts
         function syncAllCoValuesAfterCreateAccount() {
@@ -196,6 +203,7 @@ export class LocalNode {
             state: "loaded",
             coValue: controlledAccount.core,
         };
+        controlledAccount.core._cachedContent = undefined;
 
         const profileID = account.get("profile");
         if (!profileID) {

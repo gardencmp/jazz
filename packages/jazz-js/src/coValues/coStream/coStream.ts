@@ -71,13 +71,4 @@ export interface BinaryCoStreamSchema
         BinaryCoStream,
         "BinaryCoStream",
         undefined
-    > {
-    load<V extends BinaryCoStream>(
-        this: SubclassedConstructor<V>,
-        id: ID<V>,
-        options: {
-            as: Account | Group;
-            onProgress?: (progress: number) => void;
-        }
-    ): Promise<V | undefined>;
-}
+    > {}

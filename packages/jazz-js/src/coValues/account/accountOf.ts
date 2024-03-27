@@ -1,7 +1,6 @@
 import {
     AgentSecret,
     CoID,
-    CoValueCore,
     InviteSecret,
     LocalNode,
     Peer,
@@ -233,13 +232,19 @@ export function AccountOf<
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<SubClass>() {
+            return this as unknown as AccountSchema<SubClass, P, R>;
+        }
     }
 
     return AccountOfProfileAndRoot as AccountSchema<
         AccountOfProfileAndRoot & Account<P, R>,
         P,
         R
-    >;
+    > & {
+        as<SubClass>(): AccountSchema<SubClass, P, R>;
+    };
 }
 
 export class BaseProfile extends CoMapOf({
@@ -252,7 +257,7 @@ export class SimpleAccount extends AccountOf<
 >({
     profile: BaseProfile,
     root: S.null,
-}) {}
+}).as<SimpleAccount>() {}
 
 const simpleControlledAccounts = new WeakMap<
     RawControlledAccount,

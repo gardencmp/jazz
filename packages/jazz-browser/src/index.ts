@@ -20,15 +20,16 @@ import {
     MAX_RECOMMENDED_TX_SIZE,
     controlledAccountSym,
     CoValueSchema,
-    S
+    S,
 } from "jazz-js";
+import { AccountID } from "cojson";
 
 export * from "jazz-js";
 export { BrowserDemoAuth } from "./DemoAuth";
 export type { BrowserDemoAuthDriver } from "./DemoAuth";
 
 export type BrowserContext<A extends ControlledAccount> = {
-    me: ControlledAccount
+    me: A;
     // TODO: Symbol.dispose?
     done: () => void;
 };
@@ -75,8 +76,8 @@ export async function createBrowserContext<A extends AccountSchema>({
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
-                Object.keys(me.co.core.node.syncManager.peers).some((peerId) =>
-                    peerId.includes(syncAddress)
+                Object.keys(me._raw.core.node.syncManager.peers).some(
+                    (peerId) => peerId.includes(syncAddress)
                 )
             ) {
                 // TODO: this might drain battery, use listeners instead
@@ -105,7 +106,7 @@ export async function createBrowserContext<A extends AccountSchema>({
                     );
                 });
 
-                me.co.core.node.syncManager.addPeer(
+                me._raw.core.node.syncManager.addPeer(
                     createWebSocketPeer(syncAddress)
                 );
             }
@@ -120,7 +121,9 @@ export async function createBrowserContext<A extends AccountSchema>({
             shouldTryToReconnect = false;
             window.removeEventListener("online", onOnline);
             console.log("Cleaning up node");
-            for (const peer of Object.values(me.co.core.node.syncManager.peers)) {
+            for (const peer of Object.values(
+                me._raw.core.node.syncManager.peers
+            )) {
                 peer.outgoing
                     .close()
                     .catch((e) => console.error("Error while closing peer", e));
@@ -132,7 +135,7 @@ export async function createBrowserContext<A extends AccountSchema>({
 
 export interface AuthProvider {
     createOrLoadAccount<A extends AccountSchema>(
-        accountSchame: A,
+        accountSchema: A,
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
         migration?: AccountMigration<A>
@@ -172,7 +175,9 @@ function getSessionHandleFor(accountID: ID<Account> | AgentID): SessionHandle {
 
                         const sessionID =
                             localStorage[accountID + "_" + idx] ||
-                            cojsonInternals.newRandomSessionID(accountID);
+                            cojsonInternals.newRandomSessionID(
+                                accountID as AccountID | AgentID
+                            );
                         localStorage[accountID + "_" + idx] = sessionID;
 
                         console.debug(
@@ -350,7 +355,7 @@ export function createInviteLink<C extends CoValue>(
         valueHint,
     }: { baseURL?: string; valueHint?: string } = {}
 ): string {
-    const coValueCore = value.co.core;
+    const coValueCore = value._raw.core;
     let currentCoValue = coValueCore;
 
     while (currentCoValue.header.ruleset.type === "ownedByGroup") {
@@ -367,7 +372,7 @@ export function createInviteLink<C extends CoValue>(
     const inviteSecret = group.createInvite(role);
 
     return `${baseURL}#/invite/${valueHint ? valueHint + "/" : ""}${
-        value.co.id
+        value.id
     }/${inviteSecret}`;
 }
 
@@ -404,21 +409,24 @@ export function parseInviteLink<C extends CoValue>(
     }
 }
 
-export function consumeInviteLinkFromWindowLocation<S extends CoValueSchema>({
+export function consumeInviteLinkFromWindowLocation<V extends CoValueSchema>({
     as,
     forValueHint,
     invitedObjectSchema,
 }: {
     as: ControlledAccount;
     forValueHint?: string;
-    invitedObjectSchema: S;
-}): Promise<{
-    valueID: ID<S.Schema.To<S>>;
-    valueHint?: string;
-    inviteSecret: InviteSecret;
-} | undefined> {
+    invitedObjectSchema: V;
+}): Promise<
+    | {
+          valueID: ID<S.Schema.To<V>>;
+          valueHint?: string;
+          inviteSecret: InviteSecret;
+      }
+    | undefined
+> {
     return new Promise((resolve, reject) => {
-        const result = parseInviteLink<S.Schema.To<S>>(window.location.href);
+        const result = parseInviteLink<S.Schema.To<V>>(window.location.href);
 
         if (result && result.valueHint === forValueHint) {
             as.acceptInvite(
@@ -448,7 +456,7 @@ export async function createBinaryStreamFromBlob(
         onProgress?: (progress: number) => void;
     }
 ): Promise<BinaryCoStream> {
-    const stream = new Co.binaryStream([], { owner: options.owner });
+    const stream = new Co.binaryStream(undefined, { owner: options.owner });
 
     const start = Date.now();
 
@@ -509,8 +517,6 @@ export async function readBlobFromBinaryStream(
         as: options.as,
         onProgress: options.onProgress,
     });
-
-    if (stream === 'unavailable') return undefined;
 
     const chunks = stream?.getChunks({
         allowUnfinished: options.allowUnfinished,

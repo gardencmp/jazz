@@ -2,8 +2,10 @@ import { DemoAuth, createReactContext } from "jazz-react";
 import ReactDOM from "react-dom/client";
 import { HashRoute } from "hash-slash";
 import { ChatWindow } from "./chatWindow.tsx";
-import { Chat } from "./schema.ts";
-import { Group, ID, SimpleAccount } from "jazz-js";
+import { Co, ID, S, SimpleAccount, SimpleGroup } from "jazz-js";
+
+export class Message extends Co.map({ text: S.string }).as<Message>() {}
+export class Chat extends Co.list(Message).as<Chat>() {}
 
 export const { JazzProvider, useAccount, useCoState } = createReactContext({
     auth: DemoAuth({ appName: "Jazz Chat Example" }),
@@ -43,7 +45,7 @@ function Home() {
         <button
             className="rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto"
             onClick={() => {
-                const group = new Group({ admin: me }).addMember(
+                const group = new SimpleGroup(undefined, { owner: me }).addMember(
                     "everyone",
                     "writer"
                 );

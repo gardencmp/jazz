@@ -10,16 +10,15 @@ import {
 import { AST, Schema } from "@effect/schema";
 import { constructorOfSchemaSym } from "../resolution.js";
 import { pipeArguments } from "effect/Pipeable";
-import { RawGroup } from "cojson";
+import { AccountID, Everyone, RawGroup, Role } from "cojson";
 import { ValueRef } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { SharedCoValueConstructor } from "../construction.js";
 
 export function GroupOf<
-    Self,
     P extends ProfileSchema | S.Schema<null>,
     R extends CoValueSchema | S.Schema<null>,
->(fields: { profile: P; root: R }): GroupSchema<Self, P, R> {
+>(fields: { profile: P; root: R }) {
     class GroupOfProfileAndRoot
         extends SharedCoValueConstructor
         implements Group<P, R>
@@ -32,8 +31,8 @@ export function GroupOf<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            Group<P, R> & Self,
-            Group<P, R> & Self,
+            Group<P, R> & GroupOfProfileAndRoot,
+            Group<P, R> & GroupOfProfileAndRoot,
             never
         >[Schema.TypeId];
         static pipe() {
@@ -117,6 +116,15 @@ export function GroupOf<
             return this._refs.root.accessFrom(this);
         }
 
+        addMember(member: Account | Everyone, role: Role) {
+            this._raw.addMember(
+                typeof member === "string" ? member : member._raw,
+                role
+            );
+
+            return this;
+        }
+
         toJSON() {
             return {
                 co: {
@@ -131,9 +139,15 @@ export function GroupOf<
         [inspect]() {
             return this.toJSON();
         }
+
+        static as<SubClass>() {
+            return this as unknown as GroupSchema<SubClass, P, R>;
+        }
     }
 
-    return GroupOfProfileAndRoot as GroupSchema<Self, P, R>;
+    return GroupOfProfileAndRoot as GroupSchema<GroupOfProfileAndRoot, P, R> & {
+        as<SubClass>(): GroupSchema<SubClass, P, R>;
+    };
 }
 
-export const SimpleGroup = GroupOf({ profile: S.null, root: S.null });
+export class SimpleGroup extends GroupOf({ profile: S.null, root: S.null }).as<SimpleGroup>() {}
