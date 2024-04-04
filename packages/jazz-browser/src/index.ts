@@ -4,11 +4,11 @@ import {
     AccountSchema,
     AccountMigration,
     CoValue,
-    Account,
+    AnyAccount,
     ID,
     ControlledAccount,
     BinaryCoStream,
-    Group,
+    AnyGroup,
     Co,
     jazzReady,
     Peer,
@@ -143,7 +143,7 @@ export interface AuthProvider {
 }
 
 export type SessionProvider = (
-    accountID: ID<Account> | AgentID
+    accountID: ID<AnyAccount> | AgentID
 ) => Promise<SessionID>;
 
 export type SessionHandle = {
@@ -151,7 +151,7 @@ export type SessionHandle = {
     done: () => void;
 };
 
-function getSessionHandleFor(accountID: ID<Account> | AgentID): SessionHandle {
+function getSessionHandleFor(accountID: ID<AnyAccount> | AgentID): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
         done = resolve;
@@ -166,7 +166,7 @@ function getSessionHandleFor(accountID: ID<Account> | AgentID): SessionHandle {
         for (let idx = 0; idx < 100; idx++) {
             // To work better around StrictMode
             for (let retry = 0; retry < 2; retry++) {
-                console.debug("Trying to get lock", accountID + "_" + idx);
+                // console.debug("Trying to get lock", accountID + "_" + idx);
                 const sessionFinishedOrNoLock = await navigator.locks.request(
                     accountID + "_" + idx,
                     { ifAvailable: true },
@@ -180,11 +180,11 @@ function getSessionHandleFor(accountID: ID<Account> | AgentID): SessionHandle {
                             );
                         localStorage[accountID + "_" + idx] = sessionID;
 
-                        console.debug(
-                            "Got lock",
-                            accountID + "_" + idx,
-                            sessionID
-                        );
+                        // console.debug(
+                        //     "Got lock",
+                        //     accountID + "_" + idx,
+                        //     sessionID
+                        // );
 
                         resolveSession(sessionID);
 
@@ -240,13 +240,13 @@ function websocketReadableStream<T>(ws: WebSocket) {
                 }, 2500);
 
                 if (msg.type === "ping") {
-                    console.debug(
-                        "Got ping from",
-                        msg.dc,
-                        "latency",
-                        Date.now() - msg.time,
-                        "ms"
-                    );
+                    // console.debug(
+                    //     "Got ping from",
+                    //     msg.dc,
+                    //     "latency",
+                    //     Date.now() - msg.time,
+                    //     "ms"
+                    // );
 
                     return;
                 }
@@ -452,7 +452,7 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValueSchema>({
 export async function createBinaryStreamFromBlob(
     blob: Blob | File,
     options: {
-        owner: Group | Account;
+        owner: AnyGroup | AnyAccount;
         onProgress?: (progress: number) => void;
     }
 ): Promise<BinaryCoStream> {

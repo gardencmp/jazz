@@ -40,7 +40,7 @@ export class ValueRef<V extends CoValue> {
 
     loadEf() {
         return Effect.async<V, UnavailableError>((fulfill) => {
-            this.load()
+            this.loadHelper()
                 .then((value) => {
                     if (value === "unavailable") {
                         fulfill(Effect.fail<UnavailableError>("unavailable"));
@@ -54,7 +54,7 @@ export class ValueRef<V extends CoValue> {
         });
     }
 
-    async load(options?: {onProgress: (p: number) => void}): Promise<V | "unavailable"> {
+    private async loadHelper(options?: {onProgress: (p: number) => void}): Promise<V | "unavailable"> {
         const raw = await this.controlledAccount._raw.core.node.load(
             this.id as unknown as CoID<RawCoValue>,
             options?.onProgress
@@ -64,6 +64,15 @@ export class ValueRef<V extends CoValue> {
         } else {
             return new ValueRef(this.id, this.controlledAccount, this.propDef)
                 .value!;
+        }
+    }
+
+    async load(options?: {onProgress: (p: number) => void}): Promise<V | undefined> {
+        const result = await this.loadHelper(options);
+        if (result === "unavailable") {
+            return undefined;
+        } else {
+            return result;
         }
     }
 
@@ -89,7 +98,21 @@ export function makeRefs<F extends { [key: string | number]: CoValue }>(
     const refs = {} as { [K in keyof F]: ValueRef<F[K]> };
     return new Proxy(refs, {
         get(target, key) {
+            if (key === Symbol.iterator) {
+                return function* () {
+                    for (const key of getKeysWithIds()) {
+                        yield new ValueRef(
+                            getIdForKey(key)!,
+                            controlledAccount,
+                            propDefForKey(key)
+                        );
+                    }
+                };
+            }
             if (typeof key === "symbol") return undefined;
+            if (key === "length") {
+                return getKeysWithIds().length;
+            }
             const id = getIdForKey(key as keyof F);
             if (!id) return undefined;
             return new ValueRef(

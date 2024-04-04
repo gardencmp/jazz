@@ -19,9 +19,8 @@ import {
     GaugeIcon,
 } from "lucide-react";
 import {
-    DataModel_ts,
     App_tsx,
-    ChatWindow_tsx,
+    ChatScreen_tsx,
 } from "@/codeSamples/examples/chat/src";
 import Link from "next/link";
 
@@ -49,25 +48,20 @@ This means you get **built-in capabilities** that took best-in-class apps years 
 
 <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
 ### First impressions
-<Slogan small>A chat app in 82 lines of code.</Slogan>
+<Slogan small>A chat app in 84 lines of code.</Slogan>
 
 <Grid className="mt-0">
-<GridItem>
-
-<DataModel_ts/>
-
-</GridItem>
 <GridItem className="md:col-start-1">
 
 <App_tsx/>
 
 </GridItem>
-<GridItem className="md:col-start-2 md:row-start-1 md:row-span-2">
+<GridItem className="md:col-start-2">
 
-<ChatWindow_tsx/>
+<ChatScreen_tsx/>
 
 </GridItem>
-<ResponsiveIframe src="https://chat.jazz.tools" className="lg:col-start-3 lg:row-start-1 lg:row-span-2 rounded-xl overflow-hidden min-h-[50vh]"/>
+<ResponsiveIframe src="https://chat.jazz.tools" className="lg:col-start-3 rounded-xl overflow-hidden min-h-[50vh]"/>
 </Grid>
 </div>
 

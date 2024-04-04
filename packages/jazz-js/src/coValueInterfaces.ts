@@ -1,6 +1,6 @@
 import { RawCoID } from "cojson/src/ids";
 import {
-    Account,
+    AnyAccount,
     ControlledAccount,
     ControlledAccountCtx,
 } from "./coValues/account/account.js";
@@ -8,7 +8,8 @@ import { CoValueCore } from "cojson";
 import { Effect, Stream } from "effect";
 import { UnavailableError } from "./errors.js";
 import { Schema } from "@effect/schema";
-import { Group } from "./coValues/group/group.js";
+import { AnyGroup } from "./coValues/group/group.js";
+import { SchemaWithInputAndOutput } from "./schemaHelpers.js";
 
 export type SubclassedConstructor<T> = {
     new (...args: any[]): T;
@@ -23,7 +24,7 @@ export interface CoValueConstructor<
     readonly type: Type;
 
     /** @category Construction and loading */
-    new (init: Init, options: { owner: Account | Group }): Value;
+    new (init: Init, options: { owner: AnyAccount | AnyGroup }): Value;
 
     /** @ignore */
     fromRaw(raw: Value["_raw"]): Value;
@@ -63,7 +64,7 @@ export interface CoValueSchema<
     Type extends string = string,
     Init = any,
 > extends CoValueConstructor<Value, Type, Init>,
-        Schema.Schema<Self, Self> {}
+        SchemaWithInputAndOutput<Self & Value, Self & Value> {}
 
 export function isCoValueSchema(value: any): value is CoValueSchema {
     return value && value.type !== undefined;
@@ -79,7 +80,7 @@ export interface CoValue<Type extends string = string, Raw = any> {
     /** @category Value identity */
     _type: Type;
     /** @category Collaboration */
-    _owner: Account | Group;
+    _owner: AnyAccount | AnyGroup;
     /** @category Subscription */
     subscribe(listener: (update: this) => void): () => void;
     /** @category Subscription */

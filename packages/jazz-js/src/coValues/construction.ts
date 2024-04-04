@@ -27,7 +27,7 @@ export abstract class SharedCoValueConstructor {
         });
     }
 
-    static async load<V extends CoValue>(
+    static load<V extends CoValue>(
         this: CoValueSchema & SubclassedConstructor<V>,
         id: ID<V>,
         options: {
@@ -35,15 +35,9 @@ export abstract class SharedCoValueConstructor {
             onProgress?: (progress: number) => void;
         }
     ): Promise<V | undefined> {
-        const value = await new ValueRef(id as ID<V>, options.as, this).load(
+        return new ValueRef(id as ID<V>, options.as, this).load(
             options?.onProgress && { onProgress: options.onProgress }
         );
-
-        if (value === "unavailable") {
-            return undefined;
-        } else {
-            return value;
-        }
     }
 
     static subscribe<V extends CoValue>(

@@ -11,20 +11,20 @@ import {
     ID,
     SubclassedConstructor,
 } from "../../coValueInterfaces.js";
-import { Account } from "../account/account.js";
+import { AnyAccount } from "../account/account.js";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
-import { Group } from "../group/group.js";
+import { AnyGroup } from "../group/group.js";
 
 export type CoStream<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
     CoValue<"CoStream", RawCoStream> & {
-        by: { [key: ID<Account>]: Schema.Schema.To<Item> };
+        by: { [key: ID<AnyAccount>]: Schema.Schema.To<Item> };
         in: { [key: SessionID]: Schema.Schema.To<Item> };
         push(...items: Schema.Schema.To<Item>[]): void;
         _refs: {
             by: {
-                [key: ID<Account>]: Item extends CoValueSchema<
+                [key: ID<AnyAccount>]: Item extends CoValueSchema<
                     infer _,
                     infer Value
                 >

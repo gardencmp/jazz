@@ -4,16 +4,13 @@ export type Routes = {
     [Key: `/${string}`]: ReactNode | ((param: string) => ReactNode);
 };
 
-export function HashRoute(
-    routes: Routes,
-    { reportToParentFrame }: { reportToParentFrame?: boolean } = {}
-): ReactNode {
+export function useHash(options?: {tellParentFrame?: boolean}) {
     const [hash, setHash] = useState(location.hash.slice(1));
 
     useEffect(() => {
         const onHashChange = () => {
             setHash(location.hash.slice(1));
-            reportToParentFrame && window.parent.postMessage({
+            options?.tellParentFrame && window.parent.postMessage({
                 type: "navigate",
                 url: location.href,
             }, "*");
@@ -27,24 +24,19 @@ export function HashRoute(
         };
     });
 
-    for (const route of Object.keys(routes)) {
-        if (hash === route || (hash === "" && route === "/")) {
-            const elem = routes[route as keyof Routes];
-            if (typeof elem === "function") {
-                return null;
-            } else {
-                return elem;
-            }
-        } else if (route.includes("/:")) {
-            const [prefix] = route.split(":");
-
-            if (!prefix || hash.startsWith(prefix)) {
-                const handler = routes[route as keyof Routes];
-                if (typeof handler === "function") {
-                    return handler(hash.slice(prefix?.length || 0));
-                } else {
-                    return "No route found for " + hash;
+    return {
+        navigate: (url: string) => {
+            location.hash = url;
+        },
+        route: function <P extends string = ''>(route: `${string}` | `/${string}/:${P}`, paramUser: (param: P) => ReactNode) {
+            if (route.includes(":")) {
+                const [routePath, _paramName] = route.split(":");
+                if (routePath && hash.startsWith(routePath)) {
+                    const param = hash.split(routePath!)[1];
+                    return paramUser(param as P);
                 }
+            } else {
+                return hash === route ? paramUser('' as P) : null;
             }
         }
     }

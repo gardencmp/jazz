@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, S, SimpleAccount, jazzReady } from "..";
+import { Co, S, Account, jazzReady } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,7 +16,7 @@ beforeEach(async () => {
 });
 
 describe("Simple CoList operations", async () => {
-    const me = await SimpleAccount.create({
+    const me = await Account.create({
         name: "Hermes Puggington",
     });
 
@@ -125,7 +125,7 @@ describe("CoList resolution", async () => {
     class TestList extends Co.list(NestedList).as<TestList>() {}
 
     const initNodeAndList = async () => {
-        const me = await SimpleAccount.create({
+        const me = await Account.create({
             name: "Hermes Puggington",
         });
 
@@ -164,7 +164,7 @@ describe("CoList resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -217,7 +217,7 @@ describe("CoList resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],

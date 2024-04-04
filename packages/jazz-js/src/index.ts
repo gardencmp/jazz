@@ -5,6 +5,7 @@ import {
     BinaryCoStreamImpl,
     CoStreamOf,
 } from "./coValues/coStream/coStreamOf.js";
+import { ImageDefinition } from "./coValues/extensions/imageDef.js";
 import { GroupOf } from "./coValues/group/groupOf.js";
 
 /** @hidden */
@@ -18,6 +19,9 @@ export const Co = {
     binaryStream: BinaryCoStreamImpl,
     account: AccountOf,
     group: GroupOf,
+    media: {
+        imageDef: ImageDefinition
+    }
 };
 
 /** @category Internal types */
@@ -50,13 +54,13 @@ export {
 } from "./coValues/coStream/coStream.js";
 
 export {
-    Account,
+    AnyAccount,
     ControlledAccount,
     AccountSchema,
     controlledAccountSym,
 } from "./coValues/account/account.js";
 
 export { AccountMigration } from "./coValues/account/migration.js";
-export { SimpleAccount } from "./coValues/account/accountOf.js";
-export { Group } from "./coValues/group/group.js";
-export { SimpleGroup } from "./coValues/group/groupOf.js";
+export { Account } from "./coValues/account/accountOf.js";
+export { AnyGroup } from "./coValues/group/group.js";
+export { Group } from "./coValues/group/groupOf.js";

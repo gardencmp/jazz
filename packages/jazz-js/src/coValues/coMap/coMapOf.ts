@@ -14,12 +14,12 @@ import {
     IndexSignature,
     CoMapBase,
 } from "./coMap.js";
-import { makeRefs } from "../../refs.js";
-import { CoValueCore, JsonValue, RawAccount, RawCoMap } from "cojson";
-import { Group } from "../group/group.js";
-import { Account, ControlledAccount } from "../account/account.js";
+import { ValueRef, makeRefs } from "../../refs.js";
+import { CoValueCore, JsonValue, RawAccount, RawCoMap, cojsonInternals } from "cojson";
+import { AnyGroup } from "../group/group.js";
+import { AnyAccount, ControlledAccount } from "../account/account.js";
 import {
-    SimpleAccount,
+    Account,
     controlledAccountFromNode,
 } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
@@ -30,9 +30,9 @@ import {
 } from "../resolution.js";
 import { JsonObject } from "cojson/src/jsonValue.js";
 import { SharedCoValueConstructor } from "../construction.js";
-import { PropertySignatureWithInput } from "../../schemaHelpers.js";
+import { PropertySignatureWithOutput, propSigToSchema } from "../../schemaHelpers.js";
 import { pipeArguments } from "effect/Pipeable";
-import { SimpleGroup } from "../group/groupOf.js";
+import { Group } from "../group/groupOf.js";
 
 export function CoMapOf<
     Fields extends CoMapFields,
@@ -62,8 +62,9 @@ export function CoMapOf<
 
         id!: ID<this>;
         _type!: "CoMap";
-        _owner!: Account | Group;
+        _owner!: AnyAccount | AnyGroup;
         _refs!: CoMapBase<Fields, IndexSig>["_refs"];
+        _edits!: CoMapBase<Fields, IndexSig>["_edits"];
         _raw!: RawCoMap;
         _loadedAs!: ControlledAccount;
         _schema!: typeof CoMapOfFields;
@@ -71,11 +72,11 @@ export function CoMapOf<
         constructor(_init: undefined, options: { fromRaw: RawCoMap });
         constructor(
             init: CoMapInit<Fields>,
-            options: { owner: Account | Group }
+            options: { owner: AnyAccount | AnyGroup }
         );
         constructor(
             init: CoMapInit<Fields> | undefined,
-            options: { owner: Account | Group } | { fromRaw: RawCoMap }
+            options: { owner: AnyAccount | AnyGroup } | { fromRaw: RawCoMap }
         ) {
             super();
 
@@ -213,6 +214,58 @@ export function CoMapOf<
                           })())
             );
 
+            const getEdits = () => new Proxy(this, {
+                get(target, key, receiver) {
+
+                    const schemaAtKey = fields[key as keyof Fields] || ((indexSignature && Schema.is(indexSignature?.key)(key)) ? indexSignature?.value : undefined);
+                    if (!schemaAtKey) return Reflect.get(target, key, receiver);
+
+                    const rawEdit = raw.lastEditAt(key as string);
+                    if (!rawEdit) return undefined;
+
+                    return {
+                        get value() {
+                            if (isCoValueSchema(schemaAtKey)) {
+                                return this.ref?.accessFrom(target);
+                            } else {
+                                return (
+                                    rawEdit?.value &&
+                                    Schema.decodeSync(propSigToSchema(schemaAtKey))(rawEdit?.value)
+                                );
+                            }
+                        },
+
+                        get ref() {
+                            if (isCoValueSchema(schemaAtKey)) {
+                                return (
+                                    rawEdit?.value &&
+                                    new ValueRef(
+                                        rawEdit?.value as ID<CoValue>,
+                                        target._loadedAs,
+                                        schemaAtKey
+                                    )
+                                );
+                            }
+                        },
+
+                        get by() {
+                            if (
+                                cojsonInternals.isAccountID(rawEdit.by)
+                            ) {
+                                return new ValueRef(
+                                    rawEdit.by as unknown as ID<AnyAccount>,
+                                    target._loadedAs,
+                                    Account
+                                ).accessFrom(target);
+                            }
+                        },
+
+                        madeAt: rawEdit.at,
+                        tx: rawEdit.tx,
+                    };
+                }
+            })
+
             Object.defineProperties(this, {
                 id: {
                     value: raw.id as unknown as ID<
@@ -224,11 +277,12 @@ export function CoMapOf<
                 _owner: {
                     get: () =>
                         raw.group instanceof RawAccount
-                            ? SimpleAccount.fromRaw(raw.group)
-                            : SimpleGroup.fromRaw(raw.group),
+                            ? Account.fromRaw(raw.group)
+                            : Group.fromRaw(raw.group),
                     enumerable: false,
                 },
                 _refs: { value: refs, enumerable: false },
+                _edits: { get: getEdits, enumerable: false},
                 _raw: { value: raw, enumerable: false },
                 _loadedAs: {
                     get: () => controlledAccountFromNode(raw.core.node),
@@ -339,23 +393,9 @@ export function CoMapOf<
             key: string,
             schemaAtKey:
                 | Schema.Schema<any, JsonValue | undefined, never>
-                | PropertySignatureWithInput<JsonValue>
+                | PropertySignatureWithOutput<JsonValue | undefined>
         ) {
-            if ("ast" in schemaAtKey) {
-                return Schema.decodeSync(schemaAtKey)(this._raw.get(key));
-            } else {
-                const ast = (
-                    schemaAtKey as unknown as {
-                        propertySignatureAST: { from: AST.AST };
-                    }
-                ).propertySignatureAST;
-                const schema = Schema.make<
-                    JsonValue | undefined,
-                    JsonValue | undefined,
-                    never
-                >(ast.from);
-                return Schema.decodeSync(schema)(this._raw.get(key));
-            }
+            return Schema.decodeSync(propSigToSchema(schemaAtKey))(this._raw.get(key));
         }
 
         private setPrimitiveAtKey(
@@ -363,31 +403,12 @@ export function CoMapOf<
             value: any,
             schemaAtKey:
                 | Schema.Schema<any, JsonValue | undefined, never>
-                | PropertySignatureWithInput<JsonValue>
+                | PropertySignatureWithOutput<JsonValue | undefined>
         ) {
-            if ("ast" in schemaAtKey) {
-                this._raw.set(
-                    key,
-                    Schema.encodeSync(schemaAtKey)(value) as
-                        | JsonValue
-                        | undefined
-                );
-            } else {
-                const ast = (
-                    schemaAtKey as unknown as {
-                        propertySignatureAST: { from: AST.AST };
-                    }
-                ).propertySignatureAST;
-                const schema = Schema.make<
-                    JsonValue | undefined,
-                    JsonValue | undefined,
-                    never
-                >(ast.from);
-                this._raw.set(
-                    key,
-                    Schema.encodeSync(schema)(value) as JsonValue | undefined
-                );
-            }
+            this._raw.set(
+                key,
+                Schema.encodeSync(propSigToSchema(schemaAtKey))(value) as JsonValue | undefined
+            );
         }
 
         toJSON() {

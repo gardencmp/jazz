@@ -9,8 +9,8 @@ import {
     SessionID,
 } from "cojson";
 import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
-import { Account, ControlledAccount } from "../account/account.js";
-import { Group } from "../group/group.js";
+import { AnyAccount, ControlledAccount } from "../account/account.js";
+import { AnyGroup } from "../group/group.js";
 import {
     BinaryCoStream,
     BinaryCoStreamSchema,
@@ -27,10 +27,10 @@ import { pipeArguments } from "effect/Pipeable";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import {
-    SimpleAccount,
+    Account,
     controlledAccountFromNode,
 } from "../account/accountOf.js";
-import { SimpleGroup } from "../group/groupOf.js";
+import { Group } from "../group/groupOf.js";
 
 export function CoStreamOf<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
@@ -60,14 +60,14 @@ export function CoStreamOf<
 
         id!: ID<this>;
         _type!: "CoStream";
-        _owner!: Account | Group;
+        _owner!: AnyAccount | AnyGroup;
         _refs!: CoStream<Item>["_refs"];
         _raw!: RawCoStream;
         _loadedAs!: ControlledAccount;
         _schema!: typeof CoStreamOfItem;
 
         by: {
-            [key: ID<Account>]: Schema.Schema.To<Item>;
+            [key: ID<AnyAccount>]: Schema.Schema.To<Item>;
         };
         in: {
             [key: SessionID]: Schema.Schema.To<Item>;
@@ -75,7 +75,7 @@ export function CoStreamOf<
 
         constructor(
             init: Schema.Schema.To<Item>[] | undefined,
-            options: { owner: Account | Group } | { fromRaw: RawCoStream }
+            options: { owner: AnyAccount | AnyGroup } | { fromRaw: RawCoStream }
         ) {
             super();
 
@@ -90,7 +90,7 @@ export function CoStreamOf<
             }
 
             const byRefs: {
-                [key: ID<Account>]: Item extends CoValueSchema<
+                [key: ID<AnyAccount>]: Item extends CoValueSchema<
                     infer _,
                     infer Value
                 >
@@ -115,8 +115,8 @@ export function CoStreamOf<
                 _owner: {
                     get: () =>
                         raw.group instanceof RawAccount
-                            ? SimpleAccount.fromRaw(raw.group)
-                            : SimpleGroup.fromRaw(raw.group),
+                            ? Account.fromRaw(raw.group)
+                            : Group.fromRaw(raw.group),
                     enumerable: false,
                 },
                 _refs: {
@@ -152,7 +152,7 @@ export function CoStreamOf<
 
             if (itemIsCoValue) {
                 for (const accountID of this._raw.accounts() as unknown as Set<
-                    ID<Account>
+                    ID<AnyAccount>
                 >) {
                     if (Object.hasOwn(refs.by, accountID)) continue;
                     Object.defineProperty(refs.by, accountID, {
@@ -198,7 +198,7 @@ export function CoStreamOf<
                 }
             } else {
                 for (const accountID of raw.accounts() as unknown as Set<
-                    ID<Account>
+                    ID<AnyAccount>
                 >) {
                     if (Object.hasOwn(this.by, accountID)) continue;
                     Object.defineProperty(this.by, accountID, {
@@ -311,7 +311,7 @@ class BinaryCoStreamImplClass
 
     id!: ID<this>;
     _type!: "BinaryCoStream";
-    _owner!: Account | Group;
+    _owner!: AnyAccount | AnyGroup;
     _raw!: RawBinaryCoStream;
     _loadedAs!: ControlledAccount;
     _schema!: typeof BinaryCoStreamImplClass;
@@ -320,7 +320,7 @@ class BinaryCoStreamImplClass
         init: [] | undefined,
         options:
             | {
-                  owner: Account | Group;
+                  owner: AnyAccount | AnyGroup;
               }
             | {
                   fromRaw: RawBinaryCoStream;
@@ -344,8 +344,8 @@ class BinaryCoStreamImplClass
             _owner: {
                 get: () =>
                     raw.group instanceof RawAccount
-                        ? SimpleAccount.fromRaw(raw.group)
-                        : SimpleGroup.fromRaw(raw.group),
+                        ? Account.fromRaw(raw.group)
+                        : Group.fromRaw(raw.group),
                 enumerable: false,
             },
             _raw: { value: raw, enumerable: false },

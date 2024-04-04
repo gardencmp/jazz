@@ -12,17 +12,14 @@ import {
     S,
     controlledAccountSym,
     CoValueSchema,
+    Account,
 } from "jazz-js";
 
-export function createReactContext<AccountS extends AccountSchema>({
-    auth: authHook,
-    syncAddress,
+export function JazzReact<AccountS extends AccountSchema>({
     accountSchema,
     migration,
 }: {
-    auth: ReactAuthHook;
-    syncAddress?: string;
-    accountSchema: AccountS;
+    accountSchema?: AccountS;
     migration?: AccountMigration<AccountS>;
     apiKey?: string;
 }) {
@@ -34,7 +31,15 @@ export function createReactContext<AccountS extends AccountSchema>({
         | undefined
     >(undefined);
 
-    function Provider({ children }: { children: React.ReactNode }) {
+    function Provider({
+        auth: authHook,
+        syncAddress,
+        children,
+    }: {
+        auth: ReactAuthHook;
+        syncAddress?: string;
+        children: React.ReactNode;
+    }) {
         const [me, setMe] = useState<
             AccountS[controlledAccountSym] | undefined
         >();
@@ -54,7 +59,7 @@ export function createReactContext<AccountS extends AccountSchema>({
                             "sync"
                         ) ||
                         undefined,
-                    accountSchema: accountSchema,
+                    accountSchema: accountSchema || Account as AccountS,
                     migration: migration,
                 });
 
@@ -154,7 +159,7 @@ export function createReactContext<AccountS extends AccountSchema>({
     }
 
     return {
-        JazzProvider: Provider,
+        Provider,
         useAccount,
         useCoState,
         useAcceptInvite,
@@ -169,4 +174,4 @@ export type ReactAuthHook = () => {
 
 export { DemoAuth } from "./DemoAuth.js";
 
-export { createInviteLink } from "jazz-browser";
+export { createInviteLink, parseInviteLink, readBlobFromBinaryStream } from "jazz-browser";

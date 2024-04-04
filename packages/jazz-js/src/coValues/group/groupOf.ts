@@ -1,8 +1,8 @@
-import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
+import { CoValueSchema, ID, inspect, isCoValueSchema } from "../../coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
-import { Group, GroupSchema } from "./group.js";
+import { AnyGroup, GroupSchema } from "./group.js";
 import {
-    Account,
+    AnyAccount,
     ControlledAccount,
     ProfileSchema,
     isControlledAccount,
@@ -21,7 +21,7 @@ export function GroupOf<
 >(fields: { profile: P; root: R }) {
     class GroupOfProfileAndRoot
         extends SharedCoValueConstructor
-        implements Group<P, R>
+        implements AnyGroup<P, R>
     {
         static get ast() {
             return AST.setAnnotation(
@@ -31,8 +31,8 @@ export function GroupOf<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            Group<P, R> & GroupOfProfileAndRoot,
-            Group<P, R> & GroupOfProfileAndRoot,
+            AnyGroup<P, R> & GroupOfProfileAndRoot,
+            AnyGroup<P, R> & GroupOfProfileAndRoot,
             never
         >[Schema.TypeId];
         static pipe() {
@@ -43,26 +43,29 @@ export function GroupOf<
 
         id!: ID<this>;
         _type!: "Group";
-        _owner!: Account | Group;
-        _refs!: Group<P, R>["_refs"];
+        _owner!: AnyAccount | AnyGroup;
+        _refs!: AnyGroup<P, R>["_refs"];
         _raw!: RawGroup;
         _loadedAs!: ControlledAccount;
         _schema!: typeof GroupOfProfileAndRoot;
 
+        constructor(options: { owner: AnyAccount | AnyGroup });
         constructor(init: any, options: { fromRaw: RawGroup });
-        constructor(init: undefined, options: { owner: Account | Group });
+        constructor(init: undefined, options: { owner: AnyAccount | AnyGroup });
         constructor(
-            init: undefined,
-            options: { fromRaw: RawGroup } | { owner: Account | Group }
+            init: undefined | { owner: AnyAccount | AnyGroup },
+            options?: { fromRaw: RawGroup } | { owner: AnyAccount | AnyGroup }
         ) {
             super();
             let raw: RawGroup;
 
-            if ("fromRaw" in options) {
+            if (options && "fromRaw" in options) {
                 raw = options.fromRaw;
             } else {
-                if (isControlledAccount(options.owner)) {
-                    const rawOwner = options.owner._raw;
+                const initOwner = options?.owner || init?.owner;
+                if (!initOwner) throw new Error("No owner provided");
+                if (isControlledAccount(initOwner)) {
+                    const rawOwner = initOwner._raw;
                     raw = rawOwner.createGroup();
                 } else {
                     throw new Error(
@@ -73,18 +76,24 @@ export function GroupOf<
 
             const refs = {
                 get profile() {
-                    return new ValueRef(
-                        raw.id as unknown as ID<Schema.Schema.To<P>>,
-                        controlledAccountFromNode(raw.core.node),
-                        fields.profile
-                    );
+                    if (isCoValueSchema(fields.profile)) {
+                        const profileID = raw.get("profile");
+                        return profileID && new ValueRef(
+                            profileID as unknown as ID<Schema.Schema.To<typeof fields.profile>>,
+                            controlledAccountFromNode(raw.core.node),
+                            fields.profile
+                        );
+                    }
                 },
                 get root() {
-                    return new ValueRef(
-                        raw.id as unknown as ID<Schema.Schema.To<R>>,
-                        controlledAccountFromNode(raw.core.node),
-                        fields.root
-                    );
+                    if (isCoValueSchema(fields.root)) {
+                        const rootID = raw.get("root");
+                        return rootID && new ValueRef(
+                            rootID as unknown as ID<Schema.Schema.To<typeof fields.root>>,
+                            controlledAccountFromNode(raw.core.node),
+                            fields.root
+                        );
+                    }
                 },
             };
 
@@ -116,7 +125,7 @@ export function GroupOf<
             return this._refs.root.accessFrom(this);
         }
 
-        addMember(member: Account | Everyone, role: Role) {
+        addMember(member: AnyAccount | Everyone, role: Role) {
             this._raw.addMember(
                 typeof member === "string" ? member : member._raw,
                 role
@@ -150,4 +159,4 @@ export function GroupOf<
     };
 }
 
-export class SimpleGroup extends GroupOf({ profile: S.null, root: S.null }).as<SimpleGroup>() {}
+export class Group extends GroupOf({ profile: S.null, root: S.null }).as<Group>() {}

@@ -5,12 +5,12 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
 import {
-    Account,
+    AnyAccount,
     BinaryCoStream,
     Co,
     ID,
     S,
-    SimpleAccount,
+    Account,
     jazzReady,
 } from "..";
 import { Simplify } from "effect/Types";
@@ -25,7 +25,7 @@ beforeEach(async () => {
 });
 
 describe("Simple CoStream operations", async () => {
-    const me = await SimpleAccount.create({
+    const me = await Account.create({
         name: "Hermes Puggington",
     });
 
@@ -53,7 +53,7 @@ describe("Simple CoStream operations", async () => {
 
 describe("CoStream resolution", async () => {
     class TwiceNestedStream extends Co.stream(S.string).as<TwiceNestedStream>() {
-        fancyValueOf(account: ID<Account>) {
+        fancyValueOf(account: ID<AnyAccount>) {
             return "Sir " + this.by[account];
         }
     }
@@ -63,7 +63,7 @@ describe("CoStream resolution", async () => {
     class TestStream extends Co.stream(NestedStream).as<TestStream>() {}
 
     const initNodeAndStream = async () => {
-        const me = await SimpleAccount.create({
+        const me = await Account.create({
             name: "Hermes Puggington",
         });
 
@@ -93,7 +93,7 @@ describe("CoStream resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -169,7 +169,7 @@ describe("CoStream resolution", async () => {
 
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
 
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -253,7 +253,7 @@ describe("CoStream resolution", async () => {
 });
 
 describe("Simple BinaryCoStream operations", async () => {
-    const me = await SimpleAccount.create({
+    const me = await Account.create({
         name: "Hermes Puggington",
     });
 
@@ -281,7 +281,7 @@ describe("Simple BinaryCoStream operations", async () => {
 
 describe("BinaryCoStream loading & Subscription", async () => {
     const initNodeAndStream = async () => {
-        const me = await SimpleAccount.create({
+        const me = await Account.create({
             name: "Hermes Puggington",
         });
 
@@ -312,7 +312,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             { peer1role: "server", peer2role: "client" }
         );
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -343,7 +343,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
 
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
 
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],

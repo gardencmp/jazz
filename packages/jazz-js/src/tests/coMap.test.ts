@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, S, SimpleAccount, jazzReady } from "..";
+import { Co, S, Account, jazzReady } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,7 +16,7 @@ beforeEach(async () => {
 });
 
 describe("Simple CoMap operations", async () => {
-    const me = await SimpleAccount.create({
+    const me = await Account.create({
         name: "Hermes Puggington",
     });
 
@@ -24,6 +24,7 @@ describe("Simple CoMap operations", async () => {
         color: S.string,
         height: S.number,
         birthday: S.Date,
+        name: S.optional(S.string),
     }).as<TestMap>() {
         get roughColor() {
             return this.color + "ish";
@@ -60,6 +61,10 @@ describe("Simple CoMap operations", async () => {
             expect(map._raw.get("birthday")).toEqual(
                 newBirthday.toISOString()
             );
+            map.name = "Secret name";
+            expect(map.name).toEqual("Secret name");
+            delete map.name;
+            expect(map.name).toEqual(undefined);
         });
     });
 });
@@ -89,7 +94,7 @@ describe("CoMap resolution", async () => {
     }
 
     const initNodeAndMap = async () => {
-        const me = await SimpleAccount.create({
+        const me = await Account.create({
             name: "Hermes Puggington",
         });
 
@@ -136,7 +141,7 @@ describe("CoMap resolution", async () => {
             { peer1role: "server", peer2role: "client" }
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -200,7 +205,7 @@ describe("CoMap resolution", async () => {
 
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
 
-        const meOnSecondPeer = await SimpleAccount.become({
+        const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
@@ -281,7 +286,7 @@ describe("CoMap resolution", async () => {
     }).as<TestMapWithOptionalRef>() {}
 
     test("Construction with optional", async () => {
-        const me = await SimpleAccount.create({
+        const me = await Account.create({
             name: "Hermes Puggington",
         });
 
@@ -324,7 +329,7 @@ describe("CoMap resolution", async () => {
     ).as<TestRecord>() {}
 
     test("Construction with index signature", async () => {
-        const me = await SimpleAccount.create({
+        const me = await Account.create({
             name: "Hermes Puggington",
         });
 

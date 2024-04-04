@@ -6,19 +6,6 @@ import { WebSocket } from "ws";
 import "dotenv/config";
 
 import { webcrypto } from "node:crypto";
-import {
-    AccountID,
-    AccountMigration,
-    AgentSecret,
-    CoMap,
-    ControlledAccount,
-    LocalNode,
-    Peer,
-    Profile,
-    SessionID,
-    cojsonReady,
-    cojsonInternals
-} from "cojson";
 import { readFile, writeFile } from "node:fs/promises";
 
 if (!("crypto" in globalThis)) {

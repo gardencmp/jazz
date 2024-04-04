@@ -70,6 +70,11 @@ await rm("./codeSamples", { recursive: true, force: true });
                             allowImportingTsExtensions: true,
                             noEmit: true,
                             jsx: "react-jsxdev",
+                            strict: true,
+                            paths: {
+                                'jazz-js': ['../../packages/jazz-js']
+                            },
+                            types: ['vite/client']
                         },
                     });
                     const html = renderCodeToHTML(

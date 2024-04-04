@@ -1,13 +1,14 @@
 import { CoValue, CoValueSchema } from "../../coValueInterfaces.js";
-import { JsonValue, RawCoMap } from "cojson";
+import { CojsonInternalTypes, JsonValue, RawCoMap } from "cojson";
 import { ValueRef } from "../../refs.js";
 import {
-    PropertySignatureWithInput,
+    PropertySignatureWithOutput,
     SchemaWithInputAndOutput,
     SchemaWithOutput,
 } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
 import { Simplify } from "effect/Types";
+import { AnyAccount } from "../account/account.js";
 
 export type IndexSignature = {
     key: SchemaWithInputAndOutput<string, string>;
@@ -35,6 +36,31 @@ export interface CoMapBase<
         > extends CoValueSchema<infer Self, infer Value>
             ? ValueRef<Self & Value>
             : never;
+    };
+
+    readonly _edits: {
+        [Key in keyof Fields]: {
+            value?: Schema.Schema.To<Fields[Key]>;
+            ref?: Fields[Key] extends CoValueSchema<infer Self, infer Value>
+                ? ValueRef<Self & Value>
+                : never;
+            by?: AnyAccount;
+            madeAt: Date;
+            tx: CojsonInternalTypes.TransactionID;
+        };
+    } & {
+        [Key in Schema.Schema.To<IdxSig["key"]>]: {
+            value?: Schema.Schema.To<IdxSig["value"]>;
+            ref?: Schema.Schema.To<IdxSig["value"]> extends CoValueSchema<
+                infer Self,
+                infer Value
+            >
+                ? ValueRef<Self & Value>
+                : never;
+            by?: AnyAccount;
+            madeAt: Date;
+            tx: CojsonInternalTypes.TransactionID;
+        };
     };
 }
 
@@ -66,7 +92,7 @@ export interface CoMapSchema<
 export type CoMapFieldValue =
     | CoValueSchema
     | SchemaWithOutput<JsonValue>
-    | PropertySignatureWithInput<CoValue | JsonValue>;
+    | PropertySignatureWithOutput<CoValue | JsonValue | undefined>;
 
 export type CoMapFields = {
     [key: string]: CoMapFieldValue;

@@ -3,7 +3,7 @@ import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { CoValue, CoValueSchema } from "../../coValueInterfaces.js";
 import { Schema } from "@effect/schema";
 import { ValueRef } from "../../refs.js";
-import { Account } from "../account/account.js";
+import { AnyAccount } from "../account/account.js";
 
 /**
  *  @category Schemas & CoValues - CoList
@@ -12,14 +12,20 @@ export interface CoListBase<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
 > extends CoValue<"CoList", RawCoList> {
     /** @category Collaboration metadata */
-    readonly _refs: { [idx: number]: ValueRef<Schema.Schema.To<Item>> };
+    readonly _refs: {
+        [idx: number]: ValueRef<Schema.Schema.To<Item>>;
+        length: number;
+        [Symbol.iterator]: () => IterableIterator<
+            ValueRef<Schema.Schema.To<Item>>
+        >;
+    };
     readonly _edits: {
         [idx: number]: {
             value?: Schema.Schema.To<Item>;
             ref?: Item extends CoValueSchema
                 ? ValueRef<Schema.Schema.To<Item>>
                 : never;
-            by?: Account;
+            by?: AnyAccount;
             madeAt: Date;
             tx: CojsonInternalTypes.TransactionID;
         };

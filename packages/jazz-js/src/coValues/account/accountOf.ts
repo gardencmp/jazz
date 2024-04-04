@@ -17,7 +17,7 @@ import {
 } from "../../coValueInterfaces.js";
 import { CoMapOf } from "../coMap/coMapOf.js";
 import {
-    Account,
+    AnyAccount,
     AccountSchema,
     ProfileSchema,
     ControlledAccount,
@@ -26,7 +26,7 @@ import {
 import * as S from "@effect/schema/Schema";
 import { AccountMigration } from "./migration.js";
 import { AST, Schema } from "@effect/schema";
-import { Group } from "../group/group.js";
+import { AnyGroup } from "../group/group.js";
 import { SharedCoValueConstructor } from "../construction.js";
 import { constructorOfSchemaSym } from "../resolution.js";
 import { pipeArguments } from "effect/Pipeable";
@@ -38,7 +38,7 @@ export function AccountOf<
 >(fields: { profile: P; root: R }) {
     class AccountOfProfileAndRoot
         extends SharedCoValueConstructor
-        implements Account<P, R>
+        implements AnyAccount<P, R>
     {
         static get ast() {
             return AST.setAnnotation(
@@ -48,8 +48,8 @@ export function AccountOf<
             );
         }
         static [Schema.TypeId]: Schema.Schema.Variance<
-            Account<P, R> & AccountOfProfileAndRoot,
-            Account<P, R> & AccountOfProfileAndRoot,
+            AnyAccount<P, R> & AccountOfProfileAndRoot,
+            AnyAccount<P, R> & AccountOfProfileAndRoot,
             never
         >[Schema.TypeId];
         static pipe() {
@@ -62,8 +62,8 @@ export function AccountOf<
 
         id!: ID<this>;
         _type!: "Account";
-        _owner!: Account | Group;
-        _refs!: Account<P, R>["_refs"];
+        _owner!: AnyAccount | AnyGroup;
+        _refs!: AnyAccount<P, R>["_refs"];
         _raw!: RawAccount | RawControlledAccount;
         _loadedAs!: ControlledAccount;
         _schema!: typeof AccountOfProfileAndRoot;
@@ -73,7 +73,7 @@ export function AccountOf<
 
         constructor(
             init: undefined,
-            options: { owner: ControlledAccount | Group | Account }
+            options: { owner: ControlledAccount | AnyGroup | AnyAccount }
         );
         constructor(
             init: undefined,
@@ -83,7 +83,7 @@ export function AccountOf<
             init: undefined,
             options:
                 | { fromRaw: RawAccount | RawControlledAccount }
-                | { owner: ControlledAccount | Group | Account }
+                | { owner: ControlledAccount | AnyGroup | AnyAccount }
         ) {
             super();
             if (!("fromRaw" in options)) {
@@ -96,19 +96,17 @@ export function AccountOf<
 
             const refs = {
                 get profile() {
-                    return new ValueRef(
-                        options.fromRaw.id as unknown as ID<
-                            Schema.Schema.To<P>
-                        >,
+                    const profileID = options.fromRaw.get("profile");
+                    return profileID && new ValueRef(
+                        profileID as unknown as ID<Schema.Schema.To<P>>,
                         controlledAccountFromNode(options.fromRaw.core.node),
                         fields.profile
                     );
                 },
                 get root() {
-                    return new ValueRef(
-                        options.fromRaw.id as unknown as ID<
-                            Schema.Schema.To<R>
-                        >,
+                    const rootID = options.fromRaw.get("root");
+                    return rootID && new ValueRef(
+                        rootID as unknown as ID<Schema.Schema.To<P>>,
                         controlledAccountFromNode(options.fromRaw.core.node),
                         fields.root
                     );
@@ -147,7 +145,7 @@ export function AccountOf<
 
         static async create(options: {
             name: string;
-            migration?: AccountMigration<AccountSchema<Account<P, R>, P, R>>;
+            migration?: AccountMigration<AccountSchema<AnyAccount<P, R>, P, R>>;
             initialAgentSecret?: AgentSecret;
             peersToLoadFrom?: Peer[];
         }): Promise<AccountOfProfileAndRoot & ControlledAccount<P, R>> {
@@ -170,11 +168,11 @@ export function AccountOf<
         }
 
         static async become(options: {
-            accountID: ID<Account<P, R>>;
+            accountID: ID<AnyAccount<P, R>>;
             accountSecret: AgentSecret;
             sessionID: SessionID;
             peersToLoadFrom: Peer[];
-            migration?: AccountMigration<AccountSchema<Account<P, R>, P, R>>;
+            migration?: AccountMigration<AccountSchema<AnyAccount<P, R>, P, R>>;
         }): Promise<AccountOfProfileAndRoot & ControlledAccount<P, R>> {
             const node = await LocalNode.withLoadedAccount({
                 accountID: options.accountID as unknown as CoID<RawAccount>,
@@ -239,7 +237,7 @@ export function AccountOf<
     }
 
     return AccountOfProfileAndRoot as AccountSchema<
-        AccountOfProfileAndRoot & Account<P, R>,
+        AccountOfProfileAndRoot & AnyAccount<P, R>,
         P,
         R
     > & {
@@ -251,20 +249,20 @@ export class BaseProfile extends CoMapOf({
     name: S.string,
 }).as<BaseProfile>() {}
 
-export class SimpleAccount extends AccountOf<
+export class Account extends AccountOf<
     typeof BaseProfile,
     Schema.Schema<null>
 >({
     profile: BaseProfile,
     root: S.null,
-}).as<SimpleAccount>() {}
+}).as<Account>() {}
 
 const simpleControlledAccounts = new WeakMap<
     RawControlledAccount,
-    SimpleAccount & ControlledAccount
+    Account & ControlledAccount
 >();
 
-export function controlledAccountFromNode(node: LocalNode) {
+export function controlledAccountFromNode(node: LocalNode): ControlledAccount {
     if (!(node.account instanceof RawControlledAccount)) {
         throw new Error("Expected a controlled account");
     }
@@ -273,7 +271,7 @@ export function controlledAccountFromNode(node: LocalNode) {
     if (simpleControlledAccounts.has(node.account)) {
         simpleAccount = simpleControlledAccounts.get(node.account);
     } else {
-        simpleAccount = SimpleAccount.fromRaw(node.account) as SimpleAccount &
+        simpleAccount = Account.fromRaw(node.account) as Account &
             ControlledAccount;
         simpleControlledAccounts.set(node.account, simpleAccount);
     }

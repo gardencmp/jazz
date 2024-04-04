@@ -9,21 +9,18 @@ import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { CoListBase, CoListSchema } from "./coList.js";
 import { AST, Schema } from "@effect/schema";
-import { Account, ControlledAccount } from "../account/account.js";
-import { Group } from "../group/group.js";
+import { AnyAccount, ControlledAccount } from "../account/account.js";
+import { AnyGroup } from "../group/group.js";
 import {
     constructorOfSchemaSym,
     propertyIsCoValueSchema,
 } from "../resolution.js";
 import { ValueRef, makeRefs } from "../../refs.js";
-import {
-    SimpleAccount,
-    controlledAccountFromNode,
-} from "../account/accountOf.js";
+import { Account, controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
 import { SharedCoValueConstructor } from "../construction.js";
 import { pipeArguments } from "effect/Pipeable";
-import { SimpleGroup } from "../group/groupOf.js";
+import { Group } from "../group/groupOf.js";
 import { Stream } from "effect";
 import { UnavailableError } from "../../errors.js";
 
@@ -34,7 +31,11 @@ export function CoListOf<
     const encodeItem = Schema.encodeSync(itemSchema);
 
     class CoListOfItem
-        extends Array<Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>>
+        extends Array<
+            Item extends CoValueSchema
+                ? Schema.Schema.To<Item> | undefined
+                : Schema.Schema.To<Item>
+        >
         implements CoListBase<Item>
     {
         static get ast() {
@@ -57,7 +58,7 @@ export function CoListOf<
 
         id!: ID<this>;
         _type!: "CoList";
-        _owner!: Account | Group;
+        _owner!: AnyAccount | AnyGroup;
         _refs!: CoListBase<Item>["_refs"];
         _edits!: CoListBase<Item>["_edits"];
         _raw!: RawCoList;
@@ -67,12 +68,12 @@ export function CoListOf<
         constructor(_init: undefined, options: { fromRaw: RawCoList });
         constructor(
             init: Schema.Schema.From<Item>[],
-            options: { owner: Account | Group }
+            options: { owner: AnyAccount | AnyGroup }
         );
         constructor(init: number);
         constructor(
             init: Schema.Schema.From<Item>[] | undefined | number,
-            options?: { owner: Account | Group } | { fromRaw: RawCoList }
+            options?: { owner: AnyAccount | AnyGroup } | { fromRaw: RawCoList }
         ) {
             if (typeof init === "number") {
                 // this might be called from an intrinsic, like map, trying to create an empty array
@@ -121,9 +122,7 @@ export function CoListOf<
                     get: (target, key, receiver) => {
                         if (typeof key === "string" && !isNaN(+key)) {
                             const rawEdit = raw.editAt(Number(key));
-                            if (!rawEdit) {
-                                return undefined;
-                            }
+                            if (!rawEdit) return undefined;
 
                             return {
                                 get value() {
@@ -143,7 +142,7 @@ export function CoListOf<
                                             rawEdit?.value &&
                                             new ValueRef(
                                                 rawEdit?.value as ID<CoListOfItem>,
-                                                receiver.loadedAs,
+                                                receiver._loadedAs,
                                                 itemSchema
                                             )
                                         );
@@ -155,10 +154,10 @@ export function CoListOf<
                                         cojsonInternals.isAccountID(rawEdit.by)
                                     ) {
                                         return new ValueRef(
-                                            rawEdit.by as unknown as ID<Account>,
-                                            receiver.loadedAs,
-                                            SimpleAccount
-                                        );
+                                            rawEdit.by as unknown as ID<AnyAccount>,
+                                            receiver._loadedAs,
+                                            Account
+                                        ).accessFrom(receiver);
                                     }
                                 },
 
@@ -178,8 +177,8 @@ export function CoListOf<
                 _owner: {
                     get: () =>
                         raw.group instanceof RawAccount
-                            ? SimpleAccount.fromRaw(raw.group)
-                            : SimpleGroup.fromRaw(raw.group),
+                            ? Account.fromRaw(raw.group)
+                            : Group.fromRaw(raw.group),
                     enumerable: false,
                 },
                 _refs: { value: refs, enumerable: false },
@@ -235,9 +234,8 @@ export function CoListOf<
                         return Number(key) < raw.entries().length;
                     } else {
                         return Reflect.has(target, key);
-
                     }
-                }
+                },
             });
         }
 
@@ -245,7 +243,11 @@ export function CoListOf<
             return new CoListOfItem(undefined, { fromRaw: raw });
         }
 
-        push(...items: (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[]): number {
+        push(
+            ...items: (Item extends CoValueSchema
+                ? Schema.Schema.To<Item> | undefined
+                : Schema.Schema.To<Item>)[]
+        ): number {
             let rawItems;
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
@@ -260,7 +262,11 @@ export function CoListOf<
             return this._raw.entries().length;
         }
 
-        unshift(...items: (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[]): number {
+        unshift(
+            ...items: (Item extends CoValueSchema
+                ? Schema.Schema.To<Item> | undefined
+                : Schema.Schema.To<Item>)[]
+        ): number {
             let rawItems;
             if (propertyIsCoValueSchema(itemSchema)) {
                 rawItems = items.map((item) => item.id);
@@ -294,8 +300,12 @@ export function CoListOf<
         splice(
             start: number,
             deleteCount: number,
-            ...items: (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[]
-        ): (Item extends CoValueSchema ? (Schema.Schema.To<Item>|undefined) : Schema.Schema.To<Item>)[] {
+            ...items: (Item extends CoValueSchema
+                ? Schema.Schema.To<Item> | undefined
+                : Schema.Schema.To<Item>)[]
+        ): (Item extends CoValueSchema
+            ? Schema.Schema.To<Item> | undefined
+            : Schema.Schema.To<Item>)[] {
             const deleted = this.slice(start, start + deleteCount);
 
             for (

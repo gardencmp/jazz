@@ -7,7 +7,7 @@ import {
 } from "cojson";
 import { AuthProvider, SessionProvider } from ".";
 import {
-    Account,
+    AnyAccount,
     AccountMigration,
     AccountSchema,
     ID,
@@ -15,7 +15,7 @@ import {
 } from "jazz-js";
 
 type StorageData = {
-    accountID: ID<Account>;
+    accountID: ID<AnyAccount>;
     accountSecret: AgentSecret;
 };
 
@@ -90,7 +90,7 @@ export class BrowserDemoAuth implements AuthProvider {
                                     },
                                 });
                             const storageData = JSON.stringify({
-                                accountID: accountID as unknown as ID<Account>,
+                                accountID: accountID as unknown as ID<AnyAccount>,
                                 accountSecret,
                             } satisfies StorageData);
                             localStorage["demo-auth-logged-in-secret"] =
