@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-file-drop",
   "private": true,
-  "version": "0.0.63",
+  "version": "0.0.64-alpha.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 6610",

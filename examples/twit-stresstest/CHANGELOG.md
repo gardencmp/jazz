@@ -1,5 +1,13 @@
 # twit-stresstest
 
+## 0.2.1-alpha.0
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.0-alpha.0
+  - jazz-nodejs@0.6.5-alpha.0
+
 ## 0.2.0
 
 ### Minor Changes

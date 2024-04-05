@@ -1,5 +1,14 @@
 # jazz-example-twit
 
+## 0.1.2-alpha.0
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-browser-media-images@0.7.0-alpha.0
+  - jazz-react@0.7.0-alpha.0
+  - cojson@0.7.0-alpha.0
+
 ## 0.1.1
 
 ### Patch Changes

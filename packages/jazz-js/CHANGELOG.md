@@ -1,5 +1,16 @@
 # jazz-autosub
 
+## 0.7.0-alpha.0
+
+### Minor Changes
+
+- New simplified API
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.0-alpha.0
+
 ## 0.6.1
 
 ### Patch Changes

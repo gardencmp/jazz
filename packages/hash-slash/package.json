@@ -1,6 +1,6 @@
 {
   "name": "hash-slash",
-  "version": "0.1.3",
+  "version": "0.2.0-alpha.0",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",

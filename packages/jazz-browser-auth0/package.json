@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-auth0",
-  "version": "0.6.2",
+  "version": "0.6.3-alpha.0",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",

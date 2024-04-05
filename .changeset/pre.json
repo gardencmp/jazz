@@ -1,0 +1,29 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "jazz-example-chat": "0.0.46",
+    "jazz-example-chat-passphrase": "0.0.47",
+    "counter-js-auth0": "0.0.46",
+    "jazz-example-file-drop": "0.0.63",
+    "jazz-example-pets": "0.0.64",
+    "jazz-example-todo": "0.0.63",
+    "jazz-example-twit": "0.1.1",
+    "twit-stresstest": "0.2.0",
+    "cojson": "0.6.6",
+    "cojson-simple-sync": "0.6.0",
+    "cojson-storage-indexeddb": "0.6.3",
+    "cojson-storage-sqlite": "0.5.2",
+    "cojson-transport-nodejs-ws": "0.5.1",
+    "hash-slash": "0.1.3",
+    "jazz-browser": "0.6.3",
+    "jazz-browser-auth0": "0.6.2",
+    "jazz-browser-media-images": "0.6.0",
+    "jazz-js": "0.6.1",
+    "jazz-nodejs": "0.6.4",
+    "jazz-react": "0.5.4"
+  },
+  "changesets": [
+    "long-ties-relax"
+  ]
+}

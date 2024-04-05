@@ -1,5 +1,17 @@
 # jazz-browser-media-images
 
+## 0.7.0-alpha.0
+
+### Minor Changes
+
+- New simplified API
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.0
+  - jazz-js@0.7.0-alpha.0
+
 ## 0.6.0
 
 ### Minor Changes

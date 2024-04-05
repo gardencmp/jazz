@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.46",
+  "version": "0.0.47-alpha.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

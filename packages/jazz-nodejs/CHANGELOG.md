@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.6.5-alpha.0
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-js@0.7.0-alpha.0
+  - cojson@0.7.0-alpha.0
+  - cojson-transport-nodejs-ws@0.5.2-alpha.0
+
 ## 0.6.4
 
 ### Patch Changes

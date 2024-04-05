@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.0
+
+### Minor Changes
+
+- New simplified API
+
 ## 0.6.6
 
 ### Patch Changes
