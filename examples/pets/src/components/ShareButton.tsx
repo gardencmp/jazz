@@ -2,17 +2,17 @@ import { useState } from "react";
 
 import { PetPost } from "../1_types";
 
-import { Resolved, createInviteLink } from "jazz-react";
+import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
 
-export function ShareButton({ petPost }: { petPost?: Resolved<PetPost> }) {
+export function ShareButton({ petPost }: { petPost?: PetPost }) {
     const [existingInviteLink, setExistingInviteLink] = useState<string>();
     const { toast } = useToast();
 
     return (
-        petPost?.meta.group.myRole() === "admin" && (
+        petPost?._owner.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"

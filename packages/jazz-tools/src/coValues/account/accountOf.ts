@@ -216,8 +216,16 @@ export function AccountOf<
             return this._refs.profile.accessFrom(this);
         }
 
+        set profile(profile: S.Schema.To<P> | undefined) {
+            this._raw.set("profile", profile?.id || null as unknown as CoID<any> | null);
+        }
+
         get root(): S.Schema.To<R> | undefined {
             return this._refs.root.accessFrom(this);
+        }
+
+        set root(root: S.Schema.To<R> | undefined) {
+            this._raw.set("root", root?.id || null as unknown as CoID<any> | null);
         }
 
         myRole(): "admin" {
@@ -241,7 +249,7 @@ export function AccountOf<
     }
 
     return AccountOfProfileAndRoot as AccountSchema<
-        AccountOfProfileAndRoot & AnyAccount<P, R>,
+        AnyAccount<P, R>,
         P,
         R
     > & {

@@ -14,7 +14,7 @@ import {
 import { AST, Schema } from "@effect/schema";
 import { constructorOfSchemaSym } from "../resolution.js";
 import { pipeArguments } from "effect/Pipeable";
-import { Everyone, RawGroup, Role } from "cojson";
+import { CoID, Everyone, RawGroup, Role } from "cojson";
 import { ValueRef } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { SharedCoValueConstructor } from "../construction.js";
@@ -135,8 +135,16 @@ export function GroupOf<
             return this._refs.profile.accessFrom(this);
         }
 
+        set profile(value: S.Schema.To<P> | undefined) {
+            this._raw.set("profile", value?.id || null as unknown as CoID<any> | null);
+        }
+
         get root(): S.Schema.To<R> | undefined {
             return this._refs.root.accessFrom(this);
+        }
+
+        set root(value: S.Schema.To<R> | undefined) {
+            this._raw.set("root", value?.id || null as unknown as CoID<any> | null);
         }
 
         addMember(member: AnyAccount | Everyone, role: Role) {

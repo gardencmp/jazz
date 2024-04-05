@@ -70,7 +70,9 @@ export function CoStreamOf<
         _schema!: typeof CoStreamOfItem;
 
         by: CoStream<Item>["by"];
+        byMe: CoStream<Item>["byMe"];
         in: CoStream<Item>["in"];
+        inCurrentSession: CoStream<Item>["inCurrentSession"];
 
         constructor(
             init: Schema.Schema.To<Item>[] | undefined,
@@ -142,9 +144,10 @@ export function CoStreamOf<
                         );
                     },
                     configurable: true,
+                    enumerable: true,
                 });
             }
-            Object.defineProperty(this.by, "me", {
+            Object.defineProperty(this, "byMe", {
                 get() {
                     return self.by[loadedAs.id];
                 },
@@ -174,9 +177,10 @@ export function CoStreamOf<
                         );
                     },
                     configurable: true,
+                    enumerable: true,
                 });
             }
-            Object.defineProperty(this.in, "currentSession", {
+            Object.defineProperty(this, "inCurrentSession", {
                 get() {
                     return self.in[loadedAs.sessionID];
                 },

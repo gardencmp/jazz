@@ -47,5 +47,11 @@ export class ImageDefinition extends CoMapOf(
                 );
             }
         }
+        return (
+            highestAvailableResolution && {
+                res: highestAvailableResolution,
+                stream: this[highestAvailableResolution]!,
+            }
+        );
     }
 }

@@ -37,7 +37,7 @@ export class PetAccount extends Co.account({
 }).as<PetAccount>() {}
 
 export const migration: AccountMigration<typeof PetAccount> = (me) => {
-    if (!me.root) {
+    if (!me._refs.root) {
         me.root = new PetAccountRoot(
             {
                 posts: new ListOfPosts([], { owner: me }),

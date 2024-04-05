@@ -303,9 +303,9 @@ export function CoMapOf<
 
             if (indexSignature) {
                 return new Proxy(this, {
-                    get(target, key) {
+                    get(target, key, receiver) {
                         if (key in target) {
-                            return Reflect.get(target, key);
+                            return Reflect.get(target, key, receiver);
                         } else {
                             if (Schema.is(indexSignature.key)(key as string)) {
                                 if (
@@ -313,25 +313,23 @@ export function CoMapOf<
                                         indexSignature.value
                                     )
                                 ) {
-                                    return target.getCoValueAtKey(
+                                    return receiver.getCoValueAtKey(
                                         key as string
                                     );
                                 } else {
-                                    return target.getPrimitiveAtKey(
+                                    return receiver.getPrimitiveAtKey(
                                         key as string,
                                         indexSignature.value
                                     );
                                 }
                             } else {
-                                throw new Error(
-                                    "No such key " + String(key) + " in CoMap"
-                                );
+                                return undefined;
                             }
                         }
                     },
-                    set(target, key, value) {
+                    set(target, key, value, receiver) {
                         if (key in target) {
-                            return Reflect.set(target, key, value);
+                            return Reflect.set(target, key, value, receiver);
                         } else if (
                             Schema.is(indexSignature.key)(key as string)
                         ) {

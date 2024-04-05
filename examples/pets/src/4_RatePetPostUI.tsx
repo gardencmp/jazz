@@ -46,7 +46,7 @@ export function RatePetPostUI() {
                     <Button
                         key={reactionType}
                         variant={
-                            petPost?.reactions?.by.me.value === reactionType
+                            petPost?.reactions?.byMe?.value === reactionType
                                 ? "default"
                                 : "outline"
                         }

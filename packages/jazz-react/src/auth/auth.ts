@@ -7,6 +7,6 @@ export type ReactAuthHook = () => {
     AuthUI: React.ReactNode;
     logOut?: () => void;
 };
-export { DemoAuth } from "./DemoAuth.js";
-export { PasskeyAuth } from "./PasskeyAuth.js";
-export { PassphraseAuth } from "./PassphraseAuth.js";
+export { DemoAuth, DemoAuthBasicUI, DemoAuthComponent } from "./DemoAuth.js";
+export { PasskeyAuth, PasskeyAuthComponent } from "./PasskeyAuth.js";
+export { PassphraseAuth, PassphraseAuthBasicUI, PassphraseAuthComponent } from "./PassphraseAuth.js";
