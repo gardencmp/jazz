@@ -43,9 +43,7 @@ test("Should be able to sync data to database and then load that from a new node
 
     const map = group.createMap();
 
-    map.edit((m) => {
-        m.set("hello", "world");
-    });
+    map.set("hello", "world")
 
     await new Promise((resolve) => setTimeout(resolve, 200));
 
