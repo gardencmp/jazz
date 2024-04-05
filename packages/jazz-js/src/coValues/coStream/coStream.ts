@@ -1,5 +1,6 @@
 import {
     BinaryStreamInfo,
+    CojsonInternalTypes,
     JsonValue,
     RawBinaryCoStream,
     RawCoStream,
@@ -9,37 +10,25 @@ import {
     CoValue,
     CoValueSchema,
     ID,
-    SubclassedConstructor,
 } from "../../coValueInterfaces.js";
 import { AnyAccount } from "../account/account.js";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
-import { AnyGroup } from "../group/group.js";
+
+export type CoStreamEntry<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> = {
+    value: Item extends CoValueSchema<infer Self> ? Self | undefined : Schema.Schema.To<Item>;
+    ref?: Item extends CoValueSchema<infer Self, infer Value> ? ValueRef<Self & Value> : never;
+    by?: AnyAccount;
+    madeAt: Date;
+    tx: CojsonInternalTypes.TransactionID;
+}
 
 export type CoStream<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
     CoValue<"CoStream", RawCoStream> & {
-        by: { [key: ID<AnyAccount>]: Schema.Schema.To<Item> };
-        in: { [key: SessionID]: Schema.Schema.To<Item> };
+        by: { [key: ID<AnyAccount>]: CoStreamEntry<Item>, me: CoStreamEntry<Item> };
+        in: { [key: SessionID]: CoStreamEntry<Item>, currentSession: CoStreamEntry<Item> };
         push(...items: Schema.Schema.To<Item>[]): void;
-        _refs: {
-            by: {
-                [key: ID<AnyAccount>]: Item extends CoValueSchema<
-                    infer _,
-                    infer Value
-                >
-                    ? ValueRef<Value>
-                    : never;
-            };
-            in: {
-                [key: SessionID]: Item extends CoValueSchema<
-                    infer _,
-                    infer Value
-                >
-                    ? ValueRef<Value>
-                    : never;
-            };
-        };
     };
 
 export interface CoStreamSchema<

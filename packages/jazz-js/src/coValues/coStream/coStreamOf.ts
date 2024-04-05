@@ -1,20 +1,28 @@
 import {
     AccountID,
+    AgentID,
     BinaryStreamInfo,
-    CoValueCore,
+    CojsonInternalTypes,
     JsonValue,
     RawAccount,
     RawBinaryCoStream,
     RawCoStream,
     SessionID,
+    cojsonInternals,
 } from "cojson";
-import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
+import {
+    CoValue,
+    CoValueSchema,
+    ID,
+    inspect,
+} from "../../coValueInterfaces.js";
 import { AnyAccount, ControlledAccount } from "../account/account.js";
 import { AnyGroup } from "../group/group.js";
 import {
     BinaryCoStream,
     BinaryCoStreamSchema,
     CoStream,
+    CoStreamEntry,
     CoStreamSchema,
 } from "./coStream.js";
 import { SharedCoValueConstructor } from "../construction.js";
@@ -26,11 +34,9 @@ import {
 import { pipeArguments } from "effect/Pipeable";
 import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import {
-    Account,
-    controlledAccountFromNode,
-} from "../account/accountOf.js";
+import { Account, controlledAccountFromNode } from "../account/accountOf.js";
 import { Group } from "../group/groupOf.js";
+import { satisfies } from "effect/Function";
 
 export function CoStreamOf<
     Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
@@ -61,17 +67,12 @@ export function CoStreamOf<
         id!: ID<this>;
         _type!: "CoStream";
         _owner!: AnyAccount | AnyGroup;
-        _refs!: CoStream<Item>["_refs"];
         _raw!: RawCoStream;
         _loadedAs!: ControlledAccount;
         _schema!: typeof CoStreamOfItem;
 
-        by: {
-            [key: ID<AnyAccount>]: Schema.Schema.To<Item>;
-        };
-        in: {
-            [key: SessionID]: Schema.Schema.To<Item>;
-        };
+        by: CoStream<Item>["by"];
+        in: CoStream<Item>["in"];
 
         constructor(
             init: Schema.Schema.To<Item>[] | undefined,
@@ -89,25 +90,8 @@ export function CoStreamOf<
                 raw = rawOwner.createStream();
             }
 
-            const byRefs: {
-                [key: ID<AnyAccount>]: Item extends CoValueSchema<
-                    infer _,
-                    infer Value
-                >
-                    ? ValueRef<Value>
-                    : never;
-            } = {};
-            const inRefs: {
-                [key: SessionID]: Item extends CoValueSchema<
-                    infer _,
-                    infer Value
-                >
-                    ? ValueRef<Value>
-                    : never;
-            } = {};
-
-            this.by = {};
-            this.in = {};
+            this.by = {} as CoStream<Item>["by"];
+            this.in = {} as CoStream<Item>["in"];
 
             Object.defineProperties(this, {
                 id: { value: raw.id, enumerable: false },
@@ -117,13 +101,6 @@ export function CoStreamOf<
                         raw.group instanceof RawAccount
                             ? Account.fromRaw(raw.group)
                             : Group.fromRaw(raw.group),
-                    enumerable: false,
-                },
-                _refs: {
-                    value: {
-                        by: byRefs,
-                        in: inRefs,
-                    },
                     enumerable: false,
                 },
                 _raw: { value: raw, enumerable: false },
@@ -148,81 +125,66 @@ export function CoStreamOf<
             const self = this;
             const raw = this._raw;
             const loadedAs = this._loadedAs;
-            const refs = this._refs;
 
-            if (itemIsCoValue) {
-                for (const accountID of this._raw.accounts() as unknown as Set<
-                    ID<AnyAccount>
-                >) {
-                    if (Object.hasOwn(refs.by, accountID)) continue;
-                    Object.defineProperty(refs.by, accountID, {
-                        get() {
-                            const rawId = raw.lastItemBy(
-                                accountID as unknown as AccountID
-                            )?.value;
-                            return new ValueRef(
-                                rawId as unknown as ID<Schema.Schema.To<Item>>,
-                                loadedAs,
-                                itemSchema
-                            );
-                        },
-                    });
+            for (const accountID of this._raw.accounts() as unknown as Set<
+                ID<AnyAccount>
+            >) {
+                Object.defineProperty(this.by, accountID, {
+                    get() {
+                        const rawEntry = raw.lastItemBy(
+                            accountID as unknown as AccountID
+                        );
 
-                    Object.defineProperty(this.by, accountID, {
-                        get() {
-                            return refs.by[accountID]?.accessFrom(self);
-                        },
-                    });
-                }
-
-                for (const sessionID of raw.sessions() as unknown as Set<SessionID>) {
-                    if (Object.hasOwn(refs.in, sessionID)) continue;
-                    Object.defineProperty(refs.in, sessionID, {
-                        get() {
-                            const rawId = raw.lastItemIn(
-                                sessionID as unknown as SessionID
-                            )?.value;
-                            return new ValueRef(
-                                rawId as unknown as ID<Schema.Schema.To<Item>>,
-                                loadedAs,
-                                itemSchema
-                            );
-                        },
-                    });
-
-                    Object.defineProperty(this.in, sessionID, {
-                        get() {
-                            return refs.in[sessionID]?.accessFrom(self);
-                        },
-                    });
-                }
-            } else {
-                for (const accountID of raw.accounts() as unknown as Set<
-                    ID<AnyAccount>
-                >) {
-                    if (Object.hasOwn(this.by, accountID)) continue;
-                    Object.defineProperty(this.by, accountID, {
-                        get() {
-                            const rawItem = raw.lastItemBy(
-                                accountID as unknown as AccountID
-                            )?.value;
-                            return rawItem && decodeItem(rawItem);
-                        },
-                    });
-                }
-
-                for (const sessionID of raw.sessions() as unknown as Set<SessionID>) {
-                    if (Object.hasOwn(this.in, sessionID)) continue;
-                    Object.defineProperty(this.in, sessionID, {
-                        get() {
-                            const rawItem = raw.lastItemIn(
-                                sessionID as unknown as SessionID
-                            )?.value;
-                            return rawItem && decodeItem(rawItem);
-                        },
-                    });
-                }
+                        if (!rawEntry) return;
+                        return entryFromRawEntry(
+                            self,
+                            rawEntry,
+                            loadedAs,
+                            accountID
+                        );
+                    },
+                    configurable: true,
+                });
             }
+            Object.defineProperty(this.by, "me", {
+                get() {
+                    return self.by[loadedAs.id];
+                },
+                enumerable: false,
+                configurable: true,
+            });
+
+            for (const sessionID of raw.sessions() as unknown as Set<SessionID>) {
+                Object.defineProperty(this.in, sessionID, {
+                    get() {
+                        const rawEntry = raw.lastItemIn(
+                            sessionID as unknown as SessionID
+                        );
+
+                        if (!rawEntry) return;
+                        const by =
+                            cojsonInternals.accountOrAgentIDfromSessionID(
+                                sessionID
+                            );
+                        return entryFromRawEntry(
+                            self,
+                            rawEntry,
+                            loadedAs,
+                            cojsonInternals.isAccountID(by)
+                                ? (by as unknown as ID<AnyAccount>)
+                                : undefined
+                        );
+                    },
+                    configurable: true,
+                });
+            }
+            Object.defineProperty(this.in, "currentSession", {
+                get() {
+                    return self.in[loadedAs.sessionID];
+                },
+                enumerable: false,
+                configurable: true,
+            });
         }
 
         static fromRaw(raw: RawCoStream) {
@@ -287,6 +249,50 @@ export function CoStreamOf<
     return CoStreamOfItem as CoStreamSchema<CoStreamOfItem, Item> & {
         as<SubClass>(): CoStreamSchema<SubClass, Item>;
     };
+
+    function entryFromRawEntry(
+        accessFrom: CoValue,
+        rawEntry: {
+            by: AccountID | AgentID;
+            tx: CojsonInternalTypes.TransactionID;
+            at: Date;
+            value: JsonValue;
+        },
+        loadedAs: ControlledAccount,
+        accountID: ID<AnyAccount> | undefined
+    ) {
+        return {
+            get value(): Schema.Schema.To<Item> | undefined {
+                if (itemIsCoValue) {
+                    return this.ref?.accessFrom(accessFrom);
+                } else {
+                    return decodeItem(rawEntry.value);
+                }
+            },
+            get ref() {
+                if (itemIsCoValue) {
+                    const rawId = rawEntry.value;
+                    return new ValueRef(
+                        rawId as unknown as ID<Schema.Schema.To<Item>>,
+                        loadedAs,
+                        itemSchema
+                    );
+                }
+            },
+            get by() {
+                return (
+                    accountID &&
+                    new ValueRef(
+                        accountID as unknown as ID<AnyAccount>,
+                        loadedAs,
+                        Account
+                    )?.accessFrom(accessFrom)
+                );
+            },
+            madeAt: rawEntry.at,
+            tx: rawEntry.tx,
+        };
+    }
 }
 
 class BinaryCoStreamImplClass

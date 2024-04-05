@@ -1,43 +1,45 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
+import { createImage } from "jazz-browser-media-images";
 
-import { CoID, CoMap, Media, Profile } from "cojson";
-import { useAutoSub, useJazz } from "jazz-react";
-import { BrowserImage, createImage } from "jazz-browser-media-images";
-
-import { PetAccountRoot, PetPost, PetReactions } from "./1_types";
-
+import { PetPost, PetReactions } from "./1_types";
 import { Input, Button } from "./basicComponents";
+import { useAccount, useCoState } from "./2_main";
+import { Co, Group, ID, S } from "jazz-js";
+import { ProgressiveImg } from "jazz-react";
 
 /** Walkthrough: TODO
  */
 
-type PartialPetPost = CoMap<{
-    name: string;
-    image?: Media.ImageDefinition["id"];
-    reactions: PetReactions["id"];
-}>;
+class PartialPetPost extends Co.map({
+    name: S.string,
+    image: S.optional(Co.media.imageDef),
+    reactions: PetReactions,
+}).as<PartialPetPost>() {}
 
 export function NewPetPostForm() {
-    const { me } = useJazz<Profile, PetAccountRoot>();
+    const { me } = useAccount();
     const navigate = useNavigate();
 
-    const [newPostId, setNewPostId] = useState<
-        CoID<PartialPetPost> | undefined
-    >(undefined);
+    const [newPostId, setNewPostId] = useState<ID<PartialPetPost> | undefined>(
+        undefined
+    );
 
-    const newPetPost = useAutoSub(newPostId);
+    const newPetPost = useCoState(PartialPetPost, newPostId);
 
     const onChangeName = useCallback(
         (name: string) => {
             if (newPetPost) {
-                newPetPost.set({ name });
+                newPetPost.name = name;
             } else {
-                const petPostGroup = me.createGroup();
-                const petPost = petPostGroup.createMap<PartialPetPost>({
-                    name,
-                    reactions: petPostGroup.createStream<PetReactions>().id,
-                });
+                const petPostGroup = new Group({ owner: me });
+                const petPost = new PartialPetPost(
+                    {
+                        name,
+                        reactions: new PetReactions([], { owner: me }),
+                    },
+                    { owner: petPostGroup }
+                );
 
                 setNewPostId(petPost.id);
             }
@@ -49,12 +51,11 @@ export function NewPetPostForm() {
         async (event: ChangeEvent<HTMLInputElement>) => {
             if (!newPetPost || !event.target.files) return;
 
-            const image = await createImage(
-                event.target.files[0],
-                newPetPost.meta.group
-            );
+            const image = await createImage(event.target.files[0], {
+                owner: newPetPost._owner,
+            });
 
-            newPetPost.set({ image: image.id });
+            newPetPost.image = image;
         },
         [newPetPost]
     );
@@ -67,7 +68,7 @@ export function NewPetPostForm() {
             throw new Error("No posts list found");
         }
 
-        myPosts.append(newPetPost.id as PetPost["id"]);
+        myPosts.push(newPetPost as PetPost);
 
         navigate("/pet/" + newPetPost.id);
     }, [me.root?.posts, newPetPost, navigate]);
@@ -84,13 +85,11 @@ export function NewPetPostForm() {
             />
 
             {newPetPost?.image ? (
-                <img
-                    className="w-80 max-w-full rounded"
-                    src={
-                        newPetPost?.image.as(BrowserImage())
-                            ?.highestResSrcOrPlaceholder
-                    }
-                />
+                <ProgressiveImg image={newPetPost.image}>
+                    {({ src }) => (
+                        <img className="w-80 max-w-full rounded" src={src} />
+                    )}
+                </ProgressiveImg>
             ) : (
                 <Input
                     type="file"

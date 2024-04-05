@@ -1,22 +1,26 @@
-import { CoValueSchema, ID, inspect, isCoValueSchema } from "../../coValueInterfaces.js";
+import {
+    CoValueSchema,
+    ID,
+    inspect,
+    isCoValueSchema,
+} from "../../coValueInterfaces.js";
 import * as S from "@effect/schema/Schema";
 import { AnyGroup, GroupSchema } from "./group.js";
 import {
     AnyAccount,
     ControlledAccount,
-    ProfileSchema,
     isControlledAccount,
 } from "../account/account.js";
 import { AST, Schema } from "@effect/schema";
 import { constructorOfSchemaSym } from "../resolution.js";
 import { pipeArguments } from "effect/Pipeable";
-import { AccountID, Everyone, RawGroup, Role } from "cojson";
+import { Everyone, RawGroup, Role } from "cojson";
 import { ValueRef } from "../../refs.js";
 import { controlledAccountFromNode } from "../account/accountOf.js";
 import { SharedCoValueConstructor } from "../construction.js";
 
 export function GroupOf<
-    P extends ProfileSchema | S.Schema<null>,
+    P extends CoValueSchema | S.Schema<null>,
     R extends CoValueSchema | S.Schema<null>,
 >(fields: { profile: P; root: R }) {
     class GroupOfProfileAndRoot
@@ -78,20 +82,30 @@ export function GroupOf<
                 get profile() {
                     if (isCoValueSchema(fields.profile)) {
                         const profileID = raw.get("profile");
-                        return profileID && new ValueRef(
-                            profileID as unknown as ID<Schema.Schema.To<typeof fields.profile>>,
-                            controlledAccountFromNode(raw.core.node),
-                            fields.profile
+                        return (
+                            profileID &&
+                            new ValueRef(
+                                profileID as unknown as ID<
+                                    Schema.Schema.To<typeof fields.profile>
+                                >,
+                                controlledAccountFromNode(raw.core.node),
+                                fields.profile
+                            )
                         );
                     }
                 },
                 get root() {
                     if (isCoValueSchema(fields.root)) {
                         const rootID = raw.get("root");
-                        return rootID && new ValueRef(
-                            rootID as unknown as ID<Schema.Schema.To<typeof fields.root>>,
-                            controlledAccountFromNode(raw.core.node),
-                            fields.root
+                        return (
+                            rootID &&
+                            new ValueRef(
+                                rootID as unknown as ID<
+                                    Schema.Schema.To<typeof fields.root>
+                                >,
+                                controlledAccountFromNode(raw.core.node),
+                                fields.root
+                            )
                         );
                     }
                 },
@@ -134,6 +148,10 @@ export function GroupOf<
             return this;
         }
 
+        myRole(): Role | undefined {
+            return this._raw.myRole();
+        }
+
         toJSON() {
             return {
                 co: {
@@ -159,4 +177,7 @@ export function GroupOf<
     };
 }
 
-export class Group extends GroupOf({ profile: S.null, root: S.null }).as<Group>() {}
+export class Group extends GroupOf({
+    profile: S.null,
+    root: S.null,
+}).as<Group>() {}

@@ -1,11 +1,4 @@
-import {
-    AccountMigration,
-    CoList,
-    CoMap,
-    CoStream,
-    Media,
-    Profile,
-} from "cojson";
+import { AccountMigration, BaseProfile, Co, S } from "jazz-js";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -14,13 +7,7 @@ import {
  *  TODO
  **/
 
-export type PetPost = CoMap<{
-    name: string;
-    image: Media.ImageDefinition["id"];
-    reactions: PetReactions["id"];
-}>;
-
-export const REACTION_TYPES = [
+export const ReactionTypes = [
     "aww",
     "love",
     "haha",
@@ -28,24 +15,36 @@ export const REACTION_TYPES = [
     "tiny",
     "chonkers",
 ] as const;
+export const ReactionType = S.literal(...ReactionTypes);
 
-export type ReactionType = (typeof REACTION_TYPES)[number];
+export class PetReactions extends Co.stream(ReactionType).as<PetReactions>() {}
 
-export type PetReactions = CoStream<ReactionType>;
+export class PetPost extends Co.map({
+    name: S.string,
+    image: Co.media.imageDef,
+    reactions: PetReactions,
+}).as<PetPost>() {}
 
-export type ListOfPosts = CoList<PetPost["id"]>;
+export class ListOfPosts extends Co.list(PetPost).as<ListOfPosts>() {}
 
-export type PetAccountRoot = CoMap<{
-    posts: ListOfPosts["id"];
-}>;
+export class PetAccountRoot extends Co.map({
+    posts: ListOfPosts,
+}).as<PetAccountRoot>() {}
 
-export const migration: AccountMigration<Profile, PetAccountRoot> = (account) => {
-    if (!account.get("root")) {
-        const root = account.createMap<PetAccountRoot>({
-            posts: account.createList<ListOfPosts>().id,
-        });
-        account.set("root", root.id);
-        console.log("Created root", root.id);
+export class PetAccount extends Co.account({
+    profile: BaseProfile,
+    root: PetAccountRoot,
+}).as<PetAccount>() {}
+
+export const migration: AccountMigration<typeof PetAccount> = (me) => {
+    if (!me.root) {
+        me.root = new PetAccountRoot(
+            {
+                posts: new ListOfPosts([], { owner: me }),
+            },
+            { owner: me }
+        );
+        console.log("Created root", me.root);
     }
 };
 

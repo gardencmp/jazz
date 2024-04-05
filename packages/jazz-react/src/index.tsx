@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
     AuthProvider,
+    blobFromBinaryStream,
     consumeInviteLinkFromWindowLocation,
     createBrowserContext,
 } from "jazz-browser";
@@ -13,6 +14,7 @@ import {
     controlledAccountSym,
     CoValueSchema,
     Account,
+    ImageDefinition,
 } from "jazz-js";
 
 export function JazzReact<AccountS extends AccountSchema>({
@@ -59,7 +61,7 @@ export function JazzReact<AccountS extends AccountSchema>({
                             "sync"
                         ) ||
                         undefined,
-                    accountSchema: accountSchema || Account as AccountS,
+                    accountSchema: accountSchema || (Account as AccountS),
                     migration: migration,
                 });
 
@@ -174,4 +176,48 @@ export type ReactAuthHook = () => {
 
 export { DemoAuth } from "./DemoAuth.js";
 
-export { createInviteLink, parseInviteLink, readBlobFromBinaryStream } from "jazz-browser";
+export {
+    createInviteLink,
+    parseInviteLink,
+    readBlobFromBinaryStream,
+} from "jazz-browser";
+
+export function useProgressiveImg({
+    image,
+}: {
+    image: ImageDefinition | undefined;
+}) {
+    const [src, setSrc] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        const highestRes = image?.highestResAvailable;
+        if (highestRes) {
+            const blob = blobFromBinaryStream(highestRes.stream);
+            if (blob) {
+                const blobURI = URL.createObjectURL(blob);
+                setSrc(blobURI);
+                return () => {
+                    setTimeout(() => URL.revokeObjectURL(blobURI), 200);
+                };
+            }
+        } else {
+            setSrc(image?.placeholderDataURL);
+        }
+    }, [image?.highestResAvailable?.res]);
+
+    return { src, originalSize: image?.originalSize };
+}
+
+export function ProgressiveImg({
+    children,
+    image,
+}: {
+    children: (result: {
+        src: string | undefined;
+        originalSize: readonly [number, number] | undefined;
+    }) => React.ReactNode;
+    image: ImageDefinition | undefined;
+}) {
+    const result = useProgressiveImg({ image });
+    return result && children(result);
+}

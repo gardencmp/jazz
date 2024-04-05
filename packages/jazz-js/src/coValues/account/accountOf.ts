@@ -220,6 +220,10 @@ export function AccountOf<
             return this._refs.root.accessFrom(this);
         }
 
+        myRole(): "admin" {
+            return "admin";
+        }
+
         toJSON() {
             return {
                 profile: this.profile?.toJSON(),

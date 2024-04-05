@@ -19,7 +19,7 @@
     "jazz-browser-media-images": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-react-auth-local": "workspace:*",
-    "cojson": "workspace:*",
+    "jazz-js": "workspace:*",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",

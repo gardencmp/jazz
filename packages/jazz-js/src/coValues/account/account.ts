@@ -12,6 +12,7 @@ import {
     Peer,
     RawAccount,
     RawControlledAccount,
+    Role,
     SessionID,
 } from "cojson";
 import { AccountMigration } from "./migration.js";
@@ -21,7 +22,7 @@ import { SchemaWithInputAndOutput, SchemaWithOutput } from "../../schemaHelpers.
 
 export type ProfileSchema = CoMapSchema<any, {
     name: S.Schema<string>
-}> & SchemaWithInputAndOutput<CoMap<{
+}, any> & SchemaWithInputAndOutput<CoMap<{
     name: S.Schema<string>
 }>>;
 
@@ -38,6 +39,7 @@ export interface AnyAccount<
         profile: ValueRef<S.Schema.To<P>>;
         root: ValueRef<S.Schema.To<R>>;
     };
+    myRole(): 'admin';
 }
 
 export function isAccount(value: CoValue): value is AnyAccount {

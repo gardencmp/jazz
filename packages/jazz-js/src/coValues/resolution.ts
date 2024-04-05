@@ -34,7 +34,8 @@ function astIsCoValueSchema(ast: AST.AST): boolean {
     } else if (
         ast._tag === "BooleanKeyword" ||
         ast._tag === "NumberKeyword" ||
-        ast._tag === "StringKeyword"
+        ast._tag === "StringKeyword" ||
+        ast._tag === "Literal"
     ) {
         return false;
     } else if (ast._tag === "Refinement") {

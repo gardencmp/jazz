@@ -13,6 +13,7 @@ import {
     CoMap,
     IndexSignature,
     CoMapBase,
+    NoIndexSignature,
 } from "./coMap.js";
 import { ValueRef, makeRefs } from "../../refs.js";
 import { CoValueCore, JsonValue, RawAccount, RawCoMap, cojsonInternals } from "cojson";
@@ -36,7 +37,7 @@ import { Group } from "../group/groupOf.js";
 
 export function CoMapOf<
     Fields extends CoMapFields,
-    IndexSig extends IndexSignature,
+    IndexSig extends IndexSignature = NoIndexSignature,
 >(fields: Fields, indexSignature?: IndexSig) {
     class CoMapOfFields
         extends SharedCoValueConstructor

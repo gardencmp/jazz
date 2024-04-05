@@ -15,6 +15,11 @@ export type IndexSignature = {
     value: CoMapFieldValue;
 };
 
+export type NoIndexSignature = {
+    key: never;
+    value: never;
+};
+
 /**
  *  @category Schemas & CoValues - CoMap
  */
@@ -31,9 +36,8 @@ export interface CoMapBase<
             ? ValueRef<Self & Value>
             : never;
     } & {
-        [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<
-            IdxSig["value"]
-        > extends CoValueSchema<infer Self, infer Value>
+        [Key in Schema.Schema.To<IdxSig["key"]>]:
+            IdxSig["value"] extends CoValueSchema<infer Self, infer Value>
             ? ValueRef<Self & Value>
             : never;
     };
@@ -69,11 +73,11 @@ export interface CoMapBase<
  */
 export type CoMap<
     Fields extends CoMapFields,
-    IdxSig extends IndexSignature = never,
+    IdxSig extends IndexSignature | NoIndexSignature = NoIndexSignature,
 > = {
     /** @category Specified fields */
     [Key in keyof Fields]: Schema.Schema.To<Fields[Key]>;
-} & {
+} &  {
     [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
 } & CoMapBase<Fields, IdxSig>;
 
@@ -81,7 +85,7 @@ export type CoMap<
 export interface CoMapSchema<
     Self,
     Fields extends CoMapFields,
-    IdxSig extends IndexSignature = never,
+    IdxSig extends IndexSignature | NoIndexSignature,
 > extends CoValueSchema<
         Self,
         CoMap<Fields, IdxSig>,

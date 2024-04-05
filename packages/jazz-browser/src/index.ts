@@ -24,7 +24,6 @@ import {
 } from "jazz-js";
 import { AccountID } from "cojson";
 
-export * from "jazz-js";
 export { BrowserDemoAuth } from "./DemoAuth";
 export type { BrowserDemoAuthDriver } from "./DemoAuth";
 
@@ -151,7 +150,9 @@ export type SessionHandle = {
     done: () => void;
 };
 
-function getSessionHandleFor(accountID: ID<AnyAccount> | AgentID): SessionHandle {
+function getSessionHandleFor(
+    accountID: ID<AnyAccount> | AgentID
+): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
         done = resolve;
@@ -518,8 +519,20 @@ export async function readBlobFromBinaryStream(
         onProgress: options.onProgress,
     });
 
+    return (
+        stream &&
+        blobFromBinaryStream(stream, {
+            allowUnfinished: options.allowUnfinished,
+        })
+    );
+}
+
+export function blobFromBinaryStream(
+    stream: BinaryCoStream,
+    options?: { allowUnfinished?: boolean }
+): Blob | undefined {
     const chunks = stream?.getChunks({
-        allowUnfinished: options.allowUnfinished,
+        allowUnfinished: options?.allowUnfinished,
     });
 
     if (!chunks) {

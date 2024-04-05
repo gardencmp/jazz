@@ -61,6 +61,8 @@ export {
 } from "./coValues/account/account.js";
 
 export { AccountMigration } from "./coValues/account/migration.js";
-export { Account } from "./coValues/account/accountOf.js";
+export { Account, BaseProfile } from "./coValues/account/accountOf.js";
 export { AnyGroup } from "./coValues/group/group.js";
 export { Group } from "./coValues/group/groupOf.js";
+
+export { ImageDefinition } from "./coValues/extensions/imageDef.js";

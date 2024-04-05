@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { WithJazz, useJazz, useAcceptInvite } from "jazz-react";
+import { JazzReact } from "jazz-react";
 import { LocalAuth } from "jazz-react-auth-local";
 
 import {
@@ -14,8 +14,7 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
-import { PetAccountRoot, migration } from "./1_types.ts";
-import { AccountMigration, Profile } from "cojson";
+import { PetAccount, PetPost, migration } from "./1_types.ts";
 
 /** Walkthrough: The top-level provider `<WithJazz/>`
  *
@@ -31,14 +30,17 @@ const auth = LocalAuth({
     Component: PrettyAuthUI,
 });
 
+const Jazz = JazzReact({ accountSchema: PetAccount, migration: migration });
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <WithJazz auth={auth} migration={migration as AccountMigration}>
+                <Jazz.Provider auth={auth}>
                     <App />
-                </WithJazz>
+                </Jazz.Provider>
             </div>
         </ThemeProvider>
     </React.StrictMode>
@@ -52,7 +54,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 
 export default function App() {
-    const { logOut } = useJazz();
+    const { logOut } = useAccount();
 
     const router = createHashRouter([
         {
@@ -73,7 +75,10 @@ export default function App() {
         },
     ]);
 
-    useAcceptInvite((petPostID) => router.navigate("/pet/" + petPostID));
+    useAcceptInvite({
+        invitedObjectSchema: PetPost,
+        onAccept: (petPostID) => router.navigate("/pet/" + petPostID),
+    });
 
     return (
         <>
@@ -90,7 +95,7 @@ export default function App() {
 }
 
 export function PostOverview() {
-    const { me } = useJazz<Profile, PetAccountRoot>();
+    const { me } = useAccount();
 
     const myPosts = me.root?.posts;
 

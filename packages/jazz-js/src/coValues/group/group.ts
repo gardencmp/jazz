@@ -5,8 +5,8 @@ import { ValueRef } from "../../refs.js";
 import { AnyAccount } from "../account/account.js";
 
 export interface AnyGroup<
-    P extends CoValueSchema | S.Schema<null> = S.Schema<null>,
-    R extends CoValueSchema | S.Schema<null> = S.Schema<null>,
+    P extends CoValueSchema | S.Schema<null> = CoValueSchema | S.Schema<null>,
+    R extends CoValueSchema | S.Schema<null> = CoValueSchema | S.Schema<null>,
 > extends CoValue<"Group", RawGroup> {
     profile?: S.Schema.To<P>;
     root?: S.Schema.To<R>;
@@ -15,6 +15,7 @@ export interface AnyGroup<
         root: ValueRef<S.Schema.To<R>>;
     };
     addMember(member: Everyone | AnyAccount, role: Role): this;
+    myRole(): Role | undefined;
 }
 
 export interface GroupSchema<
