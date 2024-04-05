@@ -23,9 +23,8 @@ import {
     S,
 } from "jazz-js";
 import { AccountID } from "cojson";
-
-export { BrowserDemoAuth } from "./DemoAuth";
-export type { BrowserDemoAuthDriver } from "./DemoAuth";
+import { AuthProvider } from "./auth/auth";
+export * from './auth/auth.js';
 
 export type BrowserContext<A extends ControlledAccount> = {
     me: A;
@@ -130,15 +129,6 @@ export async function createBrowserContext<A extends AccountSchema>({
             sessionDone?.();
         },
     };
-}
-
-export interface AuthProvider {
-    createOrLoadAccount<A extends AccountSchema>(
-        accountSchema: A,
-        getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        migration?: AccountMigration<A>
-    ): Promise<A[controlledAccountSym]>;
 }
 
 export type SessionProvider = (

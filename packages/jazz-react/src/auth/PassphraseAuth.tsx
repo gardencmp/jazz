@@ -1,5 +1,5 @@
 import { useMemo, useState, ReactNode } from "react";
-import { BrowserPassphraseAuth } from "jazz-browser-auth-passphrase";
+import { BrowserPassphraseAuth } from "jazz-browser";
 import { ReactAuthHook } from "jazz-react";
 
 import { generateMnemonic } from "@scure/bip39";

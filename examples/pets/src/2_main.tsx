@@ -3,8 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { JazzReact } from "jazz-react";
-import { LocalAuth } from "jazz-react-auth-local";
+import { JazzReact, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -25,7 +24,7 @@ import { PetAccount, PetPost, migration } from "./1_types.ts";
 
 const appName = "Jazz Rate My Pet Example";
 
-const auth = LocalAuth({
+const auth = PasskeyAuth({
     appName,
     Component: PrettyAuthUI,
 });

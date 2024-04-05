@@ -5,7 +5,8 @@ import {
     Peer,
     RawControlledAccount,
 } from "cojson";
-import { AuthProvider, SessionProvider } from ".";
+import { SessionProvider } from "..";
+import { AuthProvider } from "./auth";
 import {
     AnyAccount,
     AccountMigration,
@@ -45,6 +46,14 @@ export class BrowserDemoAuth implements AuthProvider {
         initialPeers: Peer[],
         migration?: AccountMigration<A>
     ): Promise<A[controlledAccountSym]> {
+        const rawMigration = (account: RawControlledAccount) => {
+            return migration?.(
+                accountSchema.fromRaw(
+                    account
+                ) as A[controlledAccountSym]
+            );
+        }
+
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey]
@@ -57,13 +66,7 @@ export class BrowserDemoAuth implements AuthProvider {
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                migration: (account) => {
-                    return migration?.(
-                        accountSchema.fromRaw(
-                            account
-                        ) as A[controlledAccountSym]
-                    );
-                },
+                migration: rawMigration,
             });
 
             this.driver.onSignedIn({ logOut });
@@ -81,13 +84,7 @@ export class BrowserDemoAuth implements AuthProvider {
                             const { node, accountID, accountSecret } =
                                 await LocalNode.withNewlyCreatedAccount({
                                     name: username,
-                                    migration: (account) => {
-                                        return migration?.(
-                                            accountSchema.fromRaw(
-                                                account
-                                            ) as A[controlledAccountSym]
-                                        );
-                                    },
+                                    migration: rawMigration
                                 });
                             const storageData = JSON.stringify({
                                 accountID: accountID as unknown as ID<AnyAccount>,
@@ -134,13 +131,7 @@ export class BrowserDemoAuth implements AuthProvider {
                                 accountSecret: storageData.accountSecret,
                                 sessionID,
                                 peersToLoadFrom: initialPeers,
-                                migration: (account) => {
-                                    return migration?.(
-                                        accountSchema.fromRaw(
-                                            account
-                                        ) as A[controlledAccountSym]
-                                    );
-                                },
+                                migration: rawMigration
                             });
 
                             doneSigningUpOrLoggingIn(node);

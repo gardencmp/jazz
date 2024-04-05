@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-    AuthProvider,
-    blobFromBinaryStream,
     consumeInviteLinkFromWindowLocation,
     createBrowserContext,
 } from "jazz-browser";
@@ -14,8 +12,8 @@ import {
     controlledAccountSym,
     CoValueSchema,
     Account,
-    ImageDefinition,
 } from "jazz-js";
+import { ReactAuthHook } from "./auth/auth.js";
 
 export function JazzReact<AccountS extends AccountSchema>({
     accountSchema,
@@ -168,56 +166,11 @@ export function JazzReact<AccountS extends AccountSchema>({
     };
 }
 
-export type ReactAuthHook = () => {
-    auth: AuthProvider;
-    AuthUI: React.ReactNode;
-    logOut?: () => void;
-};
-
-export { DemoAuth } from "./DemoAuth.js";
-
 export {
     createInviteLink,
     parseInviteLink,
     readBlobFromBinaryStream,
 } from "jazz-browser";
 
-export function useProgressiveImg({
-    image,
-}: {
-    image: ImageDefinition | undefined;
-}) {
-    const [src, setSrc] = useState<string | undefined>(undefined);
-
-    useEffect(() => {
-        const highestRes = image?.highestResAvailable;
-        if (highestRes) {
-            const blob = blobFromBinaryStream(highestRes.stream);
-            if (blob) {
-                const blobURI = URL.createObjectURL(blob);
-                setSrc(blobURI);
-                return () => {
-                    setTimeout(() => URL.revokeObjectURL(blobURI), 200);
-                };
-            }
-        } else {
-            setSrc(image?.placeholderDataURL);
-        }
-    }, [image?.highestResAvailable?.res]);
-
-    return { src, originalSize: image?.originalSize };
-}
-
-export function ProgressiveImg({
-    children,
-    image,
-}: {
-    children: (result: {
-        src: string | undefined;
-        originalSize: readonly [number, number] | undefined;
-    }) => React.ReactNode;
-    image: ImageDefinition | undefined;
-}) {
-    const result = useProgressiveImg({ image });
-    return result && children(result);
-}
+export * from "./auth/auth.js";
+export * from "./media.js"

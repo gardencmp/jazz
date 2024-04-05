@@ -16,7 +16,7 @@ import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Schema } from "@effect/schema";
 
-export type CoStreamEntry<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> = {
+export type CoStreamEntry<Item extends SchemaWithOutput<CoValue> | SchemaWithOutput<JsonValue>> = {
     value: Item extends CoValueSchema<infer Self> ? Self | undefined : Schema.Schema.To<Item>;
     ref?: Item extends CoValueSchema<infer Self, infer Value> ? ValueRef<Self & Value> : never;
     by?: AnyAccount;
@@ -24,7 +24,7 @@ export type CoStreamEntry<Item extends CoValueSchema | SchemaWithOutput<JsonValu
     tx: CojsonInternalTypes.TransactionID;
 }
 
-export type CoStream<Item extends CoValueSchema | SchemaWithOutput<JsonValue>> =
+export type CoStream<Item extends SchemaWithOutput<CoValue> | SchemaWithOutput<JsonValue>> =
     CoValue<"CoStream", RawCoStream> & {
         by: { [key: ID<AnyAccount>]: CoStreamEntry<Item>, me: CoStreamEntry<Item> };
         in: { [key: SessionID]: CoStreamEntry<Item>, currentSession: CoStreamEntry<Item> };

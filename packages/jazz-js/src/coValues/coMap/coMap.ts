@@ -29,24 +29,24 @@ export interface CoMapBase<
 > extends CoValue<"CoMap", RawCoMap> {
     /** @category Referenced CoValues */
     readonly _refs: {
-        [Key in keyof Fields]: Fields[Key] extends CoValueSchema<
-            infer Self,
-            infer Value
-        >
-            ? ValueRef<Self & Value>
-            : never;
+        [Key in keyof Fields as NonNullable<
+            Schema.Schema.To<Fields[Key]>
+        > extends CoValue
+            ? Key
+            : never]: ValueRef<NonNullable<Schema.Schema.To<Fields[Key]>>>;
     } & {
-        [Key in Schema.Schema.To<IdxSig["key"]>]:
-            IdxSig["value"] extends CoValueSchema<infer Self, infer Value>
-            ? ValueRef<Self & Value>
+        [Key in Schema.Schema.To<IdxSig["key"]>]: NonNullable<
+            Schema.Schema.To<IdxSig["value"]>
+        > extends CoValue
+            ? ValueRef<NonNullable<Schema.Schema.To<IdxSig["value"]>>>
             : never;
     };
 
     readonly _edits: {
         [Key in keyof Fields]: {
             value?: Schema.Schema.To<Fields[Key]>;
-            ref?: Fields[Key] extends CoValueSchema<infer Self, infer Value>
-                ? ValueRef<Self & Value>
+            ref?: NonNullable<Schema.Schema.To<Fields[Key]>> extends CoValue
+                ? ValueRef<Schema.Schema.To<Fields[Key]>>
                 : never;
             by?: AnyAccount;
             madeAt: Date;
@@ -77,7 +77,7 @@ export type CoMap<
 > = {
     /** @category Specified fields */
     [Key in keyof Fields]: Schema.Schema.To<Fields[Key]>;
-} &  {
+} & {
     [Key in Schema.Schema.To<IdxSig["key"]>]: Schema.Schema.To<IdxSig["value"]>;
 } & CoMapBase<Fields, IdxSig>;
 
@@ -94,7 +94,7 @@ export interface CoMapSchema<
     > {}
 
 export type CoMapFieldValue =
-    | CoValueSchema
+    | SchemaWithOutput<CoValue | undefined>
     | SchemaWithOutput<JsonValue>
     | PropertySignatureWithOutput<CoValue | JsonValue | undefined>;
 

@@ -1,16 +1,17 @@
 import {
     AccountID,
-    AccountMigration,
     AgentSecret,
     cojsonInternals,
     LocalNode,
     Peer,
+    RawAccountMigration,
+    RawControlledAccount,
 } from "cojson";
 import { agentSecretFromSecretSeed } from "cojson/src/crypto";
 import { AuthProvider, SessionProvider } from "jazz-browser";
 
 type LocalStorageData = {
-    accountID: AccountID;
+    accountID: ID<AnyAccount>;
     accountSecret: AgentSecret;
 };
 
@@ -43,11 +44,18 @@ export class BrowserPassphraseAuth implements AuthProvider {
         this.appHostname = appHostname;
     }
 
-    async createNode(
+    async createOrLoadAccount<A extends AccountSchema>(
+        accountSchema: A,
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        migration?: AccountMigration
-    ): Promise<LocalNode> {
+        migration?: AccountMigration<A>
+    ): Promise<A[controlledAccountSym]> {
+        const rawMigration = (account: RawControlledAccount) => {
+            return migration?.(
+                accountSchema.fromRaw(account) as A[controlledAccountSym]
+            );
+        };
+
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey]
@@ -56,16 +64,20 @@ export class BrowserPassphraseAuth implements AuthProvider {
             const sessionID = await getSessionFor(localStorageData.accountID);
 
             const node = await LocalNode.withLoadedAccount({
-                accountID: localStorageData.accountID,
+                accountID: localStorageData.accountID as unknown as AccountID,
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                migration,
+                migration: rawMigration,
             });
 
             this.driver.onSignedIn({ logOut });
 
-            return Promise.resolve(node);
+            const account = accountSchema.fromRaw(
+                node.account as RawControlledAccount
+            ) as A[controlledAccountSym];
+
+            return Promise.resolve(account);
         } else {
             const node = await new Promise<LocalNode>(
                 (doneSigningUpOrLoggingIn) => {
@@ -78,7 +90,7 @@ export class BrowserPassphraseAuth implements AuthProvider {
                                 getSessionFor,
                                 this.appName,
                                 this.appHostname,
-                                migration
+                                rawMigration
                             );
                             for (const peer of initialPeers) {
                                 node.syncManager.addPeer(peer);
@@ -93,7 +105,7 @@ export class BrowserPassphraseAuth implements AuthProvider {
                                 getSessionFor,
                                 this.appHostname,
                                 initialPeers,
-                                migration
+                                rawMigration
                             );
                             doneSigningUpOrLoggingIn(node);
                             this.driver.onSignedIn({ logOut });
@@ -102,12 +114,23 @@ export class BrowserPassphraseAuth implements AuthProvider {
                 }
             );
 
-            return node;
+            const account = accountSchema.fromRaw(
+                node.account as RawControlledAccount
+            ) as A[controlledAccountSym];
+
+            return Promise.resolve(account);
         }
     }
 }
 
-import * as bip39 from '@scure/bip39';
+import * as bip39 from "@scure/bip39";
+import {
+    AccountMigration,
+    AccountSchema,
+    AnyAccount,
+    controlledAccountSym,
+    ID,
+} from "jazz-js";
 
 async function signUp(
     username: string,
@@ -116,7 +139,7 @@ async function signUp(
     getSessionFor: SessionProvider,
     _appName: string,
     _appHostname: string,
-    migration?: AccountMigration
+    migration?: RawAccountMigration
 ): Promise<LocalNode> {
     const secretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
@@ -128,11 +151,13 @@ async function signUp(
         });
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID,
+        accountID: accountID as unknown as ID<AnyAccount>,
         accountSecret,
     } satisfies LocalStorageData);
 
-    node.currentSessionID = await getSessionFor(accountID);
+    node.currentSessionID = await getSessionFor(
+        accountID as unknown as ID<AnyAccount>
+    );
 
     return node;
 }
@@ -143,9 +168,8 @@ async function logIn(
     getSessionFor: SessionProvider,
     _appHostname: string,
     initialPeers: Peer[],
-    migration?: AccountMigration
+    migration?: RawAccountMigration
 ): Promise<LocalNode> {
-
     const accountSecretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
     const accountSecret = agentSecretFromSecretSeed(accountSecretSeed);
@@ -154,17 +178,19 @@ async function logIn(
         throw new Error("Invalid credential");
     }
 
-    const accountID = cojsonInternals.idforHeader(cojsonInternals.accountHeaderForInitialAgentSecret(accountSecret)) as AccountID;
+    const accountID = cojsonInternals.idforHeader(
+        cojsonInternals.accountHeaderForInitialAgentSecret(accountSecret)
+    ) as AccountID;
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID,
+        accountID: accountID as unknown as ID<AnyAccount>,
         accountSecret,
     } satisfies LocalStorageData);
 
     const node = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        sessionID: await getSessionFor(accountID),
+        sessionID: await getSessionFor(accountID as unknown as ID<AnyAccount>),
         peersToLoadFrom: initialPeers,
         migration,
     });

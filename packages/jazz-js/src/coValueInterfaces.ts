@@ -64,7 +64,7 @@ export interface CoValueSchema<
     Type extends string = string,
     Init = any,
 > extends CoValueConstructor<Value, Type, Init>,
-        SchemaWithInputAndOutput<Self & Value, Self & Value> {}
+        SchemaWithInputAndOutput<Self, Self> {}
 
 export function isCoValueSchema(value: any): value is CoValueSchema {
     return value && value.type !== undefined;

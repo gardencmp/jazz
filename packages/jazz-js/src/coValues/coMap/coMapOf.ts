@@ -16,13 +16,10 @@ import {
     NoIndexSignature,
 } from "./coMap.js";
 import { ValueRef, makeRefs } from "../../refs.js";
-import { CoValueCore, JsonValue, RawAccount, RawCoMap, cojsonInternals } from "cojson";
+import { JsonValue, RawAccount, RawCoMap, cojsonInternals } from "cojson";
 import { AnyGroup } from "../group/group.js";
 import { AnyAccount, ControlledAccount } from "../account/account.js";
-import {
-    Account,
-    controlledAccountFromNode,
-} from "../account/accountOf.js";
+import { Account, controlledAccountFromNode } from "../account/accountOf.js";
 import { subscriptionsScopes } from "../../subscriptionScope.js";
 import { AST, Schema } from "@effect/schema";
 import {
@@ -31,7 +28,10 @@ import {
 } from "../resolution.js";
 import { JsonObject } from "cojson/src/jsonValue.js";
 import { SharedCoValueConstructor } from "../construction.js";
-import { PropertySignatureWithOutput, propSigToSchema } from "../../schemaHelpers.js";
+import {
+    PropertySignatureWithOutput,
+    propSigToSchema,
+} from "../../schemaHelpers.js";
 import { pipeArguments } from "effect/Pipeable";
 import { Group } from "../group/groupOf.js";
 
@@ -215,57 +215,63 @@ export function CoMapOf<
                           })())
             );
 
-            const getEdits = () => new Proxy(this, {
-                get(target, key, receiver) {
+            const getEdits = () =>
+                new Proxy(this, {
+                    get(target, key, receiver) {
+                        const schemaAtKey =
+                            fields[key as keyof Fields] ||
+                            (indexSignature &&
+                            Schema.is(indexSignature?.key)(key)
+                                ? indexSignature?.value
+                                : undefined);
+                        if (!schemaAtKey)
+                            return Reflect.get(target, key, receiver);
 
-                    const schemaAtKey = fields[key as keyof Fields] || ((indexSignature && Schema.is(indexSignature?.key)(key)) ? indexSignature?.value : undefined);
-                    if (!schemaAtKey) return Reflect.get(target, key, receiver);
+                        const rawEdit = raw.lastEditAt(key as string);
+                        if (!rawEdit) return undefined;
 
-                    const rawEdit = raw.lastEditAt(key as string);
-                    if (!rawEdit) return undefined;
+                        return {
+                            get value() {
+                                if (isCoValueSchema(schemaAtKey)) {
+                                    return this.ref?.accessFrom(target);
+                                } else {
+                                    return (
+                                        rawEdit?.value &&
+                                        Schema.decodeSync(
+                                            propSigToSchema(schemaAtKey)
+                                        )(rawEdit?.value)
+                                    );
+                                }
+                            },
 
-                    return {
-                        get value() {
-                            if (isCoValueSchema(schemaAtKey)) {
-                                return this.ref?.accessFrom(target);
-                            } else {
-                                return (
-                                    rawEdit?.value &&
-                                    Schema.decodeSync(propSigToSchema(schemaAtKey))(rawEdit?.value)
-                                );
-                            }
-                        },
+                            get ref() {
+                                if (isCoValueSchema(schemaAtKey)) {
+                                    return (
+                                        rawEdit?.value &&
+                                        new ValueRef(
+                                            rawEdit?.value as ID<CoValue>,
+                                            target._loadedAs,
+                                            schemaAtKey
+                                        )
+                                    );
+                                }
+                            },
 
-                        get ref() {
-                            if (isCoValueSchema(schemaAtKey)) {
-                                return (
-                                    rawEdit?.value &&
-                                    new ValueRef(
-                                        rawEdit?.value as ID<CoValue>,
+                            get by() {
+                                if (cojsonInternals.isAccountID(rawEdit.by)) {
+                                    return new ValueRef(
+                                        rawEdit.by as unknown as ID<AnyAccount>,
                                         target._loadedAs,
-                                        schemaAtKey
-                                    )
-                                );
-                            }
-                        },
+                                        Account
+                                    ).accessFrom(target);
+                                }
+                            },
 
-                        get by() {
-                            if (
-                                cojsonInternals.isAccountID(rawEdit.by)
-                            ) {
-                                return new ValueRef(
-                                    rawEdit.by as unknown as ID<AnyAccount>,
-                                    target._loadedAs,
-                                    Account
-                                ).accessFrom(target);
-                            }
-                        },
-
-                        madeAt: rawEdit.at,
-                        tx: rawEdit.tx,
-                    };
-                }
-            })
+                            madeAt: rawEdit.at,
+                            tx: rawEdit.tx,
+                        };
+                    },
+                });
 
             Object.defineProperties(this, {
                 id: {
@@ -283,7 +289,7 @@ export function CoMapOf<
                     enumerable: false,
                 },
                 _refs: { value: refs, enumerable: false },
-                _edits: { get: getEdits, enumerable: false},
+                _edits: { get: getEdits, enumerable: false },
                 _raw: { value: raw, enumerable: false },
                 _loadedAs: {
                     get: () => controlledAccountFromNode(raw.core.node),
@@ -382,7 +388,7 @@ export function CoMapOf<
         }
 
         private getCoValueAtKey(key: string) {
-            return this._refs[key]?.accessFrom(this);
+            return this._refs[key as keyof this["_refs"]]?.accessFrom(this);
         }
 
         private setCoValueAtKey(key: string, value: CoValue) {
@@ -396,7 +402,9 @@ export function CoMapOf<
                 | Schema.Schema<any, JsonValue | undefined, never>
                 | PropertySignatureWithOutput<JsonValue | undefined>
         ) {
-            return Schema.decodeSync(propSigToSchema(schemaAtKey))(this._raw.get(key));
+            return Schema.decodeSync(propSigToSchema(schemaAtKey))(
+                this._raw.get(key)
+            );
         }
 
         private setPrimitiveAtKey(
@@ -408,7 +416,9 @@ export function CoMapOf<
         ) {
             this._raw.set(
                 key,
-                Schema.encodeSync(propSigToSchema(schemaAtKey))(value) as JsonValue | undefined
+                Schema.encodeSync(propSigToSchema(schemaAtKey))(value) as
+                    | JsonValue
+                    | undefined
             );
         }
 

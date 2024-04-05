@@ -61,6 +61,13 @@ describe("Simple CoMap operations", async () => {
             expect(map._raw.get("birthday")).toEqual(
                 newBirthday.toISOString()
             );
+
+            Object.assign(map, { color: "green", height: 20 });
+            expect(map.color).toEqual("green");
+            expect(map._raw.get("color")).toEqual("green");
+            expect(map.height).toEqual(20);
+            expect(map._raw.get("height")).toEqual(20);
+
             map.name = "Secret name";
             expect(map.name).toEqual("Secret name");
             delete map.name;

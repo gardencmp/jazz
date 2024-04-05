@@ -1,22 +1,29 @@
 import {
     AccountID,
-    AccountMigration,
     AgentSecret,
     cojsonInternals,
     LocalNode,
     Peer,
+    RawAccountMigration,
+    RawControlledAccount,
 } from "cojson";
-import { agentSecretFromSecretSeed } from "cojson/src/crypto";
 import { AuthProvider, SessionProvider } from "jazz-browser";
+import {
+    AccountMigration,
+    AccountSchema,
+    AnyAccount,
+    controlledAccountSym,
+    ID,
+} from "jazz-js";
 
 type LocalStorageData = {
-    accountID: AccountID;
+    accountID: ID<AnyAccount>;
     accountSecret: AgentSecret;
 };
 
 const localStorageKey = "jazz-logged-in-secret";
 
-export interface BrowserLocalAuthDriver {
+export interface BrowserPasskeyAuthDriver {
     onReady: (next: {
         signUp: (username: string) => Promise<void>;
         logIn: () => Promise<void>;
@@ -24,13 +31,13 @@ export interface BrowserLocalAuthDriver {
     onSignedIn: (next: { logOut: () => void }) => void;
 }
 
-export class BrowserLocalAuth implements AuthProvider {
-    driver: BrowserLocalAuthDriver;
+export class BrowserPasskeyAuth implements AuthProvider {
+    driver: BrowserPasskeyAuthDriver;
     appName: string;
     appHostname: string;
 
     constructor(
-        driver: BrowserLocalAuthDriver,
+        driver: BrowserPasskeyAuthDriver,
         appName: string,
         // TODO: is this a safe default?
         appHostname: string = window.location.hostname
@@ -40,11 +47,18 @@ export class BrowserLocalAuth implements AuthProvider {
         this.appHostname = appHostname;
     }
 
-    async createNode(
+    async createOrLoadAccount<A extends AccountSchema>(
+        accountSchema: A,
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        migration?: AccountMigration
-    ): Promise<LocalNode> {
+        migration?: AccountMigration<A>
+    ): Promise<A[controlledAccountSym]> {
+        const rawMigration = (account: RawControlledAccount) => {
+            return migration?.(
+                accountSchema.fromRaw(account) as A[controlledAccountSym]
+            );
+        };
+
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey]
@@ -53,16 +67,20 @@ export class BrowserLocalAuth implements AuthProvider {
             const sessionID = await getSessionFor(localStorageData.accountID);
 
             const node = await LocalNode.withLoadedAccount({
-                accountID: localStorageData.accountID,
+                accountID: localStorageData.accountID as unknown as AccountID,
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                migration,
+                migration: rawMigration,
             });
 
             this.driver.onSignedIn({ logOut });
 
-            return Promise.resolve(node);
+            const account = accountSchema.fromRaw(
+                node.account as RawControlledAccount
+            ) as A[controlledAccountSym];
+
+            return Promise.resolve(account);
         } else {
             const node = await new Promise<LocalNode>(
                 (doneSigningUpOrLoggingIn) => {
@@ -73,7 +91,7 @@ export class BrowserLocalAuth implements AuthProvider {
                                 getSessionFor,
                                 this.appName,
                                 this.appHostname,
-                                migration
+                                rawMigration
                             );
                             for (const peer of initialPeers) {
                                 node.syncManager.addPeer(peer);
@@ -86,7 +104,7 @@ export class BrowserLocalAuth implements AuthProvider {
                                 getSessionFor,
                                 this.appHostname,
                                 initialPeers,
-                                migration
+                                rawMigration
                             );
                             doneSigningUpOrLoggingIn(node);
                             this.driver.onSignedIn({ logOut });
@@ -95,7 +113,11 @@ export class BrowserLocalAuth implements AuthProvider {
                 }
             );
 
-            return node;
+            const account = accountSchema.fromRaw(
+                node.account as RawControlledAccount
+            ) as A[controlledAccountSym];
+
+            return account;
         }
     }
 }
@@ -105,14 +127,15 @@ async function signUp(
     getSessionFor: SessionProvider,
     appName: string,
     appHostname: string,
-    migration?: AccountMigration
+    migration?: RawAccountMigration
 ): Promise<LocalNode> {
     const secretSeed = cojsonInternals.newRandomSecretSeed();
 
     const { node, accountID, accountSecret } =
         await LocalNode.withNewlyCreatedAccount({
             name: username,
-            initialAgentSecret: agentSecretFromSecretSeed(secretSeed),
+            initialAgentSecret:
+                cojsonInternals.agentSecretFromSecretSeed(secretSeed),
             migration,
         });
 
@@ -150,11 +173,13 @@ async function signUp(
     console.log(webAuthNCredential, accountID);
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID,
+        accountID: accountID as unknown as ID<AnyAccount>,
         accountSecret,
     } satisfies LocalStorageData);
 
-    node.currentSessionID = await getSessionFor(accountID);
+    node.currentSessionID = await getSessionFor(
+        accountID as unknown as ID<AnyAccount>
+    );
 
     return node;
 }
@@ -163,7 +188,7 @@ async function logIn(
     getSessionFor: SessionProvider,
     appHostname: string,
     initialPeers: Peer[],
-    migration?: AccountMigration
+    migration?: RawAccountMigration
 ): Promise<LocalNode> {
     const webAuthNCredential = (await navigator.credentials.get({
         publicKey: {
@@ -194,21 +219,22 @@ async function logIn(
         )
     ) as AccountID;
 
-    const accountSecret = agentSecretFromSecretSeed(accountSecretSeed);
+    const accountSecret =
+        cojsonInternals.agentSecretFromSecretSeed(accountSecretSeed);
 
     if (!accountSecret) {
         throw new Error("Invalid credential");
     }
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID,
+        accountID: accountID as unknown as ID<AnyAccount>,
         accountSecret,
     } satisfies LocalStorageData);
 
     const node = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        sessionID: await getSessionFor(accountID),
+        sessionID: await getSessionFor(accountID as unknown as ID<AnyAccount>),
         peersToLoadFrom: initialPeers,
         migration,
     });

@@ -22,7 +22,6 @@ import {
     BinaryCoStream,
     BinaryCoStreamSchema,
     CoStream,
-    CoStreamEntry,
     CoStreamSchema,
 } from "./coStream.js";
 import { SharedCoValueConstructor } from "../construction.js";
@@ -36,10 +35,9 @@ import { ValueRef } from "../../refs.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
 import { Account, controlledAccountFromNode } from "../account/accountOf.js";
 import { Group } from "../group/groupOf.js";
-import { satisfies } from "effect/Function";
 
 export function CoStreamOf<
-    Item extends CoValueSchema | SchemaWithOutput<JsonValue>,
+    Item extends SchemaWithOutput<CoValue> | SchemaWithOutput<JsonValue>,
 >(itemSchema: Item) {
     const decodeItem = Schema.decodeSync(itemSchema);
     const encodeItem = Schema.encodeSync(itemSchema);

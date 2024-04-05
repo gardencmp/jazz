@@ -1,21 +1,21 @@
 import { useMemo, useState, ReactNode } from "react";
-import { BrowserLocalAuth } from "jazz-browser-auth-local";
-import { ReactAuthHook } from "jazz-react";
+import { BrowserPasskeyAuth } from "jazz-browser";
+import { ReactAuthHook } from "./auth";
 
-export type LocalAuthComponent = (props: {
+export type PasskeyAuthComponent = (props: {
     loading: boolean;
     logIn: () => void;
     signUp: (username: string) => void;
 }) => ReactNode;
 
-export function LocalAuth({
+export function PasskeyAuth({
     appName,
     appHostname,
     Component = LocalAuthBasicUI,
 }: {
     appName: string;
     appHostname?: string;
-    Component?: LocalAuthComponent;
+    Component?: PasskeyAuthComponent;
 }): ReactAuthHook {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
@@ -31,7 +31,7 @@ export function LocalAuth({
         const [logOutCounter, setLogOutCounter] = useState(0);
 
         const auth = useMemo(() => {
-            return new BrowserLocalAuth(
+            return new BrowserPasskeyAuth(
                 {
                     onReady(next) {
                         setAuthState({
