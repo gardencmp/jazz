@@ -5,7 +5,7 @@ import { PetPost, PetReactions, ReactionTypes } from "./1_types";
 import { ShareButton } from "./components/ShareButton";
 import { Button, Skeleton } from "./basicComponents";
 import uniqolor from "uniqolor";
-import { ID } from "jazz-js";
+import { ID } from "jazz-tools";
 import { useCoState } from "./2_main";
 import { ProgressiveImg } from "jazz-react";
 

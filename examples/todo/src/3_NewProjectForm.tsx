@@ -6,7 +6,7 @@ import { SubmittableInput } from "./basicComponents";
 
 import { useNavigate } from "react-router";
 import { useAccount } from "./2_main";
-import { CoListOf, Group } from "jazz-js";
+import { CoListOf, Group } from "jazz-tools";
 
 export function NewProjectForm() {
     // `me` represents the current user account, which will determine

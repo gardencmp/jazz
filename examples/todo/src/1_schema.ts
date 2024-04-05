@@ -4,8 +4,8 @@ import {
     CoMapOf,
     createAccountMigration,
     imm,
-} from "jazz-js";
-import { AccountWith } from "jazz-js/src/account";
+} from "jazz-tools";
+import { AccountWith } from "jazz-tools/src/account";
 
 /** Walkthrough: Defining the data model with CoJSON
  *

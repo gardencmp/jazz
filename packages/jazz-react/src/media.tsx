@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { blobFromBinaryStream } from "jazz-browser";
-import { ImageDefinition } from "jazz-js";
+import { ImageDefinition } from "jazz-tools";
 
 export function useProgressiveImg({
     image,

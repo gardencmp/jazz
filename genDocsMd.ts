@@ -10,7 +10,7 @@ export async function genDocsMd() {
         // "jazz-browser-media-images": "index.ts",
         // "jazz-autosub": "index.ts",
         // "jazz-nodejs": "index.ts",
-        "jazz-js": "index.ts",
+        "jazz-tools": "index.ts",
     }).map(async ([packageName, entryPoint]) => {
         const app = await Application.bootstrapWithPlugins({
             entryPoints: [`packages/${packageName}/src/${entryPoint}`],

@@ -3,7 +3,7 @@ import {
     AccountMigration,
     Peer,
     controlledAccountSym,
-} from "jazz-js";
+} from "jazz-tools";
 import { SessionProvider } from "..";
 
 export interface AuthProvider {

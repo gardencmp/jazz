@@ -50,15 +50,12 @@ importers:
       hash-slash:
         specifier: workspace:*
         version: link:../../packages/hash-slash
-      jazz-js:
-        specifier: workspace:*
-        version: link:../../packages/jazz-js
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
-      jazz-react-auth-local:
+      jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-local
+        version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -159,9 +156,6 @@ importers:
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
-      jazz-react-auth-passphrase:
-        specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-passphrase
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -290,9 +284,6 @@ importers:
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
-      jazz-react-auth-local:
-        specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-local
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -384,15 +375,12 @@ importers:
       jazz-browser-media-images:
         specifier: workspace:*
         version: link:../../packages/jazz-browser-media-images
-      jazz-js:
-        specifier: workspace:*
-        version: link:../../packages/jazz-js
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
-      jazz-react-auth-local:
+      jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-local
+        version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -487,9 +475,6 @@ importers:
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
-      jazz-react-auth-local:
-        specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-local
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -593,9 +578,6 @@ importers:
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
-      jazz-react-auth-local:
-        specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-local
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -849,36 +831,9 @@ importers:
       isomorphic-streams:
         specifier: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
         version: github.com/sgwilym/isomorphic-streams/aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
-      jazz-js:
+      jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-js
-      typescript:
-        specifier: ^5.1.6
-        version: 5.3.3
-
-  packages/jazz-browser-auth-local:
-    dependencies:
-      cojson:
-        specifier: workspace:*
-        version: link:../cojson
-      jazz-browser:
-        specifier: workspace:*
-        version: link:../jazz-browser
-      typescript:
-        specifier: ^5.1.6
-        version: 5.3.3
-
-  packages/jazz-browser-auth-passphrase:
-    dependencies:
-      '@scure/bip39':
-        specifier: ^1.2.2
-        version: 1.2.2
-      cojson:
-        specifier: workspace:*
-        version: link:../cojson
-      jazz-browser:
-        specifier: workspace:*
-        version: link:../jazz-browser
+        version: link:../jazz-tools
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -907,18 +862,15 @@ importers:
       '@types/image-blob-reduce':
         specifier: ^4.1.1
         version: 4.1.4
-      cojson:
-        specifier: workspace:*
-        version: link:../cojson
       image-blob-reduce:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
         specifier: workspace:*
         version: link:../jazz-browser
-      jazz-js:
+      jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-js
+        version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
         version: 9.0.1
@@ -930,25 +882,6 @@ importers:
         specifier: ^9.0.4
         version: 9.0.4
 
-  packages/jazz-js:
-    dependencies:
-      '@effect/schema':
-        specifier: ^0.63.0
-        version: 0.63.0(effect@2.4.0)(fast-check@3.15.1)
-      cojson:
-        specifier: workspace:*
-        version: link:../cojson
-      effect:
-        specifier: ^2.4.0
-        version: 2.4.0
-    devDependencies:
-      typescript:
-        specifier: ^5.3.3
-        version: 5.3.3
-      vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(@vitest/browser@0.34.6)(webdriverio@8.26.3)
-
   packages/jazz-nodejs:
     dependencies:
       cojson:
@@ -957,9 +890,9 @@ importers:
       cojson-transport-nodejs-ws:
         specifier: workspace:*
         version: link:../cojson-transport-nodejs-ws
-      jazz-js:
+      jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-js
+        version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
         version: 8.15.1
@@ -979,9 +912,9 @@ importers:
       jazz-browser:
         specifier: workspace:*
         version: link:../jazz-browser
-      jazz-js:
+      jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-js
+        version: link:../jazz-tools
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -996,49 +929,24 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
 
-  packages/jazz-react-auth-local:
+  packages/jazz-tools:
     dependencies:
-      jazz-browser-auth-local:
-        specifier: workspace:*
-        version: link:../jazz-browser-auth-local
-      jazz-react:
-        specifier: workspace:*
-        version: link:../jazz-react
-      typescript:
-        specifier: ^5.1.6
-        version: 5.3.3
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.19
-        version: 18.2.45
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
-
-  packages/jazz-react-auth-passphrase:
-    dependencies:
-      '@scure/bip39':
-        specifier: ^1.2.2
-        version: 1.2.2
+      '@effect/schema':
+        specifier: ^0.63.0
+        version: 0.63.0(effect@2.4.0)(fast-check@3.15.1)
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      jazz-browser-auth-passphrase:
-        specifier: workspace:*
-        version: link:../jazz-browser-auth-passphrase
-      jazz-react:
-        specifier: workspace:*
-        version: link:../jazz-react
-      typescript:
-        specifier: ^5.1.6
-        version: 5.3.3
+      effect:
+        specifier: ^2.4.0
+        version: 2.4.0
     devDependencies:
-      '@types/react':
-        specifier: ^18.2.19
-        version: 18.2.45
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6(@vitest/browser@0.34.6)(webdriverio@8.26.3)
 
 packages:
 

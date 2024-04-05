@@ -7,7 +7,7 @@
 - Updated dependencies
   - jazz-browser-media-images@0.7.0-alpha.0
   - jazz-react@0.7.0-alpha.0
-  - jazz-js@0.7.0-alpha.0
+  - jazz-tools@0.7.0-alpha.0
 
 ## 0.0.64
 

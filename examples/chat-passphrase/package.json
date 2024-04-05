@@ -19,7 +19,6 @@
     "cojson": "workspace:*",
     "hash-slash": "workspace:*",
     "jazz-react": "workspace:*",
-    "jazz-react-auth-passphrase": "workspace:*",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react-dom": "^18.2.0",

@@ -1,6 +1,6 @@
 import ImageBlobReduce from "image-blob-reduce";
 import Pica from "pica";
-import { AnyAccount, Co, Group, ImageDefinition } from "jazz-js";
+import { AnyAccount, Co, Group, ImageDefinition } from "jazz-tools";
 import { createBinaryStreamFromBlob } from "jazz-browser";
 
 const pica = new Pica();

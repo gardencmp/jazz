@@ -13,7 +13,7 @@ import {
     AccountSchema,
     ID,
     controlledAccountSym,
-} from "jazz-js";
+} from "jazz-tools";
 
 type StorageData = {
     accountID: ID<AnyAccount>;

@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 
 import { useToast, Button } from "../basicComponents";
 import { createInviteLink } from "jazz-react";
-import { CoValue } from "jazz-js";
+import { CoValue } from "jazz-tools";
 
 export function InviteButton<T extends CoValue>({
     value,

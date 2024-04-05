@@ -3,7 +3,7 @@
 "jazz-browser": minor
 "hash-slash": minor
 "jazz-react": minor
-"jazz-js": minor
+"jazz-tools": minor
 "cojson": minor
 ---
 

@@ -19,7 +19,7 @@
     "jazz-browser": "0.6.3",
     "jazz-browser-auth0": "0.6.2",
     "jazz-browser-media-images": "0.6.0",
-    "jazz-js": "0.6.1",
+    "jazz-tools": "0.6.1",
     "jazz-nodejs": "0.6.4",
     "jazz-react": "0.5.4"
   },

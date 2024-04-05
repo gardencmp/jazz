@@ -21,7 +21,7 @@ import {
     controlledAccountSym,
     CoValueSchema,
     S,
-} from "jazz-js";
+} from "jazz-tools";
 import { AccountID } from "cojson";
 import { AuthProvider } from "./auth/auth";
 export * from './auth/auth.js';

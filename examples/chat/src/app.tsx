@@ -1,4 +1,4 @@
-import { Co, S, ID, Group } from "jazz-js";
+import { Co, S, ID, Group } from "jazz-tools";
 import { DemoAuth, JazzReact } from "jazz-react";
 import { createRoot } from "react-dom/client";
 import { useHash } from "hash-slash";

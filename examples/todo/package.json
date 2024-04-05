@@ -17,7 +17,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "jazz-react": "workspace:*",
-    "jazz-react-auth-local": "workspace:*",
     "cojson": "workspace:*",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",

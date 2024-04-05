@@ -14,7 +14,7 @@ import {
     AnyAccount,
     controlledAccountSym,
     ID,
-} from "jazz-js";
+} from "jazz-tools";
 
 type LocalStorageData = {
     accountID: ID<AnyAccount>;

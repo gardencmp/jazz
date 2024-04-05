@@ -17,7 +17,7 @@ import {
 import { InviteButton } from "./components/InviteButton";
 import uniqolor from "uniqolor";
 import { useParams } from "react-router";
-import { ID } from "jazz-js";
+import { ID } from "jazz-tools";
 import { useCoState } from "./2_main";
 
 /** Walkthrough: Reactively rendering a todo project as a table,

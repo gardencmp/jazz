@@ -7,7 +7,7 @@
 - Updated dependencies
   - hash-slash@0.2.0-alpha.0
   - jazz-react@0.7.0-alpha.0
-  - jazz-js@0.7.0-alpha.0
+  - jazz-tools@0.7.0-alpha.0
   - cojson@0.7.0-alpha.0
 
 ## 0.0.46

@@ -12,7 +12,7 @@ import {
     controlledAccountSym,
     CoValueSchema,
     Account,
-} from "jazz-js";
+} from "jazz-tools";
 import { ReactAuthHook } from "./auth/auth.js";
 
 export function JazzReact<AccountS extends AccountSchema>({

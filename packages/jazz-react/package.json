@@ -6,7 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "cojson": "workspace:*",
-    "jazz-js": "workspace:*",
+    "jazz-tools": "workspace:*",
     "jazz-browser": "workspace:*",
     "typescript": "^5.1.6"
   },

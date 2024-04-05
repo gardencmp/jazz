@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import JazzJSDocs from "../../../docsTmp/jazz-js.json";
+import JazzJSDocs from "../../../docsTmp/jazz-tools.json";
 import { Application, JSONOutput, ReflectionKind, SomeType } from "typedoc";
 
 export const packages = {
-    "jazz-js": JazzJSDocs as JSONOutput.ProjectReflection,
+    "jazz-tools": JazzJSDocs as JSONOutput.ProjectReflection,
 };
 
 export function PackageDocs(props: { package: keyof typeof packages }) {

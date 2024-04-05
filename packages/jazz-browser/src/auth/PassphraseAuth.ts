@@ -130,7 +130,7 @@ import {
     AnyAccount,
     controlledAccountSym,
     ID,
-} from "jazz-js";
+} from "jazz-tools";
 
 async function signUp(
     username: string,

@@ -10,7 +10,7 @@
 
 - Updated dependencies
   - jazz-browser@0.7.0-alpha.0
-  - jazz-js@0.7.0-alpha.0
+  - jazz-tools@0.7.0-alpha.0
 
 ## 0.6.0
 

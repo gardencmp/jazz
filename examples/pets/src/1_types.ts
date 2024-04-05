@@ -1,4 +1,4 @@
-import { AccountMigration, BaseProfile, Co, S } from "jazz-js";
+import { AccountMigration, BaseProfile, Co, S } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *

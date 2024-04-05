@@ -5,7 +5,7 @@ import { createImage } from "jazz-browser-media-images";
 import { PetPost, PetReactions } from "./1_types";
 import { Input, Button } from "./basicComponents";
 import { useAccount, useCoState } from "./2_main";
-import { Co, Group, ID, S } from "jazz-js";
+import { Co, Group, ID, S } from "jazz-tools";
 import { ProgressiveImg } from "jazz-react";
 
 /** Walkthrough: TODO

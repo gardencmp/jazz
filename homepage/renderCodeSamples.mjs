@@ -72,7 +72,7 @@ await rm("./codeSamples", { recursive: true, force: true });
                             jsx: "react-jsxdev",
                             strict: true,
                             paths: {
-                                'jazz-js': ['../../packages/jazz-js']
+                                'jazz-tools': ['../../packages/jazz-tools']
                             },
                             types: ['vite/client']
                         },
