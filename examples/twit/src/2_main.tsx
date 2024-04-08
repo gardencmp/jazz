@@ -7,7 +7,7 @@ import { DemoAuth, WithJazz, useJazz } from 'jazz-react';
 
 import { Button, ThemeProvider, TitleAndLogo } from './basicComponents/index.tsx';
 
-import { migration } from './1_dataModel.ts';
+import { migration } from './1_schema.ts';
 import { AllTwitsFeed, FollowingFeed } from './3_ChronoFeed.tsx';
 import { ProfilePage } from './5_ProfilePage.tsx';
 

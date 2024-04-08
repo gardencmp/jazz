@@ -12,7 +12,7 @@ import {
   ProfileTitleContainer,
   SmallInlineButton
 } from './basicComponents/index.tsx';
-import { TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
+import { TwitAccountRoot, TwitProfile } from './1_schema.ts';
 import { CoID } from 'cojson';
 import { BrowserImage, createImage } from 'jazz-browser-media-images';
 import { FollowButton, FollowerList, FollowingList } from './7_FollowStuff.tsx';

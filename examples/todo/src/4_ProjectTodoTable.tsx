@@ -43,15 +43,18 @@ export function ProjectTodoTable() {
     const createTask = useCallback(
         (text: string) => {
             if (!project?.tasks || !text) return;
-            const task = new Task({
-                done: false,
-                text,
-            }, { owner: project.meta.owner });
+            const task = new Task(
+                {
+                    done: false,
+                    text,
+                },
+                { owner: project._owner }
+            );
 
             // push will cause useCoState to rerender this component, both here and on other devices
             project.tasks.push(task);
         },
-        [project?.tasks, project?.meta.owner]
+        [project?.tasks, project?._owner]
     );
 
     return (
@@ -121,14 +124,12 @@ export function TaskRow({ task }: { task: Task | undefined }) {
                     {
                         // Here we see for the first time how we can access edit history
                         // for a CoValue, and use it to display who created the task.
-                        task?.meta.edits.text?.by?.profile?.name ? (
+                        task?._edits.text?.by?.profile?.name ? (
                             <span
                                 className="rounded-full py-0.5 px-2 text-xs"
-                                style={uniqueColoring(
-                                    task.meta.edits.text.by.id
-                                )}
+                                style={uniqueColoring(task._edits.text.by.id)}
                             >
-                                {task.meta.edits.text.by.profile.name}
+                                {task._edits.text.by.profile.name}
                             </span>
                         ) : (
                             <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />

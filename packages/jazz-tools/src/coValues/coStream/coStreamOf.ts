@@ -242,14 +242,14 @@ export function CoStreamOf<
         [inspect]() {
             return this.toJSON();
         }
-
-        static as<SubClass>() {
-            return CoStreamOfItem as unknown as CoStreamSchema<SubClass, Item>;
-        }
     }
 
-    return CoStreamOfItem as CoStreamSchema<CoStreamOfItem, Item> & {
-        as<SubClass>(): CoStreamSchema<SubClass, Item>;
+    return {
+        HINT: (_: never) =>
+            "Remember to do `class SubClass extends Co.stream(...)👉.as<SubClass>()👈 {}`" as const,
+        as<SubClass>() {
+            return CoStreamOfItem as unknown as CoStreamSchema<SubClass, Item>;
+        },
     };
 
     function entryFromRawEntry(

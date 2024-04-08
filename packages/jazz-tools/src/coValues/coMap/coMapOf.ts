@@ -433,17 +433,31 @@ export function CoMapOf<
         [inspect]() {
             return this.toJSON();
         }
+    }
 
-        static as<SubClass>() {
+    return {
+        HINT: (_: never) =>
+            "Remember to do `class SubClass extends Co.map(...)👉.as<SubClass>()👈 {}`" as const,
+        as<SubClass>() {
             return CoMapOfFields as unknown as CoMapSchema<
                 SubClass,
                 Fields,
                 IndexSig
             >;
-        }
-    }
-
-    return CoMapOfFields as CoMapSchema<CoMapOfFields, Fields, IndexSig> & {
-        as<SubClass>(): CoMapSchema<SubClass, Fields, IndexSig>;
+        },
     };
+}
+
+export function CoMapOfCurried<Self>() {
+    return <
+        Fields extends CoMapFields,
+        IndexSig extends IndexSignature = NoIndexSignature,
+    >(
+        fields: Fields,
+        indexSignature?: IndexSig
+    ): CoMapSchema<Self, Fields, IndexSig> =>
+        CoMapOf<Fields, IndexSig>(
+            fields,
+            indexSignature
+        ).as<Self>() as CoMapSchema<Self, Fields, IndexSig>;
 }

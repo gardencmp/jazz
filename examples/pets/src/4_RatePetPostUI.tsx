@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 
-import { PetPost, PetReactions, ReactionTypes } from "./1_types";
+import { PetPost, PetReactions, ReactionTypes } from "./1_schema";
 
 import { ShareButton } from "./components/ShareButton";
 import { Button, Skeleton } from "./basicComponents";

@@ -13,7 +13,7 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
-import { PetAccount, PetPost, migration } from "./1_types.ts";
+import { PetAccount, PetPost, migration } from "./1_schema.ts";
 
 /** Walkthrough: The top-level provider `<WithJazz/>`
  *

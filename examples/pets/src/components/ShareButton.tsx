@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { PetPost } from "../1_types";
+import { PetPost } from "../1_schema";
 
 import { createInviteLink } from "jazz-react";
 import QRCode from "qrcode";

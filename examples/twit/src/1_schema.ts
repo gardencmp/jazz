@@ -1,16 +1,18 @@
-import { CoMap, CoList, Media, CoStream, Group, AccountMigration, EVERYONE, Profile } from 'cojson';
+import { Co, CoList, CoListSchema, CoValueSchema, S,  } from 'jazz-tools';
 
-export type Twit = CoMap<{
-  text?: string;
-  images?: ListOfImages['id'];
-  likes: LikeStream['id'];
-  replies: ReplyStream['id'];
-  isReplyTo?: Twit['id'];
-}>;
 
-export type ListOfImages = CoList<Media.ImageDefinition['id']>;
-export type LikeStream = CoStream<'❤️' | null>;
-export type ReplyStream = CoStream<Twit['id']>;
+export class Twit extends Co.map({
+  text: S.optional(S.string),
+  // images: S.optional(ListOfImages),
+  // likes: LikeStream,
+  // replies: S.suspend((): S.Schema<ReplyStream> => ReplyStream),
+  isReplyTo: S.optional(S.suspend((): typeof Twit => Twit)),
+}).as<Twit>() {}
+
+
+export class ListOfImages extends Co.list(Co.media.imageDef).as<ListOfImages>() {}
+export class LikeStream extends Co.stream(S.literal('❤️', null)).as<LikeStream>() {}
+// export class ReplyStream extends Co.stream(Twit).as<ReplyStream>() {}
 
 export type ListOfTwits = CoList<Twit['id']>;
 export type ListOfProfiles = CoList<TwitProfile['id']>;

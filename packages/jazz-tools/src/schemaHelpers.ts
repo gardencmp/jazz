@@ -70,3 +70,7 @@ export function propSigToSchema<
         return S.make<any, unknown, never>(ast.from) as any;
     }
 }
+
+export function recursiveRef<T>(lazy: () => S.Schema<T>) {
+    return S.union(S.undefined, S.suspend<T, T, never>(lazy));
+}

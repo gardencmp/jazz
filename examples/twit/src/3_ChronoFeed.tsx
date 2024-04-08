@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAutoSub, useJazz } from 'jazz-react';
-import { ALL_TWEETS_LIST_ID, TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
+import { ALL_TWEETS_LIST_ID, TwitAccountRoot, TwitProfile } from './1_schema.ts';
 import { CreateTwitForm } from './6_CreateTwitForm.tsx';
 import { TwitComponent } from './4_TwitComponent.tsx';
 import { LazyLoadRow, MainH1 } from './basicComponents/index.tsx';

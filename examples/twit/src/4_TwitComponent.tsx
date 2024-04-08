@@ -15,7 +15,7 @@ import {
   TwitText,
   Placeholder,
 } from './basicComponents/index.tsx';
-import { Twit, TwitProfile } from './1_dataModel.ts';
+import { Twit, TwitProfile } from './1_schema.ts';
 import { BrowserImage } from 'jazz-browser-media-images';
 import { HeartIcon, MessagesSquareIcon } from 'lucide-react';
 import { CreateTwitForm } from './6_CreateTwitForm.tsx';

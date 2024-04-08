@@ -4,7 +4,9 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, S, Account, jazzReady } from "..";
+import { Co, S, Account, jazzReady, CoValueSchema, CoMap, CoValue } from "..";
+import { PropertySignatureWithInputAndOutput } from "../schemaHelpers";
+import { CoMapOfCurried } from "../coValues/coMap/coMapOf";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,6 +76,41 @@ describe("Simple CoMap operations", async () => {
             expect(map.name).toEqual(undefined);
         });
     });
+
+    class RecursiveMap extends CoMapOfCurried<RecursiveMap>()<{
+        name: S.Schema<string>,
+        next: PropertySignatureWithInputAndOutput<RecursiveMap, RecursiveMap>,
+    }>({
+        name: S.string,
+        next: S.optional(S.suspend((): S.Schema<RecursiveMap> => RecursiveMap)),
+    }) {}
+
+    const recursiveMap = new RecursiveMap(
+        {
+            name: "first",
+            next: new RecursiveMap(
+                {
+                    name: "second",
+                    next: new RecursiveMap(
+                        {
+                            name: "third",
+                        },
+                        { owner: me }
+                    ),
+                },
+                { owner: me }
+            ),
+        },
+        { owner: me }
+    );
+
+    describe("Recursive CoMap", () => {
+        test("Construction", () => {
+            expect(recursiveMap.name).toEqual("first");
+            expect(recursiveMap.next?.name).toEqual("second");
+            expect(recursiveMap.next?.next?.name).toEqual("third");
+        })
+    })
 });
 
 describe("CoMap resolution", async () => {

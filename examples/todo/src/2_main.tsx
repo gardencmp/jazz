@@ -7,8 +7,7 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { useAcceptInvite, createReactContext } from "jazz-react";
-import { LocalAuth } from "jazz-react-auth-local";
+import { JazzReact, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -18,13 +17,7 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
-import {
-    TodoAccount,
-    TodoAccountRoot,
-    TodoProject,
-    migration,
-} from "./1_schema.ts";
-import { AccountMigration, Profile } from "cojson";
+import { TodoAccount, TodoProject, migration } from "./1_schema.ts";
 
 /**
  * Walkthrough: The top-level provider `<WithJazz/>`
@@ -37,28 +30,24 @@ import { AccountMigration, Profile } from "cojson";
  * `<WithJazz/>` also runs our account migration
  */
 
+const Jazz = JazzReact({ accountSchema: TodoAccount, migration });
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
+
 const appName = "Jazz Todo List Example";
 
-const auth = LocalAuth({
+const auth = PasskeyAuth({
     appName,
     Component: PrettyAuthUI,
 });
-
-export const { JazzProvider, useAccount, useCoState, useAcceptInvite } =
-    createReactContext({
-        auth,
-        accountSchema: TodoAccount,
-        migration,
-    });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <JazzProvider>
+                <Jazz.Provider auth={auth}>
                     <App />
-                </JazzProvider>
+                </Jazz.Provider>
             </div>
         </ThemeProvider>
     </React.StrictMode>

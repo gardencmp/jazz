@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Resolved, useJazz } from 'jazz-react';
 import { Button, ProfilePicImg } from './basicComponents/index.tsx';
-import { TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
+import { TwitAccountRoot, TwitProfile } from './1_schema.ts';
 import { Link } from 'react-router-dom';
 import { BrowserImage } from 'jazz-browser-media-images';
 

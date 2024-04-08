@@ -469,12 +469,12 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
-      cojson:
-        specifier: workspace:*
-        version: link:../../packages/cojson
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)
@@ -566,9 +566,6 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
-      cojson:
-        specifier: workspace:*
-        version: link:../../packages/cojson
       javascript-time-ago:
         specifier: ^2.5.9
         version: 2.5.9
@@ -578,6 +575,9 @@ importers:
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.2.0)

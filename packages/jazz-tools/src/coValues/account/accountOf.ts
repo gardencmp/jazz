@@ -14,6 +14,7 @@ import {
     CoValueSchema,
     inspect,
     CoValue,
+    SubclassedConstructor,
 } from "../../coValueInterfaces.js";
 import { CoMapOf } from "../coMap/coMapOf.js";
 import {
@@ -97,18 +98,28 @@ export function AccountOf<
             const refs = {
                 get profile() {
                     const profileID = options.fromRaw.get("profile");
-                    return profileID && new ValueRef(
-                        profileID as unknown as ID<Schema.Schema.To<P>>,
-                        controlledAccountFromNode(options.fromRaw.core.node),
-                        fields.profile
+                    return (
+                        profileID &&
+                        new ValueRef(
+                            profileID as unknown as ID<Schema.Schema.To<P>>,
+                            controlledAccountFromNode(
+                                options.fromRaw.core.node
+                            ),
+                            fields.profile
+                        )
                     );
                 },
                 get root() {
                     const rootID = options.fromRaw.get("root");
-                    return rootID && new ValueRef(
-                        rootID as unknown as ID<Schema.Schema.To<P>>,
-                        controlledAccountFromNode(options.fromRaw.core.node),
-                        fields.root
+                    return (
+                        rootID &&
+                        new ValueRef(
+                            rootID as unknown as ID<Schema.Schema.To<P>>,
+                            controlledAccountFromNode(
+                                options.fromRaw.core.node
+                            ),
+                            fields.root
+                        )
                     );
                 },
             };
@@ -143,12 +154,17 @@ export function AccountOf<
             });
         }
 
-        static async create(options: {
-            name: string;
-            migration?: AccountMigration<AccountSchema<AnyAccount<P, R>, P, R>>;
-            initialAgentSecret?: AgentSecret;
-            peersToLoadFrom?: Peer[];
-        }): Promise<AccountOfProfileAndRoot & ControlledAccount<P, R>> {
+        static async create<A extends AnyAccount>(
+            this: SubclassedConstructor<A>,
+            options: {
+                name: string;
+                migration?: AccountMigration<
+                    AccountSchema<AnyAccount<P, R>, P, R>
+                >;
+                initialAgentSecret?: AgentSecret;
+                peersToLoadFrom?: Peer[];
+            }
+        ): Promise<A & ControlledAccount<P, R>> {
             const { node } = await LocalNode.withNewlyCreatedAccount({
                 ...options,
                 migration:
@@ -164,16 +180,21 @@ export function AccountOf<
 
             return new AccountOfProfileAndRoot(undefined, {
                 fromRaw: node.account as RawControlledAccount,
-            }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
+            }) as unknown as A & ControlledAccount<P, R>;
         }
 
-        static async become(options: {
-            accountID: ID<AnyAccount<P, R>>;
-            accountSecret: AgentSecret;
-            sessionID: SessionID;
-            peersToLoadFrom: Peer[];
-            migration?: AccountMigration<AccountSchema<AnyAccount<P, R>, P, R>>;
-        }): Promise<AccountOfProfileAndRoot & ControlledAccount<P, R>> {
+        static async become<A extends AnyAccount>(
+            this: SubclassedConstructor<A>,
+            options: {
+                accountID: ID<AnyAccount<P, R>>;
+                accountSecret: AgentSecret;
+                sessionID: SessionID;
+                peersToLoadFrom: Peer[];
+                migration?: AccountMigration<
+                    AccountSchema<AnyAccount<P, R>, P, R>
+                >;
+            }
+        ): Promise<A & ControlledAccount<P, R>> {
             const node = await LocalNode.withLoadedAccount({
                 accountID: options.accountID as unknown as CoID<RawAccount>,
                 accountSecret: options.accountSecret,
@@ -192,7 +213,7 @@ export function AccountOf<
 
             return new AccountOfProfileAndRoot(undefined, {
                 fromRaw: node.account as RawControlledAccount,
-            }) as AccountOfProfileAndRoot & ControlledAccount<P, R>;
+            }) as unknown as A & ControlledAccount<P, R>;
         }
 
         async acceptInvite<V extends CoValue>(
@@ -217,7 +238,10 @@ export function AccountOf<
         }
 
         set profile(profile: S.Schema.To<P> | undefined) {
-            this._raw.set("profile", profile?.id || null as unknown as CoID<any> | null);
+            this._raw.set(
+                "profile",
+                profile?.id || (null as unknown as CoID<any> | null)
+            );
         }
 
         get root(): S.Schema.To<R> | undefined {
@@ -225,7 +249,10 @@ export function AccountOf<
         }
 
         set root(root: S.Schema.To<R> | undefined) {
-            this._raw.set("root", root?.id || null as unknown as CoID<any> | null);
+            this._raw.set(
+                "root",
+                root?.id || (null as unknown as CoID<any> | null)
+            );
         }
 
         myRole(): "admin" {
@@ -242,18 +269,18 @@ export function AccountOf<
         [inspect]() {
             return this.toJSON();
         }
-
-        static as<SubClass>() {
-            return this as unknown as AccountSchema<SubClass, P, R>;
-        }
     }
 
-    return AccountOfProfileAndRoot as AccountSchema<
-        AnyAccount<P, R>,
-        P,
-        R
-    > & {
-        as<SubClass>(): AccountSchema<SubClass, P, R>;
+    return {
+        HINT: (_: never) =>
+            "Remember to do `class SubClass extends Co.account(...)👉.as<SubClass>()👈 {}`" as const,
+        as<SubClass>() {
+            return AccountOfProfileAndRoot as unknown as AccountSchema<
+                SubClass,
+                P,
+                R
+            >;
+        },
     };
 }
 
@@ -261,20 +288,21 @@ export class BaseProfile extends CoMapOf({
     name: S.string,
 }).as<BaseProfile>() {}
 
-export class Account extends AccountOf<
-    typeof BaseProfile,
-    Schema.Schema<null>
->({
-    profile: BaseProfile,
-    root: S.null,
-}).as<Account>() {}
+export class Account extends AccountOf<typeof BaseProfile, Schema.Schema<null>>(
+    {
+        profile: BaseProfile,
+        root: S.null,
+    }
+).as<Account>() {}
 
 const simpleControlledAccounts = new WeakMap<
     RawControlledAccount,
-    Account & ControlledAccount
+    ControlledAccount
 >();
 
-export function controlledAccountFromNode(node: LocalNode): ControlledAccount {
+export function controlledAccountFromNode(
+    node: LocalNode
+): ControlledAccount & AnyAccount {
     if (!(node.account instanceof RawControlledAccount)) {
         throw new Error("Expected a controlled account");
     }
@@ -283,8 +311,7 @@ export function controlledAccountFromNode(node: LocalNode): ControlledAccount {
     if (simpleControlledAccounts.has(node.account)) {
         simpleAccount = simpleControlledAccounts.get(node.account);
     } else {
-        simpleAccount = Account.fromRaw(node.account) as Account &
-            ControlledAccount;
+        simpleAccount = Account.fromRaw(node.account) as ControlledAccount;
         simpleControlledAccounts.set(node.account, simpleAccount);
     }
 

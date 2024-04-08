@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import { createImage } from "jazz-browser-media-images";
 
-import { PetPost, PetReactions } from "./1_types";
+import { PetPost, PetReactions } from "./1_schema";
 import { Input, Button } from "./basicComponents";
 import { useAccount, useCoState } from "./2_main";
 import { Co, Group, ID, S } from "jazz-tools";

@@ -17,15 +17,15 @@ export function InviteButton<T extends CoValue>({
     const { toast } = useToast();
 
     return (
-        value?.meta.owner?.myRole() === "admin" && (
+        value?._owner?.myRole() === "admin" && (
             <Button
                 size="sm"
                 className="py-0"
-                disabled={!value.meta.owner || !value.id}
+                disabled={!value._owner || !value.id}
                 variant="outline"
                 onClick={async () => {
                     let inviteLink = existingInviteLink;
-                    if (value.meta.owner && value.id && !inviteLink) {
+                    if (value._owner && value.id && !inviteLink) {
                         inviteLink = createInviteLink(value, "writer", {
                             valueHint,
                         });

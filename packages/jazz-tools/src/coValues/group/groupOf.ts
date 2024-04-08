@@ -136,7 +136,10 @@ export function GroupOf<
         }
 
         set profile(value: S.Schema.To<P> | undefined) {
-            this._raw.set("profile", value?.id || null as unknown as CoID<any> | null);
+            this._raw.set(
+                "profile",
+                value?.id || (null as unknown as CoID<any> | null)
+            );
         }
 
         get root(): S.Schema.To<R> | undefined {
@@ -144,7 +147,10 @@ export function GroupOf<
         }
 
         set root(value: S.Schema.To<R> | undefined) {
-            this._raw.set("root", value?.id || null as unknown as CoID<any> | null);
+            this._raw.set(
+                "root",
+                value?.id || (null as unknown as CoID<any> | null)
+            );
         }
 
         addMember(member: AnyAccount | Everyone, role: Role) {
@@ -174,14 +180,18 @@ export function GroupOf<
         [inspect]() {
             return this.toJSON();
         }
-
-        static as<SubClass>() {
-            return this as unknown as GroupSchema<SubClass, P, R>;
-        }
     }
 
-    return GroupOfProfileAndRoot as GroupSchema<GroupOfProfileAndRoot, P, R> & {
-        as<SubClass>(): GroupSchema<SubClass, P, R>;
+    return {
+        HINT: (_: never) =>
+            "Remember to do `class SubClass extends Co.group(...)👉.as<SubClass>()👈 {}`" as const,
+        as<SubClass>() {
+            return GroupOfProfileAndRoot as unknown as GroupSchema<
+                SubClass,
+                P,
+                R
+            >;
+        },
     };
 }
 

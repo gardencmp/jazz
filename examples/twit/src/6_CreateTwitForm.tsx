@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { Resolved, useJazz, useSyncedValue } from 'jazz-react';
 import { AddTwitPicsInput, TwitImg, TwitTextInput } from './basicComponents/index.tsx';
-import { ALL_TWEETS_LIST_ID, LikeStream, ListOfImages, ReplyStream, Twit, TwitAccountRoot, TwitProfile } from './1_dataModel.ts';
+import { ALL_TWEETS_LIST_ID, LikeStream, ListOfImages, ReplyStream, Twit, TwitAccountRoot, TwitProfile } from './1_schema.ts';
 import { createImage } from 'jazz-browser-media-images';
 
 export function CreateTwitForm(

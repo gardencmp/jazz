@@ -5,9 +5,14 @@ import {
     RawCoList,
     cojsonInternals,
 } from "cojson";
-import { CoValueSchema, ID, inspect } from "../../coValueInterfaces.js";
+import {
+    CoValue,
+    CoValueSchema,
+    ID,
+    inspect,
+} from "../../coValueInterfaces.js";
 import { SchemaWithOutput } from "../../schemaHelpers.js";
-import { CoListBase, CoListSchema } from "./coList.js";
+import { CoList, CoListBase, CoListSchema } from "./coList.js";
 import { AST, Schema } from "@effect/schema";
 import { AnyAccount, ControlledAccount } from "../account/account.js";
 import { AnyGroup } from "../group/group.js";
@@ -351,10 +356,6 @@ export function CoListOf<
             return this.toJSON();
         }
 
-        static as<SubClass>() {
-            return CoListOfItem as unknown as CoListSchema<SubClass, Item>;
-        }
-
         subscribe(listener: (update: this) => void): () => void {
             return SharedCoValueConstructor.prototype.subscribe.call(
                 this,
@@ -371,7 +372,16 @@ export function CoListOf<
         }
     }
 
-    return CoListOfItem as CoListSchema<CoListOfItem, Item> & {
-        as<SubClass>(): CoListSchema<SubClass, Item>;
+    return {
+        HINT: (_: never) =>
+            "Remember to do `class SubClass extends Co.list(...)👉.as<SubClass>()👈 {}`" as const,
+        as<SubClass>() {
+            return CoListOfItem as unknown as CoListSchema<SubClass, Item>;
+        },
+        asRecursive<Self>(): CoListSchema<
+            Self, CoListSchema<CoList<Item>, Item>
+        > {
+            return CoListOfItem as any;
+        },
     };
 }
