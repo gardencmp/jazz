@@ -1,20 +1,16 @@
-import {
-    AccountSchema,
-    AccountMigration,
-    Peer,
-    controlledAccountSym,
-} from "jazz-tools";
+import { Account, Me, Peer } from "jazz-tools";
 import { SessionProvider } from "..";
 
-export interface AuthProvider {
-    createOrLoadAccount<A extends AccountSchema>(
-        accountSchema: A,
+export interface AuthProvider<Acc extends Account> {
+    createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        migration?: AccountMigration<A>
-    ): Promise<A[controlledAccountSym]>;
+        initialPeers: Peer[]
+    ): Promise<Acc & Me>;
 }
 
 export { BrowserDemoAuth, BrowserDemoAuthDriver } from "./DemoAuth.js";
 export { BrowserPasskeyAuth, BrowserPasskeyAuthDriver } from "./PasskeyAuth.js";
-export { BrowserPassphraseAuth, BrowserPassphraseAuthDriver } from "./PassphraseAuth.js";
+export {
+    BrowserPassphraseAuth,
+    BrowserPassphraseAuthDriver,
+} from "./PassphraseAuth.js";

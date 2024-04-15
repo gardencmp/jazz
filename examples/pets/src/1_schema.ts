@@ -1,4 +1,4 @@
-import { AccountMigration, BaseProfile, Co, S } from "jazz-tools";
+import { Co, Profile } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -15,37 +15,49 @@ export const ReactionTypes = [
     "tiny",
     "chonkers",
 ] as const;
-export const ReactionType = S.literal(...ReactionTypes);
+export type ReactionType = (typeof ReactionTypes)[number];
 
-export class PetReactions extends Co.stream(ReactionType).as<PetReactions>() {}
+export class PetReactions extends Co.Stream<ReactionType> {}
+PetReactions.encoding({ _item: "json" });
 
-export class PetPost extends Co.map({
-    name: S.string,
-    image: Co.media.imageDef,
-    reactions: PetReactions,
-}).as<PetPost>() {}
+export class PetPost extends Co.Map<PetPost> {
+    declare name: string;
+    declare image: Co.media.ImageDef | null;
+    declare reactions: PetReactions | null;
+}
+PetPost.encoding({
+    name: "json",
+    image: { ref: () => Co.media.ImageDef },
+    reactions: { ref: () => PetReactions },
+});
 
-export class ListOfPosts extends Co.list(PetPost).as<ListOfPosts>() {}
+export class ListOfPosts extends Co.List<PetPost | null> {}
+ListOfPosts.encoding({ _item: { ref: () => PetPost } });
 
-export class PetAccountRoot extends Co.map({
-    posts: ListOfPosts,
-}).as<PetAccountRoot>() {}
+export class PetAccountRoot extends Co.Map<PetAccountRoot> {
+    declare posts: ListOfPosts | null;
+}
+PetAccountRoot.encoding({ posts: { ref: () => ListOfPosts } });
 
-export class PetAccount extends Co.account({
-    profile: BaseProfile,
-    root: PetAccountRoot,
-}).as<PetAccount>() {}
+export class PetAccount extends Co.Account<PetAccount> {
+    declare profile: Profile | null;
+    declare root: PetAccountRoot | null;
 
-export const migration: AccountMigration<typeof PetAccount> = (me) => {
-    if (!me._refs.root) {
-        me.root = new PetAccountRoot(
-            {
-                posts: new ListOfPosts([], { owner: me }),
-            },
-            { owner: me }
-        );
-        console.log("Created root", me.root);
-    }
-};
+    migrate = () => {
+        if (!this._refs.root) {
+            this.root = new PetAccountRoot(
+                {
+                    posts: new ListOfPosts([], { owner: this }),
+                },
+                { owner: this }
+            );
+            console.log("Created root", this.root);
+        }
+    };
+}
+PetAccount.encoding({
+    profile: { ref: () => Profile },
+    root: { ref: () => PetAccountRoot },
+});
 
 /** Walkthrough: Continue with ./2_App.tsx */

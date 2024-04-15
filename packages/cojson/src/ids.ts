@@ -5,6 +5,10 @@ import { shortHashLength } from './crypto.js';
 
 export type RawCoID = `co_z${string}`;
 
+export function isRawCoID(id: unknown): id is RawCoID {
+    return typeof id === "string" && id.startsWith("co_z");
+}
+
 export function rawCoIDtoBytes(id: RawCoID): Uint8Array {
     return base58.decode(
         id.substring("co_z".length)

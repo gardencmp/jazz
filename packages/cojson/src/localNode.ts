@@ -30,7 +30,7 @@ import {
     RawControlledAccount,
     ControlledAgent,
     AccountID,
-    Profile,
+    RawProfile,
     RawAccountMigration,
 } from "./coValues/account.js";
 import { RawCoMap } from "./coValues/coMap.js";
@@ -446,7 +446,7 @@ export class LocalNode {
     }
 
     /** @internal */
-    expectProfileLoaded(id: AccountID, expectation?: string): Profile {
+    expectProfileLoaded(id: AccountID, expectation?: string): RawProfile {
         const account = this.expectCoValueLoaded(id, expectation);
         const profileID = expectGroup(account.getCurrentContent()).get(
             "profile"
@@ -461,7 +461,7 @@ export class LocalNode {
         return this.expectCoValueLoaded(
             profileID,
             expectation
-        ).getCurrentContent() as Profile;
+        ).getCurrentContent() as RawProfile;
     }
 
     /** @internal */
@@ -497,7 +497,7 @@ export class LocalNode {
 
         account.set("readKey", readKey.id, "trusting");
 
-        const profile = account.createMap<Profile>(
+        const profile = account.createMap<RawProfile>(
             { name },
             {
                 type: "profile",

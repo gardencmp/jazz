@@ -151,7 +151,7 @@ export type ProfileShape = {
 };
 export type ProfileMeta = { type: "profile" };
 
-export class Profile<
+export class RawProfile<
     Shape extends ProfileShape = ProfileShape,
     Meta extends ProfileMeta = ProfileMeta
 > extends RawCoMap<Shape, Meta> {}

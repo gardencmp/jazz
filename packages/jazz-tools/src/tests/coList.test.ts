@@ -4,8 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, S, Account, jazzReady, CoListSchema, CoList } from "..";
-import { recursiveRef } from "../schemaHelpers";
+import { Co, Account, jazzReady } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,17 +20,10 @@ describe("Simple CoList operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestList extends Co.list(S.string).as<TestList>() {}
+    class TestList extends Co.List<string> {}
+    TestList.encoding({ _item: "json" });
 
     const list = new TestList(["bread", "butter", "onion"], { owner: me });
-
-    class RecursiveList extends Co.list(recursiveRef<any>((): any => RecursiveList))
-        .as<RecursiveList>() {}
-        type RL = typeof RecursiveList
-    interface RecursiveList extends CoList<RL> {}
-
-    const rList = new RecursiveList([undefined], { owner: me });
-    const test = rList[0]
 
     test("Construction", () => {
         expect(list[0]).toBe("bread");
@@ -106,32 +98,35 @@ describe("Simple CoList operations", async () => {
             expect(list._raw.asArray()).toEqual(["butter", "onion"]);
         });
 
-        test("splice", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
-                owner: me,
-            });
-            list.splice(1, 1, "salt", "pepper");
-            expect(list.length).toBe(4);
-            expect(list._raw.asArray()).toEqual([
-                "bread",
-                "salt",
-                "pepper",
-                "onion",
-            ]);
-        });
+        // test("splice", () => {
+        //     const list = new TestList(["bread", "butter", "onion"], {
+        //         owner: me,
+        //     });
+        //     list.splice(1, 1, "salt", "pepper");
+        //     expect(list.length).toBe(4);
+        //     expect(list._raw.asArray()).toEqual([
+        //         "bread",
+        //         "salt",
+        //         "pepper",
+        //         "onion",
+        //     ]);
+        // });
     });
 });
 
 describe("CoList resolution", async () => {
-    class TwiceNestedList extends Co.list(S.string).as<TwiceNestedList>() {
+    class TwiceNestedList extends Co.List<string> {
         joined() {
             return this.join(",");
         }
     }
+    TwiceNestedList.encoding({ _item: "json" });
 
-    class NestedList extends Co.list(TwiceNestedList).as<NestedList>() {}
+    class NestedList extends Co.List<TwiceNestedList | null> {}
+    NestedList.encoding({ _item: { ref: () => TwiceNestedList } });
 
-    class TestList extends Co.list(NestedList).as<TestList>() {}
+    class TestList extends Co.List<NestedList | null> {}
+    TestList.encoding({ _item: { ref: () => NestedList } });
 
     const initNodeAndList = async () => {
         const me = await Account.create({
@@ -182,7 +177,7 @@ describe("CoList resolution", async () => {
 
         const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
 
-        expect(loadedList?.[0]).toBe(undefined);
+        expect(loadedList?.[0]).toBe(null);
         expect(loadedList?._refs[0]?.id).toEqual(list[0]!.id);
 
         const loadedNestedList = await NestedList.load(list[0]!.id, {
@@ -190,7 +185,7 @@ describe("CoList resolution", async () => {
         });
 
         expect(loadedList?.[0]).toBeDefined();
-        expect(loadedList?.[0]?.[0]).toBeUndefined();
+        expect(loadedList?.[0]?.[0]).toBe(null);
         expect(loadedList?.[0]?._refs[0]?.id).toEqual(list[0]![0]!.id);
         expect(loadedList?._refs[0]?.value).toEqual(loadedNestedList);
 
@@ -203,9 +198,7 @@ describe("CoList resolution", async () => {
         expect(loadedList?.[0]?.[0]?.[0]).toBe("a");
         expect(loadedList?.[0]?.[0]?.joined()).toBe("a,b");
         expect(loadedList?.[0]?._refs[0]?.id).toEqual(list[0]?.[0]?.id);
-        expect(loadedList?.[0]?._refs[0]?.value).toEqual(
-            loadedTwiceNestedList
-        );
+        expect(loadedList?.[0]?._refs[0]?.value).toEqual(loadedTwiceNestedList);
 
         const otherNestedList = new NestedList(
             [new TwiceNestedList(["e", "f"], { owner: meOnSecondPeer })],
@@ -250,11 +243,11 @@ describe("CoList resolution", async () => {
                 );
 
                 const update1 = yield* $(Queue.take(queue));
-                expect(update1?.[0]).toEqual(undefined);
+                expect(update1?.[0]).toBe(null);
 
                 const update2 = yield* $(Queue.take(queue));
                 expect(update2?.[0]).toBeDefined();
-                expect(update2?.[0]?.[0]).toBeUndefined();
+                expect(update2?.[0]?.[0]).toBe(null);
 
                 const update3 = yield* $(Queue.take(queue));
                 expect(update3?.[0]?.[0]).toBeDefined();

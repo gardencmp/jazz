@@ -24,14 +24,14 @@ import {
 import { connectedPeers } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
-import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
+import { rawCoIDtoBytes, rawCoIDfromBytes, isRawCoID } from "./ids.js";
 import { RawGroup, EVERYONE } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
 import {
     RawAccount,
-    Profile,
+    RawProfile,
     accountHeaderForInitialAgentSecret,
 } from "./coValues/account.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -98,7 +98,7 @@ export {
     AccountID,
     AccountMeta,
     RawAccountMigration,
-    Profile,
+    RawProfile as Profile,
     ProfileMeta,
     SessionID,
     Media,
@@ -115,6 +115,7 @@ export {
     AgentSecret,
     InviteSecret,
     SyncMessage,
+    isRawCoID
 };
 
 export type { Value };

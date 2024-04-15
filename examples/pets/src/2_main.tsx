@@ -13,7 +13,7 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
-import { PetAccount, PetPost, migration } from "./1_schema.ts";
+import { PetAccount, PetPost } from "./1_schema.ts";
 
 /** Walkthrough: The top-level provider `<WithJazz/>`
  *
@@ -24,12 +24,13 @@ import { PetAccount, PetPost, migration } from "./1_schema.ts";
 
 const appName = "Jazz Rate My Pet Example";
 
-const auth = PasskeyAuth({
+const auth = PasskeyAuth<PetAccount>({
     appName,
     Component: PrettyAuthUI,
+    accountSchema: PetAccount,
 });
 
-const Jazz = JazzReact({ accountSchema: PetAccount, migration: migration });
+const Jazz = JazzReact({ auth });
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -37,7 +38,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider auth={auth}>
+                <Jazz.Provider>
                     <App />
                 </Jazz.Provider>
             </div>

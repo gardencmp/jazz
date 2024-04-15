@@ -7,16 +7,10 @@ import {
 } from "cojson";
 import { SessionProvider } from "..";
 import { AuthProvider } from "./auth";
-import {
-    AnyAccount,
-    AccountMigration,
-    AccountSchema,
-    ID,
-    controlledAccountSym,
-} from "jazz-tools";
+import { Account, CoValueClass, ID, Me } from "jazz-tools";
 
 type StorageData = {
-    accountID: ID<AnyAccount>;
+    accountID: ID<Account>;
     accountSecret: AgentSecret;
 };
 
@@ -31,28 +25,20 @@ export interface BrowserDemoAuthDriver {
     onSignedIn: (next: { logOut: () => void }) => void;
 }
 
-export class BrowserDemoAuth implements AuthProvider {
-    driver: BrowserDemoAuthDriver;
-    appName: string;
+export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
+    constructor(
+        public accountSchema: CoValueClass<Acc> & typeof Account,
+        public driver: BrowserDemoAuthDriver,
+        public appName: string
+    ) {}
 
-    constructor(driver: BrowserDemoAuthDriver, appName: string) {
-        this.driver = driver;
-        this.appName = appName;
-    }
-
-    async createOrLoadAccount<A extends AccountSchema>(
-        accountSchema: A,
+    async createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        migration?: AccountMigration<A>
-    ): Promise<A[controlledAccountSym]> {
+        initialPeers: Peer[]
+    ): Promise<Acc & Me> {
         const rawMigration = (account: RawControlledAccount) => {
-            return migration?.(
-                accountSchema.fromRaw(
-                    account
-                ) as A[controlledAccountSym]
-            );
-        }
+            return this.accountSchema.fromRaw(account).migrate?.();
+        };
 
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
@@ -71,9 +57,9 @@ export class BrowserDemoAuth implements AuthProvider {
 
             this.driver.onSignedIn({ logOut });
 
-            const account = accountSchema.fromRaw(
+            const account = this.accountSchema.fromRaw(
                 node.account as RawControlledAccount
-            ) as A[controlledAccountSym];
+            ) as Acc & Me;
 
             return Promise.resolve(account);
         } else {
@@ -84,10 +70,10 @@ export class BrowserDemoAuth implements AuthProvider {
                             const { node, accountID, accountSecret } =
                                 await LocalNode.withNewlyCreatedAccount({
                                     name: username,
-                                    migration: rawMigration
+                                    migration: rawMigration,
                                 });
                             const storageData = JSON.stringify({
-                                accountID: accountID as unknown as ID<AnyAccount>,
+                                accountID: accountID as unknown as ID<Account>,
                                 accountSecret,
                             } satisfies StorageData);
                             localStorage["demo-auth-logged-in-secret"] =
@@ -131,7 +117,7 @@ export class BrowserDemoAuth implements AuthProvider {
                                 accountSecret: storageData.accountSecret,
                                 sessionID,
                                 peersToLoadFrom: initialPeers,
-                                migration: rawMigration
+                                migration: rawMigration,
                             });
 
                             doneSigningUpOrLoggingIn(node);
@@ -141,9 +127,9 @@ export class BrowserDemoAuth implements AuthProvider {
                 }
             );
 
-            const account = accountSchema.fromRaw(
+            const account = this.accountSchema.fromRaw(
                 node.account as RawControlledAccount
-            ) as A[controlledAccountSym];
+            ) as Acc & Me;
 
             return account;
         }

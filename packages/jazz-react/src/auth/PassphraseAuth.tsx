@@ -4,6 +4,7 @@ import { ReactAuthHook } from "jazz-react";
 
 import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
+import { Account, CoValueClass } from "jazz-tools";
 
 export type PassphraseAuthComponent = (props: {
     loading: boolean;
@@ -12,17 +13,19 @@ export type PassphraseAuthComponent = (props: {
     generateRandomPassphrase: () => string;
 }) => ReactNode;
 
-export function PassphraseAuth({
+export function PassphraseAuth<Acc extends Account>({
+    accountSchema,
     appName,
     appHostname,
     wordlist,
     Component = PassphraseAuthBasicUI,
 }: {
+    accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     wordlist: string[];
     Component?: PassphraseAuthComponent;
-}): ReactAuthHook {
+}): ReactAuthHook<Acc> {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
@@ -37,7 +40,8 @@ export function PassphraseAuth({
         const [logOutCounter, setLogOutCounter] = useState(0);
 
         const auth = useMemo(() => {
-            return new BrowserPassphraseAuth(
+            return new BrowserPassphraseAuth<Acc>(
+                accountSchema,
                 {
                     onReady(next) {
                         setAuthState({
@@ -149,7 +153,7 @@ export const PassphraseAuthBasicUI = ({
                                 padding: "11px 8px",
                                 borderRadius: "6px",
                                 height: "7rem",
-                                flex: 1
+                                flex: 1,
                             }}
                         />
                         <button
@@ -190,7 +194,7 @@ export const PassphraseAuthBasicUI = ({
                         }}
                     />
                 </form>
-                <div style={{textAlign: "center"}}>&mdash; or &mdash;</div>
+                <div style={{ textAlign: "center" }}>&mdash; or &mdash;</div>
                 <form
                     style={{
                         width: "30rem",

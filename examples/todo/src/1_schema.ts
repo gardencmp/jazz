@@ -1,4 +1,4 @@
-import { BaseProfile, Co, S, AccountMigration } from "jazz-tools";
+import { Co, Profile } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -11,45 +11,54 @@ import { BaseProfile, Co, S, AccountMigration } from "jazz-tools";
  **/
 
 /** An individual task which collaborators can tick or rename */
-export class Task extends Co.map({
-    done: S.boolean,
-    text: S.string,
-}).as<Task>() {}
+export class Task extends Co.Map<Task> {
+    declare done: boolean;
+    declare text: string;
+}
+Task.encoding({ done: "json", text: "json" });
 
-export class ListOfTasks extends Co.list(Task).as<ListOfTasks>() {}
+export class ListOfTasks extends Co.List<Task | null> {}
+ListOfTasks.encoding({ _item: { ref: () => Task } });
 
 /** Our top level object: a project with a title, referencing a list of tasks */
-export class TodoProject extends Co.map({
-    title: S.string,
+export class TodoProject extends Co.Map<TodoProject> {
+    declare title: string;
     /** A collaborative, ordered list of tasks */
-    tasks: ListOfTasks,
-}).as<TodoProject>() {}
+    declare tasks: ListOfTasks | null;
+}
+TodoProject.encoding({ title: "json", tasks: { ref: () => ListOfTasks } });
 
-export class ListOfProjects extends Co.list(TodoProject).as<ListOfProjects>() {}
+export class ListOfProjects extends Co.List<TodoProject | null> {}
+ListOfProjects.encoding({ _item: { ref: () => TodoProject } });
 
 /** The account root is an app-specific per-user private `CoMap`
  *  where you can store top-level objects for that user */
-export class TodoAccountRoot extends Co.map({
-    projects: ListOfProjects,
-}).as<TodoAccountRoot>() {}
+export class TodoAccountRoot extends Co.Map<TodoAccountRoot> {
+    declare projects: ListOfProjects | null;
+}
+TodoAccountRoot.encoding({ projects: { ref: () => ListOfProjects } });
 
-export class TodoAccount extends Co.account({
-    profile: BaseProfile,
-    root: TodoAccountRoot,
-}).as<TodoAccount>() {}
+export class TodoAccount extends Co.Account<TodoAccount> {
+    declare profile: Profile;
+    declare root: TodoAccountRoot | null;
 
-/** The account migration is run on account creation and on every log-in.
- *  You can use it to set up the account root and any other initial CoValues you need.
- */
-export const migration: AccountMigration<typeof TodoAccount> = (me) => {
-    if (!me._refs.root) {
-        me.root = new TodoAccountRoot(
-            {
-                projects: new ListOfProjects([], { owner: me }),
-            },
-            { owner: me }
-        );
-    }
-};
+    /** The account migration is run on account creation and on every log-in.
+     *  You can use it to set up the account root and any other initial CoValues you need.
+     */
+    migrate = () => {
+        if (!this._refs.root) {
+            this.root = new TodoAccountRoot(
+                {
+                    projects: new ListOfProjects([], { owner: this }),
+                },
+                { owner: this }
+            );
+        }
+    };
+}
+TodoAccount.encoding({
+    profile: { ref: () => Profile },
+    root: { ref: () => TodoAccountRoot },
+});
 
 /** Walkthrough: Continue with ./2_main.tsx */

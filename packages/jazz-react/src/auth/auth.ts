@@ -1,9 +1,9 @@
 import React from "react";
 import { AuthProvider } from "jazz-browser";
+import { Account } from "jazz-tools";
 
-
-export type ReactAuthHook = () => {
-    auth: AuthProvider;
+export type ReactAuthHook<Acc extends Account> = () => {
+    auth: AuthProvider<Acc>;
     AuthUI: React.ReactNode;
     logOut?: () => void;
 };

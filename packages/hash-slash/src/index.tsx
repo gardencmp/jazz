@@ -4,7 +4,7 @@ export type Routes = {
     [Key: `/${string}`]: ReactNode | ((param: string) => ReactNode);
 };
 
-export function useHash(options?: {tellParentFrame?: boolean}) {
+export function useHashRouter(options?: {tellParentFrame?: boolean}) {
     const [hash, setHash] = useState(location.hash.slice(1));
 
     useEffect(() => {
@@ -28,15 +28,17 @@ export function useHash(options?: {tellParentFrame?: boolean}) {
         navigate: (url: string) => {
             location.hash = url;
         },
-        route: function <P extends string = ''>(route: `${string}` | `/${string}/:${P}`, paramUser: (param: P) => ReactNode) {
-            if (route.includes(":")) {
-                const [routePath, _paramName] = route.split(":");
-                if (routePath && hash.startsWith(routePath)) {
-                    const param = hash.split(routePath!)[1];
-                    return paramUser(param as P);
+        route: function (routes: {[route: `${string}` | `/${string}/:${string}`]: (param: string) => ReactNode}) {
+            for (const [route, paramUser] of Object.entries(routes)) {
+                if (route.includes(":")) {
+                    const [routePath, _paramName] = route.split(":");
+                    if (routePath && hash.startsWith(routePath)) {
+                        const param = hash.split(routePath!)[1];
+                        return paramUser(param!);
+                    }
+                } else {
+                    return (hash === route || route === "/" && hash === "") ? paramUser('') : null;
                 }
-            } else {
-                return hash === route ? paramUser('' as P) : null;
             }
         }
     }

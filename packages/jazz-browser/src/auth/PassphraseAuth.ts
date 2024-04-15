@@ -11,7 +11,7 @@ import { agentSecretFromSecretSeed } from "cojson/src/crypto";
 import { AuthProvider, SessionProvider } from "jazz-browser";
 
 type LocalStorageData = {
-    accountID: ID<AnyAccount>;
+    accountID: ID<Account>;
     accountSecret: AgentSecret;
 };
 
@@ -25,35 +25,24 @@ export interface BrowserPassphraseAuthDriver {
     onSignedIn: (next: { logOut: () => void }) => void;
 }
 
-export class BrowserPassphraseAuth implements AuthProvider {
-    driver: BrowserPassphraseAuthDriver;
-    appName: string;
-    appHostname: string;
-    wordlist: string[];
-
+export class BrowserPassphraseAuth<Acc extends Account>
+    implements AuthProvider<Acc>
+{
     constructor(
-        driver: BrowserPassphraseAuthDriver,
-        wordlist: string[],
-        appName: string,
+        public accountSchema: CoValueClass<Acc> & typeof Account,
+        public driver: BrowserPassphraseAuthDriver,
+        public wordlist: string[],
+        public appName: string,
         // TODO: is this a safe default?
-        appHostname: string = window.location.hostname
-    ) {
-        this.driver = driver;
-        this.wordlist = wordlist;
-        this.appName = appName;
-        this.appHostname = appHostname;
-    }
+        public appHostname: string = window.location.hostname
+    ) {}
 
-    async createOrLoadAccount<A extends AccountSchema>(
-        accountSchema: A,
+    async createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        migration?: AccountMigration<A>
-    ): Promise<A[controlledAccountSym]> {
+        initialPeers: Peer[]
+    ): Promise<Acc & Me> {
         const rawMigration = (account: RawControlledAccount) => {
-            return migration?.(
-                accountSchema.fromRaw(account) as A[controlledAccountSym]
-            );
+            return this.accountSchema.fromRaw(account).migrate?.();
         };
 
         if (localStorage[localStorageKey]) {
@@ -73,9 +62,9 @@ export class BrowserPassphraseAuth implements AuthProvider {
 
             this.driver.onSignedIn({ logOut });
 
-            const account = accountSchema.fromRaw(
+            const account = this.accountSchema.fromRaw(
                 node.account as RawControlledAccount
-            ) as A[controlledAccountSym];
+            ) as Acc & Me;
 
             return Promise.resolve(account);
         } else {
@@ -114,9 +103,9 @@ export class BrowserPassphraseAuth implements AuthProvider {
                 }
             );
 
-            const account = accountSchema.fromRaw(
+            const account = this.accountSchema.fromRaw(
                 node.account as RawControlledAccount
-            ) as A[controlledAccountSym];
+            ) as Acc & Me;
 
             return Promise.resolve(account);
         }
@@ -124,13 +113,7 @@ export class BrowserPassphraseAuth implements AuthProvider {
 }
 
 import * as bip39 from "@scure/bip39";
-import {
-    AccountMigration,
-    AccountSchema,
-    AnyAccount,
-    controlledAccountSym,
-    ID,
-} from "jazz-tools";
+import { Account, CoValueClass, ID, Me } from "jazz-tools";
 
 async function signUp(
     username: string,
@@ -151,12 +134,12 @@ async function signUp(
         });
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID as unknown as ID<AnyAccount>,
+        accountID: accountID as unknown as ID<Account>,
         accountSecret,
     } satisfies LocalStorageData);
 
     node.currentSessionID = await getSessionFor(
-        accountID as unknown as ID<AnyAccount>
+        accountID as unknown as ID<Account>
     );
 
     return node;
@@ -183,14 +166,14 @@ async function logIn(
     ) as AccountID;
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID as unknown as ID<AnyAccount>,
+        accountID: accountID as unknown as ID<Account>,
         accountSecret,
     } satisfies LocalStorageData);
 
     const node = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        sessionID: await getSessionFor(accountID as unknown as ID<AnyAccount>),
+        sessionID: await getSessionFor(accountID as unknown as ID<Account>),
         peersToLoadFrom: initialPeers,
         migration,
     });

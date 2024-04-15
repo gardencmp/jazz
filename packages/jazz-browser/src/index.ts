@@ -1,14 +1,9 @@
 import { ReadableStream, WritableStream } from "isomorphic-streams";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import {
-    AccountSchema,
-    AccountMigration,
     CoValue,
-    AnyAccount,
     ID,
-    ControlledAccount,
     BinaryCoStream,
-    AnyGroup,
     Co,
     jazzReady,
     Peer,
@@ -18,33 +13,30 @@ import {
     cojsonInternals,
     InviteSecret,
     MAX_RECOMMENDED_TX_SIZE,
-    controlledAccountSym,
-    CoValueSchema,
-    S,
+    Account,
+    CoValueClass,
+    Group,
+    Me,
 } from "jazz-tools";
 import { AccountID } from "cojson";
 import { AuthProvider } from "./auth/auth";
 export * from './auth/auth.js';
 
-export type BrowserContext<A extends ControlledAccount> = {
-    me: A;
+export type BrowserContext<A extends Account> = {
+    me: A & Me;
     // TODO: Symbol.dispose?
     done: () => void;
 };
 
-export async function createBrowserContext<A extends AccountSchema>({
+export async function createBrowserContext<Acc extends Account>({
     auth,
     syncAddress = "wss://sync.jazz.tools",
     reconnectionTimeout: initialReconnectionTimeout = 500,
-    accountSchema,
-    migration,
 }: {
-    auth: AuthProvider;
+    auth: AuthProvider<Acc>;
     syncAddress?: string;
     reconnectionTimeout?: number;
-    accountSchema: A;
-    migration?: AccountMigration<A>;
-}): Promise<BrowserContext<A[controlledAccountSym]>> {
+}): Promise<BrowserContext<Acc>> {
     await jazzReady;
     let sessionDone: () => void;
 
@@ -60,15 +52,13 @@ export async function createBrowserContext<A extends AccountSchema>({
 
     window.addEventListener("online", onOnline);
 
-    const me = await auth.createOrLoadAccount<A>(
-        accountSchema,
+    const me = await auth.createOrLoadAccount(
         (accountID) => {
             const sessionHandle = getSessionHandleFor(accountID);
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
         [await IDBStorage.asPeer(), firstWsPeer],
-        migration
     );
 
     async function websocketReconnectLoop() {
@@ -132,7 +122,7 @@ export async function createBrowserContext<A extends AccountSchema>({
 }
 
 export type SessionProvider = (
-    accountID: ID<AnyAccount> | AgentID
+    accountID: ID<Account> | AgentID
 ) => Promise<SessionID>;
 
 export type SessionHandle = {
@@ -141,7 +131,7 @@ export type SessionHandle = {
 };
 
 function getSessionHandleFor(
-    accountID: ID<AnyAccount> | AgentID
+    accountID: ID<Account> | AgentID
 ): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
@@ -400,24 +390,24 @@ export function parseInviteLink<C extends CoValue>(
     }
 }
 
-export function consumeInviteLinkFromWindowLocation<V extends CoValueSchema>({
+export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
     as,
     forValueHint,
     invitedObjectSchema,
 }: {
-    as: ControlledAccount;
+    as: Account & Me;
     forValueHint?: string;
-    invitedObjectSchema: V;
+    invitedObjectSchema: CoValueClass<V>
 }): Promise<
     | {
-          valueID: ID<S.Schema.To<V>>;
+          valueID: ID<V>;
           valueHint?: string;
           inviteSecret: InviteSecret;
       }
     | undefined
 > {
     return new Promise((resolve, reject) => {
-        const result = parseInviteLink<S.Schema.To<V>>(window.location.href);
+        const result = parseInviteLink<V>(window.location.href);
 
         if (result && result.valueHint === forValueHint) {
             as.acceptInvite(
@@ -443,11 +433,11 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValueSchema>({
 export async function createBinaryStreamFromBlob(
     blob: Blob | File,
     options: {
-        owner: AnyGroup | AnyAccount;
+        owner: Group | Account;
         onProgress?: (progress: number) => void;
     }
 ): Promise<BinaryCoStream> {
-    const stream = new Co.binaryStream(undefined, { owner: options.owner });
+    const stream = new Co.BinaryStream(undefined, { owner: options.owner });
 
     const start = Date.now();
 
@@ -499,12 +489,12 @@ export async function createBinaryStreamFromBlob(
 export async function readBlobFromBinaryStream(
     streamId: ID<BinaryCoStream>,
     options: {
-        as: ControlledAccount;
+        as: Account & Me;
         allowUnfinished?: boolean;
         onProgress?: (progress: number) => void;
     }
 ): Promise<Blob | undefined> {
-    const stream = await Co.binaryStream.load(streamId, {
+    const stream = await Co.BinaryStream.load(streamId, {
         as: options.as,
         onProgress: options.onProgress,
     });

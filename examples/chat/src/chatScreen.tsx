@@ -1,4 +1,4 @@
-import { ID, Account } from 'jazz-tools';
+import { ID } from 'jazz-tools';
 import { Chat, Message, useCoState } from './app.tsx';
 
 export function ChatScreen(props: { chatID: ID<Chat> }) {

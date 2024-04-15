@@ -1,20 +1,22 @@
-import * as S from "@effect/schema/Schema";
-import { CoMapOf } from "../coMap/coMapOf.js";
-import { BinaryCoStreamImpl } from "../coStream/coStreamOf.js";
-import { BinaryCoStream } from "../coStream/coStream.js";
-import { subscriptionsScopes } from "../../subscriptionScope.js";
+import { BinaryCoStream, CoMap, indexSignature, subscriptionsScopes } from '../../internal.js'
 
-export class ImageDefinition extends CoMapOf(
-    {
-        originalSize: S.tuple(S.number, S.number),
-        placeholderDataURL: S.optional(S.string),
-    },
-    {
-        key: S.templateLiteral(S.string, S.literal("x"), S.string),
-        value: BinaryCoStreamImpl,
+export class ImageDefinition extends CoMap<ImageDefinition> {
+    declare originalSize: [number, number]
+    declare placeholderDataURL?: string
+
+    [res: `${number}x${number}`]: BinaryCoStream | null;
+    declare [indexSignature]: BinaryCoStream | null
+
+    static {
+        this.prototype._schema
+        this.encoding({
+            originalSize: "json",
+            placeholderDataURL: "json",
+            [indexSignature]: {ref: () => BinaryCoStream},
+        })
     }
-).as<ImageDefinition>() {
-    get highestResAvailable():
+
+    get _highestResAvailable():
         | { res: `${number}x${number}`; stream: BinaryCoStream }
         | undefined {
         if (!subscriptionsScopes.get(this)) {

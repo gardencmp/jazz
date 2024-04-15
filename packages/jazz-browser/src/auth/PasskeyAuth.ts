@@ -8,16 +8,10 @@ import {
     RawControlledAccount,
 } from "cojson";
 import { AuthProvider, SessionProvider } from "jazz-browser";
-import {
-    AccountMigration,
-    AccountSchema,
-    AnyAccount,
-    controlledAccountSym,
-    ID,
-} from "jazz-tools";
+import { Account, CoValueClass, ID, Me } from "jazz-tools";
 
 type LocalStorageData = {
-    accountID: ID<AnyAccount>;
+    accountID: ID<Account>;
     accountSecret: AgentSecret;
 };
 
@@ -31,32 +25,23 @@ export interface BrowserPasskeyAuthDriver {
     onSignedIn: (next: { logOut: () => void }) => void;
 }
 
-export class BrowserPasskeyAuth implements AuthProvider {
-    driver: BrowserPasskeyAuthDriver;
-    appName: string;
-    appHostname: string;
-
+export class BrowserPasskeyAuth<Acc extends Account>
+    implements AuthProvider<Acc>
+{
     constructor(
-        driver: BrowserPasskeyAuthDriver,
-        appName: string,
+        public accountSchema: CoValueClass<Acc> & typeof Account,
+        public driver: BrowserPasskeyAuthDriver,
+        public appName: string,
         // TODO: is this a safe default?
-        appHostname: string = window.location.hostname
-    ) {
-        this.driver = driver;
-        this.appName = appName;
-        this.appHostname = appHostname;
-    }
+        public appHostname: string = window.location.hostname
+    ) {}
 
-    async createOrLoadAccount<A extends AccountSchema>(
-        accountSchema: A,
+    async createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        migration?: AccountMigration<A>
-    ): Promise<A[controlledAccountSym]> {
+        initialPeers: Peer[]
+    ): Promise<Acc & Me> {
         const rawMigration = (account: RawControlledAccount) => {
-            return migration?.(
-                accountSchema.fromRaw(account) as A[controlledAccountSym]
-            );
+            return this.accountSchema.fromRaw(account).migrate?.();
         };
 
         if (localStorage[localStorageKey]) {
@@ -76,9 +61,9 @@ export class BrowserPasskeyAuth implements AuthProvider {
 
             this.driver.onSignedIn({ logOut });
 
-            const account = accountSchema.fromRaw(
+            const account = this.accountSchema.fromRaw(
                 node.account as RawControlledAccount
-            ) as A[controlledAccountSym];
+            ) as Acc & Me;
 
             return Promise.resolve(account);
         } else {
@@ -113,9 +98,9 @@ export class BrowserPasskeyAuth implements AuthProvider {
                 }
             );
 
-            const account = accountSchema.fromRaw(
+            const account = this.accountSchema.fromRaw(
                 node.account as RawControlledAccount
-            ) as A[controlledAccountSym];
+            ) as Acc & Me;
 
             return account;
         }
@@ -173,12 +158,12 @@ async function signUp(
     console.log(webAuthNCredential, accountID);
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID as unknown as ID<AnyAccount>,
+        accountID: accountID as unknown as ID<Account>,
         accountSecret,
     } satisfies LocalStorageData);
 
     node.currentSessionID = await getSessionFor(
-        accountID as unknown as ID<AnyAccount>
+        accountID as unknown as ID<Account>
     );
 
     return node;
@@ -227,14 +212,14 @@ async function logIn(
     }
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID as unknown as ID<AnyAccount>,
+        accountID: accountID as unknown as ID<Account>,
         accountSecret,
     } satisfies LocalStorageData);
 
     const node = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        sessionID: await getSessionFor(accountID as unknown as ID<AnyAccount>),
+        sessionID: await getSessionFor(accountID as unknown as ID<Account>),
         peersToLoadFrom: initialPeers,
         migration,
     });

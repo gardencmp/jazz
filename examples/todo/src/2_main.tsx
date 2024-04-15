@@ -17,35 +17,35 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
-import { TodoAccount, TodoProject, migration } from "./1_schema.ts";
+import { TodoAccount, TodoProject } from "./1_schema.ts";
 
 /**
- * Walkthrough: The top-level provider `<WithJazz/>`
+ * Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
- * This shows how to use the top-level provider `<WithJazz/>`,
- * which provides the rest of the app with a controlled account (used through `useJazz` later).
- * Here we use `LocalAuth`, which uses Passkeys (aka WebAuthn) to store a user's account secret
+ * This shows how to use the top-level provider `<Jazz.Provider/>`,
+ * which provides the rest of the app with a controlled account (used through `useAccount` later).
+ * Here we use `PasskeyAuth`, which uses Passkeys (aka WebAuthn) to store a user's account secret
  * - no backend needed.
  *
- * `<WithJazz/>` also runs our account migration
+ * `<Jazz.Provider/>` also runs our account migration
  */
-
-const Jazz = JazzReact({ accountSchema: TodoAccount, migration });
-export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 const appName = "Jazz Todo List Example";
 
-const auth = PasskeyAuth({
+const auth = PasskeyAuth<TodoAccount>({
     appName,
     Component: PrettyAuthUI,
+    accountSchema: TodoAccount,
 });
+const Jazz = JazzReact<TodoAccount>({ auth });
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider auth={auth}>
+                <Jazz.Provider>
                     <App />
                 </Jazz.Provider>
             </div>
@@ -62,7 +62,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 
 function App() {
-    // logOut logs out the AuthProvider passed to `<WithJazz/>` above.
+    // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
     const { logOut } = useAccount();
 
     const router = createHashRouter([

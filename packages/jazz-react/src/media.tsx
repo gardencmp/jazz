@@ -5,12 +5,12 @@ import { ImageDefinition } from "jazz-tools";
 export function useProgressiveImg({
     image,
 }: {
-    image: ImageDefinition | undefined;
+    image: ImageDefinition | null | undefined;
 }) {
     const [src, setSrc] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        const highestRes = image?.highestResAvailable;
+        const highestRes = image?._highestResAvailable;
         if (highestRes) {
             const blob = blobFromBinaryStream(highestRes.stream);
             if (blob) {
@@ -23,7 +23,7 @@ export function useProgressiveImg({
         } else {
             setSrc(image?.placeholderDataURL);
         }
-    }, [image?.highestResAvailable?.res]);
+    }, [image?._highestResAvailable?.res]);
 
     return { src, originalSize: image?.originalSize };
 }
@@ -36,7 +36,7 @@ export function ProgressiveImg({
         src: string | undefined;
         originalSize: readonly [number, number] | undefined;
     }) => React.ReactNode;
-    image: ImageDefinition | undefined;
+    image: ImageDefinition | null | undefined;
 }) {
     const result = useProgressiveImg({ image });
     return result && children(result);

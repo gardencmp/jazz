@@ -5,7 +5,7 @@ import { KeyID } from "./crypto.js";
 import { CoValueCore, Transaction } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { RawAccount, AccountID, Profile } from "./coValues/account.js";
+import { RawAccount, AccountID, RawProfile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
 import { EVERYONE, Everyone } from "./coValues/group.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -101,7 +101,7 @@ export function determineValidTransactions(
             const change = changes[0] as
                 | MapOpPayload<AccountID | AgentID | Everyone, Role>
                 | MapOpPayload<"readKey", JsonValue>
-                | MapOpPayload<"profile", CoID<Profile>>;
+                | MapOpPayload<"profile", CoID<RawProfile>>;
             if (changes.length !== 1) {
                 console.warn("Group transaction must have exactly one change");
                 continue;

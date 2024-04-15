@@ -4,9 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, S, Account, jazzReady, CoValueSchema, CoMap, CoValue } from "..";
-import { PropertySignatureWithInputAndOutput } from "../schemaHelpers";
-import { CoMapOfCurried } from "../coValues/coMap/coMapOf";
+import { Co, Account, jazzReady, Encoders, indexSignature } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,16 +20,27 @@ describe("Simple CoMap operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestMap extends Co.map({
-        color: S.string,
-        height: S.number,
-        birthday: S.Date,
-        name: S.optional(S.string),
-    }).as<TestMap>() {
-        get roughColor() {
+    class TestMap extends Co.Map<TestMap> {
+        declare color: string;
+        declare height: number;
+        declare birthday: Date;
+        declare name?: string;
+
+        get _roughColor() {
             return this.color + "ish";
         }
+
+        static {
+            this.encoding({
+                color: "json",
+                height: "json",
+                birthday: { encoded: Encoders.Date },
+                name: "json",
+            });
+        }
     }
+
+    console.log("TestMap schema", TestMap.prototype._schema);
 
     const birthday = new Date();
 
@@ -46,7 +55,7 @@ describe("Simple CoMap operations", async () => {
 
     test("Construction", () => {
         expect(map.color).toEqual("red");
-        expect(map.roughColor).toEqual("redish");
+        expect(map._roughColor).toEqual("redish");
         expect(map.height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
         expect(map._raw.get("birthday")).toEqual(birthday.toISOString());
@@ -60,9 +69,7 @@ describe("Simple CoMap operations", async () => {
             const newBirthday = new Date();
             map.birthday = newBirthday;
             expect(map.birthday).toEqual(newBirthday);
-            expect(map._raw.get("birthday")).toEqual(
-                newBirthday.toISOString()
-            );
+            expect(map._raw.get("birthday")).toEqual(newBirthday.toISOString());
 
             Object.assign(map, { color: "green", height: 20 });
             expect(map.color).toEqual("green");
@@ -72,19 +79,22 @@ describe("Simple CoMap operations", async () => {
 
             map.name = "Secret name";
             expect(map.name).toEqual("Secret name");
-            delete map.name;
+            map.name = undefined;
             expect(map.name).toEqual(undefined);
         });
     });
 
-    class RecursiveMap extends CoMapOfCurried<RecursiveMap>()<{
-        name: S.Schema<string>,
-        next: PropertySignatureWithInputAndOutput<RecursiveMap, RecursiveMap>,
-    }>({
-        name: S.string,
-        next: S.optional(S.suspend((): S.Schema<RecursiveMap> => RecursiveMap)),
-    }) {}
+    class RecursiveMap extends Co.Map<RecursiveMap> {
+        declare name: string;
+        declare next: RecursiveMap | null;
 
+        static {
+            this.encoding({
+                name: "json",
+                next: { ref: () => RecursiveMap },
+            });
+        }
+    }
     const recursiveMap = new RecursiveMap(
         {
             name: "first",
@@ -109,30 +119,45 @@ describe("Simple CoMap operations", async () => {
             expect(recursiveMap.name).toEqual("first");
             expect(recursiveMap.next?.name).toEqual("second");
             expect(recursiveMap.next?.next?.name).toEqual("third");
-        })
-    })
+        });
+    });
 });
 
 describe("CoMap resolution", async () => {
-    class TwiceNestedMap extends Co.map({
-        taste: S.string,
-    }).as<TwiceNestedMap>() {}
+    class TwiceNestedMap extends Co.Map<TwiceNestedMap> {
+        taste!: string;
+    }
+    TwiceNestedMap.encoding({
+        taste: "json",
+    });
 
-    class NestedMap extends Co.map({
-        name: S.string,
-        twiceNested: TwiceNestedMap,
-    }).as<NestedMap>() {
-        get fancyName() {
+    class NestedMap extends Co.Map<NestedMap> {
+        name!: string;
+        twiceNested!: TwiceNestedMap | null;
+
+        get _fancyName() {
             return "Sir " + this.name;
         }
     }
+    NestedMap.encoding({
+        name: "json",
+        twiceNested: { ref: () => TwiceNestedMap },
+    });
 
-    class TestMap extends Co.map({
-        color: S.string,
-        height: S.number,
-        nested: NestedMap,
-    }).as<TestMap>() {
-        get roughColor() {
+    class TestMap extends Co.Map<TestMap> {
+        declare color: string;
+        declare height: number;
+        declare nested: NestedMap | null;
+
+        static {
+            this.encoding({
+                color: "json",
+                height: "json",
+                nested: { ref: () => NestedMap },
+            });
+        }
+
+        get _roughColor() {
             return this.color + "ish";
         }
     }
@@ -169,10 +194,10 @@ describe("CoMap resolution", async () => {
         // const test: Schema.Schema.To<typeof NestedMap>
 
         expect(map.color).toEqual("red");
-        expect(map.roughColor).toEqual("redish");
+        expect(map._roughColor).toEqual("redish");
         expect(map.height).toEqual(10);
         expect(map.nested?.name).toEqual("nested");
-        expect(map.nested?.fancyName).toEqual("Sir nested");
+        expect(map.nested?._fancyName).toEqual("Sir nested");
         expect(map.nested?.id).toBeDefined();
         expect(map.nested?.twiceNested?.taste).toEqual("sour");
     });
@@ -196,16 +221,16 @@ describe("CoMap resolution", async () => {
 
         expect(loadedMap?.color).toEqual("red");
         expect(loadedMap?.height).toEqual(10);
-        expect(loadedMap?.nested).toEqual(undefined);
+        expect(loadedMap?.nested).toEqual(null);
         expect(loadedMap?._refs.nested?.id).toEqual(map.nested?.id);
-        expect(loadedMap?._refs.nested?.value).toEqual(undefined);
+        expect(loadedMap?._refs.nested?.value).toEqual(null);
 
         const loadedNestedMap = await NestedMap.load(map.nested!.id, {
             as: meOnSecondPeer,
         });
 
         expect(loadedMap?.nested?.name).toEqual("nested");
-        expect(loadedMap?.nested.fancyName).toEqual("Sir nested");
+        expect(loadedMap?.nested?._fancyName).toEqual("Sir nested");
         expect(loadedMap?._refs.nested?.value).toEqual(loadedNestedMap);
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual(undefined);
 
@@ -273,7 +298,7 @@ describe("CoMap resolution", async () => {
                 );
 
                 const update1 = yield* $(Queue.take(queue));
-                expect(update1.nested).toEqual(undefined);
+                expect(update1.nested).toEqual(null);
 
                 const update2 = yield* $(Queue.take(queue));
                 expect(update2.nested?.name).toEqual("nested");
@@ -324,10 +349,17 @@ describe("CoMap resolution", async () => {
         );
     });
 
-    class TestMapWithOptionalRef extends Co.map({
-        color: S.string,
-        nested: S.optional(NestedMap),
-    }).as<TestMapWithOptionalRef>() {}
+    class TestMapWithOptionalRef extends Co.Map<TestMapWithOptionalRef> {
+        declare color: string;
+        declare nested?: NestedMap | null;
+
+        static {
+            this.encoding({
+                color: "json",
+                nested: { ref: () => NestedMap },
+            });
+        }
+    }
 
     test("Construction with optional", async () => {
         const me = await Account.create({
@@ -363,14 +395,20 @@ describe("CoMap resolution", async () => {
 
         expect(mapWith.color).toEqual("red");
         expect(mapWith.nested?.name).toEqual("wow!");
-        expect(mapWith.nested?.fancyName).toEqual("Sir wow!");
+        expect(mapWith.nested?._fancyName).toEqual("Sir wow!");
         expect(mapWith.nested?._raw).toBeDefined();
     });
 
-    class TestRecord extends Co.map(
-        { color: S.string },
-        { key: S.string, value: S.string }
-    ).as<TestRecord>() {}
+    class TestRecord extends Co.Map<TestRecord> {
+        declare [indexSignature]: number;
+
+        static {
+            this.encoding({
+                [indexSignature]: "json"
+            });
+        }
+    }
+    interface TestRecord extends Record<string, number> {}
 
     test("Construction with index signature", async () => {
         const me = await Account.create({
@@ -379,16 +417,16 @@ describe("CoMap resolution", async () => {
 
         const record = new TestRecord(
             {
-                color: "red",
-                other: "wild",
+                height: 5,
+                other: 3,
             },
             { owner: me }
         );
 
-        expect(record.color).toEqual("red");
-        expect(record._raw.get("color")).toEqual("red");
-        expect(record.other).toEqual("wild");
-        expect(record._raw.get("other")).toEqual("wild");
-        expect(Object.keys(record)).toEqual(["color", "other"]);
+        expect(record.height).toEqual(5);
+        expect(record._raw.get("height")).toEqual(5);
+        expect(record.other).toEqual(3);
+        expect(record._raw.get("other")).toEqual(3);
+        expect(Object.keys(record)).toEqual(["height", "other"]);
     });
 });

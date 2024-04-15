@@ -1,6 +1,6 @@
 import ImageBlobReduce from "image-blob-reduce";
 import Pica from "pica";
-import { AnyAccount, Co, Group, ImageDefinition } from "jazz-tools";
+import { Account, Co, Group, ImageDefinition } from "jazz-tools";
 import { createBinaryStreamFromBlob } from "jazz-browser";
 
 const pica = new Pica();
@@ -8,7 +8,7 @@ const pica = new Pica();
 export async function createImage(
     imageBlobOrFile: Blob | File,
     options: {
-        owner: Group | AnyAccount;
+        owner: Group | Account;
         maxSize?: 256 | 1024 | 2048;
     }
 ): Promise<ImageDefinition> {
@@ -31,7 +31,7 @@ export async function createImage(
         await Reducer.toCanvas(imageBlobOrFile, { max: 8 })
     ).toDataURL("image/png");
 
-    const imageDefinition = new Co.media.imageDef(
+    const imageDefinition = new Co.media.ImageDef(
         {
             originalSize: [originalWidth, originalHeight],
             placeholderDataURL,

@@ -932,14 +932,14 @@ importers:
   packages/jazz-tools:
     dependencies:
       '@effect/schema':
-        specifier: ^0.63.0
-        version: 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+        specifier: ^0.64.20
+        version: 0.64.20(effect@2.4.18)(fast-check@3.17.1)
       cojson:
         specifier: workspace:*
         version: link:../cojson
       effect:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.4.18
+        version: 2.4.18
     devDependencies:
       typescript:
         specifier: ^5.3.3
@@ -1495,14 +1495,14 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  /@effect/schema@0.63.0(effect@2.4.0)(fast-check@3.15.1):
-    resolution: {integrity: sha512-z+QTqCUexkh/qyEz5WMHVV/dDLr5jN2eOMUsXzgxzmtBFiBy1L8xunbt+/JgGBhPLOBqLzDysLlnL56edzTNzQ==}
+  /@effect/schema@0.64.20(effect@2.4.18)(fast-check@3.17.1):
+    resolution: {integrity: sha512-oSphgsP9j7yHy31RxTQ0txWq76u1F/H1Hqw+GVcpjnK4n/fuZo7MNYU/qpG+TLJWj4+yUku5I3Rr0Vr7gVoMeQ==}
     peerDependencies:
-      effect: ^2.4.0
+      effect: ^2.4.18
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.4.0
-      fast-check: 3.15.1
+      effect: 2.4.18
+      fast-check: 3.17.1
     dev: false
 
   /@esbuild/aix-ppc64@0.19.10:
@@ -4813,8 +4813,8 @@ packages:
       which: 4.0.0
     dev: true
 
-  /effect@2.4.0:
-    resolution: {integrity: sha512-HAtFVAbAGYDzfGbrSrX1gzMzXym15zk1+ps72X8W1wdZY0vxq+u23w8u9DhAZjiJPHT4W9ZYL7QWQqpP4t+dSg==}
+  /effect@2.4.18:
+    resolution: {integrity: sha512-8nNzkhSzFLhG9YxowXKawlk4+b3zwwOsbZwaaYhy1OjZGcEgcE6i0ywMFieXNSfOtsQ8swV1+5hvF+VBEtwwqg==}
     dev: false
 
   /electron-to-chromium@1.4.615:
@@ -5226,11 +5226,11 @@ packages:
       - supports-color
     dev: true
 
-  /fast-check@3.15.1:
-    resolution: {integrity: sha512-GutOXZ+SCxGaFWfHe0Pbeq8PrkpGtPxA9/hdkI3s9YzqeMlrq5RdJ+QfYZ/S93jMX+tAyqgW0z5c9ppD+vkGUw==}
+  /fast-check@3.17.1:
+    resolution: {integrity: sha512-jIKXJVe6ZO0SpwEgVtEVujTf8TwjI9wMXFJCjsDHUB3RroUbXBgF4kOSz3A7MW0UR26aqsoB8i9O2mjtjERAiA==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      pure-rand: 6.0.4
+      pure-rand: 6.1.0
     dev: false
 
   /fast-deep-equal@2.0.1:
@@ -7606,6 +7606,11 @@ packages:
 
   /pure-rand@6.0.4:
     resolution: {integrity: sha512-LA0Y9kxMYv47GIPJy6MI84fqTd2HmYZI83W/kM/SkKfDlajnZYfmXFTxkbY+xSBPkLJxltMa9hIkmdc29eguMA==}
+    dev: true
+
+  /pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
+    dev: false
 
   /qrcode@1.5.3:
     resolution: {integrity: sha512-puyri6ApkEHYiVl4CFzo1tDkAZ+ATcnbJrJ6RiBM1Fhctdn/ix9MTE3hRph33omisEbC/2fcfemsseiKgBPKZg==}

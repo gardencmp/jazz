@@ -1,28 +1,19 @@
-import { AccountOf } from "./coValues/account/accountOf.js";
-import { CoListOf } from "./coValues/coList/coListOf.js";
-import { CoMapOf } from "./coValues/coMap/coMapOf.js";
-import {
-    BinaryCoStreamImpl,
-    CoStreamOf,
-} from "./coValues/coStream/coStreamOf.js";
-import { ImageDefinition } from "./coValues/extensions/imageDef.js";
-import { GroupOf } from "./coValues/group/groupOf.js";
-
-/** @hidden */
-export * as S from "@effect/schema/Schema";
+/* eslint-disable @typescript-eslint/no-namespace */
+import { BinaryCoStream, CoMap, ImageDefinition, Account as Account_, Group as Group_, CoList, CoStream } from "./internal.js";
 
 /** @category Schemas & CoValues - Schema definers */
-export const Co = {
-    map: CoMapOf,
-    list: CoListOf,
-    stream: CoStreamOf,
-    binaryStream: BinaryCoStreamImpl,
-    account: AccountOf,
-    group: GroupOf,
-    media: {
-        imageDef: ImageDefinition
+export namespace Co {
+    export const Map = CoMap;
+    export const List = CoList;
+    export const Stream = CoStream;
+    export const BinaryStream = BinaryCoStream;
+    export const Account = Account_;
+    export const Group = Group_;
+    export namespace media {
+        export const ImageDef = ImageDefinition;
+        export type ImageDef = ImageDefinition;
     }
-};
+}
 
 /** @category Internal types */
 export {
@@ -36,33 +27,14 @@ export {
     MAX_RECOMMENDED_TX_SIZE,
 } from "cojson";
 
-export { ID, CoValue, CoValueSchema } from "./coValueInterfaces.js";
+export { ID, CoValue } from "./internal.js";
 
+export { Encoders } from "./internal.js";
 
-export { CoMap, CoMapSchema } from "./coValues/coMap/coMap.js";
-/** @category Schemas & CoValues - CoMap */
-export * as CoMapInternals from "./coValues/coMap/internalDocs.js";
-
-export { CoList, CoListSchema } from "./coValues/coList/coList.js";
-/** @category Schemas & CoValues - CoList */
-export * as CoListInternals from "./coValues/coList/internalDocs.js";
-
-export {
-    CoStream,
-    CoStreamSchema,
-    BinaryCoStream,
-} from "./coValues/coStream/coStream.js";
-
-export {
-    AnyAccount,
-    ControlledAccount,
-    AccountSchema,
-    controlledAccountSym,
-} from "./coValues/account/account.js";
-
-export { AccountMigration } from "./coValues/account/migration.js";
-export { Account, BaseProfile } from "./coValues/account/accountOf.js";
-export { AnyGroup } from "./coValues/group/group.js";
-export { Group } from "./coValues/group/groupOf.js";
-
-export { ImageDefinition } from "./coValues/extensions/imageDef.js";
+export { CoMap, indexSignature } from "./internal.js";
+export { CoList } from "./internal.js";
+export { CoStream, BinaryCoStream } from "./internal.js";
+export { Group, Profile } from "./internal.js";
+export { Account, Me } from "./internal.js";
+export { ImageDefinition } from "./internal.js";
+export { CoValueBase, CoValueClass } from "./internal.js";

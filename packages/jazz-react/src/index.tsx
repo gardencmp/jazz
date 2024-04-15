@@ -4,45 +4,31 @@ import {
     createBrowserContext,
 } from "jazz-browser";
 
-import {
-    AccountSchema,
-    AccountMigration,
-    ID,
-    S,
-    controlledAccountSym,
-    CoValueSchema,
-    Account,
-} from "jazz-tools";
+import { Account, CoValue, CoValueClass, ID, Me } from "jazz-tools";
 import { ReactAuthHook } from "./auth/auth.js";
 
-export function JazzReact<AccountS extends AccountSchema>({
-    accountSchema,
-    migration,
+export function JazzReact<Acc extends Account>({
+    auth: authHook,
 }: {
-    accountSchema?: AccountS;
-    migration?: AccountMigration<AccountS>;
+    auth: ReactAuthHook<Acc>;
     apiKey?: string;
 }) {
     const JazzContext = React.createContext<
         | {
-              me: AccountS[controlledAccountSym];
+              me: Acc & Me;
               logOut: () => void;
           }
         | undefined
     >(undefined);
 
     function Provider({
-        auth: authHook,
         syncAddress,
         children,
     }: {
-        auth: ReactAuthHook;
         syncAddress?: string;
         children: React.ReactNode;
     }) {
-        const [me, setMe] = useState<
-            AccountS[controlledAccountSym] | undefined
-        >();
+        const [me, setMe] = useState<Acc & Me | undefined>();
 
         const { auth, AuthUI, logOut } = authHook();
 
@@ -51,7 +37,7 @@ export function JazzReact<AccountS extends AccountSchema>({
             let stop = false;
 
             (async () => {
-                const context = await createBrowserContext({
+                const context = await createBrowserContext<Acc>({
                     auth: auth,
                     syncAddress:
                         syncAddress ||
@@ -59,8 +45,6 @@ export function JazzReact<AccountS extends AccountSchema>({
                             "sync"
                         ) ||
                         undefined,
-                    accountSchema: accountSchema || (Account as AccountS),
-                    migration: migration,
                 });
 
                 if (stop) {
@@ -112,20 +96,21 @@ export function JazzReact<AccountS extends AccountSchema>({
         return { me: context.me, logOut: context.logOut };
     }
 
-    function useCoState<V extends CoValueSchema>(
-        Schema: V,
-        id: ID<S.Schema.To<V>> | undefined
-    ): S.Schema.To<V> | undefined {
+    function useCoState<V extends CoValue>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Schema: {new(...args: any[]): V} & CoValueClass<V>,
+        id: ID<V> | undefined
+    ): V | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
         const [_, setUpdates] = useState<number>(0);
-        const state = useRef<S.Schema.To<V> | undefined>(undefined);
+        const state = useRef<V | undefined>(undefined);
         const { me } = useAccount();
 
         useEffect(() => {
             if (!id) return;
             return Schema.subscribe(id, { as: me }, (update) => {
-                state.current = update as S.Schema.To<V>;
+                state.current = update as V;
                 setUpdates((u) => u + 1);
             });
         }, [Schema, id, me]);
@@ -133,13 +118,13 @@ export function JazzReact<AccountS extends AccountSchema>({
         return state.current;
     }
 
-    function useAcceptInvite<V extends CoValueSchema>({
+    function useAcceptInvite<V extends CoValue>({
         invitedObjectSchema,
         onAccept,
         forValueHint,
     }: {
-        invitedObjectSchema: V;
-        onAccept: (projectID: ID<S.Schema.To<V>>) => void;
+        invitedObjectSchema: CoValueClass<V>;
+        onAccept: (projectID: ID<V>) => void;
         forValueHint?: string;
     }): void {
         const { me } = useAccount();
@@ -173,4 +158,4 @@ export {
 } from "jazz-browser";
 
 export * from "./auth/auth.js";
-export * from "./media.js"
+export * from "./media.js";

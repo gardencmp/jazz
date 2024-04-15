@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
 import { ReactAuthHook } from "./auth.js";
+import { Account, CoValueClass } from "jazz-tools";
 
 export type DemoAuthComponent = (props: {
     appName: string;
@@ -10,15 +11,17 @@ export type DemoAuthComponent = (props: {
     signUp: (username: string) => void;
 }) => ReactNode;
 
-export function DemoAuth({
+export function DemoAuth<Acc extends Account = Account>({
+    accountSchema = Account as CoValueClass<Acc> & typeof Account,
     appName,
     appHostname,
     Component = DemoAuthBasicUI,
 }: {
+    accountSchema?: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     Component?: DemoAuthComponent;
-}): ReactAuthHook {
+}): ReactAuthHook<Acc> {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
@@ -34,7 +37,8 @@ export function DemoAuth({
         const [logOutCounter, setLogOutCounter] = useState(0);
 
         const auth = useMemo(() => {
-            return new BrowserDemoAuth(
+            return new BrowserDemoAuth<Acc>(
+                accountSchema,
                 {
                     onReady(next) {
                         setAuthState({
@@ -118,7 +122,14 @@ export const DemoAuthBasicUI = ({
                     gap: "2rem",
                 }}
             >
-                <h1 style={{ color: darkMode ? "#fff" : "#000", textAlign: "center" }}>{appName}</h1>
+                <h1
+                    style={{
+                        color: darkMode ? "#fff" : "#000",
+                        textAlign: "center",
+                    }}
+                >
+                    {appName}
+                </h1>
                 <form
                     style={{
                         width: "18rem",

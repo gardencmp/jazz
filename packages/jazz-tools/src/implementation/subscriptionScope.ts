@@ -1,7 +1,5 @@
-import { ControlledAccount } from "./coValues/account/account.js";
-import { CoValueSchema, CoValue, ID } from "./coValueInterfaces.js";
-import * as S from "@effect/schema/Schema";
-import { RawCoValue } from "cojson";
+import type { RawCoValue } from "cojson";
+import type { Account, CoValue, CoValueBase, ID, Me, SubclassedConstructor } from "../internal.js";
 
 export const subscriptionsScopes = new WeakMap<
     CoValue,
@@ -9,10 +7,10 @@ export const subscriptionsScopes = new WeakMap<
 >();
 
 export class SubscriptionScope<
-    RootSchema extends CoValueSchema = CoValueSchema,
+    Root extends CoValue
 > {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
-    subscriber: ControlledAccount;
+    subscriber: Account & Me;
     entries = new Map<
         ID<CoValue>,
         | { state: "loading"; immediatelyUnsub?: boolean }
@@ -20,16 +18,16 @@ export class SubscriptionScope<
     >();
     rootEntry: {
         state: "loaded";
-        value: S.Schema.To<RootSchema>;
+        value: Root;
         rawUnsub: () => void;
     };
-    onUpdate: (newRoot: S.Schema.To<RootSchema>) => void;
+    onUpdate: (newRoot: Root) => void;
     scheduledUpdate: boolean = false;
 
     constructor(
-        root: S.Schema.To<RootSchema>,
-        rootSchema: RootSchema,
-        onUpdate: (newRoot: S.Schema.To<RootSchema>) => void
+        root: Root,
+        rootSchema: SubclassedConstructor<Root> & typeof CoValueBase,
+        onUpdate: (newRoot: Root) => void
     ) {
         this.rootEntry = {
             state: "loaded" as const,
@@ -47,7 +45,7 @@ export class SubscriptionScope<
                 if (!rawUpdate) return;
                 this.rootEntry.value = rootSchema.fromRaw(
                     rawUpdate
-                ) as S.Schema.To<RootSchema>;
+                ) as Root;
                 // console.log("root update", this.rootEntry.value.toJSON());
                 subscriptionsScopes.set(this.rootEntry.value, this);
                 this.scheduleUpdate();
@@ -77,7 +75,7 @@ export class SubscriptionScope<
                 immediatelyUnsub: false,
             } as const;
             this.entries.set(accessedOrSetId, loadingEntry);
-            this.subscriber._raw.core.node
+            void this.subscriber._raw.core.node
                 .loadCoValueCore(accessedOrSetId)
                 .then((core) => {
                     if (

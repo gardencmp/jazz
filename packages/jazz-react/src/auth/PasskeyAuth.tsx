@@ -1,6 +1,7 @@
 import { useMemo, useState, ReactNode } from "react";
 import { BrowserPasskeyAuth } from "jazz-browser";
 import { ReactAuthHook } from "./auth";
+import { Account, CoValueClass } from "jazz-tools";
 
 export type PasskeyAuthComponent = (props: {
     loading: boolean;
@@ -8,15 +9,17 @@ export type PasskeyAuthComponent = (props: {
     signUp: (username: string) => void;
 }) => ReactNode;
 
-export function PasskeyAuth({
+export function PasskeyAuth<Acc extends Account>({
+    accountSchema,
     appName,
     appHostname,
     Component = LocalAuthBasicUI,
 }: {
+    accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     Component?: PasskeyAuthComponent;
-}): ReactAuthHook {
+}): ReactAuthHook<Acc> {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
@@ -31,7 +34,8 @@ export function PasskeyAuth({
         const [logOutCounter, setLogOutCounter] = useState(0);
 
         const auth = useMemo(() => {
-            return new BrowserPasskeyAuth(
+            return new BrowserPasskeyAuth<Acc>(
+                accountSchema,
                 {
                     onReady(next) {
                         setAuthState({
@@ -137,7 +141,7 @@ export const LocalAuthBasicUI = ({
                             padding: "13px 5px",
                             border: "none",
                             borderRadius: "6px",
-                            cursor: "pointer"
+                            cursor: "pointer",
                         }}
                     />
                 </form>
@@ -149,7 +153,7 @@ export const LocalAuthBasicUI = ({
                         padding: "13px 5px",
                         border: "none",
                         borderRadius: "6px",
-                        cursor: "pointer"
+                        cursor: "pointer",
                     }}
                 >
                     Log In with existing account

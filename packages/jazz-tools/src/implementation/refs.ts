@@ -1,19 +1,15 @@
 import { Effect } from "effect";
-import { CoValue, ID } from "./coValueInterfaces.js";
-import { ControlledAccount } from "./coValues/account/account.js";
-import { CoID, RawCoValue } from "cojson";
-import { UnavailableError } from "./errors.js";
-import { getCoValueConstructorInProperty } from "./coValues/resolution.js";
-import { PropDef } from "./schemaHelpers.js";
-import { subscriptionsScopes } from "./subscriptionScope.js";
+import type { CoID, RawCoValue } from "cojson";
+import type { Account, CoValue, ID, Me, SubclassedConstructor, UnavailableError, indexSignature} from '../internal.js';
+import { subscriptionsScopes } from '../internal.js';
 
 export class ValueRef<V extends CoValue> {
     private cachedValue: V | undefined;
 
     constructor(
         readonly id: ID<V>,
-        readonly controlledAccount: ControlledAccount,
-        readonly propDef: PropDef<any>
+        readonly controlledAccount: Account & Me,
+        readonly valueConstructor: SubclassedConstructor<V>
     ) {}
 
     get value() {
@@ -23,18 +19,11 @@ export class ValueRef<V extends CoValue> {
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            const Constructor = getCoValueConstructorInProperty(
-                this.propDef,
-                raw
-            );
-            if (!Constructor) {
-                throw new Error(
-                    "Couldn't extract CoValue constructor from property definition"
-                );
-            }
-            const value = new Constructor(undefined, { fromRaw: raw }) as V;
+            const value = new this.valueConstructor(undefined, { fromRaw: raw }) as V;
             this.cachedValue = value;
             return value;
+        } else {
+            return null;
         }
     }
 
@@ -62,7 +51,7 @@ export class ValueRef<V extends CoValue> {
         if (raw === "unavailable") {
             return "unavailable";
         } else {
-            return new ValueRef(this.id, this.controlledAccount, this.propDef)
+            return new ValueRef(this.id, this.controlledAccount, this.valueConstructor)
                 .value!;
         }
     }
@@ -76,7 +65,7 @@ export class ValueRef<V extends CoValue> {
         }
     }
 
-    accessFrom(fromScopeValue: CoValue): V | undefined {
+    accessFrom(fromScopeValue: CoValue): V | null {
         const subScope = subscriptionsScopes.get(fromScopeValue);
 
         subScope?.onRefAccessedOrSet(this.id);
@@ -89,13 +78,13 @@ export class ValueRef<V extends CoValue> {
     }
 }
 
-export function makeRefs<F extends { [key: string | number]: CoValue }>(
-    getIdForKey: <K extends keyof F>(key: K) => F[K]["id"] | undefined,
-    getKeysWithIds: () => (keyof F)[],
-    controlledAccount: ControlledAccount,
-    propDefForKey: <K extends keyof F>(key: K) => PropDef<F[K]>
-): { [K in keyof F]: ValueRef<F[K]> } {
-    const refs = {} as { [K in keyof F]: ValueRef<F[K]> };
+export function makeRefs<Keys extends string | number | indexSignature>(
+    getIdForKey: (key: Keys) => ID<CoValue> | undefined,
+    getKeysWithIds: () => Keys[],
+    controlledAccount: Account & Me,
+    valueConstructorForKey: (key: Keys) => SubclassedConstructor<CoValue>,
+): { [K in Keys]: ValueRef<CoValue> } {
+    const refs = {} as { [K in Keys]: ValueRef<CoValue> };
     return new Proxy(refs, {
         get(target, key) {
             if (key === Symbol.iterator) {
@@ -104,7 +93,7 @@ export function makeRefs<F extends { [key: string | number]: CoValue }>(
                         yield new ValueRef(
                             getIdForKey(key)!,
                             controlledAccount,
-                            propDefForKey(key)
+                            valueConstructorForKey(key)
                         );
                     }
                 };
@@ -113,12 +102,12 @@ export function makeRefs<F extends { [key: string | number]: CoValue }>(
             if (key === "length") {
                 return getKeysWithIds().length;
             }
-            const id = getIdForKey(key as keyof F);
+            const id = getIdForKey(key as Keys);
             if (!id) return undefined;
             return new ValueRef(
-                id as ID<F[typeof key]>,
+                id as ID<CoValue>,
                 controlledAccount,
-                propDefForKey(key as keyof F)
+                valueConstructorForKey(key as Keys)
             );
         },
         ownKeys() {

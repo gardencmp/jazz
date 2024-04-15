@@ -5,17 +5,25 @@ import { createImage } from "jazz-browser-media-images";
 import { PetPost, PetReactions } from "./1_schema";
 import { Input, Button } from "./basicComponents";
 import { useAccount, useCoState } from "./2_main";
-import { Co, Group, ID, S } from "jazz-tools";
+import { Co, Group, ID } from "jazz-tools";
 import { ProgressiveImg } from "jazz-react";
 
 /** Walkthrough: TODO
  */
 
-class PartialPetPost extends Co.map({
-    name: S.string,
-    image: S.optional(Co.media.imageDef),
-    reactions: PetReactions,
-}).as<PartialPetPost>() {}
+class PartialPetPost extends Co.Map<PartialPetPost>{
+    declare name: string;
+    declare image?: Co.media.ImageDef | null;
+    declare reactions: PetReactions | null;
+
+    static {
+        this.encoding({
+            name: "json",
+            image: {ref: () => Co.media.ImageDef},
+            reactions: {ref: () => PetReactions}
+        })
+    }
+}
 
 export function NewPetPostForm() {
     const { me } = useAccount();
