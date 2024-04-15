@@ -1,5 +1,14 @@
 # jazz-browser-media-images
 
+## 0.7.0-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.1
+  - jazz-tools@0.7.0-alpha.1
+
 ## 0.7.0-alpha.0
 
 ### Minor Changes

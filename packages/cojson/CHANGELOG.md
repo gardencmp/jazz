@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+
 ## 0.7.0-alpha.0
 
 ### Minor Changes

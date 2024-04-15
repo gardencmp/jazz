@@ -1,5 +1,13 @@
 # cojson-storage-indexeddb
 
+## 0.6.4-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+- Updated dependencies
+  - cojson@0.7.0-alpha.1
+
 ## 0.6.4-alpha.0
 
 ### Patch Changes

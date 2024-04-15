@@ -24,6 +24,7 @@
     "jazz-react": "0.5.4"
   },
   "changesets": [
-    "long-ties-relax"
+    "long-ties-relax",
+    "tame-bikes-poke"
   ]
 }

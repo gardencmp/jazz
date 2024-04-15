@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.0-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+- Updated dependencies
+  - cojson@0.7.0-alpha.1
+
 ## 0.7.0-alpha.0
 
 ### Minor Changes

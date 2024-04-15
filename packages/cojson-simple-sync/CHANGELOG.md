@@ -1,5 +1,14 @@
 # cojson-simple-sync
 
+## 0.6.1-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+- Updated dependencies
+  - cojson-storage-sqlite@0.5.3-alpha.1
+  - cojson@0.7.0-alpha.1
+
 ## 0.6.1-alpha.0
 
 ### Patch Changes

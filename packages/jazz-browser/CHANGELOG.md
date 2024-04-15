@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.7.0-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+- Updated dependencies
+  - cojson-storage-indexeddb@0.6.4-alpha.1
+  - jazz-tools@0.7.0-alpha.1
+  - cojson@0.7.0-alpha.1
+
 ## 0.7.0-alpha.0
 
 ### Minor Changes
