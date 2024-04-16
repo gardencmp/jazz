@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.3
+
+### Patch Changes
+
+- Make refs type more precise
+
 ## 0.7.0-alpha.2
 
 ### Patch Changes
