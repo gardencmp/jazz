@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { BinaryCoStream, Co, ID, Account, jazzReady } from "..";
+import { BinaryCoStream, ID, Account, jazzReady, CoStream } from "..";
 import { Simplify } from "effect/Types";
 
 if (!("crypto" in globalThis)) {
@@ -21,7 +21,7 @@ describe("Simple CoStream operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestStream extends Co.Stream<string> {}
+    class TestStream extends CoStream<string> {}
     TestStream.encoding({ _item: "json" });
 
     const stream = new TestStream(["milk"], { owner: me });
@@ -45,17 +45,17 @@ describe("Simple CoStream operations", async () => {
 });
 
 describe("CoStream resolution", async () => {
-    class TwiceNestedStream extends Co.Stream<string> {
+    class TwiceNestedStream extends CoStream<string> {
         fancyValueOf(account: ID<Account>) {
             return "Sir " + this.by[account]?.value;
         }
     }
     TwiceNestedStream.encoding({ _item: "json" });
 
-    class NestedStream extends Co.Stream<TwiceNestedStream | null>{}
+    class NestedStream extends CoStream<TwiceNestedStream | null>{}
     NestedStream.encoding({ _item: {ref: () => TwiceNestedStream} });
 
-    class TestStream extends Co.Stream<NestedStream | null> {}
+    class TestStream extends CoStream<NestedStream | null> {}
     TestStream.encoding({ _item: {ref: () => NestedStream} });
 
     const initNodeAndStream = async () => {
@@ -265,7 +265,7 @@ describe("Simple BinaryCoStream operations", async () => {
         name: "Hermes Puggington",
     });
 
-    const stream = new Co.BinaryStream(undefined, { owner: me });
+    const stream = new BinaryCoStream(undefined, { owner: me });
 
     test("Construction", () => {
         expect(stream.getChunks()).toBe(undefined);
@@ -293,7 +293,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             name: "Hermes Puggington",
         });
 
-        const stream = new Co.BinaryStream(undefined, { owner: me });
+        const stream = new BinaryCoStream(undefined, { owner: me });
 
         stream.start({ mimeType: "text/plain" });
         stream.push(new Uint8Array([1, 2, 3]));
@@ -327,7 +327,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             sessionID: newRandomSessionID(me.id as any),
         });
 
-        const loadedStream = await Co.BinaryStream.load(stream.id, {
+        const loadedStream = await BinaryCoStream.load(stream.id, {
             as: meOnSecondPeer,
         });
 
@@ -341,7 +341,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
     test("Subscription", async () => {
         const { me } = await initNodeAndStream();
 
-        const stream = new Co.BinaryStream(undefined, { owner: me });
+        const stream = new BinaryCoStream(undefined, { owner: me });
 
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
@@ -362,7 +362,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             Effect.gen(function* ($) {
                 const queue = yield* $(Queue.unbounded<BinaryCoStream>());
 
-                Co.BinaryStream.subscribe(
+                BinaryCoStream.subscribe(
                     stream.id,
                     { as: meOnSecondPeer },
                     (subscribedStream) => {

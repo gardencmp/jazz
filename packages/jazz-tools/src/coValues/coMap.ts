@@ -70,15 +70,15 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
     }
     _raw!: RawCoMap;
 
-    static _schema: any;
-    get _schema(): {
+    static _encoding: any;
+    get _encoding(): {
         [Key in OwnKeys<Fields>]: FieldDescriptorFor<Fields[Key]>;
     } & {
         [indexSignature]: indexSignature extends keyof Fields
             ? FieldDescriptorFor<Fields[indexSignature]>
             : never;
     } {
-        return (this.constructor as typeof CoMap)._schema;
+        return (this.constructor as typeof CoMap)._encoding;
     }
 
     get _refs(): {
@@ -91,14 +91,14 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
         return makeRefs<OwnKeys<Fields>>(
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
             () =>
-                Object.keys(this._schema).filter((key) => {
-                    const schema = this._schema[
-                        key as keyof typeof this._schema
+                Object.keys(this._encoding).filter((key) => {
+                    const schema = this._encoding[
+                        key as keyof typeof this._encoding
                     ] as FieldDescriptor;
                     schema !== "json" && "ref" in schema;
                 }) as OwnKeys<Fields>[],
             this._loadedAs,
-            (key) => (this._schema[key] as RefField<CoValue>).ref()
+            (key) => (this._encoding[key] as RefField<CoValue>).ref()
         ) as any;
     }
 
@@ -115,8 +115,8 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
                 const rawEdit = target._raw.lastEditAt(key as string);
                 if (!rawEdit) return undefined;
 
-                const descriptor = target._schema[
-                    key as keyof typeof target._schema
+                const descriptor = target._encoding[
+                    key as keyof typeof target._encoding
                 ] as FieldDescriptor;
 
                 return {
@@ -168,7 +168,7 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
     ) {
         super();
 
-        if (!this._schema) {
+        if (!this._encoding) {
             throw new Error(
                 "No schema found in " +
                     this.constructor.name +
@@ -188,7 +188,7 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
 
         this.definePropertiesFromSchema();
 
-        if (this._schema[indexSignature]) {
+        if (this._encoding[indexSignature]) {
             return new Proxy(this, CoMapProxyHandler<Fields>());
         }
     }
@@ -196,7 +196,7 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
     toJSON() {
         const jsonedFields = this._raw.keys().map((key) => {
             const tKey = key as OwnKeys<Fields>;
-            const descriptor = this._schema[tKey] as FieldDescriptor;
+            const descriptor = this._encoding[tKey] as FieldDescriptor;
 
             if (descriptor == "json" || "encode" in descriptor) {
                 return [key, this._raw.get(key)];
@@ -238,9 +238,9 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
                 for (const key of Object.keys(init) as (keyof Fields)[]) {
                     const initValue = init[key as keyof typeof init];
 
-                    const descriptor = (this._schema[
-                        key as keyof typeof this._schema
-                    ] || this._schema[indexSignature]) as FieldDescriptor;
+                    const descriptor = (this._encoding[
+                        key as keyof typeof this._encoding
+                    ] || this._encoding[indexSignature]) as FieldDescriptor;
 
                     if (descriptor === "json") {
                         rawInit[key] = initValue as JsonValue;
@@ -263,17 +263,17 @@ export class CoMap<Fields extends EnsureValid<Fields> = DefaultFields>
     static encoding<V extends CoMap>(
         this: { new (...args: any): V } & typeof CoMap,
         fields: Simplify<{
-            [Key in keyof V["_schema"] as V["_schema"][Key] extends never
+            [Key in keyof V["_encoding"] as V["_encoding"][Key] extends never
                 ? never
-                : Key]: Simplify<V["_schema"][Key]>;
+                : Key]: Simplify<V["_encoding"][Key]>;
         }>
     ) {
-        this._schema ||= {};
-        Object.assign(this._schema, fields);
+        this._encoding ||= {};
+        Object.assign(this._encoding, fields);
     }
 
     private definePropertiesFromSchema() {
-        for (const [key, fieldSchema] of Object.entries(this._schema)) {
+        for (const [key, fieldSchema] of Object.entries(this._encoding)) {
             if (key === "indexSignature") continue;
             const descriptor = fieldSchema as FieldDescriptor;
             if (descriptor === "json") {
@@ -374,7 +374,7 @@ function CoMapProxyHandler<Fields extends EnsureValid<Fields>>(): ProxyHandler<
 > {
     return {
         get(target, key, receiver) {
-            const descriptor = target._schema[
+            const descriptor = target._encoding[
                 indexSignature
             ] as FieldDescriptor;
             if (key in target || typeof key === "symbol") {
@@ -400,7 +400,7 @@ function CoMapProxyHandler<Fields extends EnsureValid<Fields>>(): ProxyHandler<
             }
         },
         set(target, key, value, receiver) {
-            const descriptor = target._schema[
+            const descriptor = target._encoding[
                 indexSignature
             ] as FieldDescriptor;
             if (key in target || typeof key === "symbol") {

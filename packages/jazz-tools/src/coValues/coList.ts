@@ -33,11 +33,11 @@ export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
     }
     _raw!: RawCoList;
 
-    static _schema: any;
-    get _schema(): {
+    static _encoding: any;
+    get _encoding(): {
         _item: FieldDescriptorFor<Item>;
     } {
-        return (this.constructor as typeof CoList)._schema;
+        return (this.constructor as typeof CoList)._encoding;
     }
 
     get _owner(): Account | Group {
@@ -59,7 +59,7 @@ export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
                     (_, idx) => idx
                 ),
             this._loadedAs,
-            (_idx) => (this._schema._item as RefField<CoValue>).ref()
+            (_idx) => (this._encoding._item as RefField<CoValue>).ref()
         ) as any;
     }
 
@@ -118,11 +118,11 @@ export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
             _raw: { value: raw, enumerable: false },
         });
 
-        return new Proxy(this, CoListProxyHandler<Item>(this._schema._item));
+        return new Proxy(this, CoListProxyHandler<Item>(this._encoding._item));
     }
 
     private toRawItems(items: Item[]) {
-        const itemDescriptor = this._schema._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as FieldDescriptor;
         const rawItems =
             itemDescriptor === "json"
                 ? items
@@ -199,7 +199,7 @@ export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
     }
 
     toJSON() {
-        const itemDescriptor = this._schema._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as FieldDescriptor;
         if (itemDescriptor === "json") {
             return this._raw.asArray();
         } else if ("encoded" in itemDescriptor) {
@@ -258,10 +258,10 @@ export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
 
     static encoding<V extends CoList>(
         this: { new (...args: any): V } & typeof CoList,
-        def: { _item: V["_schema"]["_item"] }
+        def: { _item: V["_encoding"]["_item"] }
     ) {
-        this._schema ||= {};
-        Object.assign(this._schema, def);
+        this._encoding ||= {};
+        Object.assign(this._encoding, def);
     }
 }
 

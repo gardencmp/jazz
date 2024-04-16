@@ -1,4 +1,4 @@
-import { Co, Profile } from "jazz-tools";
+import { Account, CoList, CoMap, CoStream, ImageDefinition, Profile } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -17,29 +17,29 @@ export const ReactionTypes = [
 ] as const;
 export type ReactionType = (typeof ReactionTypes)[number];
 
-export class PetReactions extends Co.Stream<ReactionType> {}
+export class PetReactions extends CoStream<ReactionType> {}
 PetReactions.encoding({ _item: "json" });
 
-export class PetPost extends Co.Map<PetPost> {
+export class PetPost extends CoMap<PetPost> {
     declare name: string;
-    declare image: Co.media.ImageDef | null;
+    declare image: ImageDefinition | null;
     declare reactions: PetReactions | null;
 }
 PetPost.encoding({
     name: "json",
-    image: { ref: () => Co.media.ImageDef },
+    image: { ref: () => ImageDefinition },
     reactions: { ref: () => PetReactions },
 });
 
-export class ListOfPosts extends Co.List<PetPost | null> {}
+export class ListOfPosts extends CoList<PetPost | null> {}
 ListOfPosts.encoding({ _item: { ref: () => PetPost } });
 
-export class PetAccountRoot extends Co.Map<PetAccountRoot> {
+export class PetAccountRoot extends CoMap<PetAccountRoot> {
     declare posts: ListOfPosts | null;
 }
 PetAccountRoot.encoding({ posts: { ref: () => ListOfPosts } });
 
-export class PetAccount extends Co.Account<PetAccount> {
+export class PetAccount extends Account<PetAccount> {
     declare profile: Profile | null;
     declare root: PetAccountRoot | null;
 

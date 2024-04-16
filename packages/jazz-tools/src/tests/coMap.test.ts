@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, Account, jazzReady, Encoders, indexSignature } from "..";
+import { Account, jazzReady, Encoders, indexSignature, CoMap } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +20,7 @@ describe("Simple CoMap operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestMap extends Co.Map<TestMap> {
+    class TestMap extends CoMap<TestMap> {
         declare color: string;
         declare height: number;
         declare birthday: Date;
@@ -29,18 +29,15 @@ describe("Simple CoMap operations", async () => {
         get _roughColor() {
             return this.color + "ish";
         }
-
-        static {
-            this.encoding({
-                color: "json",
-                height: "json",
-                birthday: { encoded: Encoders.Date },
-                name: "json",
-            });
-        }
     }
+    TestMap.encoding({
+        color: "json",
+        height: "json",
+        birthday: { encoded: Encoders.Date },
+        name: "json",
+    });
 
-    console.log("TestMap schema", TestMap.prototype._schema);
+    console.log("TestMap schema", TestMap.prototype._encoding);
 
     const birthday = new Date();
 
@@ -84,17 +81,15 @@ describe("Simple CoMap operations", async () => {
         });
     });
 
-    class RecursiveMap extends Co.Map<RecursiveMap> {
+    class RecursiveMap extends CoMap<RecursiveMap> {
         declare name: string;
         declare next: RecursiveMap | null;
-
-        static {
-            this.encoding({
-                name: "json",
-                next: { ref: () => RecursiveMap },
-            });
-        }
     }
+    RecursiveMap.encoding({
+        name: "json",
+        next: { ref: () => RecursiveMap },
+    });
+
     const recursiveMap = new RecursiveMap(
         {
             name: "first",
@@ -124,14 +119,14 @@ describe("Simple CoMap operations", async () => {
 });
 
 describe("CoMap resolution", async () => {
-    class TwiceNestedMap extends Co.Map<TwiceNestedMap> {
+    class TwiceNestedMap extends CoMap<TwiceNestedMap> {
         taste!: string;
     }
     TwiceNestedMap.encoding({
         taste: "json",
     });
 
-    class NestedMap extends Co.Map<NestedMap> {
+    class NestedMap extends CoMap<NestedMap> {
         name!: string;
         twiceNested!: TwiceNestedMap | null;
 
@@ -144,23 +139,20 @@ describe("CoMap resolution", async () => {
         twiceNested: { ref: () => TwiceNestedMap },
     });
 
-    class TestMap extends Co.Map<TestMap> {
+    class TestMap extends CoMap<TestMap> {
         declare color: string;
         declare height: number;
         declare nested: NestedMap | null;
-
-        static {
-            this.encoding({
-                color: "json",
-                height: "json",
-                nested: { ref: () => NestedMap },
-            });
-        }
 
         get _roughColor() {
             return this.color + "ish";
         }
     }
+    TestMap.encoding({
+        color: "json",
+        height: "json",
+        nested: { ref: () => NestedMap },
+    });
 
     const initNodeAndMap = async () => {
         const me = await Account.create({
@@ -349,17 +341,14 @@ describe("CoMap resolution", async () => {
         );
     });
 
-    class TestMapWithOptionalRef extends Co.Map<TestMapWithOptionalRef> {
+    class TestMapWithOptionalRef extends CoMap<TestMapWithOptionalRef> {
         declare color: string;
         declare nested?: NestedMap | null;
-
-        static {
-            this.encoding({
-                color: "json",
-                nested: { ref: () => NestedMap },
-            });
-        }
     }
+    TestMapWithOptionalRef.encoding({
+        color: "json",
+        nested: { ref: () => NestedMap },
+    });
 
     test("Construction with optional", async () => {
         const me = await Account.create({
@@ -399,16 +388,13 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?._raw).toBeDefined();
     });
 
-    class TestRecord extends Co.Map<TestRecord> {
+    class TestRecord extends CoMap<TestRecord> {
         declare [indexSignature]: number;
-
-        static {
-            this.encoding({
-                [indexSignature]: "json"
-            });
-        }
     }
     interface TestRecord extends Record<string, number> {}
+    TestRecord.encoding({
+        [indexSignature]: "json",
+    });
 
     test("Construction with index signature", async () => {
         const me = await Account.create({

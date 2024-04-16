@@ -4,7 +4,6 @@ import {
     CoValue,
     ID,
     BinaryCoStream,
-    Co,
     jazzReady,
     Peer,
     AgentID,
@@ -437,7 +436,7 @@ export async function createBinaryStreamFromBlob(
         onProgress?: (progress: number) => void;
     }
 ): Promise<BinaryCoStream> {
-    const stream = new Co.BinaryStream(undefined, { owner: options.owner });
+    const stream = new BinaryCoStream(undefined, { owner: options.owner });
 
     const start = Date.now();
 
@@ -494,7 +493,7 @@ export async function readBlobFromBinaryStream(
         onProgress?: (progress: number) => void;
     }
 ): Promise<Blob | undefined> {
-    const stream = await Co.BinaryStream.load(streamId, {
+    const stream = await BinaryCoStream.load(streamId, {
         as: options.as,
         onProgress: options.onProgress,
     });

@@ -16,11 +16,8 @@ import {
 
 export class Profile extends CoMap<{ name: string }> {
     declare name: string;
-
-    static {
-        this.encoding({ name: "json" } as any);
-    }
 }
+Profile.encoding({ name: "json" });
 
 export class Group<
         Def extends { profile: Profile | null; root: CoMap | null } = {
@@ -38,8 +35,8 @@ export class Group<
     }
     _raw!: RawGroup;
 
-    static _schema: any;
-    get _schema(): {
+    static _encoding: any;
+    get _encoding(): {
         profile: Def["profile"] extends CoValue
             ? RefField<Def["profile"]>
             : PrimitiveField;
@@ -47,15 +44,15 @@ export class Group<
             ? RefField<Def["root"]>
             : PrimitiveField;
     } {
-        return (this.constructor as typeof Group)._schema;
+        return (this.constructor as typeof Group)._encoding;
     }
     static {
-        this._schema = {
+        this._encoding = {
             profile: { json: true },
             root: { json: true },
         } as any;
-        Object.defineProperty(this.prototype, "_schema", {
-            get: () => this._schema,
+        Object.defineProperty(this.prototype, "_encoding", {
+            get: () => this._encoding,
         });
     }
 
@@ -84,7 +81,7 @@ export class Group<
                     profileID,
                     this._loadedAs,
                     (
-                        this._schema.profile as RefField<
+                        this._encoding.profile as RefField<
                             NonNullable<Def["profile"]>
                         >
                     ).ref()
@@ -95,7 +92,9 @@ export class Group<
                     rootID,
                     this._loadedAs,
                     (
-                        this._schema.root as RefField<NonNullable<Def["root"]>>
+                        this._encoding.root as RefField<
+                            NonNullable<Def["root"]>
+                        >
                     ).ref()
                 ) as any),
         };
@@ -177,11 +176,11 @@ export class Group<
     static define<V extends Account>(
         this: CoValueClass<V> & typeof Account,
         fields: {
-            profile: V["_schema"]["profile"];
-            root: V["_schema"]["root"];
+            profile: V["_encoding"]["profile"];
+            root: V["_encoding"]["root"];
         }
     ) {
-        this._schema ||= {};
-        Object.assign(this._schema, fields);
+        this._encoding ||= {};
+        Object.assign(this._encoding, fields);
     }
 }

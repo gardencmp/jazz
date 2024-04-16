@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Co, Account, jazzReady } from "..";
+import { Account, CoList, jazzReady } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +20,7 @@ describe("Simple CoList operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestList extends Co.List<string> {}
+    class TestList extends CoList<string> {}
     TestList.encoding({ _item: "json" });
 
     const list = new TestList(["bread", "butter", "onion"], { owner: me });
@@ -115,17 +115,17 @@ describe("Simple CoList operations", async () => {
 });
 
 describe("CoList resolution", async () => {
-    class TwiceNestedList extends Co.List<string> {
+    class TwiceNestedList extends CoList<string> {
         joined() {
             return this.join(",");
         }
     }
     TwiceNestedList.encoding({ _item: "json" });
 
-    class NestedList extends Co.List<TwiceNestedList | null> {}
+    class NestedList extends CoList<TwiceNestedList | null> {}
     NestedList.encoding({ _item: { ref: () => TwiceNestedList } });
 
-    class TestList extends Co.List<NestedList | null> {}
+    class TestList extends CoList<NestedList | null> {}
     TestList.encoding({ _item: { ref: () => NestedList } });
 
     const initNodeAndList = async () => {

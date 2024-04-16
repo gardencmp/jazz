@@ -38,15 +38,15 @@ export class Account<
     _type!: "Account";
     _raw!: RawAccount | RawControlledAccount;
 
-    static _schema: any;
-    get _schema(): {
+    static _encoding: any;
+    get _encoding(): {
         profile: FieldDescriptor;
         root: FieldDescriptor;
     } {
-        return (this.constructor as typeof Account)._schema;
+        return (this.constructor as typeof Account)._encoding;
     }
     static {
-        this._schema = {
+        this._encoding = {
             profile: { ref: () => Profile },
             root: { json: true },
         } as any;
@@ -83,7 +83,7 @@ export class Account<
                 profileID,
                 this._loadedAs,
                 (
-                    this._schema.profile as RefField<
+                    this._encoding.profile as RefField<
                         NonNullable<Def["profile"]> & CoValue
                     >
                 ).ref()
@@ -94,7 +94,7 @@ export class Account<
                     rootID,
                     this._loadedAs,
                     (
-                        this._schema.root as RefField<NonNullable<Def["root"]> & CoValue>
+                        this._encoding.root as RefField<NonNullable<Def["root"]> & CoValue>
                     ).ref()
                 ) as any),
         };
@@ -264,14 +264,14 @@ export class Account<
     }
 
     static encoding<V extends Account>(
-        this: { new (...args: any[]): V } & CoValueClass<V> & { _schema: any },
+        this: { new (...args: any[]): V } & CoValueClass<V> & { _encoding: any },
         fields: {
-            profile: V["_schema"]["profile"];
-            root: V["_schema"]["root"];
+            profile: V["_encoding"]["profile"];
+            root: V["_encoding"]["root"];
         }
     ) {
-        this._schema ||= {};
-        Object.assign(this._schema, fields);
+        this._encoding ||= {};
+        Object.assign(this._encoding, fields);
     }
 
     migrate: (() => void | Promise<void>) | undefined;

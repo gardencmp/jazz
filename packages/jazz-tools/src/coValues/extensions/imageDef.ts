@@ -1,20 +1,16 @@
-import { BinaryCoStream, CoMap, indexSignature, subscriptionsScopes } from '../../internal.js'
+import {
+    BinaryCoStream,
+    CoMap,
+    indexSignature,
+    subscriptionsScopes,
+} from "../../internal.js";
 
 export class ImageDefinition extends CoMap<ImageDefinition> {
-    declare originalSize: [number, number]
-    declare placeholderDataURL?: string
+    declare originalSize: [number, number];
+    declare placeholderDataURL?: string;
 
     [res: `${number}x${number}`]: BinaryCoStream | null;
-    declare [indexSignature]: BinaryCoStream | null
-
-    static {
-        this.prototype._schema
-        this.encoding({
-            originalSize: "json",
-            placeholderDataURL: "json",
-            [indexSignature]: {ref: () => BinaryCoStream},
-        })
-    }
+    declare [indexSignature]: BinaryCoStream | null;
 
     get _highestResAvailable():
         | { res: `${number}x${number}`; stream: BinaryCoStream }
@@ -57,3 +53,8 @@ export class ImageDefinition extends CoMap<ImageDefinition> {
         );
     }
 }
+ImageDefinition.encoding({
+    originalSize: "json",
+    placeholderDataURL: "json",
+    [indexSignature]: { ref: () => BinaryCoStream },
+});

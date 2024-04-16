@@ -44,11 +44,11 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     _item!: Item;
-    static _schema: any;
-    get _schema(): {
+    static _encoding: any;
+    get _encoding(): {
         _item: FieldDescriptorFor<Item>;
     } {
-        return (this.constructor as typeof CoStream)._schema;
+        return (this.constructor as typeof CoStream)._encoding;
     }
 
     by: {
@@ -111,7 +111,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
                         rawEntry,
                         this._loadedAs,
                         accountID as unknown as ID<Account>,
-                        this._schema._item
+                        this._encoding._item
                     );
                 },
                 configurable: true,
@@ -138,7 +138,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
                         cojsonInternals.isAccountID(by)
                             ? (by as unknown as ID<Account>)
                             : undefined,
-                        this._schema._item
+                        this._encoding._item
                     );
                 },
                 configurable: true,
@@ -155,7 +155,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
     }
 
     private pushItem(item: Item) {
-        const itemDescriptor = this._schema._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as FieldDescriptor;
 
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
@@ -167,7 +167,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
     }
 
     toJSON() {
-        const itemDescriptor = this._schema._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as FieldDescriptor;
         const mapper =
             itemDescriptor === "json"
                 ? (v: unknown) => v
@@ -199,10 +199,10 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
 
     static encoding<V extends CoStream>(
         this: { new (...args: any): V } & typeof CoStream,
-        def: { _item: V["_schema"]["_item"] }
+        def: { _item: V["_encoding"]["_item"] }
     ) {
-        this._schema ||= {};
-        Object.assign(this._schema, def);
+        this._encoding ||= {};
+        Object.assign(this._encoding, def);
     }
 }
 

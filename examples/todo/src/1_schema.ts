@@ -1,4 +1,4 @@
-import { Co, Profile } from "jazz-tools";
+import { Account, CoList, CoMap, Profile } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -11,34 +11,34 @@ import { Co, Profile } from "jazz-tools";
  **/
 
 /** An individual task which collaborators can tick or rename */
-export class Task extends Co.Map<Task> {
+export class Task extends CoMap<Task> {
     declare done: boolean;
     declare text: string;
 }
 Task.encoding({ done: "json", text: "json" });
 
-export class ListOfTasks extends Co.List<Task | null> {}
+export class ListOfTasks extends CoList<Task | null> {}
 ListOfTasks.encoding({ _item: { ref: () => Task } });
 
 /** Our top level object: a project with a title, referencing a list of tasks */
-export class TodoProject extends Co.Map<TodoProject> {
+export class TodoProject extends CoMap<TodoProject> {
     declare title: string;
     /** A collaborative, ordered list of tasks */
     declare tasks: ListOfTasks | null;
 }
 TodoProject.encoding({ title: "json", tasks: { ref: () => ListOfTasks } });
 
-export class ListOfProjects extends Co.List<TodoProject | null> {}
+export class ListOfProjects extends CoList<TodoProject | null> {}
 ListOfProjects.encoding({ _item: { ref: () => TodoProject } });
 
 /** The account root is an app-specific per-user private `CoMap`
  *  where you can store top-level objects for that user */
-export class TodoAccountRoot extends Co.Map<TodoAccountRoot> {
+export class TodoAccountRoot extends CoMap<TodoAccountRoot> {
     declare projects: ListOfProjects | null;
 }
 TodoAccountRoot.encoding({ projects: { ref: () => ListOfProjects } });
 
-export class TodoAccount extends Co.Account<TodoAccount> {
+export class TodoAccount extends Account<TodoAccount> {
     declare profile: Profile;
     declare root: TodoAccountRoot | null;
 
