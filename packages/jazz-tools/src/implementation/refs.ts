@@ -1,7 +1,15 @@
 import { Effect } from "effect";
 import type { CoID, RawCoValue } from "cojson";
-import type { Account, CoValue, ID, Me, SubclassedConstructor, UnavailableError, indexSignature} from '../internal.js';
-import { subscriptionsScopes } from '../internal.js';
+import type {
+    Account,
+    CoValue,
+    ID,
+    Me,
+    SubclassedConstructor,
+    UnavailableError,
+    indexSignature,
+} from "../internal.js";
+import { subscriptionsScopes } from "../internal.js";
 
 export class ValueRef<V extends CoValue> {
     private cachedValue: V | undefined;
@@ -19,7 +27,9 @@ export class ValueRef<V extends CoValue> {
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            const value = new this.valueConstructor(undefined, { fromRaw: raw }) as V;
+            const value = new this.valueConstructor(undefined, {
+                fromRaw: raw,
+            }) as V;
             this.cachedValue = value;
             return value;
         } else {
@@ -43,7 +53,9 @@ export class ValueRef<V extends CoValue> {
         });
     }
 
-    private async loadHelper(options?: {onProgress: (p: number) => void}): Promise<V | "unavailable"> {
+    private async loadHelper(options?: {
+        onProgress: (p: number) => void;
+    }): Promise<V | "unavailable"> {
         const raw = await this.controlledAccount._raw.core.node.load(
             this.id as unknown as CoID<RawCoValue>,
             options?.onProgress
@@ -51,12 +63,17 @@ export class ValueRef<V extends CoValue> {
         if (raw === "unavailable") {
             return "unavailable";
         } else {
-            return new ValueRef(this.id, this.controlledAccount, this.valueConstructor)
-                .value!;
+            return new ValueRef(
+                this.id,
+                this.controlledAccount,
+                this.valueConstructor
+            ).value!;
         }
     }
 
-    async load(options?: {onProgress: (p: number) => void}): Promise<V | undefined> {
+    async load(options?: {
+        onProgress: (p: number) => void;
+    }): Promise<V | undefined> {
         const result = await this.loadHelper(options);
         if (result === "unavailable") {
             return undefined;
@@ -82,9 +99,15 @@ export function makeRefs<Keys extends string | number | indexSignature>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
     controlledAccount: Account & Me,
-    valueConstructorForKey: (key: Keys) => SubclassedConstructor<CoValue>,
-): { [K in Keys]: ValueRef<CoValue> } {
-    const refs = {} as { [K in Keys]: ValueRef<CoValue> };
+    valueConstructorForKey: (key: Keys) => SubclassedConstructor<CoValue>
+): { [K in Keys]: ValueRef<CoValue> } & {
+    [Symbol.iterator]: () => IterableIterator<ValueRef<CoValue>>;
+    length: number;
+} {
+    const refs = {} as { [K in Keys]: ValueRef<CoValue> } & {
+        [Symbol.iterator]: () => IterableIterator<ValueRef<CoValue>>;
+        length: number;
+    };
     return new Proxy(refs, {
         get(target, key) {
             if (key === Symbol.iterator) {
