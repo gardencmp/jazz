@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.4
+
+### Patch Changes
+
+- Make refs on list more precise
+
 ## 0.7.0-alpha.3
 
 ### Patch Changes
