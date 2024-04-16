@@ -1,5 +1,11 @@
 # cojson-storage-indexeddb
 
+## 0.6.4-alpha.2
+
+### Patch Changes
+
+- Get rid of Co namespace
+
 ## 0.6.4-alpha.1
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # jazz-example-chat
 
+## 0.0.47-alpha.2
+
+### Patch Changes
+
+- Updated dependencies
+  - hash-slash@0.2.0-alpha.2
+  - jazz-react@0.7.0-alpha.2
+  - jazz-tools@0.7.0-alpha.2
+
 ## 0.0.47-alpha.1
 
 ### Patch Changes

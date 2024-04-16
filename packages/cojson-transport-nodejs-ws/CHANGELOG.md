@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.5.2-alpha.2
+
+### Patch Changes
+
+- Get rid of Co namespace
+
 ## 0.5.2-alpha.1
 
 ### Patch Changes

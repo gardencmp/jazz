@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.2
+
+### Patch Changes
+
+- Get rid of Co namespace
+
 ## 0.7.0-alpha.1
 
 ### Patch Changes

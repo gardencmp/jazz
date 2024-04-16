@@ -1,7 +1,7 @@
 {
   "name": "cojson-transport-nodejs-ws",
   "type": "module",
-  "version": "0.5.2-alpha.1",
+  "version": "0.5.2-alpha.2",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",

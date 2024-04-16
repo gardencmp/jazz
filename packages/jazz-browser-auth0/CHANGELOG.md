@@ -1,5 +1,12 @@
 # jazz-browser-auth-local
 
+## 0.6.3-alpha.2
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.2
+
 ## 0.6.3-alpha.1
 
 ### Patch Changes
