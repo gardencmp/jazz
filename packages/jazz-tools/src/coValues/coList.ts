@@ -22,7 +22,7 @@ import {
 } from "../internal.js";
 import { Schema } from "@effect/schema";
 
-export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
+export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
 {
@@ -50,6 +50,13 @@ export class CoList<Item extends EnsureItemNullable<Item, 'Co.List'> = any>
         [idx: number]: NonNullable<Item> extends CoValue
             ? ValueRef<NonNullable<Item>>
             : never;
+    } & {
+        length: number;
+        [Symbol.iterator](): IterableIterator<
+            NonNullable<Item> extends CoValue
+                ? ValueRef<NonNullable<Item>>
+                : never
+        >;
     } {
         return makeRefs<number>(
             (idx) => this._raw.get(idx) as unknown as ID<CoValue>,
