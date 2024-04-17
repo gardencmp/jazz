@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser",
-  "version": "0.7.0-alpha.5",
+  "version": "0.7.0-alpha.6",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",

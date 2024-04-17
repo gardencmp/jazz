@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.0-alpha.6
+
+### Patch Changes
+
+- CoMap fix
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.6
+  - jazz-tools@0.7.0-alpha.6
+
 ## 0.7.0-alpha.5
 
 ### Patch Changes

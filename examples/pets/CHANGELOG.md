@@ -1,5 +1,14 @@
 # jazz-example-pets
 
+## 0.0.65-alpha.6
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-browser-media-images@0.7.0-alpha.6
+  - jazz-react@0.7.0-alpha.6
+  - jazz-tools@0.7.0-alpha.6
+
 ## 0.0.65-alpha.5
 
 ### Patch Changes

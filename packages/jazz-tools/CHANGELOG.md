@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.6
+
+### Patch Changes
+
+- CoMap fix
+
 ## 0.7.0-alpha.5
 
 ### Patch Changes

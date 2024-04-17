@@ -24,6 +24,7 @@
     "jazz-react": "0.5.4"
   },
   "changesets": [
+    "curly-jars-crash",
     "long-ties-relax",
     "pretty-shirts-applaud",
     "tame-bikes-poke",
