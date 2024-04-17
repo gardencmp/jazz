@@ -9,7 +9,7 @@
     "@changesets/cli": "^2.26.2",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.1",
-    "typedoc": "^0.25.1",
+    "typedoc": "^0.25.13",
     "turbo": "^1.11.2"
   },
   "scripts": {

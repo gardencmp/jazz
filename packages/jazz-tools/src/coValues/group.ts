@@ -3,14 +3,14 @@ import type {
     CoValue,
     CoValueClass,
     ID,
-    PrimitiveField,
-    RefField,
+    JsonEncoded,
+    RefEncoded,
 } from "../internal.js";
 import {
     Account,
     CoMap,
     CoValueBase,
-    ValueRef,
+    Ref,
     isControlledAccount,
 } from "../internal.js";
 
@@ -38,11 +38,11 @@ export class Group<
     static _encoding: any;
     get _encoding(): {
         profile: Def["profile"] extends CoValue
-            ? RefField<Def["profile"]>
-            : PrimitiveField;
+            ? RefEncoded<Def["profile"]>
+            : JsonEncoded;
         root: Def["root"] extends CoValue
-            ? RefField<Def["root"]>
-            : PrimitiveField;
+            ? RefEncoded<Def["root"]>
+            : JsonEncoded;
     } {
         return (this.constructor as typeof Group)._encoding;
     }
@@ -64,9 +64,9 @@ export class Group<
 
     get _refs(): {
         profile: Def["profile"] extends Profile
-            ? ValueRef<Def["profile"]>
+            ? Ref<Def["profile"]>
             : never;
-        root: Def["root"] extends CoMap ? ValueRef<Def["root"]> : never;
+        root: Def["root"] extends CoMap ? Ref<Def["root"]> : never;
     } {
         const profileID = this._raw.get("profile") as unknown as
             | ID<NonNullable<Def["profile"]>>
@@ -77,22 +77,22 @@ export class Group<
         return {
             profile:
                 profileID &&
-                (new ValueRef(
+                (new Ref(
                     profileID,
                     this._loadedAs,
                     (
-                        this._encoding.profile as RefField<
+                        this._encoding.profile as RefEncoded<
                             NonNullable<Def["profile"]>
                         >
                     ).ref()
                 ) as any),
             root:
                 rootID &&
-                (new ValueRef(
+                (new Ref(
                     rootID,
                     this._loadedAs,
                     (
-                        this._encoding.root as RefField<
+                        this._encoding.root as RefEncoded<
                             NonNullable<Def["root"]>
                         >
                     ).ref()

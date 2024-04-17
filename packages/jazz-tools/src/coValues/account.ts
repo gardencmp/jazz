@@ -15,14 +15,14 @@ import type {
     CoMap,
     CoValue,
     CoValueClass,
-    FieldDescriptor,
+    Encoding,
     Group,
     ID,
-    RefField,
+    RefEncoded,
     SubclassedConstructor,
     UnavailableError,
 } from "../internal.js";
-import { CoValueBase, Profile, ValueRef, inspect } from "../internal.js";
+import { CoValueBase, Profile, Ref, inspect } from "../internal.js";
 import type { Stream } from "effect/Stream";
 
 export class Account<
@@ -40,8 +40,8 @@ export class Account<
 
     static _encoding: any;
     get _encoding(): {
-        profile: FieldDescriptor;
-        root: FieldDescriptor;
+        profile: Encoding;
+        root: Encoding;
     } {
         return (this.constructor as typeof Account)._encoding;
     }
@@ -66,10 +66,10 @@ export class Account<
 
     get _refs(): {
         profile: NonNullable<Def["profile"]> extends Profile
-            ? ValueRef<NonNullable<Def["profile"]>> | null
+            ? Ref<NonNullable<Def["profile"]>> | null
             : null;
         root: NonNullable<Def["root"]> extends CoMap
-            ? ValueRef<NonNullable<Def["root"]>> | null
+            ? Ref<NonNullable<Def["root"]>> | null
             : null;
     } {
         const profileID = this._raw.get("profile") as unknown as ID<
@@ -79,22 +79,22 @@ export class Account<
             | ID<NonNullable<Def["root"]>>
             | undefined;
         return {
-            profile: profileID && (new ValueRef(
+            profile: profileID && (new Ref(
                 profileID,
                 this._loadedAs,
                 (
-                    this._encoding.profile as RefField<
+                    this._encoding.profile as RefEncoded<
                         NonNullable<Def["profile"]> & CoValue
                     >
                 ).ref()
             )) as any,
             root:
                 rootID &&
-                (new ValueRef(
+                (new Ref(
                     rootID,
                     this._loadedAs,
                     (
-                        this._encoding.root as RefField<NonNullable<Def["root"]> & CoValue>
+                        this._encoding.root as RefEncoded<NonNullable<Def["root"]> & CoValue>
                     ).ref()
                 ) as any),
         };

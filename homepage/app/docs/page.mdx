@@ -1,9 +1,92 @@
-import { PackageDocs } from '../../components/docs/packageDocs'
-import { PackageNav } from '../../components/docs/packageNav'
-import { DocNav } from '../../components/docs/docNav'
+import {
+    Highlight,
+    Class,
+    PropDecl,
+    ClassRef,
+    PropRef,
+} from "@/components/docs/tags";
 
-<DocNav><PackageNav package="jazz-tools"/></DocNav>
+# Guide
 
-# Docs & Guides
+# API Reference
 
-<PackageDocs package="jazz-tools"/>
+## `jazz-tools` (package)
+
+<div class="not-prose">
+
+<Class name="CoMap<Fields>">
+
+<PropDecl
+    name={`[Key in keyof Fields]`}
+    type={`Fields[Key]`}
+    doc={
+        <>
+            The properties declared on this <ClassRef name="CoMap" />
+        </>
+    }
+/>
+<PropDecl
+    name={`_refs`}
+    type={`{
+    [Key in OwnKeys<Fields>]: NonNullable<Fields[Key]> extends CoValue
+        ? Ref<NonNullable<Fields[Key]>>
+        : never
+}`}
+/>
+<PropDecl
+    name={`_edits`}
+    type={`{
+    [Key in OwnKeys<Fields>]: {
+        value?: Fields[Key];
+        ref?: Fields[Key] extends CoValue ? Ref<Fields[Key]> : never;
+        by?: Account;
+        madeAt: Date;
+    }
+}`}
+/>
+
+----
+
+#### Value identity
+<PropDecl
+    name={`id`}
+    type={`ID<this>`}
+    doc={
+        <>
+            The ID of this <ClassRef name="CoMap" />
+        </>
+    }
+/>
+
+----
+
+#### Type information
+<PropDecl
+    name={`_type`}
+    type={`"CoMap"`}
+    doc={
+        <>
+            Distinguishes this as a <ClassRef name="CoMap" /> from other
+            CoValues
+        </>
+    }
+/>
+<PropDecl
+    name={`static _encoding`}
+    type={`{ [Key in OwnKeys<Fields>]: EncodingFor<Fields[Key]>; }`}
+    doc={
+        <>
+            Stores the encoding schema for each field in this{" "}
+            <ClassRef name="CoMap" />. Define with{" "}
+            <PropRef on={"CoMap"} prop={"encoding(...)"} />.
+        </>
+    }
+/>
+
+</Class>
+
+</div>
+
+## `jazz-react` (package)
+
+## `jazz-browser` (package)

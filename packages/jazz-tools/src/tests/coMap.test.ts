@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, jazzReady, Encoders, indexSignature, CoMap } from "..";
+import { Account, jazzReady, Encoders, CoMap } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -389,11 +389,11 @@ describe("CoMap resolution", async () => {
     });
 
     class TestRecord extends CoMap<TestRecord> {
-        declare [indexSignature]: number;
+        declare _item: number;
     }
     interface TestRecord extends Record<string, number> {}
     TestRecord.encoding({
-        [indexSignature]: "json",
+        _item: "json",
     });
 
     test("Construction with index signature", async () => {

@@ -7,7 +7,7 @@ import {
     AccountCtx,
     Group,
     SubscriptionScope,
-    ValueRef,
+    Ref,
     inspect,
 } from "../internal.js";
 
@@ -117,7 +117,7 @@ export class CoValueBase implements CoValue {
     ): Effect.Effect<V, UnavailableError, AccountCtx> {
         return Effect.gen(this, function* (_) {
             const account = yield* _(AccountCtx);
-            return yield* _(new ValueRef(id as ID<V>, account, this).loadEf());
+            return yield* _(new Ref(id as ID<V>, account, this).loadEf());
         });
     }
 
@@ -129,7 +129,7 @@ export class CoValueBase implements CoValue {
             onProgress?: (progress: number) => void;
         }
     ): Promise<V | undefined> {
-        return new ValueRef(id as ID<V>, options.as, this).load(
+        return new Ref(id as ID<V>, options.as, this).load(
             options?.onProgress && { onProgress: options.onProgress }
         );
     }

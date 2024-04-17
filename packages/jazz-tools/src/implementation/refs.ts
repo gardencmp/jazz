@@ -7,11 +7,10 @@ import type {
     Me,
     SubclassedConstructor,
     UnavailableError,
-    indexSignature,
 } from "../internal.js";
 import { subscriptionsScopes } from "../internal.js";
 
-export class ValueRef<V extends CoValue> {
+export class Ref<V extends CoValue> {
     private cachedValue: V | undefined;
 
     constructor(
@@ -63,7 +62,7 @@ export class ValueRef<V extends CoValue> {
         if (raw === "unavailable") {
             return "unavailable";
         } else {
-            return new ValueRef(
+            return new Ref(
                 this.id,
                 this.controlledAccount,
                 this.valueConstructor
@@ -95,17 +94,17 @@ export class ValueRef<V extends CoValue> {
     }
 }
 
-export function makeRefs<Keys extends string | number | indexSignature>(
+export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
     controlledAccount: Account & Me,
     valueConstructorForKey: (key: Keys) => SubclassedConstructor<CoValue>
-): { [K in Keys]: ValueRef<CoValue> } & {
-    [Symbol.iterator]: () => IterableIterator<ValueRef<CoValue>>;
+): { [K in Keys]: Ref<CoValue> } & {
+    [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
     length: number;
 } {
-    const refs = {} as { [K in Keys]: ValueRef<CoValue> } & {
-        [Symbol.iterator]: () => IterableIterator<ValueRef<CoValue>>;
+    const refs = {} as { [K in Keys]: Ref<CoValue> } & {
+        [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
         length: number;
     };
     return new Proxy(refs, {
@@ -113,7 +112,7 @@ export function makeRefs<Keys extends string | number | indexSignature>(
             if (key === Symbol.iterator) {
                 return function* () {
                     for (const key of getKeysWithIds()) {
-                        yield new ValueRef(
+                        yield new Ref(
                             getIdForKey(key)!,
                             controlledAccount,
                             valueConstructorForKey(key)
@@ -127,7 +126,7 @@ export function makeRefs<Keys extends string | number | indexSignature>(
             }
             const id = getIdForKey(key as Keys);
             if (!id) return undefined;
-            return new ValueRef(
+            return new Ref(
                 id as ID<CoValue>,
                 controlledAccount,
                 valueConstructorForKey(key as Keys)

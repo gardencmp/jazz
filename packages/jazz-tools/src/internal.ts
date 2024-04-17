@@ -9,7 +9,7 @@ export * from "./coValues/group.js";
 
 export * from "./implementation/errors.js";
 export * from "./implementation/refs.js";
-export * from "./implementation/schema.js";
+export * from "./implementation/encoding.js";
 export * from "./implementation/subscriptionScope.js";
 
 export * from "./coValues/extensions/imageDef.js";

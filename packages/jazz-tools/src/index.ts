@@ -1,5 +1,5 @@
-/** @category Internal types */
 export {
+    /** @category Internal types */
     cojsonReady as jazzReady,
     InviteSecret,
     Peer,
@@ -14,7 +14,7 @@ export { ID, CoValue } from "./internal.js";
 
 export { Encoders } from "./internal.js";
 
-export { CoMap, indexSignature } from "./internal.js";
+export { CoMap } from "./internal.js";
 export { CoList } from "./internal.js";
 export { CoStream, BinaryCoStream } from "./internal.js";
 export { Group, Profile } from "./internal.js";

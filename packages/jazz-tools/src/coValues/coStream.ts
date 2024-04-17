@@ -11,27 +11,27 @@ import type {
 import { cojsonInternals } from "cojson";
 import type {
     CoValue,
-    EnsureItemNullable,
-    FieldDescriptor,
-    FieldDescriptorFor,
+    ValidItem,
+    Encoding,
+    EncodingFor,
     Group,
     ID,
     Me,
 } from "../internal.js";
-import { Account, CoValueBase, ValueRef, inspect } from "../internal.js";
+import { Account, CoValueBase, Ref, inspect } from "../internal.js";
 import { Schema } from "@effect/schema";
 
 export type CoStreamEntry<Item> = {
     value: NonNullable<Item> extends CoValue ? NonNullable<Item> | null : Item;
     ref?: NonNullable<Item> extends CoValue
-        ? ValueRef<NonNullable<Item>>
+        ? Ref<NonNullable<Item>>
         : never;
     by?: Account;
     madeAt: Date;
     tx: CojsonInternalTypes.TransactionID;
 };
 
-export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
+export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
     extends CoValueBase
     implements CoValue<"CoStream", RawCoStream>
 {
@@ -46,7 +46,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
     _item!: Item;
     static _encoding: any;
     get _encoding(): {
-        _item: FieldDescriptorFor<Item>;
+        _item: EncodingFor<Item>;
     } {
         return (this.constructor as typeof CoStream)._encoding;
     }
@@ -155,7 +155,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
     }
 
     private pushItem(item: Item) {
-        const itemDescriptor = this._encoding._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as Encoding;
 
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
@@ -167,7 +167,7 @@ export class CoStream<Item extends EnsureItemNullable<Item, "Co.Stream"> = any>
     }
 
     toJSON() {
-        const itemDescriptor = this._encoding._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as Encoding;
         const mapper =
             itemDescriptor === "json"
                 ? (v: unknown) => v
@@ -216,7 +216,7 @@ function entryFromRawEntry<Item>(
     },
     loadedAs: Account & Me,
     accountID: ID<Account> | undefined,
-    itemField: FieldDescriptor
+    itemField: Encoding
 ) {
     return {
         get value(): Item | undefined {
@@ -231,7 +231,7 @@ function entryFromRawEntry<Item>(
         get ref() {
             if (itemField !== "json" && "ref" in itemField) {
                 const rawId = rawEntry.value;
-                return new ValueRef(
+                return new Ref(
                     rawId as unknown as ID<CoValue>,
                     loadedAs,
                     itemField.ref()
@@ -241,7 +241,7 @@ function entryFromRawEntry<Item>(
         get by() {
             return (
                 accountID &&
-                new ValueRef(
+                new Ref(
                     accountID as unknown as ID<Account>,
                     loadedAs,
                     Account

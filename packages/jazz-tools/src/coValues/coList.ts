@@ -4,11 +4,11 @@ import type { Effect, Stream } from "effect";
 import type {
     AccountCtx,
     CoValue,
-    EnsureItemNullable,
-    FieldDescriptor,
-    FieldDescriptorFor,
+    ValidItem,
+    Encoding,
+    EncodingFor,
     ID,
-    RefField,
+    RefEncoded,
     SubclassedConstructor,
     UnavailableError,
 } from "../internal.js";
@@ -16,13 +16,13 @@ import {
     Account,
     CoValueBase,
     Group,
-    ValueRef,
+    Ref,
     inspect,
     makeRefs,
 } from "../internal.js";
 import { Schema } from "@effect/schema";
 
-export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
+export class CoList<Item extends ValidItem<Item, "Co.List"> = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
 {
@@ -35,7 +35,7 @@ export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
 
     static _encoding: any;
     get _encoding(): {
-        _item: FieldDescriptorFor<Item>;
+        _item: EncodingFor<Item>;
     } {
         return (this.constructor as typeof CoList)._encoding;
     }
@@ -48,13 +48,13 @@ export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
 
     get _refs(): {
         [idx: number]: NonNullable<Item> extends CoValue
-            ? ValueRef<NonNullable<Item>>
+            ? Ref<NonNullable<Item>>
             : never;
     } & {
         length: number;
         [Symbol.iterator](): IterableIterator<
             NonNullable<Item> extends CoValue
-                ? ValueRef<NonNullable<Item>>
+                ? Ref<NonNullable<Item>>
                 : never
         >;
     } {
@@ -66,14 +66,14 @@ export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
                     (_, idx) => idx
                 ),
             this._loadedAs,
-            (_idx) => (this._encoding._item as RefField<CoValue>).ref()
+            (_idx) => (this._encoding._item as RefEncoded<CoValue>).ref()
         ) as any;
     }
 
     get _edits(): {
         [idx: number]: {
             value?: Item;
-            ref?: Item extends CoValue ? ValueRef<Item> : never;
+            ref?: Item extends CoValue ? Ref<Item> : never;
             by?: Account;
             madeAt: Date;
         };
@@ -129,7 +129,7 @@ export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
     }
 
     private toRawItems(items: Item[]) {
-        const itemDescriptor = this._encoding._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as Encoding;
         const rawItems =
             itemDescriptor === "json"
                 ? items
@@ -206,7 +206,7 @@ export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
     }
 
     toJSON() {
-        const itemDescriptor = this._encoding._item as FieldDescriptor;
+        const itemDescriptor = this._encoding._item as Encoding;
         if (itemDescriptor === "json") {
             return this._raw.asArray();
         } else if ("encoded" in itemDescriptor) {
@@ -272,8 +272,8 @@ export class CoList<Item extends EnsureItemNullable<Item, "Co.List"> = any>
     }
 }
 
-function CoListProxyHandler<Item extends EnsureItemNullable<Item, "Co.List">>(
-    itemDescriptor: FieldDescriptor
+function CoListProxyHandler<Item extends ValidItem<Item, "Co.List">>(
+    itemDescriptor: Encoding
 ): ProxyHandler<CoList<Item>> {
     return {
         get(target, key, receiver) {
@@ -288,7 +288,7 @@ function CoListProxyHandler<Item extends EnsureItemNullable<Item, "Co.List">>(
                 } else if ("ref" in itemDescriptor) {
                     return rawValue === undefined
                         ? undefined
-                        : new ValueRef(
+                        : new Ref(
                               rawValue as unknown as ID<CoValue>,
                               target._loadedAs,
                               itemDescriptor.ref()
