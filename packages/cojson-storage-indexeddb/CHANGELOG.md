@@ -1,5 +1,13 @@
 # cojson-storage-indexeddb
 
+## 0.6.4-alpha.3
+
+### Patch Changes
+
+- Refactoring
+- Updated dependencies
+  - cojson@0.7.0-alpha.5
+
 ## 0.6.4-alpha.2
 
 ### Patch Changes

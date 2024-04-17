@@ -1,5 +1,14 @@
 # jazz-example-chat
 
+## 0.0.47-alpha.5
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-react@0.7.0-alpha.5
+  - jazz-tools@0.7.0-alpha.5
+  - cojson@0.7.0-alpha.5
+
 ## 0.0.47-alpha.4
 
 ### Patch Changes

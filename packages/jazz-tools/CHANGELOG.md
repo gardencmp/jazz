@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.0-alpha.5
+
+### Patch Changes
+
+- Refactoring
+- Updated dependencies
+  - cojson@0.7.0-alpha.5
+
 ## 0.7.0-alpha.4
 
 ### Patch Changes

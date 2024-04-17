@@ -1,5 +1,15 @@
 # jazz-react
 
+## 0.7.0-alpha.5
+
+### Patch Changes
+
+- Refactoring
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.5
+  - jazz-tools@0.7.0-alpha.5
+  - cojson@0.7.0-alpha.5
+
 ## 0.7.0-alpha.4
 
 ### Patch Changes

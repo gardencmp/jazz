@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.5
+
+### Patch Changes
+
+- Refactoring
+
 ## 0.7.0-alpha.1
 
 ### Patch Changes
