@@ -21,9 +21,7 @@ import {
     subscriptionsScopes,
 } from "../internal.js";
 
-type ValidFields<
-    Fields extends { [key: string]: any; _item?: any },
-> = {
+type ValidFields<Fields extends { [key: string]: any; _item?: any }> = {
     [Key in OwnKeys<Fields> as IfOptionalKey<
         Key,
         Fields
@@ -34,10 +32,7 @@ type ValidFields<
         Fields
     >]: EnsureCoValueNullable<Fields[Key], Key>;
 } & {
-    [Key in "_item"]?: EnsureCoValueNullable<
-        Fields['_item'],
-        Key
-    >;
+    [Key in "_item"]?: EnsureCoValueNullable<Fields["_item"], Key>;
 };
 
 type IfOptionalKey<Key extends keyof Obj, Obj> = Pick<
@@ -74,7 +69,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
         [Key in OwnKeys<Fields>]: EncodingFor<Fields[Key]>;
     } & {
         _item: "_item" extends keyof Fields
-            ? EncodingFor<Fields['_item']>
+            ? EncodingFor<Fields["_item"]>
             : never;
     } {
         return (this.constructor as typeof CoMap)._encoding;
@@ -418,7 +413,7 @@ function CoMapProxyHandler<Fields extends ValidFields<Fields>>(): ProxyHandler<
             }
         },
         ownKeys(target) {
-            const keys = Reflect.ownKeys(target);
+            const keys = Reflect.ownKeys(target).filter((k) => k !== "_item");
             for (const key of target._raw.keys()) {
                 if (!keys.includes(key)) {
                     keys.push(key);
