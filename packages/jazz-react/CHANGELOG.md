@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.0-alpha.8
+
+### Patch Changes
+
+- More subclass-friendly types in CoMap
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.8
+  - jazz-tools@0.7.0-alpha.8
+
 ## 0.7.0-alpha.7
 
 ### Patch Changes

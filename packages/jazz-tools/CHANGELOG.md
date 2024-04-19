@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.8
+
+### Patch Changes
+
+- More subclass-friendly types in CoMap
+
 ## 0.7.0-alpha.7
 
 ### Patch Changes
