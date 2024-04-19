@@ -1,5 +1,13 @@
 # jazz-browser
 
+## 0.7.0-alpha.9
+
+### Patch Changes
+
+- Even friendlier for subclassing CoMap
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.9
+
 ## 0.7.0-alpha.8
 
 ### Patch Changes

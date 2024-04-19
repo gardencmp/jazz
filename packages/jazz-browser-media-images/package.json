@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.7.0-alpha.8",
+  "version": "0.7.0-alpha.9",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
