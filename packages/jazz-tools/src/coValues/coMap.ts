@@ -55,6 +55,27 @@ type DefaultFields = {
     [ItemsSym]?: any;
 };
 
+type CoMapEncoding<Fields extends object> = {
+    [Key in OwnKeys<Fields> as IsVal<Fields[Key], Key>]: EncodingFor<
+        Fields[Key]
+    >;
+} &
+     {
+          [ItemsSym]: ItemsSym extends keyof Fields ? EncodingFor<Fields[ItemsSym]> : never;
+      }
+
+type CoMapEdit<V> = {
+    value?: V;
+    ref?: V extends CoValue ? Ref<V> : never;
+    by?: Account;
+    madeAt: Date;
+}
+
+type InitValuesFor<C extends CoMap> = {
+    init: Simplify<CoMapInit<C>>;
+    owner: Account | Group;
+}
+
 export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     extends CoValueBase
     implements CoValue<"CoMap", RawCoMap>
@@ -67,16 +88,8 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     _raw!: RawCoMap;
 
     static _encoding: any;
-    get _encoding(): {
-        [Key in OwnKeys<Fields> as IsVal<Fields[Key], Key>]: EncodingFor<
-            Fields[Key]
-        >;
-    } & {
-        [ItemsSym]: ItemsSym extends keyof Fields
-            ? EncodingFor<Fields[ItemsSym]>
-            : never;
-    } {
-        return (this.constructor as typeof CoMap)._encoding;
+    get _encoding() {
+        return (this.constructor as typeof CoMap)._encoding as CoMapEncoding<this>
     }
 
     get _refs(): {
@@ -100,14 +113,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
         ) as any;
     }
 
-    get _edits(): {
-        [Key in OwnKeys<Fields> as IsVal<Fields[Key], Key>]: {
-            value?: Fields[Key];
-            ref?: Fields[Key] extends CoValue ? Ref<Fields[Key]> : never;
-            by?: Account;
-            madeAt: Date;
-        };
-    } {
+    get _edits() {
         return new Proxy(this, {
             get(target, key) {
                 const rawEdit = target._raw.lastEditAt(key as string);
@@ -146,17 +152,16 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                     madeAt: rawEdit.at,
                 };
             },
-        }) as any;
+        }) as {
+            [Key in OwnKeys<this> as IsVal<this[Key], Key>]: CoMapEdit<this[Key]>
+        };
     }
 
     get _loadedAs() {
         return Account.fromNode(this._raw.core.node);
     }
 
-    [InitValues]?: {
-        init: Simplify<CoMapInit<Fields>>;
-        owner: Account | Group;
-    };
+    [InitValues]?: InitValuesFor<this>;
 
     constructor(_init: undefined, options: { fromRaw: RawCoMap });
     constructor(
@@ -170,7 +175,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
         super();
 
         if (init && "owner" in options) {
-            this[InitValues] = { init, owner: options.owner };
+            this[InitValues] = { init, owner: options.owner } as InitValuesFor<this>;
         } else if ("fromRaw" in options) {
             Object.defineProperties(this, {
                 id: {
@@ -265,7 +270,7 @@ function tryInit(map: CoMap) {
         map[InitValues] &&
         (map._encoding[ItemsSym] ||
             Object.keys(map[InitValues].init).every(
-                (key) => map._encoding[key]
+                (key) => (map._encoding as any)[key]
             ))
     ) {
         const raw = map.rawFromInit(

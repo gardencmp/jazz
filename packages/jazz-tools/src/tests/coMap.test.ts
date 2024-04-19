@@ -151,6 +151,16 @@ describe("Simple CoMap operations", async () => {
         expect(mapWithEnum.child?.value).toEqual(5);
         expect(mapWithEnum.child?.id).toBeDefined();
     });
+
+    class SuperClassMap extends CoMap<SuperClassMap> {
+        name = val.string;
+    }
+
+    class SubClassMap extends SuperClassMap {
+        name = val.literal("specificString")
+        value = val.number;
+    }
+    interface SubClassMap extends CoMap<SubClassMap> {}
 });
 
 describe("CoMap resolution", async () => {
