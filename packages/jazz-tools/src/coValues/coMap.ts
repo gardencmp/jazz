@@ -93,10 +93,10 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     }
 
     get _refs(): {
-        [Key in OwnKeys<Fields> as NonNullable<Fields[Key]> extends CoValue
+        [Key in OwnKeys<this> as NonNullable<this[Key]> extends CoValue
             ? Key
-            : never]: NonNullable<Fields[Key]> extends CoValue
-            ? Ref<NonNullable<Fields[Key]>>
+            : never]: NonNullable<this[Key]> extends CoValue
+            ? Ref<NonNullable<this[Key]>>
             : never;
     } {
         return makeRefs<OwnKeys<Fields>>(

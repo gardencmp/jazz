@@ -159,6 +159,7 @@ describe("Simple CoMap operations", async () => {
     class SubClassMap extends SuperClassMap {
         name = val.literal("specificString")
         value = val.number;
+        extra = val.ref(() => TestMap)
     }
     interface SubClassMap extends CoMap<SubClassMap> {}
 });
