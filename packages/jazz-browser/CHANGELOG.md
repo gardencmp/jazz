@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.7.0-alpha.7
+
+### Patch Changes
+
+- Consistent proxy based API
+- Updated dependencies
+  - cojson-storage-indexeddb@0.6.4-alpha.4
+  - jazz-tools@0.7.0-alpha.7
+  - cojson@0.7.0-alpha.7
+
 ## 0.7.0-alpha.6
 
 ### Patch Changes

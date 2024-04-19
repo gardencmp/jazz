@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.0-alpha.7
+
+### Patch Changes
+
+- Consistent proxy based API
+- Updated dependencies
+  - cojson@0.7.0-alpha.7
+
 ## 0.7.0-alpha.6
 
 ### Patch Changes

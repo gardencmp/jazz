@@ -1,5 +1,13 @@
 # jazz-example-todo
 
+## 0.0.64-alpha.7
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-react@0.7.0-alpha.7
+  - jazz-tools@0.7.0-alpha.7
+
 ## 0.0.64-alpha.6
 
 ### Patch Changes

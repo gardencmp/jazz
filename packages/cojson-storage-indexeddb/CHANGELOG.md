@@ -1,5 +1,13 @@
 # cojson-storage-indexeddb
 
+## 0.6.4-alpha.4
+
+### Patch Changes
+
+- Consistent proxy based API
+- Updated dependencies
+  - cojson@0.7.0-alpha.7
+
 ## 0.6.4-alpha.3
 
 ### Patch Changes
