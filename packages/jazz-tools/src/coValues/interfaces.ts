@@ -15,10 +15,7 @@ export type SubclassedConstructor<T> = {
     new (...args: any[]): T;
 };
 
-export interface CoValueClass<
-    Value extends CoValue = CoValue,
-    Init = any,
-> {
+export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
     /** @category Construction and loading */
     new (init: Init, options: { owner: Account | Group }): Value;
 
@@ -117,7 +114,11 @@ export class CoValueBase implements CoValue {
     ): Effect.Effect<V, UnavailableError, AccountCtx> {
         return Effect.gen(this, function* (_) {
             const account = yield* _(AccountCtx);
-            return yield* _(new Ref(id as ID<V>, account, this).loadEf());
+            return yield* _(
+                new Ref(id as ID<V>, account, {
+                    ref: () => this as CoValueClass<V>,
+                }).loadEf()
+            );
         });
     }
 
@@ -129,9 +130,9 @@ export class CoValueBase implements CoValue {
             onProgress?: (progress: number) => void;
         }
     ): Promise<V | undefined> {
-        return new Ref(id as ID<V>, options.as, this).load(
-            options?.onProgress && { onProgress: options.onProgress }
-        );
+        return new Ref(id as ID<V>, options.as, {
+            ref: () => this as CoValueClass<V>,
+        }).load(options?.onProgress && { onProgress: options.onProgress });
     }
 
     static subscribe<V extends CoValue, Acc extends Account>(

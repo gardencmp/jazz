@@ -10,7 +10,7 @@ export function useProgressiveImg({
     const [src, setSrc] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        const highestRes = image?._highestResAvailable;
+        const highestRes = image?.highestResAvailable;
         if (highestRes) {
             const blob = blobFromBinaryStream(highestRes.stream);
             if (blob) {
@@ -23,7 +23,7 @@ export function useProgressiveImg({
         } else {
             setSrc(image?.placeholderDataURL);
         }
-    }, [image?._highestResAvailable?.res]);
+    }, [image?.highestResAvailable?.res]);
 
     return { src, originalSize: image?.originalSize };
 }

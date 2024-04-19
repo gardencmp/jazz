@@ -284,17 +284,17 @@ export function determineValidTransactions(
 }
 
 export function isKeyForKeyField(
-    field: string
-): field is `${KeyID}_for_${KeyID}` {
-    return field.startsWith("key_") && field.includes("_for_key");
+    val: string
+): val is `${KeyID}_for_${KeyID}` {
+    return val.startsWith("key_") && val.includes("_for_key");
 }
 
 export function isKeyForAccountField(
-    field: string
-): field is `${KeyID}_for_${AccountID | AgentID}` {
+    val: string
+): val is `${KeyID}_for_${AccountID | AgentID}` {
     return (
-        (field.startsWith("key_") &&
-            (field.includes("_for_sealer") || field.includes("_for_co"))) ||
-        field.includes("_for_everyone")
+        (val.startsWith("key_") &&
+            (val.includes("_for_sealer") || val.includes("_for_co"))) ||
+        val.includes("_for_everyone")
     );
 }

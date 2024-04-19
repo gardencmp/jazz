@@ -98,7 +98,7 @@ export function JazzReact<Acc extends Account>({
 
     function useCoState<V extends CoValue>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Schema: {new(...args: any[]): V} & CoValueClass<V>,
+        Schema: {new(...args: any[]): V} & CoValueClass,
         id: ID<V> | undefined
     ): V | undefined {
         // for some reason (at least in React 18) - if we use state directly,

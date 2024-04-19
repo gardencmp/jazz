@@ -1,10 +1,10 @@
-import { expect, describe, test, beforeEach, Test } from "vitest";
+import { expect, describe, test, beforeEach } from "vitest";
 
 import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { BinaryCoStream, ID, Account, jazzReady, CoStream } from "..";
+import { BinaryCoStream, ID, Account, jazzReady, CoStream, val } from "..";
 import { Simplify } from "effect/Types";
 
 if (!("crypto" in globalThis)) {
@@ -21,42 +21,38 @@ describe("Simple CoStream operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestStream extends CoStream<string> {}
-    TestStream.encoding({ _item: "json" });
+    class TestStream extends CoStream.Of(val.string) {}
 
     const stream = new TestStream(["milk"], { owner: me });
 
     test("Construction", () => {
-        expect(stream.by[me.id]?.value).toEqual("milk");
-        expect(stream.in[me.sessionID]?.value).toEqual("milk");
+        expect(stream[me.id]?.value).toEqual("milk");
+        expect(stream.perSession[me.sessionID]?.value).toEqual("milk");
     });
 
     describe("Mutation", () => {
         test("pushing", () => {
             stream.push("bread");
-            expect(stream.by[me.id]?.value).toEqual("bread");
-            expect(stream.in[me.sessionID]?.value).toEqual("bread");
+            expect(stream[me.id]?.value).toEqual("bread");
+            expect(stream.perSession[me.sessionID]?.value).toEqual("bread");
 
             stream.push("butter");
-            expect(stream.by[me.id]?.value).toEqual("butter");
-            expect(stream.in[me.sessionID]?.value).toEqual("butter");
+            expect(stream[me.id]?.value).toEqual("butter");
+            expect(stream.perSession[me.sessionID]?.value).toEqual("butter");
         });
     });
 });
 
 describe("CoStream resolution", async () => {
-    class TwiceNestedStream extends CoStream<string> {
+    class TwiceNestedStream extends CoStream.Of(val.string) {
         fancyValueOf(account: ID<Account>) {
-            return "Sir " + this.by[account]?.value;
+            return "Sir " + this[account]?.value;
         }
     }
-    TwiceNestedStream.encoding({ _item: "json" });
 
-    class NestedStream extends CoStream<TwiceNestedStream | null>{}
-    NestedStream.encoding({ _item: {ref: () => TwiceNestedStream} });
+    class NestedStream extends CoStream.Of(val.ref(() => TwiceNestedStream)) {}
 
-    class TestStream extends CoStream<NestedStream | null> {}
-    TestStream.encoding({ _item: {ref: () => NestedStream} });
+    class TestStream extends CoStream.Of(val.ref(() => NestedStream)) {}
 
     const initNodeAndStream = async () => {
         const me = await Account.create({
@@ -78,9 +74,9 @@ describe("CoStream resolution", async () => {
 
     test("Construction", async () => {
         const { me, stream } = await initNodeAndStream();
-        expect(
-            stream.by[me.id]?.value?.by[me.id]?.value?.by[me.id]?.value
-        ).toEqual("milk");
+        expect(stream[me.id]?.value?.[me.id]?.value?.[me.id]?.value).toEqual(
+            "milk"
+        );
     });
 
     test("Loading and availability", async () => {
@@ -102,48 +98,48 @@ describe("CoStream resolution", async () => {
             as: meOnSecondPeer,
         });
 
-        expect(loadedStream?.by[me.id]?.value).toEqual(null);
-        expect(loadedStream?.by[me.id]?.ref?.id).toEqual(
-            stream.by[me.id]?.value?.id
+        expect(loadedStream?.[me.id]?.value).toEqual(null);
+        expect(loadedStream?.[me.id]?.ref?.id).toEqual(
+            stream[me.id]?.value?.id
         );
 
         const loadedNestedStream = await NestedStream.load(
-            stream.by[me.id]!.value!.id,
+            stream[me.id]!.value!.id,
             { as: meOnSecondPeer }
         );
 
-        // expect(loadedStream?.by[me.id]?.value).toEqual(loadedNestedStream);
-        expect(loadedStream?.by[me.id]?.value?.id).toEqual(
+        // expect(loadedStream?.[me.id]?.value).toEqual(loadedNestedStream);
+        expect(loadedStream?.[me.id]?.value?.id).toEqual(
             loadedNestedStream?.id
         );
-        expect(loadedStream?.by[me.id]?.value?.by[me.id]?.value).toEqual(null);
-        // expect(loadedStream?.by[me.id]?.ref?.value).toEqual(loadedNestedStream);
-        expect(loadedStream?.by[me.id]?.ref?.value?.id).toEqual(
+        expect(loadedStream?.[me.id]?.value?.[me.id]?.value).toEqual(null);
+        // expect(loadedStream?.[me.id]?.ref?.value).toEqual(loadedNestedStream);
+        expect(loadedStream?.[me.id]?.ref?.value?.id).toEqual(
             loadedNestedStream?.id
         );
-        expect(loadedStream?.by[me.id]?.value?.by[me.id]?.ref?.id).toEqual(
-            stream.by[me.id]?.value?.by[me.id]?.value?.id
+        expect(loadedStream?.[me.id]?.value?.[me.id]?.ref?.id).toEqual(
+            stream[me.id]?.value?.[me.id]?.value?.id
         );
 
         const loadedTwiceNestedStream = await TwiceNestedStream.load(
-            stream.by[me.id]!.value!.by[me.id]!.value!.id,
+            stream[me.id]!.value![me.id]!.value!.id,
             { as: meOnSecondPeer }
         );
 
-        // expect(loadedStream?.by[me.id]?.value?.by[me.id]?.value).toEqual(
+        // expect(loadedStream?.[me.id]?.value?.[me.id]?.value).toEqual(
         //     loadedTwiceNestedStream
         // );
-        expect(loadedStream?.by[me.id]?.value?.by[me.id]?.value?.id).toEqual(
+        expect(loadedStream?.[me.id]?.value?.[me.id]?.value?.id).toEqual(
             loadedTwiceNestedStream?.id
         );
         expect(
-            loadedStream?.by[me.id]?.value?.by[me.id]?.value?.fancyValueOf(
-                me.id
-            )
+            loadedStream?.[me.id]?.value?.[me.id]?.value?.fancyValueOf(me.id)
         ).toEqual("Sir milk");
-        // expect(loadedStream?.by[me.id]?.ref?.value).toEqual(loadedNestedStream);
-        expect(loadedStream?.by[me.id]?.ref?.value?.id).toEqual(loadedNestedStream?.id);
-        expect(loadedStream?.by[me.id]?.value?.by[me.id]?.ref?.value?.id).toEqual(
+        // expect(loadedStream?.[me.id]?.ref?.value).toEqual(loadedNestedStream);
+        expect(loadedStream?.[me.id]?.ref?.value?.id).toEqual(
+            loadedNestedStream?.id
+        );
+        expect(loadedStream?.[me.id]?.value?.[me.id]?.ref?.value?.id).toEqual(
             loadedTwiceNestedStream?.id
         );
 
@@ -152,16 +148,16 @@ describe("CoStream resolution", async () => {
             { owner: meOnSecondPeer }
         );
         loadedStream?.push(otherNestedStream);
-        // expect(loadedStream?.by[me.id]?.value).toEqual(otherNestedStream);
-        expect(loadedStream?.by[me.id]?.value?.id).toEqual(otherNestedStream?.id);
-        expect(loadedStream?.by[me.id]?.ref?.value?.id).toEqual(otherNestedStream?.id);
-        expect(loadedStream?.by[me.id]?.value?.by[me.id]?.value?.id).toEqual(
-            otherNestedStream.by[me.id]?.value?.id
+        // expect(loadedStream?.[me.id]?.value).toEqual(otherNestedStream);
+        expect(loadedStream?.[me.id]?.value?.id).toEqual(otherNestedStream?.id);
+        expect(loadedStream?.[me.id]?.ref?.value?.id).toEqual(
+            otherNestedStream?.id
+        );
+        expect(loadedStream?.[me.id]?.value?.[me.id]?.value?.id).toEqual(
+            otherNestedStream[me.id]?.value?.id
         );
         expect(
-            loadedStream?.by[me.id]?.value?.by[me.id]?.value?.fancyValueOf(
-                me.id
-            )
+            loadedStream?.[me.id]?.value?.[me.id]?.value?.fancyValueOf(me.id)
         ).toEqual("Sir butter");
     });
 
@@ -192,17 +188,18 @@ describe("CoStream resolution", async () => {
                     { as: meOnSecondPeer },
                     (subscribedStream) => {
                         console.log(
-                            "subscribedStream.by[me.id]",
-                            subscribedStream.by[me.id]
+                            "subscribedStream[me.id]",
+                            subscribedStream[me.id]
                         );
                         console.log(
-                            "subscribedStream.by[me.id]?.value?.by[me.id]?.value",
-                            subscribedStream.by[me.id]?.value?.by[me.id]?.value
+                            "subscribedStream[me.id]?.value?.[me.id]?.value",
+                            subscribedStream[me.id]?.value?.[me.id]?.value
                         );
                         console.log(
-                            "subscribedStream.by[me.id]?.value?.by[me.id]?.value?.by[me.id]?.value",
-                            subscribedStream.by[me.id]?.value?.by[me.id]?.value
-                                ?.by[me.id]?.value
+                            "subscribedStream[me.id]?.value?.[me.id]?.value?.[me.id]?.value",
+                            subscribedStream[me.id]?.value?.[me.id]?.value?.[
+                                me.id
+                            ]?.value
                         );
                         Effect.runPromise(Queue.offer(queue, subscribedStream));
                     }
@@ -212,25 +209,23 @@ describe("CoStream resolution", async () => {
                 const te: T = stream;
 
                 const update1 = yield* $(Queue.take(queue));
-                expect(update1.by[me.id]?.value).toEqual(null);
+                expect(update1[me.id]?.value).toEqual(null);
 
                 const update2 = yield* $(Queue.take(queue));
-                expect(update2.by[me.id]?.value).toBeDefined();
-                expect(update2.by[me.id]?.value?.by[me.id]?.value).toBe(null);
+                expect(update2[me.id]?.value).toBeDefined();
+                expect(update2[me.id]?.value?.[me.id]?.value).toBe(null);
 
                 const update3 = yield* $(Queue.take(queue));
+                expect(update3[me.id]?.value?.[me.id]?.value).toBeDefined();
                 expect(
-                    update3.by[me.id]?.value?.by[me.id]?.value
-                ).toBeDefined();
-                expect(
-                    update3.by[me.id]?.value?.by[me.id]?.value?.by[me.id]?.value
+                    update3[me.id]?.value?.[me.id]?.value?.[me.id]?.value
                 ).toBe("milk");
 
-                update3.by[me.id]!.value!.by[me.id]!.value!.push("bread");
+                update3[me.id]!.value![me.id]!.value!.push("bread");
 
                 const update4 = yield* $(Queue.take(queue));
                 expect(
-                    update4.by[me.id]?.value?.by[me.id]?.value?.by[me.id]?.value
+                    update4[me.id]?.value?.[me.id]?.value?.[me.id]?.value
                 ).toBe("bread");
 
                 // When assigning a new nested stream, we get an update
@@ -246,14 +241,14 @@ describe("CoStream resolution", async () => {
 
                 const update5 = yield* $(Queue.take(queue));
                 expect(
-                    update5.by[me.id]?.value?.by[me.id]?.value?.by[me.id]?.value
+                    update5[me.id]?.value?.[me.id]?.value?.[me.id]?.value
                 ).toBe("butter");
 
                 // we get updates when the new nested stream changes
                 newTwiceNested.push("jam");
                 const update6 = yield* $(Queue.take(queue));
                 expect(
-                    update6.by[me.id]?.value?.by[me.id]?.value?.by[me.id]?.value
+                    update6[me.id]?.value?.[me.id]?.value?.[me.id]?.value
                 ).toBe("jam");
             })
         );

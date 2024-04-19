@@ -5,7 +5,7 @@ import type {
     CoValue,
     ID,
     Me,
-    SubclassedConstructor,
+    RefEncoded,
     UnavailableError,
 } from "../internal.js";
 import { subscriptionsScopes } from "../internal.js";
@@ -16,8 +16,12 @@ export class Ref<V extends CoValue> {
     constructor(
         readonly id: ID<V>,
         readonly controlledAccount: Account & Me,
-        readonly valueConstructor: SubclassedConstructor<V>
-    ) {}
+        readonly encoding: RefEncoded<V>
+    ) {
+        if (!("ref" in encoding)) {
+            throw new Error("Ref must be constructed with a ref encoding");
+        }
+    }
 
     get value() {
         if (this.cachedValue) return this.cachedValue;
@@ -26,9 +30,7 @@ export class Ref<V extends CoValue> {
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            const value = new this.valueConstructor(undefined, {
-                fromRaw: raw,
-            }) as V;
+            const value = this.encoding.ref(raw).fromRaw(raw);
             this.cachedValue = value;
             return value;
         } else {
@@ -65,7 +67,7 @@ export class Ref<V extends CoValue> {
             return new Ref(
                 this.id,
                 this.controlledAccount,
-                this.valueConstructor
+                this.encoding
             ).value!;
         }
     }
@@ -98,7 +100,7 @@ export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
     controlledAccount: Account & Me,
-    valueConstructorForKey: (key: Keys) => SubclassedConstructor<CoValue>
+    refEncodingForKey: (key: Keys) => RefEncoded<CoValue>
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
     length: number;
@@ -115,7 +117,7 @@ export function makeRefs<Keys extends string | number>(
                         yield new Ref(
                             getIdForKey(key)!,
                             controlledAccount,
-                            valueConstructorForKey(key)
+                            refEncodingForKey(key)
                         );
                     }
                 };
@@ -129,7 +131,7 @@ export function makeRefs<Keys extends string | number>(
             return new Ref(
                 id as ID<CoValue>,
                 controlledAccount,
-                valueConstructorForKey(key as Keys)
+                refEncodingForKey(key as Keys)
             );
         },
         ownKeys() {

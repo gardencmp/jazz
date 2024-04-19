@@ -22,7 +22,14 @@ import type {
     SubclassedConstructor,
     UnavailableError,
 } from "../internal.js";
-import { CoValueBase, Profile, Ref, inspect } from "../internal.js";
+import {
+    CoValueBase,
+    Profile,
+    Ref,
+    SchemaInit,
+    inspect,
+    subscriptionsScopes,
+} from "../internal.js";
 import type { Stream } from "effect/Stream";
 
 export class Account<
@@ -72,30 +79,30 @@ export class Account<
             ? Ref<NonNullable<Def["root"]>> | null
             : null;
     } {
-        const profileID = this._raw.get("profile") as unknown as ID<
-            NonNullable<Def["profile"]>
-        > | undefined;
+        const profileID = this._raw.get("profile") as unknown as
+            | ID<NonNullable<Def["profile"]>>
+            | undefined;
         const rootID = this._raw.get("root") as unknown as
             | ID<NonNullable<Def["root"]>>
             | undefined;
         return {
-            profile: profileID && (new Ref(
-                profileID,
-                this._loadedAs,
-                (
+            profile:
+                profileID &&
+                (new Ref(
+                    profileID,
+                    this._loadedAs,
                     this._encoding.profile as RefEncoded<
                         NonNullable<Def["profile"]> & CoValue
                     >
-                ).ref()
-            )) as any,
+                ) as any),
             root:
                 rootID &&
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    (
-                        this._encoding.root as RefEncoded<NonNullable<Def["root"]> & CoValue>
-                    ).ref()
+                    this._encoding.root as RefEncoded<
+                        NonNullable<Def["root"]> & CoValue
+                    >
                 ) as any),
         };
     }
@@ -128,40 +135,17 @@ export class Account<
                 enumerable: false,
             },
             _raw: { value: options.fromRaw, enumerable: false },
-            profile: {
-                get: () => {
-                    const ref = this._refs.profile;
-                    return ref ? ref.accessFrom(this) : (undefined as any);
-                },
-                set: (value: Def["profile"] | null) => {
-                    if (value) {
-                        this._raw.set(
-                            "profile",
-                            value.id as unknown as CoID<RawCoMap>
-                        );
-                    }
-                },
-            },
-            root: {
-                get: () => {
-                    const ref = this._refs.root;
-                    return ref ? ref.accessFrom(this) : (undefined as any);
-                },
-                set: (value: Def["root"] | null) => {
-                    if (value) {
-                        this._raw.set(
-                            "root",
-                            value.id as unknown as CoID<RawCoMap>
-                        );
-                    }
-                },
-            },
         });
 
         if (this.isMe) {
             (this as Account & Me).sessionID =
                 options.fromRaw.core.node.currentSessionID;
         }
+
+        return new Proxy(
+            this,
+            AccountAndGroupProxyHandler as ProxyHandler<this>
+        );
     }
 
     myRole(): "admin" | undefined {
@@ -263,19 +247,65 @@ export class Account<
         return this.toJSON();
     }
 
-    static encoding<V extends Account>(
-        this: { new (...args: any[]): V } & CoValueClass<V> & { _encoding: any },
-        fields: {
-            profile: V["_encoding"]["profile"];
-            root: V["_encoding"]["root"];
-        }
-    ) {
-        this._encoding ||= {};
-        Object.assign(this._encoding, fields);
-    }
-
     migrate: (() => void | Promise<void>) | undefined;
 }
+
+export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
+    get(target, key, receiver) {
+        if (key === "profile") {
+            const ref = target._refs.profile;
+            return ref ? ref.accessFrom(receiver) : (undefined as any);
+        } else if (key === "root") {
+            const ref = target._refs.root;
+            return ref ? ref.accessFrom(receiver) : (undefined as any);
+        } else {
+            return Reflect.get(target, key, receiver);
+        }
+    },
+    set(target, key, value, receiver) {
+        if (
+            (key === "profile" || key === "root") &&
+            typeof value === "object" &&
+            SchemaInit in value
+        ) {
+            (target.constructor as typeof CoMap)._encoding ||= {};
+            (target.constructor as typeof CoMap)._encoding[key] =
+                value[SchemaInit];
+            return true;
+        } else if (key === "profile") {
+            if (value) {
+                target._raw.set(
+                    "profile",
+                    value.id as unknown as CoID<RawCoMap>
+                );
+            }
+            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
+            return true;
+        } else if (key === "root") {
+            if (value) {
+                target._raw.set("root", value.id as unknown as CoID<RawCoMap>);
+            }
+            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
+            return true;
+        } else {
+            return Reflect.set(target, key, value, receiver);
+        }
+    },
+    defineProperty(target, key, descriptor) {
+        if (
+            (key === "profile" || key === "root") &&
+            typeof descriptor.value === "object" &&
+            SchemaInit in descriptor.value
+        ) {
+            (target.constructor as typeof CoMap)._encoding ||= {};
+            (target.constructor as typeof CoMap)._encoding[key] =
+                descriptor.value[SchemaInit];
+            return true;
+        } else {
+            return Reflect.defineProperty(target, key, descriptor);
+        }
+    },
+};
 
 export interface Me {
     id: ID<any>;

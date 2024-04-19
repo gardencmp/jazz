@@ -78,7 +78,7 @@ function ReactionOverview({
             <h2>Reactions</h2>
             <div className="flex flex-col gap-1">
                 {ReactionTypes.map((reactionType) => {
-                    const reactionsOfThisType = Object.values(petReactions.by)
+                    const reactionsOfThisType = Object.values(petReactions)
                         .filter((entry) => entry.value === reactionType);
 
                     if (reactionsOfThisType.length === 0) return null;

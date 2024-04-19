@@ -1,4 +1,4 @@
-import { Account, CoList, CoMap, Profile } from "jazz-tools";
+import { Account, CoList, CoMap, Profile, val } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -12,35 +12,29 @@ import { Account, CoList, CoMap, Profile } from "jazz-tools";
 
 /** An individual task which collaborators can tick or rename */
 export class Task extends CoMap<Task> {
-    declare done: boolean;
-    declare text: string;
+    done = val.boolean;
+    text = val.string;
 }
-Task.encoding({ done: "json", text: "json" });
 
-export class ListOfTasks extends CoList<Task | null> {}
-ListOfTasks.encoding({ _item: { ref: () => Task } });
+export class ListOfTasks extends CoList.Of(val.ref(() => Task)) {}
 
 /** Our top level object: a project with a title, referencing a list of tasks */
 export class TodoProject extends CoMap<TodoProject> {
-    declare title: string;
-    /** A collaborative, ordered list of tasks */
-    declare tasks: ListOfTasks | null;
+    title = val.string;
+    tasks = val.ref(() => ListOfTasks);
 }
-TodoProject.encoding({ title: "json", tasks: { ref: () => ListOfTasks } });
 
-export class ListOfProjects extends CoList<TodoProject | null> {}
-ListOfProjects.encoding({ _item: { ref: () => TodoProject } });
+export class ListOfProjects extends CoList.Of(val.ref(() => TodoProject)) {}
 
 /** The account root is an app-specific per-user private `CoMap`
  *  where you can store top-level objects for that user */
 export class TodoAccountRoot extends CoMap<TodoAccountRoot> {
-    declare projects: ListOfProjects | null;
+    projects = val.ref(() => ListOfProjects);
 }
-TodoAccountRoot.encoding({ projects: { ref: () => ListOfProjects } });
 
 export class TodoAccount extends Account<TodoAccount> {
-    declare profile: Profile;
-    declare root: TodoAccountRoot | null;
+    profile = val.ref(() => Profile);
+    root = val.ref(() => TodoAccountRoot);
 
     /** The account migration is run on account creation and on every log-in.
      *  You can use it to set up the account root and any other initial CoValues you need.
@@ -56,9 +50,5 @@ export class TodoAccount extends Account<TodoAccount> {
         }
     };
 }
-TodoAccount.encoding({
-    profile: { ref: () => Profile },
-    root: { ref: () => TodoAccountRoot },
-});
 
 /** Walkthrough: Continue with ./2_main.tsx */

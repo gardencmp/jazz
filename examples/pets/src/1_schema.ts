@@ -1,4 +1,12 @@
-import { Account, CoList, CoMap, CoStream, ImageDefinition, Profile } from "jazz-tools";
+import {
+    Account,
+    CoList,
+    CoMap,
+    CoStream,
+    ImageDefinition,
+    Profile,
+    val,
+} from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -17,31 +25,23 @@ export const ReactionTypes = [
 ] as const;
 export type ReactionType = (typeof ReactionTypes)[number];
 
-export class PetReactions extends CoStream<ReactionType> {}
-PetReactions.encoding({ _item: "json" });
+export class PetReactions extends CoStream.Of(val.json<ReactionType>()) {}
 
 export class PetPost extends CoMap<PetPost> {
-    declare name: string;
-    declare image: ImageDefinition | null;
-    declare reactions: PetReactions | null;
+    name = val.string;
+    image = val.ref(() => ImageDefinition);
+    reactions = val.ref(() => PetReactions);
 }
-PetPost.encoding({
-    name: "json",
-    image: { ref: () => ImageDefinition },
-    reactions: { ref: () => PetReactions },
-});
 
-export class ListOfPosts extends CoList<PetPost | null> {}
-ListOfPosts.encoding({ _item: { ref: () => PetPost } });
+export class ListOfPosts extends CoList.Of(val.ref(() => PetPost)) {}
 
 export class PetAccountRoot extends CoMap<PetAccountRoot> {
-    declare posts: ListOfPosts | null;
+    posts = val.ref(() => ListOfPosts);
 }
-PetAccountRoot.encoding({ posts: { ref: () => ListOfPosts } });
 
 export class PetAccount extends Account<PetAccount> {
-    declare profile: Profile | null;
-    declare root: PetAccountRoot | null;
+    profile = val.ref(() => Profile);
+    root = val.ref(() => PetAccountRoot);
 
     migrate = () => {
         if (!this._refs.root) {
@@ -55,9 +55,5 @@ export class PetAccount extends Account<PetAccount> {
         }
     };
 }
-PetAccount.encoding({
-    profile: { ref: () => Profile },
-    root: { ref: () => PetAccountRoot },
-});
 
 /** Walkthrough: Continue with ./2_App.tsx */

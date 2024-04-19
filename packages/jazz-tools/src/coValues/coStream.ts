@@ -17,24 +17,40 @@ import type {
     Group,
     ID,
     Me,
+    IsVal,
 } from "../internal.js";
-import { Account, CoValueBase, Ref, inspect } from "../internal.js";
+import {
+    ItemsSym,
+    Account,
+    CoValueBase,
+    Ref,
+    inspect,
+    val,
+    InitValues,
+    SchemaInit,
+} from "../internal.js";
 import { Schema } from "@effect/schema";
 
 export type CoStreamEntry<Item> = {
     value: NonNullable<Item> extends CoValue ? NonNullable<Item> | null : Item;
-    ref?: NonNullable<Item> extends CoValue
-        ? Ref<NonNullable<Item>>
-        : never;
+    ref?: NonNullable<Item> extends CoValue ? Ref<NonNullable<Item>> : never;
     by?: Account;
     madeAt: Date;
     tx: CojsonInternalTypes.TransactionID;
 };
 
-export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
+export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
     extends CoValueBase
     implements CoValue<"CoStream", RawCoStream>
 {
+    static Of<Item extends ValidItem<Item, "CoStream"> = any>(
+        item: IsVal<Item, Item>
+    ): typeof CoStream<Item> {
+        return class CoStreamOf extends CoStream<Item> {
+            [val.items] = item;
+        };
+    }
+
     id!: ID<this>;
     _type!: "CoStream";
     static {
@@ -43,26 +59,30 @@ export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
     _raw!: RawCoStream;
 
     /** @internal This is only a marker type and doesn't exist at runtime */
-    _item!: Item;
+    [ItemsSym]!: Item;
     static _encoding: any;
     get _encoding(): {
-        _item: EncodingFor<Item>;
+        [ItemsSym]: EncodingFor<Item>;
     } {
         return (this.constructor as typeof CoStream)._encoding;
     }
 
-    by: {
-        [key: ID<Account>]: CoStreamEntry<Item>;
-    } = {};
+    [key: ID<Account>]: CoStreamEntry<Item>;
+
     get byMe(): CoStreamEntry<Item> | undefined {
-        return this.by[this._loadedAs.id];
+        return this[this._loadedAs.id];
     }
-    in: {
+    perSession!: {
         [key: SessionID]: CoStreamEntry<Item>;
-    } = {};
+    };
     get inCurrentSession(): CoStreamEntry<Item> | undefined {
-        return this.in[this._loadedAs.sessionID];
+        return this.perSession[this._loadedAs.sessionID];
     }
+
+    [InitValues]?: {
+        init?: Item[];
+        owner: Account | Group;
+    };
 
     constructor(_init: undefined, options: { fromRaw: RawCoStream });
     constructor(init: Item[], options: { owner: Account | Group });
@@ -72,90 +92,32 @@ export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
     ) {
         super();
 
-        let raw: RawCoStream;
-
         if ("fromRaw" in options) {
-            raw = options.fromRaw;
+            Object.defineProperties(this, {
+                id: {
+                    value: options.fromRaw.id,
+                    enumerable: false,
+                },
+                _raw: { value: options.fromRaw, enumerable: false },
+            });
         } else {
-            const rawOwner = options.owner._raw;
-
-            raw = rawOwner.createStream();
+            this[InitValues] = {
+                init,
+                owner: options.owner,
+            };
         }
 
-        Object.defineProperties(this, {
-            id: {
-                value: raw.id,
-                enumerable: false,
-            },
-            _raw: { value: raw, enumerable: false },
-        });
-
-        if (init !== undefined) {
-            for (const item of init) {
-                this.pushItem(item);
-            }
-        }
-
-        this.updateEntries();
-    }
-
-    private updateEntries() {
-        for (const accountID of this._raw.accounts()) {
-            Object.defineProperty(this.by, accountID, {
-                get: () => {
-                    const rawEntry = this._raw.lastItemBy(accountID);
-
-                    if (!rawEntry) return;
-                    return entryFromRawEntry(
-                        this,
-                        rawEntry,
-                        this._loadedAs,
-                        accountID as unknown as ID<Account>,
-                        this._encoding._item
-                    );
-                },
-                configurable: true,
-                enumerable: true,
-            });
-        }
-
-        for (const sessionID of this._raw.sessions()) {
-            Object.defineProperty(this.in, sessionID, {
-                get: () => {
-                    const rawEntry = this._raw.lastItemIn(
-                        sessionID as unknown as SessionID
-                    );
-
-                    if (!rawEntry) return;
-                    const by =
-                        cojsonInternals.accountOrAgentIDfromSessionID(
-                            sessionID
-                        );
-                    return entryFromRawEntry(
-                        this,
-                        rawEntry,
-                        this._loadedAs,
-                        cojsonInternals.isAccountID(by)
-                            ? (by as unknown as ID<Account>)
-                            : undefined,
-                        this._encoding._item
-                    );
-                },
-                configurable: true,
-                enumerable: true,
-            });
-        }
+        return new Proxy(this, CoStreamProxyHandler as ProxyHandler<this>);
     }
 
     push(...items: Item[]) {
         for (const item of items) {
             this.pushItem(item);
         }
-        this.updateEntries();
     }
 
     private pushItem(item: Item) {
-        const itemDescriptor = this._encoding._item as Encoding;
+        const itemDescriptor = this._encoding[ItemsSym] as Encoding;
 
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
@@ -167,7 +129,7 @@ export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
     }
 
     toJSON() {
-        const itemDescriptor = this._encoding._item as Encoding;
+        const itemDescriptor = this._encoding[ItemsSym] as Encoding;
         const mapper =
             itemDescriptor === "json"
                 ? (v: unknown) => v
@@ -178,14 +140,14 @@ export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
         return {
             id: this.id,
             _type: this._type,
-            by: Object.fromEntries(
-                Object.entries(this.by).map(([account, entry]) => [
+            ...Object.fromEntries(
+                Object.entries(this).map(([account, entry]) => [
                     account,
                     mapper(entry.value),
                 ])
             ),
             in: Object.fromEntries(
-                Object.entries(this.in).map(([session, entry]) => [
+                Object.entries(this.perSession).map(([session, entry]) => [
                     session,
                     mapper(entry.value),
                 ])
@@ -199,7 +161,7 @@ export class CoStream<Item extends ValidItem<Item, "Co.Stream"> = any>
 
     static encoding<V extends CoStream>(
         this: { new (...args: any): V } & typeof CoStream,
-        def: { _item: V["_encoding"]["_item"] }
+        def: { [ItemsSym]: V["_encoding"][ItemsSym] }
     ) {
         this._encoding ||= {};
         Object.assign(this._encoding, def);
@@ -234,7 +196,7 @@ function entryFromRawEntry<Item>(
                 return new Ref(
                     rawId as unknown as ID<CoValue>,
                     loadedAs,
-                    itemField.ref()
+                    itemField
                 );
             }
         },
@@ -244,7 +206,7 @@ function entryFromRawEntry<Item>(
                 new Ref(
                     accountID as unknown as ID<Account>,
                     loadedAs,
-                    Account
+                    {ref: () => Account}
                 )?.accessFrom(accessFrom)
             );
         },
@@ -252,6 +214,122 @@ function entryFromRawEntry<Item>(
         tx: rawEntry.tx,
     };
 }
+
+function init(stream: CoStream) {
+    const init = stream[InitValues];
+    if (!init) return;
+
+    const raw = init.owner._raw.createStream();
+
+    Object.defineProperties(stream, {
+        id: {
+            value: raw.id,
+            enumerable: false,
+        },
+        _raw: { value: raw, enumerable: false },
+    });
+
+    if (init.init) {
+        stream.push(...init.init);
+    }
+
+    delete stream[InitValues];
+}
+
+export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
+    get(target, key, receiver) {
+        if (typeof key === "string" && key.startsWith("co_")) {
+            const rawEntry = target._raw.lastItemBy(key as AccountID);
+
+            if (!rawEntry) return;
+            return entryFromRawEntry(
+                receiver,
+                rawEntry,
+                target._loadedAs,
+                key as unknown as ID<Account>,
+                target._encoding[ItemsSym]
+            );
+        } else if (key === "perSession") {
+            return new Proxy(receiver, CoStreamPerSessionProxyHandler);
+        } else {
+            return Reflect.get(target, key, receiver);
+        }
+    },
+    set(target, key, value, receiver) {
+        if (
+            key === ItemsSym &&
+            typeof value === "object" &&
+            SchemaInit in value
+        ) {
+            (target.constructor as typeof CoStream)._encoding ||= {};
+            (target.constructor as typeof CoStream)._encoding[ItemsSym] =
+                value[SchemaInit];
+            init(target);
+            return true;
+        } else {
+            return Reflect.set(target, key, value, receiver);
+        }
+    },
+    defineProperty(target, key, descriptor) {
+        if (
+            descriptor.value &&
+            key === ItemsSym &&
+            typeof descriptor.value === "object" &&
+            SchemaInit in descriptor.value
+        ) {
+            (target.constructor as typeof CoStream)._encoding ||= {};
+            (target.constructor as typeof CoStream)._encoding[ItemsSym] =
+                descriptor.value[SchemaInit];
+            init(target);
+            return true;
+        } else {
+            return Reflect.defineProperty(target, key, descriptor);
+        }
+    },
+    ownKeys(target) {
+        const keys = Reflect.ownKeys(target);
+
+        for (const accountID of target._raw.accounts()) {
+            keys.push(accountID);
+        }
+
+        return keys;
+    },
+    getOwnPropertyDescriptor(target, key) {
+        if (typeof key === "string" && key.startsWith("co_")) {
+            return {
+                configurable: true,
+                enumerable: true,
+                writable: false,
+            };
+        } else {
+            return Reflect.getOwnPropertyDescriptor(target, key);
+        }
+    },
+};
+
+const CoStreamPerSessionProxyHandler: ProxyHandler<CoStream> = {
+    get(target, key, receiver) {
+        if (typeof key === "string" && key.includes("session")) {
+            const sessionID = key as SessionID;
+            const rawEntry = target._raw.lastItemIn(sessionID);
+
+            if (!rawEntry) return;
+            const by = cojsonInternals.accountOrAgentIDfromSessionID(sessionID);
+            return entryFromRawEntry(
+                target,
+                rawEntry,
+                target._loadedAs,
+                cojsonInternals.isAccountID(by)
+                    ? (by as unknown as ID<Account>)
+                    : undefined,
+                target._encoding[ItemsSym]
+            );
+        } else {
+            return Reflect.get(target, key, receiver);
+        }
+    },
+};
 
 export class BinaryCoStream
     extends CoValueBase

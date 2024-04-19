@@ -1,23 +1,18 @@
-import type { CoID, Everyone, RawCoMap, RawGroup, Role } from "cojson";
-import type {
-    CoValue,
-    CoValueClass,
-    ID,
-    JsonEncoded,
-    RefEncoded,
-} from "../internal.js";
+import type { Everyone, RawGroup, Role } from "cojson";
+import type { CoValue, ID, JsonEncoded, RefEncoded } from "../internal.js";
 import {
     Account,
     CoMap,
     CoValueBase,
     Ref,
+    val,
     isControlledAccount,
+    AccountAndGroupProxyHandler,
 } from "../internal.js";
 
-export class Profile extends CoMap<{ name: string }> {
-    declare name: string;
+export class Profile extends CoMap<{ name: val<string> }> {
+    name = val.string;
 }
-Profile.encoding({ name: "json" });
 
 export class Group<
         Def extends { profile: Profile | null; root: CoMap | null } = {
@@ -63,9 +58,7 @@ export class Group<
     root!: Def["root"] extends CoMap ? Def["root"] | null : undefined;
 
     get _refs(): {
-        profile: Def["profile"] extends Profile
-            ? Ref<Def["profile"]>
-            : never;
+        profile: Def["profile"] extends Profile ? Ref<Def["profile"]> : never;
         root: Def["root"] extends CoMap ? Ref<Def["root"]> : never;
     } {
         const profileID = this._raw.get("profile") as unknown as
@@ -80,22 +73,16 @@ export class Group<
                 (new Ref(
                     profileID,
                     this._loadedAs,
-                    (
-                        this._encoding.profile as RefEncoded<
-                            NonNullable<Def["profile"]>
-                        >
-                    ).ref()
+                    this._encoding.profile as RefEncoded<
+                        NonNullable<Def["profile"]>
+                    >
                 ) as any),
             root:
                 rootID &&
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    (
-                        this._encoding.root as RefEncoded<
-                            NonNullable<Def["root"]>
-                        >
-                    ).ref()
+                    this._encoding.root as RefEncoded<NonNullable<Def["root"]>>
                 ) as any),
         };
     }
@@ -134,35 +121,12 @@ export class Group<
                 enumerable: false,
             },
             _raw: { value: raw, enumerable: false },
-            profile: {
-                get: () => {
-                    const ref = this._refs.profile;
-                    return ref ? ref.accessFrom(this) : (undefined as any);
-                },
-                set: (value: Def["profile"] | null) => {
-                    if (value) {
-                        this._raw.set(
-                            "profile",
-                            value.id as unknown as CoID<RawCoMap>
-                        );
-                    }
-                },
-            },
-            root: {
-                get: () => {
-                    const ref = this._refs.root;
-                    return ref ? ref.accessFrom(this) : (undefined as any);
-                },
-                set: (value: Def["root"] | null) => {
-                    if (value) {
-                        this._raw.set(
-                            "root",
-                            value.id as unknown as CoID<RawCoMap>
-                        );
-                    }
-                },
-            },
         });
+
+        return new Proxy(
+            this,
+            AccountAndGroupProxyHandler as ProxyHandler<this>
+        );
     }
 
     myRole(): Role | undefined {
@@ -171,16 +135,5 @@ export class Group<
 
     addMember(member: Everyone | Account, role: Role) {
         this._raw.addMember(member === "everyone" ? member : member._raw, role);
-    }
-
-    static define<V extends Account>(
-        this: CoValueClass<V> & typeof Account,
-        fields: {
-            profile: V["_encoding"]["profile"];
-            root: V["_encoding"]["root"];
-        }
-    ) {
-        this._encoding ||= {};
-        Object.assign(this._encoding, fields);
     }
 }
