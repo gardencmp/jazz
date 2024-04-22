@@ -5,13 +5,13 @@ import {
     CoMap,
     CoValueBase,
     Ref,
-    val,
+    co,
     isControlledAccount,
     AccountAndGroupProxyHandler,
 } from "../internal.js";
 
-export class Profile extends CoMap<{ name: val<string> }> {
-    name = val.string;
+export class Profile extends CoMap<{ name: co<string> }> {
+    name = co.string;
 }
 
 export class Group<
@@ -30,8 +30,8 @@ export class Group<
     }
     _raw!: RawGroup;
 
-    static _encoding: any;
-    get _encoding(): {
+    static _schema: any;
+    get _schema(): {
         profile: Def["profile"] extends CoValue
             ? RefEncoded<Def["profile"]>
             : JsonEncoded;
@@ -39,15 +39,15 @@ export class Group<
             ? RefEncoded<Def["root"]>
             : JsonEncoded;
     } {
-        return (this.constructor as typeof Group)._encoding;
+        return (this.constructor as typeof Group)._schema;
     }
     static {
-        this._encoding = {
+        this._schema = {
             profile: { json: true },
             root: { json: true },
         } as any;
-        Object.defineProperty(this.prototype, "_encoding", {
-            get: () => this._encoding,
+        Object.defineProperty(this.prototype, "_schema", {
+            get: () => this._schema,
         });
     }
 
@@ -73,7 +73,7 @@ export class Group<
                 (new Ref(
                     profileID,
                     this._loadedAs,
-                    this._encoding.profile as RefEncoded<
+                    this._schema.profile as RefEncoded<
                         NonNullable<Def["profile"]>
                     >
                 ) as any),
@@ -82,7 +82,7 @@ export class Group<
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    this._encoding.root as RefEncoded<NonNullable<Def["root"]>>
+                    this._schema.root as RefEncoded<NonNullable<Def["root"]>>
                 ) as any),
         };
     }

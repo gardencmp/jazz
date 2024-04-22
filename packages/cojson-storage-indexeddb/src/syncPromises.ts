@@ -8,7 +8,7 @@ const isObject = (supposedObject: any) =>
 
 const isThenable = (obj: any) => isObject(obj) && isFunction(obj.then);
 
-const identity = (val: any) => val;
+const identity = (co: any) => co;
 
 export { isObject, isThenable, identity, isFunction };
 
@@ -143,26 +143,26 @@ export class SyncPromise<T> {
 
   public finally<U>(cb: Finally<U>) {
     return new SyncPromise<U>((resolve, reject) => {
-      let val: U | any;
+      let co: U | any;
       let isRejected: boolean;
 
       return this.then(
         (value) => {
           isRejected = false;
-          val = value;
+          co = value;
           return cb();
         },
         (reason) => {
           isRejected = true;
-          val = reason;
+          co = reason;
           return cb();
         },
       ).then(() => {
         if (isRejected) {
-          return reject(val);
+          return reject(co);
         }
 
-        return resolve(val);
+        return resolve(co);
       });
     });
   }

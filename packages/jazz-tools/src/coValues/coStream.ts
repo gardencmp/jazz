@@ -12,12 +12,12 @@ import { cojsonInternals } from "cojson";
 import type {
     CoValue,
     ValidItem,
-    Encoding,
-    EncodingFor,
+    Schema,
+    SchemaFor,
     Group,
     ID,
     Me,
-    IsVal,
+    IfCo,
 } from "../internal.js";
 import {
     ItemsSym,
@@ -25,9 +25,10 @@ import {
     CoValueBase,
     Ref,
     inspect,
-    val,
+    co,
     InitValues,
     SchemaInit,
+    isRefEncoded,
 } from "../internal.js";
 import { Schema } from "@effect/schema";
 
@@ -44,10 +45,10 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
     implements CoValue<"CoStream", RawCoStream>
 {
     static Of<Item extends ValidItem<Item, "CoStream"> = any>(
-        item: IsVal<Item, Item>
+        item: IfCo<Item, Item>
     ): typeof CoStream<Item> {
         return class CoStreamOf extends CoStream<Item> {
-            [val.items] = item;
+            [co.items] = item;
         };
     }
 
@@ -60,11 +61,11 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
-    static _encoding: any;
-    get _encoding(): {
-        [ItemsSym]: EncodingFor<Item>;
+    static _schema: any;
+    get _schema(): {
+        [ItemsSym]: SchemaFor<Item>;
     } {
-        return (this.constructor as typeof CoStream)._encoding;
+        return (this.constructor as typeof CoStream)._schema;
     }
 
     [key: ID<Account>]: CoStreamEntry<Item>;
@@ -117,19 +118,19 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
     }
 
     private pushItem(item: Item) {
-        const itemDescriptor = this._encoding[ItemsSym] as Encoding;
+        const itemDescriptor = this._schema[ItemsSym] as Schema;
 
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
         } else if ("encoded" in itemDescriptor) {
             this._raw.push(Schema.encodeSync(itemDescriptor.encoded)(item));
-        } else if ("ref" in itemDescriptor) {
+        } else if (isRefEncoded(itemDescriptor)) {
             this._raw.push((item as unknown as CoValue).id);
         }
     }
 
     toJSON() {
-        const itemDescriptor = this._encoding[ItemsSym] as Encoding;
+        const itemDescriptor = this._schema[ItemsSym] as Schema;
         const mapper =
             itemDescriptor === "json"
                 ? (v: unknown) => v
@@ -159,12 +160,12 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
         return this.toJSON();
     }
 
-    static encoding<V extends CoStream>(
+    static schema<V extends CoStream>(
         this: { new (...args: any): V } & typeof CoStream,
-        def: { [ItemsSym]: V["_encoding"][ItemsSym] }
+        def: { [ItemsSym]: V["_schema"][ItemsSym] }
     ) {
-        this._encoding ||= {};
-        Object.assign(this._encoding, def);
+        this._schema ||= {};
+        Object.assign(this._schema, def);
     }
 }
 
@@ -178,7 +179,7 @@ function entryFromRawEntry<Item>(
     },
     loadedAs: Account & Me,
     accountID: ID<Account> | undefined,
-    itemField: Encoding
+    itemField: Schema
 ) {
     return {
         get value(): Item | undefined {
@@ -186,12 +187,12 @@ function entryFromRawEntry<Item>(
                 return rawEntry.value as Item;
             } else if ("encoded" in itemField) {
                 return Schema.decodeSync(itemField.encoded)(rawEntry.value);
-            } else if ("ref" in itemField) {
+            } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(accessFrom) as Item;
             }
         },
         get ref() {
-            if (itemField !== "json" && "ref" in itemField) {
+            if (itemField !== "json" && isRefEncoded(itemField)) {
                 const rawId = rawEntry.value;
                 return new Ref(
                     rawId as unknown as ID<CoValue>,
@@ -206,7 +207,7 @@ function entryFromRawEntry<Item>(
                 new Ref(
                     accountID as unknown as ID<Account>,
                     loadedAs,
-                    {ref: () => Account}
+                    Account
                 )?.accessFrom(accessFrom)
             );
         },
@@ -247,7 +248,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
                 rawEntry,
                 target._loadedAs,
                 key as unknown as ID<Account>,
-                target._encoding[ItemsSym]
+                target._schema[ItemsSym]
             );
         } else if (key === "perSession") {
             return new Proxy(receiver, CoStreamPerSessionProxyHandler);
@@ -261,8 +262,8 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
             typeof value === "object" &&
             SchemaInit in value
         ) {
-            (target.constructor as typeof CoStream)._encoding ||= {};
-            (target.constructor as typeof CoStream)._encoding[ItemsSym] =
+            (target.constructor as typeof CoStream)._schema ||= {};
+            (target.constructor as typeof CoStream)._schema[ItemsSym] =
                 value[SchemaInit];
             init(target);
             return true;
@@ -277,8 +278,8 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
             typeof descriptor.value === "object" &&
             SchemaInit in descriptor.value
         ) {
-            (target.constructor as typeof CoStream)._encoding ||= {};
-            (target.constructor as typeof CoStream)._encoding[ItemsSym] =
+            (target.constructor as typeof CoStream)._schema ||= {};
+            (target.constructor as typeof CoStream)._schema[ItemsSym] =
                 descriptor.value[SchemaInit];
             init(target);
             return true;
@@ -323,7 +324,7 @@ const CoStreamPerSessionProxyHandler: ProxyHandler<CoStream> = {
                 cojsonInternals.isAccountID(by)
                     ? (by as unknown as ID<Account>)
                     : undefined,
-                target._encoding[ItemsSym]
+                target._schema[ItemsSym]
             );
         } else {
             return Reflect.get(target, key, receiver);

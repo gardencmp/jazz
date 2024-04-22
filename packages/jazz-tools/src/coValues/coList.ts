@@ -5,13 +5,13 @@ import type {
     AccountCtx,
     CoValue,
     ValidItem,
-    Encoding,
-    EncodingFor,
+    Schema,
+    SchemaFor,
     ID,
     RefEncoded,
     SubclassedConstructor,
     UnavailableError,
-    IsVal,
+    IfCo,
 } from "../internal.js";
 import {
     Account,
@@ -21,8 +21,9 @@ import {
     ItemsSym,
     Ref,
     SchemaInit,
-    val,
+    co,
     inspect,
+    isRefEncoded,
     makeRefs,
 } from "../internal.js";
 import { Schema } from "@effect/schema";
@@ -32,10 +33,10 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
     implements CoValue<"CoList", RawCoList>
 {
     static Of<Item extends ValidItem<Item, "CoList"> = any>(
-        item: IsVal<Item, Item>
+        item: IfCo<Item, Item>
     ): typeof CoList<Item> {
         return class CoListOf extends CoList<Item> {
-            [val.items] = item;
+            [co.items] = item;
         };
     }
 
@@ -53,11 +54,11 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
-    static _encoding: any;
-    get _encoding(): {
-        [ItemsSym]: EncodingFor<Item>;
+    static _schema: any;
+    get _schema(): {
+        [ItemsSym]: SchemaFor<Item>;
     } {
-        return (this.constructor as typeof CoList)._encoding;
+        return (this.constructor as typeof CoList)._schema;
     }
 
     get _owner(): Account | Group {
@@ -84,7 +85,7 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
                     (_, idx) => idx
                 ),
             this._loadedAs,
-            (_idx) => this._encoding[ItemsSym] as RefEncoded<CoValue>
+            (_idx) => this._schema[ItemsSym] as RefEncoded<CoValue>
         ) as any;
     }
 
@@ -148,7 +149,7 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
     push(...items: Item[]): number {
         for (const item of toRawItems(
             items as Item[],
-            this._encoding[ItemsSym]
+            this._schema[ItemsSym]
         )) {
             this._raw.append(item);
         }
@@ -162,7 +163,7 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
     unshift(...items: Item[]): number {
         for (const item of toRawItems(
             items as Item[],
-            this._encoding[ItemsSym]
+            this._schema[ItemsSym]
         )) {
             this._raw.prepend(item);
         }
@@ -202,7 +203,7 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
         let appendAfter = start;
         for (const item of toRawItems(
             items as Item[],
-            this._encoding[ItemsSym]
+            this._schema[ItemsSym]
         )) {
             this._raw.append(item, appendAfter);
             appendAfter++;
@@ -212,14 +213,14 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
     }
 
     toJSON() {
-        const itemDescriptor = this._encoding[ItemsSym] as Encoding;
+        const itemDescriptor = this._schema[ItemsSym] as Schema;
         if (itemDescriptor === "json") {
             return this._raw.asArray();
         } else if ("encoded" in itemDescriptor) {
             return this._raw
                 .asArray()
                 .map((e) => Schema.encodeSync(itemDescriptor.encoded)(e));
-        } else if ("ref" in itemDescriptor) {
+        } else if (isRefEncoded(itemDescriptor)) {
             return this.map((item) => (item as unknown as CoValue)?.toJSON());
         } else {
             return [];
@@ -269,22 +270,22 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
         onUpdate: (value: V) => void
     ) => () => void;
 
-    static encoding<V extends CoList>(
+    static schema<V extends CoList>(
         this: { new (...args: any): V } & typeof CoList,
-        def: { [ItemsSym]: V["_encoding"][ItemsSym] }
+        def: { [ItemsSym]: V["_schema"][ItemsSym] }
     ) {
-        this._encoding ||= {};
-        Object.assign(this._encoding, def);
+        this._schema ||= {};
+        Object.assign(this._schema, def);
     }
 }
 
-function toRawItems<Item>(items: Item[], itemDescriptor: Encoding) {
+function toRawItems<Item>(items: Item[], itemDescriptor: Schema) {
     const rawItems =
         itemDescriptor === "json"
             ? items
             : "encoded" in itemDescriptor
               ? items?.map((e) => Schema.encodeSync(itemDescriptor.encoded)(e))
-              : "ref" in itemDescriptor
+              : isRefEncoded(itemDescriptor)
                 ? items?.map((v) => (v as unknown as CoValue).id)
                 : (() => {
                       throw new Error("Invalid element descriptor");
@@ -296,7 +297,7 @@ function init(list: CoList) {
     if (list[InitValues]) {
         const { init, owner } = list[InitValues];
         const raw = owner._raw.createList(
-            toRawItems(init, list._encoding[ItemsSym])
+            toRawItems(init, list._schema[ItemsSym])
         );
 
         Object.defineProperties(list, {
@@ -313,7 +314,7 @@ function init(list: CoList) {
 const CoListProxyHandler: ProxyHandler<CoList> = {
     get(target, key, receiver) {
         if (typeof key === "string" && !isNaN(+key)) {
-            const itemDescriptor = target._encoding[ItemsSym] as Encoding;
+            const itemDescriptor = target._schema[ItemsSym] as Schema;
             const rawValue = target._raw.get(Number(key));
             if (itemDescriptor === "json") {
                 return rawValue;
@@ -321,7 +322,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
                 return rawValue === undefined
                     ? undefined
                     : Schema.decodeSync(itemDescriptor.encoded)(rawValue);
-            } else if ("ref" in itemDescriptor) {
+            } else if (isRefEncoded(itemDescriptor)) {
                 return rawValue === undefined
                     ? undefined
                     : new Ref(
@@ -342,20 +343,20 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             typeof value === "object" &&
             SchemaInit in value
         ) {
-            (target.constructor as typeof CoList)._encoding ||= {};
-            (target.constructor as typeof CoList)._encoding[ItemsSym] =
+            (target.constructor as typeof CoList)._schema ||= {};
+            (target.constructor as typeof CoList)._schema[ItemsSym] =
                 value[SchemaInit];
             init(target);
             return true;
         }
         if (typeof key === "string" && !isNaN(+key)) {
-            const itemDescriptor = target._encoding[ItemsSym] as Encoding;
+            const itemDescriptor = target._schema[ItemsSym] as Schema;
             let rawValue;
             if (itemDescriptor === "json") {
                 rawValue = value;
             } else if ("encoded" in itemDescriptor) {
                 rawValue = Schema.encodeSync(itemDescriptor.encoded)(value);
-            } else if ("ref" in itemDescriptor) {
+            } else if (isRefEncoded(itemDescriptor)) {
                 rawValue = value.id;
             }
             target._raw.replace(Number(key), rawValue);
@@ -371,8 +372,8 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             typeof descriptor.value === "object" &&
             SchemaInit in descriptor.value
         ) {
-            (target.constructor as typeof CoList)._encoding ||= {};
-            (target.constructor as typeof CoList)._encoding[ItemsSym] =
+            (target.constructor as typeof CoList)._schema ||= {};
+            (target.constructor as typeof CoList)._schema[ItemsSym] =
                 descriptor.value[SchemaInit];
             init(target);
             return true;

@@ -78,6 +78,9 @@ export interface CoValue<Type extends string = string, Raw = any> {
 export function isCoValue(value: any): value is CoValue {
     return value && value._type !== undefined;
 }
+export function isCoValueClass(value: any): value is CoValueClass {
+    return typeof value === "function" && value.fromRaw !== undefined;
+}
 
 /** @category Schemas & CoValues - Abstract interfaces */
 export type ID<T> = CojsonInternalTypes.RawCoID & {
@@ -115,9 +118,7 @@ export class CoValueBase implements CoValue {
         return Effect.gen(this, function* (_) {
             const account = yield* _(AccountCtx);
             return yield* _(
-                new Ref(id as ID<V>, account, {
-                    ref: () => this as CoValueClass<V>,
-                }).loadEf()
+                new Ref(id as ID<V>, account, this as CoValueClass<V>).loadEf()
             );
         });
     }
@@ -130,9 +131,9 @@ export class CoValueBase implements CoValue {
             onProgress?: (progress: number) => void;
         }
     ): Promise<V | undefined> {
-        return new Ref(id as ID<V>, options.as, {
-            ref: () => this as CoValueClass<V>,
-        }).load(options?.onProgress && { onProgress: options.onProgress });
+        return new Ref(id as ID<V>, options.as, this as CoValueClass<V>).load(
+            options?.onProgress && { onProgress: options.onProgress }
+        );
     }
 
     static subscribe<V extends CoValue, Acc extends Account>(

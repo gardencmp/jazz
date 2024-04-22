@@ -12,7 +12,7 @@ export {
 
 export { ID, CoValue } from "./internal.js";
 
-export { Encoders, val } from "./internal.js";
+export { Encoders, co } from "./internal.js";
 
 export { CoMap } from "./internal.js";
 export { CoList } from "./internal.js";

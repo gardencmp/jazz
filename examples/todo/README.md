@@ -34,7 +34,7 @@ pnpm dev
 
 - [`src/basicComponents`](./src/basicComponents): simple components to build the UI, unrelated to Jazz (uses [shadcn/ui](https://ui.shadcn.com))
 - [`src/components`](./src/components/): helper components that do contain Jazz-specific logic, but aren't very relevant to understand the basics of Jazz and CoJSON
-- [`src/1_types.ts`](./src/1_types.ts),
+- [`src/1_schema.ts`](./src/1_schema.ts),
 [`src/2_main.tsx`](./src/2_main.tsx),
 [`src/3_NewProjectForm.tsx`](./src/3_NewProjectForm.tsx),
 [`src/4_ProjectTodoTable.tsx`](./src/4_ProjectTodoTable.tsx): the main files for this example, see the walkthrough below
@@ -43,7 +43,7 @@ pnpm dev
 
 ### Main parts
 
-1. Defining the data model with CoJSON: [`src/1_types.ts`](./src/1_types.ts)
+1. Defining the data model with CoJSON: [`src/1_schema.ts`](./src/1_schema.ts)
 
 2. The top-level provider `<WithJazz/>` and routing: [`src/2_main.tsx`](./src/2_main.tsx)
 

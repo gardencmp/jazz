@@ -4,8 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, jazzReady, Encoders, CoMap } from "..";
-import { val } from "../internal";
+import { Account, jazzReady, Encoders, CoMap, co } from "..";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,17 +21,17 @@ describe("Simple CoMap operations", async () => {
     });
 
     class TestMap extends CoMap<TestMap> {
-        color = val.string;
-        _height = val.number;
-        birthday = val.encoded(Encoders.Date);
-        name? = val.string;
+        color = co.string;
+        _height = co.number;
+        birthday = co.encoded(Encoders.Date);
+        name? = co.string;
 
         get roughColor() {
             return this.color + "ish";
         }
     }
 
-    console.log("TestMap schema", TestMap.prototype._encoding);
+    console.log("TestMap schema", TestMap.prototype._schema);
 
     const birthday = new Date();
 
@@ -83,8 +82,8 @@ describe("Simple CoMap operations", async () => {
     });
 
     class RecursiveMap extends CoMap<RecursiveMap> {
-        name = val.string;
-        next: val<RecursiveMap | null> = val.ref(() => RecursiveMap);
+        name = co.string;
+        next: co<RecursiveMap | null> = co.ref(RecursiveMap);
     }
 
     const recursiveMap = new RecursiveMap(
@@ -115,20 +114,20 @@ describe("Simple CoMap operations", async () => {
     });
 
     class MapWithEnumOfMaps extends CoMap<MapWithEnumOfMaps> {
-        name = val.string;
-        child = val.ref<typeof ChildA | typeof ChildB>((raw) =>
+        name = co.string;
+        child = co.ref<typeof ChildA | typeof ChildB>((raw) =>
             raw.get("type") === "a" ? ChildA : ChildB
         );
     }
 
     class ChildA extends CoMap<ChildA> {
-        type = val.literal("a");
-        value = val.number;
+        type = co.literal("a");
+        value = co.number;
     }
 
     class ChildB extends CoMap<ChildB> {
-        type = val.literal("b");
-        value = val.string;
+        type = co.literal("b");
+        value = co.string;
     }
 
     const mapWithEnum = new MapWithEnumOfMaps(
@@ -153,25 +152,25 @@ describe("Simple CoMap operations", async () => {
     });
 
     class SuperClassMap extends CoMap<SuperClassMap> {
-        name = val.string;
+        name = co.string;
     }
 
     class SubClassMap extends SuperClassMap {
-        name = val.literal("specificString")
-        value = val.number;
-        extra = val.ref(() => TestMap)
+        name = co.literal("specificString")
+        value = co.number;
+        extra = co.ref(TestMap)
     }
     interface SubClassMap extends CoMap<SubClassMap> {}
 });
 
 describe("CoMap resolution", async () => {
     class TwiceNestedMap extends CoMap<TwiceNestedMap> {
-        taste = val.string;
+        taste = co.string;
     }
 
     class NestedMap extends CoMap<NestedMap> {
-        name = val.string;
-        twiceNested = val.ref(() => TwiceNestedMap);
+        name = co.string;
+        twiceNested = co.ref(TwiceNestedMap);
 
         get _fancyName() {
             return "Sir " + this.name;
@@ -179,9 +178,9 @@ describe("CoMap resolution", async () => {
     }
 
     class TestMap extends CoMap<TestMap> {
-        color = val.string;
-        height = val.number;
-        nested = val.ref(() => NestedMap);
+        color = co.string;
+        height = co.number;
+        nested = co.ref(NestedMap);
 
         get _roughColor() {
             return this.color + "ish";
@@ -376,8 +375,8 @@ describe("CoMap resolution", async () => {
     });
 
     class TestMapWithOptionalRef extends CoMap<TestMapWithOptionalRef> {
-        color = val.string;
-        nested? = val.ref(() => NestedMap);
+        color = co.string;
+        nested? = co.ref(NestedMap);
     }
 
     test("Construction with optional", async () => {
@@ -419,7 +418,7 @@ describe("CoMap resolution", async () => {
     });
 
     class TestRecord extends CoMap<TestRecord> {
-        [val.items] = val.number;
+        [co.items] = co.number;
     }
     interface TestRecord extends Record<string, number> {}
 

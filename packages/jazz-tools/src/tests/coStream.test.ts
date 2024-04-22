@@ -4,7 +4,7 @@ import { webcrypto } from "node:crypto";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { BinaryCoStream, ID, Account, jazzReady, CoStream, val } from "..";
+import { BinaryCoStream, ID, Account, jazzReady, CoStream, co } from "..";
 import { Simplify } from "effect/Types";
 
 if (!("crypto" in globalThis)) {
@@ -21,7 +21,7 @@ describe("Simple CoStream operations", async () => {
         name: "Hermes Puggington",
     });
 
-    class TestStream extends CoStream.Of(val.string) {}
+    class TestStream extends CoStream.Of(co.string) {}
 
     const stream = new TestStream(["milk"], { owner: me });
 
@@ -44,15 +44,15 @@ describe("Simple CoStream operations", async () => {
 });
 
 describe("CoStream resolution", async () => {
-    class TwiceNestedStream extends CoStream.Of(val.string) {
+    class TwiceNestedStream extends CoStream.Of(co.string) {
         fancyValueOf(account: ID<Account>) {
             return "Sir " + this[account]?.value;
         }
     }
 
-    class NestedStream extends CoStream.Of(val.ref(() => TwiceNestedStream)) {}
+    class NestedStream extends CoStream.Of(co.ref(TwiceNestedStream)) {}
 
-    class TestStream extends CoStream.Of(val.ref(() => NestedStream)) {}
+    class TestStream extends CoStream.Of(co.ref(NestedStream)) {}
 
     const initNodeAndStream = async () => {
         const me = await Account.create({

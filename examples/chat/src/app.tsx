@@ -1,14 +1,14 @@
-import { ID, Group, CoMap, CoList, val } from "jazz-tools";
+import { ID, Group, CoMap, CoList, co } from "jazz-tools";
 import { JazzReact, DemoAuth } from "jazz-react";
 import { createRoot } from "react-dom/client";
 import { useHashRouter } from "hash-slash";
 import { ChatScreen } from "./chatScreen.tsx";
 
 export class Message extends CoMap<Message> {
-  text = val.string;
+  text = co.string;
 }
 
-export class Chat extends CoList.Of(val.ref(() => Message)) {}
+export class Chat extends CoList.Of(co.ref(Message)) {}
 
 const auth = DemoAuth({ appName: "Jazz Chat" });
 const Jazz = JazzReact({ auth, apiKey: import.meta.env.VITE_JAZZ_KEY });

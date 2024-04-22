@@ -5,16 +5,16 @@ import { createImage } from "jazz-browser-media-images";
 import { PetPost, PetReactions } from "./1_schema";
 import { Input, Button } from "./basicComponents";
 import { useAccount, useCoState } from "./2_main";
-import { CoMap, Group, ID, ImageDefinition, val } from "jazz-tools";
+import { CoMap, Group, ID, ImageDefinition, co } from "jazz-tools";
 import { ProgressiveImg } from "jazz-react";
 
 /** Walkthrough: TODO
  */
 
 class PartialPetPost extends CoMap<PartialPetPost> {
-    name = val.string;
-    image? = val.ref(() => ImageDefinition);
-    reactions = val.ref(() => PetReactions);
+    name = co.string;
+    image? = co.ref(ImageDefinition);
+    reactions = co.ref(PetReactions);
 }
 
 export function NewPetPostForm() {

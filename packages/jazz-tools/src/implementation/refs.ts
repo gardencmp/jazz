@@ -8,7 +8,11 @@ import type {
     RefEncoded,
     UnavailableError,
 } from "../internal.js";
-import { subscriptionsScopes } from "../internal.js";
+import {
+    instantiateRefEncoded,
+    isRefEncoded,
+    subscriptionsScopes,
+} from "../internal.js";
 
 export class Ref<V extends CoValue> {
     private cachedValue: V | undefined;
@@ -16,10 +20,10 @@ export class Ref<V extends CoValue> {
     constructor(
         readonly id: ID<V>,
         readonly controlledAccount: Account & Me,
-        readonly encoding: RefEncoded<V>
+        readonly schema: RefEncoded<V>
     ) {
-        if (!("ref" in encoding)) {
-            throw new Error("Ref must be constructed with a ref encoding");
+        if (!isRefEncoded(schema)) {
+            throw new Error("Ref must be constructed with a ref schema");
         }
     }
 
@@ -30,7 +34,7 @@ export class Ref<V extends CoValue> {
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            const value = this.encoding.ref(raw).fromRaw(raw);
+            const value = instantiateRefEncoded(this.schema, raw);
             this.cachedValue = value;
             return value;
         } else {
@@ -64,11 +68,8 @@ export class Ref<V extends CoValue> {
         if (raw === "unavailable") {
             return "unavailable";
         } else {
-            return new Ref(
-                this.id,
-                this.controlledAccount,
-                this.encoding
-            ).value!;
+            return new Ref(this.id, this.controlledAccount, this.schema)
+                .value!;
         }
     }
 
@@ -100,7 +101,7 @@ export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
     controlledAccount: Account & Me,
-    refEncodingForKey: (key: Keys) => RefEncoded<CoValue>
+    refSchemaForKey: (key: Keys) => RefEncoded<CoValue>
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
     length: number;
@@ -117,7 +118,7 @@ export function makeRefs<Keys extends string | number>(
                         yield new Ref(
                             getIdForKey(key)!,
                             controlledAccount,
-                            refEncodingForKey(key)
+                            refSchemaForKey(key)
                         );
                     }
                 };
@@ -131,7 +132,7 @@ export function makeRefs<Keys extends string | number>(
             return new Ref(
                 id as ID<CoValue>,
                 controlledAccount,
-                refEncodingForKey(key as Keys)
+                refSchemaForKey(key as Keys)
             );
         },
         ownKeys() {

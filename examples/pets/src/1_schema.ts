@@ -5,7 +5,7 @@ import {
     CoStream,
     ImageDefinition,
     Profile,
-    val,
+    co,
 } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
@@ -25,23 +25,23 @@ export const ReactionTypes = [
 ] as const;
 export type ReactionType = (typeof ReactionTypes)[number];
 
-export class PetReactions extends CoStream.Of(val.json<ReactionType>()) {}
+export class PetReactions extends CoStream.Of(co.json<ReactionType>()) {}
 
 export class PetPost extends CoMap<PetPost> {
-    name = val.string;
-    image = val.ref(() => ImageDefinition);
-    reactions = val.ref(() => PetReactions);
+    name = co.string;
+    image = co.ref(ImageDefinition);
+    reactions = co.ref(PetReactions);
 }
 
-export class ListOfPosts extends CoList.Of(val.ref(() => PetPost)) {}
+export class ListOfPosts extends CoList.Of(co.ref(PetPost)) {}
 
 export class PetAccountRoot extends CoMap<PetAccountRoot> {
-    posts = val.ref(() => ListOfPosts);
+    posts = co.ref(ListOfPosts);
 }
 
 export class PetAccount extends Account<PetAccount> {
-    profile = val.ref(() => Profile);
-    root = val.ref(() => PetAccountRoot);
+    profile = co.ref(Profile);
+    root = co.ref(PetAccountRoot);
 
     migrate = () => {
         if (!this._refs.root) {

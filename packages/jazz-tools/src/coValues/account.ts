@@ -15,7 +15,7 @@ import type {
     CoMap,
     CoValue,
     CoValueClass,
-    Encoding,
+    Schema,
     Group,
     ID,
     RefEncoded,
@@ -45,15 +45,15 @@ export class Account<
     _type!: "Account";
     _raw!: RawAccount | RawControlledAccount;
 
-    static _encoding: any;
-    get _encoding(): {
-        profile: Encoding;
-        root: Encoding;
+    static _schema: any;
+    get _schema(): {
+        profile: Schema;
+        root: Schema;
     } {
-        return (this.constructor as typeof Account)._encoding;
+        return (this.constructor as typeof Account)._schema;
     }
     static {
-        this._encoding = {
+        this._schema = {
             profile: { ref: () => Profile },
             root: { json: true },
         } as any;
@@ -91,7 +91,7 @@ export class Account<
                 (new Ref(
                     profileID,
                     this._loadedAs,
-                    this._encoding.profile as RefEncoded<
+                    this._schema.profile as RefEncoded<
                         NonNullable<Def["profile"]> & CoValue
                     >
                 ) as any),
@@ -100,7 +100,7 @@ export class Account<
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    this._encoding.root as RefEncoded<
+                    this._schema.root as RefEncoded<
                         NonNullable<Def["root"]> & CoValue
                     >
                 ) as any),
@@ -268,8 +268,8 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
             typeof value === "object" &&
             SchemaInit in value
         ) {
-            (target.constructor as typeof CoMap)._encoding ||= {};
-            (target.constructor as typeof CoMap)._encoding[key] =
+            (target.constructor as typeof CoMap)._schema ||= {};
+            (target.constructor as typeof CoMap)._schema[key] =
                 value[SchemaInit];
             return true;
         } else if (key === "profile") {
@@ -297,8 +297,8 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
             typeof descriptor.value === "object" &&
             SchemaInit in descriptor.value
         ) {
-            (target.constructor as typeof CoMap)._encoding ||= {};
-            (target.constructor as typeof CoMap)._encoding[key] =
+            (target.constructor as typeof CoMap)._schema ||= {};
+            (target.constructor as typeof CoMap)._schema[key] =
                 descriptor.value[SchemaInit];
             return true;
         } else {

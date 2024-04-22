@@ -1,16 +1,16 @@
 import {
     BinaryCoStream,
     CoMap,
-    val,
+    co,
     subscriptionsScopes,
 } from "../../internal.js";
 
 export class ImageDefinition extends CoMap<ImageDefinition> {
-    originalSize = val.json<[number, number]>();
-    placeholderDataURL? = val.string;
+    originalSize = co.json<[number, number]>();
+    placeholderDataURL? = co.string;
 
-    [val.items] = val.ref(() => BinaryCoStream);
-    [res: `${number}x${number}`]: val<BinaryCoStream | null>;
+    [co.items] = co.ref(BinaryCoStream);
+    [res: `${number}x${number}`]: co<BinaryCoStream | null>;
 
     get highestResAvailable():
         | { res: `${number}x${number}`; stream: BinaryCoStream }

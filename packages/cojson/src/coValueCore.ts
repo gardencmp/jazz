@@ -698,9 +698,9 @@ export class CoValueCore {
 
             // Try to find indirect revelation through previousKeys
 
-            for (const val of content.keys()) {
-                if (isKeyForKeyField(val) && val.startsWith(keyID)) {
-                    const encryptingKeyID = val.split("_for_")[1] as KeyID;
+            for (const co of content.keys()) {
+                if (isKeyForKeyField(co) && co.startsWith(keyID)) {
+                    const encryptingKeyID = co.split("_for_")[1] as KeyID;
                     const encryptingKeySecret =
                         this.getReadKey(encryptingKeyID);
 
@@ -708,7 +708,7 @@ export class CoValueCore {
                         continue;
                     }
 
-                    const encryptedPreviousKey = content.get(val)!;
+                    const encryptedPreviousKey = content.get(co)!;
 
                     const secret = decryptKeySecret(
                         {
