@@ -33,7 +33,6 @@ import {
     RawProfile,
     RawAccountMigration,
 } from "./coValues/account.js";
-import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoValue } from "./index.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 

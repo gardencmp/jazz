@@ -26,7 +26,7 @@ import {
     isRefEncoded,
     makeRefs,
 } from "../internal.js";
-import { Schema } from "@effect/schema";
+import { Schema as EffectSchema } from "@effect/schema";
 
 export class CoList<Item extends ValidItem<Item, "CoList"> = any>
     extends Array<Item>
@@ -219,7 +219,7 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
         } else if ("encoded" in itemDescriptor) {
             return this._raw
                 .asArray()
-                .map((e) => Schema.encodeSync(itemDescriptor.encoded)(e));
+                .map((e) => EffectSchema.encodeSync(itemDescriptor.encoded)(e));
         } else if (isRefEncoded(itemDescriptor)) {
             return this.map((item) => (item as unknown as CoValue)?.toJSON());
         } else {
@@ -284,7 +284,7 @@ function toRawItems<Item>(items: Item[], itemDescriptor: Schema) {
         itemDescriptor === "json"
             ? items
             : "encoded" in itemDescriptor
-              ? items?.map((e) => Schema.encodeSync(itemDescriptor.encoded)(e))
+              ? items?.map((e) => EffectSchema.encodeSync(itemDescriptor.encoded)(e))
               : isRefEncoded(itemDescriptor)
                 ? items?.map((v) => (v as unknown as CoValue).id)
                 : (() => {
@@ -321,7 +321,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             } else if ("encoded" in itemDescriptor) {
                 return rawValue === undefined
                     ? undefined
-                    : Schema.decodeSync(itemDescriptor.encoded)(rawValue);
+                    : EffectSchema.decodeSync(itemDescriptor.encoded)(rawValue);
             } else if (isRefEncoded(itemDescriptor)) {
                 return rawValue === undefined
                     ? undefined
@@ -355,7 +355,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             if (itemDescriptor === "json") {
                 rawValue = value;
             } else if ("encoded" in itemDescriptor) {
-                rawValue = Schema.encodeSync(itemDescriptor.encoded)(value);
+                rawValue = EffectSchema.encodeSync(itemDescriptor.encoded)(value);
             } else if (isRefEncoded(itemDescriptor)) {
                 rawValue = value.id;
             }

@@ -111,7 +111,7 @@ export function makeRefs<Keys extends string | number>(
         length: number;
     };
     return new Proxy(refs, {
-        get(target, key) {
+        get(_target, key) {
             if (key === Symbol.iterator) {
                 return function* () {
                     for (const key of getKeysWithIds()) {

@@ -1,6 +1,6 @@
 import type { JsonValue, RawCoMap } from "cojson";
 import type { Simplify } from "effect/Types";
-import { Schema } from "@effect/schema";
+import { Schema as EffectSchema } from "@effect/schema";
 import type {
     CoValue,
     Schema,
@@ -82,12 +82,12 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     extends CoValueBase
     implements CoValue<"CoMap", RawCoMap>
 {
-    id!: ID<this>;
-    _type!: "CoMap";
+    declare id: ID<this>;
+    declare _type: "CoMap";
     static {
         this.prototype._type = "CoMap";
     }
-    _raw!: RawCoMap;
+    declare _raw: RawCoMap;
 
     static _schema: any;
     get _schema() {
@@ -131,7 +131,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         descriptor === "json"
                             ? rawEdit.value
                             : "encoded" in descriptor
-                              ? Schema.decodeSync(descriptor.encoded)(
+                              ? EffectSchema.decodeSync(descriptor.encoded)(
                                     rawEdit.value
                                 )
                               : new Ref(
@@ -252,7 +252,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         rawInit[key] = (initValue as unknown as CoValue).id;
                     }
                 } else if ("encoded" in descriptor) {
-                    rawInit[key] = Schema.encodeSync(descriptor.encoded)(
+                    rawInit[key] = EffectSchema.encodeSync(descriptor.encoded)(
                         initValue as any
                     );
                 }
@@ -317,7 +317,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                 } else if ("encoded" in descriptor) {
                     return raw === undefined
                         ? undefined
-                        : Schema.decodeSync(descriptor.encoded)(raw);
+                        : EffectSchema.decodeSync(descriptor.encoded)(raw);
                 } else if (isRefEncoded(descriptor)) {
                     return raw === undefined
                         ? undefined
@@ -353,7 +353,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             } else if ("encoded" in descriptor) {
                 target._raw.set(
                     key,
-                    Schema.encodeSync(descriptor.encoded)(value)
+                    EffectSchema.encodeSync(descriptor.encoded)(value)
                 );
             } else if (isRefEncoded(descriptor)) {
                 target._raw.set(key, value.id);

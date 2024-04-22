@@ -30,7 +30,7 @@ import {
     SchemaInit,
     isRefEncoded,
 } from "../internal.js";
-import { Schema } from "@effect/schema";
+import { Schema as EffectSchema } from "@effect/schema";
 
 export type CoStreamEntry<Item> = {
     value: NonNullable<Item> extends CoValue ? NonNullable<Item> | null : Item;
@@ -52,12 +52,12 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
         };
     }
 
-    id!: ID<this>;
-    _type!: "CoStream";
+    declare id: ID<this>;
+    declare _type: "CoStream";
     static {
         this.prototype._type = "CoStream";
     }
-    _raw!: RawCoStream;
+    declare _raw: RawCoStream;
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
@@ -123,7 +123,7 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
         } else if ("encoded" in itemDescriptor) {
-            this._raw.push(Schema.encodeSync(itemDescriptor.encoded)(item));
+            this._raw.push(EffectSchema.encodeSync(itemDescriptor.encoded)(item));
         } else if (isRefEncoded(itemDescriptor)) {
             this._raw.push((item as unknown as CoValue).id);
         }
@@ -135,7 +135,7 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
             itemDescriptor === "json"
                 ? (v: unknown) => v
                 : "encoded" in itemDescriptor
-                  ? Schema.encodeSync(itemDescriptor.encoded)
+                  ? EffectSchema.encodeSync(itemDescriptor.encoded)
                   : (v: unknown) => v && (v as CoValue).id;
 
         return {
@@ -186,7 +186,7 @@ function entryFromRawEntry<Item>(
             if (itemField === "json") {
                 return rawEntry.value as Item;
             } else if ("encoded" in itemField) {
-                return Schema.decodeSync(itemField.encoded)(rawEntry.value);
+                return EffectSchema.decodeSync(itemField.encoded)(rawEntry.value);
             } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(accessFrom) as Item;
             }
@@ -336,12 +336,12 @@ export class BinaryCoStream
     extends CoValueBase
     implements CoValue<"BinaryCoStream", RawBinaryCoStream>
 {
-    id!: ID<this>;
-    _type!: "BinaryCoStream";
-    _raw!: RawBinaryCoStream;
+    declare id: ID<this>;
+    declare _type: "BinaryCoStream";
+    declare _raw: RawBinaryCoStream;
 
     constructor(
-        init: [] | undefined,
+        _init: [] | undefined,
         options:
             | {
                   owner: Account | Group;

@@ -8,9 +8,12 @@ export interface AuthProvider<Acc extends Account> {
     ): Promise<Acc & Me>;
 }
 
-export { BrowserDemoAuth, BrowserDemoAuthDriver } from "./DemoAuth.js";
-export { BrowserPasskeyAuth, BrowserPasskeyAuthDriver } from "./PasskeyAuth.js";
+export { BrowserDemoAuth, type BrowserDemoAuthDriver } from "./DemoAuth.js";
+export {
+    BrowserPasskeyAuth,
+    type BrowserPasskeyAuthDriver,
+} from "./PasskeyAuth.js";
 export {
     BrowserPassphraseAuth,
-    BrowserPassphraseAuthDriver,
+    type BrowserPassphraseAuthDriver,
 } from "./PassphraseAuth.js";

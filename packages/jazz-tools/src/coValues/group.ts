@@ -23,12 +23,12 @@ export class Group<
     extends CoValueBase
     implements CoValue<"Group", RawGroup>
 {
-    id!: ID<this>;
-    _type!: "Group";
+    declare id: ID<this>;
+    declare _type: "Group";
     static {
         this.prototype._type = "Group";
     }
-    _raw!: RawGroup;
+    declare _raw: RawGroup;
 
     static _schema: any;
     get _schema(): {

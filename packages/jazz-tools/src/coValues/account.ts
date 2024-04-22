@@ -41,9 +41,9 @@ export class Account<
     extends CoValueBase
     implements CoValue<"Account", RawAccount | RawControlledAccount>
 {
-    id!: ID<this>;
-    _type!: "Account";
-    _raw!: RawAccount | RawControlledAccount;
+    declare id: ID<this>;
+    declare _type: "Account";
+    declare _raw: RawAccount | RawControlledAccount;
 
     static _schema: any;
     get _schema(): {
@@ -116,7 +116,7 @@ export class Account<
         options: { fromRaw: RawAccount | RawControlledAccount }
     );
     constructor(
-        init: undefined,
+        _init: undefined,
         options:
             | { fromRaw: RawAccount | RawControlledAccount }
             | { owner: Group | Account }
