@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.0-alpha.12
+
+### Patch Changes
+
+- Fix variance of ID.\_\_type
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.12
+
 ## 0.7.0-alpha.11
 
 ### Patch Changes
