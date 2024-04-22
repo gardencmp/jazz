@@ -7,6 +7,15 @@ import "dotenv/config";
 
 import { webcrypto } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
+import {
+    AccountID,
+    AgentSecret,
+    Peer,
+    SessionID,
+    cojsonInternals,
+    cojsonReady,
+} from "cojson";
+import { Account, CoValueClass, ID, Me } from "jazz-tools";
 
 if (!("crypto" in globalThis)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,34 +26,31 @@ interface WorkerCredentialStorage {
     load(
         workerName: string
     ): Promise<
-        { accountID: AccountID; accountSecret: AgentSecret } | undefined
+        { accountID: ID<Account>; accountSecret: AgentSecret } | undefined
     >;
     save(
         workerName: string,
-        accountID: AccountID,
+        accountID: ID<Account>,
         accountSecret: AgentSecret
     ): Promise<void>;
 }
 
-export async function createOrResumeWorker<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap
->({
+export async function createOrResumeWorker<A extends Account>({
     workerName,
     credentialStorage = FileCredentialStorage,
     syncServer = "wss://sync.jazz.tools",
-    migration,
+    accountSchema = Account as unknown as CoValueClass<A> & typeof Account,
 }: {
     workerName: string;
     credentialStorage?: WorkerCredentialStorage;
     syncServer?: string;
-    migration?: AccountMigration<P, R>;
-}) {
+    accountSchema?: CoValueClass<A> & typeof Account;
+}): Promise<{ worker: A & Me }> {
     await cojsonReady;
 
     const existingCredentials = await credentialStorage.load(workerName);
 
-    let localNode: LocalNode;
+    let worker: Account & Me;
 
     const ws = new WebSocket(syncServer);
 
@@ -59,52 +65,48 @@ export async function createOrResumeWorker<
         // TODO: locked sessions similar to browser
         const sessionID =
             process.env.JAZZ_WORKER_SESSION ||
-            cojsonInternals.newRandomSessionID(existingCredentials.accountID);
+            cojsonInternals.newRandomSessionID(
+                existingCredentials.accountID as unknown as AccountID
+            );
 
         console.log("Loading worker", existingCredentials.accountID);
 
-        localNode = await LocalNode.withLoadedAccount({
+        worker = await accountSchema.become({
             accountID: existingCredentials.accountID,
             accountSecret: existingCredentials.accountSecret,
             sessionID: sessionID as SessionID,
-            migration,
             peersToLoadFrom: [wsPeer],
         });
 
         console.log(
             "Resuming worker",
             existingCredentials.accountID,
-            localNode
-                .expectProfileLoaded(localNode.account.id as AccountID)
+            worker._raw.core.node
+                .expectProfileLoaded(worker.id as AccountID)
                 .get("name")
         );
     } else {
-        const newWorker = await LocalNode.withNewlyCreatedAccount({
+        worker = await accountSchema.create({
             name: workerName,
             peersToLoadFrom: [wsPeer],
-            migration,
         });
-
-        localNode = newWorker.node;
 
         await credentialStorage.save(
             workerName,
-            newWorker.accountID,
-            newWorker.accountSecret
+            worker.id,
+            worker._raw.agentSecret
         );
 
-        console.log("Created worker", newWorker.accountID, workerName);
+        console.log("Created worker", worker.id, workerName);
     }
 
-    return { localNode, worker: localNode.account as ControlledAccount<P, R> };
+    return { worker: worker as A & Me};
 }
-
-export { autoSub } from "jazz-autosub";
 
 export const FileCredentialStorage: WorkerCredentialStorage = {
     async load(workerName: string): Promise<
         | {
-              accountID: AccountID;
+              accountID: ID<Account>;
               accountSecret: `sealerSecret_z${string}/signerSecret_z${string}`;
           }
         | undefined
@@ -122,7 +124,7 @@ export const FileCredentialStorage: WorkerCredentialStorage = {
 
     async save(
         workerName: string,
-        accountID: AccountID,
+        accountID: ID<Account>,
         accountSecret: `sealerSecret_z${string}/signerSecret_z${string}`
     ): Promise<void> {
         await writeFile(
@@ -139,10 +141,14 @@ export const FileCredentialStorage: WorkerCredentialStorage = {
                     ".gitignore",
                     gitginore + `\n${workerName}Credentials.json`
                 );
-                console.log(`Added ${workerName}Credentials.json to .gitignore`);
+                console.log(
+                    `Added ${workerName}Credentials.json to .gitignore`
+                );
             }
         } catch (e) {
-            console.warn(`Couldn't add ${workerName}Credentials.json to .gitignore, please add it yourself.`)
+            console.warn(
+                `Couldn't add ${workerName}Credentials.json to .gitignore, please add it yourself.`
+            );
         }
     },
 };
