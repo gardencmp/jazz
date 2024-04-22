@@ -1,5 +1,14 @@
 # jazz-browser-media-images
 
+## 0.7.0-alpha.11
+
+### Patch Changes
+
+- Support stricter TS lint rules
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.11
+  - jazz-tools@0.7.0-alpha.11
+
 ## 0.7.0-alpha.10
 
 ### Patch Changes

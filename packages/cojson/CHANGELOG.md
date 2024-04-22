@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.11
+
+### Patch Changes
+
+- Support stricter TS lint rules
+
 ## 0.7.0-alpha.10
 
 ### Patch Changes

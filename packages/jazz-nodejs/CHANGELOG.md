@@ -1,5 +1,15 @@
 # jazz-autosub
 
+## 0.7.0-alpha.11
+
+### Patch Changes
+
+- Support stricter TS lint rules
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.7.0-alpha.11
+  - jazz-tools@0.7.0-alpha.11
+  - cojson@0.7.0-alpha.11
+
 ## 0.7.0-alpha.10
 
 ### Patch Changes
