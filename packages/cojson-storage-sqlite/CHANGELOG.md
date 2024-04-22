@@ -1,5 +1,13 @@
 # cojson-storage-sqlite
 
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+- Updated dependencies
+  - cojson@0.7.0-alpha.10
+
 ## 0.5.3-alpha.1
 
 ### Patch Changes

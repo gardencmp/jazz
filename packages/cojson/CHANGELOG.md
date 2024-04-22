@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+
 ## 0.7.0-alpha.7
 
 ### Patch Changes

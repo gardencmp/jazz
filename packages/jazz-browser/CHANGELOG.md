@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+- Updated dependencies
+  - cojson-storage-indexeddb@0.7.0-alpha.10
+  - jazz-tools@0.7.0-alpha.10
+  - cojson@0.7.0-alpha.10
+
 ## 0.7.0-alpha.9
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # cojson-storage-indexeddb
 
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+- Updated dependencies
+  - cojson@0.7.0-alpha.10
+
 ## 0.6.4-alpha.4
 
 ### Patch Changes

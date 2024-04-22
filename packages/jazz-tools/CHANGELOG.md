@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+- Updated dependencies
+  - cojson@0.7.0-alpha.10
+
 ## 0.7.0-alpha.9
 
 ### Patch Changes

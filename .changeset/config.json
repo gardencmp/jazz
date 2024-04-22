@@ -4,7 +4,16 @@
     "commit": false,
     "fixed": [],
     "linked": [
-        ["cojson", "jazz-tools", "jazz-browser", "jazz-react"]
+        [
+            "cojson",
+            "jazz-tools",
+            "jazz-browser",
+            "jazz-react",
+            "jazz-nodejs",
+            "cojson-transport-nodejs-ws",
+            "cojson-storage-indexeddb",
+            "cojson-storage-sqlite"
+        ]
     ],
     "access": "public",
     "baseBranch": "main",

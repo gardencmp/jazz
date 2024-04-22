@@ -1,5 +1,13 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+- Updated dependencies
+  - cojson@0.7.0-alpha.10
+
 ## 0.5.2-alpha.2
 
 ### Patch Changes
