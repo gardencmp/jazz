@@ -82,7 +82,7 @@ export async function createOrResumeWorker<A extends Account>({
             "Resuming worker",
             existingCredentials.accountID,
             worker._raw.core.node
-                .expectProfileLoaded(worker.id as AccountID)
+                .expectProfileLoaded(worker.id as unknown as AccountID)
                 .get("name")
         );
     } else {

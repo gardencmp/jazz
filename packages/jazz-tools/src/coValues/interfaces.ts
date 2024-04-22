@@ -84,7 +84,7 @@ export function isCoValueClass(value: any): value is CoValueClass {
 
 /** @category Schemas & CoValues - Abstract interfaces */
 export type ID<T> = CojsonInternalTypes.RawCoID & {
-    readonly __type: T;
+    __type(_: never): T;
 };
 
 export class CoValueBase implements CoValue {
