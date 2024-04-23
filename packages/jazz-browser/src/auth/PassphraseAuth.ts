@@ -7,8 +7,9 @@ import {
     RawAccountMigration,
     RawControlledAccount,
 } from "cojson";
-import { agentSecretFromSecretSeed } from "cojson/src/crypto";
+import { Account, CoValueClass, ID, Me } from "jazz-tools";
 import { AuthProvider, SessionProvider } from "jazz-browser";
+import * as bip39 from "@scure/bip39";
 
 type LocalStorageData = {
     accountID: ID<Account>;
@@ -112,9 +113,6 @@ export class BrowserPassphraseAuth<Acc extends Account>
     }
 }
 
-import * as bip39 from "@scure/bip39";
-import { Account, CoValueClass, ID, Me } from "jazz-tools";
-
 async function signUp(
     username: string,
     passphrase: string,
@@ -129,7 +127,7 @@ async function signUp(
     const { node, accountID, accountSecret } =
         await LocalNode.withNewlyCreatedAccount({
             name: username,
-            initialAgentSecret: agentSecretFromSecretSeed(secretSeed),
+            initialAgentSecret: cojsonInternals.agentSecretFromSecretSeed(secretSeed),
             migration,
         });
 
@@ -155,7 +153,7 @@ async function logIn(
 ): Promise<LocalNode> {
     const accountSecretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
-    const accountSecret = agentSecretFromSecretSeed(accountSecretSeed);
+    const accountSecret = cojsonInternals.agentSecretFromSecretSeed(accountSecretSeed);
 
     if (!accountSecret) {
         throw new Error("Invalid credential");
