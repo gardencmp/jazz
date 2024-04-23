@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.13
+
+### Patch Changes
+
+- Add .all to CoStreamEntry
+
 ## 0.7.0-alpha.12
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.0-alpha.13
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.13
+
 ## 0.7.0-alpha.12
 
 ### Patch Changes
