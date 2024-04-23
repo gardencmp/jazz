@@ -186,27 +186,43 @@ function entryFromRawEntry<Item>(
     loadedAs: Account & Me,
     accountID: ID<Account> | undefined,
     itemField: Schema
-) {
+): Omit<CoStreamEntry<Item>, "all"> {
     return {
-        get value(): Item | undefined {
+        get value(): NonNullable<Item> extends CoValue
+            ? (CoValue & Item) | null
+            : Item {
             if (itemField === "json") {
-                return rawEntry.value as Item;
+                return rawEntry.value as NonNullable<Item> extends CoValue
+                    ? (CoValue & Item) | null
+                    : Item;
             } else if ("encoded" in itemField) {
                 return EffectSchema.decodeSync(itemField.encoded)(
                     rawEntry.value
                 );
             } else if (isRefEncoded(itemField)) {
-                return this.ref?.accessFrom(accessFrom) as Item;
+                return this.ref?.accessFrom(
+                    accessFrom
+                ) as NonNullable<Item> extends CoValue
+                    ? (CoValue & Item) | null
+                    : Item;
+            } else {
+                throw new Error("Invalid item field schema");
             }
         },
-        get ref() {
+        get ref(): NonNullable<Item> extends CoValue
+            ? Ref<NonNullable<Item>>
+            : never {
             if (itemField !== "json" && isRefEncoded(itemField)) {
                 const rawId = rawEntry.value;
                 return new Ref(
                     rawId as unknown as ID<CoValue>,
                     loadedAs,
                     itemField
-                );
+                ) as NonNullable<Item> extends CoValue
+                    ? Ref<NonNullable<Item>>
+                    : never;
+            } else {
+                return undefined as never;
             }
         },
         get by() {
@@ -358,7 +374,7 @@ const CoStreamPerSessionProxyHandler: ProxyHandler<CoStream> = {
             Object.defineProperty(entry, "all", {
                 get: () => {
                     const allRawEntries = target._raw.itemsIn(sessionID);
-                    return (function * () {
+                    return (function* () {
                         const rawEntry = allRawEntries.next();
                         if (rawEntry.done) return;
                         yield entryFromRawEntry(
@@ -370,8 +386,8 @@ const CoStreamPerSessionProxyHandler: ProxyHandler<CoStream> = {
                                 : undefined,
                             target._schema[ItemsSym]
                         );
-                    })() satisfies IterableIterator<SingleCoStreamEntry<any>>
-                }
+                    })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
+                },
             });
 
             return entry;
