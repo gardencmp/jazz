@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.15
+
+### Patch Changes
+
+- More superclass-compatible CoMaps
+
 ## 0.7.0-alpha.14
 
 ### Patch Changes
