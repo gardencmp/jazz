@@ -83,9 +83,9 @@ export function isCoValueClass(value: any): value is CoValueClass {
 }
 
 /** @category Schemas & CoValues - Abstract interfaces */
-export type ID<T> = CojsonInternalTypes.RawCoID & {
-    __type(_: never): T;
-};
+export type ID<T> = CojsonInternalTypes.RawCoID & IDMarker<T>;
+
+type IDMarker<out T> = { __type(_: never): T };
 
 export class CoValueBase implements CoValue {
     id!: ID<this>;

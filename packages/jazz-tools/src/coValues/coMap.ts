@@ -10,6 +10,7 @@ import type {
     RefEncoded,
     EnsureCoValueNullable,
     IfCo,
+    RefIfCoValue,
 } from "../internal.js";
 import {
     Account,
@@ -57,9 +58,7 @@ type DefaultFields = {
 };
 
 type CoMapSchema<Fields extends object> = {
-    [Key in OwnKeys<Fields> as IfCo<Fields[Key], Key>]: SchemaFor<
-        Fields[Key]
-    >;
+    [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]: SchemaFor<Fields[Key]>;
 } & {
     [ItemsSym]: ItemsSym extends keyof Fields
         ? SchemaFor<Fields[ItemsSym]>
@@ -68,7 +67,7 @@ type CoMapSchema<Fields extends object> = {
 
 type CoMapEdit<V> = {
     value?: V;
-    ref?: V extends CoValue ? Ref<V> : never;
+    ref?: RefIfCoValue<V>;
     by?: Account;
     madeAt: Date;
 };
@@ -91,18 +90,15 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
 
     static _schema: any;
     get _schema() {
-        return (this.constructor as typeof CoMap)
-            ._schema as CoMapSchema<this>;
+        return (this.constructor as typeof CoMap)._schema as CoMapSchema<this>;
     }
 
     get _refs(): {
-        [Key in OwnKeys<this> as NonNullable<this[Key]> extends CoValue
+        [Key in CoKeys<this> as NonNullable<this[Key]> extends CoValue
             ? Key
-            : never]: NonNullable<this[Key]> extends CoValue
-            ? Ref<NonNullable<this[Key]>>
-            : never;
+            : never]: RefIfCoValue<this[Key]>;
     } {
-        return makeRefs<OwnKeys<Fields>>(
+        return makeRefs<CoKeys<Fields>>(
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
             () =>
                 Object.keys(this._schema).filter((key) => {
@@ -110,7 +106,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         key as keyof typeof this._schema
                     ] as Schema;
                     schema !== "json" && isRefEncoded(schema);
-                }) as OwnKeys<Fields>[],
+                }) as CoKeys<Fields>[],
             this._loadedAs,
             (key) => this._schema[key] as RefEncoded<CoValue>
         ) as any;
@@ -158,9 +154,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                 };
             },
         }) as {
-            [Key in OwnKeys<this> as IfCo<this[Key], Key>]: CoMapEdit<
-                this[Key]
-            >;
+            [Key in CoKeys<this> as IfCo<this[Key], Key>]: CoMapEdit<this[Key]>;
         };
     }
 
@@ -203,7 +197,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
 
     toJSON() {
         const jsonedFields = this._raw.keys().map((key) => {
-            const tKey = key as OwnKeys<Fields>;
+            const tKey = key as CoKeys<Fields>;
             const descriptor = this._schema[tKey] as Schema;
 
             if (descriptor == "json" || "encode" in descriptor) {
@@ -262,18 +256,18 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     }
 }
 
-export type OwnKeys<Fields extends object> = Exclude<
+export type CoKeys<Fields extends object> = Exclude<
     keyof Fields & string,
     keyof CoMap<Record<string, never>>
 >;
 
 export type CoMapInit<Fields extends object> = {
-    [Key in OwnKeys<Fields> as undefined extends Fields[Key]
+    [Key in CoKeys<Fields> as undefined extends Fields[Key]
         ? never
         : null extends Fields[Key]
           ? never
           : IfCo<Fields[Key], Key>]: Fields[Key];
-} & { [Key in OwnKeys<Fields> as IfCo<Fields[Key], Key>]?: Fields[Key] };
+} & { [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]?: Fields[Key] };
 
 function tryInit(map: CoMap) {
     if (
@@ -306,9 +300,8 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         } else if (key in target) {
             return Reflect.get(target, key, receiver);
         } else {
-            const descriptor = (target._schema[
-                key as keyof CoMap["_schema"]
-            ] || target._schema[ItemsSym]) as Schema;
+            const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
+                target._schema[ItemsSym]) as Schema;
             if (descriptor && typeof key === "string") {
                 const raw = target._raw.get(key);
 
@@ -398,9 +391,8 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         if (key in target) {
             return Reflect.getOwnPropertyDescriptor(target, key);
         } else {
-            const descriptor = (target._schema[
-                key as keyof CoMap["_schema"]
-            ] || target._schema[ItemsSym]) as Schema;
+            const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
+                target._schema[ItemsSym]) as Schema;
             if (descriptor || key in target._raw.ops) {
                 return {
                     enumerable: true,

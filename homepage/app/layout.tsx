@@ -12,8 +12,8 @@ import { Nav, NavLink, Newsletter, NewsletterButton } from "@/components/nav";
 import { MailIcon } from "lucide-react";
 
 // If loading a variable font, you don't need to specify the font weight
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap", });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap", });
 const pragmata = localFont({
     src: "../fonts/ppr_0829.woff2",
     variable: "--font-ppr",
@@ -93,7 +93,6 @@ export default function RootLayout({
                     <main className="flex min-h-screen flex-col p-8 max-w-[80rem] w-full">
                         <article
                             className={[
-                                "pt-20",
                                 "prose lg:prose-lg max-w-none prose-stone dark:prose-invert",
                                 "prose-headings:font-display",
                                 "prose-h1:text-5xl lg:prose-h1:text-6xl prose-h1:font-medium prose-h1:tracking-tighter",
@@ -106,7 +105,7 @@ export default function RootLayout({
                             {children}
                         </article>
                     </main>
-                    <footer className="flex mt-10 min-h-[15rem] -mb-20 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-400 w-full justify-center">
+                    <footer className="flex z-10 mt-10 min-h-[15rem] -mb-20 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-400 w-full justify-center">
                         <div className="p-8 max-w-[80rem] w-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-8 max-sm:mb-12">
                             <div className="col-span-full md:col-span-1 sm:row-start-4 md:row-start-auto lg:col-span-2 md:row-span-2 md:flex-1 flex flex-row md:flex-col max-sm:mt-4 justify-between max-sm:items-start gap-2 text-sm min-w-[10rem]">
                                 <GcmpLogo monochrome className="w-32" />

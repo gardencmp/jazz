@@ -140,3 +140,5 @@ export function makeRefs<Keys extends string | number>(
         },
     });
 }
+
+export type RefIfCoValue<V> = NonNullable<V> extends CoValue ? Ref<NonNullable<V>> : never;
