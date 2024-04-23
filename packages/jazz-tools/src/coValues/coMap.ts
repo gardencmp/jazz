@@ -94,9 +94,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     }
 
     get _refs(): {
-        [Key in CoKeys<this> as NonNullable<this[Key]> extends CoValue
-            ? Key
-            : never]: RefIfCoValue<this[Key]>;
+        [Key in CoKeys<this>]: IfCo<this[Key], RefIfCoValue<this[Key]>>;
     } {
         return makeRefs<CoKeys<Fields>>(
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
@@ -154,7 +152,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                 };
             },
         }) as {
-            [Key in CoKeys<this> as IfCo<this[Key], Key>]: CoMapEdit<this[Key]>;
+            [Key in CoKeys<this>]: IfCo<this[Key], CoMapEdit<this[Key]>>;
         };
     }
 

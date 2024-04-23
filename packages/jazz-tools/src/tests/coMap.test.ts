@@ -156,11 +156,21 @@ describe("Simple CoMap operations", async () => {
     }
 
     class SubClassMap extends SuperClassMap {
-        name = co.literal("specificString")
+        name = co.literal("specificString");
         value = co.number;
-        extra = co.ref(TestMap)
+        extra = co.ref(TestMap);
     }
     interface SubClassMap extends CoMap<SubClassMap> {}
+
+    class GenericMapWithLoose<
+        out T extends string = string,
+    > extends CoMap<GenericMapWithLoose> {
+        name = co.json<T>();
+    }
+
+    const loose: GenericMapWithLoose<string> = {} as GenericMapWithLoose<
+        "a" | "b"
+    >;
 });
 
 describe("CoMap resolution", async () => {

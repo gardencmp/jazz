@@ -14,7 +14,7 @@ import {
     subscriptionsScopes,
 } from "../internal.js";
 
-export class Ref<V extends CoValue> {
+export class Ref<out V extends CoValue> {
     private cachedValue: V | undefined;
 
     constructor(
