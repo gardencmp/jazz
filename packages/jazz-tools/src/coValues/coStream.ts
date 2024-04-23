@@ -30,7 +30,7 @@ import {
     SchemaInit,
     isRefEncoded,
 } from "../internal.js";
-import { Schema as EffectSchema } from "@effect/schema";
+import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
 export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
     all: IterableIterator<SingleCoStreamEntry<Item>>;
@@ -125,7 +125,7 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
             this._raw.push(item as JsonValue);
         } else if ("encoded" in itemDescriptor) {
             this._raw.push(
-                EffectSchema.encodeSync(itemDescriptor.encoded)(item)
+                encodeSync(itemDescriptor.encoded)(item)
             );
         } else if (isRefEncoded(itemDescriptor)) {
             this._raw.push((item as unknown as CoValue).id);
@@ -138,7 +138,7 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
             itemDescriptor === "json"
                 ? (v: unknown) => v
                 : "encoded" in itemDescriptor
-                  ? EffectSchema.encodeSync(itemDescriptor.encoded)
+                  ? encodeSync(itemDescriptor.encoded)
                   : (v: unknown) => v && (v as CoValue).id;
 
         return {
@@ -193,7 +193,7 @@ function entryFromRawEntry<Item>(
                     ? (CoValue & Item) | null
                     : Item;
             } else if ("encoded" in itemField) {
-                return EffectSchema.decodeSync(itemField.encoded)(
+                return decodeSync(itemField.encoded)(
                     rawEntry.value
                 );
             } else if (isRefEncoded(itemField)) {

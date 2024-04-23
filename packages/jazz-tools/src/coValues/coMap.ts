@@ -1,6 +1,6 @@
 import type { JsonValue, RawCoMap } from "cojson";
 import type { Simplify } from "effect/Types";
-import { Schema as EffectSchema } from "@effect/schema";
+import { encodeSync, decodeSync } from "@effect/schema/Schema";
 import type {
     CoValue,
     Schema,
@@ -125,7 +125,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         descriptor === "json"
                             ? rawEdit.value
                             : "encoded" in descriptor
-                              ? EffectSchema.decodeSync(descriptor.encoded)(
+                              ? decodeSync(descriptor.encoded)(
                                     rawEdit.value
                                 )
                               : new Ref(
@@ -244,7 +244,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         rawInit[key] = (initValue as unknown as CoValue).id;
                     }
                 } else if ("encoded" in descriptor) {
-                    rawInit[key] = EffectSchema.encodeSync(descriptor.encoded)(
+                    rawInit[key] = encodeSync(descriptor.encoded)(
                         initValue as any
                     );
                 }
@@ -308,7 +308,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                 } else if ("encoded" in descriptor) {
                     return raw === undefined
                         ? undefined
-                        : EffectSchema.decodeSync(descriptor.encoded)(raw);
+                        : decodeSync(descriptor.encoded)(raw);
                 } else if (isRefEncoded(descriptor)) {
                     return raw === undefined
                         ? undefined
@@ -344,7 +344,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             } else if ("encoded" in descriptor) {
                 target._raw.set(
                     key,
-                    EffectSchema.encodeSync(descriptor.encoded)(value)
+                    encodeSync(descriptor.encoded)(value)
                 );
             } else if (isRefEncoded(descriptor)) {
                 target._raw.set(key, value.id);
