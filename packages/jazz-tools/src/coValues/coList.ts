@@ -104,10 +104,7 @@ export class CoList<Item extends ValidItem<Item, "CoList"> = any>
         return Account.fromNode(this._raw.core.node);
     }
 
-    [InitValues]?: {
-        init: Item[];
-        owner: Account | Group;
-    };
+    [InitValues]?: any;
 
     static get [Symbol.species]() {
         return Array;

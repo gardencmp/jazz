@@ -58,7 +58,7 @@ type DefaultFields = {
 };
 
 type CoMapSchema<Fields extends object> = {
-    [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]: SchemaFor<Fields[Key]>;
+    [Key in CoKeys<Fields>]: IfCo<Fields[Key], SchemaFor<Fields[Key]>>;
 } & {
     [ItemsSym]: ItemsSym extends keyof Fields
         ? SchemaFor<Fields[ItemsSym]>
@@ -96,7 +96,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     get _refs(): {
         [Key in CoKeys<this>]: IfCo<this[Key], RefIfCoValue<this[Key]>>;
     } {
-        return makeRefs<CoKeys<Fields>>(
+        return makeRefs<CoKeys<this>>(
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
             () =>
                 Object.keys(this._schema).filter((key) => {
@@ -104,7 +104,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         key as keyof typeof this._schema
                     ] as Schema;
                     schema !== "json" && isRefEncoded(schema);
-                }) as CoKeys<Fields>[],
+                }) as CoKeys<this>[],
             this._loadedAs,
             (key) => this._schema[key] as RefEncoded<CoValue>
         ) as any;
@@ -160,7 +160,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
         return Account.fromNode(this._raw.core.node);
     }
 
-    [InitValues]?: InitValuesFor<this>;
+    [InitValues]?: any;
 
     constructor(_init: undefined, options: { fromRaw: RawCoMap });
     constructor(
@@ -195,7 +195,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
 
     toJSON() {
         const jsonedFields = this._raw.keys().map((key) => {
-            const tKey = key as CoKeys<Fields>;
+            const tKey = key as CoKeys<this>;
             const descriptor = this._schema[tKey] as Schema;
 
             if (descriptor == "json" || "encode" in descriptor) {

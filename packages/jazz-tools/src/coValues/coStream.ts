@@ -84,10 +84,7 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
         return this.perSession[this._loadedAs.sessionID];
     }
 
-    [InitValues]?: {
-        init?: Item[];
-        owner: Account | Group;
-    };
+    [InitValues]?: any;
 
     constructor(_init: undefined, options: { fromRaw: RawCoStream });
     constructor(init: Item[], options: { owner: Account | Group });
