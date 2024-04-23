@@ -263,7 +263,8 @@ Supporting packages
     type={`{
     value?: Item,
     ref?: RefIfCoValue<Item>,
-    madeAt: Date
+    madeAt: Date,
+    all: IterableIterator<{ value?: Item; ... }>
 }`}
 />
 
@@ -272,7 +273,8 @@ Supporting packages
     type={`{ [key: SessionID]: {
         value?: Item,
         ref?: RefIfCoValue<Item>,
-        madeAt: Date
+        madeAt: Date,
+        all: IterableIterator<{ value?: Item; ... }>
 } }`}
 />
 

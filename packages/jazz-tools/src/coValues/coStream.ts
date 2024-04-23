@@ -32,10 +32,14 @@ import {
 } from "../internal.js";
 import { Schema as EffectSchema } from "@effect/schema";
 
-export type CoStreamEntry<Item> = {
+export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
+    all: IterableIterator<SingleCoStreamEntry<Item>>;
+};
+
+export type SingleCoStreamEntry<Item> = {
     value: NonNullable<Item> extends CoValue ? NonNullable<Item> | null : Item;
-    ref?: NonNullable<Item> extends CoValue ? Ref<NonNullable<Item>> : never;
-    by?: Account;
+    ref: NonNullable<Item> extends CoValue ? Ref<NonNullable<Item>> : never;
+    by?: Account | null;
     madeAt: Date;
     tx: CojsonInternalTypes.TransactionID;
 };
@@ -123,7 +127,9 @@ export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
         } else if ("encoded" in itemDescriptor) {
-            this._raw.push(EffectSchema.encodeSync(itemDescriptor.encoded)(item));
+            this._raw.push(
+                EffectSchema.encodeSync(itemDescriptor.encoded)(item)
+            );
         } else if (isRefEncoded(itemDescriptor)) {
             this._raw.push((item as unknown as CoValue).id);
         }
@@ -186,7 +192,9 @@ function entryFromRawEntry<Item>(
             if (itemField === "json") {
                 return rawEntry.value as Item;
             } else if ("encoded" in itemField) {
-                return EffectSchema.decodeSync(itemField.encoded)(rawEntry.value);
+                return EffectSchema.decodeSync(itemField.encoded)(
+                    rawEntry.value
+                );
             } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(accessFrom) as Item;
             }
@@ -204,7 +212,7 @@ function entryFromRawEntry<Item>(
         get by() {
             return (
                 accountID &&
-                new Ref(
+                new Ref<Account>(
                     accountID as unknown as ID<Account>,
                     loadedAs,
                     Account
@@ -243,13 +251,32 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
             const rawEntry = target._raw.lastItemBy(key as AccountID);
 
             if (!rawEntry) return;
-            return entryFromRawEntry(
+            const entry = entryFromRawEntry(
                 receiver,
                 rawEntry,
                 target._loadedAs,
                 key as unknown as ID<Account>,
                 target._schema[ItemsSym]
             );
+
+            Object.defineProperty(entry, "all", {
+                get: () => {
+                    const allRawEntries = target._raw.itemsBy(key as AccountID);
+                    return (function* () {
+                        const rawEntry = allRawEntries.next();
+                        if (rawEntry.done) return;
+                        yield entryFromRawEntry(
+                            receiver,
+                            rawEntry.value,
+                            target._loadedAs,
+                            key as unknown as ID<Account>,
+                            target._schema[ItemsSym]
+                        );
+                    })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
+                },
+            });
+
+            return entry;
         } else if (key === "perSession") {
             return new Proxy(receiver, CoStreamPerSessionProxyHandler);
         } else {
@@ -317,7 +344,8 @@ const CoStreamPerSessionProxyHandler: ProxyHandler<CoStream> = {
 
             if (!rawEntry) return;
             const by = cojsonInternals.accountOrAgentIDfromSessionID(sessionID);
-            return entryFromRawEntry(
+
+            const entry = entryFromRawEntry(
                 target,
                 rawEntry,
                 target._loadedAs,
@@ -326,6 +354,27 @@ const CoStreamPerSessionProxyHandler: ProxyHandler<CoStream> = {
                     : undefined,
                 target._schema[ItemsSym]
             );
+
+            Object.defineProperty(entry, "all", {
+                get: () => {
+                    const allRawEntries = target._raw.itemsIn(sessionID);
+                    return (function * () {
+                        const rawEntry = allRawEntries.next();
+                        if (rawEntry.done) return;
+                        yield entryFromRawEntry(
+                            receiver,
+                            rawEntry.value,
+                            target._loadedAs,
+                            cojsonInternals.isAccountID(by)
+                                ? (by as unknown as ID<Account>)
+                                : undefined,
+                            target._schema[ItemsSym]
+                        );
+                    })() satisfies IterableIterator<SingleCoStreamEntry<any>>
+                }
+            });
+
+            return entry;
         } else {
             return Reflect.get(target, key, receiver);
         }
