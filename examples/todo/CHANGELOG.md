@@ -1,5 +1,11 @@
 # jazz-example-todo
 
+## 0.0.64-alpha.18
+
+### Patch Changes
+
+- jazz-react@0.7.0-alpha.18
+
 ## 0.0.64-alpha.17
 
 ### Patch Changes

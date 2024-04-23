@@ -1,5 +1,11 @@
 # jazz-browser
 
+## 0.7.0-alpha.18
+
+### Patch Changes
+
+- Add missing @scure/bip39 dep
+
 ## 0.7.0-alpha.17
 
 ### Patch Changes
