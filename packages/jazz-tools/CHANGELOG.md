@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.16
+
+### Patch Changes
+
+- Make CoMaps even more subclassable
+
 ## 0.7.0-alpha.15
 
 ### Patch Changes
