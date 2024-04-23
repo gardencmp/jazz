@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.19
+
+### Patch Changes
+
+- More precise imports from @effect/schema
+
 ## 0.7.0-alpha.17
 
 ### Patch Changes
