@@ -1,5 +1,12 @@
 # jazz-browser
 
+## 0.7.0-alpha.17
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.17
+
 ## 0.7.0-alpha.16
 
 ### Patch Changes

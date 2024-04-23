@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.17
+
+### Patch Changes
+
+- Use effect 3.0
+
 ## 0.7.0-alpha.16
 
 ### Patch Changes
