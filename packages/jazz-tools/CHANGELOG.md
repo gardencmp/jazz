@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.14
+
+### Patch Changes
+
+- Fix CoStream types
+
 ## 0.7.0-alpha.13
 
 ### Patch Changes
