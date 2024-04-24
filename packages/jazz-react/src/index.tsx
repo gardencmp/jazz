@@ -28,7 +28,7 @@ export function JazzReact<Acc extends Account>({
         syncAddress?: string;
         children: React.ReactNode;
     }) {
-        const [me, setMe] = useState<Acc & Me | undefined>();
+        const [me, setMe] = useState<(Acc & Me) | undefined>();
 
         const { auth, AuthUI, logOut } = authHook();
 
@@ -52,10 +52,9 @@ export function JazzReact<Acc extends Account>({
                     return;
                 }
 
-                const unsubMe = context.me.subscribe(setMe);
+                setMe(context.me);
 
                 done = () => {
-                    unsubMe();
                     context.done();
                 };
             })().catch((e) => {
@@ -93,22 +92,27 @@ export function JazzReact<Acc extends Account>({
             throw new Error("useAccount must be used within a JazzProvider");
         }
 
-        return { me: context.me, logOut: context.logOut };
+        const me = useCoState<Acc & Me>(
+            context.me.constructor as CoValueClass<Acc & Me>,
+            context.me.id
+        );
+
+        return { me: me || context.me, logOut: context.logOut };
     }
 
     function useCoState<V extends CoValue>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Schema: {new(...args: any[]): V} & CoValueClass,
+        Schema: { new (...args: any[]): V } & CoValueClass,
         id: ID<V> | undefined
     ): V | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
         const [_, setUpdates] = useState<number>(0);
         const state = useRef<V | undefined>(undefined);
-        const { me } = useAccount();
+        const me = React.useContext(JazzContext)?.me;
 
         useEffect(() => {
-            if (!id) return;
+            if (!id || !me) return;
             return Schema.subscribe(id, { as: me }, (update) => {
                 state.current = update as V;
                 setUpdates((u) => u + 1);
@@ -127,8 +131,10 @@ export function JazzReact<Acc extends Account>({
         onAccept: (projectID: ID<V>) => void;
         forValueHint?: string;
     }): void {
-        const { me } = useAccount();
+        const me = React.useContext(JazzContext)?.me;
         useEffect(() => {
+            if (!me) return;
+
             const result = consumeInviteLinkFromWindowLocation({
                 as: me,
                 invitedObjectSchema,
