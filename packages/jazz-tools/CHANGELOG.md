@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.21
+
+### Patch Changes
+
+- Add maxWidth option for loading images
+
 ## 0.7.0-alpha.20
 
 ### Patch Changes

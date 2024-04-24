@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.0-alpha.21
+
+### Patch Changes
+
+- Add maxWidth option for loading images
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.21
+  - jazz-browser@0.7.0-alpha.21
+
 ## 0.7.0-alpha.20
 
 ### Patch Changes
