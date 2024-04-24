@@ -98,16 +98,15 @@ export function PropDecl({
     doc: ReactNode;
 }) {
     const nLinesInType = type.split("\n").length;
-    const longLinesInType = type.split("\n").some((line) => line.length > 30)
     return (
         <div className="flex items-baseline flex-wrap lg:grid grid-cols-7 gap-4 py-2 border-b">
-            <div className="text-sm leading-tighter whitespace-nowrap font-extrabold">
+            <div className="text-xs leading-tighter whitespace-nowrap font-extrabold">
                 <Highlight
                     hide={[0, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
                 >{`class X {\n${name}:\n${type}\n}`}</Highlight>{" "}
             </div>
             <div className="col-span-2 overflow-x-scroll">
-                <span className={(longLinesInType || nLinesInType > 3) ? "text-xs" : "text-sm"}>
+                <span className="text-xs">
                     <pre>
                         <Highlight
                             hide={[0, 1, 2 + nLinesInType]}

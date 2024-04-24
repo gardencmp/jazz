@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.20
+
+### Patch Changes
+
+- Make fast-check a direct dependency to help dev time resolution
+
 ## 0.7.0-alpha.19
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.0-alpha.20
+
+### Patch Changes
+
+- Fix subscription to account in useAccount
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.20
+  - jazz-browser@0.7.0-alpha.20
+
 ## 0.7.0-alpha.19
 
 ### Patch Changes
