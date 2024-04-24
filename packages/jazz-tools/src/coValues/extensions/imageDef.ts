@@ -12,17 +12,20 @@ export class ImageDefinition extends CoMap<ImageDefinition> {
     [co.items] = co.ref(BinaryCoStream);
     [res: `${number}x${number}`]: co<BinaryCoStream | null>;
 
-    get highestResAvailable():
-        | { res: `${number}x${number}`; stream: BinaryCoStream }
-        | undefined {
+    highestResAvailable(options?: {
+        maxWidth?: number;
+    }): { res: `${number}x${number}`; stream: BinaryCoStream } | undefined {
         if (!subscriptionsScopes.get(this)) {
             console.warn(
                 "highestResAvailable() only makes sense when used within a subscription."
             );
         }
 
-        const resolutions = Object.keys(this).filter((key) =>
-            key.match(/^\d+x\d+$/)
+        const resolutions = Object.keys(this).filter(
+            (key) =>
+                key.match(/^\d+x\d+$/) &&
+                (!options?.maxWidth ||
+                    Number(key.split("x")[0]) <= options.maxWidth)
         ) as `${number}x${number}`[];
 
         resolutions.sort((a, b) => {
