@@ -6,10 +6,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { BreadCrumb } from "./breadcrumb";
+import { DocNav } from "./docs/nav";
 
 export function Nav({
     mainLogo,
     items,
+    docNav,
 }: {
     mainLogo: ReactNode;
     items: {
@@ -19,6 +21,7 @@ export function Nav({
         firstOnRight?: boolean;
         newTab?: boolean;
     }[];
+    docNav: ReactNode;
 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -27,6 +30,8 @@ export function Nav({
     useLayoutEffect(() => {
         searchOpen && searchRef.current?.focus();
     }, [searchOpen]);
+
+    const pathname = usePathname();
 
     return (
         <>
@@ -81,8 +86,8 @@ export function Nav({
                         setSearchOpen(false);
                     }}
                 >
-                    <BreadCrumb items={items}/>
-                    <MenuIcon className="ml-2" />
+                    <MenuIcon className="mr-2" />
+                    <BreadCrumb items={items} />
                 </button>
             </div>
             <div
@@ -92,21 +97,18 @@ export function Nav({
                 }}
                 className={cn(
                     menuOpen || searchOpen ? "block" : "hidden",
-                    "fixed top-0 bottom-0 left-0 right-0 bg-stone-200/80 dark:bg-black/80 w-full h-full z-10"
+                    "fixed top-0 bottom-0 left-0 right-0 bg-stone-200/80 dark:bg-black/80 w-full h-full z-20"
                 )}
             ></div>
             <nav
                 className={cn(
-                    "md:hidden fixed flex flex-col items-end bottom-4 right-4 z-20",
+                    "md:hidden fixed flex flex-col bottom-4 right-4 z-20",
                     "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : ""
                 )}
             >
                 <div
-                    className={cn(
-                        menuOpen ? "flex" : "hidden",
-                        "flex-wrap px-2 pb-2"
-                    )}
+                    className={cn(menuOpen ? "block" : "hidden", " px-2 pb-2")}
                 >
                     <div className="flex items-center w-full border-b border-stone-100 dark:border-stone-900">
                         <NavLinkLogo
@@ -129,22 +131,47 @@ export function Nav({
                                 </NavLinkLogo>
                             ))}
                     </div>
-                    {items
-                        .filter((item) => !("icon" in item))
-                        .map((item, i) => (
-                            <NavLink
-                                key={i}
-                                href={item.href}
-                                onClick={() => setMenuOpen(false)}
-                                newTab={item.newTab}
-                                className={cn(
-                                    "max-sm:w-full border-b border-stone-100 dark:border-stone-900",
-                                    item.firstOnRight ? "md:ml-auto" : ""
-                                )}
-                            >
-                                {item.title}
-                            </NavLink>
-                        ))}
+
+                    {pathname === "/docs" && (
+                        <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 dark:border-stone-900 overflow-x-auto prose-sm prose-ul:pl-1 prose-ul:ml-1 prose-li:my-2 prose-li:leading-tight prose-ul:list-['-']">
+                            {docNav}
+                        </div>
+                    )}
+
+                    <div className="flex gap-4 justify-end -mb-2">
+                        {items
+                            .filter((item) => !("icon" in item))
+                            .slice(0, 3)
+                            .map((item, i) => (
+                                <>
+                                    <NavLink
+                                        key={i}
+                                        href={item.href}
+                                        onClick={() => setMenuOpen(false)}
+                                        newTab={item.newTab}
+                                    >
+                                        {item.title}
+                                    </NavLink>
+                                </>
+                            ))}
+                    </div>
+
+                    <div className="flex gap-4 justify-end border-b border-stone-100 dark:border-stone-900">
+                        {items
+                            .filter((item) => !("icon" in item))
+                            .slice(3)
+                            .map((item, i) => (
+                                <NavLink
+                                    key={i}
+                                    href={item.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    newTab={item.newTab}
+                                    className={cn("")}
+                                >
+                                    {item.title}
+                                </NavLink>
+                            ))}
+                    </div>
                 </div>
                 <div className="flex items-center self-stretch justify-end">
                     {/* <input
@@ -176,14 +203,13 @@ export function Nav({
                             setSearchOpen(false);
                         }}
                     >
-
                         {menuOpen || searchOpen ? (
-                            <XIcon/>
+                            <XIcon />
                         ) : (
                             <>
-                            <BreadCrumb items={items}/>
-                            <MenuIcon className="ml-2" />
-                        </>
+                                <MenuIcon className="mr-2" />
+                                <BreadCrumb items={items} />
+                            </>
                         )}
                     </button>
                 </div>
@@ -222,7 +248,7 @@ export function NavLink({
         >
             {children}
             {newTab ? (
-                <span className="text-stone-300 dark:text-stone-700 relative -top-0.5 -left-0.5">
+                <span className="inline-block text-stone-300 dark:text-stone-700 relative -top-0.5 -left-0.5 -mr-2">
                     ⌝
                 </span>
             ) : (

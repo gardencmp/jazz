@@ -7,71 +7,13 @@ import {
     PropCategory,
     NavPackage
 } from "@/components/docs/tags";
+import { DocNav } from "@/components/docs/nav";
 
-<div className="sticky overflow-y-scroll w-[14rem] h-[calc(100dvh-8rem)] -mb-[calc(100dvh-8rem)] top-[6rem] pr-6 mr-10 overflow-y-scroll prose-sm prose-ul:pl-1 prose-ul:ml-1 prose-li:my-2 prose-li:leading-tight prose-ul:list-['-'] border-r">
-Quickstart
-
--   Collaborative counter
-
-Guide
-
--   Intro to CoValues
--   Refs, load & subscribe
--   Groups & permissions
--   Accounts & migrations
--   Backend workers & app&nbsp;architectures
-
-Main packages
-
-<NavPackage name="jazz-tools">
-
--   <ClassRef name="CoMap" />, <ClassRef name="CoList" />
--   <ClassRef name="CoStream" />, <ClassRef name="BinaryCoStream" />
--   <ClassRef name="Account" />, <ClassRef name="Group" />
--   <PropRef prop="co" />, Interfaces & Types
--   <ClassRef name="ImageDefinition" />
-
-</NavPackage>
-
-<NavPackage name="jazz-react">
-
--   <PropRef prop="JazzReact()" />
-    - <PropRef prop="<Provider/>" />
-    - <PropRef prop="useAccount()" />
-    - <PropRef prop="useCoState()" />
--   Auth Providers
--   <PropRef prop="<ProgressiveImg/>" />
-
-</NavPackage>
-
-
-<NavPackage name="jazz-nodejs">
-
--   <PropRef prop="createOrResumeWorker()" />
-
-</NavPackage>
-
-Supporting packages
-
-<NavPackage name="jazz-browser">
-
--   <PropRef prop="createBrowserContext()" />
--   Auth Providers
--   Invite Links
--   BinaryStream ↔︎ Blob
-
-</NavPackage>
-
-<NavPackage name="jazz-browser-media-image">
-
--   <PropRef prop="createImage()" />
-
-</NavPackage>
-
-
+<div className="hidden md:block sticky overflow-y-scroll w-[14rem] h-[calc(100dvh-8rem)] -mb-[calc(100dvh-8rem)] top-[6rem] pr-6 mr-10 prose-sm prose-ul:pl-1 prose-ul:ml-1 prose-li:my-2 prose-li:leading-tight prose-ul:list-['-'] border-r border-r-stone-100 dark:border-r-stone-900">
+<DocNav/>
 </div>
 
-<div className="ml-[17rem]">
+<div className="md:ml-[17rem] prose-h2:sticky prose-h2:top-0 md:prose-h2:top-[4rem] md:prose-h2:pt-8 prose-h2:pb-2 prose-h2:bg-stone-50 dark:prose-h2:bg-stone-950 z-10">
 
 # Guide
 
@@ -81,11 +23,23 @@ Supporting packages
 
 # API Reference
 
+Note: this documentation is work in progress and hand-written, so if something seems wrong or is missing, please let us know on Discord or open an issue on GitHub.
+
 ## `jazz-tools` (package)
 
 <div class="not-prose">
 
 <Class name="CoMap<Fields>" doc="CoMaps are collaborative versions of plain objects, mapping string-like keys to values.">
+
+<PropCategory name="Declaration" />
+
+<pre className="text-xs mt-4"><Highlight>
+{`class Person extends CoMap<Person> {
+    name = co.string;
+    age = co.number;
+    mother? = co.ref(Person);
+}`}
+</Highlight></pre>
 
 <PropCategory name="Contents" />
 
@@ -101,9 +55,20 @@ Supporting packages
         </>
     }
 />
+
+<PropDecl
+    name={`id`}
+    type={`ID<this>`}
+    doc={
+        <>
+            The ID of this <ClassRef name="CoMap" />
+        </>
+    }
+/>
+
 <PropDecl
     name={`_refs`}
-    type={`{ [Key in CoKeys<Fields>]: RefIfCoValue<Fields[Key]> }`}
+    type={`{ [Key in Fields]: RefIfCoValue<Fields[Key]> }`}
     doc={
         <>
             If property `<PropRef prop="prop" />` is a{" "}
@@ -116,11 +81,20 @@ Supporting packages
     }
 />
 
+
+<PropCategory name="Construction" />
+
+<PropDecl
+    name={`constructor(init: Fields, { owner: Account | Group })`}
+    type={`Fields[Key]`}/>
+
+<PropCategory name="Loading & Subscription" />
+
 <PropCategory name="Collaboration" />
 
 <PropDecl
     name={`_edits`}
-    type={`{ [Key in CoKeys<Fields>]: {
+    type={`{ [Key in Fields]: {
     value?: Fields[Key];
     ref?: RefIfCoValue<Fields[Key]>;
     by?: Account;
@@ -150,17 +124,6 @@ Supporting packages
 
 }/>
 
-<PropCategory name="Value identity" />
-
-<PropDecl
-    name={`id`}
-    type={`ID<this>`}
-    doc={
-        <>
-            The ID of this <ClassRef name="CoMap" />
-        </>
-    }
-/>
 
 <PropCategory name="Type info" />
 

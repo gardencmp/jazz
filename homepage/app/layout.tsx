@@ -10,6 +10,7 @@ import { GcmpLogo, JazzLogo } from "@/components/logos";
 import { SiGithub, SiDiscord, SiTwitter } from "@icons-pack/react-simple-icons";
 import { Nav, NavLink, Newsletter, NewsletterButton } from "@/components/nav";
 import { MailIcon } from "lucide-react";
+import { DocNav } from "@/components/docs/nav";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap", });
@@ -89,6 +90,7 @@ export default function RootLayout({
                                 icon: <SiTwitter className="w-5" />,
                             },
                         ]}
+                        docNav={<DocNav />}
                     />
                     <main className="flex min-h-screen flex-col p-8 max-w-[80rem] w-full">
                         <article

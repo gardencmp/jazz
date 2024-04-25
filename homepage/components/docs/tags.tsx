@@ -1,3 +1,4 @@
+import { LinkIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { getHighlighter } from "shiki";
 
@@ -42,9 +43,13 @@ export function ClassHeader({ name }: { name: string }) {
         <>
             <a
                 id={name.split("<")[0]}
-                className="[&:target+*]:bg-amber-100"
-            />
-            <h3 className="sticky top-14 bg-stone-50">
+                href={"#" + name.split("<")[0]}
+                className="pt-[9.5rem] -mt-[9.5rem] -ml-6 w-4 -mb-6 flex items-center justify-center opacity-20 hover:opacity-100 target:opacity-100"
+                tabIndex={-1}
+            >
+                <LinkIcon size={15} />
+            </a>
+            <h3 className="sticky top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950">
                 <a href={"#" + name.split("<")[0]}>
                     <Highlight>{`class ${name} {`}</Highlight>
                 </a>
@@ -54,13 +59,20 @@ export function ClassHeader({ name }: { name: string }) {
 }
 
 export function ClassFooter() {
-    return <div className="mb-10"><Highlight>{`}`}</Highlight></div>
+    return (
+        <>
+            <div>
+                <Highlight>{`}`}</Highlight>
+            </div>
+            <div className="mb-8 h-8 sticky top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950" />
+        </>
+    );
 }
 
 export function Class({
     name,
     children,
-    doc
+    doc,
 }: {
     name: string;
     children: ReactNode;
@@ -99,22 +111,35 @@ export function PropDecl({
 }) {
     const nLinesInType = type.split("\n").length;
     return (
-        <div className="flex items-baseline flex-wrap lg:grid grid-cols-7 gap-4 py-2 border-b">
-            <div className="text-xs leading-tighter whitespace-nowrap font-extrabold">
-                <Highlight
-                    hide={[0, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                >{`class X {\n${name}:\n${type}\n}`}</Highlight>{" "}
-            </div>
-            <div className="col-span-2 overflow-x-scroll">
-                <span className="text-xs">
-                    <pre>
-                        <Highlight
-                            hide={[0, 1, 2 + nLinesInType]}
-                        >{`class X {\n${name}:\n${type}\n}`}</Highlight>
+        <div className="flex flex-wrap items-baseline lg:grid grid-cols-6 md:gap-2 py-2">
+            <div className="col-span-1 overflow-x-scroll pb-1 -mr-4 md:mr-0">
+                <div className="hidden md:block h-1 border-b border-dotted border-stone-300 dark:border-stone-800 relative top-[0.63em]" />
+                <div className="relative z-10 ">
+                    <pre className="text-sm">
+                        <span className="bg-stone-50 dark:bg-stone-950">
+                            <Highlight
+                                hide={[0, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+                            >{`class X {\n${name}:\n${type}\n}`}</Highlight>{" "}
+
+                        </span>
                     </pre>
-                </span>
+                </div>
             </div>
-            <div className="col-span-4">
+            <div className="col-span-2 overflow-x-scroll pb-1 pl-4 md:pl-0">
+                <div className="hidden md:block h-1 border-b border-dotted border-stone-300 dark:border-stone-800 relative top-[0.45em]" />
+                <div className="relative z-10 ">
+                    <pre className="text-xs">
+                        <span className="bg-stone-50 dark:bg-stone-950">
+                            <span className="opacity-60 hover:opacity-100">
+                                <Highlight
+                                    hide={[0, 1, 2 + nLinesInType]}
+                                >{`class X {\n${name}:\n${type.split("\n")[0] + " "}\n${type.split("\n").slice(1).join("\n")}`}</Highlight>
+                            </span>
+                        </span>
+                    </pre>
+                </div>
+            </div>
+            <div className="w-full col-span-3 pl-4 md:pl-0">
                 <DocComment>{doc || "⚠️ undocumented"}</DocComment>
             </div>
         </div>
@@ -123,16 +148,31 @@ export function PropDecl({
 
 export function PropCategory({ name }: { name: string }) {
     return (
-        <div className="col-span-6 mt-8 text-xs uppercase font-extrabold">
+        <div className="col-span-6 mt-8 text-[0.7em] uppercase font-medium tracking-widest opacity-50">
             {name}
         </div>
     );
 }
 
 export function DocComment({ children }: { children: ReactNode }) {
-    return <div className="prose-sm">{children}</div>;
+    return <div className="prose-sm text-xs">{children}</div>;
 }
 
-export function NavPackage({ name, children }: { name: string; children: ReactNode }) {
-    return <div className="border rounded pl-2 mb-6"><div className="-mt-3 -mb-2"><code>{name}</code></div>{children}</div>
+export function NavPackage({
+    name,
+    children,
+}: {
+    name: string;
+    children: ReactNode;
+}) {
+    return (
+        <div className="border dark:border-stone-800 rounded pl-2 mb-6">
+            <div className="-mt-3 -mb-2">
+                <code className="p-2 bg-stone-50 dark:bg-stone-925">
+                    {name}
+                </code>
+            </div>
+            {children}
+        </div>
+    );
 }
