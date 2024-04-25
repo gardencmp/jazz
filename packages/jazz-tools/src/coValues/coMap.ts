@@ -98,15 +98,28 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
     } {
         return makeRefs<CoKeys<this>>(
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
-            () =>
-                Object.keys(this._schema).filter((key) => {
+            () => {
+                const keys = Object.keys(this._schema).filter((key) => {
                     const schema = this._schema[
                         key as keyof typeof this._schema
                     ] as Schema;
-                    schema !== "json" && isRefEncoded(schema);
-                }) as CoKeys<this>[],
+                    return schema !== "json" && isRefEncoded(schema);
+                }) as CoKeys<this>[];
+
+                if (ItemsSym in this._schema) {
+                    for (const key of this._raw.keys()) {
+                        if (!keys.includes(key as CoKeys<this>)) {
+                            keys.push(key as CoKeys<this>);
+                        }
+                    }
+                }
+
+                return keys;
+            },
             this._loadedAs,
-            (key) => this._schema[key] as RefEncoded<CoValue>
+            (key) =>
+                this._schema[key] ||
+                (this._schema[ItemsSym] as RefEncoded<CoValue>)
         ) as any;
     }
 
@@ -125,9 +138,7 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
                         descriptor === "json"
                             ? rawEdit.value
                             : "encoded" in descriptor
-                              ? decodeSync(descriptor.encoded)(
-                                    rawEdit.value
-                                )
+                              ? decodeSync(descriptor.encoded)(rawEdit.value)
                               : new Ref(
                                     rawEdit.value as ID<CoValue>,
                                     target._loadedAs,
@@ -342,10 +353,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             if (descriptor === "json") {
                 target._raw.set(key, value);
             } else if ("encoded" in descriptor) {
-                target._raw.set(
-                    key,
-                    encodeSync(descriptor.encoded)(value)
-                );
+                target._raw.set(key, encodeSync(descriptor.encoded)(value));
             } else if (isRefEncoded(descriptor)) {
                 target._raw.set(key, value.id);
                 subscriptionsScopes.get(target)?.onRefAccessedOrSet(value.id);
