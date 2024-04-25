@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.22
+
+### Patch Changes
+
+- Fix CoMap \_refs for co.items
+
 ## 0.7.0-alpha.21
 
 ### Patch Changes
