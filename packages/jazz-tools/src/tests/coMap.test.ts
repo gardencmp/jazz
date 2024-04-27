@@ -454,7 +454,7 @@ describe("CoMap resolution", async () => {
 
     class TestRecord2 extends CoMap.Record(co.number) {}
 
-    test("Construction with index signature", async () => {
+    test("Construction with index signature (shorthand)", async () => {
         const me = await Account.create({
             name: "Hermes Puggington",
         });
@@ -472,5 +472,28 @@ describe("CoMap resolution", async () => {
         expect(record.other).toEqual(3);
         expect(record._raw.get("other")).toEqual(3);
         expect(Object.keys(record)).toEqual(["height", "other"]);
+    });
+
+    class TestRecordRef extends CoMap.Record(co.ref(TwiceNestedMap)) {}
+
+    test("Construction with index signature ref", async () => {
+        const me = await Account.create({
+            name: "Hermes Puggington",
+        });
+
+        const record = new TestRecordRef(
+            {
+                height: new TwiceNestedMap({ taste: "sour" }, { owner: me }),
+                other: new TwiceNestedMap({ taste: "sweet" }, { owner: me }),
+            },
+            { owner: me }
+        );
+
+        expect(record.height?.taste).toEqual("sour");
+        expect(record.height?.id).toBeDefined();
+        expect(record.other?.taste).toEqual("sweet");
+        expect(record.other?.id).toBeDefined();
+        expect(Object.keys(record)).toEqual(["height", "other"]);
+        expect(Object.keys(record._refs)).toEqual(["height", "other"]);
     });
 });

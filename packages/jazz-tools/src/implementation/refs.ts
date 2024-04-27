@@ -68,8 +68,7 @@ export class Ref<out V extends CoValue> {
         if (raw === "unavailable") {
             return "unavailable";
         } else {
-            return new Ref(this.id, this.controlledAccount, this.schema)
-                .value!;
+            return new Ref(this.id, this.controlledAccount, this.schema).value!;
         }
     }
 
@@ -138,7 +137,21 @@ export function makeRefs<Keys extends string | number>(
         ownKeys() {
             return getKeysWithIds().map((key) => key.toString());
         },
+        getOwnPropertyDescriptor(target, key) {
+            const id = getIdForKey(key as Keys);
+            if (id) {
+                return {
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                };
+            } else {
+                return Reflect.getOwnPropertyDescriptor(target, key);
+            }
+        },
     });
 }
 
-export type RefIfCoValue<V> = NonNullable<V> extends CoValue ? Ref<NonNullable<V>> : never;
+export type RefIfCoValue<V> = NonNullable<V> extends CoValue
+    ? Ref<NonNullable<V>>
+    : never;
