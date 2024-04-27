@@ -43,3 +43,7 @@ export function useHashRouter(options?: {tellParentFrame?: boolean}) {
         }
     }
 }
+
+export function useIframeHashRouter() {
+    return useHashRouter({tellParentFrame: true});
+}

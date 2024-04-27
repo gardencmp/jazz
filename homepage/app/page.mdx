@@ -17,6 +17,9 @@ import {
     PlaneIcon,
     MonitorSmartphoneIcon,
     GaugeIcon,
+    UsersIcon,
+    FileLock2Icon,
+    HardDriveDownloadIcon
 } from "lucide-react";
 import {
     App_tsx,
@@ -26,22 +29,27 @@ import Link from "next/link";
 
 <div className="pt-20"/>
 
-# Instant sync
+# Instant sync.
 
-<Slogan>Ship apps quickly with distributed state instead of APIs & DBs.</Slogan>
+<Slogan>A new way to build apps with distributed state.</Slogan>
 
-<h2 className="md:mt-24">Hard things are easy now</h2>
+<h2 className="md:mt-24">Hard things are easy now.</h2>
 
-Jazz replaces APIs, databases and message queues with a single new abstraction: **collaborative data** &mdash; giving you **distributed state** with **secure permissions built-in.**
+Jazz is an **open-source toolkit** that replaces APIs, databases and message queues with **a single new abstraction:**
 
-This lets you **offer features out-of-the-box** that took best-in-class apps years to build:
+**&ldquo;Collaborative data&rdquo;** &mdash; giving you **distributed state** with **secure permissions built-in.**
+
+This lets you **offer features out-of-the-box** that used to take years to build:
 
 <Grid className="-mt-2 gap-[1px] border rounded-xl overflow-hidden border-stone-200 dark:border-stone-800 shadow-sm bg-stone-200 dark:bg-stone-800 [&>*]:rounded-none [&>*]:border-none [&>*]:bg-stone-50 [&>*]:dark:bg-stone-950">
 <GridFeature icon={<MonitorSmartphoneIcon />}>Cross-device sync</GridFeature>
 <GridFeature icon={<MultiplayerIcon/>}>Real-time multiplayer</GridFeature>
-<GridFeature icon={<WorkflowIcon />}>Automatic granular data‑fetching</GridFeature>
-<GridFeature icon={<UploadCloudIcon />}>On-device & cloud persistence</GridFeature>
-<GridFeature icon={<PlaneIcon />}>Graceful offline/bad connection handling</GridFeature>
+<GridFeature icon={<UsersIcon/>}>Collaboration, teams & orgs</GridFeature>
+<GridFeature icon={<FileLock2Icon/>}>Fine-grained permissions & sharing</GridFeature>
+<GridFeature icon={<WorkflowIcon />}>On-demand granular data‑fetching</GridFeature>
+<GridFeature icon={<UploadCloudIcon />}>Cloud data storage & geographic caching</GridFeature>
+<GridFeature icon={<HardDriveDownloadIcon />}>Offline support & local-first data storage</GridFeature>
+<GridFeature icon={<PlaneIcon />}>Graceful handling of bad connections</GridFeature>
 <GridFeature icon={<GaugeIcon />}>Instant UI updates & quick loads</GridFeature>
 </Grid>
 

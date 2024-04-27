@@ -4,22 +4,42 @@ import {
     PropDecl,
     ClassRef,
     PropRef,
+    SimplePropDecl,
     PropCategory,
-    NavPackage
+    NavPackage,
+    FnDecl,
+    NewCoValueExplainer,
 } from "@/components/docs/tags";
 import { DocNav } from "@/components/docs/nav";
+import { CoMapDocs } from "@/components/docs/api/CoMap";
+import { CoListDocs } from "@/components/docs/api/CoList";
+import { CoStreamDocs } from "@/components/docs/api/CoStream";
 
-<div className="hidden md:block sticky overflow-y-scroll w-[14rem] h-[calc(100dvh-8rem)] -mb-[calc(100dvh-8rem)] top-[6rem] pr-6 mr-10 prose-sm prose-ul:pl-1 prose-ul:ml-1 prose-li:my-2 prose-li:leading-tight prose-ul:list-['-'] border-r border-r-stone-100 dark:border-r-stone-900">
-<DocNav/>
+<div className="hidden md:block sticky overflow-y-scroll w-[14rem] h-[calc(100dvh-8rem)] -mb-[calc(100dvh-8rem)] top-[6rem] pr-6 mr-10 prose-sm prose-ul:pl-1 prose-ul:ml-1 prose-li:my-2 prose-li:leading-tight prose-ul:list-['-']">
+    <DocNav />
 </div>
 
-<div className="md:ml-[17rem] prose-h2:sticky prose-h2:top-0 md:prose-h2:top-[4rem] md:prose-h2:pt-8 prose-h2:pb-2 prose-h2:bg-stone-50 dark:prose-h2:bg-stone-950 z-10">
+<div className="md:ml-[15rem] prose-h2:sticky prose-h2:top-0 md:prose-h2:top-[4rem] md:prose-h2:pt-8 prose-h2:pb-2 prose-h2:bg-stone-50 prose-h2:z-20 dark:prose-h2:bg-stone-950 z-10 xl:-mr-[calc(50vw-40rem)]">
 
-# Guide
+<h1 id="quickstart">Quickstart</h1>
 
-## Intro to `CoValue`s
+<h2 id="build-a-chat-app">Build a chat app in 5 minutes</h2>
 
-## `Ref`s, loading & subscribing
+<h2 id="what-to-try-next">What to try next</h2>
+
+<h1 id="guide">Guide</h1>
+(let's build a Linear clone)
+
+<h2 id="intro-to-covalues">Intro to CoValues</h2>
+
+<h2 id="refs-load-and-subscribe">Refs, Load & Subscribe</h2>
+
+<h2 id ="groups-and-permissions">Groups & Permissions</h2>
+
+<h2 id ="accounts-and-migrations">Accounts & Migrations</h2>
+
+<h2 id ="backend-workers">Backend Workers</h2>
+
 
 # API Reference
 
@@ -29,223 +49,11 @@ Note: this documentation is work in progress and hand-written, so if something s
 
 <div class="not-prose">
 
-<Class name="CoMap<Fields>" doc="CoMaps are collaborative versions of plain objects, mapping string-like keys to values.">
+<CoMapDocs />
 
-<PropCategory name="Declaration" />
+<CoListDocs />
 
-<pre className="text-xs mt-4"><Highlight>
-{`class Person extends CoMap<Person> {
-    name = co.string;
-    age = co.number;
-    mother? = co.ref(Person);
-}`}
-</Highlight></pre>
-
-<PropCategory name="Contents" />
-
-<PropDecl
-    name={`[Key in Fields]`}
-    type={`Fields[Key]`}
-    doc={
-        <>
-            The properties declared on this <ClassRef name="CoMap" />, behaving
-            like a regular plain object, so you can use dot notation to get/set
-            them, use <PropRef on="Object" prop="keys()" /> to iterate over
-            them, etc.
-        </>
-    }
-/>
-
-<PropDecl
-    name={`id`}
-    type={`ID<this>`}
-    doc={
-        <>
-            The ID of this <ClassRef name="CoMap" />
-        </>
-    }
-/>
-
-<PropDecl
-    name={`_refs`}
-    type={`{ [Key in Fields]: RefIfCoValue<Fields[Key]> }`}
-    doc={
-        <>
-            If property `<PropRef prop="prop" />` is a{" "}
-            <PropRef on="co" prop="ref(...)" />, you can use{" "}
-            <PropRef on="coMap" prop="_refs.prop" /> to access the{" "}
-            <ClassRef name="Ref" /> instead of the potentially loaded/null
-            value. This allows you to always get the ID or load the value
-            manually.
-        </>
-    }
-/>
-
-
-<PropCategory name="Construction" />
-
-<PropDecl
-    name={`constructor(init: Fields, { owner: Account | Group })`}
-    type={`Fields[Key]`}/>
-
-<PropCategory name="Loading & Subscription" />
-
-<PropCategory name="Collaboration" />
-
-<PropDecl
-    name={`_edits`}
-    type={`{ [Key in Fields]: {
-    value?: Fields[Key];
-    ref?: RefIfCoValue<Fields[Key]>;
-    by?: Account;
-    madeAt: Date;
-    all: { value?: Fields[Key]; ... }[];
-} }`}
-    doc={
-        <>
-            <p className="mb-4">
-                Lets you access the edit history for each property in this{" "}
-                <ClassRef name="CoMap" />. Directly includes the current value,
-                the <ClassRef name="Ref" /> if the property holds a reference,
-                the author <ClassRef name="Account" />, and the timestamp.
-            </p>
-            <p>
-                Access whole edit history with `all`, with entries of the
-                same shape.
-            </p>
-        </>
-    }
-/>
-
-<PropDecl name={`_owner`} type={`Account | Group`} doc={
-    <>
-        The <ClassRef name="Account" /> or <ClassRef name="Group" /> that owns this <ClassRef name="CoMap" />.
-    </>
-
-}/>
-
-
-<PropCategory name="Type info" />
-
-<PropDecl
-    name={`_type`}
-    type={`"CoMap"`}
-    doc={
-        <>
-            Distinguishes this as a <ClassRef name="CoMap" /> from other
-            CoValues
-        </>
-    }
-/>
-<PropDecl
-    name={`_schema`}
-    type={`{ [Key in CoKeys<Fields>]: SchemaFor<Fields[Key]>; }`}
-    doc={
-        <>
-            Stores the schema for each property in this{" "}
-            <ClassRef name="CoMap" />. Define with <PropRef prop={"co(...)"} />.
-        </>
-    }
-/>
-
-</Class>
-
-<Class name="CoList<Item> extends Array<Item>" doc="CoLists are collaborative versions of arrays.">
-
-<PropCategory name="Contents" />
-
-<PropDecl
-    name={`[idx: number]`}
-    type={`Item`}
-/>
-<PropDecl
-    name={`_refs`}
-    type={`{ [idx: number]: RefIfCoValue<Fields[Key]> }`}
-/>
-
-<PropCategory name="Collaboration" />
-
-<PropDecl
-    name={`_edits`}
-    type={`{ [idx: number]: {
-    value?: Item;
-    ref?: RefIfCoValue<Item>;
-    by?: Account;
-    madeAt: Date;
-} }`}
-    doc={
-        <>
-            <p className="mb-4">
-                Lets you access the edit history for each index in this{" "}
-                <ClassRef name="CoList" />. Directly includes the current value,
-                the <ClassRef name="Ref" /> if the item is a reference,
-                the author <ClassRef name="Account" />, and the timestamp.
-            </p>
-        </>
-    }
-/>
-
-<PropDecl name={`_owner`} type={`Account | Group`} doc={
-    <>
-        The <ClassRef name="Account" /> or <ClassRef name="Group" /> that owns this <ClassRef name="CoList" />.
-    </>
-
-}/>
-
-<PropCategory name="Type info" />
-
-<PropDecl
-    name={`_type`}
-    type={`"CoList"`}
-    doc={
-        <>
-            Distinguishes this as a <ClassRef name="CoMap" /> from other
-            CoValues
-        </>
-    }
-/>
-<PropDecl
-    name={`_schema`}
-    type={`{ [co.items]: SchemaFor<Item>; }`}
-    doc={
-        <>
-            Stores the schema of the items in this{" "}
-            <ClassRef name="CoList" />. Define with <PropRef on="CoList" prop={"Of(...)"} /> and <PropRef prop={"co(...)"} />.
-        </>
-    }
-/>
-
-</Class>
-
-<Class name="CoStream<Item>" doc="CoStreams are a collection of independent append-only streams per participant.">
-
-<PropCategory name="Contents" />
-
-<PropDecl
-    name={`[key: ID<Account>]`}
-    type={`{
-    value?: Item,
-    ref?: RefIfCoValue<Item>,
-    madeAt: Date,
-    all: IterableIterator<{ value?: Item; ... }>
-}`}
-/>
-
-<PropDecl
-    name={`perSession`}
-    type={`{ [key: SessionID]: {
-        value?: Item,
-        ref?: RefIfCoValue<Item>,
-        madeAt: Date,
-        all: IterableIterator<{ value?: Item; ... }>
-} }`}
-/>
-
-</Class>
-
-<Class name="BinaryCoStream" doc="BinaryCoStreams represent binary files and live streams.">
-
-</Class>
+<CoStreamDocs />
 
 </div>
 

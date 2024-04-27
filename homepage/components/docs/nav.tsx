@@ -3,23 +3,24 @@ import { ClassRef, NavPackage, PropRef } from "./tags";
 export function DocNav() {
     return (
         <>
-            <p>Quickstart</p>
+            <p className="mt-0 not-prose"><DocNavLink href="#quickstart">Quickstart</DocNavLink></p>
 
             <ul>
-                <li>Collaborative counter</li>
+                <li><DocNavLink href="#build-a-chat-app">Build a chat app in 5min</DocNavLink></li>
+                <li><DocNavLink href="#what-to-try-next">What to try next</DocNavLink></li>
             </ul>
 
-            <p>Guide</p>
+            <p><DocNavLink href="#guide">Guide (build a Linear)</DocNavLink></p>
 
             <ul>
-                <li>Intro to CoValues</li>
-                <li>Refs, Load & Subscribe</li>
-                <li>Groups & Permissions</li>
-                <li>Accounts & Migrations</li>
-                <li>Backend Workers & App&nbsp;Architectures</li>
+                <li><DocNavLink href="#intro-to-covalues">Intro to CoValues</DocNavLink></li>
+                <li><DocNavLink href="#refs-load-and-subscribe">Refs, Load & Subscribe</DocNavLink></li>
+                <li><DocNavLink href="#groups-and-permissions">Groups & Permissions</DocNavLink></li>
+                <li><DocNavLink href="#accounts-and-migrations">Accounts & Migrations</DocNavLink></li>
+                <li><DocNavLink href="#backend-workers">Backend Workers</DocNavLink></li>
             </ul>
 
-            <p>API (main packages)</p>
+            <p>API Reference</p>
 
             <NavPackage name="jazz-tools">
                 <ul>
@@ -73,8 +74,6 @@ export function DocNav() {
                 </ul>
             </NavPackage>
 
-            <p>API (supporting packages)</p>
-
             <NavPackage name="jazz-browser">
                 <ul>
                     <li>
@@ -95,4 +94,8 @@ export function DocNav() {
             </NavPackage>
         </>
     );
+}
+
+export function DocNavLink({href, children}: {href: string, children: string}) {
+    return <a href={href} className="not-prose hover:text-black dark:hover:text-white">{children}</a>;
 }

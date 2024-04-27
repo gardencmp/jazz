@@ -44,14 +44,14 @@ export function ClassHeader({ name }: { name: string }) {
             <a
                 id={name.split("<")[0]}
                 href={"#" + name.split("<")[0]}
-                className="pt-[9.5rem] -mt-[9.5rem] -ml-6 w-4 -mb-6 flex items-center justify-center opacity-20 hover:opacity-100 target:opacity-100"
+                className="pt-[9.5rem] -mt-[9.5rem] -ml-6 w-4 -mb-6 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
                 tabIndex={-1}
             >
                 <LinkIcon size={15} />
             </a>
-            <h3 className="sticky top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950">
+            <h3 className="peer sticky z-20 top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950">
                 <a href={"#" + name.split("<")[0]}>
-                    <Highlight>{`class ${name} {`}</Highlight>
+                    <Highlight>{`class ${name}`}</Highlight>
                 </a>
             </h3>
         </>
@@ -61,9 +61,6 @@ export function ClassHeader({ name }: { name: string }) {
 export function ClassFooter() {
     return (
         <>
-            <div>
-                <Highlight>{`}`}</Highlight>
-            </div>
             <div className="mb-8 h-8 sticky top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950" />
         </>
     );
@@ -81,8 +78,10 @@ export function Class({
     return (
         <>
             <ClassHeader name={name} />
-            <div className="ml-4 mt-4 text-sm">{doc}</div>
-            <div className="ml-4">{children}</div>
+            <div className="pl-2">
+                <div className=" mt-4 text-sm">{doc}</div>
+                <div className="">{children}</div>
+            </div>
             <ClassFooter />
         </>
     );
@@ -104,58 +103,143 @@ export function PropDecl({
     name,
     type,
     doc,
+    example,
 }: {
     name: string;
     type: string;
     doc: ReactNode;
+    example: ReactNode;
 }) {
     const nLinesInType = type.split("\n").length;
     return (
-        <div className="flex flex-wrap items-baseline lg:grid grid-cols-6 md:gap-2 py-2">
+        <div className="group flex flex-wrap items-baseline lg:grid grid-cols-8 md:gap-2 py-2 border-t border-stone-200 dark:border-stone-800 hover:border-stone-400 hover:dark:border-stone-600 mt-4">
             <div className="col-span-1 overflow-x-scroll pb-1 -mr-4 md:mr-0">
-                <div className="hidden md:block h-1 border-b border-dotted border-stone-300 dark:border-stone-800 relative top-[0.63em]" />
+
                 <div className="relative z-10 ">
                     <pre className="text-sm">
                         <span className="bg-stone-50 dark:bg-stone-950">
-                            <Highlight
-                                hide={[0, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                            >{`class X {\n${name}:\n${type}\n}`}</Highlight>{" "}
-
+                            <Highlight>{name}</Highlight>{" "}
                         </span>
                     </pre>
                 </div>
             </div>
             <div className="col-span-2 overflow-x-scroll pb-1 pl-4 md:pl-0">
-                <div className="hidden md:block h-1 border-b border-dotted border-stone-300 dark:border-stone-800 relative top-[0.45em]" />
+
                 <div className="relative z-10 ">
                     <pre className="text-xs">
                         <span className="bg-stone-50 dark:bg-stone-950">
-                            <span className="opacity-60 hover:opacity-100">
+                            <span className="opacity-60 group-hover:opacity-100">
                                 <Highlight
                                     hide={[0, 1, 2 + nLinesInType]}
-                                >{`class X {\n${name}:\n${type.split("\n")[0] + " "}\n${type.split("\n").slice(1).join("\n")}`}</Highlight>
+                                >{`class X {\nprop:\n${type}`}</Highlight>
                             </span>
                         </span>
                     </pre>
                 </div>
             </div>
             <div className="w-full col-span-3 pl-4 md:pl-0">
-                <DocComment>{doc || "⚠️ undocumented"}</DocComment>
+
+                <div className="flex flex-col items-start pr-8">
+                    <div className="bg-stone-50 dark:bg-stone-950 relative z-10">
+                        <DocComment>{doc || "⚠️ undocumented"}</DocComment>
+                    </div>
+                </div>
             </div>
+            {example && (
+                <div className="relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
+                    <div className="opacity-30 absolute -top-4 text-xs">
+                        Example:
+                    </div>
+                    {example}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export function FnDecl({
+    signature,
+    paramTypes,
+    returnType,
+    doc,
+    example,
+}: {
+    signature: string;
+    paramTypes: string;
+    returnType: string;
+    doc: ReactNode;
+    example: ReactNode;
+}) {
+    const nLinesInType = paramTypes.split("\n").length;
+    return (
+        <div className="group flex flex-wrap items-baseline lg:grid grid-cols-8 md:gap-2 py-2 border-t border-stone-200 dark:border-stone-800 hover:border-stone-400 hover:dark:border-stone-600 mt-4">
+            <div className="col-span-3 overflow-x-scroll pb-1 -mr-4 md:mr-0">
+
+                <div className="relative z-10 ">
+                    <pre className="text-sm">
+                        <span className="bg-stone-50 dark:bg-stone-950">
+                            <Highlight>{signature}</Highlight>{" "}
+                        </span>
+                    </pre>
+                </div>
+            </div>
+
+            <div className="w-full col-start-2 col-span-2 overflow-x-scroll pb-1 pl-4 md:pl-0">
+                <div className="relative z-10 ">
+                    <pre className="text-xs">
+                        <span className="bg-stone-50 dark:bg-stone-950">
+                            <span className="relative opacity-60 group-hover:opacity-100">
+                            <Highlight
+                                    hide={[0]}
+                                >{`{\n${paramTypes}`}</Highlight>
+                            </span>
+                        </span>
+                    </pre>
+                    <pre className="text-xs mt-1 mb-3">
+                        <span className="bg-stone-50 dark:bg-stone-950">
+                            <span className="relative opacity-60 group-hover:opacity-100">
+                                <Highlight
+                                    hide={[0, 2 + nLinesInType]}
+                                >{`() \n=> ${returnType}`}</Highlight>
+                            </span>
+                        </span>
+                    </pre>
+                </div>
+            </div>
+            <div className="w-full row-start-1 col-start-4 col-span-3 row-span-2 pl-4 md:pl-0">
+
+                <div className="flex flex-col items-start pr-8">
+                    <div className="bg-stone-50 dark:bg-stone-950 relative z-10">
+                        <DocComment>{doc || "⚠️ undocumented"}</DocComment>
+                    </div>
+                </div>
+            </div>
+            {example && (
+                <div className="relative w-full overflow-x-scroll row-start-1 col-start-7 col-span-2 row-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
+                    <div className="opacity-30 absolute -top-4 text-xs">
+                        Example:
+                    </div>
+                    {example}
+                </div>
+            )}
         </div>
     );
 }
 
 export function PropCategory({ name }: { name: string }) {
     return (
-        <div className="col-span-6 mt-8 text-[0.7em] uppercase font-medium tracking-widest opacity-50">
+        <div className="col-span-6 mt-8 -mb-4 text-[0.7em] uppercase font-medium tracking-widest opacity-50">
             {name}
         </div>
     );
 }
 
 export function DocComment({ children }: { children: ReactNode }) {
-    return <div className="prose-sm text-xs">{children}</div>;
+    return (
+        <div className="prose-inner-sm text-[0.7em] leading-tight">
+            {children}
+        </div>
+    );
 }
 
 export function NavPackage({
@@ -175,4 +259,14 @@ export function NavPackage({
             {children}
         </div>
     );
+}
+
+export function NewCoValueExplainer({type}:{type: string}) {
+    return <>Creates a new <ClassRef name={type} /> with the given initial values. The <ClassRef name={type} /> is immediately persisted locally and synced to connected peers. Access rights are determined by roles in the owner <ClassRef name="Group" /> or directly by the owner <ClassRef name="Account" />.</>
+}
+
+export function RefValueExplainer({propName}: {propName: string}) {
+    return <>Note that even non-optional <PropRef on="co" prop="ref(...)" /> {propName}{" "}
+    might be <Highlight>null</Highlight> if the referenced value isn't loaded yet.
+    Accessing one will cause it to be loaded if done from inside a <i>Subscription Context</i>.</>
 }

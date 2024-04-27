@@ -47,7 +47,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <Nav
-                        mainLogo={<JazzLogo className="w-24" />}
+                        mainLogo={<JazzLogo className="w-24 -ml-2" />}
                         items={[
                             { title: "Toolkit", href: "/" },
                             { title: "Sync & Storage Mesh", href: "/mesh" },
