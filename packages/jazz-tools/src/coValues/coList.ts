@@ -4,7 +4,6 @@ import type { Effect, Stream } from "effect";
 import type {
     AccountCtx,
     CoValue,
-    ValidItem,
     Schema,
     SchemaFor,
     ID,
@@ -28,11 +27,11 @@ import {
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
-export class CoList<Item extends ValidItem<Item, "CoList"> = any>
+export class CoList<Item = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
 {
-    static Of<Item extends ValidItem<Item, "CoList"> = any>(
+    static Of<Item>(
         item: IfCo<Item, Item>
     ): typeof CoList<Item> {
         return class CoListOf extends CoList<Item> {

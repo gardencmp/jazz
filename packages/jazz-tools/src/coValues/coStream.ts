@@ -11,7 +11,6 @@ import type {
 import { cojsonInternals } from "cojson";
 import type {
     CoValue,
-    ValidItem,
     Schema,
     SchemaFor,
     Group,
@@ -44,11 +43,11 @@ export type SingleCoStreamEntry<Item> = {
     tx: CojsonInternalTypes.TransactionID;
 };
 
-export class CoStream<Item extends ValidItem<Item, "CoStream"> = any>
+export class CoStream<Item = any>
     extends CoValueBase
     implements CoValue<"CoStream", RawCoStream>
 {
-    static Of<Item extends ValidItem<Item, "CoStream"> = any>(
+    static Of<Item>(
         item: IfCo<Item, Item>
     ): typeof CoStream<Item> {
         return class CoStreamOf extends CoStream<Item> {

@@ -451,4 +451,26 @@ describe("CoMap resolution", async () => {
         expect(record._raw.get("other")).toEqual(3);
         expect(Object.keys(record)).toEqual(["height", "other"]);
     });
+
+    class TestRecord2 extends CoMap.Record(co.number) {}
+
+    test("Construction with index signature", async () => {
+        const me = await Account.create({
+            name: "Hermes Puggington",
+        });
+
+        const record = new TestRecord2(
+            {
+                height: 5,
+                other: 3,
+            },
+            { owner: me }
+        );
+
+        expect(record.height).toEqual(5);
+        expect(record._raw.get("height")).toEqual(5);
+        expect(record.other).toEqual(3);
+        expect(record._raw.get("other")).toEqual(3);
+        expect(Object.keys(record)).toEqual(["height", "other"]);
+    });
 });

@@ -8,7 +8,6 @@ import type {
     Group,
     ID,
     RefEncoded,
-    EnsureCoValueNullable,
     IfCo,
     RefIfCoValue,
 } from "../internal.js";
@@ -24,33 +23,6 @@ import {
     InitValues,
     isRefEncoded,
 } from "../internal.js";
-
-type ValidFields<Fields extends { [key: string]: any; [ItemsSym]?: any }> = {
-    [Key in keyof Fields & string as IfCo<
-        Fields[Key],
-        IfOptionalKey<Key, Fields>
-    >]?: EnsureCoValueNullable<Fields[Key], Key>;
-} & {
-    [Key in keyof Fields & string as IfCo<
-        Fields[Key],
-        IfRequiredKey<Key, Fields>
-    >]: EnsureCoValueNullable<Fields[Key], Key>;
-} & {
-    [Key in ItemsSym]?: EnsureCoValueNullable<Fields[ItemsSym], Key>;
-};
-
-type IfOptionalKey<Key extends keyof Obj, Obj> = Pick<
-    Partial<Obj>,
-    Key
-> extends Pick<Obj, Key>
-    ? Key
-    : never;
-type IfRequiredKey<Key extends keyof Obj, Obj> = Pick<
-    Partial<Obj>,
-    Key
-> extends Pick<Obj, Key>
-    ? never
-    : Key;
 
 type DefaultFields = {
     [key: string]: any;
@@ -77,7 +49,7 @@ type InitValuesFor<C extends CoMap> = {
     owner: Account | Group;
 };
 
-export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
+export class CoMap<Fields extends object = DefaultFields>
     extends CoValueBase
     implements CoValue<"CoMap", RawCoMap>
 {
@@ -262,6 +234,17 @@ export class CoMap<Fields extends ValidFields<Fields> = DefaultFields>
             }
 
         return rawOwner.createMap(rawInit);
+    }
+
+    static Record<Value>(value: IfCo<Value, Value>) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+        class RecordLikeCoMap extends CoMap<RecordLikeCoMap> {
+            [ItemsSym] = value;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+        interface RecordLikeCoMap extends Record<string, Value> {}
+
+        return RecordLikeCoMap;
     }
 }
 

@@ -93,32 +93,3 @@ import { Date } from "@effect/schema/Schema";
 export const Encoders = {
     Date,
 };
-
-export type EnsureCoValueNullable<
-    V,
-    Key extends string | ItemsSym,
-> = NonNullable<V> extends CoValue
-    ? null extends V
-        ? V
-        : Key extends string
-          ? [
-                `👋 CoMap fields that are CoValue references should be nullable, declare ${Key} as:`,
-                V | null,
-            ]
-          : [
-                `👋 CoMap fields that are CoValue references should be nullable, declare _item as:`,
-                V | null,
-            ]
-    : V;
-
-export type ValidItem<
-    Item,
-    ContainerType extends string,
-> = NonNullable<Item> extends CoValue
-    ? null extends Item
-        ? any
-        : [
-              `👋 CoList items that are CoValue references should be nullable, make sure the Item generic parameter of ${ContainerType} is:`,
-              Item | null,
-          ]
-    : any;
