@@ -121,13 +121,23 @@ export class RawCoMapView<
      *
      * @category 1. Reading */
     keys<K extends keyof Shape & string = keyof Shape & string>(): K[] {
-        const keys = Object.keys(this.ops) as K[];
+        return (Object.keys(this.ops) as K[]).filter((key) => {
+            const ops = this.ops[key];
+            if (!ops) {
+                return undefined;
+            }
 
-        if (this.atTimeFilter) {
-            return keys.filter((key) => this.timeFilteredOps(key)?.length);
-        } else {
-            return keys;
-        }
+            const includeUntil = this.atTimeFilter;
+            const lastEntry = includeUntil
+                ? ops.findLast((entry) => entry.madeAt <= includeUntil)
+                : ops[ops.length - 1]!;
+
+            if (lastEntry?.op === "del") {
+                return false;
+            } else {
+                return true;
+            }
+        });
     }
 
     /**
@@ -136,7 +146,7 @@ export class RawCoMapView<
      * @category 1. Reading
      **/
     get<K extends keyof Shape & string>(key: K): Shape[K] | undefined {
-        const ops = this.timeFilteredOps(key);
+        const ops = this.ops[key];
         if (!ops) {
             return undefined;
         }

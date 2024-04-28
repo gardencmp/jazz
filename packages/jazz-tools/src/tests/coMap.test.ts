@@ -54,12 +54,11 @@ describe("Simple CoMap operations", async () => {
             "color",
             "_height",
             "birthday",
-            "name",
         ]);
     });
 
     describe("Mutation", () => {
-        test("assignment", () => {
+        test("assignment & deletion", () => {
             map.color = "blue";
             expect(map.color).toEqual("blue");
             expect(map._raw.get("color")).toEqual("blue");
@@ -78,6 +77,10 @@ describe("Simple CoMap operations", async () => {
             expect(map.name).toEqual("Secret name");
             map.name = undefined;
             expect(map.name).toEqual(undefined);
+            expect(Object.keys(map)).toContain("name");
+            delete map.name;
+            expect(map.name).toEqual(undefined);
+            expect(Object.keys(map)).not.toContain("name");
         });
     });
 
@@ -483,17 +486,17 @@ describe("CoMap resolution", async () => {
 
         const record = new TestRecordRef(
             {
-                height: new TwiceNestedMap({ taste: "sour" }, { owner: me }),
-                other: new TwiceNestedMap({ taste: "sweet" }, { owner: me }),
+                firstNested: new TwiceNestedMap({ taste: "sour" }, { owner: me }),
+                secondNested: new TwiceNestedMap({ taste: "sweet" }, { owner: me }),
             },
             { owner: me }
         );
 
-        expect(record.height?.taste).toEqual("sour");
-        expect(record.height?.id).toBeDefined();
-        expect(record.other?.taste).toEqual("sweet");
-        expect(record.other?.id).toBeDefined();
-        expect(Object.keys(record)).toEqual(["height", "other"]);
-        expect(Object.keys(record._refs)).toEqual(["height", "other"]);
+        expect(record.firstNested?.taste).toEqual("sour");
+        expect(record.firstNested?.id).toBeDefined();
+        expect(record.secondNested?.taste).toEqual("sweet");
+        expect(record.secondNested?.id).toBeDefined();
+        expect(Object.keys(record)).toEqual(["firstNested", "secondNested"]);
+        expect(Object.keys(record._refs)).toEqual(["firstNested", "secondNested"]);
     });
 });

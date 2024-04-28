@@ -55,6 +55,7 @@ test("Can insert and delete CoMap entries in edit()", () => {
     expect([...content.keys()]).toEqual(["hello", "foo"]);
     content.delete("foo", "trusting");
     expect(content.get("foo")).toEqual(undefined);
+    expect(content.keys()).toEqual(["hello"]);
 });
 
 test("Can get CoMap entry values at different points in time", () => {

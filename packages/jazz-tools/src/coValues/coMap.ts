@@ -64,20 +64,12 @@ export class CoMap<Fields extends object = DefaultFields>
         return makeRefs<CoKeys<this>>(
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
             () => {
-                const keys = Object.keys(this._schema).filter((key) => {
+                const keys = this._raw.keys().filter((key) => {
                     const schema = this._schema[
                         key as keyof typeof this._schema
-                    ] as Schema;
-                    return schema !== "json" && isRefEncoded(schema);
+                    ] || this._schema[ItemsSym] as Schema | undefined;
+                    return schema && schema !== "json" && isRefEncoded(schema);
                 }) as CoKeys<this>[];
-
-                if (ItemsSym in this._schema) {
-                    for (const key of this._raw.keys()) {
-                        if (!keys.includes(key as CoKeys<this>)) {
-                            keys.push(key as CoKeys<this>);
-                        }
-                    }
-                }
 
                 return keys;
             },
@@ -356,11 +348,11 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
     },
     ownKeys(target) {
         const keys = Reflect.ownKeys(target).filter((k) => k !== ItemsSym);
-        for (const key of Reflect.ownKeys(target._schema)) {
-            if (key !== ItemsSym && !keys.includes(key)) {
-                keys.push(key);
-            }
-        }
+        // for (const key of Reflect.ownKeys(target._schema)) {
+        //     if (key !== ItemsSym && !keys.includes(key)) {
+        //         keys.push(key);
+        //     }
+        // }
         for (const key of target._raw.keys()) {
             if (!keys.includes(key)) {
                 keys.push(key);
@@ -382,6 +374,16 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                     writable: true,
                 };
             }
+        }
+    },
+    deleteProperty(target, key) {
+        const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
+            target._schema[ItemsSym]) as Schema;
+        if (typeof key === "string" && descriptor) {
+            target._raw.delete(key);
+            return true;
+        } else {
+            return Reflect.deleteProperty(target, key);
         }
     },
 };
