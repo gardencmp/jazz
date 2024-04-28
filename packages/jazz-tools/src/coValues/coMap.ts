@@ -4,7 +4,6 @@ import { encodeSync, decodeSync } from "@effect/schema/Schema";
 import type {
     CoValue,
     Schema,
-    SchemaFor,
     Group,
     ID,
     RefEncoded,
@@ -27,14 +26,6 @@ import {
 type DefaultFields = {
     [key: string]: any;
     [ItemsSym]?: any;
-};
-
-type CoMapSchema<Fields extends object> = {
-    [Key in CoKeys<Fields>]: IfCo<Fields[Key], SchemaFor<Fields[Key]>>;
-} & {
-    [ItemsSym]: ItemsSym extends keyof Fields
-        ? SchemaFor<Fields[ItemsSym]>
-        : never;
 };
 
 type CoMapEdit<V> = {
@@ -62,7 +53,9 @@ export class CoMap<Fields extends object = DefaultFields>
 
     static _schema: any;
     get _schema() {
-        return (this.constructor as typeof CoMap)._schema as CoMapSchema<this>;
+        return (this.constructor as typeof CoMap)._schema as {
+            [key: string]: Schema;
+        } & { [ItemsSym]?: Schema };
     }
 
     get _refs(): {
@@ -90,8 +83,8 @@ export class CoMap<Fields extends object = DefaultFields>
             },
             this._loadedAs,
             (key) =>
-                this._schema[key] ||
-                (this._schema[ItemsSym] as RefEncoded<CoValue>)
+                (this._schema[key] ||
+                    this._schema[ItemsSym]) as RefEncoded<CoValue>
         ) as any;
     }
 
