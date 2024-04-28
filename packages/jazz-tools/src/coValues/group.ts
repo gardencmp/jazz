@@ -1,5 +1,5 @@
 import type { Everyone, RawGroup, Role } from "cojson";
-import type { CoValue, ID, JsonEncoded, RefEncoded } from "../internal.js";
+import type { CoValue, ID, JsonEncoded, RefEncoded, Schema } from "../internal.js";
 import {
     Account,
     CoMap,
@@ -43,8 +43,8 @@ export class Group<
     }
     static {
         this._schema = {
-            profile: { json: true },
-            root: { json: true },
+            profile: "json" satisfies Schema,
+            root: "json" satisfies Schema,
         } as any;
         Object.defineProperty(this.prototype, "_schema", {
             get: () => this._schema,
