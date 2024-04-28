@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.24
+
+### Patch Changes
+
+- Make sure delete on CoMaps deletes keys
+
 ## 0.7.0-alpha.11
 
 ### Patch Changes

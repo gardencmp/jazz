@@ -1,5 +1,15 @@
 # jazz-autosub
 
+## 0.7.0-alpha.24
+
+### Patch Changes
+
+- Relax types of CoMap.\_schema
+- Fix schema of Account & Group
+- Make sure delete on CoMaps deletes keys
+- Updated dependencies
+  - cojson@0.7.0-alpha.24
+
 ## 0.7.0-alpha.23
 
 ### Patch Changes
