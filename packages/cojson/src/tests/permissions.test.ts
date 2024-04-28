@@ -1670,7 +1670,7 @@ test("Can give read permissions to 'everyone' (high-level)", async () => {
     expect(childContent2.get("foo")).toEqual("bar");
 });
 
-test("Can give write permission to 'everyone'", () => {
+test("Can give write permission to 'everyone'", async () => {
     const { node, groupCore } = newGroup();
 
     const childObject = node.createCoValue({
@@ -1704,6 +1704,9 @@ test("Can give write permission to 'everyone'", () => {
             )
             .getCurrentContent()
     );
+
+    // TODO: resolve race condition
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(childContent2.get("foo")).toEqual("bar");
 

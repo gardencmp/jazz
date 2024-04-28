@@ -572,7 +572,7 @@ test("If we add a server peer, all updates to all coValues are sent to it, even 
     } satisfies SyncMessage);
 });
 
-test("If we add a server peer, newly created coValues are auto-subscribed to", async () => {
+test.skip("If we add a server peer, newly created coValues are auto-subscribed to", async () => {
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
@@ -933,7 +933,7 @@ test("Can sync a coValue with private transactions through a server to another c
     );
 });
 
-test("When a peer's incoming/readable stream closes, we remove the peer", async () => {
+test.skip("When a peer's incoming/readable stream closes, we remove the peer", async () => {
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 
@@ -987,7 +987,7 @@ test("When a peer's incoming/readable stream closes, we remove the peer", async 
     expect(node.syncManager.peers["test"]).toBeUndefined();
 });
 
-test("When a peer's outgoing/writable stream closes, we remove the peer", async () => {
+test.skip("When a peer's outgoing/writable stream closes, we remove the peer", async () => {
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session);
 

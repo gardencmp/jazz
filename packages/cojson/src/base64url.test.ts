@@ -1,4 +1,5 @@
 import { base64URLtoBytes, bytesToBase64url } from "./base64url";
+import { test, expect } from 'vitest';
 
 const txt = new TextEncoder();
 

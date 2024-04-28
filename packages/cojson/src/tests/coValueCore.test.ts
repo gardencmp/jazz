@@ -1,4 +1,4 @@
-import { expect, test, beforeEach } from "vitest";
+import { expect, test, beforeEach, vi } from "vitest";
 import { Transaction } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "../crypto.js";
@@ -151,7 +151,7 @@ test("New transactions in a group correctly update owned values, including subsc
 
     map.set("hello", "world");
 
-    const listener = jest.fn().mockImplementation();
+    const listener = vi.fn();
 
     map.subscribe(listener);
 

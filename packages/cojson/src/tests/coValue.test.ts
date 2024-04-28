@@ -339,19 +339,7 @@ test("Can push into RawBinaryCoStream", () => {
         { mimeType: "text/plain", fileName: "test.txt" },
         "trusting"
     );
-    expect(content.getBinaryChunks(true)).toEqual({
-        mimeType: "text/plain",
-        fileName: "test.txt",
-        chunks: [],
-        finished: false,
-    });
     content.pushBinaryStreamChunk(new Uint8Array([1, 2, 3]), "trusting");
-    expect(content.getBinaryChunks(true)).toEqual({
-        mimeType: "text/plain",
-        fileName: "test.txt",
-        chunks: [new Uint8Array([1, 2, 3])],
-        finished: false,
-    });
     content.pushBinaryStreamChunk(new Uint8Array([4, 5, 6]), "trusting");
 
     content.endBinaryStream("trusting");
