@@ -65,9 +65,9 @@ export class CoMap<Fields extends object = DefaultFields>
             (key) => this._raw.get(key as string) as unknown as ID<CoValue>,
             () => {
                 const keys = this._raw.keys().filter((key) => {
-                    const schema = this._schema[
-                        key as keyof typeof this._schema
-                    ] || this._schema[ItemsSym] as Schema | undefined;
+                    const schema =
+                        this._schema[key as keyof typeof this._schema] ||
+                        (this._schema[ItemsSym] as Schema | undefined);
                     return schema && schema !== "json" && isRefEncoded(schema);
                 }) as CoKeys<this>[];
 
@@ -164,7 +164,8 @@ export class CoMap<Fields extends object = DefaultFields>
     toJSON() {
         const jsonedFields = this._raw.keys().map((key) => {
             const tKey = key as CoKeys<this>;
-            const descriptor = this._schema[tKey] as Schema;
+            const descriptor = (this._schema[tKey] ||
+                this._schema[ItemsSym]) as Schema;
 
             if (descriptor == "json" || "encode" in descriptor) {
                 return [key, this._raw.get(key)];

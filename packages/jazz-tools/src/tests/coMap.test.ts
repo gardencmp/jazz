@@ -453,6 +453,12 @@ describe("CoMap resolution", async () => {
         expect(record.other).toEqual(3);
         expect(record._raw.get("other")).toEqual(3);
         expect(Object.keys(record)).toEqual(["height", "other"]);
+        expect(record.toJSON()).toMatchObject({
+            "_type": "CoMap",
+            "height": 5,
+            "id": expect.any(String),
+            "other": 3,
+          });
     });
 
     class TestRecord2 extends CoMap.Record(co.number) {}
