@@ -1,6 +1,6 @@
 {
   "name": "jazz-react",
-  "version": "0.7.0-alpha.25",
+  "version": "0.7.0-alpha.26",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",

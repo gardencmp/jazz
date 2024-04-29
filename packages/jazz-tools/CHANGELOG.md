@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.26
+
+### Patch Changes
+
+- Fix CoMap.Record.toJSON()
+
 ## 0.7.0-alpha.25
 
 ### Patch Changes
