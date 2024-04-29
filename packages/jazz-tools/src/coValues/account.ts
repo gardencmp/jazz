@@ -54,7 +54,7 @@ export class Account<
     }
     static {
         this._schema = {
-            profile: Profile satisfies Schema,
+            profile: () => Profile satisfies Schema,
             root: "json" satisfies Schema,
         } as any;
     }
