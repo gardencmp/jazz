@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.25
+
+### Patch Changes
+
+- Make Account -> Profile a lazy ref schema
+
 ## 0.7.0-alpha.24
 
 ### Patch Changes
