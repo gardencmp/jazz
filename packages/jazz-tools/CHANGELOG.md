@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.7.0-alpha.27
+
+### Patch Changes
+
+- Fix CoList.splice / RawCoList.append
+- Fix Costream[...].all
+- Updated dependencies
+  - cojson@0.7.0-alpha.27
+
 ## 0.7.0-alpha.26
 
 ### Patch Changes

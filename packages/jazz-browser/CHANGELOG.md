@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.7.0-alpha.27
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.27
+  - cojson@0.7.0-alpha.27
+  - cojson-storage-indexeddb@0.7.0-alpha.27
+
 ## 0.7.0-alpha.26
 
 ### Patch Changes

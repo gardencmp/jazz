@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.27
+
+### Patch Changes
+
+- Fix CoList.splice / RawCoList.append
+
 ## 0.7.0-alpha.24
 
 ### Patch Changes
