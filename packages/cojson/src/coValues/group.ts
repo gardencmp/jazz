@@ -96,11 +96,12 @@ export class RawGroup<
      *
      * @category 2. Role changing
      */
-    addMember(
-        account: RawAccount | ControlledAccountOrAgent | Everyone,
+    addMember<T extends RawAccount | ControlledAccountOrAgent | Everyone>(
+        account:  T,
         role: Role
-    ) {
+    ): T {
         this.addMemberInternal(account, role);
+        return account;
     }
 
     /** @internal */
