@@ -55,7 +55,7 @@ export async function createOrResumeWorker<A extends Account>({
     const ws = new WebSocket(syncServer);
 
     const wsPeer: Peer = {
-        id: "globalMesh",
+        id: "upstream",
         role: "server",
         incoming: websocketReadableStream(ws),
         outgoing: websocketWritableStream(ws),
@@ -99,6 +99,22 @@ export async function createOrResumeWorker<A extends Account>({
 
         console.log("Created worker", worker.id, workerName);
     }
+
+    setInterval(() => {
+        if (!worker._raw.core.node.syncManager.peers["upstream"]) {
+            console.log(new Date(), "Reconnecting to upstream " + syncServer);
+            const ws = new WebSocket(syncServer);
+
+            const wsPeer: Peer = {
+                id: "upstream",
+                role: "server",
+                incoming: websocketReadableStream(ws),
+                outgoing: websocketWritableStream(ws),
+            };
+
+            worker._raw.core.node.syncManager.addPeer(wsPeer);
+        }
+    }, 5000);
 
     return { worker: worker as A & Me };
 }

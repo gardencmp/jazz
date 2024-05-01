@@ -220,14 +220,14 @@ function websocketReadableStream<T>(ws: WebSocket) {
                 }, 2500);
 
                 if (msg.type === "ping") {
-                    // console.debug(
-                    //     "Got ping from",
-                    //     msg.dc,
-                    //     "latency",
-                    //     Date.now() - msg.time,
-                    //     "ms"
-                    // );
-
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (window as any).jazzPings = (window as any).jazzPings || [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (window as any).jazzPings.push({
+                        received: Date.now(),
+                        sent: msg.time,
+                        dc: msg.dc,
+                    })
                     return;
                 }
                 controller.enqueue(msg);
