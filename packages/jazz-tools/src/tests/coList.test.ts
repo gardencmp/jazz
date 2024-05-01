@@ -97,19 +97,19 @@ describe("Simple CoList operations", async () => {
             expect(list._raw.asArray()).toEqual(["butter", "onion"]);
         });
 
-        // test("splice", () => {
-        //     const list = new TestList(["bread", "butter", "onion"], {
-        //         owner: me,
-        //     });
-        //     list.splice(1, 1, "salt", "pepper");
-        //     expect(list.length).toBe(4);
-        //     expect(list._raw.asArray()).toEqual([
-        //         "bread",
-        //         "salt",
-        //         "pepper",
-        //         "onion",
-        //     ]);
-        // });
+        test("splice", () => {
+            const list = new TestList(["bread", "butter", "onion"], {
+                owner: me,
+            });
+            list.splice(1, 1, "salt", "pepper");
+            expect(list.length).toBe(4);
+            expect(list._raw.asArray()).toEqual([
+                "bread",
+                "salt",
+                "pepper",
+                "onion",
+            ]);
+        });
     });
 });
 

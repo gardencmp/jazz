@@ -31,9 +31,7 @@ export class CoList<Item = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
 {
-    static Of<Item>(
-        item: IfCo<Item, Item>
-    ): typeof CoList<Item> {
+    static Of<Item>(item: IfCo<Item, Item>): typeof CoList<Item> {
         return class CoListOf extends CoList<Item> {
             [co.items] = item;
         };
@@ -183,24 +181,23 @@ export class CoList<Item = any>
         return first;
     }
 
-    splice(start: number, deleteCount: number, ...items: Item[]): Item[];
-    splice(start: number, deleteCount: number, ...items: Item[]): Item[];
     splice(start: number, deleteCount: number, ...items: Item[]): Item[] {
         const deleted = this.slice(start, start + deleteCount);
 
         for (
-            let idxToDelete = start + deleteCount;
-            idxToDelete > start;
+            let idxToDelete = start + deleteCount - 1;
+            idxToDelete >= start;
             idxToDelete--
         ) {
             this._raw.delete(idxToDelete);
         }
 
-        let appendAfter = start;
+        let appendAfter = Math.max(start - 1, 0);
         for (const item of toRawItems(
             items as Item[],
             this._schema[ItemsSym]
         )) {
+            console.log(this._raw.asArray(), appendAfter);
             this._raw.append(item, appendAfter);
             appendAfter++;
         }

@@ -421,7 +421,7 @@ export class RawCoList<
                 ? entries.length > 0
                     ? entries.length - 1
                     : 0
-                : 0;
+                : after;
         let opIDBefore;
         if (entries.length > 0) {
             const entryBefore = entries[after];
