@@ -61,14 +61,14 @@ describe("Custom accounts and groups", async () => {
 
         await new Promise<void>((resolve) => {
             group.subscribe((update) => {
-                const myProfile = update.members.find((member) => {
+                const meAsMember = update.members.find((member) => {
                     return member.id === me.id && member.account?.profile;
                 });
-                if (myProfile) {
-                    expect(myProfile.account?.profile?.name).toBe(
+                if (meAsMember) {
+                    expect(meAsMember.account?.profile?.name).toBe(
                         "Hermes Puggington"
                     );
-                    expect(myProfile.account?.profile?.color).toBe("blue");
+                    expect(meAsMember.account?.profile?.color).toBe("blue");
                     resolve();
                 }
             });
