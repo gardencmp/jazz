@@ -24,6 +24,7 @@
     "jazz-react": "0.5.4"
   },
   "changesets": [
+    "clever-onions-call",
     "curly-jars-crash",
     "empty-lamps-punch",
     "friendly-jeans-deny",

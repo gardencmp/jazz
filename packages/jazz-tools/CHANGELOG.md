@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.0-alpha.28
+
+### Patch Changes
+
+- Implement profile visibility based on groups & new migration signature
+- Updated dependencies
+  - cojson@0.7.0-alpha.28
+
 ## 0.7.0-alpha.27
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.28
+
+### Patch Changes
+
+- Implement profile visibility based on groups & new migration signature
+
 ## 0.7.0-alpha.27
 
 ### Patch Changes
