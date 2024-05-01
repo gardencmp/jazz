@@ -41,7 +41,7 @@ export function ResponsiveIframe(
     return (
         <div
             className={
-                "w-full h-full flex flex-col items-stretch border border-stone-200 dark:border-stone-800 " +
+                "w-full h-full flex flex-col items-stretch border border-stone-100 dark:border-stone-900 " +
                 props.className
             }
         >

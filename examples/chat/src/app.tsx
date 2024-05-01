@@ -4,27 +4,33 @@ import { createRoot } from "react-dom/client";
 import { useIframeHashRouter } from "hash-slash";
 import { ChatScreen } from "./chatScreen.tsx";
 
+// Schema
 export class Message extends CoMap<Message> {
   text = co.string;
 }
 
 export class Chat extends CoList.Of(co.ref(Message)) {}
 
+// Jazz setup
 const Jazz = JazzReact({
   auth: DemoAuth({ appName: "Jazz Chat" }),
   apiKey: import.meta.env.VITE_JAZZ_KEY
 });
 export const { useAccount, useCoState } = Jazz;
 
+// React app root
 createRoot(document.getElementById("root")!)
   .render(<Jazz.Provider><App /></Jazz.Provider>);
 
 function App() {
   return <div className="flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white">
-    <button onClick={useAccount().logOut} className="rounded mb-5 px-2 py-1 bg-stone-200 dark:bg-stone-800 dark:text-white self-end">Log Out</button>
-    { useIframeHashRouter().route({
+    <button onClick={useAccount().logOut} className="rounded mb-5 px-2 py-1 bg-stone-200 dark:bg-stone-800 dark:text-white self-end">
+      Log Out
+    </button>
+    {useIframeHashRouter().route({
       '/': () => <StartScreen />,
-      '/chat/:id': (id) => <ChatScreen chatID={id as ID<Chat>} />}) }
+      '/chat/:id': (id) => <ChatScreen chatID={id as ID<Chat>} />
+    })}
   </div>;
 }
 
@@ -38,5 +44,7 @@ function StartScreen() {
     location.hash = "/chat/" + chat.id;
   };
 
-  return <button onClick={createChat} className="rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto">Create New Chat</button>;
+  return <button onClick={createChat} className="rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto">
+    Create New Chat
+  </button>;
 }

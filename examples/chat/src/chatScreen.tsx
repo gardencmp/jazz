@@ -4,14 +4,21 @@ import { Chat, Message, useCoState } from './app.tsx';
 export function ChatScreen(props: { chatID: ID<Chat> }) {
   const chat = useCoState(Chat, props.chatID);
 
-  return chat ? <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
-    {chat.map((msg) => msg && <ChatBubble msg={msg} key={msg.id} />)}
+  if (!chat) return <div>Loading...</div>;
+
+  return <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
+    {chat.map((msg) => (
+      msg && <ChatBubble msg={msg} key={msg.id} />
+    ))}
     <ChatInput
       onSubmit={(text) => {
-        chat.push(new Message({ text }, { owner: chat._owner }));
+        const message = new Message(
+          { text }, { owner: chat._owner }
+        );
+        chat.push(message);
       }}
     />
-  </div> : <div>Loading...</div>;
+  </div>;
 }
 
 function ChatBubble(props: { msg: Message }) {
@@ -34,7 +41,7 @@ function ChatInput(props: { onSubmit: (text: string) => void }) {
     placeholder='Type a message and press Enter'
     className='rounded p-2 border mt-auto dark:bg-black dark:text-white dark:border-stone-700'
     onKeyDown={({ key, currentTarget: input }) => {
-      if (key !== 'Enter' || !input.value) return
+      if (key !== 'Enter' || !input.value) return;
       props.onSubmit(input.value);
       input.value = '';
     }}

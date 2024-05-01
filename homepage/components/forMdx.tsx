@@ -45,7 +45,7 @@ export function GridFeature(props: {
             className={[
                 "p-4 flex items-center gap-2",
                 "not-prose text-base",
-                "border border-stone-200 dark:border-stone-800 rounded-xl shadow-sm",
+                "border border-stone-200 dark:border-stone-800 rounded-xl",
                 props.className || "",
             ].join(" ")}
         >
@@ -69,19 +69,21 @@ export function GridCard(props: { children: ReactNode; className?: string }) {
     );
 }
 
-export function MultiplayerIcon() {
+export function MultiplayerIcon({color, strokeWidth}: {color?: string, strokeWidth?: number}) {
     return (
         <div className="w-8 h-8 -my-1 -mr-2 relative z-0">
             <MousePointer2Icon
                 size="20"
                 absoluteStrokeWidth
-                strokeWidth={2}
+                strokeWidth={strokeWidth}
+                color={color}
                 className="absolute top-1 right-0"
             />
             <MousePointer2Icon
                 size="16"
                 absoluteStrokeWidth
-                strokeWidth={2}
+                strokeWidth={strokeWidth}
+                color={color}
                 className="absolute bottom-1 left-0 -scale-x-100"
             />
         </div>

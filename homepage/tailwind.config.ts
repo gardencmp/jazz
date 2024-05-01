@@ -15,6 +15,7 @@ const config: Config = {
     colors: {...harmonyPalette,
       "stone": {
         "50": "oklch(0.988281 0.002 75 / <alpha-value>)",
+        "75": "oklch(0.980563 0.002 75 / <alpha-value>)",
         "100": "oklch(0.964844 0.002 75 / <alpha-value>)",
         "200": "oklch(0.917969 0.002 75 / <alpha-value>)",
         "300": "oklch(0.853516 0.002 75 / <alpha-value>)",

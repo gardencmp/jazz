@@ -99,7 +99,7 @@ pre.shiki div.highlight {
     background-color: #f1f8ff;
 }
 pre.shiki div.line {
-    min-height: 1rem;
+    /* min-height: 1rem; */
     counter-increment: lineNumber 1;
 }
 
@@ -110,7 +110,13 @@ pre.shiki div.line::before {
     width: 1.3rem;
     padding-right: 0.3rem;
     text-align: right;
-    @apply text-stone-200 dark:text-stone-800 text-[0.65rem];
+    transition: color 0.3s;
+    @apply text-stone-200/50 dark:text-stone-900 text-[0.65rem];
+}
+
+pre.shiki div.line:hover::before {
+    @apply text-stone-400 dark:text-stone-600;
+
 }
 
 /** Don't show the language identifiers */
@@ -147,7 +153,7 @@ pre.twoslash data-lsp:hover::before {
 }
 
 .shiki-outer {
-    @apply shadow-sm rounded-xl border border-stone-200 dark:border-stone-800;
+    @apply shadow-sm rounded-xl;
 }
 
 .shiki-filename {
@@ -156,7 +162,7 @@ pre.twoslash data-lsp:hover::before {
 
 pre .code-container {
     overflow: scroll;
-    @apply p-2 pl-0 bg-stone-50 dark:bg-stone-950 rounded-b-xl text-[0.8rem] leading-4;
+    @apply p-2 pl-0 bg-stone-75 dark:bg-stone-925 rounded-b-xl text-[0.8rem] leading-[0.9rem] border border-stone-100 dark:border-stone-900;
 }
 /* The try button */
 pre .code-container > a {

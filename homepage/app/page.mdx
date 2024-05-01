@@ -33,31 +33,32 @@ import Link from "next/link";
 
 <Slogan>A new way to build apps with distributed state.</Slogan>
 
-<h2 className="md:mt-24">Hard things are easy now.</h2>
+<Grid className="gap-[1px] -mx-6 rounded-xl overflow-hidden bg-stone-50 dark:bg-stone-950 [&>*]:rounded-none [&>*]:border-none [&>*]:bg-stone-100 [&>*]:dark:bg-stone-900">
+<GridFeature icon={<MonitorSmartphoneIcon strokeWidth={1.6}/>}>Cross-device sync</GridFeature>
+<GridFeature icon={<MultiplayerIcon strokeWidth={1.6}/>}>Real-time multiplayer</GridFeature>
+<GridFeature icon={<UsersIcon strokeWidth={1.6}/>}>Collaboration, orgs & social features</GridFeature>
+<GridFeature icon={<FileLock2Icon strokeWidth={1.6}/>}>Fine-grained permissions</GridFeature>
+{/* <GridFeature icon={<WorkflowIcon strokeWidth={1.6}/>}>On-demand granular data‑fetching</GridFeature> */}
+<GridFeature icon={<UploadCloudIcon strokeWidth={1.6}/>}>Cloud sync & storage</GridFeature>
+<GridFeature icon={<HardDriveDownloadIcon strokeWidth={1.6}/>}>Local-first on-device storage</GridFeature>
+<GridFeature icon={<PlaneIcon strokeWidth={1.6}/>}>Full offline & bad connection support</GridFeature>
+<GridFeature icon={<GaugeIcon strokeWidth={1.6}/>}>Instant UI updates & quick loads</GridFeature>
+<div className="col-start-1 row-start-1 row-span-4 px-6 text-base">
+<h2 className="not-prose text-2xl font-medium tracking-tight mt-5 mb-6">Hard things are easy now.</h2>
 
-Jazz is an **open-source toolkit** that replaces APIs, databases and message queues with **a single new abstraction:**
+Jazz is an **open-source toolkit** that replaces APIs, databases and message queues with **a&nbsp;single new abstraction:**
 
-**&ldquo;Collaborative data&rdquo;** &mdash; giving you **distributed state** with **secure permissions built-in.**
+**&ldquo;Collaborative Values&rdquo;** &mdash; **distributed state** with **secure permissions built-in.**
 
-This lets you **offer features out-of-the-box** that used to take years to build:
-
-<Grid className="-mt-2 gap-[1px] border rounded-xl overflow-hidden border-stone-200 dark:border-stone-800 shadow-sm bg-stone-200 dark:bg-stone-800 [&>*]:rounded-none [&>*]:border-none [&>*]:bg-stone-50 [&>*]:dark:bg-stone-950">
-<GridFeature icon={<MonitorSmartphoneIcon />}>Cross-device sync</GridFeature>
-<GridFeature icon={<MultiplayerIcon/>}>Real-time multiplayer</GridFeature>
-<GridFeature icon={<UsersIcon/>}>Collaboration, teams & orgs</GridFeature>
-<GridFeature icon={<FileLock2Icon/>}>Fine-grained permissions & sharing</GridFeature>
-<GridFeature icon={<WorkflowIcon />}>On-demand granular data‑fetching</GridFeature>
-<GridFeature icon={<UploadCloudIcon />}>Cloud data storage & geographic caching</GridFeature>
-<GridFeature icon={<HardDriveDownloadIcon />}>Offline support & local-first data storage</GridFeature>
-<GridFeature icon={<PlaneIcon />}>Graceful handling of bad connections</GridFeature>
-<GridFeature icon={<GaugeIcon />}>Instant UI updates & quick loads</GridFeature>
+Features that used to take months to build now take an afternoon or work out-of-the-box.
+</div>
 </Grid>
 
 <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
-### First impressions
-<Slogan small>A chat app in 84 lines of code.</Slogan>
+### First impressions&hellip;
+<Slogan small>A chat app in 98 lines of code.</Slogan>
 
-<Grid className="mt-0">
+<Grid className="mt-0 -mx-6">
 <GridItem className="md:col-start-1">
 
 <App_tsx/>
@@ -72,18 +73,29 @@ This lets you **offer features out-of-the-box** that used to take years to build
 </Grid>
 </div>
 
+### Wait, where's the backend?
+
+TODO...
+
 ## Collaborative Values
 
 <Slogan small>Your new building blocks.</Slogan>
 
-Collaborative Values (CoValues) **can be edited as if they were simple local data,** but they're **automatically encrypted, signed** and **synced** between participants.
+<div className='text-base'>
+Based on CRDTs and public-key cryptography, CoValues...
 
-CoValues also **keep their full edit history,** including author metadata and potential editing conflicts. This makes it **super simple to build collaborative and social features.**
+- Can be read & edited like simple local JSON state
+- Can be created anywhere, are automatically synced & persisted
+- Always keep full edit history & author metadata
+- Automatically resolve most conflicts
+</div>
+
+### Bread-and-butter datastructures
 
 <Grid className="lg:gap-y-8 lg:grid-cols-2">
 
 <GridCard>
-### `CoMap`
+#### `CoMap`
 <div className="text-sm">
 - Collaborative key-value map
 - Possible values:
@@ -92,7 +104,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 </GridCard>
 
 <GridCard>
-### `CoList`
+#### `CoList`
 <div className="text-sm">
 - Collaborative ordered list
 - Possible items:
@@ -101,7 +113,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 </GridCard>
 
 <GridCard>
-### `CoString` & `CoText` <ComingSoonBadge/>
+#### `CoPlainText` & `CoRichText` <ComingSoonBadge/>
 <div className="text-sm">
 - Collaborative plain-text & rich-text
     - Gracefully prevents most editing conflicts
@@ -110,23 +122,45 @@ CoValues also **keep their full edit history,** including author metadata and po
 </GridCard>
 
 <GridCard>
-### `CoStream` & `BinaryCoStream`
+#### `CoStream`
 <div className="text-sm">
 - Collection of independent per-user items streams:
     - Immutable JSON & other CoValues
 - Great for presence, reactions, polls, replies etc.
-- Create, sync and store binary blobs or live-streams as just another kind of object
 </div>
 </GridCard>
 </Grid>
 
-### Groups & Accounts
+### First-class files & binary data
 
-<Slogan small>First-class user identities & secure permissions.</Slogan>
+<Grid className="lg:gap-y-8 lg:grid-cols-2">
+
+<GridCard>
+#### `BinaryCoStream`
+<div className="text-sm">
+- Represents a file or live binary stream
+- Can be referenced and synced like any other CoValue
+- Can easily be converted from/to browser `Blob`s
+    - <code>{`<input type="file"/>`}</code> -> `BinaryCoStream` -> `Blob` -> `BlobURL`
+</div>
+</GridCard>
+
+<GridCard>
+#### `ImageDefinition`
+<div className="text-sm">
+- Represents multiple resolutions of the same image
+- Can be progressively loaded, including super fast blur preview & image size info
+</div>
+</GridCard>
+
+</Grid>
+
+
+### Secure permissions, authorship & teams
 
 <Grid className="lg:gap-y-8 lg:grid-cols-2">
 <GridCard>
-### `Group`
+#### `Group`
 <div className="text-sm">
 - A scope where specified accounts have roles (`reader`/`writer`/`admin`).
 - A `Group` owns `CoValues`, with access right determined by group roles.
@@ -134,7 +168,7 @@ CoValues also **keep their full edit history,** including author metadata and po
 </div>
 </GridCard>
 <GridCard>
-### `Account`
+#### `Account`
 <div className="text-sm">
 - Represents a single user and their signing/encryption keys.
 - Has a private account root and a public profile
@@ -236,6 +270,5 @@ Jazz Mesh is currently free &mdash; and it's set up as the default sync & storag
 
 ## Get Started
 
-- See the <Link href="https://github.com/gardencmp/jazz#todo-list" target="_blank">Todo List Example Walkthrough</Link>
-- <Link href="https://github.com/gardencmp/jazz/blob/main/DOCS.md" target="_blank">Read the docs</Link>
+- <Link href="/docs" target="_blank">Read the docs</Link>
 - <Link href="https://discord.gg/utDMjHYg42" target="_blank">Join our Discord</Link>

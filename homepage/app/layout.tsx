@@ -129,14 +129,13 @@ export default function RootLayout({
                                     className="py-0.5 max-sm:px-0 md:px-0 lg:px-0"
                                     href="/mesh"
                                 >
-                                    Global Mesh
+                                    Sync & Storage Mesh
                                 </NavLink>
                                 <NavLink
                                     className="py-0.5 max-sm:px-0 md:px-0 lg:px-0"
-                                    href="https://github.com/gardencmp/jazz/blob/main/DOCS.md"
-                                    newTab
+                                    href="/docs"
                                 >
-                                    Docs & Guides
+                                    Docs
                                 </NavLink>
                             </div>
                             {/* <div className="flex flex-col gap-2 text-sm">

@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { ClassRef, NavPackage, PropRef } from "./tags";
 
 export function DocNav() {
@@ -7,7 +8,6 @@ export function DocNav() {
 
             <ul>
                 <li><DocNavLink href="#build-a-chat-app">Build a chat app in 5min</DocNavLink></li>
-                <li><DocNavLink href="#what-to-try-next">What to try next</DocNavLink></li>
             </ul>
 
             <p><DocNavLink href="#guide">Guide (build a Linear)</DocNavLink></p>
@@ -25,7 +25,7 @@ export function DocNav() {
             <NavPackage name="jazz-tools">
                 <ul>
                     <li>
-                        <ClassRef name="CoMap" />, <ClassRef name="CoList" />
+                    <DocNavLink href="#CoMap"><ClassRef name="CoMap" /></DocNavLink> & <DocNavLink href="#CoList"><ClassRef name="CoList" /></DocNavLink>
                     </li>
                     <li>
                         <ClassRef name="CoStream" />,{" "}
@@ -96,6 +96,6 @@ export function DocNav() {
     );
 }
 
-export function DocNavLink({href, children}: {href: string, children: string}) {
+export function DocNavLink({href, children}: {href: string, children: ReactNode}) {
     return <a href={href} className="not-prose hover:text-black dark:hover:text-white">{children}</a>;
 }
