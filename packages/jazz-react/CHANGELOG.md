@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.0-alpha.29
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.29
+  - cojson@0.7.0-alpha.29
+  - jazz-browser@0.7.0-alpha.29
+
 ## 0.7.0-alpha.28
 
 ### Patch Changes

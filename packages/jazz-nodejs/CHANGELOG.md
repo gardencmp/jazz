@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.7.0-alpha.29
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.7.0-alpha.29
+  - jazz-tools@0.7.0-alpha.29
+  - cojson@0.7.0-alpha.29
+
 ## 0.7.0-alpha.28
 
 ### Patch Changes
