@@ -17,7 +17,7 @@ beforeEach(async () => {
 
 describe("Simple CoMap operations", async () => {
     const me = await Account.create({
-        name: "Hermes Puggington",
+        creationProps: { name: "Hermes Puggington" },
     });
 
     class TestMap extends CoMap<TestMap> {
@@ -50,11 +50,7 @@ describe("Simple CoMap operations", async () => {
         expect(map._height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
         expect(map._raw.get("birthday")).toEqual(birthday.toISOString());
-        expect(Object.keys(map)).toEqual([
-            "color",
-            "_height",
-            "birthday",
-        ]);
+        expect(Object.keys(map)).toEqual(["color", "_height", "birthday"]);
     });
 
     describe("Mutation", () => {
@@ -202,7 +198,7 @@ describe("CoMap resolution", async () => {
 
     const initNodeAndMap = async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const map = new TestMap(
@@ -394,7 +390,7 @@ describe("CoMap resolution", async () => {
 
     test("Construction with optional", async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const mapWithout = new TestMapWithOptionalRef(
@@ -437,7 +433,7 @@ describe("CoMap resolution", async () => {
 
     test("Construction with index signature", async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const record = new TestRecord(
@@ -454,18 +450,18 @@ describe("CoMap resolution", async () => {
         expect(record._raw.get("other")).toEqual(3);
         expect(Object.keys(record)).toEqual(["height", "other"]);
         expect(record.toJSON()).toMatchObject({
-            "_type": "CoMap",
-            "height": 5,
-            "id": expect.any(String),
-            "other": 3,
-          });
+            _type: "CoMap",
+            height: 5,
+            id: expect.any(String),
+            other: 3,
+        });
     });
 
     class TestRecord2 extends CoMap.Record(co.number) {}
 
     test("Construction with index signature (shorthand)", async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const record = new TestRecord2(
@@ -487,13 +483,19 @@ describe("CoMap resolution", async () => {
 
     test("Construction with index signature ref", async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const record = new TestRecordRef(
             {
-                firstNested: new TwiceNestedMap({ taste: "sour" }, { owner: me }),
-                secondNested: new TwiceNestedMap({ taste: "sweet" }, { owner: me }),
+                firstNested: new TwiceNestedMap(
+                    { taste: "sour" },
+                    { owner: me }
+                ),
+                secondNested: new TwiceNestedMap(
+                    { taste: "sweet" },
+                    { owner: me }
+                ),
             },
             { owner: me }
         );
@@ -503,6 +505,9 @@ describe("CoMap resolution", async () => {
         expect(record.secondNested?.taste).toEqual("sweet");
         expect(record.secondNested?.id).toBeDefined();
         expect(Object.keys(record)).toEqual(["firstNested", "secondNested"]);
-        expect(Object.keys(record._refs)).toEqual(["firstNested", "secondNested"]);
+        expect(Object.keys(record._refs)).toEqual([
+            "firstNested",
+            "secondNested",
+        ]);
     });
 });

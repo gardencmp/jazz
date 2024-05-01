@@ -16,6 +16,7 @@ import { AgentID } from "../ids.js";
 import { RawCoMap } from "./coMap.js";
 import { RawGroup, InviteSecret } from "./group.js";
 import { LocalNode } from "../index.js";
+import { JsonObject } from "../jsonValue.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret
@@ -33,7 +34,7 @@ export function accountHeaderForInitialAgentSecret(
 }
 
 export class RawAccount<
-    Meta extends AccountMeta = AccountMeta
+    Meta extends AccountMeta = AccountMeta,
 > extends RawGroup<Meta> {
     currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
@@ -149,15 +150,14 @@ export type AccountID = CoID<RawAccount>;
 export type ProfileShape = {
     name: string;
 };
-export type ProfileMeta = { type: "profile" };
 
 export class RawProfile<
     Shape extends ProfileShape = ProfileShape,
-    Meta extends ProfileMeta = ProfileMeta
+    Meta extends JsonObject | null = JsonObject | null,
 > extends RawCoMap<Shape, Meta> {}
 
 export type RawAccountMigration<Meta extends AccountMeta = AccountMeta> = (
     account: RawControlledAccount<Meta>,
-    profile: RawCoMap,
-    localNode: LocalNode
+    localNode: LocalNode,
+    creationProps?: { name: string }
 ) => void | Promise<void>;

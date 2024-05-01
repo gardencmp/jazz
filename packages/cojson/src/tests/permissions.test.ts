@@ -53,7 +53,7 @@ test("Added admin can add a third admin to a group", () => {
 
     expect(groupAsOtherAdmin.get(otherAdmin.id)).toEqual("admin");
 
-    const thirdAdmin = node.createAccount("thirdAdmin");
+    const thirdAdmin = node.createAccount();
 
     groupAsOtherAdmin.set(thirdAdmin.id, "admin", "trusting");
     expect(groupAsOtherAdmin.get(thirdAdmin.id)).toEqual("admin");
@@ -71,7 +71,7 @@ test("Added adming can add a third admin to a group (high level)", () => {
             .getCurrentContent()
     );
 
-    const thirdAdmin = groupAsOtherAdmin.core.node.createAccount("thirdAdmin");
+    const thirdAdmin = groupAsOtherAdmin.core.node.createAccount();
 
     groupAsOtherAdmin.addMember(thirdAdmin, "admin");
 
@@ -122,7 +122,7 @@ test("Admins can't demote other admins in a group (high level)", () => {
 
 test("Admins an add writers to a group, who can't add admins, writers, or readers", () => {
     const { groupCore, node } = newGroup();
-    const writer = node.createAccount("writer");
+    const writer = node.createAccount();
 
     const groupContent = expectGroup(groupCore.getCurrentContent());
 
@@ -139,7 +139,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
     expect(groupAsWriter.get(writer.id)).toEqual("writer");
 
-    const otherAgent = node.createAccount("otherAgent");
+    const otherAgent = node.createAccount();
 
     groupAsWriter.set(otherAgent.id, "admin", "trusting");
     expect(groupAsWriter.get(otherAgent.id)).toBeUndefined();
@@ -154,7 +154,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 test("Admins an add writers to a group, who can't add admins, writers, or readers (high level)", () => {
     const { group, node } = newGroupHighLevel();
 
-    const writer = node.createAccount("writer");
+    const writer = node.createAccount();
 
     group.addMember(writer, "writer");
     expect(group.get(writer.id)).toEqual("writer");
@@ -167,7 +167,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
     expect(groupAsWriter.get(writer.id)).toEqual("writer");
 
-    const otherAgent = groupAsWriter.core.node.createAccount("otherAgent");
+    const otherAgent = groupAsWriter.core.node.createAccount();
 
     expect(() => groupAsWriter.addMember(otherAgent, "admin")).toThrow(
         "Failed to set role"
@@ -184,7 +184,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
 test("Admins can add readers to a group, who can't add admins, writers, or readers", () => {
     const { groupCore, node } = newGroup();
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     const groupContent = expectGroup(groupCore.getCurrentContent());
 
@@ -199,7 +199,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 
     expect(groupAsReader.get(reader.id)).toEqual("reader");
 
-    const otherAgent = node.createAccount("otherAgent");
+    const otherAgent = node.createAccount();
 
     groupAsReader.set(otherAgent.id, "admin", "trusting");
     expect(groupAsReader.get(otherAgent.id)).toBeUndefined();
@@ -215,7 +215,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 test("Admins can add readers to a group, who can't add admins, writers, or readers (high level)", () => {
     const { group, node } = newGroupHighLevel();
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     group.addMember(reader, "reader");
     expect(group.get(reader.id)).toEqual("reader");
@@ -228,7 +228,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 
     expect(groupAsReader.get(reader.id)).toEqual("reader");
 
-    const otherAgent = groupAsReader.core.node.createAccount("otherAgent");
+    const otherAgent = groupAsReader.core.node.createAccount();
 
     expect(() => groupAsReader.addMember(otherAgent, "admin")).toThrow(
         "Failed to set role"
@@ -271,7 +271,7 @@ test("Admins can write to an object that is owned by their group (high level)", 
 test("Writers can write to an object that is owned by their group", () => {
     const { node, groupCore } = newGroup();
 
-    const writer = node.createAccount("writer");
+    const writer = node.createAccount();
 
     const group = expectGroup(groupCore.getCurrentContent());
     group.set(writer.id, "writer", "trusting");
@@ -300,7 +300,7 @@ test("Writers can write to an object that is owned by their group", () => {
 test("Writers can write to an object that is owned by their group (high level)", () => {
     const { node, group } = newGroupHighLevel();
 
-    const writer = node.createAccount("writer");
+    const writer = node.createAccount();
 
     group.addMember(writer, "writer");
 
@@ -319,7 +319,7 @@ test("Writers can write to an object that is owned by their group (high level)",
 test("Readers can not write to an object that is owned by their group", () => {
     const { node, groupCore } = newGroup();
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     const group = expectGroup(groupCore.getCurrentContent());
     group.set(reader.id, "reader", "trusting");
@@ -348,7 +348,7 @@ test("Readers can not write to an object that is owned by their group", () => {
 test("Readers can not write to an object that is owned by their group (high level)", () => {
     const { node, group } = newGroupHighLevel();
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     group.addMember(reader, "reader");
 
@@ -417,7 +417,7 @@ test("Admins can set group read key and then use it to create and read private t
 test("Admins can set group read key and then writers can use it to create and read private transactions in owned objects", () => {
     const { node, groupCore, admin } = newGroup();
 
-    const writer = node.createAccount("writer");
+    const writer = node.createAccount();
 
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
@@ -477,7 +477,7 @@ test("Admins can set group read key and then writers can use it to create and re
 test("Admins can set group read key and then writers can use it to create and read private transactions in owned objects (high level)", () => {
     const { node, group, admin } = newGroupHighLevel();
 
-    const writer = node.createAccount("writer");
+    const writer = node.createAccount();
 
     group.addMember(writer, "writer");
 
@@ -496,7 +496,7 @@ test("Admins can set group read key and then writers can use it to create and re
 test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read", () => {
     const { node, groupCore, admin } = newGroup();
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
@@ -560,7 +560,7 @@ test("Admins can set group read key and then use it to create private transactio
 test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read (high level)", () => {
     const { node, group, admin } = newGroupHighLevel();
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     group.addMember(reader, "reader");
 
@@ -581,9 +581,9 @@ test("Admins can set group read key and then use it to create private transactio
 test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key", () => {
     const { node, groupCore, admin } = newGroup();
 
-    const reader1 = node.createAccount("reader1");
+    const reader1 = node.createAccount();
 
-    const reader2 = node.createAccount("reader2");
+    const reader2 = node.createAccount();
 
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
 
@@ -672,9 +672,9 @@ test("Admins can set group read key and then use it to create private transactio
 test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key (high level)", () => {
     const { node, group, admin } = newGroupHighLevel();
 
-    const reader1 = node.createAccount("reader1");
+    const reader1 = node.createAccount();
 
-    const reader2 = node.createAccount("reader2");
+    const reader2 = node.createAccount();
 
     group.addMember(reader1, "reader");
 
@@ -814,7 +814,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     expect(childContent.get("foo")).toEqual("bar");
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     const { secret: readKey2, id: readKeyID2 } = newRandomKeySecret();
 
@@ -893,7 +893,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     expect(childObject.core.getCurrentReadKey()).not.toEqual(firstReadKey);
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
     group.addMember(reader, "reader");
 
@@ -922,9 +922,9 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     const groupContent = expectGroup(groupCore.getCurrentContent());
     const { secret: readKey, id: readKeyID } = newRandomKeySecret();
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
-    const reader2 = node.createAccount("reader2");
+    const reader2 = node.createAccount();
 
     const revelation1 = seal({
         message: readKey,
@@ -1072,9 +1072,9 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     const secondReadKey = childObject.core.getCurrentReadKey();
 
-    const reader = node.createAccount("reader");
+    const reader = node.createAccount();
 
-    const reader2 = node.createAccount("reader2");
+    const reader2 = node.createAccount();
 
     group.addMember(reader, "reader");
     group.addMember(reader2, "reader");

@@ -17,7 +17,7 @@ beforeEach(async () => {
 
 describe("Simple CoList operations", async () => {
     const me = await Account.create({
-        name: "Hermes Puggington",
+        creationProps: { name: "Hermes Puggington" },
     });
 
     class TestList extends CoList.Of(co.string) {}
@@ -126,7 +126,7 @@ describe("CoList resolution", async () => {
 
     const initNodeAndList = async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const list = new TestList(

@@ -33,7 +33,7 @@ import {
     RawProfile,
     RawAccountMigration,
 } from "./coValues/account.js";
-import { RawCoValue } from "./index.js";
+import { Profile, RawCoValue } from "./index.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
@@ -70,12 +70,12 @@ export class LocalNode {
     static async withNewlyCreatedAccount<
         Meta extends AccountMeta = AccountMeta
     >({
-        name,
+        creationProps,
         peersToLoadFrom,
         migration,
         initialAgentSecret = newRandomAgentSecret(),
     }: {
-        name: string;
+        creationProps: {name: string};
         peersToLoadFrom?: Peer[];
         migration?: RawAccountMigration<Meta>;
         initialAgentSecret?: AgentSecret;
@@ -91,7 +91,7 @@ export class LocalNode {
             newRandomSessionID(getAgentID(throwawayAgent))
         );
 
-        const account = setupNode.createAccount(name, initialAgentSecret);
+        const account = setupNode.createAccount(initialAgentSecret);
 
         const nodeWithAccount = account.core.node.testWithDifferentAccount(
             account,
@@ -101,11 +101,6 @@ export class LocalNode {
         const accountOnNodeWithAccount =
             nodeWithAccount.account as RawControlledAccount<Meta>;
 
-        const profile = nodeWithAccount.expectProfileLoaded(
-            accountOnNodeWithAccount.id,
-            "After creating account"
-        );
-
         if (peersToLoadFrom) {
             for (const peer of peersToLoadFrom) {
                 nodeWithAccount.syncManager.addPeer(peer);
@@ -113,7 +108,14 @@ export class LocalNode {
         }
 
         if (migration) {
-            await migration(accountOnNodeWithAccount, profile, nodeWithAccount);
+            await migration(accountOnNodeWithAccount, nodeWithAccount, creationProps);
+        } else {
+            const profileGroup = accountOnNodeWithAccount.createGroup();
+            profileGroup.addMember("everyone", "reader");
+            const profile = profileGroup.createMap<Profile>({
+                name: creationProps.name,
+            });
+            accountOnNodeWithAccount.set('profile', profile.id, "trusting");
         }
 
         const controlledAccount = new RawControlledAccount(
@@ -127,6 +129,10 @@ export class LocalNode {
             coValue: controlledAccount.core,
         };
         controlledAccount.core._cachedContent = undefined;
+
+        if (!controlledAccount.get("profile")) {
+            throw new Error("Must set account profile in initial migration");
+        }
 
         // we shouldn't need this, but it fixes account data not syncing for new accounts
         function syncAllCoValuesAfterCreateAccount() {
@@ -217,7 +223,6 @@ export class LocalNode {
         if (migration) {
             await migration(
                 controlledAccount as RawControlledAccount<Meta>,
-                profile,
                 node
             );
             node.account = new RawControlledAccount(
@@ -465,11 +470,10 @@ export class LocalNode {
 
     /** @internal */
     createAccount(
-        name: string,
         agentSecret = newRandomAgentSecret()
     ): RawControlledAccount {
         const accountAgentID = getAgentID(agentSecret);
-        let account = expectGroup(
+        const account = expectGroup(
             this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
                 .testWithDifferentAccount(
                     new ControlledAgent(agentSecret),
@@ -496,26 +500,11 @@ export class LocalNode {
 
         account.set("readKey", readKey.id, "trusting");
 
-        const profile = account.createMap<RawProfile>(
-            { name },
-            {
-                type: "profile",
-            },
-            "trusting"
-        );
-
-        account.set("profile", profile.id, "trusting");
-
         const accountOnThisNode = this.expectCoValueLoaded(account.id);
 
         accountOnThisNode._sessionLogs = new Map(account.core.sessionLogs);
 
         accountOnThisNode._cachedContent = undefined;
-
-        const profileOnThisNode = this.createCoValue(profile.core.header);
-
-        profileOnThisNode._sessionLogs = new Map(profile.core.sessionLogs);
-        profileOnThisNode._cachedContent = undefined;
 
         return new RawControlledAccount(accountOnThisNode, agentSecret);
     }

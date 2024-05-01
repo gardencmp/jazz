@@ -87,7 +87,7 @@ export async function createOrResumeWorker<A extends Account>({
         );
     } else {
         worker = await accountSchema.create({
-            name: workerName,
+            creationProps: { name: workerName },
             peersToLoadFrom: [wsPeer],
         });
 
@@ -100,7 +100,7 @@ export async function createOrResumeWorker<A extends Account>({
         console.log("Created worker", worker.id, workerName);
     }
 
-    return { worker: worker as A & Me};
+    return { worker: worker as A & Me };
 }
 
 export const FileCredentialStorage: WorkerCredentialStorage = {

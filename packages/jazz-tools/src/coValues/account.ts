@@ -16,14 +16,15 @@ import type {
     CoValue,
     CoValueClass,
     Schema,
-    Group,
     ID,
     RefEncoded,
     SubclassedConstructor,
     UnavailableError,
 } from "../internal.js";
 import {
+    Group,
     CoValueBase,
+    MembersSym,
     Profile,
     Ref,
     SchemaInit,
@@ -182,19 +183,19 @@ export class Account<
     static async create<A extends Account>(
         this: SubclassedConstructor<A> & typeof Account,
         options: {
-            name: string;
+            creationProps: { name: string };
             initialAgentSecret?: AgentSecret;
             peersToLoadFrom?: Peer[];
         }
     ): Promise<A & Me> {
         const { node } = await LocalNode.withNewlyCreatedAccount({
             ...options,
-            migration: async (rawAccount) => {
+            migration: async (rawAccount, _node, creationProps) => {
                 const account = new this(undefined, {
                     fromRaw: rawAccount,
                 }) as A & Me;
 
-                await account.migrate?.();
+                await account.migrate?.(creationProps);
             },
         });
 
@@ -215,12 +216,12 @@ export class Account<
             accountSecret: options.accountSecret,
             sessionID: options.sessionID,
             peersToLoadFrom: options.peersToLoadFrom,
-            migration: async (rawAccount) => {
+            migration: async (rawAccount, _node, creationProps) => {
                 const account = new this(undefined, {
                     fromRaw: rawAccount,
                 }) as A & Me;
 
-                await account.migrate?.();
+                await account.migrate?.(creationProps);
             },
         });
 
@@ -247,7 +248,16 @@ export class Account<
         return this.toJSON();
     }
 
-    migrate: (() => void | Promise<void>) | undefined;
+    migrate(creationProps?: { name: string }): void | Promise<void> {
+        if (creationProps) {
+            const profileGroup = new Group({ owner: this });
+            profileGroup.addMember("everyone", "reader");
+            this.profile = new Profile(
+                { name: creationProps.name },
+                { owner: profileGroup }
+            );
+        }
+    }
 }
 
 export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
@@ -264,7 +274,7 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     },
     set(target, key, value, receiver) {
         if (
-            (key === "profile" || key === "root") &&
+            (key === "profile" || key === "root" || key === MembersSym) &&
             typeof value === "object" &&
             SchemaInit in value
         ) {
@@ -276,7 +286,8 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
             if (value) {
                 target._raw.set(
                     "profile",
-                    value.id as unknown as CoID<RawCoMap>
+                    value.id as unknown as CoID<RawCoMap>,
+                    "trusting"
                 );
             }
             subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
@@ -293,7 +304,7 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     },
     defineProperty(target, key, descriptor) {
         if (
-            (key === "profile" || key === "root") &&
+            (key === "profile" || key === "root" || key === MembersSym) &&
             typeof descriptor.value === "object" &&
             SchemaInit in descriptor.value
         ) {

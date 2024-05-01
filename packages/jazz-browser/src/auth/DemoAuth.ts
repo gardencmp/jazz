@@ -1,10 +1,4 @@
-import {
-    AccountID,
-    AgentSecret,
-    LocalNode,
-    Peer,
-    RawControlledAccount,
-} from "cojson";
+import { AgentSecret, Peer } from "cojson";
 import { SessionProvider } from "..";
 import { AuthProvider } from "./auth";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
@@ -36,10 +30,6 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
         getSessionFor: SessionProvider,
         initialPeers: Peer[]
     ): Promise<Acc & Me> {
-        const rawMigration = (account: RawControlledAccount) => {
-            return this.accountSchema.fromRaw(account).migrate?.();
-        };
-
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey]
@@ -47,91 +37,72 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
 
             const sessionID = await getSessionFor(localStorageData.accountID);
 
-            const node = await LocalNode.withLoadedAccount({
-                accountID: localStorageData.accountID as unknown as AccountID,
+            const account = (await this.accountSchema.become({
+                accountID: localStorageData.accountID as ID<Acc>,
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                migration: rawMigration,
-            });
+            })) as Acc & Me;
 
             this.driver.onSignedIn({ logOut });
-
-            const account = this.accountSchema.fromRaw(
-                node.account as RawControlledAccount
-            ) as Acc & Me;
-
             return Promise.resolve(account);
         } else {
-            const node = await new Promise<LocalNode>(
-                (doneSigningUpOrLoggingIn) => {
-                    this.driver.onReady({
-                        signUp: async (username) => {
-                            const { node, accountID, accountSecret } =
-                                await LocalNode.withNewlyCreatedAccount({
-                                    name: username,
-                                    migration: rawMigration,
-                                });
-                            const storageData = JSON.stringify({
-                                accountID: accountID as unknown as ID<Account>,
-                                accountSecret,
-                            } satisfies StorageData);
-                            localStorage["demo-auth-logged-in-secret"] =
-                                storageData;
+            return new Promise<Acc & Me>((resolveAccount) => {
+                this.driver.onReady({
+                    signUp: async (username) => {
+                        const account = (await this.accountSchema.create({
+                            creationProps: { name: username },
+                            peersToLoadFrom: initialPeers,
+                        })) as Acc & Me;
+
+                        const storageData = JSON.stringify({
+                            accountID: account.id,
+                            accountSecret: account._raw.agentSecret,
+                        } satisfies StorageData);
+
+                        localStorage["demo-auth-logged-in-secret"] =
+                            storageData;
+                        localStorage["demo-auth-existing-users-" + username] =
+                            storageData;
+
+                        localStorage["demo-auth-existing-users"] = localStorage[
+                            "demo-auth-existing-users"
+                        ]
+                            ? localStorage["demo-auth-existing-users"] +
+                              "," +
+                              username
+                            : username;
+
+                        resolveAccount(account);
+                        this.driver.onSignedIn({ logOut });
+                    },
+                    existingUsers:
+                        localStorage["demo-auth-existing-users"]?.split(",") ??
+                        [],
+                    logInAs: async (existingUser) => {
+                        const storageData = JSON.parse(
                             localStorage[
-                                "demo-auth-existing-users-" + username
-                            ] = storageData;
-                            localStorage["demo-auth-existing-users"] =
-                                localStorage["demo-auth-existing-users"]
-                                    ? localStorage["demo-auth-existing-users"] +
-                                      "," +
-                                      username
-                                    : username;
-                            for (const peer of initialPeers) {
-                                node.syncManager.addPeer(peer);
-                            }
-                            doneSigningUpOrLoggingIn(node);
-                            this.driver.onSignedIn({ logOut });
-                        },
-                        existingUsers:
-                            localStorage["demo-auth-existing-users"]?.split(
-                                ","
-                            ) ?? [],
-                        logInAs: async (existingUser) => {
-                            const storageData = JSON.parse(
-                                localStorage[
-                                    "demo-auth-existing-users-" + existingUser
-                                ]
-                            ) as StorageData;
+                                "demo-auth-existing-users-" + existingUser
+                            ]
+                        ) as StorageData;
 
-                            localStorage["demo-auth-logged-in-secret"] =
-                                JSON.stringify(storageData);
+                        localStorage["demo-auth-logged-in-secret"] =
+                            JSON.stringify(storageData);
 
-                            const sessionID = await getSessionFor(
+                        const account = (await this.accountSchema.become({
+                            accountID: storageData.accountID as ID<Acc>,
+                            accountSecret: storageData.accountSecret,
+                            sessionID: await getSessionFor(
                                 storageData.accountID
-                            );
+                            ),
+                            peersToLoadFrom: initialPeers,
+                        })) as Acc & Me;
 
-                            const node = await LocalNode.withLoadedAccount({
-                                accountID:
-                                    storageData.accountID as unknown as AccountID,
-                                accountSecret: storageData.accountSecret,
-                                sessionID,
-                                peersToLoadFrom: initialPeers,
-                                migration: rawMigration,
-                            });
-
-                            doneSigningUpOrLoggingIn(node);
-                            this.driver.onSignedIn({ logOut });
-                        },
-                    });
-                }
-            );
-
-            const account = this.accountSchema.fromRaw(
-                node.account as RawControlledAccount
-            ) as Acc & Me;
-
-            return account;
+                        resolveAccount(account);
+                        this.driver.onSignedIn({ logOut });
+                    },
+                });
+            });
         }
     }
 }

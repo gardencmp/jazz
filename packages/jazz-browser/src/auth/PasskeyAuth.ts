@@ -1,12 +1,4 @@
-import {
-    AccountID,
-    AgentSecret,
-    cojsonInternals,
-    LocalNode,
-    Peer,
-    RawAccountMigration,
-    RawControlledAccount,
-} from "cojson";
+import { AccountID, AgentSecret, cojsonInternals, Peer } from "cojson";
 import { AuthProvider, SessionProvider } from "jazz-browser";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
 
@@ -40,10 +32,6 @@ export class BrowserPasskeyAuth<Acc extends Account>
         getSessionFor: SessionProvider,
         initialPeers: Peer[]
     ): Promise<Acc & Me> {
-        const rawMigration = (account: RawControlledAccount) => {
-            return this.accountSchema.fromRaw(account).migrate?.();
-        };
-
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey]
@@ -51,78 +39,64 @@ export class BrowserPasskeyAuth<Acc extends Account>
 
             const sessionID = await getSessionFor(localStorageData.accountID);
 
-            const node = await LocalNode.withLoadedAccount({
-                accountID: localStorageData.accountID as unknown as AccountID,
+            const account = (await this.accountSchema.become({
+                accountID: localStorageData.accountID as ID<Acc>,
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                migration: rawMigration,
-            });
+            })) as Acc & Me;
 
             this.driver.onSignedIn({ logOut });
 
-            const account = this.accountSchema.fromRaw(
-                node.account as RawControlledAccount
-            ) as Acc & Me;
-
             return Promise.resolve(account);
         } else {
-            const node = await new Promise<LocalNode>(
-                (doneSigningUpOrLoggingIn) => {
-                    this.driver.onReady({
-                        signUp: async (username) => {
-                            const node = await signUp(
-                                username,
-                                getSessionFor,
-                                this.appName,
-                                this.appHostname,
-                                rawMigration
-                            );
-                            for (const peer of initialPeers) {
-                                node.syncManager.addPeer(peer);
-                            }
-                            doneSigningUpOrLoggingIn(node);
-                            this.driver.onSignedIn({ logOut });
-                        },
-                        logIn: async () => {
-                            const node = await logIn(
-                                getSessionFor,
-                                this.appHostname,
-                                initialPeers,
-                                rawMigration
-                            );
-                            doneSigningUpOrLoggingIn(node);
-                            this.driver.onSignedIn({ logOut });
-                        },
-                    });
-                }
-            );
+            return new Promise<Acc & Me>((resolveAccount) => {
+                this.driver.onReady({
+                    signUp: async (username) => {
+                        const account = await signUp<Acc>(
+                            username,
+                            getSessionFor,
+                            this.appName,
+                            this.appHostname,
+                            this.accountSchema,
+                            initialPeers
+                        );
 
-            const account = this.accountSchema.fromRaw(
-                node.account as RawControlledAccount
-            ) as Acc & Me;
-
-            return account;
+                        resolveAccount(account);
+                        this.driver.onSignedIn({ logOut });
+                    },
+                    logIn: async () => {
+                        const account = await logIn<Acc>(
+                            getSessionFor,
+                            this.appHostname,
+                            this.accountSchema,
+                            initialPeers
+                        );
+                        resolveAccount(account);
+                        this.driver.onSignedIn({ logOut });
+                    },
+                });
+            });
         }
     }
 }
 
-async function signUp(
+async function signUp<Acc extends Account>(
     username: string,
     getSessionFor: SessionProvider,
     appName: string,
     appHostname: string,
-    migration?: RawAccountMigration
-): Promise<LocalNode> {
+    accountSchema: CoValueClass<Acc> & typeof Account,
+    initialPeers: Peer[]
+): Promise<Acc & Me> {
     const secretSeed = cojsonInternals.newRandomSecretSeed();
 
-    const { node, accountID, accountSecret } =
-        await LocalNode.withNewlyCreatedAccount({
-            name: username,
-            initialAgentSecret:
-                cojsonInternals.agentSecretFromSecretSeed(secretSeed),
-            migration,
-        });
+    const account = (await accountSchema.create({
+        creationProps: { name: username },
+        initialAgentSecret:
+            cojsonInternals.agentSecretFromSecretSeed(secretSeed),
+        peersToLoadFrom: initialPeers,
+    })) as Acc & Me;
 
     const webAuthNCredentialPayload = new Uint8Array(
         cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength
@@ -130,7 +104,7 @@ async function signUp(
 
     webAuthNCredentialPayload.set(secretSeed);
     webAuthNCredentialPayload.set(
-        cojsonInternals.rawCoIDtoBytes(accountID),
+        cojsonInternals.rawCoIDtoBytes(account.id as unknown as AccountID),
         cojsonInternals.secretSeedLength
     );
 
@@ -155,26 +129,24 @@ async function signUp(
         },
     });
 
-    console.log(webAuthNCredential, accountID);
+    console.log(webAuthNCredential, account.id);
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID as unknown as ID<Account>,
-        accountSecret,
+        accountID: account.id,
+        accountSecret: account._raw.agentSecret,
     } satisfies LocalStorageData);
 
-    node.currentSessionID = await getSessionFor(
-        accountID as unknown as ID<Account>
-    );
+    account._raw.core.node.currentSessionID = await getSessionFor(account.id);
 
-    return node;
+    return account;
 }
 
-async function logIn(
+async function logIn<Acc extends Account>(
     getSessionFor: SessionProvider,
     appHostname: string,
-    initialPeers: Peer[],
-    migration?: RawAccountMigration
-): Promise<LocalNode> {
+    accountSchema: CoValueClass<Acc> & typeof Account,
+    initialPeers: Peer[]
+): Promise<Acc & Me> {
     const webAuthNCredential = (await navigator.credentials.get({
         publicKey: {
             challenge: Uint8Array.from([0, 1, 2]),
@@ -202,7 +174,7 @@ async function logIn(
             cojsonInternals.secretSeedLength,
             cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength
         )
-    ) as AccountID;
+    ) as ID<Acc>;
 
     const accountSecret =
         cojsonInternals.agentSecretFromSecretSeed(accountSecretSeed);
@@ -212,19 +184,18 @@ async function logIn(
     }
 
     localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID as unknown as ID<Account>,
+        accountID: accountID,
         accountSecret,
     } satisfies LocalStorageData);
 
-    const node = await LocalNode.withLoadedAccount({
+    const account = (await accountSchema.become({
         accountID,
         accountSecret,
-        sessionID: await getSessionFor(accountID as unknown as ID<Account>),
+        sessionID: await getSessionFor(accountID),
         peersToLoadFrom: initialPeers,
-        migration,
-    });
+    })) as Acc & Me;
 
-    return node;
+    return account;
 }
 
 function logOut() {

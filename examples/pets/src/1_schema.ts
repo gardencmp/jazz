@@ -43,7 +43,8 @@ export class PetAccount extends Account<PetAccount> {
     profile = co.ref(Profile);
     root = co.ref(PetAccountRoot);
 
-    migrate = () => {
+    migrate(creationProps?: { name: string }) {
+        super.migrate(creationProps);
         if (!this._refs.root) {
             this.root = new PetAccountRoot(
                 {
@@ -53,7 +54,7 @@ export class PetAccount extends Account<PetAccount> {
             );
             console.log("Created root", this.root);
         }
-    };
+    }
 }
 
 /** Walkthrough: Continue with ./2_App.tsx */

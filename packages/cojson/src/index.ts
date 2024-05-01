@@ -50,7 +50,6 @@ import type {
     AccountID,
     AccountMeta,
     RawAccountMigration,
-    ProfileMeta,
 } from "./coValues/account.js";
 import type { InviteSecret } from "./coValues/group.js";
 import type * as Media from "./media.js";
@@ -99,7 +98,6 @@ export {
     AccountMeta,
     RawAccountMigration,
     RawProfile as Profile,
-    ProfileMeta,
     SessionID,
     Media,
     CoValueCore,
@@ -133,7 +131,6 @@ export namespace CojsonInternalTypes {
     export type Signature = import("./crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
     export type ProfileShape = import("./coValues/account.js").ProfileShape;
-    export type ProfileMeta = import("./coValues/account.js").ProfileMeta;
     export type SealerSecret = import("./crypto.js").SealerSecret;
     export type SignerSecret = import("./crypto.js").SignerSecret;
     export type JsonObject = import("./jsonValue.js").JsonObject;

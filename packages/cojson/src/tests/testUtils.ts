@@ -37,7 +37,7 @@ export function newGroup() {
 export function groupWithTwoAdmins() {
     const { groupCore, admin, node } = newGroup();
 
-    const otherAdmin = node.createAccount("otherAdmin");
+    const otherAdmin = node.createAccount();
 
     let group = expectGroup(groupCore.getCurrentContent());
 
@@ -66,7 +66,7 @@ export function newGroupHighLevel() {
 export function groupWithTwoAdminsHighLevel() {
     let { admin, node, group } = newGroupHighLevel();
 
-    const otherAdmin = node.createAccount("otherAdmin");
+    const otherAdmin = node.createAccount();
 
     group.addMember(otherAdmin, "admin");
 

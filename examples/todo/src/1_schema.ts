@@ -39,7 +39,8 @@ export class TodoAccount extends Account<TodoAccount> {
     /** The account migration is run on account creation and on every log-in.
      *  You can use it to set up the account root and any other initial CoValues you need.
      */
-    migrate = () => {
+    migrate(creationProps?: { name: string }) {
+        super.migrate(creationProps);
         if (!this._refs.root) {
             this.root = new TodoAccountRoot(
                 {

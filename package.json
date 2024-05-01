@@ -1,6 +1,7 @@
 {
   "name": "jazz-monorepo",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*",
     "examples/*"
@@ -10,7 +11,8 @@
     "prettier": "^3.1.1",
     "ts-node": "^10.9.1",
     "typedoc": "^0.25.13",
-    "turbo": "^1.11.2"
+    "turbo": "^1.11.2",
+    "vitest": "1.5.3"
   },
   "scripts": {
     "dev": "turbo dev",

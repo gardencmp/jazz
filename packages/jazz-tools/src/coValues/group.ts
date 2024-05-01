@@ -1,5 +1,11 @@
-import type { Everyone, RawGroup, Role } from "cojson";
-import type { CoValue, ID, JsonEncoded, RefEncoded, Schema } from "../internal.js";
+import type { AccountID, Everyone, RawGroup, Role } from "cojson";
+import type {
+    CoValue,
+    ID,
+    JsonEncoded,
+    RefEncoded,
+    Schema,
+} from "../internal.js";
 import {
     Account,
     CoMap,
@@ -8,16 +14,32 @@ import {
     co,
     isControlledAccount,
     AccountAndGroupProxyHandler,
+    MembersSym,
 } from "../internal.js";
 
 export class Profile extends CoMap<{ name: co<string> }> {
     name = co.string;
 }
 
+type GroupSchema<Def extends Group> = {
+    profile: NonNullable<Def["profile"]> extends CoValue
+        ? RefEncoded<NonNullable<Def["profile"]>>
+        : JsonEncoded;
+    root: NonNullable<Def["root"]> extends CoValue
+        ? RefEncoded<NonNullable<Def["root"]>>
+        : JsonEncoded;
+    [MembersSym]: RefEncoded<NonNullable<Def[MembersSym]>>;
+};
+
 export class Group<
-        Def extends { profile: Profile | null; root: CoMap | null } = {
+        Def extends {
             profile: Profile | null;
             root: CoMap | null;
+            [MembersSym]: Account | null;
+        } = {
+            profile: Profile | null;
+            root: CoMap | null;
+            [MembersSym]: Account | null;
         },
     >
     extends CoValueBase
@@ -31,31 +53,23 @@ export class Group<
     declare _raw: RawGroup;
 
     static _schema: any;
-    get _schema(): {
-        profile: Def["profile"] extends CoValue
-            ? RefEncoded<Def["profile"]>
-            : JsonEncoded;
-        root: Def["root"] extends CoValue
-            ? RefEncoded<Def["root"]>
-            : JsonEncoded;
-    } {
+    get _schema(): GroupSchema<this> {
         return (this.constructor as typeof Group)._schema;
     }
     static {
         this._schema = {
             profile: "json" satisfies Schema,
             root: "json" satisfies Schema,
+            [MembersSym]: () => Account satisfies Schema,
         } as any;
         Object.defineProperty(this.prototype, "_schema", {
             get: () => this._schema,
         });
     }
 
-    profile!: Def["profile"] extends Profile
-        ? Def["profile"] | null
-        : undefined;
-
-    root!: Def["root"] extends CoMap ? Def["root"] | null : undefined;
+    declare profile: Def["profile"] | null;
+    declare root: Def["root"] | null;
+    declare [MembersSym]: Def[MembersSym] | null;
 
     get _refs(): {
         profile: Def["profile"] extends Profile ? Ref<Def["profile"]> : never;
@@ -135,5 +149,37 @@ export class Group<
 
     addMember(member: Everyone | Account, role: Role) {
         this._raw.addMember(member === "everyone" ? member : member._raw, role);
+    }
+
+    get members() {
+        return this._raw
+            .keys()
+            .filter((key) => {
+                return key === "everyone" || key.startsWith("co_");
+            })
+            .map((id) => {
+                const role = this._raw.get(id as Everyone | AccountID);
+                const accountID =
+                    id === "everyone"
+                        ? undefined
+                        : (id as unknown as ID<Account>);
+                const ref =
+                    accountID &&
+                    new Ref<NonNullable<this[MembersSym]>>(
+                        accountID,
+                        this._loadedAs,
+                        this._schema[MembersSym]
+                    );
+                const accessRef = () => ref?.accessFrom(this);
+
+                return {
+                    id: id as unknown as Everyone | ID<this[MembersSym]>,
+                    role,
+                    ref,
+                    get account() {
+                        return accessRef();
+                    },
+                };
+            });
     }
 }

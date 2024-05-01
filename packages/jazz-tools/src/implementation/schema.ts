@@ -10,15 +10,6 @@ export type IfCo<C, R> = C extends infer _A | infer B
         : never
     : never;
 
-export const SchemaInit = Symbol.for("SchemaInit");
-export type SchemaInit = typeof SchemaInit;
-
-export const InitValues = Symbol.for("InitValues");
-export type InitValues = typeof InitValues;
-
-export const ItemsSym = Symbol.for("items");
-export type ItemsSym = typeof ItemsSym;
-
 export const co = {
     string: {
         [SchemaInit]: "json" satisfies Schema,
@@ -29,6 +20,9 @@ export const co = {
     boolean: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<boolean>,
+    null: {
+        [SchemaInit]: "json" satisfies Schema,
+    } as unknown as co<null>,
     literal: <T extends string | number | boolean>(_lit: T): co<T> => {
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
@@ -44,6 +38,7 @@ export const co = {
         return { [SchemaInit]: arg satisfies Schema } as any;
     },
     items: ItemsSym as ItemsSym,
+    members: MembersSym as MembersSym,
 };
 
 export type JsonEncoded = "json";
@@ -89,6 +84,7 @@ export type EffectSchemaWithInputAndOutput<A, I = A> = EffectSchema<
 export type Encoder<V> = EffectSchemaWithInputAndOutput<V, JsonValue>;
 
 import { Date } from "@effect/schema/Schema";
+import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
 
 export const Encoders = {
     Date,

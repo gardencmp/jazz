@@ -18,7 +18,7 @@ beforeEach(async () => {
 
 describe("Simple CoStream operations", async () => {
     const me = await Account.create({
-        name: "Hermes Puggington",
+        creationProps: { name: "Hermes Puggington" },
     });
 
     class TestStream extends CoStream.Of(co.string) {}
@@ -56,7 +56,7 @@ describe("CoStream resolution", async () => {
 
     const initNodeAndStream = async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const stream = new TestStream(
@@ -257,7 +257,7 @@ describe("CoStream resolution", async () => {
 
 describe("Simple BinaryCoStream operations", async () => {
     const me = await Account.create({
-        name: "Hermes Puggington",
+        creationProps: { name: "Hermes Puggington" },
     });
 
     const stream = new BinaryCoStream(undefined, { owner: me });
@@ -285,7 +285,7 @@ describe("Simple BinaryCoStream operations", async () => {
 describe("BinaryCoStream loading & Subscription", async () => {
     const initNodeAndStream = async () => {
         const me = await Account.create({
-            name: "Hermes Puggington",
+            creationProps: { name: "Hermes Puggington" },
         });
 
         const stream = new BinaryCoStream(undefined, { owner: me });
