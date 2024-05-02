@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.30
+
+### Patch Changes
+
+- CoValue casting & auto-subbing \_owner
+
 ## 0.7.0-alpha.29
 
 ### Patch Changes
