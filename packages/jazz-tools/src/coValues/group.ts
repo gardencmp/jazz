@@ -149,6 +149,7 @@ export class Group<
 
     addMember(member: Everyone | Account, role: Role) {
         this._raw.addMember(member === "everyone" ? member : member._raw, role);
+        return this;
     }
 
     get members() {
