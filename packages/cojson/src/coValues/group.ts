@@ -97,7 +97,7 @@ export class RawGroup<
      * @category 2. Role changing
      */
     addMember(
-        account:  RawAccount | ControlledAccountOrAgent | Everyone,
+        account: RawAccount | ControlledAccountOrAgent | Everyone,
         role: Role
     ) {
         this.addMemberInternal(account, role);
