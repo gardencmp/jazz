@@ -13,8 +13,16 @@ import { MailIcon } from "lucide-react";
 import { DocNav } from "@/components/docs/nav";
 
 // If loading a variable font, you don't need to specify the font weight
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap", });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap", });
+const manrope = Manrope({
+    subsets: ["latin"],
+    variable: "--font-manrope",
+    display: "swap",
+});
+const inter = Inter({
+    subsets: ["latin"],
+    variable: "--font-inter",
+    display: "swap",
+});
 const pragmata = localFont({
     src: "../fonts/ppr_0829.woff2",
     variable: "--font-ppr",
@@ -102,6 +110,7 @@ export default function RootLayout({
                                 "prose-p:max-w-3xl prose-p:leading-snug",
                                 "prose-strong:font-medium",
                                 "prose-code:font-normal prose-code:leading-tight prose-code:before:content-none prose-code:after:content-none prose-code:bg-stone-100 prose-code:dark:bg-stone-900 prose-code:p-1 prose-code:-my-1 prose-code:rounded",
+                                "prose-pre:text-sm prose-pre:p-2 prose-pre:bg-stone-100 dark:prose-pre:bg-stone-900"
                             ].join(" ")}
                         >
                             {children}
@@ -191,9 +200,7 @@ export default function RootLayout({
                             </div>
                             <div className="col-span-3 md:col-start-2 lg:col-start-auto flex flex-col gap-2 text-sm">
                                 Sign up for updates:
-
-
-                                <Newsletter/>
+                                <Newsletter />
                             </div>
                         </div>
                     </footer>

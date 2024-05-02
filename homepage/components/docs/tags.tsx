@@ -3,20 +3,22 @@ import { ReactNode } from "react";
 import { getHighlighter } from "shiki";
 
 const highlighter = getHighlighter({
-    langs: ["typescript"],
+    langs: ["typescript", "bash"],
     theme: "css-variables", // use the theme
 });
 
 export async function Highlight({
     children,
     hide,
+    lang = "typescript",
 }: {
     children: string;
     hide?: number[];
+    lang?: string
 }) {
     const lines = (await highlighter).codeToThemedTokens(
         children,
-        "typescript",
+        lang,
         "css-variables"
     );
 
@@ -49,7 +51,7 @@ export function ClassHeader({ name }: { name: string }) {
             >
                 <LinkIcon size={15} />
             </a>
-            <h3 className="peer sticky z-20 top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950">
+            <h3 className="peer">
                 <a href={"#" + name.split("<")[0]}>
                     <Highlight>{`class ${name}`}</Highlight>
                 </a>
@@ -114,7 +116,6 @@ export function PropDecl({
     return (
         <div className="group flex flex-wrap items-baseline lg:grid grid-cols-8 md:gap-2 py-2 border-t border-stone-200 dark:border-stone-800 hover:border-stone-400 hover:dark:border-stone-600 mt-4">
             <div className="col-span-1 overflow-x-scroll pb-1 -mr-4 md:mr-0">
-
                 <div className="relative z-10 ">
                     <pre className="text-sm">
                         <span className="bg-stone-50 dark:bg-stone-950">
@@ -124,7 +125,6 @@ export function PropDecl({
                 </div>
             </div>
             <div className="col-span-2 overflow-x-scroll pb-1 pl-4 md:pl-0">
-
                 <div className="relative z-10 ">
                     <pre className="text-xs">
                         <span className="bg-stone-50 dark:bg-stone-950">
@@ -138,7 +138,6 @@ export function PropDecl({
                 </div>
             </div>
             <div className="w-full col-span-3 pl-4 md:pl-0">
-
                 <div className="flex flex-col items-start pr-8">
                     <div className="bg-stone-50 dark:bg-stone-950 relative z-10">
                         <DocComment>{doc || "⚠️ undocumented"}</DocComment>
@@ -174,7 +173,6 @@ export function FnDecl({
     return (
         <div className="group flex flex-wrap items-baseline lg:grid grid-cols-8 md:gap-2 py-2 border-t border-stone-200 dark:border-stone-800 hover:border-stone-400 hover:dark:border-stone-600 mt-4">
             <div className="col-span-3 overflow-x-scroll pb-1 -mr-4 md:mr-0">
-
                 <div className="relative z-10 ">
                     <pre className="text-sm">
                         <span className="bg-stone-50 dark:bg-stone-950">
@@ -189,7 +187,7 @@ export function FnDecl({
                     <pre className="text-xs">
                         <span className="bg-stone-50 dark:bg-stone-950">
                             <span className="relative opacity-60 group-hover:opacity-100">
-                            <Highlight
+                                <Highlight
                                     hide={[0]}
                                 >{`{\n${paramTypes}`}</Highlight>
                             </span>
@@ -207,7 +205,6 @@ export function FnDecl({
                 </div>
             </div>
             <div className="w-full row-start-1 col-start-4 col-span-3 row-span-2 pl-4 md:pl-0">
-
                 <div className="flex flex-col items-start pr-8">
                     <div className="bg-stone-50 dark:bg-stone-950 relative z-10">
                         <DocComment>{doc || "⚠️ undocumented"}</DocComment>
@@ -261,12 +258,25 @@ export function NavPackage({
     );
 }
 
-export function NewCoValueExplainer({type}:{type: string}) {
-    return <>Creates a new <ClassRef name={type} /> with the given initial values. The <ClassRef name={type} /> is immediately persisted locally and synced to connected peers. Access rights are determined by roles in the owner <ClassRef name="Group" /> or directly by the owner <ClassRef name="Account" />.</>
+export function NewCoValueExplainer({ type }: { type: string }) {
+    return (
+        <>
+            Creates a new <ClassRef name={type} /> with the given initial
+            values. The <ClassRef name={type} /> is immediately persisted
+            locally and synced to connected peers. Access rights are determined
+            by roles in the owner <ClassRef name="Group" /> or directly by the
+            owner <ClassRef name="Account" />.
+        </>
+    );
 }
 
-export function RefValueExplainer({propName}: {propName: string}) {
-    return <>Note that even non-optional <PropRef on="co" prop="ref(...)" /> {propName}{" "}
-    might be <Highlight>null</Highlight> if the referenced value isn't loaded yet.
-    Accessing one will cause it to be loaded if done from inside a <i>Subscription Context</i>.</>
+export function RefValueExplainer({ propName }: { propName: string }) {
+    return (
+        <>
+            Note that even non-optional <PropRef on="co" prop="ref(...)" />{" "}
+            {propName} might be <Highlight>null</Highlight> if the referenced
+            value isn't loaded yet. Accessing one will cause it to be loaded if
+            done from inside a <i>Subscription Context</i>.
+        </>
+    );
 }

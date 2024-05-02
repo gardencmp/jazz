@@ -40,7 +40,7 @@ export function Nav({
                     "hidden md:flex sticky left-0 right-0 top-0 max-sm:bottom-0 w-full justify-center",
                     "bg-stone-50 dark:bg-stone-950 border-b max-sm:border-t border-stone-50 dark:border-b-stone-950",
                     "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
-                    "z-20",
+                    "z-50",
                     menuOpen ? "h-[100dvh]" : "h-16",
                 ].join(" ")}
             >
@@ -102,7 +102,7 @@ export function Nav({
             ></div>
             <nav
                 className={cn(
-                    "md:hidden fixed flex flex-col bottom-4 right-4 z-20",
+                    "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
                     "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : ""
                 )}
@@ -114,7 +114,7 @@ export function Nav({
                         <NavLinkLogo
                             prominent
                             href="/"
-                            className="-ml-4 mr-auto"
+                            className="mr-auto"
                             onClick={() => setMenuOpen(false)}
                         >
                             {mainLogo}

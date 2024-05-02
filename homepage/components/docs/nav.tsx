@@ -10,9 +10,10 @@ export function DocNav() {
                 <li><DocNavLink href="#build-a-chat-app">Build a chat app in 5min</DocNavLink></li>
             </ul>
 
-            <p><DocNavLink href="#guide">Guide (build a Linear)</DocNavLink></p>
+            <p><DocNavLink href="#guide">Let's Learn Some Jazz</DocNavLink></p>
 
             <ul>
+                <li><DocNavLink href="#guide-goal">Goal: Issue-Tracking App</DocNavLink></li>
                 <li><DocNavLink href="#intro-to-covalues">Intro to CoValues</DocNavLink></li>
                 <li><DocNavLink href="#refs-load-and-subscribe">Refs, Load & Subscribe</DocNavLink></li>
                 <li><DocNavLink href="#groups-and-permissions">Groups & Permissions</DocNavLink></li>
@@ -20,25 +21,38 @@ export function DocNav() {
                 <li><DocNavLink href="#backend-workers">Backend Workers</DocNavLink></li>
             </ul>
 
+            <p><DocNavLink href="#faq">FAQ</DocNavLink></p>
+
             <p>API Reference</p>
 
             <NavPackage name="jazz-tools">
                 <ul>
                     <li>
-                    <DocNavLink href="#CoMap"><ClassRef name="CoMap" /></DocNavLink> & <DocNavLink href="#CoList"><ClassRef name="CoList" /></DocNavLink>
+                    <DocNavLink href="#jazz-tools-CoMap"><ClassRef name="CoMap" /></DocNavLink>
                     </li>
                     <li>
-                        <ClassRef name="CoStream" />,{" "}
-                        <ClassRef name="BinaryCoStream" />
+                    <DocNavLink href="#jazz-tools-CoList"><ClassRef name="CoList" /></DocNavLink>
                     </li>
                     <li>
-                        <ClassRef name="Account" />, <ClassRef name="Group" />
+                    <DocNavLink href="#jazz-tools-CoStream"><ClassRef name="CoStream" /></DocNavLink>
                     </li>
                     <li>
-                        <PropRef prop="co" />, Interfaces & Types
+                    <DocNavLink href="#jazz-tools-BinaryCoStream"><ClassRef name="BinaryCoStream" /></DocNavLink>
                     </li>
                     <li>
-                        <ClassRef name="ImageDefinition" />
+                    <DocNavLink href="#jazz-tools-Account"><ClassRef name="Account" /></DocNavLink>
+                    </li>
+                    <li>
+                    <DocNavLink href="#jazz-tools-Group"><ClassRef name="Group" /></DocNavLink>
+                    </li>
+                    <li>
+                    <DocNavLink href="#jazz-tools-co"><ClassRef name="co" /></DocNavLink>
+                    </li>
+                    <li>
+                    <DocNavLink href="#jazz-tools-interfaces">Interfaces & Types</DocNavLink>
+                    </li>
+                    <li>
+                    <DocNavLink href="#jazz-tools-ImageDefinition"><ClassRef name="ImageDefinition" /></DocNavLink>
                     </li>
                 </ul>
             </NavPackage>
