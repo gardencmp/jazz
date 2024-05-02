@@ -9,6 +9,7 @@ import {
     SubscriptionScope,
     Ref,
     inspect,
+    subscriptionsScopes,
 } from "../internal.js";
 
 export type SubclassedConstructor<T> = {
@@ -93,11 +94,20 @@ export class CoValueBase implements CoValue {
     _raw!: RawCoValue;
 
     get _owner(): Account | Group {
-        return this._raw.group instanceof RawAccount
+        const owner = this._raw.group instanceof RawAccount
             ? Account.fromRaw(this._raw.group)
             : Group.fromRaw(this._raw.group);
+
+        const subScope = subscriptionsScopes.get(this);
+        if (subScope) {
+            subScope.onRefAccessedOrSet(owner.id);
+            subscriptionsScopes.set(owner, subScope);
+        }
+
+        return owner;
     }
 
+    /** @private */
     get _loadedAs() {
         return Account.fromNode(this._raw.core.node);
     }
@@ -214,5 +224,14 @@ export class CoValueBase implements CoValue {
 
     [inspect]() {
         return this.toJSON();
+    }
+
+    as<C extends CoValueClass>(otherSchema: C): InstanceType<C> {
+        const cast = otherSchema.fromRaw(this._raw) as InstanceType<C>;
+        const subScope = subscriptionsScopes.get(this);
+        if (subScope) {
+            subscriptionsScopes.set(cast, subScope);
+        }
+        return cast;
     }
 }

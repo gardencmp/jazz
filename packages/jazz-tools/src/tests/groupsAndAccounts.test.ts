@@ -38,6 +38,10 @@ describe("Custom accounts and groups", async () => {
         profile = co.null;
         root = co.null;
         [co.members] = co.ref(CustomAccount);
+
+        get nMembers() {
+            return this.members.length;
+        }
     }
 
     type T = CustomGroup[typeof co.members];
@@ -59,6 +63,8 @@ describe("Custom accounts and groups", async () => {
             { id: "everyone", role: "reader" },
         ]);
 
+        expect(group.nMembers).toBe(2);
+
         await new Promise<void>((resolve) => {
             group.subscribe((update) => {
                 const meAsMember = update.members.find((member) => {
@@ -73,5 +79,18 @@ describe("Custom accounts and groups", async () => {
                 }
             });
         });
+
+        class MyMap extends CoMap<MyMap> {
+            name = co.string;
+        }
+
+        const map = new MyMap({name: "test"}, {owner: group});
+
+        const meAsCastMember = map._owner.as(CustomGroup).members.find((member) => member.id === me.id);
+        expect(meAsCastMember?.account?.profile?.name).toBe("Hermes Puggington");
+        expect(meAsCastMember?.account?.profile?.color).toBe("blue");
+
+        expect((map._owner as any).nMembers).toBeUndefined();
+        expect(map._owner.as(CustomGroup).nMembers).toBe(2);
     });
 });
