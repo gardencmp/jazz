@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-pets",
   "private": true,
-  "version": "0.0.65-alpha.30",
+  "version": "0.0.65-alpha.31",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.31
+
+### Patch Changes
+
+- Get rid of self generics, new create syntax
+
 ## 0.7.0-alpha.30
 
 ### Patch Changes
