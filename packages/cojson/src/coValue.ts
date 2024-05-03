@@ -2,6 +2,7 @@ import { CoValueCore } from "./coValueCore.js";
 import { RawProfile as Profile, RawAccount } from "./coValues/account.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoMap } from "./coValues/coMap.js";
+import { RawCoPlainText } from "./coValues/coPlainText.js";
 import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
 import { RawGroup } from "./coValues/group.js";
 import { RawCoID } from "./ids.js";
@@ -65,4 +66,12 @@ export function expectStream(content: RawCoValue): RawCoStream {
   }
 
   return content as RawCoStream;
+}
+
+export function expectPlainText(content: RawCoValue): RawCoPlainText {
+  if (content.type !== "coplaintext") {
+    throw new Error("Expected plaintext");
+  }
+
+  return content as RawCoPlainText;
 }
