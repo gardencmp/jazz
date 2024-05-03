@@ -29,69 +29,69 @@ Literally say "Hello world!" by building your own chat app.
 
 1. Create a barebones Vite project with TypeScript, React, and Tailwind CSS:
 
-    ```bash
-    npx degit gardencmp/vite-ts-react-tailwind chat-app
-    cd chat-app
-    npm install
-    npm run dev
-    ```
+```bash
+npx degit gardencmp/vite-ts-react-tailwind chat-app
+cd chat-app
+npm install
+npm run dev
+```
 
-    You should now have the empty app running, typically at [localhost:5173](http://localhost:5173)
+You should now have the empty app running, typically at [localhost:5173](http://localhost:5173)
 
-    If you make changes to the code, the app will automatically refresh.
+If you make changes to the code, the app will automatically refresh.
 
 2. Now, in a new terminal window, install `jazz-react`:
 
-    ```bash
-    cd chat-app
-    npm install jazz-react
-    ```
+```bash
+cd chat-app
+npm install jazz-react
+```
 
 3. Let's start actually building the app by defining a schema in `src/schema.tsx`
 
-    ```tsx
-    import { CoMap, CoList, co } from "jazz-tools";
+```tsx
+import { CoMap, CoList, co } from "jazz-tools";
 
-    export class Message extends CoMap<Message> {
-      text = co.string;
-    }
+export class Message extends CoMap<Message> {
+  text = co.string;
+}
 
-    export class Chat extends CoList.Of(co.ref(Message)) {}
-    ```
+export class Chat extends CoList.Of(co.ref(Message)) {}
+```
 
-    TODO explain
-    - The need for schemas
-    - Why CoMap takes a generic arg
-    - What `co` is
-    - What `co.ref` is, with link to Refs, Load & Subscribe
+TODO explain
+- The need for schemas
+- Why CoMap takes a generic arg
+- What `co` is
+- What `co.ref` is, with link to Refs, Load & Subscribe
 
 4. To set up Jazz for our app, let's define a Jazz context in `src/main.tsx` and extract hooks and wrap our app in the provider.
 
-    ```tsx subtle=1,2,3,4,13,15,16,17,19
-    import React from 'react'
-    import ReactDOM from 'react-dom/client'
-    import App from './App.tsx'
-    import './index.css'
-    import { JazzReact } from "jazz-react";
+```tsx subtle=1,2,3,4,13,15,16,17,19
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+import { JazzReact } from "jazz-react";
 
-    const Jazz = JazzReact({
-      auth: DemoAuth({ appName: "Jazz Chat" }),
-      apiKey: import.meta.env.VITE_JAZZ_KEY
-    });
-    export const { useAccount, useCoState } = Jazz;
+const Jazz = JazzReact({
+  auth: DemoAuth({ appName: "Jazz Chat" }),
+  apiKey: import.meta.env.VITE_JAZZ_KEY
+});
+export const { useAccount, useCoState } = Jazz;
 
-    ReactDOM.createRoot(document.getElementById('root')!).render(
-      <Jazz.Provider>
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
-      </Jazz.Provider>
-    )
-    ```
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <Jazz.Provider>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </Jazz.Provider>
+)
+```
 
-    TODO explain
-    - What `DemoAuth` is
-    - Why we get our Provider and hooks from `Jazz` instead of importing them
+TODO explain
+- What `DemoAuth` is
+- Why we get our Provider and hooks from `Jazz` instead of importing them
 
 <h2 id="what-to-try-next">What to try next</h2>
 
