@@ -52,7 +52,7 @@ npm install jazz-react
 ```tsx
 import { CoMap, CoList, co } from "jazz-tools";
 
-export class Message extends CoMap<Message> {
+export class Message extends CoMap {
   text = co.string;
 }
 
@@ -61,7 +61,6 @@ export class Chat extends CoList.Of(co.ref(Message)) {}
 
 TODO explain
 - The need for schemas
-- Why CoMap takes a generic arg
 - What `co` is
 - What `co.ref` is, with link to Refs, Load & Subscribe
 

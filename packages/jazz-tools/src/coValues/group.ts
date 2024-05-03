@@ -2,9 +2,9 @@ import type { AccountID, Everyone, RawGroup, Role } from "cojson";
 import type {
     CoValue,
     ID,
-    JsonEncoded,
     RefEncoded,
     Schema,
+    SubclassedConstructor,
 } from "../internal.js";
 import {
     Account,
@@ -17,34 +17,11 @@ import {
     MembersSym,
 } from "../internal.js";
 
-export class Profile extends CoMap<{ name: co<string> }> {
+export class Profile extends CoMap {
     name = co.string;
 }
 
-type GroupSchema<Def extends Group> = {
-    profile: NonNullable<Def["profile"]> extends CoValue
-        ? RefEncoded<NonNullable<Def["profile"]>>
-        : JsonEncoded;
-    root: NonNullable<Def["root"]> extends CoValue
-        ? RefEncoded<NonNullable<Def["root"]>>
-        : JsonEncoded;
-    [MembersSym]: RefEncoded<NonNullable<Def[MembersSym]>>;
-};
-
-export class Group<
-        Def extends {
-            profile: Profile | null;
-            root: CoMap | null;
-            [MembersSym]: Account | null;
-        } = {
-            profile: Profile | null;
-            root: CoMap | null;
-            [MembersSym]: Account | null;
-        },
-    >
-    extends CoValueBase
-    implements CoValue<"Group", RawGroup>
-{
+export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
     declare id: ID<this>;
     declare _type: "Group";
     static {
@@ -53,7 +30,11 @@ export class Group<
     declare _raw: RawGroup;
 
     static _schema: any;
-    get _schema(): GroupSchema<this> {
+    get _schema(): {
+        profile: Schema;
+        root: Schema;
+        [MembersSym]: RefEncoded<Account>;
+    } {
         return (this.constructor as typeof Group)._schema;
     }
     static {
@@ -67,19 +48,16 @@ export class Group<
         });
     }
 
-    declare profile: Def["profile"] | null;
-    declare root: Def["root"] | null;
-    declare [MembersSym]: Def[MembersSym] | null;
+    declare profile: Profile | null;
+    declare root: CoMap | null;
+    declare [MembersSym]: Account | null;
 
-    get _refs(): {
-        profile: Def["profile"] extends Profile ? Ref<Def["profile"]> : never;
-        root: Def["root"] extends CoMap ? Ref<Def["root"]> : never;
-    } {
+    get _refs() {
         const profileID = this._raw.get("profile") as unknown as
-            | ID<NonNullable<Def["profile"]>>
+            | ID<NonNullable<this["profile"]>>
             | undefined;
         const rootID = this._raw.get("root") as unknown as
-            | ID<NonNullable<Def["root"]>>
+            | ID<NonNullable<this["root"]>>
             | undefined;
         return {
             profile:
@@ -88,33 +66,32 @@ export class Group<
                     profileID,
                     this._loadedAs,
                     this._schema.profile as RefEncoded<
-                        NonNullable<Def["profile"]>
+                        NonNullable<this["profile"]>
                     >
-                ) as any),
+                ) as any as this["profile"] extends Profile
+                    ? Ref<this["profile"]>
+                    : never),
             root:
                 rootID &&
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    this._schema.root as RefEncoded<NonNullable<Def["root"]>>
-                ) as any),
+                    this._schema.root as RefEncoded<NonNullable<this["root"]>>
+                ) as any as this["root"] extends CoMap
+                    ? Ref<this["root"]>
+                    : never),
         };
     }
 
-    constructor(options: { owner: Account | Group });
-    constructor(init: any, options: { fromRaw: RawGroup });
-    constructor(init: undefined, options: { owner: Account | Group });
-    constructor(
-        init: undefined | { owner: Account | Group },
-        options?: { fromRaw: RawGroup } | { owner: Account | Group }
-    ) {
+    /** @deprecated Don't use constructor directly, use .create */
+    constructor(options: { fromRaw: RawGroup } | { owner: Account | Group }) {
         super();
         let raw: RawGroup;
 
         if (options && "fromRaw" in options) {
             raw = options.fromRaw;
         } else {
-            const initOwner = options?.owner || init?.owner;
+            const initOwner = options.owner;
             if (!initOwner) throw new Error("No owner provided");
             if (
                 initOwner instanceof Account &&
@@ -141,6 +118,13 @@ export class Group<
             this,
             AccountAndGroupProxyHandler as ProxyHandler<this>
         );
+    }
+
+    static create<G extends Group>(
+        this: SubclassedConstructor<G>,
+        options: { owner: Account }
+    ) {
+        return new this(options);
     }
 
     myRole(): Role | undefined {

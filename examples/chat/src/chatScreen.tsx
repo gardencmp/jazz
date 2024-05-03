@@ -12,7 +12,7 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
     ))}
     <ChatInput
       onSubmit={(text) => {
-        const message = new Message(
+        const message = Message.create(
           { text }, { owner: chat._owner }
         );
         chat.push(message);

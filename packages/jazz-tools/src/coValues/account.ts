@@ -33,12 +33,7 @@ import {
 } from "../internal.js";
 import type { Stream } from "effect/Stream";
 
-export class Account<
-        Def extends { profile: Profile | null; root: CoMap | null } = {
-            profile: Profile | null;
-            root: CoMap | null;
-        },
-    >
+export class Account
     extends CoValueBase
     implements CoValue<"Account", RawAccount | RawControlledAccount>
 {
@@ -69,23 +64,17 @@ export class Account<
             : Account.fromNode(this._raw.core.node);
     }
 
-    profile!: NonNullable<Def["profile"]> | null;
-    root!: NonNullable<Def["root"]> | null;
+    declare profile: Profile | null;
+    declare root: CoMap | null;
 
-    get _refs(): {
-        profile: NonNullable<Def["profile"]> extends Profile
-            ? Ref<NonNullable<Def["profile"]>> | null
-            : null;
-        root: NonNullable<Def["root"]> extends CoMap
-            ? Ref<NonNullable<Def["root"]>> | null
-            : null;
-    } {
+    get _refs() {
         const profileID = this._raw.get("profile") as unknown as
-            | ID<NonNullable<Def["profile"]>>
+            | ID<NonNullable<this["profile"]>>
             | undefined;
         const rootID = this._raw.get("root") as unknown as
-            | ID<NonNullable<Def["root"]>>
+            | ID<NonNullable<this["root"]>>
             | undefined;
+
         return {
             profile:
                 profileID &&
@@ -93,35 +82,29 @@ export class Account<
                     profileID,
                     this._loadedAs,
                     this._schema.profile as RefEncoded<
-                        NonNullable<Def["profile"]> & CoValue
+                        NonNullable<this["profile"]> & CoValue
                     >
-                ) as any),
+                ) as any as NonNullable<this["profile"]> extends Profile
+                    ? Ref<NonNullable<this["profile"]>> | null
+                    : null),
             root:
                 rootID &&
                 (new Ref(
                     rootID,
                     this._loadedAs,
                     this._schema.root as RefEncoded<
-                        NonNullable<Def["root"]> & CoValue
+                        NonNullable<this["root"]> & CoValue
                     >
-                ) as any),
+                ) as any as NonNullable<this["root"]> extends CoMap
+                    ? Ref<NonNullable<this["root"]>> | null
+                    : null),
         };
     }
 
     isMe: boolean;
     sessionID: SessionID | undefined;
 
-    constructor(init: undefined, options: { owner: Group | Account });
-    constructor(
-        init: undefined,
-        options: { fromRaw: RawAccount | RawControlledAccount }
-    );
-    constructor(
-        _init: undefined,
-        options:
-            | { fromRaw: RawAccount | RawControlledAccount }
-            | { owner: Group | Account }
-    ) {
+    constructor(options: { fromRaw: RawAccount | RawControlledAccount }) {
         super();
         if (!("fromRaw" in options)) {
             throw new Error(
@@ -191,7 +174,7 @@ export class Account<
         const { node } = await LocalNode.withNewlyCreatedAccount({
             ...options,
             migration: async (rawAccount, _node, creationProps) => {
-                const account = new this(undefined, {
+                const account = new this({
                     fromRaw: rawAccount,
                 }) as A & Me;
 
@@ -217,7 +200,7 @@ export class Account<
             sessionID: options.sessionID,
             peersToLoadFrom: options.peersToLoadFrom,
             migration: async (rawAccount, _node, creationProps) => {
-                const account = new this(undefined, {
+                const account = new this({
                     fromRaw: rawAccount,
                 }) as A & Me;
 
@@ -232,7 +215,7 @@ export class Account<
         this: SubclassedConstructor<A>,
         node: LocalNode
     ): A & Me {
-        return new this(undefined, {
+        return new this({
             fromRaw: node.account as RawControlledAccount,
         }) as A & Me;
     }
@@ -250,9 +233,9 @@ export class Account<
 
     migrate(creationProps?: { name: string }): void | Promise<void> {
         if (creationProps) {
-            const profileGroup = new Group({ owner: this });
+            const profileGroup = Group.create({ owner: this });
             profileGroup.addMember("everyone", "reader");
-            this.profile = new Profile(
+            this.profile = Profile.create(
                 { name: creationProps.name },
                 { owner: profileGroup }
             );

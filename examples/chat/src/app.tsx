@@ -5,7 +5,7 @@ import { useIframeHashRouter } from "hash-slash";
 import { ChatScreen } from "./chatScreen.tsx";
 
 // Schema
-export class Message extends CoMap<Message> {
+export class Message extends CoMap {
   text = co.string;
 }
 
@@ -38,9 +38,9 @@ function StartScreen() {
   const { me } = useAccount();
 
   const createChat = () => {
-    const group = new Group({ owner: me });
+    const group = Group.create({ owner: me });
     group.addMember("everyone", "writer");
-    const chat = new Chat([], { owner: group });
+    const chat = Chat.create([], { owner: group });
     location.hash = "/chat/" + chat.id;
   };
 

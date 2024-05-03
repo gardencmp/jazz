@@ -13,20 +13,20 @@ beforeEach(async () => {
 });
 
 describe("Custom accounts and groups", async () => {
-    class CustomProfile extends CoMap<CustomProfile> {
+    class CustomProfile extends CoMap {
         name = co.string;
         color = co.string;
     }
 
-    class CustomAccount extends Account<CustomAccount> {
+    class CustomAccount extends Account {
         profile = co.ref(CustomProfile);
         root = co.ref(CoMap);
 
         migrate(creationProps?: { name: string }) {
             if (creationProps) {
-                const profileGroup = new Group({ owner: this });
+                const profileGroup = Group.create({ owner: this });
                 profileGroup.addMember("everyone", "reader");
-                this.profile = new CustomProfile(
+                this.profile = CustomProfile.create(
                     { name: creationProps.name, color: "blue" },
                     { owner: this }
                 );
@@ -34,7 +34,7 @@ describe("Custom accounts and groups", async () => {
         }
     }
 
-    class CustomGroup extends Group<CustomGroup> {
+    class CustomGroup extends Group {
         profile = co.null;
         root = co.null;
         [co.members] = co.ref(CustomAccount);
@@ -80,14 +80,18 @@ describe("Custom accounts and groups", async () => {
             });
         });
 
-        class MyMap extends CoMap<MyMap> {
+        class MyMap extends CoMap {
             name = co.string;
         }
 
-        const map = new MyMap({name: "test"}, {owner: group});
+        const map = MyMap.create({ name: "test" }, { owner: group });
 
-        const meAsCastMember = map._owner.as(CustomGroup).members.find((member) => member.id === me.id);
-        expect(meAsCastMember?.account?.profile?.name).toBe("Hermes Puggington");
+        const meAsCastMember = map._owner
+            .as(CustomGroup)
+            .members.find((member) => member.id === me.id);
+        expect(meAsCastMember?.account?.profile?.name).toBe(
+            "Hermes Puggington"
+        );
         expect(meAsCastMember?.account?.profile?.color).toBe("blue");
 
         expect((map._owner as any).nMembers).toBeUndefined();

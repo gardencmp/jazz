@@ -31,7 +31,7 @@ export async function createImage(
         await Reducer.toCanvas(imageBlobOrFile, { max: 8 })
     ).toDataURL("image/png");
 
-    const imageDefinition = new ImageDefinition(
+    const imageDefinition = ImageDefinition.create(
         {
             originalSize: [originalWidth, originalHeight],
             placeholderDataURL,

@@ -436,7 +436,7 @@ export async function createBinaryStreamFromBlob(
         onProgress?: (progress: number) => void;
     }
 ): Promise<BinaryCoStream> {
-    const stream = new BinaryCoStream(undefined, { owner: options.owner });
+    const stream = BinaryCoStream.create({ owner: options.owner });
 
     const start = Date.now();
 

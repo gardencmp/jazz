@@ -20,7 +20,7 @@ describe("Simple CoMap operations", async () => {
         creationProps: { name: "Hermes Puggington" },
     });
 
-    class TestMap extends CoMap<TestMap> {
+    class TestMap extends CoMap {
         color = co.string;
         _height = co.number;
         birthday = co.encoded(Encoders.Date);
@@ -35,7 +35,7 @@ describe("Simple CoMap operations", async () => {
 
     const birthday = new Date();
 
-    const map = new TestMap(
+    const map = TestMap.create(
         {
             color: "red",
             _height: 10,
@@ -80,18 +80,18 @@ describe("Simple CoMap operations", async () => {
         });
     });
 
-    class RecursiveMap extends CoMap<RecursiveMap> {
+    class RecursiveMap extends CoMap {
         name = co.string;
         next: co<RecursiveMap | null> = co.ref(RecursiveMap);
     }
 
-    const recursiveMap = new RecursiveMap(
+    const recursiveMap = RecursiveMap.create(
         {
             name: "first",
-            next: new RecursiveMap(
+            next: RecursiveMap.create(
                 {
                     name: "second",
-                    next: new RecursiveMap(
+                    next: RecursiveMap.create(
                         {
                             name: "third",
                         },
@@ -112,27 +112,27 @@ describe("Simple CoMap operations", async () => {
         });
     });
 
-    class MapWithEnumOfMaps extends CoMap<MapWithEnumOfMaps> {
+    class MapWithEnumOfMaps extends CoMap {
         name = co.string;
         child = co.ref<typeof ChildA | typeof ChildB>((raw) =>
             raw.get("type") === "a" ? ChildA : ChildB
         );
     }
 
-    class ChildA extends CoMap<ChildA> {
+    class ChildA extends CoMap {
         type = co.literal("a");
         value = co.number;
     }
 
-    class ChildB extends CoMap<ChildB> {
+    class ChildB extends CoMap {
         type = co.literal("b");
         value = co.string;
     }
 
-    const mapWithEnum = new MapWithEnumOfMaps(
+    const mapWithEnum = MapWithEnumOfMaps.create(
         {
             name: "enum",
-            child: new ChildA(
+            child: ChildA.create(
                 {
                     type: "a",
                     value: 5,
@@ -150,7 +150,7 @@ describe("Simple CoMap operations", async () => {
         expect(mapWithEnum.child?.id).toBeDefined();
     });
 
-    class SuperClassMap extends CoMap<SuperClassMap> {
+    class SuperClassMap extends CoMap {
         name = co.string;
     }
 
@@ -159,11 +159,11 @@ describe("Simple CoMap operations", async () => {
         value = co.number;
         extra = co.ref(TestMap);
     }
-    interface SubClassMap extends CoMap<SubClassMap> {}
+    interface SubClassMap extends CoMap {}
 
     class GenericMapWithLoose<
         out T extends string = string,
-    > extends CoMap<GenericMapWithLoose> {
+    > extends CoMap {
         name = co.json<T>();
     }
 
@@ -173,11 +173,11 @@ describe("Simple CoMap operations", async () => {
 });
 
 describe("CoMap resolution", async () => {
-    class TwiceNestedMap extends CoMap<TwiceNestedMap> {
+    class TwiceNestedMap extends CoMap {
         taste = co.string;
     }
 
-    class NestedMap extends CoMap<NestedMap> {
+    class NestedMap extends CoMap {
         name = co.string;
         twiceNested = co.ref(TwiceNestedMap);
 
@@ -186,7 +186,7 @@ describe("CoMap resolution", async () => {
         }
     }
 
-    class TestMap extends CoMap<TestMap> {
+    class TestMap extends CoMap {
         color = co.string;
         height = co.number;
         nested = co.ref(NestedMap);
@@ -201,14 +201,14 @@ describe("CoMap resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const map = new TestMap(
+        const map = TestMap.create(
             {
                 color: "red",
                 height: 10,
-                nested: new NestedMap(
+                nested: NestedMap.create(
                     {
                         name: "nested",
-                        twiceNested: new TwiceNestedMap(
+                        twiceNested: TwiceNestedMap.create(
                             { taste: "sour" },
                             { owner: me }
                         ),
@@ -278,10 +278,10 @@ describe("CoMap resolution", async () => {
             loadedTwiceNestedMap
         );
 
-        const otherNestedMap = new NestedMap(
+        const otherNestedMap = NestedMap.create(
             {
                 name: "otherNested",
-                twiceNested: new TwiceNestedMap(
+                twiceNested: TwiceNestedMap.create(
                     { taste: "sweet" },
                     { owner: meOnSecondPeer }
                 ),
@@ -347,14 +347,14 @@ describe("CoMap resolution", async () => {
                 expect(oldTwiceNested?.taste).toEqual("sour");
 
                 // When assigning a new nested value, we get an update
-                const newTwiceNested = new TwiceNestedMap(
+                const newTwiceNested = TwiceNestedMap.create(
                     {
                         taste: "sweet",
                     },
                     { owner: meOnSecondPeer }
                 );
 
-                const newNested = new NestedMap(
+                const newNested = NestedMap.create(
                     {
                         name: "newNested",
                         twiceNested: newTwiceNested,
@@ -383,7 +383,7 @@ describe("CoMap resolution", async () => {
         );
     });
 
-    class TestMapWithOptionalRef extends CoMap<TestMapWithOptionalRef> {
+    class TestMapWithOptionalRef extends CoMap {
         color = co.string;
         nested? = co.ref(NestedMap);
     }
@@ -393,7 +393,7 @@ describe("CoMap resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const mapWithout = new TestMapWithOptionalRef(
+        const mapWithout = TestMapWithOptionalRef.create(
             {
                 color: "red",
             },
@@ -403,13 +403,13 @@ describe("CoMap resolution", async () => {
         expect(mapWithout.color).toEqual("red");
         expect(mapWithout.nested).toEqual(undefined);
 
-        const mapWith = new TestMapWithOptionalRef(
+        const mapWith = TestMapWithOptionalRef.create(
             {
                 color: "red",
-                nested: new NestedMap(
+                nested: NestedMap.create(
                     {
                         name: "wow!",
-                        twiceNested: new TwiceNestedMap(
+                        twiceNested: TwiceNestedMap.create(
                             { taste: "sour" },
                             { owner: me }
                         ),
@@ -426,7 +426,7 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?._raw).toBeDefined();
     });
 
-    class TestRecord extends CoMap<TestRecord> {
+    class TestRecord extends CoMap {
         [co.items] = co.number;
     }
     interface TestRecord extends Record<string, number> {}
@@ -436,7 +436,7 @@ describe("CoMap resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const record = new TestRecord(
+        const record = TestRecord.create(
             {
                 height: 5,
                 other: 3,
@@ -464,7 +464,7 @@ describe("CoMap resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const record = new TestRecord2(
+        const record = TestRecord2.create(
             {
                 height: 5,
                 other: 3,
@@ -486,13 +486,13 @@ describe("CoMap resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const record = new TestRecordRef(
+        const record = TestRecordRef.create(
             {
-                firstNested: new TwiceNestedMap(
+                firstNested: TwiceNestedMap.create(
                     { taste: "sour" },
                     { owner: me }
                 ),
-                secondNested: new TwiceNestedMap(
+                secondNested: TwiceNestedMap.create(
                     { taste: "sweet" },
                     { owner: me }
                 ),
