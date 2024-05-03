@@ -5,6 +5,7 @@ import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoStream } from "./coValues/coStream.js";
 import { RawBinaryCoStream } from "./coValues/coStream.js";
+import { RawCoPlainText } from "./coValues/coPlainText.js";
 
 export function coreToCoValue(
     core: CoValueCore,
@@ -35,6 +36,8 @@ export function coreToCoValue(
         } else {
             return new RawCoStream(core);
         }
+    } else if (core.header.type === "coplaintext") {
+        return new RawCoPlainText(core);
     } else {
         throw new Error(`Unknown coValue type ${core.header.type}`);
     }

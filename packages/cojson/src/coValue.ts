@@ -6,6 +6,7 @@ import { RawCoList } from "./coValues/coList.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawGroup } from "./coValues/group.js";
 import { RawAccount, Profile } from "./index.js";
+import { RawCoPlainText } from "./coValues/coPlainText.js";
 
 export type CoID<T extends RawCoValue> = RawCoID & {
     readonly __type: T;
@@ -65,4 +66,12 @@ export function expectStream(content: RawCoValue): RawCoStream {
     }
 
     return content as RawCoStream;
+}
+
+export function expectPlainText(content: RawCoValue): RawCoPlainText {
+    if (content.type !== "coplaintext") {
+        throw new Error("Expected plaintext");
+    }
+
+    return content as RawCoPlainText;
 }
