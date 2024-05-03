@@ -9,6 +9,7 @@ export type IfCo<C, R> = C extends infer _A | infer B
         ? R
         : never
     : never;
+export type UnCo<T> = T extends co<infer A> ? A : T;
 
 export const co = {
     string: {

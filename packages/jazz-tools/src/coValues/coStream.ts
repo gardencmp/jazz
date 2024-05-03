@@ -17,6 +17,8 @@ import type {
     ID,
     Me,
     IfCo,
+    SubclassedConstructor,
+    UnCo,
 } from "../internal.js";
 import {
     ItemsSym,
@@ -47,9 +49,7 @@ export class CoStream<Item = any>
     extends CoValueBase
     implements CoValue<"CoStream", RawCoStream>
 {
-    static Of<Item>(
-        item: IfCo<Item, Item>
-    ): typeof CoStream<Item> {
+    static Of<Item>(item: IfCo<Item, Item>): typeof CoStream<Item> {
         return class CoStreamOf extends CoStream<Item> {
             [co.items] = item;
         };
@@ -85,11 +85,10 @@ export class CoStream<Item = any>
 
     [InitValues]?: any;
 
-    constructor(_init: undefined, options: { fromRaw: RawCoStream });
-    constructor(init: Item[], options: { owner: Account | Group });
     constructor(
-        init: Item[] | undefined,
-        options: { owner: Account | Group } | { fromRaw: RawCoStream }
+        options:
+            | { init: Item[]; owner: Account | Group }
+            | { fromRaw: RawCoStream }
     ) {
         super();
 
@@ -103,12 +102,20 @@ export class CoStream<Item = any>
             });
         } else {
             this[InitValues] = {
-                init,
+                init: options.init,
                 owner: options.owner,
             };
         }
 
         return new Proxy(this, CoStreamProxyHandler as ProxyHandler<this>);
+    }
+
+    static create<S extends CoStream>(
+        this: SubclassedConstructor<S>,
+        init: S extends CoStream<infer Item> ? UnCo<Item>[] : never,
+        options: { owner: Account | Group }
+    ) {
+        return new this({ init, owner: options.owner });
     }
 
     push(...items: Item[]) {
@@ -123,9 +130,7 @@ export class CoStream<Item = any>
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
         } else if ("encoded" in itemDescriptor) {
-            this._raw.push(
-                encodeSync(itemDescriptor.encoded)(item)
-            );
+            this._raw.push(encodeSync(itemDescriptor.encoded)(item));
         } else if (isRefEncoded(itemDescriptor)) {
             this._raw.push((item as unknown as CoValue).id);
         }
@@ -192,9 +197,7 @@ function entryFromRawEntry<Item>(
                     ? (CoValue & Item) | null
                     : Item;
             } else if ("encoded" in itemField) {
-                return decodeSync(itemField.encoded)(
-                    rawEntry.value
-                );
+                return decodeSync(itemField.encoded)(rawEntry.value);
             } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(
                     accessFrom
@@ -292,7 +295,10 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
 
             return entry;
         } else if (key === "perSession") {
-            return new Proxy({}, CoStreamPerSessionProxyHandler(target, receiver));
+            return new Proxy(
+                {},
+                CoStreamPerSessionProxyHandler(target, receiver)
+            );
         } else {
             return Reflect.get(target, key, receiver);
         }
@@ -350,7 +356,10 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
     },
 };
 
-const CoStreamPerSessionProxyHandler = (innerTarget: CoStream, accessFrom: CoStream): ProxyHandler<Record<string, never>> => ({
+const CoStreamPerSessionProxyHandler = (
+    innerTarget: CoStream,
+    accessFrom: CoStream
+): ProxyHandler<Record<string, never>> => ({
     get(_target, key, receiver) {
         if (typeof key === "string" && key.includes("session")) {
             const sessionID = key as SessionID;
@@ -420,7 +429,6 @@ export class BinaryCoStream
     declare _raw: RawBinaryCoStream;
 
     constructor(
-        _init: [] | undefined,
         options:
             | {
                   owner: Account | Group;
@@ -447,6 +455,13 @@ export class BinaryCoStream
             },
             _raw: { value: raw, enumerable: false },
         });
+    }
+
+    static create<S extends BinaryCoStream>(
+        this: SubclassedConstructor<S>,
+        options: { owner: Account | Group }
+    ) {
+        return new this(options);
     }
 
     getChunks(options?: {

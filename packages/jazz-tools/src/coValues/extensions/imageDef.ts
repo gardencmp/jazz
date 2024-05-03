@@ -5,7 +5,7 @@ import {
     subscriptionsScopes,
 } from "../../internal.js";
 
-export class ImageDefinition extends CoMap<ImageDefinition> {
+export class ImageDefinition extends CoMap {
     originalSize = co.json<[number, number]>();
     placeholderDataURL? = co.string;
 

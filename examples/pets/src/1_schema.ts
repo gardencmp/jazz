@@ -27,7 +27,7 @@ export type ReactionType = (typeof ReactionTypes)[number];
 
 export class PetReactions extends CoStream.Of(co.json<ReactionType>()) {}
 
-export class PetPost extends CoMap<PetPost> {
+export class PetPost extends CoMap {
     name = co.string;
     image = co.ref(ImageDefinition);
     reactions = co.ref(PetReactions);
@@ -35,20 +35,20 @@ export class PetPost extends CoMap<PetPost> {
 
 export class ListOfPosts extends CoList.Of(co.ref(PetPost)) {}
 
-export class PetAccountRoot extends CoMap<PetAccountRoot> {
+export class PetAccountRoot extends CoMap {
     posts = co.ref(ListOfPosts);
 }
 
-export class PetAccount extends Account<PetAccount> {
+export class PetAccount extends Account {
     profile = co.ref(Profile);
     root = co.ref(PetAccountRoot);
 
     migrate(creationProps?: { name: string }) {
         super.migrate(creationProps);
         if (!this._refs.root) {
-            this.root = new PetAccountRoot(
+            this.root = PetAccountRoot.create(
                 {
-                    posts: new ListOfPosts([], { owner: this }),
+                    posts: ListOfPosts.create([], { owner: this }),
                 },
                 { owner: this }
             );

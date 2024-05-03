@@ -43,7 +43,7 @@ export function ProjectTodoTable() {
     const createTask = useCallback(
         (text: string) => {
             if (!project?.tasks || !text) return;
-            const task = new Task(
+            const task = Task.create(
                 {
                     done: false,
                     text,

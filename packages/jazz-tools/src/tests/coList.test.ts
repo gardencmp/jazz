@@ -22,7 +22,7 @@ describe("Simple CoList operations", async () => {
 
     class TestList extends CoList.Of(co.string) {}
 
-    const list = new TestList(["bread", "butter", "onion"], { owner: me });
+    const list = TestList.create(["bread", "butter", "onion"], { owner: me });
 
     test("Construction", () => {
         expect(list[0]).toBe("bread");
@@ -39,7 +39,7 @@ describe("Simple CoList operations", async () => {
 
     describe("Mutation", () => {
         test("assignment", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
+            const list = TestList.create(["bread", "butter", "onion"], {
                 owner: me,
             });
             list[1] = "margarine";
@@ -52,7 +52,7 @@ describe("Simple CoList operations", async () => {
         });
 
         test("push", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
+            const list = TestList.create(["bread", "butter", "onion"], {
                 owner: me,
             });
             list.push("cheese");
@@ -66,7 +66,7 @@ describe("Simple CoList operations", async () => {
         });
 
         test("unshift", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
+            const list = TestList.create(["bread", "butter", "onion"], {
                 owner: me,
             });
             list.unshift("lettuce");
@@ -80,7 +80,7 @@ describe("Simple CoList operations", async () => {
         });
 
         test("pop", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
+            const list = TestList.create(["bread", "butter", "onion"], {
                 owner: me,
             });
             expect(list.pop()).toBe("onion");
@@ -89,7 +89,7 @@ describe("Simple CoList operations", async () => {
         });
 
         test("shift", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
+            const list = TestList.create(["bread", "butter", "onion"], {
                 owner: me,
             });
             expect(list.shift()).toBe("bread");
@@ -98,7 +98,7 @@ describe("Simple CoList operations", async () => {
         });
 
         test("splice", () => {
-            const list = new TestList(["bread", "butter", "onion"], {
+            const list = TestList.create(["bread", "butter", "onion"], {
                 owner: me,
             });
             list.splice(1, 1, "salt", "pepper");
@@ -129,14 +129,14 @@ describe("CoList resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const list = new TestList(
+        const list = TestList.create(
             [
-                new NestedList(
-                    [new TwiceNestedList(["a", "b"], { owner: me })],
+                NestedList.create(
+                    [TwiceNestedList.create(["a", "b"], { owner: me })],
                     { owner: me }
                 ),
-                new NestedList(
-                    [new TwiceNestedList(["c", "d"], { owner: me })],
+                NestedList.create(
+                    [TwiceNestedList.create(["c", "d"], { owner: me })],
                     { owner: me }
                 ),
             ],
@@ -196,8 +196,8 @@ describe("CoList resolution", async () => {
         expect(loadedList?.[0]?._refs[0]?.id).toEqual(list[0]?.[0]?.id);
         expect(loadedList?.[0]?._refs[0]?.value).toEqual(loadedTwiceNestedList);
 
-        const otherNestedList = new NestedList(
-            [new TwiceNestedList(["e", "f"], { owner: meOnSecondPeer })],
+        const otherNestedList = NestedList.create(
+            [TwiceNestedList.create(["e", "f"], { owner: meOnSecondPeer })],
             { owner: meOnSecondPeer }
         );
 
@@ -257,11 +257,11 @@ describe("CoList resolution", async () => {
 
                 // When assigning a new nested value, we get an update
 
-                const newTwiceNestedList = new TwiceNestedList(["y", "z"], {
+                const newTwiceNestedList = TwiceNestedList.create(["y", "z"], {
                     owner: meOnSecondPeer,
                 });
 
-                const newNestedList = new NestedList([newTwiceNestedList], {
+                const newNestedList = NestedList.create([newTwiceNestedList], {
                     owner: meOnSecondPeer,
                 });
 

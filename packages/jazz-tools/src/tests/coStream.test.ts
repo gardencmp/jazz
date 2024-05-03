@@ -23,7 +23,7 @@ describe("Simple CoStream operations", async () => {
 
     class TestStream extends CoStream.Of(co.string) {}
 
-    const stream = new TestStream(["milk"], { owner: me });
+    const stream = TestStream.create(["milk"], { owner: me });
 
     test("Construction", () => {
         expect(stream[me.id]?.value).toEqual("milk");
@@ -59,10 +59,10 @@ describe("CoStream resolution", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const stream = new TestStream(
+        const stream = TestStream.create(
             [
-                new NestedStream(
-                    [new TwiceNestedStream(["milk"], { owner: me })],
+                NestedStream.create(
+                    [TwiceNestedStream.create(["milk"], { owner: me })],
                     { owner: me }
                 ),
             ],
@@ -143,8 +143,8 @@ describe("CoStream resolution", async () => {
             loadedTwiceNestedStream?.id
         );
 
-        const otherNestedStream = new NestedStream(
-            [new TwiceNestedStream(["butter"], { owner: meOnSecondPeer })],
+        const otherNestedStream = NestedStream.create(
+            [TwiceNestedStream.create(["butter"], { owner: meOnSecondPeer })],
             { owner: meOnSecondPeer }
         );
         loadedStream?.push(otherNestedStream);
@@ -229,11 +229,11 @@ describe("CoStream resolution", async () => {
                 ).toBe("bread");
 
                 // When assigning a new nested stream, we get an update
-                const newTwiceNested = new TwiceNestedStream(["butter"], {
+                const newTwiceNested = TwiceNestedStream.create(["butter"], {
                     owner: meOnSecondPeer,
                 });
 
-                const newNested = new NestedStream([newTwiceNested], {
+                const newNested = NestedStream.create([newTwiceNested], {
                     owner: meOnSecondPeer,
                 });
 
@@ -260,7 +260,7 @@ describe("Simple BinaryCoStream operations", async () => {
         creationProps: { name: "Hermes Puggington" },
     });
 
-    const stream = new BinaryCoStream(undefined, { owner: me });
+    const stream = BinaryCoStream.create({ owner: me });
 
     test("Construction", () => {
         expect(stream.getChunks()).toBe(undefined);
@@ -288,7 +288,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             creationProps: { name: "Hermes Puggington" },
         });
 
-        const stream = new BinaryCoStream(undefined, { owner: me });
+        const stream = BinaryCoStream.create({ owner: me });
 
         stream.start({ mimeType: "text/plain" });
         stream.push(new Uint8Array([1, 2, 3]));
@@ -336,7 +336,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
     test("Subscription", async () => {
         const { me } = await initNodeAndStream();
 
-        const stream = new BinaryCoStream(undefined, { owner: me });
+        const stream = BinaryCoStream.create({ owner: me });
 
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",

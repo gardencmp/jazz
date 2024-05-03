@@ -118,7 +118,7 @@ export class CoValueBase implements CoValue {
         this: SubclassedConstructor<V>,
         raw: RawCoValue
     ): V {
-        return new this(undefined, { fromRaw: raw });
+        return new this({ fromRaw: raw });
     }
 
     static loadEf<V extends CoValue>(

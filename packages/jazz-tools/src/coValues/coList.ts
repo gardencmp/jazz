@@ -11,6 +11,7 @@ import type {
     SubclassedConstructor,
     UnavailableError,
     IfCo,
+    UnCo,
 } from "../internal.js";
 import {
     Account,
@@ -32,6 +33,7 @@ export class CoList<Item = any>
     implements CoValue<"CoList", RawCoList>
 {
     static Of<Item>(item: IfCo<Item, Item>): typeof CoList<Item> {
+        // TODO: cache superclass for item class
         return class CoListOf extends CoList<Item> {
             [co.items] = item;
         };
@@ -107,21 +109,16 @@ export class CoList<Item = any>
         return Array;
     }
 
-    constructor(_init: undefined, options: { fromRaw: RawCoList });
-    constructor(init: Item[], options: { owner: Account | Group });
     constructor(
-        init: Item[] | undefined,
-        options?: { owner: Account | Group } | { fromRaw: RawCoList }
+        options:
+            | { init: Item[]; owner: Account | Group }
+            | { fromRaw: RawCoList }
     ) {
         super();
 
-        if (!options) {
-            throw new Error("Must provide options");
-        }
-
-        if (init && "owner" in options) {
+        if ("owner" in options) {
             this[InitValues] = {
-                init,
+                init: options.init,
                 owner: options.owner,
             };
         } else if ("fromRaw" in options) {
@@ -135,6 +132,14 @@ export class CoList<Item = any>
         }
 
         return new Proxy(this, CoListProxyHandler as ProxyHandler<this>);
+    }
+
+    static create<L extends CoList>(
+        this: SubclassedConstructor<L>,
+        items: UnCo<L[number]>[],
+        options: {owner: Account | Group}
+    ) {
+        return new this({ init: items, owner: options.owner });
     }
 
     push(...items: Item[]): number;
@@ -238,7 +243,7 @@ export class CoList<Item = any>
         this: SubclassedConstructor<V> & typeof CoList,
         raw: RawCoList
     ) {
-        return new this(undefined, { fromRaw: raw });
+        return new this({ fromRaw: raw });
     }
 
     static loadEf = CoValueBase.loadEf as unknown as <V extends CoValue>(

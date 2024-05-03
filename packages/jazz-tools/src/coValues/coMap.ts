@@ -9,6 +9,7 @@ import type {
     RefEncoded,
     IfCo,
     RefIfCoValue,
+    SubclassedConstructor,
 } from "../internal.js";
 import {
     Account,
@@ -23,11 +24,6 @@ import {
     isRefEncoded,
 } from "../internal.js";
 
-type DefaultFields = {
-    [key: string]: any;
-    [ItemsSym]?: any;
-};
-
 type CoMapEdit<V> = {
     value?: V;
     ref?: RefIfCoValue<V>;
@@ -40,10 +36,7 @@ type InitValuesFor<C extends CoMap> = {
     owner: Account | Group;
 };
 
-export class CoMap<Fields extends object = DefaultFields>
-    extends CoValueBase
-    implements CoValue<"CoMap", RawCoMap>
-{
+export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     declare id: ID<this>;
     declare _type: "CoMap";
     static {
@@ -130,20 +123,14 @@ export class CoMap<Fields extends object = DefaultFields>
 
     [InitValues]?: any;
 
-    constructor(_init: undefined, options: { fromRaw: RawCoMap });
     constructor(
-        init: Simplify<CoMapInit<Fields>>,
-        options: { owner: Account | Group }
-    );
-    constructor(
-        init: Simplify<CoMapInit<Fields>> | undefined,
-        options: { owner: Account | Group } | { fromRaw: RawCoMap }
+        options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group }
     ) {
         super();
 
-        if (init && "owner" in options) {
+        if ("owner" in options) {
             this[InitValues] = {
-                init,
+                init: options.init,
                 owner: options.owner,
             } as InitValuesFor<this>;
         } else if ("fromRaw" in options) {
@@ -159,6 +146,14 @@ export class CoMap<Fields extends object = DefaultFields>
         }
 
         return new Proxy(this, CoMapProxyHandler as ProxyHandler<this>);
+    }
+
+    static create<M extends CoMap>(
+        this: SubclassedConstructor<M>,
+        init: Simplify<CoMapInit<M>>,
+        options: { owner: Account | Group }
+    ) {
+        return new this({ init, owner: options.owner });
     }
 
     toJSON() {
@@ -224,7 +219,7 @@ export class CoMap<Fields extends object = DefaultFields>
 
     static Record<Value>(value: IfCo<Value, Value>) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-        class RecordLikeCoMap extends CoMap<RecordLikeCoMap> {
+        class RecordLikeCoMap extends CoMap {
             [ItemsSym] = value;
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -236,7 +231,7 @@ export class CoMap<Fields extends object = DefaultFields>
 
 export type CoKeys<Fields extends object> = Exclude<
     keyof Fields & string,
-    keyof CoMap<Record<string, never>>
+    keyof CoMap
 >;
 
 export type CoMapInit<Fields extends object> = {
