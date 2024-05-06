@@ -71,7 +71,7 @@ export interface CoValue<Type extends string = string, Raw = any> {
     /** @category Internals */
     readonly _loadedAs: Account & Me;
     /** @category Stringifying & inspection */
-    toJSON(): any[] | object;
+    toJSON(): any[] | object | string;
     /** @category Stringifying & inspection */
     [inspect](): any;
 }
@@ -214,7 +214,7 @@ export class CoValueBase implements CoValue {
         ) as unknown as Stream.Stream<this, UnavailableError, never>;
     }
 
-    toJSON(): object | any[] {
+    toJSON(): object | any[] | string {
         return {
             id: this.id,
             type: this._type,

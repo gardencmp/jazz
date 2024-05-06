@@ -5,6 +5,8 @@ export * from "./coValues/interfaces.js";
 export * from "./coValues/coMap.js";
 export * from "./coValues/account.js";
 export * from "./coValues/coList.js";
+export * from "./coValues/coPlainText.js";
+export * from "./coValues/coRichText.js";
 export * from "./coValues/coStream.js";
 export * from "./coValues/group.js";
 

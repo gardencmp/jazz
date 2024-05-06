@@ -9,6 +9,7 @@ import { LocalNode } from "./localNode.js";
 import type { RawCoValue } from "./coValue.js";
 import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoList } from "./coValues/coList.js";
+import { RawCoPlainText, stringifyOpID } from "./coValues/coPlainText.js";
 import { RawCoStream, RawBinaryCoStream } from "./coValues/coStream.js";
 import {
     agentSecretFromBytes,
@@ -88,6 +89,7 @@ export {
     Everyone,
     RawCoMap,
     RawCoList,
+    RawCoPlainText,
     RawCoStream,
     RawBinaryCoStream,
     RawCoValue,
@@ -113,7 +115,8 @@ export {
     AgentSecret,
     InviteSecret,
     SyncMessage,
-    isRawCoID
+    isRawCoID,
+    stringifyOpID
 };
 
 export type { Value };
@@ -134,4 +137,5 @@ export namespace CojsonInternalTypes {
     export type SealerSecret = import("./crypto.js").SealerSecret;
     export type SignerSecret = import("./crypto.js").SignerSecret;
     export type JsonObject = import("./jsonValue.js").JsonObject;
+    export type OpID = import("./coValues/coList.js").OpID;
 }
