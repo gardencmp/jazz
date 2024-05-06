@@ -4,7 +4,7 @@ import { DeletionOpPayload, InsertionOpPayload, OpID, RawCoList } from "./coList
 
 export type StringifiedOpID = string & { __stringifiedOpID: true };
 
-function stringifyOpID(opID: OpID): StringifiedOpID {
+export function stringifyOpID(opID: OpID): StringifiedOpID {
     return `${opID.sessionID}:${opID.txIndex}:${opID.changeIdx}` as StringifiedOpID;
 }
 
