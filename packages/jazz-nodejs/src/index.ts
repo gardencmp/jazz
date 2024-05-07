@@ -22,19 +22,7 @@ if (!("crypto" in globalThis)) {
     (globalThis as any).crypto = webcrypto;
 }
 
-interface WorkerCredentialStorage {
-    load(
-        workerName: string
-    ): Promise<
-        { accountID: ID<Account>; accountSecret: AgentSecret } | undefined
-    >;
-    save(
-        workerName: string,
-        accountID: ID<Account>,
-        accountSecret: AgentSecret
-    ): Promise<void>;
-}
-
+/** @category Context Creation */
 export async function createOrResumeWorker<A extends Account>({
     workerName,
     credentialStorage = FileCredentialStorage,
@@ -119,6 +107,21 @@ export async function createOrResumeWorker<A extends Account>({
     return { worker: worker as A & Me };
 }
 
+/** @category Credential Storage */
+export interface WorkerCredentialStorage {
+    load(
+        workerName: string
+    ): Promise<
+        { accountID: ID<Account>; accountSecret: AgentSecret } | undefined
+    >;
+    save(
+        workerName: string,
+        accountID: ID<Account>,
+        accountSecret: AgentSecret
+    ): Promise<void>;
+}
+
+/** @category Credential Storage */
 export const FileCredentialStorage: WorkerCredentialStorage = {
     async load(workerName: string): Promise<
         | {

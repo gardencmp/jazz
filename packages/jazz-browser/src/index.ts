@@ -21,12 +21,14 @@ import { AccountID } from "cojson";
 import { AuthProvider } from "./auth/auth";
 export * from './auth/auth.js';
 
+/** @category Context Creation */
 export type BrowserContext<A extends Account> = {
     me: A & Me;
     // TODO: Symbol.dispose?
     done: () => void;
 };
 
+/** @category Context Creation */
 export async function createBrowserContext<Acc extends Account>({
     auth,
     syncAddress = "wss://sync.jazz.tools",
@@ -120,10 +122,12 @@ export async function createBrowserContext<Acc extends Account>({
     };
 }
 
+/** @category Auth Providers */
 export type SessionProvider = (
     accountID: ID<Account> | AgentID
 ) => Promise<SessionID>;
 
+/** @category Auth Providers */
 export type SessionHandle = {
     session: Promise<SessionID>;
     done: () => void;
@@ -326,6 +330,7 @@ function websocketWritableStream<T>(ws: WebSocket) {
     }
 }
 
+/** @category Invite Links */
 export function createInviteLink<C extends CoValue>(
     value: C,
     role: "reader" | "writer" | "admin",
@@ -356,6 +361,7 @@ export function createInviteLink<C extends CoValue>(
     }/${inviteSecret}`;
 }
 
+/** @category Invite Links */
 export function parseInviteLink<C extends CoValue>(
     inviteURL: string
 ):
@@ -389,6 +395,7 @@ export function parseInviteLink<C extends CoValue>(
     }
 }
 
+/** @category Invite Links */
 export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
     as,
     forValueHint,
@@ -427,96 +434,4 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
             resolve(undefined);
         }
     });
-}
-
-export async function createBinaryStreamFromBlob(
-    blob: Blob | File,
-    options: {
-        owner: Group | Account;
-        onProgress?: (progress: number) => void;
-    }
-): Promise<BinaryCoStream> {
-    const stream = BinaryCoStream.create({ owner: options.owner });
-
-    const start = Date.now();
-
-    const reader = new FileReader();
-    const done = new Promise<void>((resolve) => {
-        reader.onload = async () => {
-            const data = new Uint8Array(reader.result as ArrayBuffer);
-            stream.start({
-                mimeType: blob.type,
-                totalSizeBytes: blob.size,
-                fileName: blob instanceof File ? blob.name : undefined,
-            });
-            const chunkSize = MAX_RECOMMENDED_TX_SIZE;
-
-            let lastProgressUpdate = Date.now();
-
-            for (let idx = 0; idx < data.length; idx += chunkSize) {
-                stream.push(data.slice(idx, idx + chunkSize));
-
-                if (Date.now() - lastProgressUpdate > 100) {
-                    options.onProgress?.(idx / data.length);
-                    lastProgressUpdate = Date.now();
-                }
-
-                await new Promise((resolve) => setTimeout(resolve, 0));
-            }
-            stream.end();
-            const end = Date.now();
-
-            console.debug(
-                "Finished creating binary stream in",
-                (end - start) / 1000,
-                "s - Throughput in MB/s",
-                (1000 * (blob.size / (end - start))) / (1024 * 1024)
-            );
-            options.onProgress?.(1);
-            resolve();
-        };
-    });
-    setTimeout(() => {
-        reader.readAsArrayBuffer(blob);
-    });
-
-    await done;
-
-    return stream;
-}
-
-export async function readBlobFromBinaryStream(
-    streamId: ID<BinaryCoStream>,
-    options: {
-        as: Account & Me;
-        allowUnfinished?: boolean;
-        onProgress?: (progress: number) => void;
-    }
-): Promise<Blob | undefined> {
-    const stream = await BinaryCoStream.load(streamId, {
-        as: options.as,
-        onProgress: options.onProgress,
-    });
-
-    return (
-        stream &&
-        blobFromBinaryStream(stream, {
-            allowUnfinished: options.allowUnfinished,
-        })
-    );
-}
-
-export function blobFromBinaryStream(
-    stream: BinaryCoStream,
-    options?: { allowUnfinished?: boolean }
-): Blob | undefined {
-    const chunks = stream?.getChunks({
-        allowUnfinished: options?.allowUnfinished,
-    });
-
-    if (!chunks) {
-        return undefined;
-    }
-
-    return new Blob(chunks.chunks, { type: chunks.mimeType });
 }

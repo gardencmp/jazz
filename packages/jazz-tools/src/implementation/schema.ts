@@ -3,6 +3,7 @@ import { type CoValue, type CoValueClass, isCoValueClass } from "../internal.js"
 import type { Schema as EffectSchema,  TypeId } from "@effect/schema/Schema";
 
 export type CoMarker = { readonly __co: unique symbol };
+/** @category Schema definition */
 export type co<T> = T | (T & CoMarker);
 export type IfCo<C, R> = C extends infer _A | infer B
     ? B extends CoMarker
@@ -11,6 +12,7 @@ export type IfCo<C, R> = C extends infer _A | infer B
     : never;
 export type UnCo<T> = T extends co<infer A> ? A : T;
 
+/** @category Schema definition */
 export const co = {
     string: {
         [SchemaInit]: "json" satisfies Schema,
@@ -87,6 +89,7 @@ export type Encoder<V> = EffectSchemaWithInputAndOutput<V, JsonValue>;
 import { Date } from "@effect/schema/Schema";
 import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
 
+/** @category Schema definition */
 export const Encoders = {
     Date,
 };

@@ -1,6 +1,6 @@
 import {
     Highlight,
-    Class,
+    ClassOrInterface,
     PropDecl,
     ClassRef,
     PropRef,
@@ -13,7 +13,7 @@ import {
 export function CoStreamDocs() {
     return (
         <>
-            <Class
+            <ClassOrInterface
                 name="CoStream<Item>"
                 doc="CoStreams are a collection of independent append-only streams per participant."
             >
@@ -50,14 +50,14 @@ class Inbox extends CoStream.Of(co.ref(Message)) {}`}
         all: IterableIterator<{ value?: Item; ... }>
 } }`}
                 />
-            </Class>
+            </ClassOrInterface>
 
-            <Class
+            <ClassOrInterface
                 name="BinaryCoStream"
                 doc="BinaryCoStreams represent binary files and live streams."
             >
 bla
-            </Class>
+            </ClassOrInterface>
         </>
     );
 }

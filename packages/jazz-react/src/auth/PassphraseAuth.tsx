@@ -6,13 +6,14 @@ import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
 import { Account, CoValueClass } from "jazz-tools";
 
-export type PassphraseAuthComponent = (props: {
+type PassphraseAuthComponent = (props: {
     loading: boolean;
     logIn: (passphrase: string) => void;
     signUp: (username: string, passphrase: string) => void;
     generateRandomPassphrase: () => string;
 }) => ReactNode;
 
+/** @category Auth Providers */
 export function PassphraseAuth<Acc extends Account>({
     accountSchema,
     appName,
@@ -98,7 +99,7 @@ export function PassphraseAuth<Acc extends Account>({
     };
 }
 
-export const PassphraseAuthBasicUI = ({
+const PassphraseAuthBasicUI = ({
     logIn,
     signUp,
     generateRandomPassphrase,
@@ -236,3 +237,9 @@ export const PassphraseAuthBasicUI = ({
         </div>
     );
 };
+
+/** @category Auth Providers */
+export namespace PassphraseAuth {
+    export type Component = PassphraseAuthComponent;
+    export const BasicUI = PassphraseAuthBasicUI;
+}

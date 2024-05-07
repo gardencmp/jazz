@@ -40,51 +40,38 @@ export async function Highlight({
     );
 }
 
-export function ClassHeader({ name }: { name: string }) {
+export function ClassOrInterface({
+    inPackage,
+    name,
+    children,
+    doc,
+    isInterface,
+}: {
+    inPackage: string;
+    name: string;
+    children: ReactNode;
+    doc: ReactNode;
+    isInterface?: boolean;
+}) {
     return (
         <>
             <a
-                id={name.split("<")[0]}
-                href={"#" + name.split("<")[0]}
-                className="pt-[9.5rem] -mt-[9.5rem] -ml-6 w-4 -mb-6 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
+                id={inPackage + "/" + name}
+                href={"#" + inPackage + "/" + name}
+                className="pt-[6rem] -mt-[6rem] -ml-6 w-4 -mb-6 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
                 tabIndex={-1}
             >
                 <LinkIcon size={15} />
             </a>
             <h3 className="peer">
-                <a href={"#" + name.split("<")[0]}>
-                    <Highlight>{`class ${name}`}</Highlight>
+                <a href={"#" + inPackage + "/" + name}>
+                    <Highlight>{(isInterface ? "interface " : "class ") + name}</Highlight>
                 </a>
             </h3>
-        </>
-    );
-}
-
-export function ClassFooter() {
-    return (
-        <>
-            <div className="mb-8 h-8 sticky top-[2.2rem] md:top-[8.7rem] bg-stone-50 dark:bg-stone-950" />
-        </>
-    );
-}
-
-export function Class({
-    name,
-    children,
-    doc,
-}: {
-    name: string;
-    children: ReactNode;
-    doc: ReactNode;
-}) {
-    return (
-        <>
-            <ClassHeader name={name} />
             <div className="pl-2">
                 <div className=" mt-4 text-sm">{doc}</div>
                 <div className="">{children}</div>
             </div>
-            <ClassFooter />
         </>
     );
 }
@@ -234,25 +221,6 @@ export function PropCategory({ name }: { name: string }) {
 export function DocComment({ children }: { children: ReactNode }) {
     return (
         <div className="prose-inner-sm text-[0.7em] leading-tight">
-            {children}
-        </div>
-    );
-}
-
-export function NavPackage({
-    name,
-    children,
-}: {
-    name: string;
-    children: ReactNode;
-}) {
-    return (
-        <div className="border dark:border-stone-800 rounded pl-2 mb-6">
-            <div className="-mt-3 -mb-2">
-                <code className="p-2 bg-stone-50 dark:bg-stone-925">
-                    {name}
-                </code>
-            </div>
             {children}
         </div>
     );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { blobFromBinaryStream } from "jazz-browser";
 import { ImageDefinition } from "jazz-tools";
 
+/** @category Media */
 export function useProgressiveImg({
     image,
     maxWidth
@@ -14,7 +14,7 @@ export function useProgressiveImg({
     useEffect(() => {
         const highestRes = image?.highestResAvailable({ maxWidth });
         if (highestRes) {
-            const blob = blobFromBinaryStream(highestRes.stream);
+            const blob = highestRes.stream.toBlob();
             if (blob) {
                 const blobURI = URL.createObjectURL(blob);
                 setSrc(blobURI);
@@ -30,6 +30,7 @@ export function useProgressiveImg({
     return { src, originalSize: image?.originalSize };
 }
 
+/** @category Media */
 export function ProgressiveImg({
     children,
     image,

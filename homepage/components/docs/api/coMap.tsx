@@ -1,6 +1,6 @@
 import {
     Highlight,
-    Class,
+    ClassOrInterface,
     PropDecl,
     ClassRef,
     PropRef,
@@ -13,7 +13,7 @@ import {
 export function CoMapDocs() {
     return (
         <>
-            <Class
+            <ClassOrInterface
                 name="CoMap<Fields>"
                 doc="CoMaps are collaborative versions of plain objects, mapping string-like keys to values."
             >
@@ -250,7 +250,7 @@ returns: () => void`}
                         </>
                     }
                 />
-            </Class>
+            </ClassOrInterface>
         </>
     );
 }

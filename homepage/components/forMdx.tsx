@@ -2,8 +2,8 @@ export function Slogan(props: { children: ReactNode; small?: boolean }) {
     return (
         <div
             className={[
-                "leading-snug mb-5 max-w-3xl text-stone-700 dark:text-stone-200",
-                props.small ? "text-lg lg:text-xl -mt-2" : "text-xl lg:text-2xl -mt-5",
+                "leading-snug tracking-tight mb-5 max-w-4xl text-stone-700 dark:text-stone-500",
+                props.small ? "text-lg lg:text-xl -mt-2" : "text-3xl lg:text-4xl -mt-5",
             ].join(" ")}
         >
             {props.children}

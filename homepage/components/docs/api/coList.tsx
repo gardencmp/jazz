@@ -1,6 +1,6 @@
 import {
     Highlight,
-    Class,
+    ClassOrInterface,
     PropDecl,
     ClassRef,
     PropRef,
@@ -11,7 +11,7 @@ import {
 export function CoListDocs() {
     return (
         <>
-            <Class
+            <ClassOrInterface
                 name="CoList<Item> extends Array<Item>"
                 doc="CoLists are collaborative versions of arrays."
             >
@@ -115,7 +115,7 @@ class People extends CoList.Of(co.ref(Person)) {}`}
                         </>
                     }
                 />
-            </Class>
+            </ClassOrInterface>
         </>
     );
 }

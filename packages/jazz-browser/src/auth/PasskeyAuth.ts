@@ -9,7 +9,7 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
-export interface BrowserPasskeyAuthDriver {
+interface BrowserPasskeyAuthDriver {
     onReady: (next: {
         signUp: (username: string) => Promise<void>;
         logIn: () => Promise<void>;
@@ -79,6 +79,11 @@ export class BrowserPasskeyAuth<Acc extends Account>
             });
         }
     }
+}
+
+/** @category Auth Providers */
+export namespace BrowserPasskeyAuth {
+    export type Driver = BrowserPasskeyAuthDriver;
 }
 
 async function signUp<Acc extends Account>(

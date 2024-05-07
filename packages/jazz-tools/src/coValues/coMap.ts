@@ -36,6 +36,7 @@ type InitValuesFor<C extends CoMap> = {
     owner: Account | Group;
 };
 
+/** @category CoValues */
 export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     declare id: ID<this>;
     declare _type: "CoMap";

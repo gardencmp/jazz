@@ -3,17 +3,18 @@ import { BrowserPasskeyAuth } from "jazz-browser";
 import { ReactAuthHook } from "./auth";
 import { Account, CoValueClass } from "jazz-tools";
 
-export type PasskeyAuthComponent = (props: {
+type PasskeyAuthComponent = (props: {
     loading: boolean;
     logIn: () => void;
     signUp: (username: string) => void;
 }) => ReactNode;
 
+/** @category Auth Providers */
 export function PasskeyAuth<Acc extends Account>({
     accountSchema,
     appName,
     appHostname,
-    Component = LocalAuthBasicUI,
+    Component = PasskeyAuthBasicUI,
 }: {
     accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
@@ -82,7 +83,7 @@ export function PasskeyAuth<Acc extends Account>({
     };
 }
 
-export const LocalAuthBasicUI = ({
+const PasskeyAuthBasicUI = ({
     logIn,
     signUp,
 }: {
@@ -162,3 +163,9 @@ export const LocalAuthBasicUI = ({
         </div>
     );
 };
+
+/** @category Auth Providers */
+export namespace PasskeyAuth {
+    export type Component = PasskeyAuthComponent;
+    export const BasicUI = PasskeyAuthBasicUI;
+}

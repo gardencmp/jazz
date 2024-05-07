@@ -3,7 +3,7 @@ import { BrowserDemoAuth } from "jazz-browser";
 import { ReactAuthHook } from "./auth.js";
 import { Account, CoValueClass } from "jazz-tools";
 
-export type DemoAuthComponent = (props: {
+type DemoAuthComponent = (props: {
     appName: string;
     loading: boolean;
     existingUsers: string[];
@@ -11,6 +11,7 @@ export type DemoAuthComponent = (props: {
     signUp: (username: string) => void;
 }) => ReactNode;
 
+/** @category Auth Providers */
 export function DemoAuth<Acc extends Account = Account>({
     accountSchema = Account as CoValueClass<Acc> & typeof Account,
     appName,
@@ -89,7 +90,7 @@ export function DemoAuth<Acc extends Account = Account>({
     };
 }
 
-export const DemoAuthBasicUI = ({
+const DemoAuthBasicUI = ({
     appName,
     existingUsers,
     logInAs,
@@ -198,3 +199,9 @@ export const DemoAuthBasicUI = ({
         </div>
     );
 };
+
+/** @category Auth Providers */
+export namespace DemoAuth {
+    export type Component = DemoAuthComponent;
+    export const BasicUI = DemoAuthBasicUI;
+}

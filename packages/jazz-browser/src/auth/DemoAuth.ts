@@ -10,7 +10,7 @@ type StorageData = {
 
 const localStorageKey = "demo-auth-logged-in-secret";
 
-export interface BrowserDemoAuthDriver {
+interface BrowserDemoAuthDriver {
     onReady: (next: {
         signUp: (username: string) => Promise<void>;
         existingUsers: string[];
@@ -105,6 +105,11 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
             });
         }
     }
+}
+
+/** @category Auth Providers */
+export namespace BrowserDemoAuth {
+    export type Driver = BrowserDemoAuthDriver;
 }
 
 function logOut() {

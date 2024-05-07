@@ -23,7 +23,7 @@ Quickly build and ship apps with:
 
 - **Set fine-grained, role-based permissions in `Group`s** that are **synced along with your data**.
 - **Permissions *verifiably enforced* everywhere,** using encryption & signatures under the hood.
-- **Change roles dynamically** for evolving teams, expiring invite links and more.
+- **Change roles dynamically** for evolving teams, expiring Invite Links and more.
 
 # What's special about Jazz?
 

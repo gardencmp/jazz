@@ -33,6 +33,7 @@ import {
 } from "../internal.js";
 import type { Stream } from "effect/Stream";
 
+/** @category Identity & Permissions */
 export class Account
     extends CoValueBase
     implements CoValue<"Account", RawAccount | RawControlledAccount>
@@ -301,6 +302,7 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     },
 };
 
+/** @category Identity & Permissions */
 export interface Me {
     id: ID<any>;
     isMe: true;
@@ -311,11 +313,13 @@ export interface Me {
     acceptInvite: (...args: any[]) => any;
 }
 
+/** @category Identity & Permissions */
 export class AccountCtx extends Context.Tag("Account")<
     AccountCtx,
     Account & Me
 >() {}
 
+/** @category Identity & Permissions */
 export function isControlledAccount(account: Account): account is Account & Me {
     return account.isMe;
 }

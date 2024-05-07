@@ -28,6 +28,7 @@ import {
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
+/** @category CoValues */
 export class CoList<Item = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
@@ -66,6 +67,7 @@ export class CoList<Item = any>
             : Group.fromRaw(this._raw.group);
     }
 
+    /** @category Content */
     get _refs(): {
         [idx: number]: NonNullable<Item> extends CoValue
             ? Ref<NonNullable<Item>>

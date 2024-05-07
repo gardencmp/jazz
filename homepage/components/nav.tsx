@@ -354,6 +354,7 @@ export function Newsletter() {
                         name="groups[]"
                         value="112132481"
                         checked
+                        readOnly
                     />
                     <input
                         type="checkbox"

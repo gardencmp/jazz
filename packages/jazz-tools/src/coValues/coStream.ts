@@ -8,7 +8,7 @@ import type {
     RawCoStream,
     SessionID,
 } from "cojson";
-import { cojsonInternals } from "cojson";
+import { MAX_RECOMMENDED_TX_SIZE, cojsonInternals } from "cojson";
 import type {
     CoValue,
     Schema,
@@ -45,6 +45,7 @@ export type SingleCoStreamEntry<Item> = {
     tx: CojsonInternalTypes.TransactionID;
 };
 
+/** @category CoValues */
 export class CoStream<Item = any>
     extends CoValueBase
     implements CoValue<"CoStream", RawCoStream>
@@ -420,6 +421,7 @@ const CoStreamPerSessionProxyHandler = (
     },
 });
 
+/** @category CoValues */
 export class BinaryCoStream
     extends CoValueBase
     implements CoValue<"BinaryCoStream", RawBinaryCoStream>
@@ -482,6 +484,92 @@ export class BinaryCoStream
 
     end(): void {
         this._raw.endBinaryStream();
+    }
+
+    toBlob(options?: { allowUnfinished?: boolean }): Blob | undefined {
+        const chunks = this.getChunks({
+            allowUnfinished: options?.allowUnfinished,
+        });
+
+        if (!chunks) {
+            return undefined;
+        }
+
+        return new Blob(chunks.chunks, { type: chunks.mimeType });
+    }
+
+    static async loadAsBlob(
+        id: ID<BinaryCoStream>,
+        options: {
+            as: Account & Me;
+            allowUnfinished?: boolean;
+            onProgress?: (progress: number) => void;
+        }
+    ): Promise<Blob | undefined> {
+        const stream = await this.load(id, {
+            as: options.as,
+            onProgress: options.onProgress,
+        });
+
+        return stream?.toBlob({
+            allowUnfinished: options.allowUnfinished,
+        });
+    }
+
+    static async createFromBlob(
+        blob: Blob | File,
+        options: {
+            owner: Group | Account;
+            onProgress?: (progress: number) => void;
+        }
+    ): Promise<BinaryCoStream> {
+        const stream = this.create({ owner: options.owner });
+
+        const start = Date.now();
+
+        const reader = new FileReader();
+        const done = new Promise<void>((resolve) => {
+            reader.onload = async () => {
+                const data = new Uint8Array(reader.result as ArrayBuffer);
+                stream.start({
+                    mimeType: blob.type,
+                    totalSizeBytes: blob.size,
+                    fileName: blob instanceof File ? blob.name : undefined,
+                });
+                const chunkSize = MAX_RECOMMENDED_TX_SIZE;
+
+                let lastProgressUpdate = Date.now();
+
+                for (let idx = 0; idx < data.length; idx += chunkSize) {
+                    stream.push(data.slice(idx, idx + chunkSize));
+
+                    if (Date.now() - lastProgressUpdate > 100) {
+                        options.onProgress?.(idx / data.length);
+                        lastProgressUpdate = Date.now();
+                    }
+
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                }
+                stream.end();
+                const end = Date.now();
+
+                console.debug(
+                    "Finished creating binary stream in",
+                    (end - start) / 1000,
+                    "s - Throughput in MB/s",
+                    (1000 * (blob.size / (end - start))) / (1024 * 1024)
+                );
+                options.onProgress?.(1);
+                resolve();
+            };
+        });
+        setTimeout(() => {
+            reader.readAsArrayBuffer(blob);
+        });
+
+        await done;
+
+        return stream;
     }
 
     toJSON() {

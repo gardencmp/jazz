@@ -17,10 +17,12 @@ import {
     MembersSym,
 } from "../internal.js";
 
+/** @category Identity & Permissions */
 export class Profile extends CoMap {
     name = co.string;
 }
 
+/** @category Identity & Permissions */
 export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
     declare id: ID<this>;
     declare _type: "Group";

@@ -16,6 +16,7 @@ export type SubclassedConstructor<T> = {
     new (...args: any[]): T;
 };
 
+/** @category Abstract interfaces */
 export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
     /** @category Construction and loading */
     new (init: Init, options: { owner: Account | Group }): Value;
@@ -54,9 +55,9 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
     ): Stream.Stream<V, UnavailableError, AccountCtx>;
 }
 
-/** @category Schemas & CoValues - Abstract interfaces */
+/** @category Abstract interfaces */
 export interface CoValue<Type extends string = string, Raw = any> {
-    /** @category Value identity */
+    /** @category Content */
     readonly id: ID<this>;
     /** @category Value identity */
     _type: Type;
@@ -68,7 +69,7 @@ export interface CoValue<Type extends string = string, Raw = any> {
     subscribeEf(): Stream.Stream<this, UnavailableError, never>;
     /** @category Internals */
     _raw: Raw;
-    /** @category Internals */
+    /** @internal */
     readonly _loadedAs: Account & Me;
     /** @category Stringifying & inspection */
     toJSON(): any[] | object;
@@ -83,7 +84,7 @@ export function isCoValueClass(value: any): value is CoValueClass {
     return typeof value === "function" && value.fromRaw !== undefined;
 }
 
-/** @category Schemas & CoValues - Abstract interfaces */
+/** @category CoValues */
 export type ID<T> = CojsonInternalTypes.RawCoID & IDMarker<T>;
 
 type IDMarker<out T> = { __type(_: never): T };

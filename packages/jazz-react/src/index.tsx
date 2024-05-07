@@ -7,12 +7,18 @@ import {
 import { Account, CoValue, CoValueClass, ID, Me } from "jazz-tools";
 import { ReactAuthHook } from "./auth/auth.js";
 
+/** @category Context & Hooks */
 export function JazzReact<Acc extends Account>({
     auth: authHook,
 }: {
     auth: ReactAuthHook<Acc>;
     apiKey?: string;
-}) {
+}): {
+    Provider: Provider,
+    useAccount: UseAccountHook<Acc>,
+    useCoState: UseCoStateHook,
+    useAcceptInvite: UseAcceptInviteHook,
+} {
     const JazzContext = React.createContext<
         | {
               me: Acc & Me;
@@ -157,10 +163,38 @@ export function JazzReact<Acc extends Account>({
     };
 }
 
+/** @category Context & Hooks */
+export type Provider = React.FC<{
+    syncAddress?: string;
+    children: React.ReactNode;
+}>;
+
+/** @category Context & Hooks */
+export type UseAccountHook<Acc extends Account> = () => {
+    me: Acc & Me;
+    logOut: () => void;
+};
+
+/** @category Context & Hooks */
+export type UseCoStateHook = <V extends CoValue>(
+    Schema: { new (...args: any[]): V } & CoValueClass,
+    id: ID<V> | undefined
+) => V | undefined;
+
+/** @category Context & Hooks */
+export type UseAcceptInviteHook = <V extends CoValue>({
+    invitedObjectSchema,
+    onAccept,
+    forValueHint,
+}: {
+    invitedObjectSchema: CoValueClass<V>;
+    onAccept: (projectID: ID<V>) => void;
+    forValueHint?: string;
+}) => void;
+
 export {
     createInviteLink,
-    parseInviteLink,
-    readBlobFromBinaryStream,
+    parseInviteLink
 } from "jazz-browser";
 
 export * from "./auth/auth.js";
