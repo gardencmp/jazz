@@ -18,7 +18,7 @@ import type {
     Schema,
     ID,
     RefEncoded,
-    SubclassedConstructor,
+    ClassOf,
     UnavailableError,
 } from "../internal.js";
 import {
@@ -165,7 +165,7 @@ export class Account
     }) as any;
 
     static async create<A extends Account>(
-        this: SubclassedConstructor<A> & typeof Account,
+        this: ClassOf<A> & typeof Account,
         options: {
             creationProps: { name: string };
             initialAgentSecret?: AgentSecret;
@@ -187,7 +187,7 @@ export class Account
     }
 
     static async become<A extends Account>(
-        this: SubclassedConstructor<A> & typeof Account,
+        this: ClassOf<A> & typeof Account,
         options: {
             accountID: ID<Account>;
             accountSecret: AgentSecret;
@@ -213,7 +213,7 @@ export class Account
     }
 
     static fromNode<A extends Account>(
-        this: SubclassedConstructor<A>,
+        this: ClassOf<A>,
         node: LocalNode
     ): A & Me {
         return new this({

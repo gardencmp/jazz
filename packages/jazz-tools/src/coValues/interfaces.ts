@@ -12,7 +12,7 @@ import {
     subscriptionsScopes,
 } from "../internal.js";
 
-export type SubclassedConstructor<T> = {
+export type ClassOf<T> = {
     new (...args: any[]): T;
 };
 
@@ -26,7 +26,7 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
 
     /** @category Construction and loading */
     load<V extends Value>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>,
         options: {
             as: Account & Me;
@@ -36,13 +36,13 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
 
     /** @category Construction and loading */
     loadEf<V extends Value>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>
     ): Effect.Effect<V, UnavailableError, AccountCtx>;
 
     /** @category Subscription */
     subscribe<V extends Value, Acc extends Account>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>,
         options: { as: Acc & Me },
         onUpdate: (value: V) => void
@@ -50,7 +50,7 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
 
     /** @category Subscription */
     subscribeEf<V extends Value>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>
     ): Stream.Stream<V, UnavailableError, AccountCtx>;
 }
@@ -59,21 +59,21 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
 export interface CoValue<Type extends string = string, Raw = any> {
     /** @category Content */
     readonly id: ID<this>;
-    /** @category Value identity */
+    /** @category Type Helpers */
     _type: Type;
     /** @category Collaboration */
     _owner: Account | Group;
-    /** @category Subscription */
+    /** @category Subscription & Loading */
     subscribe(listener: (update: this) => void): () => void;
-    /** @category Subscription */
+    /** @category Subscription & Loading */
     subscribeEf(): Stream.Stream<this, UnavailableError, never>;
     /** @category Internals */
     _raw: Raw;
     /** @internal */
     readonly _loadedAs: Account & Me;
-    /** @category Stringifying & inspection */
+    /** @category Stringifying & Inspection */
     toJSON(): any[] | object;
-    /** @category Stringifying & inspection */
+    /** @category Stringifying & Inspection */
     [inspect](): any;
 }
 
@@ -89,6 +89,7 @@ export type ID<T> = CojsonInternalTypes.RawCoID & IDMarker<T>;
 
 type IDMarker<out T> = { __type(_: never): T };
 
+/** @internal */
 export class CoValueBase implements CoValue {
     id!: ID<this>;
     _type!: string;
@@ -115,15 +116,17 @@ export class CoValueBase implements CoValue {
 
     constructor(..._args: any) {}
 
+    /** @category Internals */
     static fromRaw<V extends CoValue>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         raw: RawCoValue
     ): V {
         return new this({ fromRaw: raw });
     }
 
+    /** @category Subscription & Loading */
     static loadEf<V extends CoValue>(
-        this: SubclassedConstructor<V> & typeof CoValueBase,
+        this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>
     ): Effect.Effect<V, UnavailableError, AccountCtx> {
         return Effect.gen(this, function* (_) {
@@ -134,8 +137,9 @@ export class CoValueBase implements CoValue {
         });
     }
 
+    /** @category Subscription & Loading */
     static load<V extends CoValue>(
-        this: SubclassedConstructor<V> & typeof CoValueBase,
+        this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
         options: {
             as: Account & Me;
@@ -147,8 +151,9 @@ export class CoValueBase implements CoValue {
         );
     }
 
+    /** @category Subscription & Loading */
     static subscribe<V extends CoValue, Acc extends Account>(
-        this: SubclassedConstructor<V> & typeof CoValueBase,
+        this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
         options: { as: Acc & Me },
         onUpdate: (value: V) => void
@@ -170,8 +175,9 @@ export class CoValueBase implements CoValue {
         return function unsubscribe() {};
     }
 
+    /** @category Subscription & Loading */
     static subscribeEf<V extends CoValue>(
-        this: SubclassedConstructor<V> & typeof CoValueBase,
+        this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>
     ): Stream.Stream<V, UnavailableError, AccountCtx> {
         return Stream.fromEffect(this.loadEf(id)).pipe(
@@ -197,6 +203,7 @@ export class CoValueBase implements CoValue {
         );
     }
 
+    /** @category Subscription & Loading */
     subscribe(listener: (update: this) => void): () => void {
         return (this.constructor as unknown as typeof CoValueBase).subscribe(
             this.id as unknown as ID<CoValue>,
@@ -205,6 +212,7 @@ export class CoValueBase implements CoValue {
         );
     }
 
+    /** @category Subscription & Loading */
     subscribeEf(): Stream.Stream<this, UnavailableError, never> {
         return Stream.provideService(
             (this.constructor as unknown as typeof CoValueBase).subscribeEf(
@@ -227,6 +235,7 @@ export class CoValueBase implements CoValue {
         return this.toJSON();
     }
 
+    /** @category Type Helpers*/
     as<C extends CoValueClass>(otherSchema: C): InstanceType<C> {
         const cast = otherSchema.fromRaw(this._raw) as InstanceType<C>;
         const subScope = subscriptionsScopes.get(this);

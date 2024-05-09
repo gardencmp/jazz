@@ -21,7 +21,7 @@ export function Grid({
     return (
         <div
             className={cn(
-                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
+                "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4",
                 "mt-10 items-stretch",
                 className
             )}
@@ -43,14 +43,14 @@ export function GridFeature(props: {
     return (
         <div
             className={[
-                "p-4 flex items-center gap-2",
+                "p-4 flex flex-col items-center justify-center gap-2",
                 "not-prose text-base",
                 "border border-stone-200 dark:border-stone-800 rounded-xl",
                 props.className || "",
             ].join(" ")}
         >
             <div className="text-stone-500 mr-2">{props.icon}</div>
-            {props.children}
+            <div className="text-stone-700 dark:text-stone-300">{props.children}</div>
         </div>
     );
 }
@@ -69,22 +69,20 @@ export function GridCard(props: { children: ReactNode; className?: string }) {
     );
 }
 
-export function MultiplayerIcon({color, strokeWidth}: {color?: string, strokeWidth?: number}) {
+export function MultiplayerIcon({color, strokeWidth, size}: {color?: string, strokeWidth?: number, size: number}) {
     return (
-        <div className="w-8 h-8 -my-1 -mr-2 relative z-0">
+        <div className="relative z-0" style={{width: size, height: size}}>
             <MousePointer2Icon
-                size="20"
-                absoluteStrokeWidth
-                strokeWidth={strokeWidth}
+                size={0.6 * size}
+                strokeWidth={(strokeWidth || 1) / 0.6}
                 color={color}
-                className="absolute top-1 right-0"
+                className="absolute top-0 right-0"
             />
             <MousePointer2Icon
-                size="16"
-                absoluteStrokeWidth
-                strokeWidth={strokeWidth}
+                size={0.5 * size}
+                strokeWidth={(strokeWidth || 1) / 0.5}
                 color={color}
-                className="absolute bottom-1 left-0 -scale-x-100"
+                className="absolute bottom-0 left-0 -scale-x-100"
             />
         </div>
     );

@@ -7,17 +7,13 @@ export function DocNav() {
     return (
         <>
             <p className="mt-0 not-prose">
-                <DocNavLink href="#quickstart">Quickstart (5min Chat App)</DocNavLink>
-            </p>
-
-            <p>
-                <DocNavLink href="#guide">Let's Learn Some Jazz</DocNavLink>
+                <DocNavLink href="#guide">Guide</DocNavLink>
             </p>
 
             <ul>
                 <li>
-                    <DocNavLink href="#guide-goal">
-                        Goal: Issue-Tracking App
+                    <DocNavLink href="#guide-setup">
+                        Project Setup
                     </DocNavLink>
                 </li>
                 <li>
@@ -47,7 +43,7 @@ export function DocNav() {
                 </li>
             </ul>
 
-            <p>
+            <p className="border-t -mx-4 px-4 pt-4 border-stone-200 dark:border-stone-800">
                 <DocNavLink href="#faq">FAQ</DocNavLink>
             </p>
 
@@ -69,26 +65,26 @@ export async function NavPackage({
 
     return (
         <>
-            <h2 className="text-sm not-prose mt-4 flex gap-1 items-center border-t border-stone-200 dark:border-stone-800 -mx-4 px-4 pt-2">
+            <h2 className="text-sm not-prose mt-4 flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 ">
                 <code>{packageName}</code> <PackageIcon size={15} strokeWidth={1.5}/>
             </h2>
             {project.categories?.map((category) => {
                 return (
                     <details key={category.title} open={category.title !== "Other"} className="[&:not([open])_summary]:after:content-['...']">
                         <summary className="block text-xs mt-2 cursor-pointer">{category.title}</summary>
-                        <div className="flex flex-wrap text-sm">
+                        <div className="text-sm -ml-0.5 max-w-full text-balance">
                             {category.children.map(
                                 (child, i, children) =>
                                     (i == 0 ||
                                         child.name !==
-                                            children[i - 1]!.name) && (
+                                            children[i - 1]!.name) && (<>
                                         <a
                                             key={child.id}
-                                            className="not-prose px-1 m-0.5 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
+                                            className="inline-block not-prose px-1 m-0.5 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
                                             href={`#${packageName}/${child.name}`}
                                         >
                                             <code>{child.name}</code>
-                                        </a>
+                                        </a>{"\u200B"}</>
                                     )
                             )}
                         </div>

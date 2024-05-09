@@ -8,7 +8,7 @@ import type {
     SchemaFor,
     ID,
     RefEncoded,
-    SubclassedConstructor,
+    ClassOf,
     UnavailableError,
     IfCo,
     UnCo,
@@ -137,7 +137,7 @@ export class CoList<Item = any>
     }
 
     static create<L extends CoList>(
-        this: SubclassedConstructor<L>,
+        this: ClassOf<L>,
         items: UnCo<L[number]>[],
         options: {owner: Account | Group}
     ) {
@@ -242,29 +242,29 @@ export class CoList<Item = any>
     }
 
     static fromRaw<V extends CoList>(
-        this: SubclassedConstructor<V> & typeof CoList,
+        this: ClassOf<V> & typeof CoList,
         raw: RawCoList
     ) {
         return new this({ fromRaw: raw });
     }
 
     static loadEf = CoValueBase.loadEf as unknown as <V extends CoValue>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>
     ) => Effect.Effect<V, UnavailableError, AccountCtx>;
     static load = CoValueBase.load as unknown as <V extends CoValue>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>,
         options: { as: Account | Group }
     ) => Promise<V | undefined>;
     static subscribeEf = CoValueBase.subscribeEf as unknown as <
         V extends CoValue,
     >(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>
     ) => Stream.Stream<V, UnavailableError, AccountCtx>;
     static subscribe = CoValueBase.subscribe as unknown as <V extends CoValue>(
-        this: SubclassedConstructor<V>,
+        this: ClassOf<V>,
         id: ID<V>,
         options: { as: Account | Group },
         onUpdate: (value: V) => void

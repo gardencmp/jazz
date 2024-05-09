@@ -9,7 +9,7 @@ import type {
     RefEncoded,
     IfCo,
     RefIfCoValue,
-    SubclassedConstructor,
+    ClassOf,
 } from "../internal.js";
 import {
     Account,
@@ -36,22 +36,72 @@ type InitValuesFor<C extends CoMap> = {
     owner: Account | Group;
 };
 
-/** @category CoValues */
+/**
+ * CoMaps are collaborative versions of plain objects, mapping string-like keys to values.
+ *
+ * @categoryDescription Declaration
+ * Declare your own CoMap schemas by subclassing `CoMap` and assigning field schemas with `co`.
+ *
+ * ```ts
+ * import { co, CoMap } from "jazz-tools";
+ *
+ * class Person extends CoMap {
+ *   name = co.string;
+ *   age = co.number;
+ *   pet = co.ref(Animal);
+ * }
+ * ```
+ *
+ * @categoryDescription Content
+ * You can access properties you declare on a `CoMap` (using `co`) as if they were normal properties on a plain object, using dot notation, `Object.keys()`, etc.
+ *
+ * ```ts
+ * person.name;
+ * person["age"];
+ * person.age = 42;
+ * person.pet?.name;
+ * Object.keys(person);
+ * // => ["name", "age", "pet"]
+ * ```
+ *
+ * @category CoValues
+ *  */
 export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
+    /**
+     * The ID of this `CoMap`
+     * @category Content */
     declare id: ID<this>;
+    /** @category Type Helpers */
     declare _type: "CoMap";
     static {
         this.prototype._type = "CoMap";
     }
+    /** @category Internals */
     declare _raw: RawCoMap;
 
+    /** @internal */
     static _schema: any;
+    /** @internal */
     get _schema() {
         return (this.constructor as typeof CoMap)._schema as {
             [key: string]: Schema;
         } & { [ItemsSym]?: Schema };
     }
 
+    /**
+     * If property `prop` is a `co.ref(...)`, you can use `coMaps._refs.prop` to access
+     * the `Ref` instead of the potentially loaded/null value.
+     * This allows you to always get the ID or load the value manually.
+     *
+     * @example
+     * ```ts
+     * person._refs.pet.id; // => ID<Animal>
+     * person._refs.pet.value;
+     * // => Animal | undefined
+     * const pet = await person._refs.pet.load();
+     * ```
+     *
+     * @category Content */
     get _refs(): {
         [Key in CoKeys<this>]: IfCo<this[Key], RefIfCoValue<this[Key]>>;
     } {
@@ -74,6 +124,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         ) as any;
     }
 
+    /** @category Collaboration */
     get _edits() {
         return new Proxy(this, {
             get(target, key) {
@@ -118,12 +169,15 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         };
     }
 
+    /** @internal */
     get _loadedAs() {
         return Account.fromNode(this._raw.core.node);
     }
 
+    /** @internal */
     [InitValues]?: any;
 
+    /** @internal */
     constructor(
         options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group }
     ) {
@@ -149,8 +203,9 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return new Proxy(this, CoMapProxyHandler as ProxyHandler<this>);
     }
 
+    /** @category Creation */
     static create<M extends CoMap>(
-        this: SubclassedConstructor<M>,
+        this: ClassOf<M>,
         init: Simplify<CoMapInit<M>>,
         options: { owner: Account | Group }
     ) {
@@ -184,6 +239,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return this.toJSON();
     }
 
+    /** @internal */
     rawFromInit<Fields extends object = Record<string, any>>(
         init: Simplify<CoMapInit<Fields>> | undefined,
         owner: Account | Group
@@ -218,6 +274,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return rawOwner.createMap(rawInit);
     }
 
+    /** @category Declaration */
     static Record<Value>(value: IfCo<Value, Value>) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
         class RecordLikeCoMap extends CoMap {

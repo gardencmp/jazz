@@ -4,7 +4,7 @@ import type {
     ID,
     RefEncoded,
     Schema,
-    SubclassedConstructor,
+    ClassOf,
 } from "../internal.js";
 import {
     Account,
@@ -123,7 +123,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
     }
 
     static create<G extends Group>(
-        this: SubclassedConstructor<G>,
+        this: ClassOf<G>,
         options: { owner: Account }
     ) {
         return new this(options);

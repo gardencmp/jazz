@@ -1,5 +1,5 @@
 import type { RawCoValue } from "cojson";
-import type { Account, CoValue, CoValueBase, ID, Me, SubclassedConstructor } from "../internal.js";
+import type { Account, CoValue, CoValueBase, ID, Me, ClassOf } from "../internal.js";
 
 export const subscriptionsScopes = new WeakMap<
     CoValue,
@@ -26,7 +26,7 @@ export class SubscriptionScope<
 
     constructor(
         root: Root,
-        rootSchema: SubclassedConstructor<Root> & typeof CoValueBase,
+        rootSchema: ClassOf<Root> & typeof CoValueBase,
         onUpdate: (newRoot: Root) => void
     ) {
         this.rootEntry = {

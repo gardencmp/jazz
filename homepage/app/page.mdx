@@ -27,30 +27,30 @@ import {
 } from "@/codeSamples/examples/chat/src";
 import Link from "next/link";
 
-<div className="pt-20"/>
+<div className="md:pt-20"/>
 
 # Instant sync.
 
 <Slogan>A new way to build apps with distributed state.</Slogan>
 
-<Grid className="gap-[1px] -mx-6 rounded-xl overflow-hidden bg-stone-50 dark:bg-stone-950 [&>*]:rounded-none [&>*]:border-none [&>*]:bg-stone-100 [&>*]:dark:bg-stone-900">
-<GridFeature icon={<MonitorSmartphoneIcon strokeWidth={1.6}/>}>Cross-device sync</GridFeature>
-<GridFeature icon={<MultiplayerIcon strokeWidth={1.6}/>}>Real-time multiplayer</GridFeature>
-<GridFeature icon={<UsersIcon strokeWidth={1.6}/>}>Collaboration, orgs & social features</GridFeature>
-<GridFeature icon={<FileLock2Icon strokeWidth={1.6}/>}>Fine-grained permissions</GridFeature>
-{/* <GridFeature icon={<WorkflowIcon strokeWidth={1.6}/>}>On-demand granular data‑fetching</GridFeature> */}
-<GridFeature icon={<UploadCloudIcon strokeWidth={1.6}/>}>Cloud sync & storage</GridFeature>
-<GridFeature icon={<HardDriveDownloadIcon strokeWidth={1.6}/>}>Local-first on-device storage</GridFeature>
-<GridFeature icon={<PlaneIcon strokeWidth={1.6}/>}>Full offline & bad connection support</GridFeature>
-<GridFeature icon={<GaugeIcon strokeWidth={1.6}/>}>Instant UI updates & quick loads</GridFeature>
-<div className="col-start-1 row-start-1 row-span-4 px-6 text-base">
-<h2 className="not-prose text-2xl font-medium tracking-tight mt-5 mb-6">Hard things are easy now.</h2>
+<Grid className="gap-[1px] -mx-4 md:-mx-6 rounded-xl overflow-hidden bg-stone-50 dark:bg-stone-950 [&>*]:rounded-none [&>*]:border-none [&>*]:bg-stone-100 [&>*]:dark:bg-stone-900">
+<GridFeature icon={<MonitorSmartphoneIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Cross-device sync</GridFeature>
+<GridFeature icon={<MultiplayerIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Real-time multiplayer</GridFeature>
+<GridFeature icon={<UsersIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Team/social features</GridFeature>
+<GridFeature icon={<FileLock2Icon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Precise permissions</GridFeature>
+{/* <GridFeature icon={<WorkflowIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>On-demand granular data‑fetching</GridFeature> */}
+<GridFeature icon={<UploadCloudIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Cloud sync & storage</GridFeature>
+<GridFeature icon={<HardDriveDownloadIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>On-device storage</GridFeature>
+<GridFeature icon={<PlaneIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Full offline support</GridFeature>
+<GridFeature icon={<GaugeIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Instant UI updates</GridFeature>
+<div className="col-start-1 row-start-1 row-span-2 col-span-2 px-4 md:px-6 text-base">
+<h2 className="not-prose text-2xl font-medium tracking-tight mt-3 md:mt-5 mb-6">Hard things are easy now.</h2>
 
 Jazz is an **open-source toolkit** that replaces APIs, databases and message queues with **a&nbsp;single new abstraction:**
 
 **&ldquo;Collaborative Values&rdquo;** &mdash; **distributed state** with **secure permissions built-in.**
 
-Features that used to take months to build now take an afternoon or work out-of-the-box.
+Features that used to take months to build now work out-of-the-box.
 </div>
 </Grid>
 
@@ -58,18 +58,18 @@ Features that used to take months to build now take an afternoon or work out-of-
 ### First impressions&hellip;
 <Slogan small>A chat app in 98 lines of code.</Slogan>
 
-<Grid className="mt-0 -mx-6">
-<GridItem className="md:col-start-1">
+<Grid className="mt-0 -mx-4 md:-mx-6">
+<GridItem className="md:col-start-1 col-span-2">
 
 <App_tsx/>
 
 </GridItem>
-<GridItem className="md:col-start-2">
+<GridItem className="md:col-start-3 col-span-2">
 
 <ChatScreen_tsx/>
 
 </GridItem>
-<ResponsiveIframe src="https://chat.jazz.tools" className="lg:col-start-3 rounded-xl overflow-hidden min-h-[50vh]"/>
+<ResponsiveIframe src="https://chat.jazz.tools" className="lg:col-start-5 col-span-2 rounded-xl overflow-hidden min-h-[50vh]"/>
 </Grid>
 </div>
 

@@ -57,7 +57,7 @@ export default function RootLayout({
                     <Nav
                         mainLogo={<JazzLogo className="w-24 -ml-2" />}
                         items={[
-                            { title: "Toolkit", href: "/" },
+                            { title: "Home", href: "/" },
                             { title: "Sync & Storage Mesh", href: "/mesh" },
                             {
                                 title: "Docs",

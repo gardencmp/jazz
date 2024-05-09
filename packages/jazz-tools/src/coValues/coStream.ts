@@ -17,7 +17,7 @@ import type {
     ID,
     Me,
     IfCo,
-    SubclassedConstructor,
+    ClassOf,
     UnCo,
 } from "../internal.js";
 import {
@@ -112,7 +112,7 @@ export class CoStream<Item = any>
     }
 
     static create<S extends CoStream>(
-        this: SubclassedConstructor<S>,
+        this: ClassOf<S>,
         init: S extends CoStream<infer Item> ? UnCo<Item>[] : never,
         options: { owner: Account | Group }
     ) {
@@ -460,7 +460,7 @@ export class BinaryCoStream
     }
 
     static create<S extends BinaryCoStream>(
-        this: SubclassedConstructor<S>,
+        this: ClassOf<S>,
         options: { owner: Account | Group }
     ) {
         return new this(options);

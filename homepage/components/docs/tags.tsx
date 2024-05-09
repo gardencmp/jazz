@@ -54,25 +54,25 @@ export function ClassOrInterface({
     isInterface?: boolean;
 }) {
     return (
-        <>
+        <div className="relative not-prose">
             <a
                 id={inPackage + "/" + name}
                 href={"#" + inPackage + "/" + name}
-                className="pt-[6rem] -mt-[6rem] -ml-6 w-4 -mb-6 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
+                className="absolute -top-[2.5rem] pt-[6rem] -ml-6 w-4 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
                 tabIndex={-1}
             >
                 <LinkIcon size={15} />
             </a>
-            <h3 className="peer">
+            <h4 className="peer sticky top-0 pt-[0.5rem] md:top-[2.5rem] md:pt-[3rem] bg-stone-50 dark:bg-stone-950 z-20">
                 <a href={"#" + inPackage + "/" + name}>
                     <Highlight>{(isInterface ? "interface " : "class ") + name}</Highlight>
                 </a>
-            </h3>
+            </h4>
             <div className="pl-2">
                 <div className=" mt-4 text-sm">{doc}</div>
                 <div className="">{children}</div>
             </div>
-        </>
+        </div>
     );
 }
 
@@ -210,11 +210,14 @@ export function FnDecl({
     );
 }
 
-export function PropCategory({ name }: { name: string }) {
+export function PropCategory({ name, description, example }: { name: string, description?: ReactNode, example?: ReactNode }) {
     return (
+        <>
         <div className="col-span-6 mt-8 -mb-4 text-[0.7em] uppercase font-medium tracking-widest opacity-50">
             {name}
         </div>
+        {description && <PropDecl name="" type="" doc={description} example={example}/>}
+        </>
     );
 }
 
