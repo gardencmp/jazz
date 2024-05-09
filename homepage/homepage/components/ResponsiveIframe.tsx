@@ -3,12 +3,12 @@
 import { useLayoutEffect, useState, useRef, IframeHTMLAttributes } from "react";
 
 export function ResponsiveIframe(
-    props: IframeHTMLAttributes<HTMLIFrameElement>
+    props: IframeHTMLAttributes<HTMLIFrameElement> & {localSrc: string}
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const [url, setUrl] = useState<string | undefined>(props.src);
+    const [url, setUrl] = useState<string | undefined>(window.location.hostname === "localhost" ? props.localSrc : props.src);
 
     useLayoutEffect(() => {
         const listener = (e: MessageEvent) => {
@@ -57,6 +57,7 @@ export function ResponsiveIframe(
             <div className="flex-grow" ref={containerRef}>
                 <iframe
                     {...props}
+                    src={window.location.hostname === "localhost" ? props.localSrc : props.src}
                     className="dark:bg-black"
                     {...dimensions}
                     allowFullScreen
