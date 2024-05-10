@@ -21,7 +21,8 @@
     "jazz-browser-media-images": "0.6.0",
     "jazz-tools": "0.6.1",
     "jazz-nodejs": "0.6.4",
-    "jazz-react": "0.5.4"
+    "jazz-react": "0.5.4",
+    "jazz-run": "0.7.0-alpha.32"
   },
   "changesets": [
     "clever-onions-call",
@@ -64,6 +65,7 @@
     "tough-waves-shave",
     "wet-schools-travel",
     "wicked-adults-visit",
+    "wise-geckos-buy",
     "witty-cougars-swim"
   ]
 }

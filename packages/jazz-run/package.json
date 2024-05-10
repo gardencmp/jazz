@@ -3,7 +3,7 @@
     "bin": "./dist/index.js",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.0-alpha.32",
+    "version": "0.7.0-alpha.34",
     "scripts": {
         "test": "vitest",
         "lint": "eslint src/**/*.ts",

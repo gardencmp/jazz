@@ -1,5 +1,13 @@
 # jazz-react
 
+## 0.7.0-alpha.34
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.34
+  - jazz-browser@0.7.0-alpha.34
+
 ## 0.7.0-alpha.33
 
 ### Patch Changes

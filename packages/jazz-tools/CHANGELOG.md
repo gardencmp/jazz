@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.0-alpha.34
+
+### Patch Changes
+
+- Extract jazz cli into jazz-run package
+
 ## 0.7.0-alpha.32
 
 ### Patch Changes
