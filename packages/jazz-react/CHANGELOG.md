@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.7.0-alpha.33
+
+### Patch Changes
+
+- Fix Provider params
+
 ## 0.7.0-alpha.32
 
 ### Patch Changes
