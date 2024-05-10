@@ -14,7 +14,7 @@ export async function Highlight({
 }: {
     children: string;
     hide?: number[];
-    lang?: string
+    lang?: string;
 }) {
     const lines = (await highlighter).codeToThemedTokens(
         children,
@@ -58,14 +58,16 @@ export function ClassOrInterface({
             <a
                 id={inPackage + "/" + name}
                 href={"#" + inPackage + "/" + name}
-                className="absolute -top-[2.5rem] pt-[6rem] -ml-6 w-4 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
+                className="absolute md:top-[3.5rem] -ml-6 w-4 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
                 tabIndex={-1}
             >
                 <LinkIcon size={15} />
             </a>
             <h4 className="peer sticky top-0 pt-[0.5rem] md:top-[2.5rem] md:pt-[3rem] bg-stone-50 dark:bg-stone-950 z-20">
                 <a href={"#" + inPackage + "/" + name}>
-                    <Highlight>{(isInterface ? "interface " : "class ") + name}</Highlight>
+                    <Highlight>
+                        {(isInterface ? "interface " : "class ") + name}
+                    </Highlight>
                 </a>
             </h4>
             <div className="pl-2">
@@ -94,51 +96,35 @@ export function PropDecl({
     doc,
     example,
 }: {
-    name: string;
-    type: string;
+    name?: string;
+    type?: string;
     doc: ReactNode;
-    example: ReactNode;
+    example?: ReactNode;
 }) {
-    const nLinesInType = type.split("\n").length;
     return (
-        <div className="group flex flex-wrap items-baseline lg:grid grid-cols-8 md:gap-2 py-2 border-t border-stone-200 dark:border-stone-800 hover:border-stone-400 hover:dark:border-stone-600 mt-4">
-            <div className="col-span-1 overflow-x-scroll pb-1 -mr-4 md:mr-0">
-                <div className="relative z-10 ">
-                    <pre className="text-sm">
-                        <span className="bg-stone-50 dark:bg-stone-950">
-                            <Highlight>{name}</Highlight>{" "}
-                        </span>
-                    </pre>
-                </div>
+        <div className="py-2 border-t border-stone-200 dark:border-stone-800 mt-4 text-sm">
+            <div>
+                {name && <Highlight>{name + ":"}</Highlight>}
+                {"  "}
+                {type && (
+                    <span className="opacity-75 text-xs pl-1">
+                        <Highlight
+                            hide={[0, 1, 2 + type.split("\n").length]}
+                        >{`class X {\nprop:\n${type}`}</Highlight>
+                    </span>
+                )}
             </div>
-            <div className="col-span-2 overflow-x-scroll pb-1 pl-4 md:pl-0">
-                <div className="relative z-10 ">
-                    <pre className="text-xs">
-                        <span className="bg-stone-50 dark:bg-stone-950">
-                            <span className="opacity-60 group-hover:opacity-100">
-                                <Highlight
-                                    hide={[0, 1, 2 + nLinesInType]}
-                                >{`class X {\nprop:\n${type}`}</Highlight>
-                            </span>
-                        </span>
-                    </pre>
+            <div className="lg:flex gap-2">
+                <div className="ml-4 mt-2 flex-[3]">
+                    <DocComment>{doc || "⚠️ undocumented"}</DocComment>
                 </div>
-            </div>
-            <div className="w-full col-span-3 pl-4 md:pl-0">
-                <div className="flex flex-col items-start pr-8">
-                    <div className="bg-stone-50 dark:bg-stone-950 relative z-10">
-                        <DocComment>{doc || "⚠️ undocumented"}</DocComment>
+                {example && (
+                    <div className="ml-4 lg:ml-0 lg:mt-0 flex-[1] relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
+                        <div className="opacity-30 text-xs -mb-4">Example:</div>
+                        {example}
                     </div>
-                </div>
+                )}
             </div>
-            {example && (
-                <div className="relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
-                    <div className="opacity-30 absolute -top-4 text-xs">
-                        Example:
-                    </div>
-                    {example}
-                </div>
-            )}
         </div>
     );
 }
@@ -151,81 +137,67 @@ export function FnDecl({
     example,
 }: {
     signature: string;
-    paramTypes: string;
+    paramTypes: string[];
     returnType: string;
     doc: ReactNode;
     example: ReactNode;
 }) {
-    const nLinesInType = paramTypes.split("\n").length;
     return (
-        <div className="group flex flex-wrap items-baseline lg:grid grid-cols-8 md:gap-2 py-2 border-t border-stone-200 dark:border-stone-800 hover:border-stone-400 hover:dark:border-stone-600 mt-4">
-            <div className="col-span-3 overflow-x-scroll pb-1 -mr-4 md:mr-0">
-                <div className="relative z-10 ">
-                    <pre className="text-sm">
-                        <span className="bg-stone-50 dark:bg-stone-950">
-                            <Highlight>{signature}</Highlight>{" "}
-                        </span>
-                    </pre>
-                </div>
+        <div className="py-2 border-t border-stone-200 dark:border-stone-800 mt-4 text-sm">
+            <div>
+                {<Highlight>{signature + ":"}</Highlight>}{" "}
+                <span className="opacity-75 text-xs pl-1">
+                    <Highlight>{returnType}</Highlight>
+                </span>
             </div>
-
-            <div className="w-full col-start-2 col-span-2 overflow-x-scroll pb-1 pl-4 md:pl-0">
-                <div className="relative z-10 ">
-                    <pre className="text-xs">
-                        <span className="bg-stone-50 dark:bg-stone-950">
-                            <span className="relative opacity-60 group-hover:opacity-100">
-                                <Highlight
-                                    hide={[0]}
-                                >{`{\n${paramTypes}`}</Highlight>
-                            </span>
-                        </span>
-                    </pre>
-                    <pre className="text-xs mt-1 mb-3">
-                        <span className="bg-stone-50 dark:bg-stone-950">
-                            <span className="relative opacity-60 group-hover:opacity-100">
-                                <Highlight
-                                    hide={[0, 2 + nLinesInType]}
-                                >{`() \n=> ${returnType}`}</Highlight>
-                            </span>
-                        </span>
-                    </pre>
-                </div>
-            </div>
-            <div className="w-full row-start-1 col-start-4 col-span-3 row-span-2 pl-4 md:pl-0">
-                <div className="flex flex-col items-start pr-8">
-                    <div className="bg-stone-50 dark:bg-stone-950 relative z-10">
-                        <DocComment>{doc || "⚠️ undocumented"}</DocComment>
+            <div className="ml-4 mt-2 text-xs opacity-75 flex">
+                {paramTypes.length > 0 && (
+                    <div>
+                        <Highlight
+                            hide={[0, 1 + paramTypes.length]}
+                        >{`function fn(...args: [\n${paramTypes.join(
+                            ",\n"
+                        )}\n]) {}`}</Highlight>
                     </div>
-                </div>
+                )}
             </div>
-            {example && (
-                <div className="relative w-full overflow-x-scroll row-start-1 col-start-7 col-span-2 row-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
-                    <div className="opacity-30 absolute -top-4 text-xs">
-                        Example:
-                    </div>
-                    {example}
+            <div className="lg:flex gap-2">
+                <div className="ml-4 mt-2 flex-[3]">
+                    <DocComment>{doc || "⚠️ undocumented"}</DocComment>
                 </div>
-            )}
+                {example && (
+                    <div className="flex-[1] relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
+                        <div className="opacity-30 text-xs -mb-4">Example:</div>
+                        {example}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
 
-export function PropCategory({ name, description, example }: { name: string, description?: ReactNode, example?: ReactNode }) {
+export function PropCategory({
+    name,
+    description,
+    example,
+}: {
+    name: string;
+    description?: ReactNode;
+    example?: ReactNode;
+}) {
     return (
         <>
-        <div className="col-span-6 mt-8 -mb-4 text-[0.7em] uppercase font-medium tracking-widest opacity-50">
-            {name}
-        </div>
-        {description && <PropDecl name="" type="" doc={description} example={example}/>}
+            <div className="col-span-6 mt-8 -mb-4 text-[0.7em] uppercase font-medium tracking-widest opacity-50">
+                {name}
+            </div>
+            {description && <PropDecl doc={description} example={example} />}
         </>
     );
 }
 
 export function DocComment({ children }: { children: ReactNode }) {
     return (
-        <div className="prose-inner-sm text-[0.7em] leading-tight">
-            {children}
-        </div>
+        <div className="prose-inner-sm max-w-xl leading-snug">{children}</div>
     );
 }
 

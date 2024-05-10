@@ -8,6 +8,7 @@ import {
 } from "typedoc";
 import {
     ClassOrInterface,
+    DocComment,
     FnDecl,
     Highlight,
     PropCategory,
@@ -66,25 +67,73 @@ function RenderPackageChild({
             />
         );
     } else if (child.kind === ReflectionKind.TypeAlias) {
-        return (
-            <>
-                <h4 className="not-prose">
-                    <Highlight>{`type ${child.name}`}</Highlight>
-                </h4>
-                <p className="not-prose text-sm ml-4">
-                    <Highlight>{`type ${child.name} = ${
-                        child.type?.toString() || "NO TYPE"
-                    }`}</Highlight>
-                </p>
-            </>
-        );
+        return <RenderTypeAlias inPackage={inPackage} child={child} />;
+    } else if (child.kind === ReflectionKind.Function) {
+        return child.getAllSignatures().map((signature, i) => {
+            const paramTypes = printParamsWithTypes(signature);
+            return (
+                <div
+                    key={i}
+                    id={inPackage + "/" + child.name}
+                    className="not-prose mt-4"
+                >
+                    {
+                        <Highlight hide={[0, 2]}>
+                            {`function \n${printSimpleSignature(child, signature) + ":"}\n {}`}
+                        </Highlight>
+                    }{" "}
+                    <span className="opacity-75 text-xs pl-1">
+                        <Highlight>{printType(signature.type)}</Highlight>
+                    </span>
+                    <div className="ml-4 mt-0 text-xs opacity-75 flex">
+                        {paramTypes.length > 0 && (
+                            <div>
+                                <Highlight
+                                    hide={[0, 1 + paramTypes.length]}
+                                >{`function fn(...args: [\n${paramTypes.join(
+                                    ",\n"
+                                )}\n]) {}`}</Highlight>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        });
     } else {
         return (
-            <h4>
+            <h4 id={inPackage + "/" + child.name}>
                 {child.name} {child.type?.type}
             </h4>
         );
     }
+}
+
+function RenderTypeAlias({
+    inPackage,
+    child,
+}: {
+    inPackage: string;
+    child: DeclarationReflection;
+}) {
+    return (
+        <div className="mt-4">
+            <h4 className="not-prose" id={inPackage + "/" + child.name}>
+                <Highlight>{`type ${child.name}`}</Highlight>
+            </h4>
+            <p className="not-prose text-sm ml-4">
+                <Highlight>{`type ${child.name} = ${
+                    printType(child.type)
+                }`}</Highlight>
+            </p>
+            <div className="ml-4 mt-2 flex-[3]">
+                <DocComment>
+                    {child.comment
+                        ? renderSummary(child.comment.summary)
+                        : "⚠️ undocumented"}
+                </DocComment>
+            </div>
+        </div>
+    );
 }
 
 function RenderClassOrInterface({
@@ -172,20 +221,13 @@ function RenderProp({
             .map((signature) => (
                 <FnDecl
                     key={signature.id}
-                    signature={`${prop.flags.isStatic ? klass.name : ""}.${
-                        prop.name
-                    }${
-                        signature.typeParameters?.length
-                            ? "<" +
-                              signature.typeParameters
-                                  .map((tParam) => tParam.name)
-                                  .join(", ") +
-                              ">"
-                            : ""
-                    }(${printParams(signature)?.join(", ")})`}
-                    paramTypes={printParamsWithTypes(signature).join("\n")}
+                    signature={printSimplePropSignature(prop, klass, signature)}
+                    paramTypes={printParamsWithTypes(signature)}
                     returnType={printType(signature.type)}
-                    doc="TODO"
+                    doc={renderSummary(signature.comment?.summary)}
+                    example={renderSummary(
+                        signature.comment?.getTag("@example")?.content
+                    )}
                 />
             ))
     ) : (
@@ -207,10 +249,44 @@ function RenderProp({
     );
 }
 
+function printSimplePropSignature(
+    prop: DeclarationReflection,
+    klass: DeclarationReflection,
+    signature: SignatureReflection
+): string {
+    return (
+        `${prop.flags.isStatic ? klass.name : ""}.` +
+        printSimpleSignature(prop, signature)
+    );
+}
+
+function printSimpleSignature(
+    item: DeclarationReflection,
+    signature: SignatureReflection
+) {
+    return `${item.name}${
+        signature.typeParameters?.length
+            ? "<" +
+              signature.typeParameters.map((tParam) => tParam.name + (tParam.type ? " extends " + printType(tParam.type) : "")).join(", ") +
+              ">"
+            : ""
+    }(${printParams(signature)?.join(", ")})`;
+}
+
 function printParams(signature: SignatureReflection) {
     return (
-        signature.parameters?.map(
-            (param) => param.name + (param.defaultValue ? "?" : "")
+        signature.parameters?.map((param) =>
+            param.name === "__namedParameters" &&
+            param.type?.type === "reflection"
+                ? "{ " +
+                  param.type.declaration.children
+                      ?.map(
+                          (child) =>
+                              child.name + (child.flags.isOptional ? "?" : "")
+                      )
+                      .join(", ") +
+                  " }"
+                : param.name + (param.defaultValue ? "?" : "")
         ) || []
     );
 }
@@ -219,9 +295,9 @@ function printParamsWithTypes(signature: SignatureReflection) {
     return (
         signature.parameters?.map(
             (param) =>
-                param.name +
-                (param.defaultValue ? "?" : "") +
-                ": " +
+                (param.name === "__namedParameters"
+                    ? ""
+                    : param.name + (param.defaultValue ? "?" : "") + ": ") +
                 printType(param.type)
         ) || []
     );
@@ -283,6 +359,8 @@ function printType(type: SomeType | undefined): string {
                 )
                 .join(" | ") || "NO TYPES"
         );
+    } else if (type.type === "tuple") {
+        return `[${type.elements.map(printType).join(", ")}]`;
     } else if (type.type === "array") {
         if (type.needsParenthesis()) {
             return `(${printType(type.elementType)})[]`;

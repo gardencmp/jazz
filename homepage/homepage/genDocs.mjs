@@ -34,6 +34,7 @@ for (const { packageName, entryPoint } of [
             "Type Helpers",
             "Other",
         ],
+        defaultCategory: "Other",
         excludeInternal: true,
         categorizeByGroup: false,
         pretty: false,

@@ -29,10 +29,8 @@ export function createJazzReactContext<Acc extends Account>({
     >(undefined);
 
     function Provider({
-        syncAddress,
         children,
     }: {
-        syncAddress?: string;
         children: React.ReactNode;
     }) {
         const [me, setMe] = useState<(Acc & Me) | undefined>();
@@ -70,7 +68,7 @@ export function createJazzReactContext<Acc extends Account>({
                 stop = true;
                 done && done();
             };
-        }, [auth, syncAddress]);
+        }, [auth]);
 
         return (
             <>
@@ -164,7 +162,6 @@ export function createJazzReactContext<Acc extends Account>({
 
 /** @category Context & Hooks */
 export type Provider = React.FC<{
-    syncAddress?: string;
     children: React.ReactNode;
 }>;
 
