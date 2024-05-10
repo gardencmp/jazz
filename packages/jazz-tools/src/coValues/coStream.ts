@@ -527,47 +527,36 @@ export class BinaryCoStream
 
         const start = Date.now();
 
-        const reader = new FileReader();
-        const done = new Promise<void>((resolve) => {
-            reader.onload = async () => {
-                const data = new Uint8Array(reader.result as ArrayBuffer);
-                stream.start({
-                    mimeType: blob.type,
-                    totalSizeBytes: blob.size,
-                    fileName: blob instanceof File ? blob.name : undefined,
-                });
-                const chunkSize = MAX_RECOMMENDED_TX_SIZE;
-
-                let lastProgressUpdate = Date.now();
-
-                for (let idx = 0; idx < data.length; idx += chunkSize) {
-                    stream.push(data.slice(idx, idx + chunkSize));
-
-                    if (Date.now() - lastProgressUpdate > 100) {
-                        options.onProgress?.(idx / data.length);
-                        lastProgressUpdate = Date.now();
-                    }
-
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                }
-                stream.end();
-                const end = Date.now();
-
-                console.debug(
-                    "Finished creating binary stream in",
-                    (end - start) / 1000,
-                    "s - Throughput in MB/s",
-                    (1000 * (blob.size / (end - start))) / (1024 * 1024)
-                );
-                options.onProgress?.(1);
-                resolve();
-            };
+        const data = new Uint8Array(await blob.arrayBuffer());
+        stream.start({
+            mimeType: blob.type,
+            totalSizeBytes: blob.size,
+            fileName: blob instanceof File ? blob.name : undefined,
         });
-        setTimeout(() => {
-            reader.readAsArrayBuffer(blob);
-        });
+        const chunkSize = MAX_RECOMMENDED_TX_SIZE;
 
-        await done;
+        let lastProgressUpdate = Date.now();
+
+        for (let idx = 0; idx < data.length; idx += chunkSize) {
+            stream.push(data.slice(idx, idx + chunkSize));
+
+            if (Date.now() - lastProgressUpdate > 100) {
+                options.onProgress?.(idx / data.length);
+                lastProgressUpdate = Date.now();
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        stream.end();
+        const end = Date.now();
+
+        console.debug(
+            "Finished creating binary stream in",
+            (end - start) / 1000,
+            "s - Throughput in MB/s",
+            (1000 * (blob.size / (end - start))) / (1024 * 1024)
+        );
+        options.onProgress?.(1);
 
         return stream;
     }

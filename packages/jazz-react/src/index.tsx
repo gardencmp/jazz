@@ -1,23 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
     consumeInviteLinkFromWindowLocation,
-    createBrowserContext,
+    createJazzBrowserContext,
 } from "jazz-browser";
 
 import { Account, CoValue, CoValueClass, ID, Me } from "jazz-tools";
 import { ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
-export function JazzReact<Acc extends Account>({
+export function createJazzReactContext<Acc extends Account>({
     auth: authHook,
+    peer,
 }: {
     auth: ReactAuthHook<Acc>;
-    apiKey?: string;
+    peer: `wss://${string}` | `ws://${string}`;
 }): {
-    Provider: Provider,
-    useAccount: UseAccountHook<Acc>,
-    useCoState: UseCoStateHook,
-    useAcceptInvite: UseAcceptInviteHook,
+    Provider: Provider;
+    useAccount: UseAccountHook<Acc>;
+    useCoState: UseCoStateHook;
+    useAcceptInvite: UseAcceptInviteHook;
 } {
     const JazzContext = React.createContext<
         | {
@@ -43,14 +44,12 @@ export function JazzReact<Acc extends Account>({
             let stop = false;
 
             (async () => {
-                const context = await createBrowserContext<Acc>({
+                const context = await createJazzBrowserContext<Acc>({
                     auth: auth,
-                    syncAddress:
-                        syncAddress ||
-                        new URLSearchParams(window.location.search).get(
-                            "sync"
-                        ) ||
-                        undefined,
+                    peer:
+                        (new URLSearchParams(window.location.search).get(
+                            "peer"
+                        ) as typeof peer) || peer,
                 });
 
                 if (stop) {
@@ -192,10 +191,7 @@ export type UseAcceptInviteHook = <V extends CoValue>({
     forValueHint?: string;
 }) => void;
 
-export {
-    createInviteLink,
-    parseInviteLink
-} from "jazz-browser";
+export { createInviteLink, parseInviteLink } from "jazz-browser";
 
 export * from "./auth/auth.js";
 export * from "./media.js";

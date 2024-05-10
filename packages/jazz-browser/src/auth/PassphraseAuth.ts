@@ -1,7 +1,8 @@
 import { AgentSecret, cojsonInternals, Peer } from "cojson";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
-import { AuthProvider, SessionProvider } from "jazz-browser";
 import * as bip39 from "@scure/bip39";
+import { AuthProvider } from "./auth.js";
+import { SessionProvider } from "../index.js";
 
 type LocalStorageData = {
     accountID: ID<Account>;
@@ -10,20 +11,12 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
-interface BrowserPassphraseAuthDriver {
-    onReady: (next: {
-        signUp: (username: string, passphrase: string) => Promise<void>;
-        logIn: (passphrase: string) => Promise<void>;
-    }) => void;
-    onSignedIn: (next: { logOut: () => void }) => void;
-}
-
 export class BrowserPassphraseAuth<Acc extends Account>
     implements AuthProvider<Acc>
 {
     constructor(
         public accountSchema: CoValueClass<Acc> & typeof Account,
-        public driver: BrowserPassphraseAuthDriver,
+        public driver: BrowserPassphraseAuth.Driver,
         public wordlist: string[],
         public appName: string,
         // TODO: is this a safe default?
@@ -87,8 +80,15 @@ export class BrowserPassphraseAuth<Acc extends Account>
 }
 
 /** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BrowserPassphraseAuth {
-    export type Driver = BrowserPassphraseAuthDriver;
+    export interface Driver {
+        onReady: (next: {
+            signUp: (username: string, passphrase: string) => Promise<void>;
+            logIn: (passphrase: string) => Promise<void>;
+        }) => void;
+        onSignedIn: (next: { logOut: () => void }) => void;
+    }
 }
 
 async function signUp<Acc extends Account>(

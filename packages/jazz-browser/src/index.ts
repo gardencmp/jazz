@@ -3,7 +3,6 @@ import { IDBStorage } from "cojson-storage-indexeddb";
 import {
     CoValue,
     ID,
-    BinaryCoStream,
     jazzReady,
     Peer,
     AgentID,
@@ -11,15 +10,13 @@ import {
     SyncMessage,
     cojsonInternals,
     InviteSecret,
-    MAX_RECOMMENDED_TX_SIZE,
     Account,
     CoValueClass,
-    Group,
     Me,
 } from "jazz-tools";
 import { AccountID } from "cojson";
 import { AuthProvider } from "./auth/auth";
-export * from './auth/auth.js';
+export * from "./auth/auth.js";
 
 /** @category Context Creation */
 export type BrowserContext<A extends Account> = {
@@ -29,19 +26,19 @@ export type BrowserContext<A extends Account> = {
 };
 
 /** @category Context Creation */
-export async function createBrowserContext<Acc extends Account>({
+export async function createJazzBrowserContext<Acc extends Account>({
     auth,
-    syncAddress = "wss://sync.jazz.tools",
+    peer,
     reconnectionTimeout: initialReconnectionTimeout = 500,
 }: {
     auth: AuthProvider<Acc>;
-    syncAddress?: string;
+    peer: `wss://${string}` | `ws://${string}`;
     reconnectionTimeout?: number;
 }): Promise<BrowserContext<Acc>> {
     await jazzReady;
     let sessionDone: () => void;
 
-    const firstWsPeer = createWebSocketPeer(syncAddress);
+    const firstWsPeer = createWebSocketPeer(peer);
     let shouldTryToReconnect = true;
 
     let currentReconnectionTimeout = initialReconnectionTimeout;
@@ -59,14 +56,14 @@ export async function createBrowserContext<Acc extends Account>({
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
-        [await IDBStorage.asPeer(), firstWsPeer],
+        [await IDBStorage.asPeer(), firstWsPeer]
     );
 
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
                 Object.keys(me._raw.core.node.syncManager.peers).some(
-                    (peerId) => peerId.includes(syncAddress)
+                    (peerId) => peerId.includes(peer)
                 )
             ) {
                 // TODO: this might drain battery, use listeners instead
@@ -96,7 +93,7 @@ export async function createBrowserContext<Acc extends Account>({
                 });
 
                 me._raw.core.node.syncManager.addPeer(
-                    createWebSocketPeer(syncAddress)
+                    createWebSocketPeer(peer)
                 );
             }
         }
@@ -133,9 +130,7 @@ export type SessionHandle = {
     done: () => void;
 };
 
-function getSessionHandleFor(
-    accountID: ID<Account> | AgentID
-): SessionHandle {
+function getSessionHandleFor(accountID: ID<Account> | AgentID): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
         done = resolve;
@@ -231,7 +226,7 @@ function websocketReadableStream<T>(ws: WebSocket) {
                         received: Date.now(),
                         sent: msg.time,
                         dc: msg.dc,
-                    })
+                    });
                     return;
                 }
                 controller.enqueue(msg);
@@ -403,7 +398,7 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
 }: {
     as: Account & Me;
     forValueHint?: string;
-    invitedObjectSchema: CoValueClass<V>
+    invitedObjectSchema: CoValueClass<V>;
 }): Promise<
     | {
           valueID: ID<V>;

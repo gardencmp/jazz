@@ -1,27 +1,19 @@
 import { ReactNode, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
-import { ReactAuthHook } from "./auth.js";
 import { Account, CoValueClass } from "jazz-tools";
-
-type DemoAuthComponent = (props: {
-    appName: string;
-    loading: boolean;
-    existingUsers: string[];
-    logInAs: (existingUser: string) => void;
-    signUp: (username: string) => void;
-}) => ReactNode;
+import { ReactAuthHook } from "./auth.js";
 
 /** @category Auth Providers */
 export function DemoAuth<Acc extends Account = Account>({
     accountSchema = Account as CoValueClass<Acc> & typeof Account,
     appName,
     appHostname,
-    Component = DemoAuthBasicUI,
+    Component = DemoAuth.BasicUI,
 }: {
     accountSchema?: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
-    Component?: DemoAuthComponent;
+    Component?: DemoAuth.Component;
 }): ReactAuthHook<Acc> {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
@@ -201,7 +193,14 @@ const DemoAuthBasicUI = ({
 };
 
 /** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DemoAuth {
-    export type Component = DemoAuthComponent;
+    export type Component = (props: {
+        appName: string;
+        loading: boolean;
+        existingUsers: string[];
+        logInAs: (existingUser: string) => void;
+        signUp: (username: string) => void;
+    }) => ReactNode;
     export const BasicUI = DemoAuthBasicUI;
 }

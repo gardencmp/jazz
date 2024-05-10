@@ -1,6 +1,7 @@
 import { AccountID, AgentSecret, cojsonInternals, Peer } from "cojson";
-import { AuthProvider, SessionProvider } from "jazz-browser";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
+import { AuthProvider } from "./auth.js";
+import { SessionProvider } from "../index.js";
 
 type LocalStorageData = {
     accountID: ID<Account>;
@@ -9,20 +10,12 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
-interface BrowserPasskeyAuthDriver {
-    onReady: (next: {
-        signUp: (username: string) => Promise<void>;
-        logIn: () => Promise<void>;
-    }) => void;
-    onSignedIn: (next: { logOut: () => void }) => void;
-}
-
 export class BrowserPasskeyAuth<Acc extends Account>
     implements AuthProvider<Acc>
 {
     constructor(
         public accountSchema: CoValueClass<Acc> & typeof Account,
-        public driver: BrowserPasskeyAuthDriver,
+        public driver: BrowserPasskeyAuth.Driver,
         public appName: string,
         // TODO: is this a safe default?
         public appHostname: string = window.location.hostname
@@ -82,8 +75,15 @@ export class BrowserPasskeyAuth<Acc extends Account>
 }
 
 /** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BrowserPasskeyAuth {
-    export type Driver = BrowserPasskeyAuthDriver;
+    export interface Driver {
+        onReady: (next: {
+            signUp: (username: string) => Promise<void>;
+            logIn: () => Promise<void>;
+        }) => void;
+        onSignedIn: (next: { logOut: () => void }) => void;
+    }
 }
 
 async function signUp<Acc extends Account>(

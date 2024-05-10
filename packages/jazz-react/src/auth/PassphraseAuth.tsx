@@ -1,17 +1,9 @@
 import { useMemo, useState, ReactNode } from "react";
 import { BrowserPassphraseAuth } from "jazz-browser";
-import { ReactAuthHook } from "jazz-react";
-
 import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
 import { Account, CoValueClass } from "jazz-tools";
-
-type PassphraseAuthComponent = (props: {
-    loading: boolean;
-    logIn: (passphrase: string) => void;
-    signUp: (username: string, passphrase: string) => void;
-    generateRandomPassphrase: () => string;
-}) => ReactNode;
+import { ReactAuthHook } from "./auth.js";
 
 /** @category Auth Providers */
 export function PassphraseAuth<Acc extends Account>({
@@ -19,13 +11,13 @@ export function PassphraseAuth<Acc extends Account>({
     appName,
     appHostname,
     wordlist,
-    Component = PassphraseAuthBasicUI,
+    Component = PassphraseAuth.BasicUI,
 }: {
     accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     wordlist: string[];
-    Component?: PassphraseAuthComponent;
+    Component?: PassphraseAuth.Component;
 }): ReactAuthHook<Acc> {
     return function useLocalAuth() {
         const [authState, setAuthState] = useState<
@@ -239,7 +231,13 @@ const PassphraseAuthBasicUI = ({
 };
 
 /** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace PassphraseAuth {
-    export type Component = PassphraseAuthComponent;
+    export type Component = (props: {
+        loading: boolean;
+        logIn: (passphrase: string) => void;
+        signUp: (username: string, passphrase: string) => void;
+        generateRandomPassphrase: () => string;
+    }) => ReactNode;
     export const BasicUI = PassphraseAuthBasicUI;
 }

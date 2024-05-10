@@ -1,7 +1,7 @@
 import { AgentSecret, Peer } from "cojson";
-import { SessionProvider } from "..";
-import { AuthProvider } from "./auth";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
+import { AuthProvider } from "./auth.js";
+import { SessionProvider } from "../index.js";
 
 type StorageData = {
     accountID: ID<Account>;
@@ -10,19 +10,10 @@ type StorageData = {
 
 const localStorageKey = "demo-auth-logged-in-secret";
 
-interface BrowserDemoAuthDriver {
-    onReady: (next: {
-        signUp: (username: string) => Promise<void>;
-        existingUsers: string[];
-        logInAs: (existingUser: string) => Promise<void>;
-    }) => void;
-    onSignedIn: (next: { logOut: () => void }) => void;
-}
-
 export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
     constructor(
         public accountSchema: CoValueClass<Acc> & typeof Account,
-        public driver: BrowserDemoAuthDriver,
+        public driver: BrowserDemoAuth.Driver,
         public appName: string
     ) {}
 
@@ -108,8 +99,16 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
 }
 
 /** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BrowserDemoAuth {
-    export type Driver = BrowserDemoAuthDriver;
+    export interface Driver {
+        onReady: (next: {
+            signUp: (username: string) => Promise<void>;
+            existingUsers: string[];
+            logInAs: (existingUser: string) => Promise<void>;
+        }) => void;
+        onSignedIn: (next: { logOut: () => void }) => void;
+    }
 }
 
 function logOut() {

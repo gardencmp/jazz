@@ -26,7 +26,7 @@ export const co = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null>,
-    literal: <T extends string | number | boolean>(...lit: T[]): co<T> => {
+    literal: <T extends (string | number | boolean)[]>(..._lit: T): co<T[number]> => {
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
     json: <T extends JsonValue>(): co<T> => {
