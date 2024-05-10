@@ -3,17 +3,20 @@
 import { useLayoutEffect, useState, useRef, IframeHTMLAttributes } from "react";
 
 export function ResponsiveIframe(
-    props: IframeHTMLAttributes<HTMLIFrameElement> & {localSrc: string}
+    props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string }
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const src =
+        window.location.hostname === "localhost" ? props.localSrc : props.src;
+
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const [url, setUrl] = useState<string | undefined>(window.location.hostname === "localhost" ? props.localSrc : props.src);
+    const [url, setUrl] = useState<string | undefined>(src);
 
     useLayoutEffect(() => {
         const listener = (e: MessageEvent) => {
             console.log(e);
-            if (e.data.type === "navigate" && props.src?.startsWith(e.origin)) {
+            if (e.data.type === "navigate" && src?.startsWith(e.origin)) {
                 setUrl(e.data.url);
             }
         };
@@ -21,7 +24,7 @@ export function ResponsiveIframe(
         return () => {
             window.removeEventListener("message", listener);
         };
-    }, [props.src]);
+    }, [src]);
 
     useLayoutEffect(() => {
         if (!containerRef.current) return;
@@ -57,7 +60,7 @@ export function ResponsiveIframe(
             <div className="flex-grow" ref={containerRef}>
                 <iframe
                     {...props}
-                    src={window.location.hostname === "localhost" ? props.localSrc : props.src}
+                    src={src}
                     className="dark:bg-black"
                     {...dimensions}
                     allowFullScreen

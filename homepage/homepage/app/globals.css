@@ -162,7 +162,7 @@ pre.twoslash data-lsp:hover::before {
 
 pre .code-container {
     overflow: scroll;
-    @apply p-2 pl-0 bg-stone-75 dark:bg-stone-925 rounded-b-xl text-[0.8rem] leading-[0.9rem] border border-stone-100 dark:border-stone-900;
+    @apply p-2 pl-0 bg-stone-75 dark:bg-stone-925 rounded-b-xl text-[0.8rem] leading-tight border border-stone-100 dark:border-stone-900;
 }
 /* The try button */
 pre .code-container > a {

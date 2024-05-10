@@ -6,7 +6,7 @@ import { PackageIcon } from "lucide-react";
 export function DocNav() {
     return (
         <>
-            <p className="mt-0 not-prose">
+            <p className="mt-0 not-prose font-medium">
                 <DocNavLink href="#guide">Guide</DocNavLink>
             </p>
 
@@ -20,10 +20,47 @@ export function DocNav() {
                     <DocNavLink href="#intro-to-covalues">
                         Intro to CoValues
                     </DocNavLink>
+                    <ul>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Declaration
+                            </DocNavLink>
+                        </li>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Reading
+                            </DocNavLink>
+                        </li>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Creation
+                            </DocNavLink>
+                        </li>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Editing & Subscription
+                            </DocNavLink>
+                        </li>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Persistence
+                            </DocNavLink>
+                        </li>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Remote Sync
+                            </DocNavLink>
+                        </li>
+                        <li>
+                            <DocNavLink href="#intro-to-covalues">
+                                Public Sharing
+                            </DocNavLink>
+                        </li>
+                    </ul>
                 </li>
                 <li>
-                    <DocNavLink href="#refs-load-and-subscribe">
-                        Refs, Load & Subscribe
+                    <DocNavLink href="#refs-and-on-demand-subscribe">
+                        Refs & Auto-Subscribe
                     </DocNavLink>
                 </li>
                 <li>
@@ -43,7 +80,7 @@ export function DocNav() {
                 </li>
             </ul>
 
-            <p className="border-t -mx-4 px-4 pt-4 border-stone-200 dark:border-stone-800">
+            <p className="font-medium border-t -mx-4 px-4 pt-4 border-stone-200 dark:border-stone-800">
                 <DocNavLink href="#faq">FAQ</DocNavLink>
             </p>
 
@@ -66,7 +103,7 @@ export async function NavPackage({
     return (
         <>
             <h2 className="text-sm not-prose mt-4 flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 ">
-                <code>{packageName}</code> <PackageIcon size={15} strokeWidth={1.5}/>
+                <code className="font-bold">{packageName}</code> <PackageIcon size={15} strokeWidth={1.5}/>
             </h2>
             {project.categories?.map((category) => {
                 return (

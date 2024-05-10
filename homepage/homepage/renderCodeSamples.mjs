@@ -22,14 +22,14 @@ await rm("./codeSamples", { recursive: true, force: true });
             (
                 await Promise.all(
                     (
-                        await readdir(path.join("../", dir))
+                        await readdir(path.join("../../", dir))
                     ).map(async (f) =>
                         (f.endsWith(".ts") && f !== "vite-env.d.ts") ||
                         f.endsWith(".tsx")
                             ? [
                                   f,
                                   await readFile(
-                                      path.join("../", dir, f),
+                                      path.join("../../", dir, f),
                                       "utf8"
                                   ),
                               ]
@@ -72,9 +72,11 @@ await rm("./codeSamples", { recursive: true, force: true });
                             jsx: "react-jsxdev",
                             strict: true,
                             paths: {
-                                'jazz-tools': ['../../packages/jazz-tools']
+                                'jazz-tools': ['../../../packages/jazz-tools'],
+                                'jazz-react': ['../../../packages/jazz-react'],
+                                'hash-slash': ['../../../packages/hash-slash'],
                             },
-                            types: ['vite/client']
+                            types: ['../../../examples/chat/node_modules/vite/client']
                         },
                     });
                     const html = renderCodeToHTML(

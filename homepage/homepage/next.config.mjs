@@ -44,7 +44,6 @@ function highlightPlugin() {
             // match a meta tag like `subtle=0,1,2,3` and parse out the line numbers
             const subtleTag = node.meta && node.meta.match(/subtle=\S+/);
             const subtle = subtleTag && subtleTag[0].split("=")[1].split(",").map(Number);
-            console.log({subtle})
 
             node.type = "html";
             node.value = `<pre><code class="not-prose">${lines

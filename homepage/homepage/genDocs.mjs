@@ -9,9 +9,9 @@ for (const { packageName, entryPoint } of [
 ]) {
     const app = await Application.bootstrapWithPlugins({
         entryPoints: [
-            `../packages/${packageName}/src/${entryPoint || "index.ts"}`,
+            `../../packages/${packageName}/src/${entryPoint || "index.ts"}`,
         ],
-        tsconfig: `../packages/${packageName}/tsconfig.json`,
+        tsconfig: `../../packages/${packageName}/tsconfig.json`,
         sort: ["required-first"],
         groupOrder: ["Functions", "Classes", "TypeAliases", "Namespaces"],
         categoryOrder: [

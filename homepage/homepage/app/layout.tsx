@@ -110,7 +110,7 @@ export default function RootLayout({
                                 "prose-p:max-w-3xl prose-p:leading-snug",
                                 "prose-strong:font-medium",
                                 "prose-code:font-normal prose-code:leading-tight prose-code:before:content-none prose-code:after:content-none prose-code:bg-stone-100 prose-code:dark:bg-stone-900 prose-code:p-1 prose-code:-my-1 prose-code:rounded",
-                                "prose-pre:text-sm prose-pre:p-2 prose-pre:bg-stone-100 dark:prose-pre:bg-stone-900"
+                                "prose-pre:text-[0.8em] prose-pre:leading-[1.3] prose-pre:-mt-4 prose-pre:my-4 prose-pre:px-3 prose-pre:py-2 md:prose-pre:-mx-3 prose-pre:bg-stone-100 dark:prose-pre:bg-stone-900",
                             ].join(" ")}
                         >
                             {children}
