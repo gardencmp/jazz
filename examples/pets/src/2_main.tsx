@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { JazzReact, PasskeyAuth } from "jazz-react";
+import { createJazzReactContext, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -30,7 +30,10 @@ const auth = PasskeyAuth<PetAccount>({
     accountSchema: PetAccount,
 });
 
-const Jazz = JazzReact({ auth });
+const Jazz = createJazzReactContext({
+    auth,
+    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+});
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

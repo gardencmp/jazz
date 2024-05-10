@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { JazzReact, PasskeyAuth } from "jazz-react";
+import { createJazzReactContext, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -37,7 +37,7 @@ const auth = PasskeyAuth<TodoAccount>({
     Component: PrettyAuthUI,
     accountSchema: TodoAccount,
 });
-const Jazz = JazzReact<TodoAccount>({ auth });
+const Jazz = createJazzReactContext<TodoAccount>({ auth, peer: "wss://mesh.jazz.tools/?key=you@example.com" });
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

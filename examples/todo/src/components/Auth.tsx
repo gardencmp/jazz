@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import { PasskeyAuthComponent } from "jazz-react";
+import { PasskeyAuth } from "jazz-react";
 
 import { Input, Button } from "../basicComponents";
 
-export const PrettyAuthUI: PasskeyAuthComponent = ({
+export const PrettyAuthUI: PasskeyAuth.Component = ({
     loading,
     logIn,
     signUp,
