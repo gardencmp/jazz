@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.0-alpha.32
+
+### Patch Changes
+
+- Introduce jazz-tools CLI
+- Clean up exports
+
 ## 0.7.0-alpha.31
 
 ### Patch Changes

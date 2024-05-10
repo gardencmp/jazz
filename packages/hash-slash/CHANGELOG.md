@@ -1,5 +1,11 @@
 # hash-slash
 
+## 0.2.0-alpha.3
+
+### Patch Changes
+
+- Allow fall-through of routes
+
 ## 0.2.0-alpha.2
 
 ### Patch Changes

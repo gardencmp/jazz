@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.7.0-alpha.32
+
+### Patch Changes
+
+- Simplify jazz-nodejs
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.32
+
 ## 0.7.0-alpha.31
 
 ### Patch Changes
