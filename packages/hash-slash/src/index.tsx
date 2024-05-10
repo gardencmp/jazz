@@ -37,9 +37,10 @@ export function useHashRouter(options?: {tellParentFrame?: boolean}) {
                         return paramUser(param!);
                     }
                 } else {
-                    return (hash === route || route === "/" && hash === "") ? paramUser('') : null;
+                    if (hash === route || route === "/" && hash === "") { return paramUser('') }
                 }
             }
+            return null;
         }
     }
 }
