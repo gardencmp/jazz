@@ -10,6 +10,7 @@
             "jazz-browser",
             "jazz-react",
             "jazz-nodejs",
+            "jazz-run",
             "cojson-transport-nodejs-ws",
             "cojson-storage-indexeddb",
             "cojson-storage-sqlite"

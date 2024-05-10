@@ -7,7 +7,7 @@ import {
     websocketWritableStream,
 } from "cojson-transport-nodejs-ws";
 import { WebSocket } from "ws";
-import { Account, jazzReady } from "../index.js";
+import { Account, jazzReady } from "jazz-tools";
 import { webcrypto } from "node:crypto";
 
 const jazzTools = Command.make("jazz-tools");
