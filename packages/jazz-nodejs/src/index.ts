@@ -6,7 +6,6 @@ import { WebSocket } from "ws";
 import "dotenv/config";
 
 import { webcrypto } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
 import {
     AccountID,
     AgentSecret,
@@ -23,24 +22,22 @@ if (!("crypto" in globalThis)) {
 }
 
 /** @category Context Creation */
-export async function createOrResumeWorker<A extends Account>({
-    workerName,
-    credentialStorage = FileCredentialStorage,
-    syncServer = "wss://sync.jazz.tools",
+export async function startWorker<A extends Account>({
+    accountID = process.env.JAZZ_WORKER_ACCOUNT,
+    accountSecret = process.env.JAZZ_WORKER_SECRET,
+    sessionID = process.env.JAZZ_WORKER_SESSION,
+    syncServer: peer = "wss://sync.jazz.tools",
     accountSchema = Account as unknown as CoValueClass<A> & typeof Account,
 }: {
-    workerName: string;
-    credentialStorage?: WorkerCredentialStorage;
+    accountID?: string,
+    accountSecret?: string,
+    sessionID?: string,
     syncServer?: string;
     accountSchema?: CoValueClass<A> & typeof Account;
 }): Promise<{ worker: A & Me }> {
     await cojsonReady;
 
-    const existingCredentials = await credentialStorage.load(workerName);
-
-    let worker: Account & Me;
-
-    const ws = new WebSocket(syncServer);
+    const ws = new WebSocket(peer);
 
     const wsPeer: Peer = {
         id: "upstream",
@@ -49,49 +46,43 @@ export async function createOrResumeWorker<A extends Account>({
         outgoing: websocketWritableStream(ws),
     };
 
-    if (existingCredentials) {
-        // TODO: locked sessions similar to browser
-        const sessionID =
-            process.env.JAZZ_WORKER_SESSION ||
-            cojsonInternals.newRandomSessionID(
-                existingCredentials.accountID as unknown as AccountID
-            );
-
-        console.log("Loading worker", existingCredentials.accountID);
-
-        worker = await accountSchema.become({
-            accountID: existingCredentials.accountID,
-            accountSecret: existingCredentials.accountSecret,
-            sessionID: sessionID as SessionID,
-            peersToLoadFrom: [wsPeer],
-        });
-
-        console.log(
-            "Resuming worker",
-            existingCredentials.accountID,
-            worker._raw.core.node
-                .expectProfileLoaded(worker.id as unknown as AccountID)
-                .get("name")
-        );
-    } else {
-        worker = await accountSchema.create({
-            creationProps: { name: workerName },
-            peersToLoadFrom: [wsPeer],
-        });
-
-        await credentialStorage.save(
-            workerName,
-            worker.id,
-            worker._raw.agentSecret
+    // TODO: locked sessions similar to browser
+    const sessionIDToUse =
+        sessionID ||
+        cojsonInternals.newRandomSessionID(
+            accountID as AccountID
         );
 
-        console.log("Created worker", worker.id, workerName);
+    if (!accountID) {
+        throw new Error("No accountID provided");
     }
+    if (!accountSecret) {
+        throw new Error("No accountSecret provided");
+    }
+    if (!sessionIDToUse) {
+        throw new Error("No sessionID provided");
+    }
+    if (!accountID.startsWith("co_")) {
+        throw new Error("Invalid accountID");
+    }
+    if (!accountSecret?.startsWith("sealerSecret_")) {
+        throw new Error("Invalid accountSecret");
+    }
+    if (!sessionIDToUse.startsWith("co_") || !sessionIDToUse.includes("_session")) {
+        throw new Error("Invalid sessionID");
+    }
+
+    const worker = await accountSchema.become({
+        accountID: accountID as ID<A>,
+        accountSecret: accountSecret as AgentSecret,
+        sessionID: sessionIDToUse as SessionID,
+        peersToLoadFrom: [wsPeer],
+    });
 
     setInterval(() => {
         if (!worker._raw.core.node.syncManager.peers["upstream"]) {
-            console.log(new Date(), "Reconnecting to upstream " + syncServer);
-            const ws = new WebSocket(syncServer);
+            console.log(new Date(), "Reconnecting to upstream " + peer);
+            const ws = new WebSocket(peer);
 
             const wsPeer: Peer = {
                 id: "upstream",
@@ -106,68 +97,3 @@ export async function createOrResumeWorker<A extends Account>({
 
     return { worker: worker as A & Me };
 }
-
-/** @category Credential Storage */
-export interface WorkerCredentialStorage {
-    load(
-        workerName: string
-    ): Promise<
-        { accountID: ID<Account>; accountSecret: AgentSecret } | undefined
-    >;
-    save(
-        workerName: string,
-        accountID: ID<Account>,
-        accountSecret: AgentSecret
-    ): Promise<void>;
-}
-
-/** @category Credential Storage */
-export const FileCredentialStorage: WorkerCredentialStorage = {
-    async load(workerName: string): Promise<
-        | {
-              accountID: ID<Account>;
-              accountSecret: `sealerSecret_z${string}/signerSecret_z${string}`;
-          }
-        | undefined
-    > {
-        try {
-            const credentials = await readFile(
-                `${workerName}Credentials.json`,
-                "utf-8"
-            );
-            return JSON.parse(credentials);
-        } catch (e) {
-            return undefined;
-        }
-    },
-
-    async save(
-        workerName: string,
-        accountID: ID<Account>,
-        accountSecret: `sealerSecret_z${string}/signerSecret_z${string}`
-    ): Promise<void> {
-        await writeFile(
-            `${workerName}Credentials.json`,
-            JSON.stringify({ accountID, accountSecret }, undefined, 2)
-        );
-        console.log(
-            `Saved credentials for ${workerName} to ${workerName}Credentials.json`
-        );
-        try {
-            const gitginore = await readFile(".gitignore", "utf-8");
-            if (!gitginore.includes(`${workerName}Credentials.json`)) {
-                await writeFile(
-                    ".gitignore",
-                    gitginore + `\n${workerName}Credentials.json`
-                );
-                console.log(
-                    `Added ${workerName}Credentials.json to .gitignore`
-                );
-            }
-        } catch (e) {
-            console.warn(
-                `Couldn't add ${workerName}Credentials.json to .gitignore, please add it yourself.`
-            );
-        }
-    },
-};
