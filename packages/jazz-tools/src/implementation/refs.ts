@@ -14,9 +14,9 @@ import {
     subscriptionsScopes,
 } from "../internal.js";
 
-export class Ref<out V extends CoValue> {
-    private cachedValue: V | undefined;
+const refCache = new WeakMap<RawCoValue, CoValue>();
 
+export class Ref<out V extends CoValue> {
     constructor(
         readonly id: ID<V>,
         readonly controlledAccount: Account & Me,
@@ -28,15 +28,19 @@ export class Ref<out V extends CoValue> {
     }
 
     get value() {
-        if (this.cachedValue) return this.cachedValue;
         // TODO: cache it for object identity!!!
         const raw = this.controlledAccount._raw.core.node.getLoaded(
             this.id as unknown as CoID<RawCoValue>
         );
         if (raw) {
-            const value = instantiateRefEncoded(this.schema, raw);
-            this.cachedValue = value;
-            return value;
+            let value = refCache.get(raw);
+            if (value) {
+                // console.log("Using cached value for " + this.id);
+            } else {
+                value = instantiateRefEncoded(this.schema, raw);
+                refCache.set(raw, value);
+            }
+            return value as V;
         } else {
             return null;
         }
