@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.35
+
+### Patch Changes
+
+- CoJSON performance improvement
+
 ## 0.7.0-alpha.29
 
 ### Patch Changes

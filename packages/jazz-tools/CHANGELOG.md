@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.7.0-alpha.35
+
+### Patch Changes
+
+- Cache CoValue proxies
+- Updated dependencies
+  - cojson@0.7.0-alpha.35
+  - cojson-transport-nodejs-ws@0.7.0-alpha.35
+
 ## 0.7.0-alpha.34
 
 ### Patch Changes

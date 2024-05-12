@@ -1,5 +1,13 @@
 # jazz-browser-media-images
 
+## 0.7.0-alpha.34
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.35
+  - jazz-browser@0.7.0-alpha.35
+
 ## 0.7.0-alpha.33
 
 ### Patch Changes
