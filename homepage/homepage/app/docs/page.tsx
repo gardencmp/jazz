@@ -12,6 +12,11 @@ import { DocNav } from "@/components/docs/nav";
 import { PackageDocs } from "@/components/docs/packageDocs";
 import Guide from "./guide.mdx";
 
+export const metadata = {
+    title: "jazz - Docs",
+    description: "Jazz Guide, FAQ & Docs.",
+};
+
 export default function Page() {
     return (
         <>
