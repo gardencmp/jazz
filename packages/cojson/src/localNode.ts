@@ -534,7 +534,7 @@ export class LocalNode {
             );
         }
 
-        return new RawAccount(coValue).currentAgentID();
+        return (coValue.getCurrentContent() as RawAccount).currentAgentID();
     }
 
     async resolveAccountAgentAsync(
@@ -569,7 +569,7 @@ export class LocalNode {
             );
         }
 
-        return new RawAccount(coValue).currentAgentID();
+        return (coValue.getCurrentContent() as RawAccount).currentAgentID();
     }
 
     /**
