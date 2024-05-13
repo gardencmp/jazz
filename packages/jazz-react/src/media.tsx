@@ -25,7 +25,7 @@ export function useProgressiveImg({
         } else {
             setSrc(image?.placeholderDataURL);
         }
-    }, [image?.highestResAvailable?.({ maxWidth })?.res]);
+    }, [maxWidth, image?.highestResAvailable?.({ maxWidth })?.res, image?.placeholderDataURL]);
 
     return { src, originalSize: image?.originalSize };
 }

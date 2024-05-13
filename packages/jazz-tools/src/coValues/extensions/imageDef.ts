@@ -25,7 +25,7 @@ export class ImageDefinition extends CoMap {
         const resolutions = Object.keys(this).filter(
             (key) =>
                 key.match(/^\d+x\d+$/) &&
-                (!options?.maxWidth ||
+                ((options?.maxWidth === undefined) ||
                     Number(key.split("x")[0]) <= options.maxWidth)
         ) as `${number}x${number}`[];
 
