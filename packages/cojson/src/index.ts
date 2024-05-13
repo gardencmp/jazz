@@ -20,6 +20,7 @@ import {
     secretSeedLength,
     shortHashLength,
     cryptoReady,
+    StreamingHash
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
@@ -78,6 +79,7 @@ export const cojsonInternals = {
     isAccountID,
     accountHeaderForInitialAgentSecret,
     idforHeader,
+    StreamingHash
 };
 
 export {

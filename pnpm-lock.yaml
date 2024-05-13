@@ -386,6 +386,21 @@ importers:
         specifier: ^8.15.0
         version: 8.26.3(typescript@5.3.3)
 
+  packages/cojson-storage-lsm:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+      effect:
+        specifier: ^2.3.5
+        version: 2.3.5
+      isomorphic-streams:
+        specifier: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
+        version: github.com/sgwilym/isomorphic-streams/aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
+      typescript:
+        specifier: ^5.1.6
+        version: 5.3.3
+
   packages/cojson-storage-sqlite:
     dependencies:
       better-sqlite3:
@@ -444,9 +459,12 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      cojson-storage-indexeddb:
+      cojson-storage-lsm:
         specifier: workspace:*
-        version: link:../cojson-storage-indexeddb
+        version: link:../cojson-storage-lsm
+      effect:
+        specifier: ^2.3.5
+        version: 2.3.5
       isomorphic-streams:
         specifier: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
         version: github.com/sgwilym/isomorphic-streams/aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
@@ -556,7 +574,7 @@ importers:
         specifier: ^3.17.2
         version: 3.17.2
       jazz-tools:
-        specifier: workspace:0.7.0-alpha.32
+        specifier: workspace:*
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -3835,6 +3853,10 @@ packages:
       unzipper: 0.10.14
       which: 4.0.0
     dev: true
+
+  /effect@2.3.5:
+    resolution: {integrity: sha512-qarp/WBRty4VM//ZEKDY8Bu3Tolr1afEIwFVZtU3eMOtBZpRIQkLVQMTOjUTt3qeJAAIHfYfEk7GiKg6ABCWlg==}
+    dev: false
 
   /effect@3.1.3:
     resolution: {integrity: sha512-afL9sbn4m9fCERYMLgUgtJC8+JvHb62zh0Q3v0O56z4aMAEdrrd+DKvLtlTbonQjgdOB37frE9LJuwUO7DV0ww==}

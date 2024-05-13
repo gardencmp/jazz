@@ -276,7 +276,7 @@ export class StreamingHash {
         this.state = fromClone || blake3Instance.init().save();
     }
 
-    update(value: JsonValue) {
+    update(value: JsonValue): Uint8Array {
         const encoded = textEncoder.encode(stableStringify(value));
         // const before = performance.now();
         this.state = blake3incrementalUpdateSLOW_WITH_DEVTOOLS(
@@ -285,6 +285,7 @@ export class StreamingHash {
         );
         // const after = performance.now();
         // console.log(`Hashing throughput in MB/s`, 1000 * (encoded.length / (after - before)) / (1024 * 1024));
+        return encoded;
     }
 
     digest(): Hash {
