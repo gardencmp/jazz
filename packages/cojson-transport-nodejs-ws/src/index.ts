@@ -25,7 +25,13 @@ export function websocketReadableStream<T>(ws: WebSocket) {
                 }
                 controller.enqueue(msg);
             });
-            ws.addEventListener("close", () => controller.close());
+            ws.addEventListener("close", () => {
+                try {
+                    controller.close()
+                } catch(ignore) {
+                    // will throw if already closed, with no way to check before-hand
+                }
+            });
             ws.addEventListener("error", () =>
                 controller.error(new Error("The WebSocket errored!"))
             );
