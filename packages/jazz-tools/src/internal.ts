@@ -14,3 +14,5 @@ export * from "./implementation/schema.js";
 export * from "./implementation/subscriptionScope.js";
 
 export * from "./coValues/extensions/imageDef.js";
+
+import "./implementation/devtoolsFormatters.js"
