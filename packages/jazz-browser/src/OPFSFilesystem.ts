@@ -163,6 +163,27 @@ export class OPFSFilesystem implements FileSystem<number, number> {
         });
     }
 
+    close(handle: number): Effect.Effect<void, FSErr, never> {
+        return Effect.async((cb) => {
+            const requestId = this.nextRequestId++;
+            performance.mark("close" + requestId);
+            this.callbacks.set(requestId, (_) => {
+                performance.mark("closeEnd" + requestId);
+                performance.measure(
+                    "close" + requestId,
+                    "close" + requestId,
+                    "closeEnd" + requestId
+                );
+                cb(Effect.succeed(undefined));
+            });
+            this.opfsWorker.postMessage({
+                type: "close",
+                handle,
+                requestId,
+            });
+        });
+    }
+
     closeAndRename(
         handle: number,
         filename: BlockFilename
@@ -217,7 +238,7 @@ const opfsWorkerJSSrc = `
     const handlesByFilename = new Map();
     const filenamesForHandles = new Map();
 
-    onmessage = async (event) => {
+    onmessage = async function handleEvent(event) {
         rootDirHandle = rootDirHandle || await navigator.storage.getDirectory();
         // console.log("Received in OPFS worker", {...event.data, data: event.data.data ? "some data of length " + event.data.data.length : undefined});
         if (event.data.type === "listFiles") {
@@ -232,7 +253,7 @@ const opfsWorkerJSSrc = `
             let syncHandle;
             const existingHandle = handlesByFilename.get(event.data.filename);
             if (existingHandle) {
-                syncHandle = existingHandle;
+                throw new Error("Handle already exists for file: " + event.data.filename);
             } else {
                 const handle = await rootDirHandle.getFileHandle(event.data.filename);
                 try {
@@ -244,7 +265,13 @@ const opfsWorkerJSSrc = `
             handlesByRequest.set(event.data.requestId, syncHandle);
             handlesByFilename.set(event.data.filename, syncHandle);
             filenamesForHandles.set(syncHandle, event.data.filename);
-            postMessage({requestId: event.data.requestId, handle: event.data.requestId, size: syncHandle.getSize()});
+            let size;
+            try {
+                size = syncHandle.getSize();
+            } catch (e) {
+                throw new Error("Couldn't get size of file: " + event.data.filename, {cause: e});
+            }
+            postMessage({requestId: event.data.requestId, handle: event.data.requestId, size});
         } else if (event.data.type === "createFile") {
             const handle = await rootDirHandle.getFileHandle(event.data.filename, {
                 create: true,
@@ -272,6 +299,16 @@ const opfsWorkerJSSrc = `
                 throw new Error("Couldn't read enough");
             }
             postMessage({requestId: event.data.requestId, data: buffer, result: "done"});
+        } else if (event.data.type === "close") {
+            const handle = handlesByRequest.get(event.data.handle);
+            console.log("Closing handle", filenamesForHandles.get(handle), event.data.handle, handle);
+            handle.flush();
+            handle.close();
+            handlesByRequest.delete(handle);
+            const filename = filenamesForHandles.get(handle);
+            handlesByFilename.delete(filename);
+            filenamesForHandles.delete(handle);
+            postMessage({requestId: event.data.requestId, result: "done"});
         } else if (event.data.type === "closeAndRename") {
             const handle = handlesByRequest.get(event.data.handle);
             handle.flush();
@@ -280,22 +317,26 @@ const opfsWorkerJSSrc = `
             if (read < buffer.length) {
                 throw new Error("Couldn't read enough " + read + ", " + handle.getSize());
             }
+            handle.close();
+            const oldFilename = filenamesForHandles.get(handle);
+            await rootDirHandle.removeEntry(oldFilename);
+
             const newHandle = await rootDirHandle.getFileHandle(event.data.filename, { create: true });
             let writable;
             try {
                 writable = await newHandle.createSyncAccessHandle();
             } catch (e) {
-                throw new Error("Couldn't create file (to rename to): " + event.data.filename, {cause: e});
+                throw new Error("Couldn't create file (to rename to): " + event.data.filename, { cause: e })
             }
             writable.write(buffer);
-            writable.flush();
             writable.close();
-            handle.close();
-            const oldFilename = filenamesForHandles.get(handle);
-            rootDirHandle.removeEntry(oldFilename);
             postMessage({requestId: event.data.requestId, result: "done"});
         } else if (event.data.type === "removeFile") {
-            rootDirHandle.removeEntry(event.data.filename);
+            try {
+                await rootDirHandle.removeEntry(event.data.filename);
+            } catch(e) {
+                throw new Error("Couldn't remove file: " + event.data.filename, { cause: e });
+            }
             postMessage({requestId: event.data.requestId, result: "done"});
         } else {
             console.error("Unknown event type", event.data.type);

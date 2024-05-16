@@ -58,12 +58,12 @@ import type * as Media from "./media.js";
 type Value = JsonValue | AnyRawCoValue;
 
 import {
-    FileSystem,
     LSMStorage,
     FSErr,
     BlockFilename,
     WalFilename,
 } from "./storage/index.js";
+import { FileSystem } from "./storage/FileSystem.js";
 
 /** @hidden */
 export const cojsonInternals = {

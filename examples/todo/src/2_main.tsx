@@ -41,7 +41,7 @@ const Jazz = createJazzReactContext<TodoAccount>({ auth, peer: "wss://mesh.jazz.
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
+    // <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
@@ -50,7 +50,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 </Jazz.Provider>
             </div>
         </ThemeProvider>
-    </React.StrictMode>
+    // </React.StrictMode>
 );
 
 /**
