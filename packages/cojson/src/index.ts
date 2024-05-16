@@ -57,6 +57,14 @@ import type * as Media from "./media.js";
 
 type Value = JsonValue | AnyRawCoValue;
 
+import {
+    FileSystem,
+    LSMStorage,
+    FSErr,
+    BlockFilename,
+    WalFilename,
+} from "./storage/index.js";
+
 /** @hidden */
 export const cojsonInternals = {
     agentSecretFromBytes,
@@ -115,7 +123,12 @@ export {
     AgentSecret,
     InviteSecret,
     SyncMessage,
-    isRawCoID
+    isRawCoID,
+    FileSystem,
+    LSMStorage,
+    FSErr,
+    BlockFilename,
+    WalFilename,
 };
 
 export type { Value };

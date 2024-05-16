@@ -13,16 +13,9 @@ import {
     Me,
     jazzReady,
 } from "jazz-tools";
-import { AccountID } from "cojson";
+import { AccountID, LSMStorage } from "cojson";
 import { AuthProvider } from "./auth/auth.js";
-import {
-    BlockFilename,
-    FSErr,
-    FileSystem,
-    LSMStorage,
-} from "cojson-storage-lsm";
-import { Effect } from "effect";
-import { opfsWorkerJSSrc } from "./opfsWorkerJSSrc.js";
+import { OPFSFilesystem } from "./OPFSFilesystem.js";
 export * from "./auth/auth.js";
 
 /** @category Context Creation */
@@ -57,147 +50,6 @@ export async function createJazzBrowserContext<Acc extends Account>({
 
     window.addEventListener("online", onOnline);
 
-    const opfsWorker = new Worker(
-        URL.createObjectURL(
-            new Blob([opfsWorkerJSSrc], { type: "text/javascript" })
-        )
-    );
-
-    class OPFSFilesystem implements FileSystem<number, number> {
-        opfsWorker: Worker;
-        callbacks: Map<number, (event: MessageEvent) => void> = new Map();
-        nextRequestId = 0;
-
-        constructor(opfsWorker: Worker) {
-            this.opfsWorker = opfsWorker;
-            opfsWorker.onmessage = (event) => {
-                // console.log("Received from OPFS worker", event.data);
-                const handler = this.callbacks.get(event.data.requestId);
-                if (handler) {
-                    handler(event);
-                    this.callbacks.delete(event.data.requestId);
-                }
-            };
-        }
-
-        listFiles(): Effect.Effect<string[], FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, (event) => {
-                    cb(Effect.succeed(event.data.fileNames));
-                });
-                this.opfsWorker.postMessage({ type: "listFiles", requestId });
-            });
-        }
-
-        openToRead(
-            filename: string
-        ): Effect.Effect<{ handle: number; size: number }, FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, (event) => {
-                    cb(
-                        Effect.succeed({
-                            handle: event.data.handle,
-                            size: event.data.size,
-                        })
-                    );
-                });
-                this.opfsWorker.postMessage({
-                    type: "openToRead",
-                    filename,
-                    requestId,
-                });
-            });
-        }
-
-        createFile(filename: string): Effect.Effect<number, FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, (event) => {
-                    cb(Effect.succeed(event.data.handle));
-                });
-                this.opfsWorker.postMessage({
-                    type: "createFile",
-                    filename,
-                    requestId,
-                });
-            });
-        }
-
-        openToWrite(
-            filename: string
-        ): Effect.Effect<FileSystemFileHandle, FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, (event) => {
-                    cb(Effect.succeed(event.data.handle));
-                });
-                this.opfsWorker.postMessage({
-                    type: "openToWrite",
-                    filename,
-                    requestId,
-                });
-            });
-        }
-
-        append(
-            handle: number,
-            data: Uint8Array
-        ): Effect.Effect<void, FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, (_) => {
-                    cb(Effect.succeed(undefined));
-                });
-                this.opfsWorker.postMessage({
-                    type: "append",
-                    handle,
-                    data,
-                    requestId,
-                });
-            });
-        }
-
-        read(
-            handle: number,
-            offset: number,
-            length: number
-        ): Effect.Effect<Uint8Array, FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, (event) => {
-                    cb(Effect.succeed(event.data.data));
-                });
-                this.opfsWorker.postMessage({
-                    type: "read",
-                    handle,
-                    offset,
-                    length,
-                    requestId,
-                });
-            });
-        }
-
-        renameAndClose(
-            handle: number,
-            filename: BlockFilename
-        ): Effect.Effect<void, FSErr, never> {
-            return Effect.async((cb) => {
-                const requestId = this.nextRequestId++;
-                this.callbacks.set(requestId, () => {
-                    cb(Effect.succeed(undefined));
-                });
-                this.opfsWorker.postMessage({
-                    type: "renameAndClose",
-                    handle,
-                    filename,
-                    requestId,
-                });
-            });
-        }
-    }
-
     const me = await auth.createOrLoadAccount(
         (accountID) => {
             const sessionHandle = getSessionHandleFor(accountID);
@@ -206,8 +58,8 @@ export async function createJazzBrowserContext<Acc extends Account>({
         },
         [
             await LSMStorage.asPeer({
-                fs: new OPFSFilesystem(opfsWorker),
-                trace: true,
+                fs: new OPFSFilesystem(),
+                // trace: true,
             }),
             firstWsPeer,
         ]
