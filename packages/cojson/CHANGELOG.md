@@ -1,5 +1,12 @@
 # cojson
 
+## 0.7.0-alpha.36
+
+### Patch Changes
+
+- 1a35307: WIP working-ish version of LSM storage
+- 1a35307: Optimizations for incoming sync messages
+
 ## 0.7.0-alpha.35
 
 ### Patch Changes

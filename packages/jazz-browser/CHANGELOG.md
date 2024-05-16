@@ -1,5 +1,18 @@
 # jazz-browser
 
+## 0.7.0-alpha.36
+
+### Patch Changes
+
+- 1a35307: WIP working-ish version of LSM storage
+- Updated dependencies [1a35307]
+- Updated dependencies [1a35307]
+- Updated dependencies [1a35307]
+- Updated dependencies [6b0418f]
+- Updated dependencies [1a35307]
+  - cojson@0.7.0-alpha.36
+  - jazz-tools@0.7.0-alpha.36
+
 ## 0.7.0-alpha.35
 
 ### Patch Changes

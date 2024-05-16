@@ -1,5 +1,17 @@
 # jazz-autosub
 
+## 0.7.0-alpha.36
+
+### Patch Changes
+
+- 1a35307: Implement first devtools formatters
+- 6b0418f: Fix image resolution loading
+- 1a35307: Add ability to declare minimum required data in subscribe & Improve property access tracing
+- Updated dependencies [1a35307]
+- Updated dependencies [1a35307]
+  - cojson@0.7.0-alpha.36
+  - cojson-transport-nodejs-ws@0.7.0-alpha.36
+
 ## 0.7.0-alpha.35
 
 ### Patch Changes
