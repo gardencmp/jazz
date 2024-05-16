@@ -12,20 +12,24 @@ export function useProgressiveImg({
     const [src, setSrc] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        const highestRes = image?.highestResAvailable({ maxWidth });
-        if (highestRes) {
-            const blob = highestRes.stream.toBlob();
-            if (blob) {
-                const blobURI = URL.createObjectURL(blob);
-                setSrc(blobURI);
-                return () => {
-                    setTimeout(() => URL.revokeObjectURL(blobURI), 200);
-                };
-            }
-        } else {
-            setSrc(image?.placeholderDataURL);
-        }
-    }, [maxWidth, image?.highestResAvailable?.({ maxWidth })?.res, image?.placeholderDataURL]);
+        const unsub = image?.subscribe(update => {
+            const highestRes = update?.highestResAvailable({ maxWidth });
+                if (highestRes) {
+                    const blob = highestRes.stream.toBlob();
+                    if (blob) {
+                        const blobURI = URL.createObjectURL(blob);
+                        setSrc(blobURI);
+                        return () => {
+                            setTimeout(() => URL.revokeObjectURL(blobURI), 200);
+                        };
+                    }
+                } else {
+                    setSrc(update?.placeholderDataURL);
+                }
+        })
+
+        return unsub
+    }, [image?.id, maxWidth])
 
     return { src, originalSize: image?.originalSize };
 }
