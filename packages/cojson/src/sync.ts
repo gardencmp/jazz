@@ -151,25 +151,25 @@ export class SyncManager {
                 throw new Error("Expected firstPeerState to be waiting " + id);
             }
             await new Promise<void>((resolve) => {
-                const timeout = setTimeout(() => {
-                    if (this.local.coValues[id]?.state === "loading") {
-                        // console.warn(
-                        //     "Timeout waiting for peer to load",
-                        //     id,
-                        //     "from",
-                        //     peer.id,
-                        //     "and it hasn't loaded from other peers yet"
-                        // );
-                    }
-                    resolve();
-                }, 1000);
+                // const timeout = setTimeout(() => {
+                //     if (this.local.coValues[id]?.state === "loading") {
+                //         console.warn(
+                //             "Timeout waiting for peer to load",
+                //             id,
+                //             "from",
+                //             peer.id,
+                //             "and it hasn't loaded from other peers yet"
+                //         );
+                //     }
+                //     resolve();
+                // }, 1000);
                 firstStateEntry.done
                     .then(() => {
-                        clearTimeout(timeout);
+                        // clearTimeout(timeout);
                         resolve();
                     })
                     .catch((e) => {
-                        clearTimeout(timeout);
+                        // clearTimeout(timeout);
                         console.error(
                             "Error waiting for peer to load",
                             id,
@@ -688,14 +688,14 @@ export class SyncManager {
             return this.requestedSyncs[coValue.id]!.done;
         } else {
             const done = new Promise<void>((resolve) => {
-                setTimeout(async () => {
+                queueMicrotask(async () => {
                     delete this.requestedSyncs[coValue.id];
                     // if (entry.nRequestsThisTick >= 2) {
                     //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
                     // }
                     await this.actuallySyncCoValue(coValue);
                     resolve();
-                }, 0);
+                });
             });
             const entry = {
                 done,
@@ -707,14 +707,14 @@ export class SyncManager {
     }
 
     async actuallySyncCoValue(coValue: CoValueCore) {
-        let blockingSince = performance.now();
+        // let blockingSince = performance.now();
         for (const peer of this.peersInPriorityOrder()) {
-            if (performance.now() - blockingSince > 5) {
-                await new Promise<void>((resolve) => {
-                    setTimeout(resolve, 0);
-                });
-                blockingSince = performance.now();
-            }
+            // if (performance.now() - blockingSince > 5) {
+            //     await new Promise<void>((resolve) => {
+            //         setTimeout(resolve, 0);
+            //     });
+            //     blockingSince = performance.now();
+            // }
             const optimisticKnownState = peer.optimisticKnownStates[coValue.id];
 
             if (optimisticKnownState) {
