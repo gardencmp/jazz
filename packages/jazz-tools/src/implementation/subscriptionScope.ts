@@ -6,6 +6,8 @@ export const subscriptionsScopes = new WeakMap<
     SubscriptionScope<any>
 >();
 
+const TRACE_INVALIDATIONS = false;
+
 export class SubscriptionScope<
     Root extends CoValue
 > {
@@ -23,6 +25,8 @@ export class SubscriptionScope<
     };
     onUpdate: (newRoot: Root) => void;
     scheduledUpdate: boolean = false;
+    cachedValues: {[id: ID<CoValue>]: CoValue} = {};
+    parents: {[id: ID<CoValue>]: Set<ID<CoValue>>} = {};
 
     constructor(
         root: Root,
@@ -63,11 +67,14 @@ export class SubscriptionScope<
         }
     }
 
-    onRefAccessedOrSet(accessedOrSetId: ID<CoValue> | undefined) {
+    onRefAccessedOrSet(fromId: ID<CoValue>, accessedOrSetId: ID<CoValue> | undefined) {
         // console.log("onRefAccessedOrSet", this.scopeID, accessedOrSetId);
         if (!accessedOrSetId) {
             return;
         }
+
+        this.parents[accessedOrSetId] = this.parents[accessedOrSetId] || new Set();
+        this.parents[accessedOrSetId]!.add(fromId);
 
         if (!this.entries.has(accessedOrSetId)) {
             const loadingEntry = {
@@ -94,12 +101,21 @@ export class SubscriptionScope<
                         const rawUnsub = core.subscribe((rawUpdate) => {
                             // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
                             if (!rawUpdate) return;
+                            this.invalidate(accessedOrSetId);
                             this.scheduleUpdate();
                         });
 
                         entry.rawUnsub = rawUnsub;
                     }
                 });
+        }
+    }
+
+    invalidate(id: ID<CoValue>, fromChild?: ID<CoValue>) {
+        TRACE_INVALIDATIONS && console.log("invalidating", fromChild, "->", id, this.cachedValues[id]);
+        delete this.cachedValues[id];
+        for (const parent of this.parents[id] || []) {
+            this.invalidate(parent, id);
         }
     }
 

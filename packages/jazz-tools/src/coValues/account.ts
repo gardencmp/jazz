@@ -120,6 +120,7 @@ export class Account
                 enumerable: false,
             },
             _raw: { value: options.fromRaw, enumerable: false },
+            _type: { value: "Account", enumerable: false },
         });
 
         if (this.isMe) {
@@ -248,10 +249,10 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     get(target, key, receiver) {
         if (key === "profile") {
             const ref = target._refs.profile;
-            return ref ? ref.accessFrom(receiver) : (undefined as any);
+            return ref ? ref.accessFrom(receiver, "profile") : (undefined as any);
         } else if (key === "root") {
             const ref = target._refs.root;
-            return ref ? ref.accessFrom(receiver) : (undefined as any);
+            return ref ? ref.accessFrom(receiver, "root") : (undefined as any);
         } else {
             return Reflect.get(target, key, receiver);
         }
@@ -274,13 +275,13 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
                     "trusting"
                 );
             }
-            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
+            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(target.id, value.id);
             return true;
         } else if (key === "root") {
             if (value) {
                 target._raw.set("root", value.id as unknown as CoID<RawCoMap>);
             }
-            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
+            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(target.id, value.id);
             return true;
         } else {
             return Reflect.set(target, key, value, receiver);

@@ -157,7 +157,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                         this._loadedAs,
                         this._schema[MembersSym]
                     );
-                const accessRef = () => ref?.accessFrom(this);
+                const accessRef = () => ref?.accessFrom(this, "members." + id);
 
                 return {
                     id: id as unknown as Everyone | ID<this[MembersSym]>,

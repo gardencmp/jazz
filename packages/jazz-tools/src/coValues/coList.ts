@@ -10,9 +10,8 @@ import type {
     RefEncoded,
     ClassOf,
     UnavailableError,
-    IfCo,
     UnCo,
-} from "../internal.js";
+    RequireOptions} from "../internal.js";
 import {
     Account,
     CoValueBase,
@@ -33,7 +32,7 @@ export class CoList<Item = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
 {
-    static Of<Item>(item: IfCo<Item, Item>): typeof CoList<Item> {
+    static Of<Item>(item: Item): typeof CoList<Item> {
         // TODO: cache superclass for item class
         return class CoListOf extends CoList<Item> {
             [co.items] = item;
@@ -51,6 +50,7 @@ export class CoList<Item = any>
         this.prototype._type = "CoList";
     }
     _raw!: RawCoList;
+    _instanceID!: string;
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
@@ -117,6 +117,8 @@ export class CoList<Item = any>
             | { fromRaw: RawCoList }
     ) {
         super();
+
+        Object.defineProperty(this, "_instanceID", {value: `instance-${Math.random().toString(36).slice(2)}`, enumerable: false});
 
         if ("owner" in options) {
             this[InitValues] = {
@@ -231,12 +233,12 @@ export class CoList<Item = any>
         return this.toJSON();
     }
 
-    subscribe!: (listener: (update: this) => void) => () => void;
+    subscribe!: (listener: (update: this) => void, options?: RequireOptions<this>) => () => void;
     static {
         this.prototype.subscribe = CoValueBase.prototype.subscribe as any;
     }
 
-    subscribeEf!: () => Stream.Stream<this, "unavailable", never>;
+    subscribeEf!: (options?: RequireOptions<this>) => Stream.Stream<this, "unavailable", never>;
     static {
         this.prototype.subscribeEf = CoValueBase.prototype.subscribeEf as any;
     }
@@ -261,12 +263,13 @@ export class CoList<Item = any>
         V extends CoValue,
     >(
         this: ClassOf<V>,
-        id: ID<V>
+        id: ID<V>,
+        options?: { require?: (value: V) => boolean | undefined }
     ) => Stream.Stream<V, UnavailableError, AccountCtx>;
     static subscribe = CoValueBase.subscribe as unknown as <V extends CoValue>(
         this: ClassOf<V>,
         id: ID<V>,
-        options: { as: Account | Group },
+        options: { as: Account | Group, require?: (value: V) => boolean | undefined },
         onUpdate: (value: V) => void
     ) => () => void;
 
@@ -329,7 +332,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
                           rawValue as unknown as ID<CoValue>,
                           target._loadedAs,
                           itemDescriptor
-                      ).accessFrom(receiver);
+                      ).accessFrom(receiver, Number(key));
             }
         } else if (key === "length") {
             return target._raw.entries().length;

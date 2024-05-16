@@ -28,11 +28,7 @@ export function createJazzReactContext<Acc extends Account>({
         | undefined
     >(undefined);
 
-    function Provider({
-        children,
-    }: {
-        children: React.ReactNode;
-    }) {
+    function Provider({ children }: { children: React.ReactNode }) {
         const [me, setMe] = useState<(Acc & Me) | undefined>();
 
         const { auth, AuthUI, logOut } = authHook();
@@ -106,7 +102,8 @@ export function createJazzReactContext<Acc extends Account>({
     function useCoState<V extends CoValue>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema: { new (...args: any[]): V } & CoValueClass,
-        id: ID<V> | undefined
+        id: ID<V> | undefined,
+        options?: { require?: (value: V) => boolean | undefined }
     ): V | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
@@ -116,10 +113,17 @@ export function createJazzReactContext<Acc extends Account>({
 
         useEffect(() => {
             if (!id || !me) return;
-            return Schema.subscribe(id, { as: me }, (update) => {
-                state.current = update as V;
-                setUpdates((u) => u + 1);
-            });
+            return Schema.subscribe(
+                id,
+                { as: me, require: options?.require },
+                (update) => {
+                    state.current = update as V;
+
+                    setUpdates((u) => {
+                        return u + 1;
+                    });
+                }
+            );
         }, [Schema, id, me]);
 
         return state.current;
@@ -174,7 +178,8 @@ export type UseAccountHook<Acc extends Account> = () => {
 /** @category Context & Hooks */
 export type UseCoStateHook = <V extends CoValue>(
     Schema: { new (...args: any[]): V } & CoValueClass,
-    id: ID<V> | undefined
+    id: ID<V> | undefined,
+    options?: { require?: (value: V) => boolean | undefined }
 ) => V | undefined;
 
 /** @category Context & Hooks */

@@ -201,7 +201,7 @@ function entryFromRawEntry<Item>(
                 return decodeSync(itemField.encoded)(rawEntry.value);
             } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(
-                    accessFrom
+                    accessFrom, rawEntry.by + rawEntry.tx.sessionID + rawEntry.tx.txIndex + ".value"
                 ) as NonNullable<Item> extends CoValue
                     ? (CoValue & Item) | null
                     : Item;
@@ -232,7 +232,7 @@ function entryFromRawEntry<Item>(
                     accountID as unknown as ID<Account>,
                     loadedAs,
                     Account
-                )?.accessFrom(accessFrom)
+                )?.accessFrom(accessFrom, rawEntry.by + rawEntry.tx.sessionID + rawEntry.tx.txIndex + ".by")
             );
         },
         madeAt: rawEntry.at,

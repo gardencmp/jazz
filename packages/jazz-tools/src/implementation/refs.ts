@@ -16,6 +16,8 @@ import {
 
 const refCache = new WeakMap<RawCoValue, CoValue>();
 
+const TRACE_ACCESSES = false;
+
 export class Ref<out V extends CoValue> {
     constructor(
         readonly id: ID<V>,
@@ -28,7 +30,6 @@ export class Ref<out V extends CoValue> {
     }
 
     get value() {
-        // TODO: cache it for object identity!!!
         const raw = this.controlledAccount._raw.core.node.getLoaded(
             this.id as unknown as CoID<RawCoValue>
         );
@@ -87,16 +88,33 @@ export class Ref<out V extends CoValue> {
         }
     }
 
-    accessFrom(fromScopeValue: CoValue): V | null {
+    accessFrom(fromScopeValue: CoValue, key: string | number | symbol): V | null {
         const subScope = subscriptionsScopes.get(fromScopeValue);
 
-        subScope?.onRefAccessedOrSet(this.id);
+        subScope?.onRefAccessedOrSet(fromScopeValue.id, this.id);
+        TRACE_ACCESSES && console.log(subScope?.scopeID, "accessing", fromScopeValue, key, this.id);
 
         if (this.value && subScope) {
             subscriptionsScopes.set(this.value, subScope);
         }
 
-        return this.value;
+        if (subScope) {
+            const cached = subScope.cachedValues[this.id];
+            if (cached) {
+                TRACE_ACCESSES && console.log("cached", cached);
+                return cached as V;
+            } else if (this.value !== null) {
+                const freshValueInstance = instantiateRefEncoded(this.schema, this.value?._raw);
+                TRACE_ACCESSES && console.log("freshValueInstance", freshValueInstance);
+                subScope.cachedValues[this.id] = freshValueInstance;
+                subscriptionsScopes.set(freshValueInstance, subScope);
+                return freshValueInstance as V;
+            } else {
+                return null
+            }
+        } else {
+            return this.value;
+        }
     }
 }
 

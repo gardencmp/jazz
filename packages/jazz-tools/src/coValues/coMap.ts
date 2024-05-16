@@ -145,7 +145,10 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                                     rawEdit.value as ID<CoValue>,
                                     target._loadedAs,
                                     descriptor
-                                ).accessFrom(target),
+                                ).accessFrom(
+                                    target,
+                                    "_edits." + key.toString() + ".value"
+                                ),
                     ref:
                         descriptor !== "json" && isRefEncoded(descriptor)
                             ? new Ref(
@@ -160,7 +163,10 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                             rawEdit.by as ID<Account>,
                             target._loadedAs,
                             Account
-                        ).accessFrom(target),
+                        ).accessFrom(
+                            target,
+                            "_edits." + key.toString() + ".by"
+                        ),
                     madeAt: rawEdit.at,
                 };
             },
@@ -349,7 +355,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                               raw as unknown as ID<CoValue>,
                               target._loadedAs,
                               descriptor
-                          ).accessFrom(receiver);
+                          ).accessFrom(receiver, key);
                 }
             } else {
                 return undefined;
@@ -378,7 +384,9 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                 target._raw.set(key, encodeSync(descriptor.encoded)(value));
             } else if (isRefEncoded(descriptor)) {
                 target._raw.set(key, value.id);
-                subscriptionsScopes.get(target)?.onRefAccessedOrSet(value.id);
+                subscriptionsScopes
+                    .get(target)
+                    ?.onRefAccessedOrSet(target.id, value.id);
             }
             return true;
         } else {
