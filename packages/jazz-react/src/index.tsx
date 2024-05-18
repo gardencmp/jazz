@@ -11,9 +11,11 @@ import { ReactAuthHook } from "./auth/auth.js";
 export function createJazzReactContext<Acc extends Account>({
     auth: authHook,
     peer,
+    storage = "indexedDB",
 }: {
     auth: ReactAuthHook<Acc>;
     peer: `wss://${string}` | `ws://${string}`;
+    storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
 }): {
     Provider: Provider;
     useAccount: UseAccountHook<Acc>;
@@ -44,6 +46,7 @@ export function createJazzReactContext<Acc extends Account>({
                         (new URLSearchParams(window.location.search).get(
                             "peer"
                         ) as typeof peer) || peer,
+                    storage,
                 });
 
                 if (stop) {

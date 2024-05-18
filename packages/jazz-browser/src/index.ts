@@ -16,6 +16,7 @@ import {
 import { AccountID, LSMStorage } from "cojson";
 import { AuthProvider } from "./auth/auth.js";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
+import { IDBStorage } from "cojson-storage-indexeddb";
 export * from "./auth/auth.js";
 
 /** @category Context Creation */
@@ -30,10 +31,12 @@ export async function createJazzBrowserContext<Acc extends Account>({
     auth,
     peer,
     reconnectionTimeout: initialReconnectionTimeout = 500,
+    storage = "indexedDB",
 }: {
     auth: AuthProvider<Acc>;
     peer: `wss://${string}` | `ws://${string}`;
     reconnectionTimeout?: number;
+    storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
 }): Promise<BrowserContext<Acc>> {
     await jazzReady;
     let sessionDone: () => void;
@@ -57,10 +60,12 @@ export async function createJazzBrowserContext<Acc extends Account>({
             return sessionHandle.session;
         },
         [
-            await LSMStorage.asPeer({
-                fs: new OPFSFilesystem(),
-                // trace: true,
-            }),
+            storage === "indexedDB"
+                ? await IDBStorage.asPeer()
+                : await LSMStorage.asPeer({
+                      fs: new OPFSFilesystem(),
+                      // trace: true,
+                  }),
             firstWsPeer,
         ]
     );
@@ -99,7 +104,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
                 });
 
                 me._raw.core.node.syncManager.addPeer(
-                    createWebSocketPeer(peer),
+                    createWebSocketPeer(peer)
                 );
             }
         }
