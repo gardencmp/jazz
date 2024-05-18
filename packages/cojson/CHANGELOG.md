@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.37
+
+### Patch Changes
+
+- Expose experimental OPFS storage
+
 ## 0.7.0-alpha.36
 
 ### Patch Changes

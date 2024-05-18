@@ -1,5 +1,15 @@
 # jazz-react
 
+## 0.7.0-alpha.37
+
+### Patch Changes
+
+- Expose experimental OPFS storage
+- Updated dependencies
+  - jazz-browser@0.7.0-alpha.37
+  - cojson@0.7.0-alpha.37
+  - jazz-tools@0.7.0-alpha.37
+
 ## 0.7.0-alpha.36
 
 ### Patch Changes
