@@ -20,7 +20,7 @@ import {
     secretSeedLength,
     shortHashLength,
     cryptoReady,
-    StreamingHash
+    StreamingHash,
 } from "./crypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
@@ -87,7 +87,7 @@ export const cojsonInternals = {
     isAccountID,
     accountHeaderForInitialAgentSecret,
     idforHeader,
-    StreamingHash
+    StreamingHash,
 };
 
 export {
@@ -124,14 +124,10 @@ export {
     InviteSecret,
     SyncMessage,
     isRawCoID,
-    FileSystem,
     LSMStorage,
-    FSErr,
-    BlockFilename,
-    WalFilename,
 };
 
-export type { Value };
+export type { Value, FileSystem, FSErr, BlockFilename, WalFilename };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CojsonInternalTypes {

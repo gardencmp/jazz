@@ -33,7 +33,7 @@ import {
     writeBlock,
     writeToWal,
 } from "./FileSystem.js";
-export { FSErr, BlockFilename, WalFilename } from "./FileSystem.js";
+export type { FSErr, BlockFilename, WalFilename } from "./FileSystem.js";
 
 export type CoValueChunk = {
     header?: CoValueHeader;
