@@ -1,7 +1,7 @@
 import { CoID } from "./coValue.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { JsonValue } from "./jsonValue.js";
-import { KeyID } from "./crypto.js";
+import { KeyID } from "./crypto/crypto.js";
 import { CoValueCore, Transaction } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";

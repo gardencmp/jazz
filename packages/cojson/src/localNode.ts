@@ -1,14 +1,4 @@
-import {
-    AgentSecret,
-    agentSecretFromSecretSeed,
-    createdNowUnique,
-    getAgentID,
-    getAgentSealerID,
-    getAgentSealerSecret,
-    newRandomAgentSecret,
-    newRandomKeySecret,
-    seal,
-} from "./crypto.js";
+import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
 import {
     CoValueCore,
     CoValueHeader,
@@ -49,6 +39,8 @@ const { localNode } = useJazz();
 */
 export class LocalNode {
     /** @internal */
+    crypto: CryptoProvider;
+    /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
     /** @category 3. Low-level */
     account: ControlledAccountOrAgent;
@@ -60,24 +52,28 @@ export class LocalNode {
     /** @category 3. Low-level */
     constructor(
         account: ControlledAccountOrAgent,
-        currentSessionID: SessionID
+        currentSessionID: SessionID,
+        crypto: CryptoProvider
     ) {
         this.account = account;
         this.currentSessionID = currentSessionID;
+        this.crypto = crypto;
     }
 
     /** @category 2. Node Creation */
     static async withNewlyCreatedAccount<
-        Meta extends AccountMeta = AccountMeta
+        Meta extends AccountMeta = AccountMeta,
     >({
         creationProps,
         peersToLoadFrom,
         migration,
-        initialAgentSecret = newRandomAgentSecret(),
+        crypto,
+        initialAgentSecret = crypto.newRandomAgentSecret(),
     }: {
-        creationProps: {name: string};
+        creationProps: { name: string };
         peersToLoadFrom?: Peer[];
         migration?: RawAccountMigration<Meta>;
+        crypto: CryptoProvider;
         initialAgentSecret?: AgentSecret;
     }): Promise<{
         node: LocalNode;
@@ -85,10 +81,11 @@ export class LocalNode {
         accountSecret: AgentSecret;
         sessionID: SessionID;
     }> {
-        const throwawayAgent = newRandomAgentSecret();
+        const throwawayAgent = crypto.newRandomAgentSecret();
         const setupNode = new LocalNode(
-            new ControlledAgent(throwawayAgent),
-            newRandomSessionID(getAgentID(throwawayAgent))
+            new ControlledAgent(throwawayAgent, crypto),
+            newRandomSessionID(crypto.getAgentID(throwawayAgent)),
+            crypto
         );
 
         const account = setupNode.createAccount(initialAgentSecret);
@@ -108,14 +105,18 @@ export class LocalNode {
         }
 
         if (migration) {
-            await migration(accountOnNodeWithAccount, nodeWithAccount, creationProps);
+            await migration(
+                accountOnNodeWithAccount,
+                nodeWithAccount,
+                creationProps
+            );
         } else {
             const profileGroup = accountOnNodeWithAccount.createGroup();
             profileGroup.addMember("everyone", "reader");
             const profile = profileGroup.createMap<Profile>({
                 name: creationProps.name,
             });
-            accountOnNodeWithAccount.set('profile', profile.id, "trusting");
+            accountOnNodeWithAccount.set("profile", profile.id, "trusting");
         }
 
         const controlledAccount = new RawControlledAccount(
@@ -123,7 +124,7 @@ export class LocalNode {
             accountOnNodeWithAccount.agentSecret
         );
 
-        nodeWithAccount.account = controlledAccount
+        nodeWithAccount.account = controlledAccount;
         nodeWithAccount.coValues[controlledAccount.id] = {
             state: "loaded",
             coValue: controlledAccount.core,
@@ -165,17 +166,20 @@ export class LocalNode {
         accountSecret,
         sessionID,
         peersToLoadFrom,
+        crypto,
         migration,
     }: {
         accountID: AccountID;
         accountSecret: AgentSecret;
         sessionID: SessionID;
         peersToLoadFrom: Peer[];
+        crypto: CryptoProvider;
         migration?: RawAccountMigration<Meta>;
     }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
-            new ControlledAgent(accountSecret),
-            newRandomSessionID(accountID)
+            new ControlledAgent(accountSecret, crypto),
+            newRandomSessionID(accountID),
+            crypto
         );
 
         for (const peer of peersToLoadFrom) {
@@ -369,10 +373,10 @@ export class LocalNode {
 
         const group = expectGroup(groupOrOwnedValue);
 
-        const inviteAgentSecret = agentSecretFromSecretSeed(
+        const inviteAgentSecret = this.crypto.agentSecretFromSecretSeed(
             secretSeedFromInviteSecret(inviteSecret)
         );
-        const inviteAgentID = getAgentID(inviteAgentSecret);
+        const inviteAgentID = this.crypto.getAgentID(inviteAgentSecret);
 
         const inviteRole = await new Promise((resolve, reject) => {
             group.subscribe((groupUpdate) => {
@@ -408,7 +412,7 @@ export class LocalNode {
         const groupAsInvite = expectGroup(
             group.core
                 .testWithDifferentAccount(
-                    new ControlledAgent(inviteAgentSecret),
+                    new ControlledAgent(inviteAgentSecret, this.crypto),
                     newRandomSessionID(inviteAgentID)
                 )
                 .getCurrentContent()
@@ -419,8 +423,8 @@ export class LocalNode {
             inviteRole === "adminInvite"
                 ? "admin"
                 : inviteRole === "writerInvite"
-                ? "writer"
-                : "reader"
+                  ? "writer"
+                  : "reader"
         );
 
         group.core._sessionLogs = groupAsInvite.core.sessionLogs;
@@ -470,13 +474,13 @@ export class LocalNode {
 
     /** @internal */
     createAccount(
-        agentSecret = newRandomAgentSecret()
+        agentSecret = this.crypto.newRandomAgentSecret()
     ): RawControlledAccount {
-        const accountAgentID = getAgentID(agentSecret);
+        const accountAgentID = this.crypto.getAgentID(agentSecret);
         const account = expectGroup(
-            this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
+            this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret, this.crypto))
                 .testWithDifferentAccount(
-                    new ControlledAgent(agentSecret),
+                    new ControlledAgent(agentSecret, this.crypto),
                     newRandomSessionID(accountAgentID)
                 )
                 .getCurrentContent()
@@ -484,12 +488,12 @@ export class LocalNode {
 
         account.set(accountAgentID, "admin", "trusting");
 
-        const readKey = newRandomKeySecret();
+        const readKey = this.crypto.newRandomKeySecret();
 
-        const sealed = seal({
+        const sealed = this.crypto.seal({
             message: readKey.secret,
-            from: getAgentSealerSecret(agentSecret),
-            to: getAgentSealerID(accountAgentID),
+            from: this.crypto.getAgentSealerSecret(agentSecret),
+            to: this.crypto.getAgentSealerID(accountAgentID),
             nOnceMaterial: {
                 in: account.id,
                 tx: account.core.nextTransactionID(),
@@ -580,18 +584,18 @@ export class LocalNode {
             type: "comap",
             ruleset: { type: "group", initialAdmin: this.account.id },
             meta: null,
-            ...createdNowUnique(),
+            ...this.crypto.createdNowUnique(),
         });
 
-        let group = expectGroup(groupCoValue.getCurrentContent());
+        const group = expectGroup(groupCoValue.getCurrentContent());
 
         group.set(this.account.id, "admin", "trusting");
 
-        const readKey = newRandomKeySecret();
+        const readKey = this.crypto.newRandomKeySecret();
 
         group.set(
             `${readKey.id}_for_${this.account.id}`,
-            seal({
+            this.crypto.seal({
                 message: readKey.secret,
                 from: this.account.currentSealerSecret(),
                 to: this.account.currentSealerID(),
@@ -613,7 +617,7 @@ export class LocalNode {
         account: ControlledAccountOrAgent,
         currentSessionID: SessionID
     ): LocalNode {
-        const newNode = new LocalNode(account, currentSessionID);
+        const newNode = new LocalNode(account, currentSessionID, this.crypto);
 
         const coValuesToCopy = Object.entries(this.coValues);
 

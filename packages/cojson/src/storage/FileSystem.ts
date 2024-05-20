@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import { CoValueChunk } from "./index.js";
 import { RawCoID } from "../ids.js";
-import { StreamingHash } from "../crypto.js";
+import { CryptoProvider, StreamingHash } from "../crypto/crypto.js";
 
 export type BlockFilename =
     `${string}-L${number}-H${number}.jsonl`;
@@ -18,6 +18,7 @@ export type FSErr = {
 };
 
 export interface FileSystem<WriteHandle, ReadHandle> {
+    crypto: CryptoProvider;
     createFile(filename: string): Effect.Effect<WriteHandle, FSErr>;
     append(handle: WriteHandle, data: Uint8Array): Effect.Effect<void, FSErr>;
     close(
@@ -98,7 +99,7 @@ export function writeBlock<WH, RH, FS extends FileSystem<WH, RH>>(
                 ".tmp.jsonl"
             )
         );
-        const hash = new StreamingHash();
+        const hash = new StreamingHash(fs.crypto);
 
         const chunksSortedById = Array.from(chunks).sort(([id1], [id2]) => id1.localeCompare(id2)
         );

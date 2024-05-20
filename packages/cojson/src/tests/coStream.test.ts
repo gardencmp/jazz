@@ -1,30 +1,21 @@
 import { expect, test, beforeEach } from "vitest";
 import { expectList, expectMap, expectStream } from "../coValue.js";
 import { RawBinaryCoStream } from "../coValues/coStream.js";
-import { createdNowUnique } from "../crypto.js";
-import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
+import { MAX_RECOMMENDED_TX_SIZE, WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Empty CoStream works", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectStream(coValue.getCurrentContent());
@@ -35,13 +26,13 @@ test("Empty CoStream works", () => {
 });
 
 test("Can push into CoStream", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectStream(coValue.getCurrentContent());
@@ -61,13 +52,13 @@ test("Can push into CoStream", () => {
 });
 
 test("Empty RawBinaryCoStream works", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: { type: "binary" },
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -87,13 +78,13 @@ test("Empty RawBinaryCoStream works", () => {
 });
 
 test("Can push into RawBinaryCoStream", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: { type: "binary" },
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -123,13 +114,13 @@ test("Can push into RawBinaryCoStream", () => {
 });
 
 test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE), we store an inbetween signature every time we reach MAX_RECOMMENDED_TX_SIZE and split up newContentSince accordingly", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: { type: "binary" },
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();
@@ -193,13 +184,13 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
 });
 
 test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we store an inbetween signature after every large transaction and split up newContentSince accordingly", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: { type: "binary" },
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = coValue.getCurrentContent();

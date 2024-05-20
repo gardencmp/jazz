@@ -1,30 +1,21 @@
 import { expect, test, beforeEach } from "vitest";
 import { expectList, expectMap, expectStream } from "../coValue.js";
 import { RawBinaryCoStream } from "../coValues/coStream.js";
-import { createdNowUnique } from "../crypto.js";
-import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
+import { MAX_RECOMMENDED_TX_SIZE, WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Empty CoList works", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "colist",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectList(coValue.getCurrentContent());
@@ -34,13 +25,13 @@ test("Empty CoList works", () => {
 });
 
 test("Can append, prepend, delete and replace items in CoList", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "colist",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectList(coValue.getCurrentContent());
@@ -60,13 +51,13 @@ test("Can append, prepend, delete and replace items in CoList", () => {
 });
 
 test("Push is equivalent to append after last item", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "colist",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectList(coValue.getCurrentContent());
@@ -82,13 +73,13 @@ test("Push is equivalent to append after last item", () => {
 });
 
 test("Can push into empty list", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "colist",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectList(coValue.getCurrentContent());

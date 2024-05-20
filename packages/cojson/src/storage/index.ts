@@ -7,7 +7,7 @@ import {
 import { Effect, Either, SynchronizedRef } from "effect";
 import { RawCoID } from "../ids.js";
 import { CoValueHeader, Transaction } from "../coValueCore.js";
-import { Signature } from "../crypto.js";
+import { Signature } from "../crypto/crypto.js";
 import {
     CoValueKnownState,
     NewContentMessage,

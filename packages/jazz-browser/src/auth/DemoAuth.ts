@@ -1,4 +1,4 @@
-import { AgentSecret, Peer } from "cojson";
+import { AgentSecret, CryptoProvider, Peer } from "cojson";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
 import { AuthProvider } from "./auth.js";
 import { SessionProvider } from "../index.js";
@@ -14,12 +14,13 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
     constructor(
         public accountSchema: CoValueClass<Acc> & typeof Account,
         public driver: BrowserDemoAuth.Driver,
-        public appName: string
+        public appName: string,
     ) {}
 
     async createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
+        initialPeers: Peer[],
+        crypto: CryptoProvider
     ): Promise<Acc & Me> {
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
@@ -33,6 +34,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
+                crypto
             })) as Acc & Me;
 
             this.driver.onSignedIn({ logOut });
@@ -44,6 +46,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                         const account = (await this.accountSchema.create({
                             creationProps: { name: username },
                             peersToLoadFrom: initialPeers,
+                            crypto
                         })) as Acc & Me;
 
                         const storageData = JSON.stringify({
@@ -87,6 +90,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                                 storageData.accountID
                             ),
                             peersToLoadFrom: initialPeers,
+                            crypto
                         })) as Acc & Me;
 
                         resolveAccount(account);

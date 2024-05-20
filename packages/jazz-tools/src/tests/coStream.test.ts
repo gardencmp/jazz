@@ -1,24 +1,17 @@
-import { expect, describe, test, beforeEach } from "vitest";
-
-import { webcrypto } from "node:crypto";
+import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { BinaryCoStream, ID, Account, jazzReady, CoStream, co } from "..";
+import { BinaryCoStream, ID, Account, CoStream, co, WasmCrypto } from "..";
 import { Simplify } from "effect/Types";
 
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
+const Crypto = await WasmCrypto.create();
 
-beforeEach(async () => {
-    await jazzReady;
-});
 
 describe("Simple CoStream operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
     });
 
     class TestStream extends CoStream.Of(co.string) {}
@@ -57,6 +50,7 @@ describe("CoStream resolution", async () => {
     const initNodeAndStream = async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const stream = TestStream.create(
@@ -92,6 +86,7 @@ describe("CoStream resolution", async () => {
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         const loadedStream = await TestStream.load(stream.id, {
@@ -177,6 +172,7 @@ describe("CoStream resolution", async () => {
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         await Effect.runPromise(
@@ -258,6 +254,7 @@ describe("CoStream resolution", async () => {
 describe("Simple BinaryCoStream operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
     });
 
     const stream = BinaryCoStream.create({ owner: me });
@@ -286,6 +283,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
     const initNodeAndStream = async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const stream = BinaryCoStream.create({ owner: me });
@@ -320,6 +318,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         const loadedStream = await BinaryCoStream.load(stream.id, {
@@ -351,6 +350,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         await Effect.runPromise(

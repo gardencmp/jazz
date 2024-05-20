@@ -1,29 +1,31 @@
 import { expect } from "vitest";
-import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import { ControlledAgent } from "../coValues/account.js";
 import { SessionID } from "../ids.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
+
+const Crypto = await WasmCrypto.create();
 
 export function randomAnonymousAccountAndSessionID(): [ControlledAgent, SessionID] {
-    const agentSecret = newRandomAgentSecret();
+    const agentSecret = Crypto.newRandomAgentSecret();
 
-    const sessionID = newRandomSessionID(getAgentID(agentSecret));
+    const sessionID = newRandomSessionID(Crypto.getAgentID(agentSecret));
 
-    return [new ControlledAgent(agentSecret), sessionID];
+    return [new ControlledAgent(agentSecret, Crypto), sessionID];
 }
 
 export function newGroup() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
-    const node = new LocalNode(admin, sessionID);
+    const node = new LocalNode(admin, sessionID, Crypto);
 
     const groupCore = node.createCoValue({
         type: "comap",
         ruleset: { type: "group", initialAdmin: admin.id },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const group = expectGroup(groupCore.getCurrentContent());
@@ -56,7 +58,7 @@ export function newGroupHighLevel() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
 
-    const node = new LocalNode(admin, sessionID);
+    const node = new LocalNode(admin, sessionID, Crypto);
 
     const group = node.createGroup();
 

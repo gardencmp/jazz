@@ -1,6 +1,6 @@
 import { AccountID } from './coValues/account.js';
 import { base58 } from "@scure/base";
-import { shortHashLength } from './crypto.js';
+import { shortHashLength } from './crypto/crypto.js';
 
 
 export type RawCoID = `co_z${string}`;

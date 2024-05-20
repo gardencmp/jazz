@@ -1,4 +1,4 @@
-import { AccountID, AgentSecret, cojsonInternals, Peer } from "cojson";
+import { AccountID, AgentSecret, cojsonInternals, CryptoProvider, Peer } from "cojson";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
 import { AuthProvider } from "./auth.js";
 import { SessionProvider } from "../index.js";
@@ -18,12 +18,13 @@ export class BrowserPasskeyAuth<Acc extends Account>
         public driver: BrowserPasskeyAuth.Driver,
         public appName: string,
         // TODO: is this a safe default?
-        public appHostname: string = window.location.hostname
+        public appHostname: string = window.location.hostname,
     ) {}
 
     async createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
+        initialPeers: Peer[],
+        crypto: CryptoProvider
     ): Promise<Acc & Me> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
@@ -37,6 +38,7 @@ export class BrowserPasskeyAuth<Acc extends Account>
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
+                crypto
             })) as Acc & Me;
 
             this.driver.onSignedIn({ logOut });
@@ -52,7 +54,8 @@ export class BrowserPasskeyAuth<Acc extends Account>
                             this.appName,
                             this.appHostname,
                             this.accountSchema,
-                            initialPeers
+                            initialPeers,
+                            crypto
                         );
 
                         resolveAccount(account);
@@ -63,7 +66,8 @@ export class BrowserPasskeyAuth<Acc extends Account>
                             getSessionFor,
                             this.appHostname,
                             this.accountSchema,
-                            initialPeers
+                            initialPeers,
+                            crypto
                         );
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });
@@ -92,15 +96,17 @@ async function signUp<Acc extends Account>(
     appName: string,
     appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
-    initialPeers: Peer[]
+    initialPeers: Peer[],
+    crypto: CryptoProvider
 ): Promise<Acc & Me> {
-    const secretSeed = cojsonInternals.newRandomSecretSeed();
+    const secretSeed = crypto.newRandomSecretSeed();
 
     const account = (await accountSchema.create({
         creationProps: { name: username },
         initialAgentSecret:
-            cojsonInternals.agentSecretFromSecretSeed(secretSeed),
+        crypto.agentSecretFromSecretSeed(secretSeed),
         peersToLoadFrom: initialPeers,
+        crypto: crypto
     })) as Acc & Me;
 
     const webAuthNCredentialPayload = new Uint8Array(
@@ -150,7 +156,8 @@ async function logIn<Acc extends Account>(
     getSessionFor: SessionProvider,
     appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
-    initialPeers: Peer[]
+    initialPeers: Peer[],
+    crypto: CryptoProvider
 ): Promise<Acc & Me> {
     const webAuthNCredential = (await navigator.credentials.get({
         publicKey: {
@@ -182,7 +189,7 @@ async function logIn<Acc extends Account>(
     ) as ID<Acc>;
 
     const accountSecret =
-        cojsonInternals.agentSecretFromSecretSeed(accountSecretSeed);
+        crypto.agentSecretFromSecretSeed(accountSecretSeed);
 
     if (!accountSecret) {
         throw new Error("Invalid credential");
@@ -198,6 +205,7 @@ async function logIn<Acc extends Account>(
         accountSecret,
         sessionID: await getSessionFor(accountID),
         peersToLoadFrom: initialPeers,
+        crypto
     })) as Acc & Me;
 
     return account;

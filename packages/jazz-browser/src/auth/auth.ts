@@ -1,11 +1,12 @@
-import { Account, Me, Peer } from "jazz-tools";
+import { Account, CryptoProvider, Me, Peer } from "jazz-tools";
 import { SessionProvider } from "..";
 
 /** @category Auth Providers */
 export interface AuthProvider<Acc extends Account> {
     createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
+        initialPeers: Peer[],
+        crypto: CryptoProvider
     ): Promise<Acc & Me>;
 }
 

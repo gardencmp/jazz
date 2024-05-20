@@ -329,12 +329,15 @@ importers:
       '@noble/ciphers':
         specifier: ^0.1.3
         version: 0.1.4
+      '@noble/hashes':
+        specifier: ^1.4.0
+        version: 1.4.0
       '@scure/base':
         specifier: ^1.1.1
         version: 1.1.5
       effect:
-        specifier: ^3.1.3
-        version: 3.1.4
+        specifier: ^3.1.5
+        version: 3.2.1
       hash-wasm:
         specifier: ^4.9.0
         version: 4.11.0
@@ -343,7 +346,7 @@ importers:
         version: github.com/sgwilym/isomorphic-streams/aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
     devDependencies:
       '@noble/curves':
-        specifier: ^1.2.0
+        specifier: ^1.3.0
         version: 1.3.0
       '@types/jest':
         specifier: ^29.5.3
@@ -451,8 +454,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson-storage-indexeddb
       effect:
-        specifier: ^3.1.4
-        version: 3.1.4
+        specifier: ^3.1.5
+        version: 3.2.1
       isomorphic-streams:
         specifier: https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
         version: github.com/sgwilym/isomorphic-streams/aa9394781bfc92f8d7c981be7daf8af4b4cd4fae
@@ -542,13 +545,13 @@ importers:
     dependencies:
       '@effect/cli':
         specifier: ^0.36.21
-        version: 0.36.21(@effect/platform@0.53.2)(@effect/printer-ansi@0.33.12)(@effect/printer@0.33.12)(@effect/schema@0.66.16)(effect@3.1.3)
+        version: 0.36.21(@effect/platform@0.53.2)(@effect/printer-ansi@0.33.12)(@effect/printer@0.33.12)(@effect/schema@0.66.16)(effect@3.2.1)
       '@effect/platform-node':
         specifier: ^0.49.2
-        version: 0.49.2(@effect/platform@0.53.2)(effect@3.1.3)
+        version: 0.49.2(@effect/platform@0.53.2)(effect@3.2.1)
       '@effect/schema':
         specifier: ^0.66.16
-        version: 0.66.16(effect@3.1.3)(fast-check@3.17.2)
+        version: 0.66.16(effect@3.2.1)(fast-check@3.17.2)
       cojson:
         specifier: workspace:*
         version: link:../cojson
@@ -556,8 +559,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson-transport-nodejs-ws
       effect:
-        specifier: ^3.1.3
-        version: 3.1.3
+        specifier: ^3.1.5
+        version: 3.2.1
       fast-check:
         specifier: ^3.17.2
         version: 3.17.2
@@ -582,7 +585,7 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.66.16
-        version: 0.66.16(effect@3.1.3)(fast-check@3.17.2)
+        version: 0.66.16(effect@3.2.1)(fast-check@3.17.2)
       cojson:
         specifier: workspace:*
         version: link:../cojson
@@ -590,8 +593,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson-transport-nodejs-ws
       effect:
-        specifier: ^3.1.3
-        version: 3.1.3
+        specifier: ^3.1.5
+        version: 3.2.1
       fast-check:
         specifier: ^3.17.2
         version: 3.17.2
@@ -831,7 +834,7 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  /@effect/cli@0.36.21(@effect/platform@0.53.2)(@effect/printer-ansi@0.33.12)(@effect/printer@0.33.12)(@effect/schema@0.66.16)(effect@3.1.3):
+  /@effect/cli@0.36.21(@effect/platform@0.53.2)(@effect/printer-ansi@0.33.12)(@effect/printer@0.33.12)(@effect/schema@0.66.16)(effect@3.2.1):
     resolution: {integrity: sha512-39ya5HjJxeFE84pv6D1JvZHHLwalB+yQWbNOWvu65Lf8FdngLptwDCNgOnrzvHvgOEguaPUaN7YHlHReUAOddA==}
     peerDependencies:
       '@effect/platform': ^0.53.2
@@ -840,37 +843,37 @@ packages:
       '@effect/schema': ^0.66.16
       effect: ^3.1.3
     dependencies:
-      '@effect/platform': 0.53.2(@effect/schema@0.66.16)(effect@3.1.3)
-      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12)(effect@3.1.3)
-      '@effect/printer-ansi': 0.33.12(@effect/typeclass@0.24.12)(effect@3.1.3)
-      '@effect/schema': 0.66.16(effect@3.1.3)(fast-check@3.17.2)
-      effect: 3.1.3
+      '@effect/platform': 0.53.2(@effect/schema@0.66.16)(effect@3.2.1)
+      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12)(effect@3.2.1)
+      '@effect/printer-ansi': 0.33.12(@effect/typeclass@0.24.12)(effect@3.2.1)
+      '@effect/schema': 0.66.16(effect@3.2.1)(fast-check@3.17.2)
+      effect: 3.2.1
       ini: 4.1.2
       toml: 3.0.0
       yaml: 2.4.2
     dev: false
 
-  /@effect/platform-node-shared@0.4.21(@effect/platform@0.53.2)(effect@3.1.3):
+  /@effect/platform-node-shared@0.4.21(@effect/platform@0.53.2)(effect@3.2.1):
     resolution: {integrity: sha512-F0cEeLQ9Qi5hr/KYxgjL2+bJT1Ti4Sd24czyCE1ETEMxUid7zca3NCBbhjDKNMkHYroGhP2bG2lVzRx048cfzg==}
     peerDependencies:
       '@effect/platform': ^0.53.2
       effect: ^3.1.3
     dependencies:
-      '@effect/platform': 0.53.2(@effect/schema@0.66.16)(effect@3.1.3)
+      '@effect/platform': 0.53.2(@effect/schema@0.66.16)(effect@3.2.1)
       '@parcel/watcher': 2.4.1
-      effect: 3.1.3
+      effect: 3.2.1
       multipasta: 0.2.1
     dev: false
 
-  /@effect/platform-node@0.49.2(@effect/platform@0.53.2)(effect@3.1.3):
+  /@effect/platform-node@0.49.2(@effect/platform@0.53.2)(effect@3.2.1):
     resolution: {integrity: sha512-OvixXYcQrRZAt0T/7GJ9Li2RRr6+3HDQ8kUiiBNo+OWyg25QVfQTsTU4OjT7MHnuR0mcNzbsu5VlDskci7/T/g==}
     peerDependencies:
       '@effect/platform': ^0.53.2
       effect: ^3.1.3
     dependencies:
-      '@effect/platform': 0.53.2(@effect/schema@0.66.16)(effect@3.1.3)
-      '@effect/platform-node-shared': 0.4.21(@effect/platform@0.53.2)(effect@3.1.3)
-      effect: 3.1.3
+      '@effect/platform': 0.53.2(@effect/schema@0.66.16)(effect@3.2.1)
+      '@effect/platform-node-shared': 0.4.21(@effect/platform@0.53.2)(effect@3.2.1)
+      effect: 3.2.1
       mime: 3.0.0
       undici: 6.16.1
       ws: 8.17.0
@@ -879,56 +882,56 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@effect/platform@0.53.2(@effect/schema@0.66.16)(effect@3.1.3):
+  /@effect/platform@0.53.2(@effect/schema@0.66.16)(effect@3.2.1):
     resolution: {integrity: sha512-+OeR9o7UOdWsl8xQow7FUIgoJaPjqZ5dPz2xxGv0VeNDkAJMxu7+FWDtB7tK+r4PzhA3X/x5YaGbH09mcOD+mg==}
     peerDependencies:
       '@effect/schema': ^0.66.16
       effect: ^3.1.3
     dependencies:
-      '@effect/schema': 0.66.16(effect@3.1.3)(fast-check@3.17.2)
-      effect: 3.1.3
+      '@effect/schema': 0.66.16(effect@3.2.1)(fast-check@3.17.2)
+      effect: 3.2.1
       find-my-way-ts: 0.1.2
       multipasta: 0.2.1
       path-browserify: 1.0.1
     dev: false
 
-  /@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12)(effect@3.1.3):
+  /@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12)(effect@3.2.1):
     resolution: {integrity: sha512-MEGolsEBQlZNsgEoqq02erGgMmLH/6QAU3Bq9pQp2fkOR907LMvXTD++HiMRmEnV1mqDMxgQvICF6RA/voLnCA==}
     peerDependencies:
       '@effect/typeclass': ^0.24.12
       effect: ^3.1.3
     dependencies:
-      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12)(effect@3.1.3)
-      '@effect/typeclass': 0.24.12(effect@3.1.3)
-      effect: 3.1.3
+      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12)(effect@3.2.1)
+      '@effect/typeclass': 0.24.12(effect@3.2.1)
+      effect: 3.2.1
     dev: false
 
-  /@effect/printer@0.33.12(@effect/typeclass@0.24.12)(effect@3.1.3):
+  /@effect/printer@0.33.12(@effect/typeclass@0.24.12)(effect@3.2.1):
     resolution: {integrity: sha512-AY5uupL6yWm/fQsD+j9UHBKZcd6Ai4I6Z2PHec48KwgFQUiKCpn6sN69Scp8CINwKHrYsCtwwqyO+xt8yZOXDw==}
     peerDependencies:
       '@effect/typeclass': ^0.24.12
       effect: ^3.1.3
     dependencies:
-      '@effect/typeclass': 0.24.12(effect@3.1.3)
-      effect: 3.1.3
+      '@effect/typeclass': 0.24.12(effect@3.2.1)
+      effect: 3.2.1
     dev: false
 
-  /@effect/schema@0.66.16(effect@3.1.3)(fast-check@3.17.2):
+  /@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2):
     resolution: {integrity: sha512-sT/k5NOgKslGPzs3DUaCFuM6g2JQoIIT8jpwEorAZooplPIMK2xIspr7ECz6pp6Dc7Wz/ppXGk7HVyGZQsIYEQ==}
     peerDependencies:
       effect: ^3.1.3
       fast-check: ^3.13.2
     dependencies:
-      effect: 3.1.3
+      effect: 3.2.1
       fast-check: 3.17.2
     dev: false
 
-  /@effect/typeclass@0.24.12(effect@3.1.3):
+  /@effect/typeclass@0.24.12(effect@3.2.1):
     resolution: {integrity: sha512-s18bZwNKgVkp9kEK2ZkwnxOHRvn1UdpAnhVVHyUyYiUYJWGwlHUXTZWf0Y+kCaai+fLcLUGF63qu97JdNzdDyQ==}
     peerDependencies:
       effect: ^3.1.3
     dependencies:
-      effect: 3.1.3
+      effect: 3.2.1
     dev: false
 
   /@esbuild/aix-ppc64@0.19.10:
@@ -3842,12 +3845,8 @@ packages:
       which: 4.0.0
     dev: true
 
-  /effect@3.1.3:
-    resolution: {integrity: sha512-afL9sbn4m9fCERYMLgUgtJC8+JvHb62zh0Q3v0O56z4aMAEdrrd+DKvLtlTbonQjgdOB37frE9LJuwUO7DV0ww==}
-    dev: false
-
-  /effect@3.1.4:
-    resolution: {integrity: sha512-eAKVwRyDF+8wCRKWY6yK7inCwsTGjLIyZTggbQjlVp/ziHBmfVsOCn/JOyW5iFjRoeZv7+TsLMUPjoMwkt1QQA==}
+  /effect@3.2.1:
+    resolution: {integrity: sha512-WnM7QyHekA+oWkJyD1g99BDqD3atAXKjarcDnUX9alIKLd8EFXdY333wpgcNJkSqtvXDsx8qYWOMbuivdwoN2w==}
     dev: false
 
   /electron-to-chromium@1.4.615:

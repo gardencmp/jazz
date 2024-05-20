@@ -1,23 +1,15 @@
-import { expect, describe, test, beforeEach } from "vitest";
-
-import { webcrypto } from "node:crypto";
+import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, jazzReady, Encoders, CoMap, co } from "..";
+import { Account, Encoders, CoMap, co, WasmCrypto } from "..";
 
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await jazzReady;
-});
+const Crypto = await WasmCrypto.create();
 
 describe("Simple CoMap operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
     });
 
     class TestMap extends CoMap {
@@ -161,9 +153,7 @@ describe("Simple CoMap operations", async () => {
     }
     interface SubClassMap extends CoMap {}
 
-    class GenericMapWithLoose<
-        out T extends string = string,
-    > extends CoMap {
+    class GenericMapWithLoose<out T extends string = string> extends CoMap {
         name = co.json<T>();
     }
 
@@ -199,6 +189,7 @@ describe("CoMap resolution", async () => {
     const initNodeAndMap = async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const map = TestMap.create(
@@ -249,6 +240,7 @@ describe("CoMap resolution", async () => {
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         const loadedMap = await TestMap.load(map.id, { as: meOnSecondPeer });
@@ -313,6 +305,7 @@ describe("CoMap resolution", async () => {
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         await Effect.runPromise(
@@ -391,6 +384,7 @@ describe("CoMap resolution", async () => {
     test("Construction with optional", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const mapWithout = TestMapWithOptionalRef.create(
@@ -434,6 +428,7 @@ describe("CoMap resolution", async () => {
     test("Construction with index signature", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const record = TestRecord.create(
@@ -462,6 +457,7 @@ describe("CoMap resolution", async () => {
     test("Construction with index signature (shorthand)", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const record = TestRecord2.create(
@@ -484,6 +480,7 @@ describe("CoMap resolution", async () => {
     test("Construction with index signature ref", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const record = TestRecordRef.create(

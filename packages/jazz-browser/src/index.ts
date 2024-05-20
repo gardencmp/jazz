@@ -11,7 +11,8 @@ import {
     Account,
     CoValueClass,
     Me,
-    jazzReady,
+    WasmCrypto,
+    CryptoProvider,
 } from "jazz-tools";
 import { AccountID, LSMStorage } from "cojson";
 import { AuthProvider } from "./auth/auth.js";
@@ -32,13 +33,15 @@ export async function createJazzBrowserContext<Acc extends Account>({
     peer,
     reconnectionTimeout: initialReconnectionTimeout = 500,
     storage = "indexedDB",
+    crypto: customCrypto,
 }: {
     auth: AuthProvider<Acc>;
     peer: `wss://${string}` | `ws://${string}`;
     reconnectionTimeout?: number;
     storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
+    crypto?: CryptoProvider;
 }): Promise<BrowserContext<Acc>> {
-    await jazzReady;
+    const crypto = customCrypto || (await WasmCrypto.create());
     let sessionDone: () => void;
 
     const firstWsPeer = createWebSocketPeer(peer);
@@ -63,11 +66,12 @@ export async function createJazzBrowserContext<Acc extends Account>({
             storage === "indexedDB"
                 ? await IDBStorage.asPeer()
                 : await LSMStorage.asPeer({
-                      fs: new OPFSFilesystem(),
+                      fs: new OPFSFilesystem(crypto),
                       // trace: true,
                   }),
             firstWsPeer,
-        ]
+        ],
+        await WasmCrypto.create()
     );
 
     async function websocketReconnectLoop() {

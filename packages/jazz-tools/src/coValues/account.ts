@@ -2,6 +2,7 @@ import { LocalNode } from "cojson";
 import type {
     AgentSecret,
     CoID,
+    CryptoProvider,
     InviteSecret,
     Peer,
     RawAccount,
@@ -171,6 +172,7 @@ export class Account
             creationProps: { name: string };
             initialAgentSecret?: AgentSecret;
             peersToLoadFrom?: Peer[];
+            crypto: CryptoProvider;
         }
     ): Promise<A & Me> {
         const { node } = await LocalNode.withNewlyCreatedAccount({
@@ -194,6 +196,7 @@ export class Account
             accountSecret: AgentSecret;
             sessionID: SessionID;
             peersToLoadFrom: Peer[];
+            crypto: CryptoProvider;
         }
     ): Promise<A & Me> {
         const node = await LocalNode.withLoadedAccount({
@@ -201,6 +204,7 @@ export class Account
             accountSecret: options.accountSecret,
             sessionID: options.sessionID,
             peersToLoadFrom: options.peersToLoadFrom,
+            crypto: options.crypto,
             migration: async (rawAccount, _node, creationProps) => {
                 const account = new this({
                     fromRaw: rawAccount,

@@ -5,17 +5,9 @@ import {
     KeySecret,
     Signature,
     StreamingHash,
-    unseal,
-    shortHash,
-    sign,
-    verify,
-    encryptForTransaction,
     KeyID,
-    decryptKeySecret,
-    getAgentSignerID,
-    getAgentSealerID,
-    decryptRawForTransaction,
-} from "./crypto.js";
+    CryptoProvider,
+} from "./crypto/crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
 import {
@@ -44,8 +36,8 @@ export type CoValueHeader = {
     uniqueness: `z${string}` | null;
 };
 
-export function idforHeader(header: CoValueHeader): RawCoID {
-    const hash = shortHash(header);
+export function idforHeader(header: CoValueHeader, crypto: CryptoProvider): RawCoID {
+    const hash = crypto.shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
 }
 
@@ -93,6 +85,7 @@ const readKeyCache = new WeakMap<CoValueCore, { [id: KeyID]: KeySecret }>();
 export class CoValueCore {
     id: RawCoID;
     node: LocalNode;
+    crypto: CryptoProvider;
     header: CoValueHeader;
     _sessionLogs: Map<SessionID, SessionLog>;
     _cachedContent?: RawCoValue;
@@ -108,9 +101,10 @@ export class CoValueCore {
     constructor(
         header: CoValueHeader,
         node: LocalNode,
-        internalInitSessions: Map<SessionID, SessionLog> = new Map()
+        internalInitSessions: Map<SessionID, SessionLog> = new Map(),
     ) {
-        this.id = idforHeader(header);
+        this.crypto = node.crypto;
+        this.id = idforHeader(header, node.crypto);
         this.header = header;
         this._sessionLogs = internalInitSessions;
         this.node = node;
@@ -194,7 +188,7 @@ export class CoValueCore {
         givenExpectedNewHash: Hash | undefined,
         newSignature: Signature
     ): boolean {
-        const signerID = getAgentSignerID(
+        const signerID = this.crypto.getAgentSignerID(
             this.node.resolveAccountAgent(
                 accountOrAgentIDfromSessionID(sessionID),
                 "Expected to know signer of transaction"
@@ -229,7 +223,7 @@ export class CoValueCore {
         }
 
         // const beforeVerify = performance.now();
-        if (!verify(newSignature, expectedNewHash, signerID)) {
+        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
                 "Invalid signature in",
                 this.id,
@@ -272,7 +266,7 @@ export class CoValueCore {
             resolveDone = resolve;
         });
 
-        const signerID = getAgentSignerID(
+        const signerID = this.crypto.getAgentSignerID(
             await this.node.resolveAccountAgentAsync(
                 accountOrAgentIDfromSessionID(sessionID),
                 "Expected to know signer of transaction"
@@ -324,7 +318,7 @@ export class CoValueCore {
         }
 
         performance.mark("verifyStart" + this.id);
-        if (!verify(newSignature, expectedNewHash, signerID)) {
+        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
                 "Invalid signature in",
                 this.id,
@@ -452,7 +446,7 @@ export class CoValueCore {
     ): { expectedNewHash: Hash; newStreamingHash: StreamingHash } {
         const streamingHash =
             this.sessionLogs.get(sessionID)?.streamingHash.clone() ??
-            new StreamingHash();
+            new StreamingHash(this.crypto);
         for (const transaction of newTransactions) {
             streamingHash.update(transaction);
         }
@@ -471,7 +465,7 @@ export class CoValueCore {
     ): Promise<{ expectedNewHash: Hash; newStreamingHash: StreamingHash }> {
         const streamingHash =
             this.sessionLogs.get(sessionID)?.streamingHash.clone() ??
-            new StreamingHash();
+            new StreamingHash(this.crypto);
         let before = performance.now();
         for (const transaction of newTransactions) {
             streamingHash.update(transaction);
@@ -508,10 +502,14 @@ export class CoValueCore {
                 );
             }
 
-            const encrypted = encryptForTransaction(changes, keySecret, {
-                in: this.id,
-                tx: this.nextTransactionID(),
-            });
+            const encrypted = this.crypto.encryptForTransaction(
+                changes,
+                keySecret,
+                {
+                    in: this.id,
+                    tx: this.nextTransactionID(),
+                }
+            );
 
             this._decryptionCache[encrypted] = changes;
 
@@ -542,7 +540,7 @@ export class CoValueCore {
             transaction,
         ]);
 
-        const signature = sign(
+        const signature = this.crypto.sign(
             this.node.account.currentSignerSecret(),
             expectedNewHash
         );
@@ -603,14 +601,15 @@ export class CoValueCore {
                             this._decryptionCache[tx.encryptedChanges];
 
                         if (!decrytedChanges) {
-                            const decryptedString = decryptRawForTransaction(
-                                tx.encryptedChanges,
-                                readKey,
-                                {
-                                    in: this.id,
-                                    tx: txID,
-                                }
-                            );
+                            const decryptedString =
+                                this.crypto.decryptRawForTransaction(
+                                    tx.encryptedChanges,
+                                    readKey,
+                                    {
+                                        in: this.id,
+                                        tx: txID,
+                                    }
+                                );
                             decrytedChanges =
                                 decryptedString && parseJSON(decryptedString);
                             this._decryptionCache[tx.encryptedChanges] =
@@ -711,10 +710,10 @@ export class CoValueCore {
                     "Expected to know revealer"
                 );
 
-                const secret = unseal(
+                const secret = this.crypto.unseal(
                     lastReadyKeyEdit.value,
                     this.node.account.currentSealerSecret(),
-                    getAgentSealerID(revealerAgent),
+                    this.crypto.getAgentSealerID(revealerAgent),
                     {
                         in: this.id,
                         tx: lastReadyKeyEdit.tx,
@@ -740,7 +739,7 @@ export class CoValueCore {
 
                     const encryptedPreviousKey = content.get(co)!;
 
-                    const secret = decryptKeySecret(
+                    const secret = this.crypto.decryptKeySecret(
                         {
                             encryptedID: keyID,
                             encryptingID: encryptingKeyID,

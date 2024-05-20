@@ -1,15 +1,18 @@
 import { expect, test } from "vitest";
-import { ControlledAgent, LocalNode, cojsonInternals } from "cojson";
+import { ControlledAgent, LocalNode, WasmCrypto, cojsonInternals } from "cojson";
 import { IDBStorage } from ".";
 
+const Crypto = await WasmCrypto.create();
+
 test.skip("Should be able to initialize and load from empty DB", async () => {
-    const agentSecret = cojsonInternals.newRandomAgentSecret();
+    const agentSecret = Crypto.newRandomAgentSecret();
 
     const node = new LocalNode(
-        new ControlledAgent(agentSecret),
+        new ControlledAgent(agentSecret, Crypto),
         cojsonInternals.newRandomSessionID(
-            cojsonInternals.getAgentID(agentSecret)
-        )
+            Crypto.getAgentID(agentSecret)
+        ),
+        Crypto
     );
 
     node.syncManager.addPeer(await IDBStorage.asPeer({ trace: true }));
@@ -24,13 +27,14 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 });
 
 test("Should be able to sync data to database and then load that from a new node", async () => {
-    const agentSecret = cojsonInternals.newRandomAgentSecret();
+    const agentSecret = Crypto.newRandomAgentSecret();
 
     const node1 = new LocalNode(
-        new ControlledAgent(agentSecret),
+        new ControlledAgent(agentSecret, Crypto),
         cojsonInternals.newRandomSessionID(
-            cojsonInternals.getAgentID(agentSecret)
-        )
+            Crypto.getAgentID(agentSecret)
+        ),
+        Crypto
     );
 
     node1.syncManager.addPeer(
@@ -48,10 +52,11 @@ test("Should be able to sync data to database and then load that from a new node
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const node2 = new LocalNode(
-        new ControlledAgent(agentSecret),
+        new ControlledAgent(agentSecret, Crypto),
         cojsonInternals.newRandomSessionID(
-            cojsonInternals.getAgentID(agentSecret)
-        )
+            Crypto.getAgentID(agentSecret)
+        ),
+        Crypto
     );
 
     node2.syncManager.addPeer(

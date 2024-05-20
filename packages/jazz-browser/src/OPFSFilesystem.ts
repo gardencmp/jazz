@@ -1,4 +1,4 @@
-import { BlockFilename, FSErr, FileSystem, WalFilename } from "cojson";
+import { BlockFilename, FSErr, FileSystem, WalFilename, CryptoProvider } from "cojson";
 import { Effect } from "effect";
 
 export class OPFSFilesystem implements FileSystem<number, number> {
@@ -6,7 +6,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
     callbacks: Map<number, (event: MessageEvent) => void> = new Map();
     nextRequestId = 0;
 
-    constructor() {
+    constructor(public crypto: CryptoProvider) {
         this.opfsWorker = new Worker(
             URL.createObjectURL(
                 new Blob([opfsWorkerJSSrc], { type: "text/javascript" })

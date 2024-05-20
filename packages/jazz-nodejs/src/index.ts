@@ -5,21 +5,15 @@ import {
 import { WebSocket } from "ws";
 import "dotenv/config";
 
-import { webcrypto } from "node:crypto";
 import {
     AccountID,
     AgentSecret,
     Peer,
     SessionID,
+    WasmCrypto,
     cojsonInternals,
-    cojsonReady,
 } from "cojson";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
-
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
 
 /** @category Context Creation */
 export async function startWorker<A extends Account>({
@@ -29,14 +23,12 @@ export async function startWorker<A extends Account>({
     syncServer: peer = "wss://sync.jazz.tools",
     accountSchema = Account as unknown as CoValueClass<A> & typeof Account,
 }: {
-    accountID?: string,
-    accountSecret?: string,
-    sessionID?: string,
+    accountID?: string;
+    accountSecret?: string;
+    sessionID?: string;
     syncServer?: string;
     accountSchema?: CoValueClass<A> & typeof Account;
 }): Promise<{ worker: A & Me }> {
-    await cojsonReady;
-
     const ws = new WebSocket(peer);
 
     const wsPeer: Peer = {
@@ -48,10 +40,7 @@ export async function startWorker<A extends Account>({
 
     // TODO: locked sessions similar to browser
     const sessionIDToUse =
-        sessionID ||
-        cojsonInternals.newRandomSessionID(
-            accountID as AccountID
-        );
+        sessionID || cojsonInternals.newRandomSessionID(accountID as AccountID);
 
     if (!accountID) {
         throw new Error("No accountID provided");
@@ -68,7 +57,10 @@ export async function startWorker<A extends Account>({
     if (!accountSecret?.startsWith("sealerSecret_")) {
         throw new Error("Invalid accountSecret");
     }
-    if (!sessionIDToUse.startsWith("co_") || !sessionIDToUse.includes("_session")) {
+    if (
+        !sessionIDToUse.startsWith("co_") ||
+        !sessionIDToUse.includes("_session")
+    ) {
         throw new Error("Invalid sessionID");
     }
 
@@ -77,6 +69,7 @@ export async function startWorker<A extends Account>({
         accountSecret: accountSecret as AgentSecret,
         sessionID: sessionIDToUse as SessionID,
         peersToLoadFrom: [wsPeer],
+        crypto: await WasmCrypto.create(),
     });
 
     setInterval(() => {

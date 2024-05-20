@@ -1,16 +1,7 @@
-import { expect, describe, test, beforeEach } from "vitest";
+import { expect, describe, test } from "vitest";
+import { Account, CoMap, co, Group, WasmCrypto } from "..";
 
-import { webcrypto } from "node:crypto";
-import { Account, jazzReady, CoMap, co, Group } from "..";
-
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await jazzReady;
-});
+const Crypto = await WasmCrypto.create();
 
 describe("Custom accounts and groups", async () => {
     class CustomProfile extends CoMap {
@@ -49,6 +40,7 @@ describe("Custom accounts and groups", async () => {
     test("Custom account and group", async () => {
         const me = await CustomAccount.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto
         });
 
         expect(me.profile).toBeDefined();

@@ -1,8 +1,8 @@
 export {
-    /** @category Internal types */
-    cojsonReady as jazzReady,
     cojsonInternals,
     MAX_RECOMMENDED_TX_SIZE,
+    WasmCrypto,
+    PureJSCrypto,
 } from "cojson";
 export type {
     InviteSecret,
@@ -10,6 +10,7 @@ export type {
     SessionID,
     AgentID,
     SyncMessage,
+    CryptoProvider,
 } from "cojson";
 
 export type { ID, CoValue } from "./internal.js";

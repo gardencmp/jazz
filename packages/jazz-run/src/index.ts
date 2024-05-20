@@ -8,16 +8,10 @@ import {
 } from "cojson-transport-nodejs-ws";
 import { WebSocket } from "ws";
 import type { Me } from "jazz-tools";
-import { Account, cojsonInternals, jazzReady } from "jazz-tools";
-import { webcrypto } from "node:crypto";
+import { Account, WasmCrypto, cojsonInternals } from "jazz-tools";
 import type { AccountID } from "cojson";
 
 const jazzTools = Command.make("jazz-tools");
-
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
 
 const name = Options.text("name").pipe(Options.withAlias("n"));
 const peer = Options.text("peer")
@@ -30,9 +24,9 @@ const accountCreate = Command.make(
         return Effect.gen(function* () {
             const ws = new WebSocket(peer);
 
-            yield* Effect.promise(() => jazzReady);
+            const crypto = yield* Effect.promise(() => WasmCrypto.create());
 
-            const account: Account & Me = yield* Effect.promise(() =>
+            const account: Account & Me = yield* Effect.promise(async () =>
                 Account.create({
                     creationProps: { name },
                     peersToLoadFrom: [
@@ -43,6 +37,7 @@ const accountCreate = Command.make(
                             outgoing: websocketWritableStream(ws),
                         },
                     ],
+                    crypto,
                 })
             );
 
@@ -59,7 +54,7 @@ const accountCreate = Command.make(
 
             const ws2 = new WebSocket(peer);
 
-            yield* Effect.promise(() =>
+            yield* Effect.promise(async () =>
                 Account.become({
                     accountID: account.id,
                     accountSecret: account._raw.agentSecret,
@@ -74,6 +69,7 @@ const accountCreate = Command.make(
                             outgoing: websocketWritableStream(ws2),
                         },
                     ],
+                    crypto,
                 })
             );
 
