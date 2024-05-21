@@ -2,8 +2,7 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { BinaryCoStream, ID, Account, CoStream, co, WasmCrypto } from "..";
-import { Simplify } from "effect/Types";
+import { BinaryCoStream, ID, Account, CoStream, co, WasmCrypto } from '../index.js';
 
 const Crypto = await WasmCrypto.create();
 
@@ -85,6 +84,7 @@ describe("CoStream resolution", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
@@ -171,6 +171,7 @@ describe("CoStream resolution", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
@@ -197,12 +198,9 @@ describe("CoStream resolution", async () => {
                                 me.id
                             ]?.value
                         );
-                        Effect.runPromise(Queue.offer(queue, subscribedStream));
+                        void Effect.runPromise(Queue.offer(queue, subscribedStream));
                     }
                 );
-
-                type T = Simplify<TestStream>;
-                const te: T = stream;
 
                 const update1 = yield* $(Queue.take(queue));
                 expect(update1[me.id]?.value).toEqual(null);
@@ -297,7 +295,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
     };
 
     test("Construction", async () => {
-        const { me, stream } = await initNodeAndStream();
+        const { stream } = await initNodeAndStream();
         expect(stream.getChunks()).toEqual({
             mimeType: "text/plain",
             chunks: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])],
@@ -317,6 +315,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
@@ -349,6 +348,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
@@ -361,7 +361,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
                     stream.id,
                     { as: meOnSecondPeer },
                     (subscribedStream) => {
-                        Effect.runPromise(Queue.offer(queue, subscribedStream));
+                        void Effect.runPromise(Queue.offer(queue, subscribedStream));
                     }
                 );
 

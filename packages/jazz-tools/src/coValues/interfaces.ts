@@ -13,10 +13,12 @@ import {
 } from "../internal.js";
 
 export type ClassOf<T> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new (...args: any[]): T;
 };
 
 /** @category Abstract interfaces */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
     /** @category Construction and loading */
     new (init: Init, options: { owner: Account | Group }): Value;
@@ -57,6 +59,7 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
 }
 
 /** @category Abstract interfaces */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface CoValue<Type extends string = string, Raw = any> {
     /** @category Content */
     readonly id: ID<this>;
@@ -73,14 +76,19 @@ export interface CoValue<Type extends string = string, Raw = any> {
     /** @internal */
     readonly _loadedAs: Account & Me;
     /** @category Stringifying & Inspection */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(): any[] | object;
     /** @category Stringifying & Inspection */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [inspect](): any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isCoValue(value: any): value is CoValue {
     return value && value._type !== undefined;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isCoValueClass(value: any): value is CoValueClass {
     return typeof value === "function" && value.fromRaw !== undefined;
 }
@@ -117,6 +125,7 @@ export class CoValueBase implements CoValue {
         return Account.fromNode(this._raw.core.node);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(..._args: any) {
         Object.defineProperty(this, "_instanceID", {
             value: `instance-${Math.random().toString(36).slice(2)}`,
@@ -215,6 +224,7 @@ export class CoValueBase implements CoValue {
     subscribe(listener: (update: this) => void, options?: RequireOptions<this>): () => void {
         return (this.constructor as unknown as typeof CoValueBase).subscribe(
             this.id as unknown as ID<CoValue>,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { as: this._loadedAs, require: options?.require as any },
             listener as unknown as (update: CoValue) => void
         );
@@ -225,6 +235,7 @@ export class CoValueBase implements CoValue {
         return Stream.provideService(
             (this.constructor as unknown as typeof CoValueBase).subscribeEf(
                 this.id as unknown as ID<CoValue>,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 options as any
             ),
             AccountCtx,
@@ -232,6 +243,7 @@ export class CoValueBase implements CoValue {
         ) as unknown as Stream.Stream<this, UnavailableError, never>;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(): object | any[] {
         return {
             id: this.id,

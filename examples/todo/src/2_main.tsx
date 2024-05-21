@@ -37,6 +37,7 @@ const auth = PasskeyAuth<TodoAccount>({
     accountSchema: TodoAccount,
 });
 const Jazz = createJazzReactContext<TodoAccount>({ auth, peer: "wss://mesh.jazz.tools/?key=you@example.com" });
+// eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -59,8 +60,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  * on the CoValue ID (CoID) of our TodoProject, stored in the URL hash
  * - which can also contain invite links.
  */
-
-function App() {
+export default function App() {
     // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
     const { logOut } = useAccount();
 
@@ -101,7 +101,7 @@ function App() {
     );
 }
 
-export function HomeScreen() {
+function HomeScreen() {
     const { me } = useAccount();
     const navigate = useNavigate();
 

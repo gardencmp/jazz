@@ -3,6 +3,7 @@ import type { Account, CoValue, CoValueBase, ID, Me, ClassOf } from "../internal
 
 export const subscriptionsScopes = new WeakMap<
     CoValue,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SubscriptionScope<any>
 >();
 

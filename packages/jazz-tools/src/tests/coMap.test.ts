@@ -2,7 +2,7 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, Encoders, CoMap, co, WasmCrypto } from "..";
+import { Account, Encoders, CoMap, co, WasmCrypto } from '../index.js';
 
 const Crypto = await WasmCrypto.create();
 
@@ -146,17 +146,18 @@ describe("Simple CoMap operations", async () => {
         name = co.string;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class SubClassMap extends SuperClassMap {
         name = co.literal("specificString");
         value = co.number;
         extra = co.ref(TestMap);
     }
-    interface SubClassMap extends CoMap {}
 
     class GenericMapWithLoose<out T extends string = string> extends CoMap {
         name = co.json<T>();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const loose: GenericMapWithLoose<string> = {} as GenericMapWithLoose<
         "a" | "b"
     >;
@@ -239,6 +240,7 @@ describe("CoMap resolution", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
@@ -304,6 +306,7 @@ describe("CoMap resolution", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
@@ -320,7 +323,7 @@ describe("CoMap resolution", async () => {
                             "subscribedMap.nested?.twiceNested?.taste",
                             subscribedMap.nested?.twiceNested?.taste
                         );
-                        Effect.runPromise(Queue.offer(queue, subscribedMap));
+                        void Effect.runPromise(Queue.offer(queue, subscribedMap));
                     }
                 );
 
@@ -420,9 +423,11 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?._raw).toBeDefined();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
     class TestRecord extends CoMap {
         [co.items] = co.number;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
     interface TestRecord extends Record<string, number> {}
 
     test("Construction with index signature", async () => {

@@ -1,4 +1,4 @@
-import { base64URLtoBytes, bytesToBase64url } from "./base64url";
+import { base64URLtoBytes, bytesToBase64url } from './base64url.js';
 import { test, expect } from 'vitest';
 
 const txt = new TextEncoder();

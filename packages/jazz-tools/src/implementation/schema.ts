@@ -27,17 +27,21 @@ export const co = {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null>,
     literal: <T extends (string | number | boolean)[]>(..._lit: T): co<T[number]> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
     json: <T extends JsonValue>(): co<T> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
     encoded: <T>(arg: Encoder<T>): co<T> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: { encoded: arg } satisfies Schema } as any;
     },
     ref: <C extends CoValueClass>(
         arg: C | ((_raw: InstanceType<C>["_raw"]) => C)
     ): co<InstanceType<C> | null> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: arg satisfies Schema } as any;
     },
     items: ItemsSym as ItemsSym,
@@ -65,6 +69,7 @@ export function instantiateRefEncoded<V extends CoValue>(
         : (schema as (raw: RawCoValue) => CoValueClass<V>)(raw).fromRaw(raw);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Schema = JsonEncoded | RefEncoded<CoValue> | EncodedAs<any>;
 
 export type SchemaFor<Field> = NonNullable<Field> extends CoValue
@@ -74,12 +79,16 @@ export type SchemaFor<Field> = NonNullable<Field> extends CoValue
       : EncodedAs<NonNullable<Field>>;
 
 export type EffectSchemaWithInputAndOutput<A, I = A> = EffectSchema<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
     never
 > & {
     [TypeId]: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _A: (_: any) => A;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _I: (_: any) => I;
     };
 };

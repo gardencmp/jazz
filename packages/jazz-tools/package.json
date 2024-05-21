@@ -15,7 +15,8 @@
     },
     "scripts": {
         "test": "vitest",
-        "lint": "eslint src/**/*.ts",
+        "lint": "eslint . --ext ts,tsx",
+        "format": "prettier --write src/**/*.ts",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },

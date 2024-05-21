@@ -80,6 +80,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     declare _raw: RawCoMap;
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     /** @internal */
     get _schema() {
@@ -121,6 +122,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
             (key) =>
                 (this._schema[key] ||
                     this._schema[ItemsSym]) as RefEncoded<CoValue>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ) as any;
     }
 
@@ -181,10 +183,12 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [InitValues]?: any;
 
     /** @internal */
     constructor(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group }
     ) {
         super();
@@ -227,6 +231,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
             if (descriptor == "json" || "encode" in descriptor) {
                 return [key, this._raw.get(key)];
             } else if (isRefEncoded(descriptor)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const jsonedRef = (this as any)[tKey]?.toJSON();
                 return [key, jsonedRef];
             } else {
@@ -246,6 +251,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawFromInit<Fields extends object = Record<string, any>>(
         init: Simplify<CoMapInit<Fields>> | undefined,
         owner: Account | Group
@@ -272,6 +278,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                     }
                 } else if ("encoded" in descriptor) {
                     rawInit[key] = encodeSync(descriptor.encoded)(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         initValue as any
                     );
                 }
@@ -311,6 +318,7 @@ function tryInit(map: CoMap) {
         map[InitValues] &&
         (map._schema[ItemsSym] ||
             Object.keys(map[InitValues].init).every(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (key) => (map._schema as any)[key]
             ))
     ) {

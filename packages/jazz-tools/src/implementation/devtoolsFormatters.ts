@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ItemsSym } from "./symbols.js";
 
 (globalThis as any).devtoolsFormatters = [

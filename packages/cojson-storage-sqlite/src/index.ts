@@ -59,7 +59,7 @@ export class SQLiteStorage {
         this.fromLocalNode = fromLocalNode.getReader();
         this.toLocalNode = toLocalNode.getWriter();
 
-        (async () => {
+        void (async () => {
             let done = false;
             while (!done) {
                 const result = await this.fromLocalNode.read();

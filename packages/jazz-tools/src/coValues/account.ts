@@ -43,6 +43,7 @@ export class Account
     declare _type: "Account";
     declare _raw: RawAccount | RawControlledAccount;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     get _schema(): {
         profile: Schema;
@@ -54,6 +55,7 @@ export class Account
         this._schema = {
             profile: () => Profile satisfies Schema,
             root: "json" satisfies Schema,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
     }
 
@@ -86,6 +88,7 @@ export class Account
                     this._schema.profile as RefEncoded<
                         NonNullable<this["profile"]> & CoValue
                     >
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as NonNullable<this["profile"]> extends Profile
                     ? Ref<NonNullable<this["profile"]>> | null
                     : null),
@@ -97,6 +100,7 @@ export class Account
                     this._schema.root as RefEncoded<
                         NonNullable<this["root"]> & CoValue
                     >
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as NonNullable<this["root"]> extends CoMap
                     ? Ref<NonNullable<this["root"]>> | null
                     : null),
@@ -164,6 +168,7 @@ export class Account
         return coValueClass.load(valueID, {
             as: this as Account & Me,
         });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any;
 
     static async create<A extends Account>(
@@ -226,6 +231,7 @@ export class Account
         }) as A & Me;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(): object | any[] {
         return {
             id: this.id,
@@ -253,9 +259,11 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     get(target, key, receiver) {
         if (key === "profile") {
             const ref = target._refs.profile;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return ref ? ref.accessFrom(receiver, "profile") : (undefined as any);
         } else if (key === "root") {
             const ref = target._refs.root;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return ref ? ref.accessFrom(receiver, "root") : (undefined as any);
         } else {
             return Reflect.get(target, key, receiver);
@@ -309,12 +317,14 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
 
 /** @category Identity & Permissions */
 export interface Me {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     id: ID<any>;
     isMe: true;
     _raw: RawControlledAccount;
     sessionID: SessionID;
     subscribe(listener: (update: this & Me) => void): () => void;
     subscribeEf(): Stream<this & Me, UnavailableError, never>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     acceptInvite: (...args: any[]) => any;
 }
 

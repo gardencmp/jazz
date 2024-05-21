@@ -46,6 +46,7 @@ export type SingleCoStreamEntry<Item> = {
 };
 
 /** @category CoValues */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class CoStream<Item = any>
     extends CoValueBase
     implements CoValue<"CoStream", RawCoStream>
@@ -65,6 +66,7 @@ export class CoStream<Item = any>
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     get _schema(): {
         [ItemsSym]: SchemaFor<Item>;
@@ -84,6 +86,7 @@ export class CoStream<Item = any>
         return this.perSession[this._loadedAs.sessionID];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [InitValues]?: any;
 
     constructor(
@@ -169,6 +172,7 @@ export class CoStream<Item = any>
     }
 
     static schema<V extends CoStream>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this: { new (...args: any): V } & typeof CoStream,
         def: { [ItemsSym]: V["_schema"][ItemsSym] }
     ) {
@@ -290,6 +294,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
                                 target._schema[ItemsSym]
                             );
                         }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
                 },
             });
@@ -396,6 +401,7 @@ const CoStreamPerSessionProxyHandler = (
                                 innerTarget._schema[ItemsSym]
                             );
                         }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
                 },
             });

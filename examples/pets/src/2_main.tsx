@@ -34,6 +34,7 @@ const Jazz = createJazzReactContext({
     auth,
     peer: "wss://mesh.jazz.tools/?key=you@example.com",
 });
+// eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

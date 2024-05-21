@@ -31,6 +31,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
     }
     declare _raw: RawGroup;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     get _schema(): {
         profile: Schema;
@@ -44,6 +45,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
             profile: "json" satisfies Schema,
             root: "json" satisfies Schema,
             [MembersSym]: () => Account satisfies Schema,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         Object.defineProperty(this.prototype, "_schema", {
             get: () => this._schema,
@@ -70,6 +72,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     this._schema.profile as RefEncoded<
                         NonNullable<this["profile"]>
                     >
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["profile"] extends Profile
                     ? Ref<this["profile"]>
                     : never),
@@ -79,6 +82,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     rootID,
                     this._loadedAs,
                     this._schema.root as RefEncoded<NonNullable<this["root"]>>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["root"] extends CoMap
                     ? Ref<this["root"]>
                     : never),

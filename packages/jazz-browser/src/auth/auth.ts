@@ -1,5 +1,5 @@
 import { Account, CryptoProvider, Me, Peer } from "jazz-tools";
-import { SessionProvider } from "..";
+import { SessionProvider } from "../index.js";
 
 /** @category Auth Providers */
 export interface AuthProvider<Acc extends Account> {

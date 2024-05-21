@@ -28,6 +28,7 @@ import {
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
 /** @category CoValues */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class CoList<Item = any>
     extends Array<Item>
     implements CoValue<"CoList", RawCoList>
@@ -54,6 +55,7 @@ export class CoList<Item = any>
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     get _schema(): {
         [ItemsSym]: SchemaFor<Item>;
@@ -87,6 +89,7 @@ export class CoList<Item = any>
                 ),
             this._loadedAs,
             (_idx) => this._schema[ItemsSym] as RefEncoded<CoValue>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ) as any;
     }
 
@@ -105,6 +108,7 @@ export class CoList<Item = any>
         return Account.fromNode(this._raw.core.node);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [InitValues]?: any;
 
     static get [Symbol.species]() {
@@ -235,11 +239,13 @@ export class CoList<Item = any>
 
     subscribe!: (listener: (update: this) => void, options?: RequireOptions<this>) => () => void;
     static {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.prototype.subscribe = CoValueBase.prototype.subscribe as any;
     }
 
     subscribeEf!: (options?: RequireOptions<this>) => Stream.Stream<this, "unavailable", never>;
     static {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.prototype.subscribeEf = CoValueBase.prototype.subscribeEf as any;
     }
 
@@ -274,6 +280,7 @@ export class CoList<Item = any>
     ) => () => void;
 
     static schema<V extends CoList>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this: { new (...args: any): V } & typeof CoList,
         def: { [ItemsSym]: V["_schema"][ItemsSym] }
     ) {

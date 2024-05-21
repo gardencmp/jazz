@@ -180,6 +180,7 @@ export type UseAccountHook<Acc extends Account> = () => {
 
 /** @category Context & Hooks */
 export type UseCoStateHook = <V extends CoValue>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Schema: { new (...args: any[]): V } & CoValueClass,
     id: ID<V> | undefined,
     options?: { require?: (value: V) => boolean | undefined }

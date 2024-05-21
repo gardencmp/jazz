@@ -2,7 +2,7 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, CoList, WasmCrypto, co } from "..";
+import { Account, CoList, WasmCrypto, co } from '../index.js';
 
 const Crypto = await WasmCrypto.create();
 
@@ -161,6 +161,7 @@ describe("CoList resolution", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto
         });
@@ -213,6 +214,7 @@ describe("CoList resolution", async () => {
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto
         });
@@ -229,7 +231,7 @@ describe("CoList resolution", async () => {
                             "subscribedList?.[0]?.[0]?.[0]",
                             subscribedList?.[0]?.[0]?.[0]
                         );
-                        Effect.runPromise(Queue.offer(queue, subscribedList));
+                        void Effect.runPromise(Queue.offer(queue, subscribedList));
                     }
                 );
 

@@ -1,5 +1,5 @@
 import { expect, describe, test } from "vitest";
-import { Account, CoMap, co, Group, WasmCrypto } from "..";
+import { Account, CoMap, co, Group, WasmCrypto } from '../index.js';
 
 const Crypto = await WasmCrypto.create();
 
@@ -34,8 +34,6 @@ describe("Custom accounts and groups", async () => {
             return this.members.length;
         }
     }
-
-    type T = CustomGroup[typeof co.members];
 
     test("Custom account and group", async () => {
         const me = await CustomAccount.create({
@@ -86,6 +84,7 @@ describe("Custom accounts and groups", async () => {
         );
         expect(meAsCastMember?.account?.profile?.color).toBe("blue");
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map._owner as any).nMembers).toBeUndefined();
         expect(map._owner.as(CustomGroup).nMembers).toBe(2);
     });
