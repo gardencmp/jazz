@@ -98,7 +98,7 @@ test("Can push into RawBinaryCoStream", () => {
 
     content.startBinaryStream(
         { mimeType: "text/plain", fileName: "test.txt" },
-        "trusting"
+        "trusting",
     );
     content.pushBinaryStreamChunk(new Uint8Array([1, 2, 3]), "trusting");
     content.pushBinaryStreamChunk(new Uint8Array([4, 5, 6]), "trusting");
@@ -134,7 +134,7 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
 
     content.startBinaryStream(
         { mimeType: "text/plain", fileName: "test.txt" },
-        "trusting"
+        "trusting",
     );
 
     for (let i = 0; i < 10; i++) {
@@ -169,16 +169,16 @@ test("When adding large transactions (small fraction of MAX_RECOMMENDED_TX_SIZE)
     expect(newContent.length).toEqual(5);
     expect(newContent[0]!.header).toBeDefined();
     expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.signatureAfter[3]
+        sessionEntry.signatureAfter[3],
     );
     expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.signatureAfter[6]
+        sessionEntry.signatureAfter[6],
     );
     expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.signatureAfter[9]
+        sessionEntry.signatureAfter[9],
     );
     expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.lastSignature
+        sessionEntry.lastSignature,
     );
 });
 
@@ -204,7 +204,7 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
 
     content.startBinaryStream(
         { mimeType: "text/plain", fileName: "test.txt" },
-        "trusting"
+        "trusting",
     );
 
     const chunk = new Uint8Array(MAX_RECOMMENDED_TX_SIZE + 100);
@@ -232,15 +232,15 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
     expect(newContent.length).toEqual(5);
     expect(newContent[0]!.header).toBeDefined();
     expect(newContent[1]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.signatureAfter[1]
+        sessionEntry.signatureAfter[1],
     );
     expect(newContent[2]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.signatureAfter[2]
+        sessionEntry.signatureAfter[2],
     );
     expect(newContent[3]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.signatureAfter[3]
+        sessionEntry.signatureAfter[3],
     );
     expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(
-        sessionEntry.lastSignature
+        sessionEntry.lastSignature,
     );
 });

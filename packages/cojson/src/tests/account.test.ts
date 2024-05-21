@@ -10,7 +10,7 @@ test("Can create a node while creating a new account with profile", async () => 
     const { node, accountID, accountSecret, sessionID } =
         await LocalNode.withNewlyCreatedAccount({
             creationProps: { name: "Hermes Puggington" },
-            crypto: Crypto
+            crypto: Crypto,
         });
 
     expect(node).not.toBeNull();
@@ -19,14 +19,14 @@ test("Can create a node while creating a new account with profile", async () => 
     expect(sessionID).not.toBeNull();
 
     expect(node.expectProfileLoaded(accountID).get("name")).toEqual(
-        "Hermes Puggington"
+        "Hermes Puggington",
     );
 });
 
 test("A node with an account can create groups and and objects within them", async () => {
     const { node, accountID } = await LocalNode.withNewlyCreatedAccount({
         creationProps: { name: "Hermes Puggington" },
-        crypto: Crypto
+        crypto: Crypto,
     });
 
     const group = await node.createGroup();
@@ -42,7 +42,7 @@ test("Can create account with one node, and then load it on another", async () =
     const { node, accountID, accountSecret } =
         await LocalNode.withNewlyCreatedAccount({
             creationProps: { name: "Hermes Puggington" },
-            crypto: Crypto
+            crypto: Crypto,
         });
 
     const group = await node.createGroup();
@@ -65,7 +65,7 @@ test("Can create account with one node, and then load it on another", async () =
         accountSecret,
         sessionID: newRandomSessionID(accountID),
         peersToLoadFrom: [node1asPeer],
-        crypto: Crypto
+        crypto: Crypto,
     });
 
     const map2 = await node2.load(map.id);

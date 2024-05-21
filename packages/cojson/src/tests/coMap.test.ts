@@ -152,7 +152,7 @@ test("Can get last tx ID for a key in CoMap", () => {
     content.set("hello", "A", "trusting");
     const sessionID = content.lastEditAt("hello")?.tx.sessionID;
     expect(sessionID && accountOrAgentIDfromSessionID(sessionID)).toEqual(
-        node.account.id
+        node.account.id,
     );
     expect(content.lastEditAt("hello")?.tx.txIndex).toEqual(0);
     content.set("hello", "B", "trusting");

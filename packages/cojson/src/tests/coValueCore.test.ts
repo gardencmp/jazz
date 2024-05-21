@@ -32,7 +32,7 @@ test("Can create coValue with new agent credentials and add transaction to it", 
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.currentSessionID,
-        [transaction]
+        [transaction],
     );
 
     expect(
@@ -40,8 +40,8 @@ test("Can create coValue with new agent credentials and add transaction to it", 
             node.currentSessionID,
             [transaction],
             expectedNewHash,
-            Crypto.sign(account.currentSignerSecret(), expectedNewHash)
-        )
+            Crypto.sign(account.currentSignerSecret(), expectedNewHash),
+        ),
     ).toBe(true);
 });
 
@@ -69,7 +69,7 @@ test("transactions with wrong signature are rejected", () => {
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.currentSessionID,
-        [transaction]
+        [transaction],
     );
 
     expect(
@@ -77,8 +77,11 @@ test("transactions with wrong signature are rejected", () => {
             node.currentSessionID,
             [transaction],
             expectedNewHash,
-            Crypto.sign(Crypto.getAgentSignerSecret(wrongAgent), expectedNewHash)
-        )
+            Crypto.sign(
+                Crypto.getAgentSignerSecret(wrongAgent),
+                expectedNewHash,
+            ),
+        ),
     ).toBe(false);
 });
 
@@ -115,7 +118,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
                     },
                 ]),
             },
-        ]
+        ],
     );
 
     expect(
@@ -123,8 +126,8 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
             node.currentSessionID,
             [transaction],
             expectedNewHash,
-            Crypto.sign(account.currentSignerSecret(), expectedNewHash)
-        )
+            Crypto.sign(account.currentSignerSecret(), expectedNewHash),
+        ),
     ).toBe(false);
 });
 
@@ -155,9 +158,9 @@ test("New transactions in a group correctly update owned values, including subsc
             {
                 op: "set",
                 key: account.id,
-                value: "revoked"
-            } satisfies MapOpPayload<typeof account.id, Role>
-        ])
+                value: "revoked",
+            } satisfies MapOpPayload<typeof account.id, Role>,
+        ]),
     } satisfies Transaction;
 
     const { expectedNewHash } = group.core.expectedNewHashAfter(sessionID, [
@@ -166,12 +169,17 @@ test("New transactions in a group correctly update owned values, including subsc
 
     const signature = Crypto.sign(
         node.account.currentSignerSecret(),
-        expectedNewHash
+        expectedNewHash,
     );
 
     expect(map.core.getValidSortedTransactions().length).toBe(1);
 
-    const manuallyAdddedTxSuccess = group.core.tryAddTransactions(node.currentSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
+    const manuallyAdddedTxSuccess = group.core.tryAddTransactions(
+        node.currentSessionID,
+        [resignationThatWeJustLearnedAbout],
+        expectedNewHash,
+        signature,
+    );
 
     expect(manuallyAdddedTxSuccess).toBe(true);
 

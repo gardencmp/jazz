@@ -81,7 +81,7 @@ export class RawGroup<
      */
     addMember(
         account: RawAccount | ControlledAccountOrAgent | Everyone,
-        role: Role
+        role: Role,
     ) {
         this.addMemberInternal(account, role);
     }
@@ -89,7 +89,7 @@ export class RawGroup<
     /** @internal */
     addMemberInternal(
         account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
-        role: Role
+        role: Role,
     ) {
         const currentReadKey = this.core.getCurrentReadKey();
 
@@ -100,7 +100,7 @@ export class RawGroup<
         if (account === EVERYONE) {
             if (!(role === "reader" || role === "writer")) {
                 throw new Error(
-                    "Can't make everyone something other than reader or writer"
+                    "Can't make everyone something other than reader or writer",
                 );
             }
             this.set(account, role, "trusting");
@@ -112,7 +112,7 @@ export class RawGroup<
             this.set(
                 `${currentReadKey.id}_for_${EVERYONE}`,
                 currentReadKey.secret,
-                "trusting"
+                "trusting",
             );
         } else {
             const memberKey =
@@ -138,7 +138,7 @@ export class RawGroup<
                         tx: this.core.nextTransactionID(),
                     },
                 }),
-                "trusting"
+                "trusting",
             );
         }
     }
@@ -160,7 +160,7 @@ export class RawGroup<
 
         if (!maybeCurrentReadKey.secret) {
             throw new Error(
-                "Can't rotate read key secret we don't have access to"
+                "Can't rotate read key secret we don't have access to",
             );
         }
 
@@ -174,7 +174,7 @@ export class RawGroup<
         for (const readerID of currentlyPermittedReaders) {
             const reader = this.core.node.resolveAccountAgent(
                 readerID,
-                "Expected to know currently permitted reader"
+                "Expected to know currently permitted reader",
             );
 
             this.set(
@@ -188,7 +188,7 @@ export class RawGroup<
                         tx: this.core.nextTransactionID(),
                     },
                 }),
-                "trusting"
+                "trusting",
             );
         }
 
@@ -198,7 +198,7 @@ export class RawGroup<
                 encrypting: newReadKey,
                 toEncrypt: currentReadKey,
             }).encrypted,
-            "trusting"
+            "trusting",
         );
 
         this.set("readKey", newReadKey.id, "trusting");
@@ -217,7 +217,7 @@ export class RawGroup<
 
     /** @internal */
     removeMemberInternal(
-        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
     ) {
         const memberKey = typeof account === "string" ? account : account.id;
         this.set(memberKey, "revoked", "trusting");
@@ -252,7 +252,7 @@ export class RawGroup<
     createMap<M extends RawCoMap>(
         init?: M["_shape"],
         meta?: M["headerMeta"],
-        initPrivacy: "trusting" | "private" = "private"
+        initPrivacy: "trusting" | "private" = "private",
     ): M {
         const map = this.core.node
             .createCoValue({
@@ -284,7 +284,7 @@ export class RawGroup<
     createList<L extends RawCoList>(
         init?: L["_item"][],
         meta?: L["headerMeta"],
-        initPrivacy: "trusting" | "private" = "private"
+        initPrivacy: "trusting" | "private" = "private",
     ): L {
         const list = this.core.node
             .createCoValue({
@@ -324,7 +324,7 @@ export class RawGroup<
 
     /** @category 3. Value creation */
     createBinaryStream<C extends RawBinaryCoStream>(
-        meta: C["headerMeta"] = { type: "binary" }
+        meta: C["headerMeta"] = { type: "binary" },
     ): C {
         return this.core.node
             .createCoValue({

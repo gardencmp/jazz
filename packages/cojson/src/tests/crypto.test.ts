@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { WasmCrypto } from '../crypto/WasmCrypto.js';
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";
@@ -19,8 +19,8 @@ test("Signatures round-trip and use stable stringify", () => {
         Crypto.verify(
             signature,
             { a: "hello", b: "world" },
-            Crypto.getSignerID(signer)
-        )
+            Crypto.getSignerID(signer),
+        ),
     ).toBe(true);
 });
 
@@ -31,7 +31,7 @@ test("Invalid signatures don't verify", () => {
     const wrongSignature = Crypto.sign(signer2, data);
 
     expect(
-        Crypto.verify(wrongSignature, data, Crypto.getSignerID(signer))
+        Crypto.verify(wrongSignature, data, Crypto.getSignerID(signer)),
     ).toBe(false);
 });
 
@@ -54,26 +54,31 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
     });
 
     expect(
-        Crypto.unseal(sealed, sealer, Crypto.getSealerID(sender), nOnceMaterial)
+        Crypto.unseal(
+            sealed,
+            sealer,
+            Crypto.getSealerID(sender),
+            nOnceMaterial,
+        ),
     ).toEqual(data);
     expect(() =>
         Crypto.unseal(
             sealed,
             wrongSealer,
             Crypto.getSealerID(sender),
-            nOnceMaterial
-        )
+            nOnceMaterial,
+        ),
     ).toThrow(/Wrong tag/);
 
     // trying with wrong sealer secret, by hand
     const nOnce = blake3(
-        new TextEncoder().encode(stableStringify(nOnceMaterial))
+        new TextEncoder().encode(stableStringify(nOnceMaterial)),
     ).slice(0, 24);
     const sealer3priv = base58.decode(
-        wrongSealer.substring("sealerSecret_z".length)
+        wrongSealer.substring("sealerSecret_z".length),
     );
     const senderPub = base58.decode(
-        Crypto.getSealerID(sender).substring("sealer_z".length)
+        Crypto.getSealerID(sender).substring("sealer_z".length),
     );
     const sealedBytes = base64url.decode(sealed.substring("sealed_U".length));
     const sharedSecret = x25519.getSharedSecret(sealer3priv, senderPub);
@@ -85,11 +90,11 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
 
 test("Hashing is deterministic", () => {
     expect(Crypto.secureHash({ b: "world", a: "hello" })).toEqual(
-        Crypto.secureHash({ a: "hello", b: "world" })
+        Crypto.secureHash({ a: "hello", b: "world" }),
     );
 
     expect(Crypto.shortHash({ b: "world", a: "hello" })).toEqual(
-        Crypto.shortHash({ a: "hello", b: "world" })
+        Crypto.shortHash({ a: "hello", b: "world" }),
     );
 });
 
@@ -176,7 +181,7 @@ test("Encryption of keySecrets doesn't decrypt with a wrong key", () => {
 
     const decrypted = Crypto.decryptKeySecret(
         encrypted,
-        encryptingWrong.secret
+        encryptingWrong.secret,
     );
 
     expect(decrypted).toBeUndefined();

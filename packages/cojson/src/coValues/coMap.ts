@@ -50,14 +50,14 @@ export class RawCoMapView<
     /** @internal */
     constructor(
         core: CoValueCore,
-        options?: { ignorePrivateTransactions: true }
+        options?: { ignorePrivateTransactions: true },
     ) {
         this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
 
         for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
-            options
+            options,
         )) {
             for (const [changeIdx, changeUntyped] of changes.entries()) {
                 const change = changeUntyped as MapOpPayload<
@@ -105,11 +105,11 @@ export class RawCoMapView<
 
     /** @internal */
     timeFilteredOps<K extends keyof Shape & string>(
-        key: K
+        key: K,
     ): MapOp<K, Shape[K]>[] | undefined {
         if (this.atTimeFilter) {
             return this.ops[key]?.filter(
-                (op) => op.madeAt <= this.atTimeFilter!
+                (op) => op.madeAt <= this.atTimeFilter!,
             );
         } else {
             return this.ops[key];
@@ -193,7 +193,7 @@ export class RawCoMapView<
     /** @category 5. Edit history */
     nthEditAt<K extends keyof Shape & string>(
         key: K,
-        n: number
+        n: number,
     ):
         | {
               by: AccountID | AgentID;
@@ -223,7 +223,7 @@ export class RawCoMapView<
 
     /** @category 5. Edit history */
     lastEditAt<K extends keyof Shape & string>(
-        key: K
+        key: K,
     ):
         | {
               by: AccountID | AgentID;
@@ -280,7 +280,7 @@ export class RawCoMap<
     set<K extends keyof Shape & string>(
         key: K,
         value: Shape[K],
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ): void {
         this.core.makeTransaction(
             [
@@ -290,7 +290,7 @@ export class RawCoMap<
                     value: isCoValue(value) ? value.id : value,
                 },
             ],
-            privacy
+            privacy,
         );
 
         const after = new RawCoMap(this.core) as this;
@@ -308,7 +308,7 @@ export class RawCoMap<
      **/
     delete(
         key: keyof Shape & string,
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ) {
         this.core.makeTransaction(
             [
@@ -317,7 +317,7 @@ export class RawCoMap<
                     key,
                 },
             ],
-            privacy
+            privacy,
         );
 
         const after = new RawCoMap(this.core) as this;

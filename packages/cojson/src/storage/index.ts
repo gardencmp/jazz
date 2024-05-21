@@ -63,7 +63,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
     constructor(
         fs: FS,
         fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>
+        toLocalNode: WritableStream<SyncMessage>,
     ) {
         this.fs = fs;
         this.fromLocalNode = fromLocalNode.getReader();
@@ -76,7 +76,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 let done = false;
                 while (!done) {
                     const result = yield* Effect.promise(() =>
-                        this.fromLocalNode.read()
+                        this.fromLocalNode.read(),
                     );
                     done = result.done;
 
@@ -91,14 +91,14 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                             yield* this.sendNewContent(
                                 result.value.id,
                                 result.value,
-                                undefined
+                                undefined,
                             );
                         }
                     }
                 }
 
                 return;
-            })
+            }),
         );
 
         setTimeout(() => this.compact(), 20000);
@@ -107,10 +107,10 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
     sendNewContent(
         id: RawCoID,
         known: CoValueKnownState | undefined,
-        asDependencyOf: RawCoID | undefined
+        asDependencyOf: RawCoID | undefined,
     ): Effect.Effect<void, FSErr> {
         return SynchronizedRef.updateEffect(this.coValues, (coValues) =>
-            this.sendNewContentInner(coValues, id, known, asDependencyOf)
+            this.sendNewContentInner(coValues, id, known, asDependencyOf),
         );
     }
 
@@ -118,7 +118,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         coValues: { [id: `co_z${string}`]: CoValueChunk | undefined },
         id: RawCoID,
         known: CoValueKnownState | undefined,
-        asDependencyOf: RawCoID | undefined
+        asDependencyOf: RawCoID | undefined,
     ): Effect.Effect<
         { [id: `co_z${string}`]: CoValueChunk | undefined },
         FSErr,
@@ -139,7 +139,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         header: false,
                         sessions: {},
                         asDependencyOf,
-                    })
+                    }),
                 );
 
                 return coValues;
@@ -153,7 +153,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     coValues,
                     coValue.header.ruleset.group,
                     undefined,
-                    asDependencyOf || id
+                    asDependencyOf || id,
                 );
             } else if (
                 !known?.header &&
@@ -182,7 +182,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         coValues,
                         account as CoID<RawCoValue>,
                         undefined,
-                        asDependencyOf || id
+                        asDependencyOf || id,
                     );
                 }
             }
@@ -190,7 +190,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
             const newContentMessages = contentSinceChunk(
                 id,
                 coValue,
-                known
+                known,
             ).map((message) => ({ ...message, asDependencyOf }));
 
             const ourKnown: CoValueKnownState = chunkToKnownState(id, coValue);
@@ -200,7 +200,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     action: "known",
                     ...ourKnown,
                     asDependencyOf,
-                })
+                }),
             );
 
             for (const message of newContentMessages) {
@@ -213,7 +213,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
     }
 
     withWAL(
-        handler: (wal: WH) => Effect.Effect<void, FSErr>
+        handler: (wal: WH) => Effect.Effect<void, FSErr>,
     ): Effect.Effect<void, FSErr> {
         return SynchronizedRef.updateEffect(this.currentWal, (wal) =>
             Effect.gen(this, function* () {
@@ -222,17 +222,17 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     newWal = yield* this.fs.createFile(
                         `wal-${new Date().toISOString()}-${Math.random()
                             .toString(36)
-                            .slice(2)}.jsonl`
+                            .slice(2)}.jsonl`,
                     );
                 }
                 yield* handler(newWal);
                 return newWal;
-            })
+            }),
         );
     }
 
     handleNewContent(
-        newContent: NewContentMessage
+        newContent: NewContentMessage,
     ): Effect.Effect<void, FSErr> {
         return SynchronizedRef.updateEffect(this.coValues, (coValues) =>
             Effect.gen(this, function* () {
@@ -253,8 +253,8 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                                             newInSession.newTransactions,
                                     },
                                 ],
-                            ]
-                        )
+                            ],
+                        ),
                     ),
                 };
 
@@ -266,8 +266,8 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                                 wal,
                                 this.fs,
                                 newContent.id,
-                                newContentAsChunk
-                            )
+                                newContentAsChunk,
+                            ),
                         );
 
                         return {
@@ -287,7 +287,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         //     )
                         // );
                         console.warn(
-                            "Incontiguous incoming update for " + newContent.id
+                            "Incontiguous incoming update for " + newContent.id,
                         );
                         return coValues;
                     }
@@ -295,7 +295,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     const merged = mergeChunks(coValue, newContentAsChunk);
                     if (Either.isRight(merged)) {
                         yield* Effect.logWarning(
-                            "Non-contigous new content for " + newContent.id
+                            "Non-contigous new content for " + newContent.id,
                         );
 
                         // yield* Effect.promise(() =>
@@ -314,27 +314,27 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                                 wal,
                                 this.fs,
                                 newContent.id,
-                                newContentAsChunk
-                            )
+                                newContentAsChunk,
+                            ),
                         );
 
                         return { ...coValues, [newContent.id]: merged.left };
                     }
                 }
-            })
+            }),
         );
     }
 
     loadCoValue<WH, RH, FS extends FileSystem<WH, RH>>(
         id: RawCoID,
-        fs: FS
+        fs: FS,
     ): Effect.Effect<CoValueChunk | undefined, FSErr> {
         // return _loadChunkFromWal(id, fs);
         return Effect.gen(this, function* () {
             const files = this.fileCache || (yield* fs.listFiles());
             this.fileCache = files;
             const blockFiles = files.filter((name) =>
-                name.startsWith("hash_")
+                name.startsWith("hash_"),
             ) as BlockFilename[];
 
             for (const blockFile of blockFiles) {
@@ -346,7 +346,12 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                 if (!cachedHeader) {
                     cachedHeader = {};
-                    const header = yield* readHeader(blockFile, handle, size, fs);
+                    const header = yield* readHeader(
+                        blockFile,
+                        handle,
+                        size,
+                        fs,
+                    );
                     for (const entry of header) {
                         cachedHeader[entry.id] = {
                             start: entry.start,
@@ -361,12 +366,11 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 let result;
                 if (headerEntry) {
                     result = yield* readChunk(handle, headerEntry, fs);
-
                 }
 
                 yield* fs.close(handle);
 
-                return result
+                return result;
             }
 
             return undefined;
@@ -379,7 +383,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 const fileNames = yield* this.fs.listFiles();
 
                 const walFiles = fileNames.filter((name) =>
-                    name.startsWith("wal-")
+                    name.startsWith("wal-"),
                 ) as WalFilename[];
                 walFiles.sort();
 
@@ -394,7 +398,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                             yield* this.fs.close(wal);
                         }
                         return undefined;
-                    })
+                    }),
                 );
 
                 for (const fileName of walFiles) {
@@ -402,7 +406,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         yield* this.fs.openToRead(fileName);
                     if (size === 0) {
                         yield* this.fs.close(handle);
-                        continue
+                        continue;
                     }
                     const bytes = yield* this.fs.read(handle, 0, size);
 
@@ -424,7 +428,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                                         ", " +
                                         fileName,
                                     existingChunk,
-                                    chunk
+                                    chunk,
                                 );
                             } else {
                                 coValues.set(chunk.id, merged.left);
@@ -442,7 +446,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     yield* this.fs.removeFile(walFile);
                 }
                 this.fileCache = undefined;
-            })
+            }),
         );
 
         setTimeout(() => this.compact(), 5000);
@@ -464,7 +468,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 peer1role: "client",
                 peer2role: "server",
                 trace,
-            }
+            },
         );
 
         new LSMStorage(fs, localNodeAsPeer.incoming, localNodeAsPeer.outgoing);

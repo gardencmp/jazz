@@ -5,9 +5,8 @@ import { RawCoList } from "../coValues/coList.js";
 import { RawCoStream } from "../coValues/coStream.js";
 import { RawBinaryCoStream } from "../coValues/coStream.js";
 
-
 export function isCoValue(
-    value: JsonValue | RawCoValue | undefined
+    value: JsonValue | RawCoValue | undefined,
 ): value is RawCoValue {
     return (
         value instanceof RawCoMap ||

@@ -41,7 +41,7 @@ export abstract class CryptoProvider<Blake3State = any> {
     abstract verify(
         signature: Signature,
         message: JsonValue,
-        id: SignerID
+        id: SignerID,
     ): boolean;
 
     abstract newX25519StaticSecret(): Uint8Array;
@@ -81,7 +81,7 @@ export abstract class CryptoProvider<Blake3State = any> {
     getAgentID(secret: AgentSecret): AgentID {
         const [sealerSecret, signerSecret] = secret.split("/");
         return `${this.getSealerID(
-            sealerSecret as SealerSecret
+            sealerSecret as SealerSecret,
         )}/${this.getSignerID(signerSecret as SignerSecret)}`;
     }
 
@@ -105,38 +105,38 @@ export abstract class CryptoProvider<Blake3State = any> {
     abstract blake3HashOnce(data: Uint8Array): Uint8Array;
     abstract blake3HashOnceWithContext(
         data: Uint8Array,
-        { context }: { context: Uint8Array }
+        { context }: { context: Uint8Array },
     ): Uint8Array;
     abstract blake3IncrementalUpdate(
         state: Blake3State,
-        data: Uint8Array
+        data: Uint8Array,
     ): Blake3State;
     abstract blake3DigestForState(state: Blake3State): Uint8Array;
 
     secureHash(value: JsonValue): Hash {
         return `hash_z${base58.encode(
-            this.blake3HashOnce(textEncoder.encode(stableStringify(value)))
+            this.blake3HashOnce(textEncoder.encode(stableStringify(value))),
         )}`;
     }
 
     shortHash(value: JsonValue): ShortHash {
         return `shortHash_z${base58.encode(
             this.blake3HashOnce(
-                textEncoder.encode(stableStringify(value))
-            ).slice(0, shortHashLength)
+                textEncoder.encode(stableStringify(value)),
+            ).slice(0, shortHashLength),
         )}`;
     }
 
     abstract encrypt<T extends JsonValue, N extends JsonValue>(
         value: T,
         keySecret: KeySecret,
-        nOnceMaterial: N
+        nOnceMaterial: N,
     ): Encrypted<T, N>;
 
     encryptForTransaction<T extends JsonValue>(
         value: T,
         keySecret: KeySecret,
-        nOnceMaterial: { in: RawCoID; tx: TransactionID }
+        nOnceMaterial: { in: RawCoID; tx: TransactionID },
     ): Encrypted<T, { in: RawCoID; tx: TransactionID }> {
         return this.encrypt(value, keySecret, nOnceMaterial);
     }
@@ -144,17 +144,17 @@ export abstract class CryptoProvider<Blake3State = any> {
     abstract decryptRaw<T extends JsonValue, N extends JsonValue>(
         encrypted: Encrypted<T, N>,
         keySecret: KeySecret,
-        nOnceMaterial: N
+        nOnceMaterial: N,
     ): Stringified<T>;
 
     decrypt<T extends JsonValue, N extends JsonValue>(
         encrypted: Encrypted<T, N>,
         keySecret: KeySecret,
-        nOnceMaterial: N
+        nOnceMaterial: N,
     ): T | undefined {
         try {
             return parseJSON(
-                this.decryptRaw(encrypted, keySecret, nOnceMaterial)
+                this.decryptRaw(encrypted, keySecret, nOnceMaterial),
             );
         } catch (e) {
             console.error("Decryption error", e);
@@ -172,7 +172,7 @@ export abstract class CryptoProvider<Blake3State = any> {
     decryptRawForTransaction<T extends JsonValue>(
         encrypted: Encrypted<T, { in: RawCoID; tx: TransactionID }>,
         keySecret: KeySecret,
-        nOnceMaterial: { in: RawCoID; tx: TransactionID }
+        nOnceMaterial: { in: RawCoID; tx: TransactionID },
     ): Stringified<T> | undefined {
         return this.decryptRaw(encrypted, keySecret, nOnceMaterial);
     }
@@ -180,7 +180,7 @@ export abstract class CryptoProvider<Blake3State = any> {
     decryptForTransaction<T extends JsonValue>(
         encrypted: Encrypted<T, { in: RawCoID; tx: TransactionID }>,
         keySecret: KeySecret,
-        nOnceMaterial: { in: RawCoID; tx: TransactionID }
+        nOnceMaterial: { in: RawCoID; tx: TransactionID },
     ): T | undefined {
         return this.decrypt(encrypted, keySecret, nOnceMaterial);
     }
@@ -207,7 +207,7 @@ export abstract class CryptoProvider<Blake3State = any> {
             encrypted: this.encrypt(
                 keys.toEncrypt.secret,
                 keys.encrypting.secret,
-                nOnceMaterial
+                nOnceMaterial,
             ),
         };
     }
@@ -221,7 +221,7 @@ export abstract class CryptoProvider<Blake3State = any> {
                 { encryptedID: KeyID; encryptingID: KeyID }
             >;
         },
-        sealingSecret: KeySecret
+        sealingSecret: KeySecret,
     ): KeySecret | undefined {
         const nOnceMaterial = {
             encryptedID: encryptedInfo.encryptedID,
@@ -231,7 +231,7 @@ export abstract class CryptoProvider<Blake3State = any> {
         return this.decrypt(
             encryptedInfo.encrypted,
             sealingSecret,
-            nOnceMaterial
+            nOnceMaterial,
         );
     }
 
@@ -251,7 +251,7 @@ export abstract class CryptoProvider<Blake3State = any> {
         sealed: Sealed<T>,
         sealer: SealerSecret,
         from: SealerID,
-        nOnceMaterial: { in: RawCoID; tx: TransactionID }
+        nOnceMaterial: { in: RawCoID; tx: TransactionID },
     ): T | undefined;
 
     uniquenessForHeader(): `z${string}` {
@@ -276,18 +276,18 @@ export abstract class CryptoProvider<Blake3State = any> {
     agentSecretFromSecretSeed(secretSeed: Uint8Array): AgentSecret {
         if (secretSeed.length !== secretSeedLength) {
             throw new Error(
-                `Secret seed needs to be ${secretSeedLength} bytes long`
+                `Secret seed needs to be ${secretSeedLength} bytes long`,
             );
         }
 
         return `sealerSecret_z${base58.encode(
             this.blake3HashOnceWithContext(secretSeed, {
                 context: textEncoder.encode("seal"),
-            })
+            }),
         )}/signerSecret_z${base58.encode(
             this.blake3HashOnceWithContext(secretSeed, {
                 context: textEncoder.encode("sign"),
-            })
+            }),
         )}`;
     }
 }

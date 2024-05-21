@@ -35,14 +35,14 @@ describe.each([
         const state2 = impl.blake3IncrementalUpdate(state, data) as any;
         expect(impl.blake3DigestForState(state2)).toEqual(
             // prettier-ignore
-            new Uint8Array([2,79,103,192,66,90,61,192,47,186,245,140,185,61,229,19,46,61,117,197,25,250,160,186,218,33,73,29,136,201,112,87])
+            new Uint8Array([2,79,103,192,66,90,61,192,47,186,245,140,185,61,229,19,46,61,117,197,25,250,160,186,218,33,73,29,136,201,112,87]),
         );
         const data2 = new Uint8Array([6, 7, 8, 9, 10]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state3 = impl.blake3IncrementalUpdate(state2, data2) as any;
         expect(impl.blake3DigestForState(state3)).toEqual(
             // prettier-ignore
-            new Uint8Array([165,131,141,69,2,69,39,236,196,244,180,213,147,124,222,39,68,223,54,176,242,97,200,101,204,79,21,233,56,51,1,199])
+            new Uint8Array([165,131,141,69,2,69,39,236,196,244,180,213,147,124,222,39,68,223,54,176,242,97,200,101,204,79,21,233,56,51,1,199]),
         );
     });
 
@@ -52,38 +52,38 @@ describe.each([
 
     test("getSignerID", () => {
         const secret = impl.signerSecretFromBytes(
-            new Uint8Array(Array.from({ length: 32 }, (_, i) => i * 2))
+            new Uint8Array(Array.from({ length: 32 }, (_, i) => i * 2)),
         );
         const id = impl.getSignerID(secret);
         expect(id).toEqual(
-            "signer_z8wDhwtSA2twZvmz8J3Df63TdCBxC7ta9hFASV9cZC9xw"
+            "signer_z8wDhwtSA2twZvmz8J3Df63TdCBxC7ta9hFASV9cZC9xw",
         );
     });
 
     test("sign and verify", () => {
         const secret = impl.signerSecretFromBytes(
-            new Uint8Array(Array.from({ length: 32 }, (_, i) => i * 2))
+            new Uint8Array(Array.from({ length: 32 }, (_, i) => i * 2)),
         );
         const wrongSecret = impl.signerSecretFromBytes(
             new Uint8Array(
-                Array.from({ length: 32 }, (_, i) => (i === 0 ? 1 : i * 2))
-            )
+                Array.from({ length: 32 }, (_, i) => (i === 0 ? 1 : i * 2)),
+            ),
         );
         const message = { foo: "bar" };
         const wrongMessage = { foo: "baz" };
         const signature = impl.sign(secret, message);
         const wrongSignature = impl.sign(wrongSecret, message);
         expect(signature).toEqual(
-            "signature_zHH7trJJ4iJFgYv9B8QtF96qcG7PbPJcfojy9ACtJc6z9FqzbJNM6xeqVLxCEK1oSj1oSYAgy2V3CW5SzjYDh8ax"
+            "signature_zHH7trJJ4iJFgYv9B8QtF96qcG7PbPJcfojy9ACtJc6z9FqzbJNM6xeqVLxCEK1oSj1oSYAgy2V3CW5SzjYDh8ax",
         );
         expect(
-            impl.verify(signature, message, impl.getSignerID(secret))
+            impl.verify(signature, message, impl.getSignerID(secret)),
         ).toBeTruthy();
         expect(
-            impl.verify(wrongSignature, message, impl.getSignerID(secret))
+            impl.verify(wrongSignature, message, impl.getSignerID(secret)),
         ).toBeFalsy();
         expect(
-            impl.verify(signature, wrongMessage, impl.getSignerID(secret))
+            impl.verify(signature, wrongMessage, impl.getSignerID(secret)),
         ).toBeFalsy();
     });
 
@@ -93,11 +93,11 @@ describe.each([
 
     test("getSealerID", () => {
         const secret = impl.sealerSecretFromBytes(
-            new Uint8Array(Array.from({ length: 32 }, (_, i) => i * 2))
+            new Uint8Array(Array.from({ length: 32 }, (_, i) => i * 2)),
         );
         const id = impl.getSealerID(secret);
         expect(id).toEqual(
-            "sealer_zBvzQipsgJZwgy4rN5dfnWQWQNrV4PnJpWfDjZkJ5iYqy"
+            "sealer_zBvzQipsgJZwgy4rN5dfnWQWQNrV4PnJpWfDjZkJ5iYqy",
         );
     });
 
@@ -113,11 +113,11 @@ describe.each([
         const wrongSecret =
             "keySecret_zyRhQCZGM3LwEjB2nXTktyBQ56JiDBHbRtYjjddingjT";
         expect(
-            impl.decrypt(encrypted, wrongSecret, nOnceMaterial)
+            impl.decrypt(encrypted, wrongSecret, nOnceMaterial),
         ).toBeUndefined();
         const wrongNOnceMaterial = { bar: "baz" };
         expect(
-            impl.decrypt(encrypted, secret, wrongNOnceMaterial)
+            impl.decrypt(encrypted, secret, wrongNOnceMaterial),
         ).toBeUndefined();
     });
 
@@ -143,14 +143,14 @@ describe.each([
         });
 
         expect(sealed).toEqual(
-            "sealed_UtuddAQjop6zMR47aI7HOqj-f0kR2tdFvRxzDe4I="
+            "sealed_UtuddAQjop6zMR47aI7HOqj-f0kR2tdFvRxzDe4I=",
         );
 
         const unsealed = impl.unseal(
             sealed,
             recipientSecret,
             impl.getSealerID(senderSecret),
-            nOnceMaterial
+            nOnceMaterial,
         );
         expect(unsealed).toEqual(message);
 
@@ -161,8 +161,8 @@ describe.each([
                 sealed,
                 wrongRecipientSecret,
                 impl.getSealerID(senderSecret),
-                nOnceMaterial
-            )
+                nOnceMaterial,
+            ),
         ).toThrow();
         const wrongNOnceMaterial = {
             in: "co_zSomeCoValue" as const,
@@ -176,8 +176,8 @@ describe.each([
                 sealed,
                 recipientSecret,
                 impl.getSealerID(senderSecret),
-                wrongNOnceMaterial
-            )
+                wrongNOnceMaterial,
+            ),
         ).toThrow();
     });
 });

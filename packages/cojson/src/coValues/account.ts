@@ -16,7 +16,7 @@ import { JsonObject } from "../jsonValue.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret,
-    crypto: CryptoProvider
+    crypto: CryptoProvider,
 ): CoValueHeader {
     const agent = crypto.getAgentID(agentSecret);
     return {
@@ -35,12 +35,12 @@ export class RawAccount<
 > extends RawGroup<Meta> {
     currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
-            k.startsWith("sealer_")
+            k.startsWith("sealer_"),
         );
 
         if (agents.length !== 1) {
             throw new Error(
-                "Expected exactly one agent in account, got " + agents.length
+                "Expected exactly one agent in account, got " + agents.length,
             );
         }
 
@@ -84,7 +84,7 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
 
     async acceptInvite<T extends RawCoValue>(
         groupOrOwnedValueID: CoID<T>,
-        inviteSecret: InviteSecret
+        inviteSecret: InviteSecret,
     ): Promise<void> {
         return this.core.node.acceptInvite(groupOrOwnedValueID, inviteSecret);
     }
@@ -112,8 +112,10 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
 
 /** @hidden */
 export class ControlledAgent implements ControlledAccountOrAgent {
-    constructor(public agentSecret: AgentSecret, public crypto: CryptoProvider) {
-    }
+    constructor(
+        public agentSecret: AgentSecret,
+        public crypto: CryptoProvider,
+    ) {}
 
     get id(): AgentID {
         return this.crypto.getAgentID(this.agentSecret);
@@ -155,5 +157,5 @@ export class RawProfile<
 export type RawAccountMigration<Meta extends AccountMeta = AccountMeta> = (
     account: RawControlledAccount<Meta>,
     localNode: LocalNode,
-    creationProps?: { name: string }
+    creationProps?: { name: string },
 ) => void | Promise<void>;
