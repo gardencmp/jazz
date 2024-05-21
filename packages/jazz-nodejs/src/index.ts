@@ -3,7 +3,6 @@ import {
     websocketWritableStream,
 } from "cojson-transport-nodejs-ws";
 import { WebSocket } from "ws";
-import "dotenv/config";
 
 import {
     AccountID,
