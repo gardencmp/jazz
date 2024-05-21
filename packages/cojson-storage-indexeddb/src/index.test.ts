@@ -1,6 +1,11 @@
 import { expect, test } from "vitest";
-import { ControlledAgent, LocalNode, WasmCrypto, cojsonInternals } from "cojson";
-import { IDBStorage } from ".";
+import {
+    ControlledAgent,
+    LocalNode,
+    WasmCrypto,
+    cojsonInternals,
+} from "cojson";
+import { IDBStorage } from "./index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -9,10 +14,8 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 
     const node = new LocalNode(
         new ControlledAgent(agentSecret, Crypto),
-        cojsonInternals.newRandomSessionID(
-            Crypto.getAgentID(agentSecret)
-        ),
-        Crypto
+        cojsonInternals.newRandomSessionID(Crypto.getAgentID(agentSecret)),
+        Crypto,
     );
 
     node.syncManager.addPeer(await IDBStorage.asPeer({ trace: true }));
@@ -31,14 +34,12 @@ test("Should be able to sync data to database and then load that from a new node
 
     const node1 = new LocalNode(
         new ControlledAgent(agentSecret, Crypto),
-        cojsonInternals.newRandomSessionID(
-            Crypto.getAgentID(agentSecret)
-        ),
-        Crypto
+        cojsonInternals.newRandomSessionID(Crypto.getAgentID(agentSecret)),
+        Crypto,
     );
 
     node1.syncManager.addPeer(
-        await IDBStorage.asPeer({ trace: true, localNodeName: "node1" })
+        await IDBStorage.asPeer({ trace: true, localNodeName: "node1" }),
     );
 
     console.log("yay!");
@@ -47,20 +48,18 @@ test("Should be able to sync data to database and then load that from a new node
 
     const map = group.createMap();
 
-    map.set("hello", "world")
+    map.set("hello", "world");
 
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const node2 = new LocalNode(
         new ControlledAgent(agentSecret, Crypto),
-        cojsonInternals.newRandomSessionID(
-            Crypto.getAgentID(agentSecret)
-        ),
-        Crypto
+        cojsonInternals.newRandomSessionID(Crypto.getAgentID(agentSecret)),
+        Crypto,
     );
 
     node2.syncManager.addPeer(
-        await IDBStorage.asPeer({ trace: true, localNodeName: "node2" })
+        await IDBStorage.asPeer({ trace: true, localNodeName: "node2" }),
     );
 
     const map2 = await node2.load(map.id);
