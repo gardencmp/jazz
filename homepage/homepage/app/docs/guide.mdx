@@ -20,10 +20,15 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
     ```
 
     You should now have an empty app running, typically at [localhost:5173](http://localhost:5173).<br/>
-    <small>(If you make changes to the code, the app will automatically refresh.)</small>
+
+    <small>
+        (If you make changes to the code, the app will automatically refresh.)
+    </small>
 
 2. Install `jazz-tools` and `jazz-react`<br/>
+
     <small>(in a new terminal window):</small>
+
     ```bash
     cd circular
     npm install jazz-tools jazz-react
@@ -40,7 +45,7 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
 
     const Jazz = createJazzReactContext({
         auth: DemoAuth({ appName: "Circular" }),
-        peer: "wss://mesh.jazz.tools/?key=you@example.com" // <- put your email here to receive a proper API key for later
+        peer: "wss://mesh.jazz.tools/?key=you@example.com", // <- put your email here to receive a proper API key for later
     });
     export const { useAccount, useCoState } = Jazz;
 
@@ -49,7 +54,7 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
             <React.StrictMode>
                 <App />
             </React.StrictMode>
-        </Jazz.Provider>
+        </Jazz.Provider>,
     );
     ```
 
@@ -158,7 +163,7 @@ function App() {
                 estimate: 5,
                 status: "backlog",
             },
-            { owner: me }
+            { owner: me },
         );
         setIssue(newIssue);
     };
@@ -175,7 +180,9 @@ export default App;
 
 Now you should be able to create a new issue by clicking the button and then see it rendered.
 
-<div className="text-xs uppercase text-stone-400 dark:text-stone-600 tracking-wider">Preview</div>
+<div className="text-xs uppercase text-stone-400 dark:text-stone-600 tracking-wider">
+    Preview
+</div>
 <div className="p-3 md:-mx-3 rounded border border-stone-100 dark:border-stone-900 bg-white dark:bg-black not-prose">
     <div className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t">
         <h2>Buy terrarium</h2>
@@ -187,9 +194,9 @@ Now you should be able to create a new issue by clicking the button and then see
 
 We'll already notice one interesting thing here:
 
-- We have to create every CoValue with an `owner`!
-    - this will determine access rights on the CoValue, which we'll learn about in "Groups & Permissions"
-    - here we set `owner` to the current user `me`, which we get from the Jazz context / `useAccount`
+-   We have to create every CoValue with an `owner`!
+    -   this will determine access rights on the CoValue, which we'll learn about in "Groups & Permissions"
+    -   here we set `owner` to the current user `me`, which we get from the Jazz context / `useAccount`
 
 **Behind the scenes, Jazz not only creates the Issue in memory but also automatically syncs an encrypted version to the cloud and persists it locally. The Issue also has a globally unique ID.**
 
@@ -203,9 +210,9 @@ And since this is a React app, it would be nice to subscribe to edits of the CoV
 
 This is exactly what the `useCoState` hook is for!
 
-- Note that `useCoState` doesn't take a CoValue directly, but rather a CoValue's schema, plus its `ID`.
-  - So we'll slightly adapt our `useState` to only keep track of an issue ID...
-  - ...and then use `useCoState` to get the actual issue
+-   Note that `useCoState` doesn't take a CoValue directly, but rather a CoValue's schema, plus its `ID`.
+    -   So we'll slightly adapt our `useState` to only keep track of an issue ID...
+    -   ...and then use `useCoState` to get the actual issue
 
 Let's modify `src/App.tsx`:
 
@@ -229,7 +236,7 @@ function App() {
                 estimate: 5,
                 status: "backlog",
             },
-            { owner: me }
+            { owner: me },
         );
         setIssueID(newIssue.id);
     };
@@ -279,12 +286,21 @@ export function IssueComponent({ issue }, { issue: Issue }) {
 }
 ```
 
-<div className="text-xs uppercase text-stone-400 dark:text-stone-600 tracking-wider">Preview</div>
+<div className="text-xs uppercase text-stone-400 dark:text-stone-600 tracking-wider">
+    Preview
+</div>
 <div className="p-3 md:-mx-3 rounded border border-stone-100 dark:border-stone-900 bg-white dark:bg-black not-prose">
     <div className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t">
-        <input type="text" value={"Buy terrarium"}/>
-        <input type="text" className="col-span-3" value={"Make sure it's big enough for 10 snails."}/>
-        <label className="flex">Estimate: <input type="number" value={5} className="text-right min-w-0"/></label>
+        <input type="text" value={"Buy terrarium"} />
+        <input
+            type="text"
+            className="col-span-3"
+            value={"Make sure it's big enough for 10 snails."}
+        />
+        <label className="flex">
+            Estimate:{" "}
+            <input type="number" value={5} className="text-right min-w-0" />
+        </label>
         <select value={"backlog"}>
             <option value="backlog">Backlog</option>
             <option value="in progress">In Progress</option>
@@ -298,39 +314,42 @@ You'll immediately notice that we're doing something non-idiomatic for React: we
 This works because CoValues intercept these edits, update their local view accordingly (React doesn't really care after rendering) and then notify subscribers of the change, who will receive a fresh, updated view of the CoValue.
 
 <aside className="text-sm border rounded px-4 my-4 max-w-3xl [&_pre]:mx-0">
-<h4 className="not-prose text-base py-2 mb-3 -mx-4 px-4 border-b">💡 A Quick Overview of Subscribing to CoValues</h4>
+    <h4 className="not-prose text-base py-2 mb-3 -mx-4 px-4 border-b">💡 A Quick Overview of Subscribing to CoValues</h4>
 
-There are three main ways to subscribe to a CoValue:
+    There are three main ways to subscribe to a CoValue:
 
-1. Directly on an instance:
-    ```ts
-    const unsub = issue.subscribe(updatedIssue => console.log(updatedIssue));
-    ```
+    1.  Directly on an instance:
 
-2. If you only have an ID (this will load the issue if needed):
-    ```ts
-    const unsub = Issue.subscribe(issueID, { as: me }, updatedIssue => {
-        console.log(updatedIssue)
-    });
-    ```
+        ```ts
+        const unsub = issue.subscribe((updatedIssue) => console.log(updatedIssue));
+        ```
 
-3. If you're in a React component, to re-render reactively:
-    ```tsx
-    const issue = useCoState(Issue, issueID);
-    ```
+    2.  If you only have an ID (this will load the issue if needed):
 
-    By the way, `useCoState` is basically just an optimized version of
+        ```ts
+        const unsub = Issue.subscribe(issueID, { as: me }, (updatedIssue) => {
+            console.log(updatedIssue);
+        });
+        ```
 
-    ```ts
-    function useCoState<V extends CoValue>(Schema: CoValueClass<V>, id?: ID<V>): V | undefined {
-        const { me } = useAccount();
-        const [value, setValue] = useState<V>();
+    3.  If you're in a React component, to re-render reactively:
+        `tsx
+        const issue = useCoState(Issue, issueID);
+        `
 
-        useEffect(() => Schema.subscribe(id, { as: me }, setValue), [id]);
+            By the way, `useCoState` is basically just an optimized version of
 
-        return value;
-    }
-    ```
+            ```ts
+            function useCoState<V extends CoValue>(Schema: CoValueClass<V>, id?: ID<V>): V | undefined {
+                const { me } = useAccount();
+                const [value, setValue] = useState<V>();
+
+                useEffect(() => Schema.subscribe(id, { as: me }, setValue), [id]);
+
+                return value;
+            }
+            ```
+
 </aside>
 
 We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which will cause the `App` component and its children to re-render whenever the Issue changes.
@@ -339,7 +358,11 @@ We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which w
 
 So far our Issue CoValues just looked like ephemeral local state. We'll now start exploring the first main feature that makes CoValues special: **automatic persistence.**
 
-<span className="text-amber-500">🚧 OH NO - This is as far as we've written the Guide. 🚧</span> -> <a href="https://github.com/gardencmp/jazz/issues/186">Complain on GitHub</a>
+<span className="text-amber-500">
+    🚧 OH NO - This is as far as we've written the Guide. 🚧
+</span>
+{" -> "}
+<a href="https://github.com/gardencmp/jazz/issues/186">Complain on GitHub</a>
 
 <h3>Remote sync</h3>
 

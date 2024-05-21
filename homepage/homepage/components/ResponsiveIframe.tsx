@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState, useRef, IframeHTMLAttributes } from "react";
 
 export function ResponsiveIframe(
-    props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string }
+    props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
 

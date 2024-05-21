@@ -116,7 +116,6 @@ pre.shiki div.line::before {
 
 pre.shiki div.line:hover::before {
     @apply text-stone-400 dark:text-stone-600;
-
 }
 
 /** Don't show the language identifiers */
@@ -330,7 +329,12 @@ data-lsp {
 }
 .tag-container .twoslash-annotation {
     position: absolute;
-    font-family: "JetBrains Mono", Menlo, Monaco, Consolas, Courier New,
+    font-family:
+        "JetBrains Mono",
+        Menlo,
+        Monaco,
+        Consolas,
+        Courier New,
         monospace;
     right: -10px;
     /** Default annotation text to 200px */

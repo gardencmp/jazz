@@ -22,7 +22,7 @@ export async function PackageDocs({
 }: {
     package: string;
 }) {
-    let project = await requestProject(packageName);
+    let project = await requestProject(packageName as any);
 
     // console.dir(project, {depth: 10});
 
@@ -91,7 +91,7 @@ function RenderPackageChild({
                                 <Highlight
                                     hide={[0, 1 + paramTypes.length]}
                                 >{`function fn(...args: [\n${paramTypes.join(
-                                    ",\n"
+                                    ",\n",
                                 )}\n]) {}`}</Highlight>
                             </div>
                         )}
@@ -121,9 +121,9 @@ function RenderTypeAlias({
                 <Highlight>{`type ${child.name}`}</Highlight>
             </h4>
             <p className="not-prose text-sm ml-4">
-                <Highlight>{`type ${child.name} = ${
-                    printType(child.type)
-                }`}</Highlight>
+                <Highlight>{`type ${child.name} = ${printType(
+                    child.type,
+                )}`}</Highlight>
             </p>
             <div className="ml-4 mt-2 flex-[3]">
                 <DocComment>
@@ -159,15 +159,15 @@ function RenderClassOrInterface({
                             category.description?.filter(
                                 (p) =>
                                     p.kind !== "code" ||
-                                    !p.text.startsWith("```")
-                            )
+                                    !p.text.startsWith("```"),
+                            ),
                         )}
                         example={renderSummary(
                             category.description?.filter(
                                 (p) =>
                                     p.kind === "code" &&
-                                    p.text.startsWith("```")
-                            )
+                                    p.text.startsWith("```"),
+                            ),
                         )}
                     />
                     {category.children.map((prop) => (
@@ -184,15 +184,15 @@ function RenderClassOrInterface({
 }
 
 function renderSummary(commentSummary: CommentDisplayPart[] | undefined) {
-    return commentSummary?.map((part) =>
+    return commentSummary?.map((part, idx) =>
         part.kind === "text" ? (
-            <span>{part.text}</span>
+            <span key={idx}>{part.text}</span>
         ) : part.kind === "inline-tag" ? (
-            <code>
+            <code key={idx}>
                 {part.tag} {part.text}
             </code>
         ) : part.text.startsWith("```") ? (
-            <pre className="text-xs mt-4">
+            <pre key={idx} className="text-xs mt-4">
                 <code>
                     <Highlight>
                         {part.text.split("\n").slice(1, -1).join("\n")}
@@ -200,10 +200,10 @@ function renderSummary(commentSummary: CommentDisplayPart[] | undefined) {
                 </code>
             </pre>
         ) : (
-            <code>
+            <code key={idx}>
                 <Highlight>{part.text.slice(1, -1)}</Highlight>
             </code>
-        )
+        ),
     );
 }
 
@@ -226,7 +226,7 @@ function RenderProp({
                     returnType={printType(signature.type)}
                     doc={renderSummary(signature.comment?.summary)}
                     example={renderSummary(
-                        signature.comment?.getTag("@example")?.content
+                        signature.comment?.getTag("@example")?.content,
                     )}
                 />
             ))
@@ -243,7 +243,7 @@ function RenderProp({
                 renderSummary(propOrGetSig.comment.summary)
             }
             example={renderSummary(
-                propOrGetSig.comment?.getTag("@example")?.content
+                propOrGetSig.comment?.getTag("@example")?.content,
             )}
         />
     );
@@ -252,7 +252,7 @@ function RenderProp({
 function printSimplePropSignature(
     prop: DeclarationReflection,
     klass: DeclarationReflection,
-    signature: SignatureReflection
+    signature: SignatureReflection,
 ): string {
     return (
         `${prop.flags.isStatic ? klass.name : ""}.` +
@@ -262,12 +262,20 @@ function printSimplePropSignature(
 
 function printSimpleSignature(
     item: DeclarationReflection,
-    signature: SignatureReflection
+    signature: SignatureReflection,
 ) {
     return `${item.name}${
         signature.typeParameters?.length
             ? "<" +
-              signature.typeParameters.map((tParam) => tParam.name + (tParam.type ? " extends " + printType(tParam.type) : "")).join(", ") +
+              signature.typeParameters
+                  .map(
+                      (tParam) =>
+                          tParam.name +
+                          (tParam.type
+                              ? " extends " + printType(tParam.type)
+                              : ""),
+                  )
+                  .join(", ") +
               ">"
             : ""
     }(${printParams(signature)?.join(", ")})`;
@@ -282,11 +290,11 @@ function printParams(signature: SignatureReflection) {
                   param.type.declaration.children
                       ?.map(
                           (child) =>
-                              child.name + (child.flags.isOptional ? "?" : "")
+                              child.name + (child.flags.isOptional ? "?" : ""),
                       )
                       .join(", ") +
                   " }"
-                : param.name + (param.defaultValue ? "?" : "")
+                : param.name + (param.defaultValue ? "?" : ""),
         ) || []
     );
 }
@@ -298,7 +306,7 @@ function printParamsWithTypes(signature: SignatureReflection) {
                 (param.name === "__namedParameters"
                     ? ""
                     : param.name + (param.defaultValue ? "?" : "") + ": ") +
-                printType(param.type)
+                printType(param.type),
         ) || []
     );
 }
@@ -313,8 +321,8 @@ function printType(type: SomeType | undefined): string {
                         ?.map(
                             (sig) =>
                                 `(${printParamsWithTypes(sig).join(
-                                    ", "
-                                )}) => ${printType(sig.type)}`
+                                    ", ",
+                                )}) => ${printType(sig.type)}`,
                         )
                         .join(" | ") || ""
                 );
@@ -323,7 +331,8 @@ function printType(type: SomeType | undefined): string {
                     "{ " +
                     type.declaration.children
                         ?.map(
-                            (child) => `${child.name}: ${printType(child.type)}`
+                            (child) =>
+                                `${child.name}: ${printType(child.type)}`,
                         )
                         .join(", ") +
                     " }"
@@ -344,7 +353,7 @@ function printType(type: SomeType | undefined): string {
                 ?.map((part) =>
                     part.needsParenthesis(TypeContext["intersectionElement"])
                         ? `(${printType(part)})`
-                        : printType(part)
+                        : printType(part),
                 )
                 .join(" & ") || "NO TYPES"
         );
@@ -355,7 +364,7 @@ function printType(type: SomeType | undefined): string {
                 ?.map((part) =>
                     part.needsParenthesis(TypeContext["unionElement"])
                         ? `(${printType(part)})`
-                        : printType(part)
+                        : printType(part),
                 )
                 .join(" | ") || "NO TYPES"
         );
@@ -369,7 +378,7 @@ function printType(type: SomeType | undefined): string {
         }
     } else if (type.type === "mapped") {
         return `{[${type.parameter} in ${printType(
-            type.parameterType
+            type.parameterType,
         )}]: ${printType(type.templateType)}}`;
     } else if (type.type === "indexedAccess") {
         return `${printType(type.objectType)}[${printType(type.indexType)}]`;

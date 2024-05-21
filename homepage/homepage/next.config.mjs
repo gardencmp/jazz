@@ -38,12 +38,13 @@ function highlightPlugin() {
             const lines = highlighter.codeToThemedTokens(
                 node.value,
                 node.lang,
-                "css-variables"
+                "css-variables",
             );
 
             // match a meta tag like `subtle=0,1,2,3` and parse out the line numbers
             const subtleTag = node.meta && node.meta.match(/subtle=\S+/);
-            const subtle = subtleTag && subtleTag[0].split("=")[1].split(",").map(Number);
+            const subtle =
+                subtleTag && subtleTag[0].split("=")[1].split(",").map(Number);
 
             node.type = "html";
             node.value = `<pre><code class="not-prose">${lines
@@ -51,9 +52,9 @@ function highlightPlugin() {
                     line
                         .map(
                             (token) =>
-                                `<span style="color: ${token.color};${subtle?.includes(lineI+1) ? "opacity: 0.3;" : ""}">${escape(token.content)}</span>`
+                                `<span style="color: ${token.color};${subtle?.includes(lineI + 1) ? "opacity: 0.3;" : ""}">${escape(token.content)}</span>`,
                         )
-                        .join("")
+                        .join(""),
                 )
                 .join("\n")}</code></pre>`;
             node.children = [];
@@ -63,10 +64,7 @@ function highlightPlugin() {
 }
 
 function escape(s) {
-    return s.replace(
-        /[^0-9A-Za-z ]/g,
-        c => "&#" + c.charCodeAt(0) + ";"
-    );
+    return s.replace(/[^0-9A-Za-z ]/g, (c) => "&#" + c.charCodeAt(0) + ";");
 }
 
 function remarkHtmlToJsx() {

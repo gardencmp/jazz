@@ -29,13 +29,29 @@ export default function Page() {
 
                 <h1 id="faq">FAQ</h1>
 
-                <p><span className="text-amber-500">🚧 OH NO - We don't have any FAQ yet. 🚧</span> {'->'} <a href="https://github.com/gardencmp/jazz/issues/187">Complain on GitHub</a></p>
+                <p>
+                    <span className="text-amber-500">
+                        🚧 OH NO - We don&apos;t have any FAQ yet. 🚧
+                    </span>{" "}
+                    {"->"}{" "}
+                    <a href="https://github.com/gardencmp/jazz/issues/187">
+                        Complain on GitHub
+                    </a>
+                </p>
 
                 <div className="xl:-mr-[calc(50vw-40rem)]">
                     <h1>API Reference</h1>
 
-                    <p><span className="text-amber-500">🚧 OH NO - These docs are still highly work-in-progress. 🚧</span> {'->'} <a href="https://github.com/gardencmp/jazz/issues/188">Complain on GitHub</a></p>
-
+                    <p>
+                        <span className="text-amber-500">
+                            🚧 OH NO - These docs are still highly
+                            work-in-progress. 🚧
+                        </span>{" "}
+                        {"->"}{" "}
+                        <a href="https://github.com/gardencmp/jazz/issues/188">
+                            Complain on GitHub
+                        </a>
+                    </p>
 
                     <PackageDocs package="jazz-tools" />
                     <PackageDocs package="jazz-react" />

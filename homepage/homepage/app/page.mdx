@@ -6,11 +6,9 @@ import {
     GridCard,
     MultiplayerIcon,
     ResponsiveIframe,
-    ComingSoonBadge
+    ComingSoonBadge,
 } from "@/components/forMdx";
-import {
-    JazzLogo
-} from "@/components/logos";
+import { JazzLogo } from "@/components/logos";
 import {
     WorkflowIcon,
     UploadCloudIcon,
@@ -19,15 +17,12 @@ import {
     GaugeIcon,
     UsersIcon,
     FileLock2Icon,
-    HardDriveDownloadIcon
+    HardDriveDownloadIcon,
 } from "lucide-react";
-import {
-    App_tsx,
-    ChatScreen_tsx,
-} from "@/codeSamples/examples/chat/src";
+import { App_tsx, ChatScreen_tsx } from "@/codeSamples/examples/chat/src";
 import Link from "next/link";
 
-<div className="md:pt-20"/>
+<div className="md:pt-20" />
 
 # Instant sync.
 
@@ -51,6 +46,7 @@ Jazz is an **open-source toolkit** that replaces APIs, databases and message que
 **&ldquo;Collaborative Values&rdquo;** &mdash; **distributed state** with **secure permissions built-in.**
 
 Features that used to take months to build now work out-of-the-box.
+
 </div>
 </Grid>
 
@@ -73,9 +69,9 @@ Features that used to take months to build now work out-of-the-box.
 </Grid>
 </div>
 
-{/* ### Wait, where's the backend?
+{/\* ### Wait, where's the backend?
 
-TODO... */}
+TODO... \*/}
 
 ## Collaborative Values
 
@@ -84,41 +80,38 @@ TODO... */}
 <div className='text-base'>
 Based on CRDTs and public-key cryptography, CoValues...
 
-- Can be read & edited like simple local JSON state
-- Can be created anywhere, are automatically synced & persisted
-- Always keep full edit history & author metadata
-- Automatically resolve most conflicts
-</div>
+-   Can be read & edited like simple local JSON state
+-   Can be created anywhere, are automatically synced & persisted
+-   Always keep full edit history & author metadata
+-   Automatically resolve most conflicts
+    </div>
 
 ### Bread-and-butter datastructures
 
 <Grid className="lg:gap-y-8 grid-cols-2 lg:grid-cols-4">
 
 <GridCard>
-#### `CoMap`
-<div className="text-sm">
-- Collaborative key-value map
-- Possible values:
-    - Immutable JSON & other CoValues
-</div>
+    #### `CoMap`
+    <div className="text-sm">
+        - Collaborative key-value map - Possible values: - Immutable JSON &
+        other CoValues
+    </div>
 </GridCard>
 
 <GridCard>
-#### `CoList`
-<div className="text-sm">
-- Collaborative ordered list
-- Possible items:
-    - Immutable JSON & other CoValues
-</div>
+    #### `CoList`
+    <div className="text-sm">
+        - Collaborative ordered list - Possible items: - Immutable JSON & other
+        CoValues
+    </div>
 </GridCard>
 
 <GridCard>
-#### `CoPlainText` & `CoRichText` <ComingSoonBadge/>
-<div className="text-sm">
-- Collaborative plain-text & rich-text
-    - Gracefully prevents most editing conflicts
-    - Rendered as markdown, HTML, JSX, etc.
-</div>
+    #### `CoPlainText` & `CoRichText` <ComingSoonBadge />
+    <div className="text-sm">
+        - Collaborative plain-text & rich-text - Gracefully prevents most
+        editing conflicts - Rendered as markdown, HTML, JSX, etc.
+    </div>
 </GridCard>
 
 <GridCard>
@@ -136,25 +129,25 @@ Based on CRDTs and public-key cryptography, CoValues...
 <Grid className="lg:gap-y-8 grid-cols-2 lg:grid-cols-4">
 
 <GridCard>
-#### `BinaryCoStream`
-<div className="text-sm">
-- Represents a file or live binary stream
-- Can be referenced and synced like any other CoValue
-- Can easily be converted from/to browser `Blob`s
-    - <code>{`<input type="file"/>`}</code> -> `BinaryCoStream` -> `Blob` -> `BlobURL`
-</div>
+    #### `BinaryCoStream`
+    <div className="text-sm">
+        - Represents a file or live binary stream - Can be referenced and synced
+        like any other CoValue - Can easily be converted from/to browser `Blob`s
+        - <code>{`<input type="file"/>`}</code> -> `BinaryCoStream` -> `Blob` ->
+        `BlobURL`
+    </div>
 </GridCard>
 
 <GridCard>
-#### `ImageDefinition`
-<div className="text-sm">
-- Represents multiple resolutions of the same image
-- Can be progressively loaded, including super fast blur preview & image size info
-</div>
+    #### `ImageDefinition`
+    <div className="text-sm">
+        - Represents multiple resolutions of the same image - Can be
+        progressively loaded, including super fast blur preview & image size
+        info
+    </div>
 </GridCard>
 
 </Grid>
-
 
 ### Secure permissions, authorship & teams
 
@@ -183,6 +176,7 @@ Based on CRDTs and public-key cryptography, CoValues...
 <Slogan small>A high-level toolkit for building apps around CoValues.</Slogan>
 
 Supported environments:
+
 <div className="text-sm">
 - Browser (sync via WebSockets, IndexedDB persistence)
     - React
@@ -194,26 +188,26 @@ Supported environments:
 <Grid>
 
 <GridCard>
-### Auto-sub
-<Slogan small>Let your UI drive data-syncing.</Slogan>
-<div className="text-sm">
-- Load and auto-subscribe to deeply nested `CoValues` with a reactive hook (or callback).
-- Access properties & metadata as plain JSON.
-- Make granular changes with simple mutators.
-- No queries needed, everything loads on-demand: <br/>
-`profile?.tweets?.map(tweet => tweet?.text)`
-</div>
+    ### Auto-sub
+    <Slogan small>Let your UI drive data-syncing.</Slogan>
+    <div className="text-sm">
+        - Load and auto-subscribe to deeply nested `CoValues` with a reactive
+        hook (or callback). - Access properties & metadata as plain JSON. - Make
+        granular changes with simple mutators. - No queries needed, everything
+        loads on-demand: <br />
+        `profile?.tweets?.map(tweet => tweet?.text)`
+    </div>
 </GridCard>
 
 <GridCard>
-### Cursors & carets
-<Slogan small>Ready-made spatial presence.</Slogan>
-<div className="text-sm">
-- 2D canvas cursors <ComingSoonBadge/>
-- Text carets <ComingSoonBadge/>
-- Element-based focus-presence <ComingSoonBadge/>
-- Scroll-based / out-of-bounds helpers <ComingSoonBadge/>
-</div>
+    ### Cursors & carets
+    <Slogan small>Ready-made spatial presence.</Slogan>
+    <div className="text-sm">
+        - 2D canvas cursors <ComingSoonBadge />
+        - Text carets <ComingSoonBadge />
+        - Element-based focus-presence <ComingSoonBadge />
+        - Scroll-based / out-of-bounds helpers <ComingSoonBadge />
+    </div>
 </GridCard>
 
 <GridCard>
@@ -229,13 +223,13 @@ Supported environments:
 </GridCard>
 
 <GridCard>
-### Two-way sync to your DB
-<Slogan small>Add Jazz to an existing app.</Slogan>
-<div className="text-sm">
-- Prisma <ComingSoonBadge/>
-- Drizzle <ComingSoonBadge/>
-- PostgreSQL introspection <ComingSoonBadge/>
-</div>
+    ### Two-way sync to your DB
+    <Slogan small>Add Jazz to an existing app.</Slogan>
+    <div className="text-sm">
+        - Prisma <ComingSoonBadge />
+        - Drizzle <ComingSoonBadge />
+        - PostgreSQL introspection <ComingSoonBadge />
+    </div>
 </GridCard>
 
 <GridCard>
@@ -267,9 +261,15 @@ To give you sync and secure collaborative data instantly on a global scale, we'r
 
 Jazz Mesh is currently free &mdash; and it's set up as the default sync & storage peer in Jazz, letting you start building multi-user apps with persistence right away, no backend needed.
 
-<Link href="/mesh" target="_blank">Learn more about Jazz Mesh</Link>
+<Link href="/mesh" target="_blank">
+    Learn more about Jazz Mesh
+</Link>
 
 ## Get Started
 
-- <Link href="/docs" target="_blank">Read the docs</Link>
-- <Link href="https://discord.gg/utDMjHYg42" target="_blank">Join our Discord</Link>
+-   <Link href="/docs" target="_blank">
+        Read the docs
+    </Link>
+-   <Link href="https://discord.gg/utDMjHYg42" target="_blank">
+        Join our Discord
+    </Link>

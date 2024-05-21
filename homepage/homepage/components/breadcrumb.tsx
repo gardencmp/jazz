@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation";
 
 export function BreadCrumb({
     items,

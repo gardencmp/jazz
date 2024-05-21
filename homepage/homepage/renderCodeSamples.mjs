@@ -21,22 +21,20 @@ await rm("./codeSamples", { recursive: true, force: true });
         const allFiles = Object.fromEntries(
             (
                 await Promise.all(
-                    (
-                        await readdir(path.join("../../", dir))
-                    ).map(async (f) =>
+                    (await readdir(path.join("../../", dir))).map(async (f) =>
                         (f.endsWith(".ts") && f !== "vite-env.d.ts") ||
                         f.endsWith(".tsx")
                             ? [
                                   f,
                                   await readFile(
                                       path.join("../../", dir, f),
-                                      "utf8"
+                                      "utf8",
                                   ),
                               ]
-                            : undefined
-                    )
+                            : undefined,
+                    ),
                 )
-            ).filter((entry) => entry !== undefined)
+            ).filter((entry) => entry !== undefined),
         );
 
         console.log(allFiles);
@@ -48,7 +46,7 @@ await rm("./codeSamples", { recursive: true, force: true });
                         .filter(([f, _]) => f !== filename)
                         .map(
                             ([f, src]) =>
-                                `// @filename: ${f}\n// @errors: 2345\n${src}`
+                                `// @filename: ${f}\n// @errors: 2345\n${src}`,
                         )
                         .join("\n\n");
 
@@ -72,11 +70,13 @@ await rm("./codeSamples", { recursive: true, force: true });
                             jsx: "react-jsxdev",
                             strict: true,
                             paths: {
-                                'jazz-tools': ['../../../packages/jazz-tools'],
-                                'jazz-react': ['../../../packages/jazz-react'],
-                                'hash-slash': ['../../../packages/hash-slash'],
+                                "jazz-tools": ["../../../packages/jazz-tools"],
+                                "jazz-react": ["../../../packages/jazz-react"],
+                                "hash-slash": ["../../../packages/hash-slash"],
                             },
-                            types: ['../../../examples/chat/node_modules/vite/client']
+                            types: [
+                                "../../../examples/chat/node_modules/vite/client",
+                            ],
                         },
                     });
                     const html = renderCodeToHTML(
@@ -87,20 +87,20 @@ await rm("./codeSamples", { recursive: true, force: true });
                             themeName: "css-variables",
                         },
                         highlighter,
-                        twoslash
+                        twoslash,
                     );
 
                     const component = `export function ${
                         path.basename(filename).slice(0, 1).toUpperCase() +
                         path.basename(filename).slice(1).replace(".", "_")
                     }() {\n\treturn <div className="shiki-outer"><div className="shiki-filename">${path.basename(
-                        filename
+                        filename,
                     )}</div><div className="not-prose" dangerouslySetInnerHTML={{__html: \`${html
                         .replace(/`/g, "\\`")
                         .replace(/\$/g, "\\$")}\`\n\t}}/></div>;\n}`;
 
                     return component;
-                })
+                }),
             )
         ).join("\n\n");
 
@@ -110,7 +110,7 @@ await rm("./codeSamples", { recursive: true, force: true });
         await writeFile(
             path.join("./codeSamples/", dir, "index.tsx"),
             components,
-            "utf8"
+            "utf8",
         );
-    }
+    },
 );

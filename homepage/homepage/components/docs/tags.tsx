@@ -19,7 +19,7 @@ export async function Highlight({
     const lines = (await highlighter).codeToThemedTokens(
         children,
         lang,
-        "css-variables"
+        "css-variables",
     );
 
     return (
@@ -156,7 +156,7 @@ export function FnDecl({
                         <Highlight
                             hide={[0, 1 + paramTypes.length]}
                         >{`function fn(...args: [\n${paramTypes.join(
-                            ",\n"
+                            ",\n",
                         )}\n]) {}`}</Highlight>
                     </div>
                 )}
@@ -218,8 +218,8 @@ export function RefValueExplainer({ propName }: { propName: string }) {
         <>
             Note that even non-optional <PropRef on="co" prop="ref(...)" />{" "}
             {propName} might be <Highlight>null</Highlight> if the referenced
-            value isn't loaded yet. Accessing one will cause it to be loaded if
-            done from inside a <i>Subscription Context</i>.
+            value isn&apos;t loaded yet. Accessing one will cause it to be
+            loaded if done from inside a <i>Subscription Context</i>.
         </>
     );
 }

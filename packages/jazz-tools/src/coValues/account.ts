@@ -261,8 +261,8 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
             const ref = target._refs.profile;
             return ref
                 ? ref.accessFrom(receiver, "profile")
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                : (undefined as any);
+                : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (undefined as any);
         } else if (key === "root") {
             const ref = target._refs.root;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

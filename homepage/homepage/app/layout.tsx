@@ -112,7 +112,7 @@ export default function RootLayout({
                                 "prose-code:font-normal prose-code:leading-tight prose-code:before:content-none prose-code:after:content-none prose-code:bg-stone-100 prose-code:dark:bg-stone-900 prose-code:p-1 prose-code:-my-1 prose-code:rounded",
                                 "prose-pre:max-w-3xl prose-pre:text-[0.8em] prose-pre:leading-[1.3] prose-pre:-mt-4 prose-pre:my-4 prose-pre:px-3 prose-pre:py-2 md:prose-pre:-mx-3 prose-pre:bg-stone-100 dark:prose-pre:bg-stone-900",
 
-                                "prose-inner-code:font-normal prose-inner-code:text-[1em]"
+                                "prose-inner-code:font-normal prose-inner-code:text-[1em]",
                             ].join(" ")}
                         >
                             {children}
@@ -207,7 +207,12 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </ThemeProvider>
-                <script defer data-api="/api/event" data-domain="jazz.tools" src="/js/script.js"></script>
+                <script
+                    defer
+                    data-api="/api/event"
+                    data-domain="jazz.tools"
+                    src="/js/script.js"
+                ></script>
             </body>
         </html>
     );

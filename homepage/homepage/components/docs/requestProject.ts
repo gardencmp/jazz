@@ -17,7 +17,7 @@ const docs = {
 };
 
 export async function requestProject(
-    packageName: keyof typeof docs
+    packageName: keyof typeof docs,
 ): Promise<ProjectReflection> {
     const deserializer = new Deserializer({} as any);
     return deserializer.reviveProject(docs[packageName], packageName);

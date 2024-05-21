@@ -66,12 +66,12 @@ export function Nav({
                                 newTab={item.newTab}
                                 className={cn(
                                     "max-sm:w-full",
-                                    item.firstOnRight ? "md:ml-auto" : ""
+                                    item.firstOnRight ? "md:ml-auto" : "",
                                 )}
                             >
                                 {item.title}
                             </NavLink>
-                        )
+                        ),
                     )}
                 </div>
             </nav>
@@ -97,14 +97,14 @@ export function Nav({
                 }}
                 className={cn(
                     menuOpen || searchOpen ? "block" : "hidden",
-                    "fixed top-0 bottom-0 left-0 right-0 bg-stone-200/80 dark:bg-black/80 w-full h-full z-20"
+                    "fixed top-0 bottom-0 left-0 right-0 bg-stone-200/80 dark:bg-black/80 w-full h-full z-20",
                 )}
             ></div>
             <nav
                 className={cn(
                     "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
                     "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
-                    menuOpen || searchOpen ? "left-4" : ""
+                    menuOpen || searchOpen ? "left-4" : "",
                 )}
             >
                 <div
@@ -241,7 +241,7 @@ export function NavLink({
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
-                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none"
+                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
             )}
             onClick={onClick}
             target={newTab ? "_blank" : undefined}
@@ -286,7 +286,7 @@ export function NavLinkLogo({
                       ? "hover:opacity-50"
                       : "opacity-60 hover:opacity-100",
                 "text-black dark:text-white",
-                className
+                className,
             )}
             onClick={onClick}
             target={newTab ? "_blank" : undefined}
@@ -304,7 +304,7 @@ export function NewsletterButton() {
                     "webforms",
                     "5744530",
                     "p5o0j8",
-                    "show"
+                    "show",
                 )
             }
             className="flex px-2 py-1 rounded gap-2 items-center bg-stone-300 hover:bg-stone-200 dark:bg-stone-950 dark:hover:bg-stone-800 text-black dark:text-white"

@@ -20,7 +20,13 @@ export function JazzLogo({ className }: { className?: string }) {
     );
 }
 
-export function GcmpLogo({ monochrome, className }: { monochrome?: boolean, className?: string }) {
+export function GcmpLogo({
+    monochrome,
+    className,
+}: {
+    monochrome?: boolean;
+    className?: string;
+}) {
     return (
         <svg
             viewBox="0 0 557 164"
@@ -72,7 +78,7 @@ export function GcmpLogo({ monochrome, className }: { monochrome?: boolean, clas
             </g>
             <defs>
                 <clipPath id="clip0_12197_1172">
-                    <rect width="557" height="164" fill="white"/>
+                    <rect width="557" height="164" fill="white" />
                 </clipPath>
             </defs>
         </svg>
