@@ -48,13 +48,13 @@ export function ProjectTodoTable() {
                     done: false,
                     text,
                 },
-                { owner: project._owner }
+                { owner: project._owner },
             );
 
             // push will cause useCoState to rerender this component, both here and on other devices
             project.tasks.push(task);
         },
-        [project?.tasks, project?._owner]
+        [project?.tasks, project?._owner],
     );
 
     return (
@@ -85,7 +85,7 @@ export function ProjectTodoTable() {
                 </TableHeader>
                 <TableBody>
                     {project?.tasks?.map(
-                        (task) => task && <TaskRow key={task.id} task={task} />
+                        (task) => task && <TaskRow key={task.id} task={task} />,
                     )}
                     <NewTaskInputRow
                         createTask={createTask}

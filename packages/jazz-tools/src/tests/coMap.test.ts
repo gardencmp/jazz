@@ -2,7 +2,7 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, Encoders, CoMap, co, WasmCrypto } from '../index.js';
+import { Account, Encoders, CoMap, co, WasmCrypto } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -33,7 +33,7 @@ describe("Simple CoMap operations", async () => {
             _height: 10,
             birthday: birthday,
         },
-        { owner: me }
+        { owner: me },
     );
 
     test("Construction", () => {
@@ -87,13 +87,13 @@ describe("Simple CoMap operations", async () => {
                         {
                             name: "third",
                         },
-                        { owner: me }
+                        { owner: me },
                     ),
                 },
-                { owner: me }
+                { owner: me },
             ),
         },
-        { owner: me }
+        { owner: me },
     );
 
     describe("Recursive CoMap", () => {
@@ -107,7 +107,7 @@ describe("Simple CoMap operations", async () => {
     class MapWithEnumOfMaps extends CoMap {
         name = co.string;
         child = co.ref<typeof ChildA | typeof ChildB>((raw) =>
-            raw.get("type") === "a" ? ChildA : ChildB
+            raw.get("type") === "a" ? ChildA : ChildB,
         );
     }
 
@@ -129,10 +129,10 @@ describe("Simple CoMap operations", async () => {
                     type: "a",
                     value: 5,
                 },
-                { owner: me }
+                { owner: me },
             ),
         },
-        { owner: me }
+        { owner: me },
     );
 
     test("Enum of maps", () => {
@@ -202,13 +202,13 @@ describe("CoMap resolution", async () => {
                         name: "nested",
                         twiceNested: TwiceNestedMap.create(
                             { taste: "sour" },
-                            { owner: me }
+                            { owner: me },
                         ),
                     },
-                    { owner: me }
+                    { owner: me },
                 ),
             },
-            { owner: me }
+            { owner: me },
         );
 
         return { me, map };
@@ -233,7 +233,7 @@ describe("CoMap resolution", async () => {
         const [initialAsPeer, secondPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
@@ -264,12 +264,12 @@ describe("CoMap resolution", async () => {
 
         const loadedTwiceNestedMap = await TwiceNestedMap.load(
             map.nested!.twiceNested!.id,
-            { as: meOnSecondPeer }
+            { as: meOnSecondPeer },
         );
 
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sour");
         expect(loadedMap?.nested?._refs.twiceNested?.value).toEqual(
-            loadedTwiceNestedMap
+            loadedTwiceNestedMap,
         );
 
         const otherNestedMap = NestedMap.create(
@@ -277,10 +277,10 @@ describe("CoMap resolution", async () => {
                 name: "otherNested",
                 twiceNested: TwiceNestedMap.create(
                     { taste: "sweet" },
-                    { owner: meOnSecondPeer }
+                    { owner: meOnSecondPeer },
                 ),
             },
-            { owner: meOnSecondPeer }
+            { owner: meOnSecondPeer },
         );
 
         loadedMap!.nested = otherNestedMap;
@@ -297,7 +297,7 @@ describe("CoMap resolution", async () => {
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
 
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
@@ -321,10 +321,12 @@ describe("CoMap resolution", async () => {
                     (subscribedMap) => {
                         console.log(
                             "subscribedMap.nested?.twiceNested?.taste",
-                            subscribedMap.nested?.twiceNested?.taste
+                            subscribedMap.nested?.twiceNested?.taste,
                         );
-                        void Effect.runPromise(Queue.offer(queue, subscribedMap));
-                    }
+                        void Effect.runPromise(
+                            Queue.offer(queue, subscribedMap),
+                        );
+                    },
                 );
 
                 const update1 = yield* $(Queue.take(queue));
@@ -347,7 +349,7 @@ describe("CoMap resolution", async () => {
                     {
                         taste: "sweet",
                     },
-                    { owner: meOnSecondPeer }
+                    { owner: meOnSecondPeer },
                 );
 
                 const newNested = NestedMap.create(
@@ -355,7 +357,7 @@ describe("CoMap resolution", async () => {
                         name: "newNested",
                         twiceNested: newTwiceNested,
                     },
-                    { owner: meOnSecondPeer }
+                    { owner: meOnSecondPeer },
                 );
 
                 update3.nested = newNested;
@@ -375,7 +377,7 @@ describe("CoMap resolution", async () => {
                 newTwiceNested.taste = "umami";
                 const update6 = yield* $(Queue.take(queue));
                 expect(update6.nested?.twiceNested?.taste).toEqual("umami");
-            })
+            }),
         );
     });
 
@@ -394,7 +396,7 @@ describe("CoMap resolution", async () => {
             {
                 color: "red",
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(mapWithout.color).toEqual("red");
@@ -408,13 +410,13 @@ describe("CoMap resolution", async () => {
                         name: "wow!",
                         twiceNested: TwiceNestedMap.create(
                             { taste: "sour" },
-                            { owner: me }
+                            { owner: me },
                         ),
                     },
-                    { owner: me }
+                    { owner: me },
                 ),
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(mapWith.color).toEqual("red");
@@ -441,7 +443,7 @@ describe("CoMap resolution", async () => {
                 height: 5,
                 other: 3,
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(record.height).toEqual(5);
@@ -470,7 +472,7 @@ describe("CoMap resolution", async () => {
                 height: 5,
                 other: 3,
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(record.height).toEqual(5);
@@ -492,14 +494,14 @@ describe("CoMap resolution", async () => {
             {
                 firstNested: TwiceNestedMap.create(
                     { taste: "sour" },
-                    { owner: me }
+                    { owner: me },
                 ),
                 secondNested: TwiceNestedMap.create(
                     { taste: "sweet" },
-                    { owner: me }
+                    { owner: me },
                 ),
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(record.firstNested?.taste).toEqual("sour");

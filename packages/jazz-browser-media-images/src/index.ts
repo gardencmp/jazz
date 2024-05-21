@@ -10,7 +10,7 @@ export async function createImage(
     options: {
         owner: Group | Account;
         maxSize?: 256 | 1024 | 2048;
-    }
+    },
 ): Promise<ImageDefinition> {
     let originalWidth!: number;
     let originalHeight!: number;
@@ -36,7 +36,7 @@ export async function createImage(
             originalSize: [originalWidth, originalHeight],
             placeholderDataURL,
         },
-        { owner: options.owner }
+        { owner: options.owner },
     );
     setTimeout(async () => {
         const max256 = await Reducer.toBlob(imageBlobOrFile, { max: 256 });
@@ -110,7 +110,7 @@ export async function createImage(
 
         const originalBinaryStream = await BinaryCoStream.createFromBlob(
             imageBlobOrFile,
-            { owner: options.owner }
+            { owner: options.owner },
         );
 
         imageDefinition[`${originalWidth}x${originalHeight}`] =

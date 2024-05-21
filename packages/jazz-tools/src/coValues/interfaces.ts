@@ -33,28 +33,28 @@ export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
         options: {
             as: Account & Me;
             onProgress?: (progress: number) => void;
-        }
+        },
     ): Promise<V | undefined>;
 
     /** @category Construction and loading */
     loadEf<V extends Value>(
         this: ClassOf<V>,
-        id: ID<V>
+        id: ID<V>,
     ): Effect.Effect<V, UnavailableError, AccountCtx>;
 
     /** @category Subscription */
     subscribe<V extends Value, Acc extends Account>(
         this: ClassOf<V>,
         id: ID<V>,
-        options: { as: Acc & Me, require?: (value: V) => boolean | undefined },
-        onUpdate: (value: V) => void
+        options: { as: Acc & Me; require?: (value: V) => boolean | undefined },
+        onUpdate: (value: V) => void,
     ): () => void;
 
     /** @category Subscription */
     subscribeEf<V extends Value>(
         this: ClassOf<V>,
         id: ID<V>,
-        options?: { require?: (value: V) => boolean | undefined }
+        options?: { require?: (value: V) => boolean | undefined },
     ): Stream.Stream<V, UnavailableError, AccountCtx>;
 }
 
@@ -68,7 +68,10 @@ export interface CoValue<Type extends string = string, Raw = any> {
     /** @category Collaboration */
     _owner: Account | Group;
     /** @category Subscription & Loading */
-    subscribe(listener: (update: this) => void, options?: RequireOptions<this>): () => void;
+    subscribe(
+        listener: (update: this) => void,
+        options?: RequireOptions<this>,
+    ): () => void;
     /** @category Subscription & Loading */
     subscribeEf(): Stream.Stream<this, UnavailableError, never>;
     /** @category Internals */
@@ -141,12 +144,12 @@ export class CoValueBase implements CoValue {
     /** @category Subscription & Loading */
     static loadEf<V extends CoValue>(
         this: ClassOf<V> & typeof CoValueBase,
-        id: ID<V>
+        id: ID<V>,
     ): Effect.Effect<V, UnavailableError, AccountCtx> {
         return Effect.gen(this, function* (_) {
             const account = yield* _(AccountCtx);
             return yield* _(
-                new Ref(id as ID<V>, account, this as CoValueClass<V>).loadEf()
+                new Ref(id as ID<V>, account, this as CoValueClass<V>).loadEf(),
             );
         });
     }
@@ -158,10 +161,10 @@ export class CoValueBase implements CoValue {
         options: {
             as: Account & Me;
             onProgress?: (progress: number) => void;
-        }
+        },
     ): Promise<V | undefined> {
         return new Ref(id as ID<V>, options.as, this as CoValueClass<V>).load(
-            options?.onProgress && { onProgress: options.onProgress }
+            options?.onProgress && { onProgress: options.onProgress },
         );
     }
 
@@ -170,20 +173,20 @@ export class CoValueBase implements CoValue {
         this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
         options: { as: Acc & Me; require?: (value: V) => boolean | undefined },
-        onUpdate: (value: V) => void
+        onUpdate: (value: V) => void,
     ): () => void {
         void Effect.runPromise(
             Effect.provideService(
                 this.subscribeEf(id, { require: options.require }).pipe(
                     Stream.run(
                         Sink.forEach((update) =>
-                            Effect.sync(() => onUpdate(update))
-                        )
-                    )
+                            Effect.sync(() => onUpdate(update)),
+                        ),
+                    ),
                 ),
                 AccountCtx,
-                options.as as Account & Me
-            )
+                options.as as Account & Me,
+            ),
         );
 
         return function unsubscribe() {};
@@ -193,7 +196,7 @@ export class CoValueBase implements CoValue {
     static subscribeEf<V extends CoValue>(
         this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
-        options?: { require?: (value: V) => boolean | undefined }
+        options?: { require?: (value: V) => boolean | undefined },
     ): Stream.Stream<V, UnavailableError, AccountCtx> {
         return Stream.fromEffect(this.loadEf(id)).pipe(
             Stream.flatMap((value) =>
@@ -203,43 +206,53 @@ export class CoValueBase implements CoValue {
                             value,
                             this,
                             (update) => {
-                                if (!options?.require || options.require(update)) {
+                                if (
+                                    !options?.require ||
+                                    options.require(update)
+                                ) {
                                     void emit.single(update as V);
                                 }
-                            }
+                            },
                         );
 
                         yield* _(
                             Effect.addFinalizer(() =>
-                                Effect.sync(() => subscription.unsubscribeAll())
-                            )
+                                Effect.sync(() =>
+                                    subscription.unsubscribeAll(),
+                                ),
+                            ),
                         );
-                    })
-                )
-            )
+                    }),
+                ),
+            ),
         );
     }
 
     /** @category Subscription & Loading */
-    subscribe(listener: (update: this) => void, options?: RequireOptions<this>): () => void {
+    subscribe(
+        listener: (update: this) => void,
+        options?: RequireOptions<this>,
+    ): () => void {
         return (this.constructor as unknown as typeof CoValueBase).subscribe(
             this.id as unknown as ID<CoValue>,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { as: this._loadedAs, require: options?.require as any },
-            listener as unknown as (update: CoValue) => void
+            listener as unknown as (update: CoValue) => void,
         );
     }
 
     /** @category Subscription & Loading */
-    subscribeEf(options?: RequireOptions<this>): Stream.Stream<this, UnavailableError, never> {
+    subscribeEf(
+        options?: RequireOptions<this>,
+    ): Stream.Stream<this, UnavailableError, never> {
         return Stream.provideService(
             (this.constructor as unknown as typeof CoValueBase).subscribeEf(
                 this.id as unknown as ID<CoValue>,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                options as any
+                options as any,
             ),
             AccountCtx,
-            this._loadedAs
+            this._loadedAs,
         ) as unknown as Stream.Stream<this, UnavailableError, never>;
     }
 
@@ -268,5 +281,5 @@ export class CoValueBase implements CoValue {
 }
 
 export type RequireOptions<V extends CoValue> = {
-    require?: (value: V) => boolean | undefined
+    require?: (value: V) => boolean | undefined;
 };

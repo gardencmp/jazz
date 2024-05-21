@@ -56,14 +56,14 @@ export function PassphraseAuth<Acc extends Account>({
                 },
                 wordlist,
                 appName,
-                appHostname
+                appHostname,
             );
         }, [appName, appHostname, logOutCounter]);
 
         const generateRandomPassphrase = () => {
             return generateMnemonic(
                 wordlist,
-                cojsonInternals.secretSeedLength * 8
+                cojsonInternals.secretSeedLength * 8,
             );
         };
 

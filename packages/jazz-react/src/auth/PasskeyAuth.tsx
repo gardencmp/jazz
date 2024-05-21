@@ -51,7 +51,7 @@ export function PasskeyAuth<Acc extends Account>({
                     },
                 },
                 appName,
-                appHostname
+                appHostname,
             );
         }, [appName, appHostname, logOutCounter]);
 

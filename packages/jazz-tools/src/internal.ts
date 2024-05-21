@@ -1,5 +1,5 @@
 export * from "./implementation/symbols.js";
-export * from './implementation/inspect.js';
+export * from "./implementation/inspect.js";
 export * from "./coValues/interfaces.js";
 
 export * from "./coValues/coMap.js";
@@ -15,4 +15,4 @@ export * from "./implementation/subscriptionScope.js";
 
 export * from "./coValues/extensions/imageDef.js";
 
-import "./implementation/devtoolsFormatters.js"
+import "./implementation/devtoolsFormatters.js";

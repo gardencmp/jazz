@@ -22,7 +22,7 @@ export class Ref<out V extends CoValue> {
     constructor(
         readonly id: ID<V>,
         readonly controlledAccount: Account & Me,
-        readonly schema: RefEncoded<V>
+        readonly schema: RefEncoded<V>,
     ) {
         if (!isRefEncoded(schema)) {
             throw new Error("Ref must be constructed with a ref schema");
@@ -31,7 +31,7 @@ export class Ref<out V extends CoValue> {
 
     get value() {
         const raw = this.controlledAccount._raw.core.node.getLoaded(
-            this.id as unknown as CoID<RawCoValue>
+            this.id as unknown as CoID<RawCoValue>,
         );
         if (raw) {
             let value = refCache.get(raw);
@@ -68,7 +68,7 @@ export class Ref<out V extends CoValue> {
     }): Promise<V | "unavailable"> {
         const raw = await this.controlledAccount._raw.core.node.load(
             this.id as unknown as CoID<RawCoValue>,
-            options?.onProgress
+            options?.onProgress,
         );
         if (raw === "unavailable") {
             return "unavailable";
@@ -88,11 +88,21 @@ export class Ref<out V extends CoValue> {
         }
     }
 
-    accessFrom(fromScopeValue: CoValue, key: string | number | symbol): V | null {
+    accessFrom(
+        fromScopeValue: CoValue,
+        key: string | number | symbol,
+    ): V | null {
         const subScope = subscriptionsScopes.get(fromScopeValue);
 
         subScope?.onRefAccessedOrSet(fromScopeValue.id, this.id);
-        TRACE_ACCESSES && console.log(subScope?.scopeID, "accessing", fromScopeValue, key, this.id);
+        TRACE_ACCESSES &&
+            console.log(
+                subScope?.scopeID,
+                "accessing",
+                fromScopeValue,
+                key,
+                this.id,
+            );
 
         if (this.value && subScope) {
             subscriptionsScopes.set(this.value, subScope);
@@ -104,13 +114,17 @@ export class Ref<out V extends CoValue> {
                 TRACE_ACCESSES && console.log("cached", cached);
                 return cached as V;
             } else if (this.value !== null) {
-                const freshValueInstance = instantiateRefEncoded(this.schema, this.value?._raw);
-                TRACE_ACCESSES && console.log("freshValueInstance", freshValueInstance);
+                const freshValueInstance = instantiateRefEncoded(
+                    this.schema,
+                    this.value?._raw,
+                );
+                TRACE_ACCESSES &&
+                    console.log("freshValueInstance", freshValueInstance);
                 subScope.cachedValues[this.id] = freshValueInstance;
                 subscriptionsScopes.set(freshValueInstance, subScope);
                 return freshValueInstance as V;
             } else {
-                return null
+                return null;
             }
         } else {
             return this.value;
@@ -122,7 +136,7 @@ export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
     controlledAccount: Account & Me,
-    refSchemaForKey: (key: Keys) => RefEncoded<CoValue>
+    refSchemaForKey: (key: Keys) => RefEncoded<CoValue>,
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
     length: number;
@@ -139,7 +153,7 @@ export function makeRefs<Keys extends string | number>(
                         yield new Ref(
                             getIdForKey(key)!,
                             controlledAccount,
-                            refSchemaForKey(key)
+                            refSchemaForKey(key),
                         );
                     }
                 };
@@ -153,7 +167,7 @@ export function makeRefs<Keys extends string | number>(
             return new Ref(
                 id as ID<CoValue>,
                 controlledAccount,
-                refSchemaForKey(key as Keys)
+                refSchemaForKey(key as Keys),
             );
         },
         ownKeys() {

@@ -46,7 +46,7 @@ export class TodoAccount extends Account {
                 {
                     projects: ListOfProjects.create([], { owner: this }),
                 },
-                { owner: this }
+                { owner: this },
             );
         }
     }

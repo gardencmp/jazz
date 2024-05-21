@@ -52,7 +52,7 @@ export function DemoAuth<Acc extends Account = Account>({
                         });
                     },
                 },
-                appName
+                appName,
             );
         }, [appName, appHostname, logOutCounter]);
 

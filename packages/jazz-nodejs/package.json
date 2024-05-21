@@ -18,9 +18,8 @@
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",
-        "test": "jest",
         "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write src/**/*.ts",
+        "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },

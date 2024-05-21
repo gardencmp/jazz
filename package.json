@@ -18,7 +18,8 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
-    "format": "turbo format",
+    "test": "turbo test",
+    "format": "pnpm run -r format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "release": "pnpm publish -r"

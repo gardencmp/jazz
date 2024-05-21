@@ -71,14 +71,14 @@ export async function createJazzBrowserContext<Acc extends Account>({
                   }),
             firstWsPeer,
         ],
-        await WasmCrypto.create()
+        await WasmCrypto.create(),
     );
 
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
                 Object.keys(me._raw.core.node.syncManager.peers).some(
-                    (peerId) => peerId.includes(peer)
+                    (peerId) => peerId.includes(peer),
                 )
             ) {
                 // TODO: this might drain battery, use listeners instead
@@ -87,11 +87,11 @@ export async function createJazzBrowserContext<Acc extends Account>({
                 console.log(
                     "Websocket disconnected, trying to reconnect in " +
                         currentReconnectionTimeout +
-                        "ms"
+                        "ms",
                 );
                 currentReconnectionTimeout = Math.min(
                     currentReconnectionTimeout * 2,
-                    30000
+                    30000,
                 );
                 await new Promise<void>((resolve) => {
                     setTimeout(resolve, currentReconnectionTimeout);
@@ -99,16 +99,16 @@ export async function createJazzBrowserContext<Acc extends Account>({
                         "online",
                         () => {
                             console.log(
-                                "Online, trying to reconnect immediately"
+                                "Online, trying to reconnect immediately",
                             );
                             resolve();
                         },
-                        { once: true }
+                        { once: true },
                     );
                 });
 
                 me._raw.core.node.syncManager.addPeer(
-                    createWebSocketPeer(peer)
+                    createWebSocketPeer(peer),
                 );
             }
         }
@@ -123,7 +123,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
             window.removeEventListener("online", onOnline);
             console.log("Cleaning up node");
             for (const peer of Object.values(
-                me._raw.core.node.syncManager.peers
+                me._raw.core.node.syncManager.peers,
             )) {
                 peer.outgoing
                     .close()
@@ -136,7 +136,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
 
 /** @category Auth Providers */
 export type SessionProvider = (
-    accountID: ID<Account> | AgentID
+    accountID: ID<Account> | AgentID,
 ) => Promise<SessionID>;
 
 /** @category Auth Providers */
@@ -146,7 +146,7 @@ export type SessionHandle = {
 };
 
 export function getSessionHandleFor(
-    accountID: ID<Account> | AgentID
+    accountID: ID<Account> | AgentID,
 ): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
@@ -172,7 +172,7 @@ export function getSessionHandleFor(
                         const sessionID =
                             localStorage[accountID + "_" + idx] ||
                             cojsonInternals.newRandomSessionID(
-                                accountID as AccountID | AgentID
+                                accountID as AccountID | AgentID,
                             );
                         localStorage[accountID + "_" + idx] = sessionID;
 
@@ -188,10 +188,10 @@ export function getSessionHandleFor(
                         console.log(
                             "Done with lock",
                             accountID + "_" + idx,
-                            sessionID
+                            sessionID,
                         );
                         return "sessionFinished";
-                    }
+                    },
                 );
 
                 if (sessionFinishedOrNoLock === "sessionFinished") {
@@ -230,7 +230,7 @@ function websocketReadableStream<T>(ws: WebSocket) {
                     } catch (e) {
                         console.error(
                             "Error while trying to close ws on ping timeout",
-                            e
+                            e,
                         );
                     }
                 }, 2500);
@@ -287,12 +287,12 @@ function websocketWritableStream<T>(ws: WebSocket) {
         start(controller) {
             ws.addEventListener("error", (event) => {
                 controller.error(
-                    new Error("The WebSocket errored!" + JSON.stringify(event))
+                    new Error("The WebSocket errored!" + JSON.stringify(event)),
                 );
             });
             ws.addEventListener("close", () => {
                 controller.error(
-                    new Error("The server closed the connection unexpectedly!")
+                    new Error("The server closed the connection unexpectedly!"),
                 );
             });
             ws.addEventListener("open", () => {
@@ -331,11 +331,11 @@ function websocketWritableStream<T>(ws: WebSocket) {
                         resolve();
                     } else {
                         reject(
-                            new Error("The connection was not closed cleanly")
+                            new Error("The connection was not closed cleanly"),
                         );
                     }
                 },
-                { once: true }
+                { once: true },
             );
             ws.close(code, reasonString);
         });
@@ -350,7 +350,7 @@ export function createInviteLink<C extends CoValue>(
     {
         baseURL = window.location.href.replace(/#.*$/, ""),
         valueHint,
-    }: { baseURL?: string; valueHint?: string } = {}
+    }: { baseURL?: string; valueHint?: string } = {},
 ): string {
     const coValueCore = value._raw.core;
     let currentCoValue = coValueCore;
@@ -364,7 +364,7 @@ export function createInviteLink<C extends CoValue>(
     }
 
     const group = cojsonInternals.expectGroup(
-        currentCoValue.getCurrentContent()
+        currentCoValue.getCurrentContent(),
     );
     const inviteSecret = group.createInvite(role);
 
@@ -375,7 +375,7 @@ export function createInviteLink<C extends CoValue>(
 
 /** @category Invite Links */
 export function parseInviteLink<C extends CoValue>(
-    inviteURL: string
+    inviteURL: string,
 ):
     | {
           valueID: ID<C>;
@@ -431,14 +431,14 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
             as.acceptInvite(
                 result.valueID,
                 result.inviteSecret,
-                invitedObjectSchema
+                invitedObjectSchema,
             )
                 .then(() => {
                     resolve(result);
                     window.history.replaceState(
                         {},
                         "",
-                        window.location.href.replace(/#.*$/, "")
+                        window.location.href.replace(/#.*$/, ""),
                     );
                 })
                 .catch(reject);

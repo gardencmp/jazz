@@ -14,9 +14,10 @@
         "fast-check": "^3.17.2"
     },
     "scripts": {
-        "test": "vitest",
+        "test": "vitest --run",
+        "test-watch": "vitest",
         "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write src/**/*.ts",
+        "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },

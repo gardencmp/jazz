@@ -55,7 +55,7 @@ export class Account
         this._schema = {
             profile: () => Profile satisfies Schema,
             root: "json" satisfies Schema,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
     }
 
@@ -87,8 +87,8 @@ export class Account
                     this._loadedAs,
                     this._schema.profile as RefEncoded<
                         NonNullable<this["profile"]> & CoValue
-                    >
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    >,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as NonNullable<this["profile"]> extends Profile
                     ? Ref<NonNullable<this["profile"]>> | null
                     : null),
@@ -99,8 +99,8 @@ export class Account
                     this._loadedAs,
                     this._schema.root as RefEncoded<
                         NonNullable<this["root"]> & CoValue
-                    >
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    >,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as NonNullable<this["root"]> extends CoMap
                     ? Ref<NonNullable<this["root"]>> | null
                     : null),
@@ -114,7 +114,7 @@ export class Account
         super();
         if (!("fromRaw" in options)) {
             throw new Error(
-                "Can only construct account from raw or with .create()"
+                "Can only construct account from raw or with .create()",
             );
         }
         this.isMe = options.fromRaw.id == options.fromRaw.core.node.account.id;
@@ -135,7 +135,7 @@ export class Account
 
         return new Proxy(
             this,
-            AccountAndGroupProxyHandler as ProxyHandler<this>
+            AccountAndGroupProxyHandler as ProxyHandler<this>,
         );
     }
 
@@ -149,12 +149,12 @@ export class Account
         | (<V extends CoValue>(
               valueID: ID<V>,
               inviteSecret: InviteSecret,
-              coValueClass: CoValueClass<V>
+              coValueClass: CoValueClass<V>,
           ) => Promise<V | undefined>)
         | undefined = (async <V extends CoValue>(
         valueID: ID<V>,
         inviteSecret: InviteSecret,
-        coValueClass: CoValueClass<V>
+        coValueClass: CoValueClass<V>,
     ) => {
         if (!this.isMe) {
             throw new Error("Only a controlled account can accept invites");
@@ -162,13 +162,13 @@ export class Account
 
         await (this._raw as RawControlledAccount).acceptInvite(
             valueID as unknown as CoID<RawCoValue>,
-            inviteSecret
+            inviteSecret,
         );
 
         return coValueClass.load(valueID, {
             as: this as Account & Me,
         });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any;
 
     static async create<A extends Account>(
@@ -178,7 +178,7 @@ export class Account
             initialAgentSecret?: AgentSecret;
             peersToLoadFrom?: Peer[];
             crypto: CryptoProvider;
-        }
+        },
     ): Promise<A & Me> {
         const { node } = await LocalNode.withNewlyCreatedAccount({
             ...options,
@@ -202,7 +202,7 @@ export class Account
             sessionID: SessionID;
             peersToLoadFrom: Peer[];
             crypto: CryptoProvider;
-        }
+        },
     ): Promise<A & Me> {
         const node = await LocalNode.withLoadedAccount({
             accountID: options.accountID as unknown as CoID<RawAccount>,
@@ -224,7 +224,7 @@ export class Account
 
     static fromNode<A extends Account>(
         this: ClassOf<A>,
-        node: LocalNode
+        node: LocalNode,
     ): A & Me {
         return new this({
             fromRaw: node.account as RawControlledAccount,
@@ -249,7 +249,7 @@ export class Account
             profileGroup.addMember("everyone", "reader");
             this.profile = Profile.create(
                 { name: creationProps.name },
-                { owner: profileGroup }
+                { owner: profileGroup },
             );
         }
     }
@@ -259,8 +259,10 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     get(target, key, receiver) {
         if (key === "profile") {
             const ref = target._refs.profile;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return ref ? ref.accessFrom(receiver, "profile") : (undefined as any);
+            return ref
+                ? ref.accessFrom(receiver, "profile")
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                : (undefined as any);
         } else if (key === "root") {
             const ref = target._refs.root;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -284,16 +286,20 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
                 target._raw.set(
                     "profile",
                     value.id as unknown as CoID<RawCoMap>,
-                    "trusting"
+                    "trusting",
                 );
             }
-            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(target.id, value.id);
+            subscriptionsScopes
+                .get(receiver)
+                ?.onRefAccessedOrSet(target.id, value.id);
             return true;
         } else if (key === "root") {
             if (value) {
                 target._raw.set("root", value.id as unknown as CoID<RawCoMap>);
             }
-            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(target.id, value.id);
+            subscriptionsScopes
+                .get(receiver)
+                ?.onRefAccessedOrSet(target.id, value.id);
             return true;
         } else {
             return Reflect.set(target, key, value, receiver);

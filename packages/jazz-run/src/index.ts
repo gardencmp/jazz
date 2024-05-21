@@ -38,18 +38,18 @@ const accountCreate = Command.make(
                         },
                     ],
                     crypto,
-                })
+                }),
             );
 
             yield* Effect.promise(() =>
                 account._raw.core.node.syncManager.syncCoValue(
-                    account._raw.core
-                )
+                    account._raw.core,
+                ),
             );
             yield* Effect.promise(() =>
                 account._raw.core.node.syncManager.syncCoValue(
-                    account.profile!._raw.core
-                )
+                    account.profile!._raw.core,
+                ),
             );
 
             const ws2 = new WebSocket(peer);
@@ -59,7 +59,7 @@ const accountCreate = Command.make(
                     accountID: account.id,
                     accountSecret: account._raw.agentSecret,
                     sessionID: cojsonInternals.newRandomSessionID(
-                        account.id as unknown as AccountID
+                        account.id as unknown as AccountID,
                     ),
                     peersToLoadFrom: [
                         {
@@ -70,7 +70,7 @@ const accountCreate = Command.make(
                         },
                     ],
                     crypto,
-                })
+                }),
             );
 
             yield* Console.log(`# Credentials for Jazz account "${name}":
@@ -78,7 +78,7 @@ JAZZ_WORKER_ACCOUNT=${account.id}
 JAZZ_WORKER_SECRET=${account._raw.agentSecret}
 `);
         });
-    }
+    },
 );
 
 const accountBase = Command.make("account");
@@ -94,5 +94,5 @@ const cli = Command.run(command, {
 
 Effect.suspend(() => cli(process.argv)).pipe(
     Effect.provide(NodeContext.layer),
-    NodeRuntime.runMain
+    NodeRuntime.runMain,
 );

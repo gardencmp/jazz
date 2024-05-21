@@ -26,11 +26,11 @@ export class BrowserPassphraseAuth<Acc extends Account>
     async createOrLoadAccount(
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        crypto: CryptoProvider
+        crypto: CryptoProvider,
     ): Promise<Acc & Me> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
-                localStorage[localStorageKey]
+                localStorage[localStorageKey],
             ) as LocalStorageData;
 
             const sessionID = await getSessionFor(localStorageData.accountID);
@@ -59,7 +59,7 @@ export class BrowserPassphraseAuth<Acc extends Account>
                             this.appHostname,
                             this.accountSchema,
                             initialPeers,
-                            crypto
+                            crypto,
                         );
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });
@@ -72,7 +72,7 @@ export class BrowserPassphraseAuth<Acc extends Account>
                             this.appHostname,
                             this.accountSchema,
                             initialPeers,
-                            crypto
+                            crypto,
                         );
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });
@@ -104,7 +104,7 @@ async function signUp<Acc extends Account>(
     _appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
-    crypto: CryptoProvider
+    crypto: CryptoProvider,
 ): Promise<Acc & Me> {
     const secretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
@@ -132,7 +132,7 @@ async function logIn<Acc extends Account>(
     _appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
-    crypto: CryptoProvider
+    crypto: CryptoProvider,
 ): Promise<Acc & Me> {
     const accountSecretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
@@ -145,9 +145,9 @@ async function logIn<Acc extends Account>(
     const accountID = cojsonInternals.idforHeader(
         cojsonInternals.accountHeaderForInitialAgentSecret(
             accountSecret,
-            crypto
+            crypto,
         ),
-        crypto
+        crypto,
     ) as ID<Acc>;
 
     localStorage[localStorageKey] = JSON.stringify({

@@ -14,7 +14,7 @@ import {
     secretSeedLength,
     shortHashLength,
     StreamingHash,
-    CryptoProvider
+    CryptoProvider,
 } from "./crypto/crypto.js";
 import { WasmCrypto } from "./crypto/WasmCrypto.js";
 import { PureJSCrypto } from "./crypto/PureJSCrypto.js";

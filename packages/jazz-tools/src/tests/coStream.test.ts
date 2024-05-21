@@ -2,10 +2,16 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { BinaryCoStream, ID, Account, CoStream, co, WasmCrypto } from '../index.js';
+import {
+    BinaryCoStream,
+    ID,
+    Account,
+    CoStream,
+    co,
+    WasmCrypto,
+} from "../index.js";
 
 const Crypto = await WasmCrypto.create();
-
 
 describe("Simple CoStream operations", async () => {
     const me = await Account.create({
@@ -56,10 +62,10 @@ describe("CoStream resolution", async () => {
             [
                 NestedStream.create(
                     [TwiceNestedStream.create(["milk"], { owner: me })],
-                    { owner: me }
+                    { owner: me },
                 ),
             ],
-            { owner: me }
+            { owner: me },
         );
 
         return { me, stream };
@@ -68,7 +74,7 @@ describe("CoStream resolution", async () => {
     test("Construction", async () => {
         const { me, stream } = await initNodeAndStream();
         expect(stream[me.id]?.value?.[me.id]?.value?.[me.id]?.value).toEqual(
-            "milk"
+            "milk",
         );
     });
 
@@ -77,7 +83,7 @@ describe("CoStream resolution", async () => {
         const [initialAsPeer, secondPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
@@ -95,64 +101,64 @@ describe("CoStream resolution", async () => {
 
         expect(loadedStream?.[me.id]?.value).toEqual(null);
         expect(loadedStream?.[me.id]?.ref?.id).toEqual(
-            stream[me.id]?.value?.id
+            stream[me.id]?.value?.id,
         );
 
         const loadedNestedStream = await NestedStream.load(
             stream[me.id]!.value!.id,
-            { as: meOnSecondPeer }
+            { as: meOnSecondPeer },
         );
 
         // expect(loadedStream?.[me.id]?.value).toEqual(loadedNestedStream);
         expect(loadedStream?.[me.id]?.value?.id).toEqual(
-            loadedNestedStream?.id
+            loadedNestedStream?.id,
         );
         expect(loadedStream?.[me.id]?.value?.[me.id]?.value).toEqual(null);
         // expect(loadedStream?.[me.id]?.ref?.value).toEqual(loadedNestedStream);
         expect(loadedStream?.[me.id]?.ref?.value?.id).toEqual(
-            loadedNestedStream?.id
+            loadedNestedStream?.id,
         );
         expect(loadedStream?.[me.id]?.value?.[me.id]?.ref?.id).toEqual(
-            stream[me.id]?.value?.[me.id]?.value?.id
+            stream[me.id]?.value?.[me.id]?.value?.id,
         );
 
         const loadedTwiceNestedStream = await TwiceNestedStream.load(
             stream[me.id]!.value![me.id]!.value!.id,
-            { as: meOnSecondPeer }
+            { as: meOnSecondPeer },
         );
 
         // expect(loadedStream?.[me.id]?.value?.[me.id]?.value).toEqual(
         //     loadedTwiceNestedStream
         // );
         expect(loadedStream?.[me.id]?.value?.[me.id]?.value?.id).toEqual(
-            loadedTwiceNestedStream?.id
+            loadedTwiceNestedStream?.id,
         );
         expect(
-            loadedStream?.[me.id]?.value?.[me.id]?.value?.fancyValueOf(me.id)
+            loadedStream?.[me.id]?.value?.[me.id]?.value?.fancyValueOf(me.id),
         ).toEqual("Sir milk");
         // expect(loadedStream?.[me.id]?.ref?.value).toEqual(loadedNestedStream);
         expect(loadedStream?.[me.id]?.ref?.value?.id).toEqual(
-            loadedNestedStream?.id
+            loadedNestedStream?.id,
         );
         expect(loadedStream?.[me.id]?.value?.[me.id]?.ref?.value?.id).toEqual(
-            loadedTwiceNestedStream?.id
+            loadedTwiceNestedStream?.id,
         );
 
         const otherNestedStream = NestedStream.create(
             [TwiceNestedStream.create(["butter"], { owner: meOnSecondPeer })],
-            { owner: meOnSecondPeer }
+            { owner: meOnSecondPeer },
         );
         loadedStream?.push(otherNestedStream);
         // expect(loadedStream?.[me.id]?.value).toEqual(otherNestedStream);
         expect(loadedStream?.[me.id]?.value?.id).toEqual(otherNestedStream?.id);
         expect(loadedStream?.[me.id]?.ref?.value?.id).toEqual(
-            otherNestedStream?.id
+            otherNestedStream?.id,
         );
         expect(loadedStream?.[me.id]?.value?.[me.id]?.value?.id).toEqual(
-            otherNestedStream[me.id]?.value?.id
+            otherNestedStream[me.id]?.value?.id,
         );
         expect(
-            loadedStream?.[me.id]?.value?.[me.id]?.value?.fancyValueOf(me.id)
+            loadedStream?.[me.id]?.value?.[me.id]?.value?.fancyValueOf(me.id),
         ).toEqual("Sir butter");
     });
 
@@ -162,7 +168,7 @@ describe("CoStream resolution", async () => {
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
 
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
@@ -186,20 +192,22 @@ describe("CoStream resolution", async () => {
                     (subscribedStream) => {
                         console.log(
                             "subscribedStream[me.id]",
-                            subscribedStream[me.id]
+                            subscribedStream[me.id],
                         );
                         console.log(
                             "subscribedStream[me.id]?.value?.[me.id]?.value",
-                            subscribedStream[me.id]?.value?.[me.id]?.value
+                            subscribedStream[me.id]?.value?.[me.id]?.value,
                         );
                         console.log(
                             "subscribedStream[me.id]?.value?.[me.id]?.value?.[me.id]?.value",
                             subscribedStream[me.id]?.value?.[me.id]?.value?.[
                                 me.id
-                            ]?.value
+                            ]?.value,
                         );
-                        void Effect.runPromise(Queue.offer(queue, subscribedStream));
-                    }
+                        void Effect.runPromise(
+                            Queue.offer(queue, subscribedStream),
+                        );
+                    },
                 );
 
                 const update1 = yield* $(Queue.take(queue));
@@ -212,14 +220,14 @@ describe("CoStream resolution", async () => {
                 const update3 = yield* $(Queue.take(queue));
                 expect(update3[me.id]?.value?.[me.id]?.value).toBeDefined();
                 expect(
-                    update3[me.id]?.value?.[me.id]?.value?.[me.id]?.value
+                    update3[me.id]?.value?.[me.id]?.value?.[me.id]?.value,
                 ).toBe("milk");
 
                 update3[me.id]!.value![me.id]!.value!.push("bread");
 
                 const update4 = yield* $(Queue.take(queue));
                 expect(
-                    update4[me.id]?.value?.[me.id]?.value?.[me.id]?.value
+                    update4[me.id]?.value?.[me.id]?.value?.[me.id]?.value,
                 ).toBe("bread");
 
                 // When assigning a new nested stream, we get an update
@@ -235,16 +243,16 @@ describe("CoStream resolution", async () => {
 
                 const update5 = yield* $(Queue.take(queue));
                 expect(
-                    update5[me.id]?.value?.[me.id]?.value?.[me.id]?.value
+                    update5[me.id]?.value?.[me.id]?.value?.[me.id]?.value,
                 ).toBe("butter");
 
                 // we get updates when the new nested stream changes
                 newTwiceNested.push("jam");
                 const update6 = yield* $(Queue.take(queue));
                 expect(
-                    update6[me.id]?.value?.[me.id]?.value?.[me.id]?.value
+                    update6[me.id]?.value?.[me.id]?.value?.[me.id]?.value,
                 ).toBe("jam");
-            })
+            }),
         );
     });
 });
@@ -308,7 +316,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
         const meOnSecondPeer = await Account.become({
@@ -339,7 +347,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
 
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
@@ -361,8 +369,10 @@ describe("BinaryCoStream loading & Subscription", async () => {
                     stream.id,
                     { as: meOnSecondPeer },
                     (subscribedStream) => {
-                        void Effect.runPromise(Queue.offer(queue, subscribedStream));
-                    }
+                        void Effect.runPromise(
+                            Queue.offer(queue, subscribedStream),
+                        );
+                    },
                 );
 
                 const update1 = yield* $(Queue.take(queue));
@@ -417,7 +427,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
                     totalSizeBytes: undefined,
                     finished: true,
                 });
-            })
+            }),
         );
     });
 });

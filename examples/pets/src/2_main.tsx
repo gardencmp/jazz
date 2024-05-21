@@ -47,7 +47,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 </Jazz.Provider>
             </div>
         </ThemeProvider>
-    </React.StrictMode>
+    </React.StrictMode>,
 );
 
 /** Walkthrough: Creating pet posts & routing in `<App/>`
@@ -114,7 +114,7 @@ export function PostOverview() {
                                 <Link key={post.id} to={"/pet/" + post.id}>
                                     {post.name}
                                 </Link>
-                            )
+                            ),
                     )}
                 </>
             ) : undefined}

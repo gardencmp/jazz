@@ -121,8 +121,8 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
             this._loadedAs,
             (key) =>
                 (this._schema[key] ||
-                    this._schema[ItemsSym]) as RefEncoded<CoValue>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    this._schema[ItemsSym]) as RefEncoded<CoValue>,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ) as any;
     }
 
@@ -146,17 +146,17 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                               : new Ref(
                                     rawEdit.value as ID<CoValue>,
                                     target._loadedAs,
-                                    descriptor
+                                    descriptor,
                                 ).accessFrom(
                                     target,
-                                    "_edits." + key.toString() + ".value"
+                                    "_edits." + key.toString() + ".value",
                                 ),
                     ref:
                         descriptor !== "json" && isRefEncoded(descriptor)
                             ? new Ref(
                                   rawEdit.value as ID<CoValue>,
                                   target._loadedAs,
-                                  descriptor
+                                  descriptor,
                               )
                             : undefined,
                     by:
@@ -164,10 +164,10 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                         new Ref(
                             rawEdit.by as ID<Account>,
                             target._loadedAs,
-                            Account
+                            Account,
                         ).accessFrom(
                             target,
-                            "_edits." + key.toString() + ".by"
+                            "_edits." + key.toString() + ".by",
                         ),
                     madeAt: rawEdit.at,
                 };
@@ -189,7 +189,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     /** @internal */
     constructor(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group }
+        options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group },
     ) {
         super();
 
@@ -217,7 +217,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     static create<M extends CoMap>(
         this: ClassOf<M>,
         init: Simplify<CoMapInit<M>>,
-        options: { owner: Account | Group }
+        options: { owner: Account | Group },
     ) {
         return new this({ init, owner: options.owner });
     }
@@ -254,7 +254,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawFromInit<Fields extends object = Record<string, any>>(
         init: Simplify<CoMapInit<Fields>> | undefined,
-        owner: Account | Group
+        owner: Account | Group,
     ) {
         const rawOwner = owner._raw;
 
@@ -279,7 +279,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                 } else if ("encoded" in descriptor) {
                     rawInit[key] = encodeSync(descriptor.encoded)(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        initValue as any
+                        initValue as any,
                     );
                 }
             }
@@ -319,12 +319,12 @@ function tryInit(map: CoMap) {
         (map._schema[ItemsSym] ||
             Object.keys(map[InitValues].init).every(
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (key) => (map._schema as any)[key]
+                (key) => (map._schema as any)[key],
             ))
     ) {
         const raw = map.rawFromInit(
             map[InitValues].init,
-            map[InitValues].owner
+            map[InitValues].owner,
         );
         Object.defineProperties(map, {
             id: {
@@ -362,7 +362,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                         : new Ref(
                               raw as unknown as ID<CoValue>,
                               target._loadedAs,
-                              descriptor
+                              descriptor,
                           ).accessFrom(receiver, key);
                 }
             } else {

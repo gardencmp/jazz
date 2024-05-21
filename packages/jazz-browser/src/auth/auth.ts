@@ -6,7 +6,7 @@ export interface AuthProvider<Acc extends Account> {
     createOrLoadAccount(
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        crypto: CryptoProvider
+        crypto: CryptoProvider,
     ): Promise<Acc & Me>;
 }
 

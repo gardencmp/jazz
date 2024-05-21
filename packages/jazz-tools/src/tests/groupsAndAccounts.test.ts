@@ -1,5 +1,5 @@
 import { expect, describe, test } from "vitest";
-import { Account, CoMap, co, Group, WasmCrypto } from '../index.js';
+import { Account, CoMap, co, Group, WasmCrypto } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -19,7 +19,7 @@ describe("Custom accounts and groups", async () => {
                 profileGroup.addMember("everyone", "reader");
                 this.profile = CustomProfile.create(
                     { name: creationProps.name, color: "blue" },
-                    { owner: this }
+                    { owner: this },
                 );
             }
         }
@@ -38,7 +38,7 @@ describe("Custom accounts and groups", async () => {
     test("Custom account and group", async () => {
         const me = await CustomAccount.create({
             creationProps: { name: "Hermes Puggington" },
-            crypto: Crypto
+            crypto: Crypto,
         });
 
         expect(me.profile).toBeDefined();
@@ -62,7 +62,7 @@ describe("Custom accounts and groups", async () => {
                 });
                 if (meAsMember) {
                     expect(meAsMember.account?.profile?.name).toBe(
-                        "Hermes Puggington"
+                        "Hermes Puggington",
                     );
                     expect(meAsMember.account?.profile?.color).toBe("blue");
                     resolve();
@@ -80,7 +80,7 @@ describe("Custom accounts and groups", async () => {
             .as(CustomGroup)
             .members.find((member) => member.id === me.id);
         expect(meAsCastMember?.account?.profile?.name).toBe(
-            "Hermes Puggington"
+            "Hermes Puggington",
         );
         expect(meAsCastMember?.account?.profile?.color).toBe("blue");
 

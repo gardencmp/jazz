@@ -20,11 +20,11 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
     async createOrLoadAccount(
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        crypto: CryptoProvider
+        crypto: CryptoProvider,
     ): Promise<Acc & Me> {
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
-                localStorage[localStorageKey]
+                localStorage[localStorageKey],
             ) as StorageData;
 
             const sessionID = await getSessionFor(localStorageData.accountID);
@@ -34,7 +34,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                crypto
+                crypto,
             })) as Acc & Me;
 
             this.driver.onSignedIn({ logOut });
@@ -46,7 +46,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                         const account = (await this.accountSchema.create({
                             creationProps: { name: username },
                             peersToLoadFrom: initialPeers,
-                            crypto
+                            crypto,
                         })) as Acc & Me;
 
                         const storageData = JSON.stringify({
@@ -77,7 +77,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                         const storageData = JSON.parse(
                             localStorage[
                                 "demo-auth-existing-users-" + existingUser
-                            ]
+                            ],
                         ) as StorageData;
 
                         localStorage["demo-auth-logged-in-secret"] =
@@ -87,10 +87,10 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                             accountID: storageData.accountID as ID<Acc>,
                             accountSecret: storageData.accountSecret,
                             sessionID: await getSessionFor(
-                                storageData.accountID
+                                storageData.accountID,
                             ),
                             peersToLoadFrom: initialPeers,
-                            crypto
+                            crypto,
                         })) as Acc & Me;
 
                         resolveAccount(account);

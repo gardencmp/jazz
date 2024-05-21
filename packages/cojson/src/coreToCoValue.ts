@@ -8,7 +8,7 @@ import { RawBinaryCoStream } from "./coValues/coStream.js";
 
 export function coreToCoValue(
     core: CoValueCore,
-    options?: { ignorePrivateTransactions: true }
+    options?: { ignorePrivateTransactions: true },
 ) {
     if (core.header.type === "comap") {
         if (core.header.ruleset.type === "group") {
@@ -17,7 +17,10 @@ export function coreToCoValue(
                 !options?.ignorePrivateTransactions
             ) {
                 if (core.id === core.node.account.id) {
-                    return new RawControlledAccount(core, core.node.account.agentSecret);
+                    return new RawControlledAccount(
+                        core,
+                        core.node.account.agentSecret,
+                    );
                 } else {
                     return new RawAccount(core);
                 }

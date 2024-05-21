@@ -2,14 +2,14 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, CoList, WasmCrypto, co } from '../index.js';
+import { Account, CoList, WasmCrypto, co } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
 describe("Simple CoList operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
-        crypto: Crypto
+        crypto: Crypto,
     });
 
     class TestList extends CoList.Of(co.string) {}
@@ -119,21 +119,21 @@ describe("CoList resolution", async () => {
     const initNodeAndList = async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
-            crypto: Crypto
+            crypto: Crypto,
         });
 
         const list = TestList.create(
             [
                 NestedList.create(
                     [TwiceNestedList.create(["a", "b"], { owner: me })],
-                    { owner: me }
+                    { owner: me },
                 ),
                 NestedList.create(
                     [TwiceNestedList.create(["c", "d"], { owner: me })],
-                    { owner: me }
+                    { owner: me },
                 ),
             ],
-            { owner: me }
+            { owner: me },
         );
 
         return { me, list };
@@ -154,7 +154,7 @@ describe("CoList resolution", async () => {
         const [initialAsPeer, secondPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
@@ -163,7 +163,7 @@ describe("CoList resolution", async () => {
             peersToLoadFrom: [initialAsPeer],
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
-            crypto: Crypto
+            crypto: Crypto,
         });
 
         const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
@@ -182,7 +182,7 @@ describe("CoList resolution", async () => {
 
         const loadedTwiceNestedList = await TwiceNestedList.load(
             list[0]![0]!.id,
-            { as: meOnSecondPeer }
+            { as: meOnSecondPeer },
         );
 
         expect(loadedList?.[0]?.[0]).toBeDefined();
@@ -193,7 +193,7 @@ describe("CoList resolution", async () => {
 
         const otherNestedList = NestedList.create(
             [TwiceNestedList.create(["e", "f"], { owner: meOnSecondPeer })],
-            { owner: meOnSecondPeer }
+            { owner: meOnSecondPeer },
         );
 
         loadedList![0] = otherNestedList;
@@ -207,7 +207,7 @@ describe("CoList resolution", async () => {
         const [initialAsPeer, secondPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
@@ -216,7 +216,7 @@ describe("CoList resolution", async () => {
             peersToLoadFrom: [initialAsPeer],
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
-            crypto: Crypto
+            crypto: Crypto,
         });
 
         await Effect.runPromise(
@@ -229,10 +229,12 @@ describe("CoList resolution", async () => {
                     (subscribedList) => {
                         console.log(
                             "subscribedList?.[0]?.[0]?.[0]",
-                            subscribedList?.[0]?.[0]?.[0]
+                            subscribedList?.[0]?.[0]?.[0],
                         );
-                        void Effect.runPromise(Queue.offer(queue, subscribedList));
-                    }
+                        void Effect.runPromise(
+                            Queue.offer(queue, subscribedList),
+                        );
+                    },
                 );
 
                 const update1 = yield* $(Queue.take(queue));
@@ -272,7 +274,7 @@ describe("CoList resolution", async () => {
                 newTwiceNestedList[0] = "w";
                 const update6 = yield* $(Queue.take(queue));
                 expect(update6?.[0]?.[0]?.[0]).toBe("w");
-            })
+            }),
         );
     });
 });

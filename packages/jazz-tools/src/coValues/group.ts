@@ -1,11 +1,5 @@
 import type { AccountID, Everyone, RawGroup, Role } from "cojson";
-import type {
-    CoValue,
-    ID,
-    RefEncoded,
-    Schema,
-    ClassOf,
-} from "../internal.js";
+import type { CoValue, ID, RefEncoded, Schema, ClassOf } from "../internal.js";
 import {
     Account,
     CoMap,
@@ -45,7 +39,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
             profile: "json" satisfies Schema,
             root: "json" satisfies Schema,
             [MembersSym]: () => Account satisfies Schema,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         Object.defineProperty(this.prototype, "_schema", {
             get: () => this._schema,
@@ -71,8 +65,8 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     this._loadedAs,
                     this._schema.profile as RefEncoded<
                         NonNullable<this["profile"]>
-                    >
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    >,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["profile"] extends Profile
                     ? Ref<this["profile"]>
                     : never),
@@ -81,8 +75,8 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    this._schema.root as RefEncoded<NonNullable<this["root"]>>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    this._schema.root as RefEncoded<NonNullable<this["root"]>>,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["root"] extends CoMap
                     ? Ref<this["root"]>
                     : never),
@@ -107,7 +101,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                 raw = rawOwner.createGroup();
             } else {
                 throw new Error(
-                    "Can only construct group as a controlled account"
+                    "Can only construct group as a controlled account",
                 );
             }
         }
@@ -122,13 +116,13 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
 
         return new Proxy(
             this,
-            AccountAndGroupProxyHandler as ProxyHandler<this>
+            AccountAndGroupProxyHandler as ProxyHandler<this>,
         );
     }
 
     static create<G extends Group>(
         this: ClassOf<G>,
-        options: { owner: Account }
+        options: { owner: Account },
     ) {
         return new this(options);
     }
@@ -159,7 +153,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     new Ref<NonNullable<this[MembersSym]>>(
                         accountID,
                         this._loadedAs,
-                        this._schema[MembersSym]
+                        this._schema[MembersSym],
                     );
                 const accessRef = () => ref?.accessFrom(this, "members." + id);
 

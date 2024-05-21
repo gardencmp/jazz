@@ -1,4 +1,10 @@
-import { AccountID, AgentSecret, cojsonInternals, CryptoProvider, Peer } from "cojson";
+import {
+    AccountID,
+    AgentSecret,
+    cojsonInternals,
+    CryptoProvider,
+    Peer,
+} from "cojson";
 import { Account, CoValueClass, ID, Me } from "jazz-tools";
 import { AuthProvider } from "./auth.js";
 import { SessionProvider } from "../index.js";
@@ -24,11 +30,11 @@ export class BrowserPasskeyAuth<Acc extends Account>
     async createOrLoadAccount(
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
-        crypto: CryptoProvider
+        crypto: CryptoProvider,
     ): Promise<Acc & Me> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
-                localStorage[localStorageKey]
+                localStorage[localStorageKey],
             ) as LocalStorageData;
 
             const sessionID = await getSessionFor(localStorageData.accountID);
@@ -38,7 +44,7 @@ export class BrowserPasskeyAuth<Acc extends Account>
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-                crypto
+                crypto,
             })) as Acc & Me;
 
             this.driver.onSignedIn({ logOut });
@@ -55,7 +61,7 @@ export class BrowserPasskeyAuth<Acc extends Account>
                             this.appHostname,
                             this.accountSchema,
                             initialPeers,
-                            crypto
+                            crypto,
                         );
 
                         resolveAccount(account);
@@ -67,7 +73,7 @@ export class BrowserPasskeyAuth<Acc extends Account>
                             this.appHostname,
                             this.accountSchema,
                             initialPeers,
-                            crypto
+                            crypto,
                         );
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });
@@ -97,26 +103,25 @@ async function signUp<Acc extends Account>(
     appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
-    crypto: CryptoProvider
+    crypto: CryptoProvider,
 ): Promise<Acc & Me> {
     const secretSeed = crypto.newRandomSecretSeed();
 
     const account = (await accountSchema.create({
         creationProps: { name: username },
-        initialAgentSecret:
-        crypto.agentSecretFromSecretSeed(secretSeed),
+        initialAgentSecret: crypto.agentSecretFromSecretSeed(secretSeed),
         peersToLoadFrom: initialPeers,
-        crypto: crypto
+        crypto: crypto,
     })) as Acc & Me;
 
     const webAuthNCredentialPayload = new Uint8Array(
-        cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength
+        cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength,
     );
 
     webAuthNCredentialPayload.set(secretSeed);
     webAuthNCredentialPayload.set(
         cojsonInternals.rawCoIDtoBytes(account.id as unknown as AccountID),
-        cojsonInternals.secretSeedLength
+        cojsonInternals.secretSeedLength,
     );
 
     const webAuthNCredential = await navigator.credentials.create({
@@ -157,7 +162,7 @@ async function logIn<Acc extends Account>(
     appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
-    crypto: CryptoProvider
+    crypto: CryptoProvider,
 ): Promise<Acc & Me> {
     const webAuthNCredential = (await navigator.credentials.get({
         publicKey: {
@@ -174,22 +179,21 @@ async function logIn<Acc extends Account>(
     }
 
     const webAuthNCredentialPayload = new Uint8Array(
-        webAuthNCredential.response.userHandle
+        webAuthNCredential.response.userHandle,
     );
     const accountSecretSeed = webAuthNCredentialPayload.slice(
         0,
-        cojsonInternals.secretSeedLength
+        cojsonInternals.secretSeedLength,
     );
 
     const accountID = cojsonInternals.rawCoIDfromBytes(
         webAuthNCredentialPayload.slice(
             cojsonInternals.secretSeedLength,
-            cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength
-        )
+            cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength,
+        ),
     ) as ID<Acc>;
 
-    const accountSecret =
-        crypto.agentSecretFromSecretSeed(accountSecretSeed);
+    const accountSecret = crypto.agentSecretFromSecretSeed(accountSecretSeed);
 
     if (!accountSecret) {
         throw new Error("Invalid credential");
@@ -205,7 +209,7 @@ async function logIn<Acc extends Account>(
         accountSecret,
         sessionID: await getSessionFor(accountID),
         peersToLoadFrom: initialPeers,
-        crypto
+        crypto,
     })) as Acc & Me;
 
     return account;

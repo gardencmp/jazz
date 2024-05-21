@@ -11,7 +11,8 @@ import type {
     ClassOf,
     UnavailableError,
     UnCo,
-    RequireOptions} from "../internal.js";
+    RequireOptions,
+} from "../internal.js";
 import {
     Account,
     CoValueBase,
@@ -85,11 +86,11 @@ export class CoList<Item = any>
             () =>
                 Array.from(
                     { length: this._raw.entries().length },
-                    (_, idx) => idx
+                    (_, idx) => idx,
                 ),
             this._loadedAs,
-            (_idx) => this._schema[ItemsSym] as RefEncoded<CoValue>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (_idx) => this._schema[ItemsSym] as RefEncoded<CoValue>,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ) as any;
     }
 
@@ -118,11 +119,14 @@ export class CoList<Item = any>
     constructor(
         options:
             | { init: Item[]; owner: Account | Group }
-            | { fromRaw: RawCoList }
+            | { fromRaw: RawCoList },
     ) {
         super();
 
-        Object.defineProperty(this, "_instanceID", {value: `instance-${Math.random().toString(36).slice(2)}`, enumerable: false});
+        Object.defineProperty(this, "_instanceID", {
+            value: `instance-${Math.random().toString(36).slice(2)}`,
+            enumerable: false,
+        });
 
         if ("owner" in options) {
             this[InitValues] = {
@@ -145,7 +149,7 @@ export class CoList<Item = any>
     static create<L extends CoList>(
         this: ClassOf<L>,
         items: UnCo<L[number]>[],
-        options: {owner: Account | Group}
+        options: { owner: Account | Group },
     ) {
         return new this({ init: items, owner: options.owner });
     }
@@ -156,7 +160,7 @@ export class CoList<Item = any>
     push(...items: Item[]): number {
         for (const item of toRawItems(
             items as Item[],
-            this._schema[ItemsSym]
+            this._schema[ItemsSym],
         )) {
             this._raw.append(item);
         }
@@ -170,7 +174,7 @@ export class CoList<Item = any>
     unshift(...items: Item[]): number {
         for (const item of toRawItems(
             items as Item[],
-            this._schema[ItemsSym]
+            this._schema[ItemsSym],
         )) {
             this._raw.prepend(item);
         }
@@ -208,7 +212,7 @@ export class CoList<Item = any>
         let appendAfter = Math.max(start - 1, 0);
         for (const item of toRawItems(
             items as Item[],
-            this._schema[ItemsSym]
+            this._schema[ItemsSym],
         )) {
             console.log(this._raw.asArray(), appendAfter);
             this._raw.append(item, appendAfter);
@@ -237,13 +241,18 @@ export class CoList<Item = any>
         return this.toJSON();
     }
 
-    subscribe!: (listener: (update: this) => void, options?: RequireOptions<this>) => () => void;
+    subscribe!: (
+        listener: (update: this) => void,
+        options?: RequireOptions<this>,
+    ) => () => void;
     static {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.prototype.subscribe = CoValueBase.prototype.subscribe as any;
     }
 
-    subscribeEf!: (options?: RequireOptions<this>) => Stream.Stream<this, "unavailable", never>;
+    subscribeEf!: (
+        options?: RequireOptions<this>,
+    ) => Stream.Stream<this, "unavailable", never>;
     static {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.prototype.subscribeEf = CoValueBase.prototype.subscribeEf as any;
@@ -251,38 +260,41 @@ export class CoList<Item = any>
 
     static fromRaw<V extends CoList>(
         this: ClassOf<V> & typeof CoList,
-        raw: RawCoList
+        raw: RawCoList,
     ) {
         return new this({ fromRaw: raw });
     }
 
     static loadEf = CoValueBase.loadEf as unknown as <V extends CoValue>(
         this: ClassOf<V>,
-        id: ID<V>
+        id: ID<V>,
     ) => Effect.Effect<V, UnavailableError, AccountCtx>;
     static load = CoValueBase.load as unknown as <V extends CoValue>(
         this: ClassOf<V>,
         id: ID<V>,
-        options: { as: Account | Group }
+        options: { as: Account | Group },
     ) => Promise<V | undefined>;
     static subscribeEf = CoValueBase.subscribeEf as unknown as <
         V extends CoValue,
     >(
         this: ClassOf<V>,
         id: ID<V>,
-        options?: { require?: (value: V) => boolean | undefined }
+        options?: { require?: (value: V) => boolean | undefined },
     ) => Stream.Stream<V, UnavailableError, AccountCtx>;
     static subscribe = CoValueBase.subscribe as unknown as <V extends CoValue>(
         this: ClassOf<V>,
         id: ID<V>,
-        options: { as: Account | Group, require?: (value: V) => boolean | undefined },
-        onUpdate: (value: V) => void
+        options: {
+            as: Account | Group;
+            require?: (value: V) => boolean | undefined;
+        },
+        onUpdate: (value: V) => void,
     ) => () => void;
 
     static schema<V extends CoList>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this: { new (...args: any): V } & typeof CoList,
-        def: { [ItemsSym]: V["_schema"][ItemsSym] }
+        def: { [ItemsSym]: V["_schema"][ItemsSym] },
     ) {
         this._schema ||= {};
         Object.assign(this._schema, def);
@@ -307,7 +319,7 @@ function init(list: CoList) {
     if (list[InitValues]) {
         const { init, owner } = list[InitValues];
         const raw = owner._raw.createList(
-            toRawItems(init, list._schema[ItemsSym])
+            toRawItems(init, list._schema[ItemsSym]),
         );
 
         Object.defineProperties(list, {
@@ -338,7 +350,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
                     : new Ref(
                           rawValue as unknown as ID<CoValue>,
                           target._loadedAs,
-                          itemDescriptor
+                          itemDescriptor,
                       ).accessFrom(receiver, Number(key));
             }
         } else if (key === "length") {

@@ -44,7 +44,7 @@ export function createJazzReactContext<Acc extends Account>({
                     auth: auth,
                     peer:
                         (new URLSearchParams(window.location.search).get(
-                            "peer"
+                            "peer",
                         ) as typeof peer) || peer,
                     storage,
                 });
@@ -96,7 +96,7 @@ export function createJazzReactContext<Acc extends Account>({
 
         const me = useCoState<Acc & Me>(
             context.me.constructor as CoValueClass<Acc & Me>,
-            context.me.id
+            context.me.id,
         );
 
         return { me: me || context.me, logOut: context.logOut };
@@ -106,7 +106,7 @@ export function createJazzReactContext<Acc extends Account>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema: { new (...args: any[]): V } & CoValueClass,
         id: ID<V> | undefined,
-        options?: { require?: (value: V) => boolean | undefined }
+        options?: { require?: (value: V) => boolean | undefined },
     ): V | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
@@ -125,7 +125,7 @@ export function createJazzReactContext<Acc extends Account>({
                     setUpdates((u) => {
                         return u + 1;
                     });
-                }
+                },
             );
         }, [Schema, id, me]);
 
@@ -183,7 +183,7 @@ export type UseCoStateHook = <V extends CoValue>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Schema: { new (...args: any[]): V } & CoValueClass,
     id: ID<V> | undefined,
-    options?: { require?: (value: V) => boolean | undefined }
+    options?: { require?: (value: V) => boolean | undefined },
 ) => V | undefined;
 
 /** @category Context & Hooks */

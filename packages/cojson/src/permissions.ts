@@ -25,7 +25,7 @@ export type Role =
     | "readerInvite";
 
 export function determineValidTransactions(
-    coValue: CoValueCore
+    coValue: CoValueCore,
 ): { txID: TransactionID; tx: Transaction }[] {
     if (coValue.header.ruleset.type === "group") {
         const allTransactionsSorted = [
@@ -73,7 +73,7 @@ export function determineValidTransactions(
                     continue;
                 } else {
                     console.warn(
-                        "Only admins can make private transactions in groups"
+                        "Only admins can make private transactions in groups",
                     );
                     continue;
                 }
@@ -92,8 +92,8 @@ export function determineValidTransactions(
                     JSON.stringify(tx.changes, (k, v) =>
                         k === "changes" || k === "encryptedChanges"
                             ? v.slice(0, 20) + "..."
-                            : v
-                    )
+                            : v,
+                    ),
                 );
                 continue;
             }
@@ -173,7 +173,7 @@ export function determineValidTransactions(
                 )
             ) {
                 console.warn(
-                    "Everyone can only be set to reader, writer or revoked"
+                    "Everyone can only be set to reader, writer or revoked",
                 );
                 continue;
             }
@@ -212,7 +212,7 @@ export function determineValidTransactions(
                     }
                 } else {
                     console.warn(
-                        "Group transaction must be made by current admin or invite"
+                        "Group transaction must be made by current admin or invite",
                     );
                     continue;
                 }
@@ -230,9 +230,9 @@ export function determineValidTransactions(
             coValue.node
                 .expectCoValueLoaded(
                     coValue.header.ruleset.group,
-                    "Determining valid transaction in owned object but its group wasn't loaded"
+                    "Determining valid transaction in owned object but its group wasn't loaded",
                 )
-                .getCurrentContent()
+                .getCurrentContent(),
         );
 
         if (groupContent.type !== "comap") {
@@ -264,7 +264,7 @@ export function determineValidTransactions(
                         txID: { sessionID: sessionID, txIndex },
                         tx,
                     }));
-            }
+            },
         );
     } else if (coValue.header.ruleset.type === "unsafeAllowAll") {
         return [...coValue.sessionLogs.entries()].flatMap(
@@ -273,24 +273,22 @@ export function determineValidTransactions(
                     txID: { sessionID: sessionID, txIndex },
                     tx,
                 }));
-            }
+            },
         );
     } else {
         throw new Error(
             "Unknown ruleset type " +
-                (coValue.header.ruleset as { type: string }).type
+                (coValue.header.ruleset as { type: string }).type,
         );
     }
 }
 
-export function isKeyForKeyField(
-    co: string
-): co is `${KeyID}_for_${KeyID}` {
+export function isKeyForKeyField(co: string): co is `${KeyID}_for_${KeyID}` {
     return co.startsWith("key_") && co.includes("_for_key");
 }
 
 export function isKeyForAccountField(
-    co: string
+    co: string,
 ): co is `${KeyID}_for_${AccountID | AgentID}` {
     return (
         (co.startsWith("key_") &&

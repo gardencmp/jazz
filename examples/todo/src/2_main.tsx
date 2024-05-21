@@ -36,20 +36,23 @@ const auth = PasskeyAuth<TodoAccount>({
     Component: PrettyAuthUI,
     accountSchema: TodoAccount,
 });
-const Jazz = createJazzReactContext<TodoAccount>({ auth, peer: "wss://mesh.jazz.tools/?key=you@example.com" });
+const Jazz = createJazzReactContext<TodoAccount>({
+    auth,
+    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+});
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     // <React.StrictMode>
-        <ThemeProvider>
-            <TitleAndLogo name={appName} />
-            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider>
-                    <App />
-                </Jazz.Provider>
-            </div>
-        </ThemeProvider>
+    <ThemeProvider>
+        <TitleAndLogo name={appName} />
+        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+            <Jazz.Provider>
+                <App />
+            </Jazz.Provider>
+        </div>
+    </ThemeProvider>,
     // </React.StrictMode>
 );
 

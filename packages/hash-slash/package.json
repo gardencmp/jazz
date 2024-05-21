@@ -1,6 +1,7 @@
 {
   "name": "hash-slash",
   "version": "0.2.0-alpha.3",
+  "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",
@@ -15,7 +16,7 @@
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",
     "lint": "eslint . --ext ts,tsx",
-    "format": "prettier --write src/**/*.ts",
+    "format": "prettier --write './src/**/*.{ts,tsx}'",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },

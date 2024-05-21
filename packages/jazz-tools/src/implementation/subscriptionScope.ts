@@ -1,5 +1,12 @@
 import type { RawCoValue } from "cojson";
-import type { Account, CoValue, CoValueBase, ID, Me, ClassOf } from "../internal.js";
+import type {
+    Account,
+    CoValue,
+    CoValueBase,
+    ID,
+    Me,
+    ClassOf,
+} from "../internal.js";
 
 export const subscriptionsScopes = new WeakMap<
     CoValue,
@@ -9,9 +16,7 @@ export const subscriptionsScopes = new WeakMap<
 
 const TRACE_INVALIDATIONS = false;
 
-export class SubscriptionScope<
-    Root extends CoValue
-> {
+export class SubscriptionScope<Root extends CoValue> {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
     subscriber: Account & Me;
     entries = new Map<
@@ -26,13 +31,13 @@ export class SubscriptionScope<
     };
     onUpdate: (newRoot: Root) => void;
     scheduledUpdate: boolean = false;
-    cachedValues: {[id: ID<CoValue>]: CoValue} = {};
-    parents: {[id: ID<CoValue>]: Set<ID<CoValue>>} = {};
+    cachedValues: { [id: ID<CoValue>]: CoValue } = {};
+    parents: { [id: ID<CoValue>]: Set<ID<CoValue>> } = {};
 
     constructor(
         root: Root,
         rootSchema: ClassOf<Root> & typeof CoValueBase,
-        onUpdate: (newRoot: Root) => void
+        onUpdate: (newRoot: Root) => void,
     ) {
         this.rootEntry = {
             state: "loaded" as const,
@@ -48,13 +53,11 @@ export class SubscriptionScope<
         this.rootEntry.rawUnsub = root._raw.core.subscribe(
             (rawUpdate: RawCoValue | undefined) => {
                 if (!rawUpdate) return;
-                this.rootEntry.value = rootSchema.fromRaw(
-                    rawUpdate
-                ) as Root;
+                this.rootEntry.value = rootSchema.fromRaw(rawUpdate) as Root;
                 // console.log("root update", this.rootEntry.value.toJSON());
                 subscriptionsScopes.set(this.rootEntry.value, this);
                 this.scheduleUpdate();
-            }
+            },
         );
     }
 
@@ -68,13 +71,17 @@ export class SubscriptionScope<
         }
     }
 
-    onRefAccessedOrSet(fromId: ID<CoValue>, accessedOrSetId: ID<CoValue> | undefined) {
+    onRefAccessedOrSet(
+        fromId: ID<CoValue>,
+        accessedOrSetId: ID<CoValue> | undefined,
+    ) {
         // console.log("onRefAccessedOrSet", this.scopeID, accessedOrSetId);
         if (!accessedOrSetId) {
             return;
         }
 
-        this.parents[accessedOrSetId] = this.parents[accessedOrSetId] || new Set();
+        this.parents[accessedOrSetId] =
+            this.parents[accessedOrSetId] || new Set();
         this.parents[accessedOrSetId]!.add(fromId);
 
         if (!this.entries.has(accessedOrSetId)) {
@@ -113,7 +120,14 @@ export class SubscriptionScope<
     }
 
     invalidate(id: ID<CoValue>, fromChild?: ID<CoValue>) {
-        TRACE_INVALIDATIONS && console.log("invalidating", fromChild, "->", id, this.cachedValues[id]);
+        TRACE_INVALIDATIONS &&
+            console.log(
+                "invalidating",
+                fromChild,
+                "->",
+                id,
+                this.cachedValues[id],
+            );
         delete this.cachedValues[id];
         for (const parent of this.parents[id] || []) {
             this.invalidate(parent, id);

@@ -1,6 +1,10 @@
 import type { JsonValue, RawCoValue } from "cojson";
-import { type CoValue, type CoValueClass, isCoValueClass } from "../internal.js";
-import type { Schema as EffectSchema,  TypeId } from "@effect/schema/Schema";
+import {
+    type CoValue,
+    type CoValueClass,
+    isCoValueClass,
+} from "../internal.js";
+import type { Schema as EffectSchema, TypeId } from "@effect/schema/Schema";
 
 export type CoMarker = { readonly __co: unique symbol };
 /** @category Schema definition */
@@ -26,7 +30,9 @@ export const co = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null>,
-    literal: <T extends (string | number | boolean)[]>(..._lit: T): co<T[number]> => {
+    literal: <T extends (string | number | boolean)[]>(
+        ..._lit: T
+    ): co<T[number]> => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
@@ -39,7 +45,7 @@ export const co = {
         return { [SchemaInit]: { encoded: arg } satisfies Schema } as any;
     },
     ref: <C extends CoValueClass>(
-        arg: C | ((_raw: InstanceType<C>["_raw"]) => C)
+        arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
     ): co<InstanceType<C> | null> => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: arg satisfies Schema } as any;
@@ -55,14 +61,14 @@ export type RefEncoded<V extends CoValue> =
     | ((raw: RawCoValue) => CoValueClass<V>);
 
 export function isRefEncoded<V extends CoValue>(
-    schema: Schema
+    schema: Schema,
 ): schema is RefEncoded<V> {
     return typeof schema === "function";
 }
 
 export function instantiateRefEncoded<V extends CoValue>(
     schema: RefEncoded<V>,
-    raw: RawCoValue
+    raw: RawCoValue,
 ): V {
     return isCoValueClass(schema)
         ? schema.fromRaw(raw)

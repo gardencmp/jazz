@@ -50,7 +50,7 @@ export class PetAccount extends Account {
                 {
                     posts: ListOfPosts.create([], { owner: this }),
                 },
-                { owner: this }
+                { owner: this },
             );
             console.log("Created root", this.root);
         }

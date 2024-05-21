@@ -92,7 +92,7 @@ export class CoStream<Item = any>
     constructor(
         options:
             | { init: Item[]; owner: Account | Group }
-            | { fromRaw: RawCoStream }
+            | { fromRaw: RawCoStream },
     ) {
         super();
 
@@ -117,7 +117,7 @@ export class CoStream<Item = any>
     static create<S extends CoStream>(
         this: ClassOf<S>,
         init: S extends CoStream<infer Item> ? UnCo<Item>[] : never,
-        options: { owner: Account | Group }
+        options: { owner: Account | Group },
     ) {
         return new this({ init, owner: options.owner });
     }
@@ -156,13 +156,13 @@ export class CoStream<Item = any>
                 Object.entries(this).map(([account, entry]) => [
                     account,
                     mapper(entry.value),
-                ])
+                ]),
             ),
             in: Object.fromEntries(
                 Object.entries(this.perSession).map(([session, entry]) => [
                     session,
                     mapper(entry.value),
-                ])
+                ]),
             ),
         };
     }
@@ -174,7 +174,7 @@ export class CoStream<Item = any>
     static schema<V extends CoStream>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this: { new (...args: any): V } & typeof CoStream,
-        def: { [ItemsSym]: V["_schema"][ItemsSym] }
+        def: { [ItemsSym]: V["_schema"][ItemsSym] },
     ) {
         this._schema ||= {};
         Object.assign(this._schema, def);
@@ -191,7 +191,7 @@ function entryFromRawEntry<Item>(
     },
     loadedAs: Account & Me,
     accountID: ID<Account> | undefined,
-    itemField: Schema
+    itemField: Schema,
 ): Omit<CoStreamEntry<Item>, "all"> {
     return {
         get value(): NonNullable<Item> extends CoValue
@@ -205,7 +205,11 @@ function entryFromRawEntry<Item>(
                 return decodeSync(itemField.encoded)(rawEntry.value);
             } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(
-                    accessFrom, rawEntry.by + rawEntry.tx.sessionID + rawEntry.tx.txIndex + ".value"
+                    accessFrom,
+                    rawEntry.by +
+                        rawEntry.tx.sessionID +
+                        rawEntry.tx.txIndex +
+                        ".value",
                 ) as NonNullable<Item> extends CoValue
                     ? (CoValue & Item) | null
                     : Item;
@@ -221,7 +225,7 @@ function entryFromRawEntry<Item>(
                 return new Ref(
                     rawId as unknown as ID<CoValue>,
                     loadedAs,
-                    itemField
+                    itemField,
                 ) as NonNullable<Item> extends CoValue
                     ? Ref<NonNullable<Item>>
                     : never;
@@ -235,8 +239,14 @@ function entryFromRawEntry<Item>(
                 new Ref<Account>(
                     accountID as unknown as ID<Account>,
                     loadedAs,
-                    Account
-                )?.accessFrom(accessFrom, rawEntry.by + rawEntry.tx.sessionID + rawEntry.tx.txIndex + ".by")
+                    Account,
+                )?.accessFrom(
+                    accessFrom,
+                    rawEntry.by +
+                        rawEntry.tx.sessionID +
+                        rawEntry.tx.txIndex +
+                        ".by",
+                )
             );
         },
         madeAt: rawEntry.at,
@@ -276,7 +286,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
                 rawEntry,
                 target._loadedAs,
                 key as unknown as ID<Account>,
-                target._schema[ItemsSym]
+                target._schema[ItemsSym],
             );
 
             Object.defineProperty(entry, "all", {
@@ -291,10 +301,10 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
                                 rawEntry.value,
                                 target._loadedAs,
                                 key as unknown as ID<Account>,
-                                target._schema[ItemsSym]
+                                target._schema[ItemsSym],
                             );
                         }
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
                 },
             });
@@ -303,7 +313,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
         } else if (key === "perSession") {
             return new Proxy(
                 {},
-                CoStreamPerSessionProxyHandler(target, receiver)
+                CoStreamPerSessionProxyHandler(target, receiver),
             );
         } else {
             return Reflect.get(target, key, receiver);
@@ -364,7 +374,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
 
 const CoStreamPerSessionProxyHandler = (
     innerTarget: CoStream,
-    accessFrom: CoStream
+    accessFrom: CoStream,
 ): ProxyHandler<Record<string, never>> => ({
     get(_target, key, receiver) {
         if (typeof key === "string" && key.includes("session")) {
@@ -381,7 +391,7 @@ const CoStreamPerSessionProxyHandler = (
                 cojsonInternals.isAccountID(by)
                     ? (by as unknown as ID<Account>)
                     : undefined,
-                innerTarget._schema[ItemsSym]
+                innerTarget._schema[ItemsSym],
             );
 
             Object.defineProperty(entry, "all", {
@@ -398,10 +408,10 @@ const CoStreamPerSessionProxyHandler = (
                                 cojsonInternals.isAccountID(by)
                                     ? (by as unknown as ID<Account>)
                                     : undefined,
-                                innerTarget._schema[ItemsSym]
+                                innerTarget._schema[ItemsSym],
                             );
                         }
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
                 },
             });
@@ -443,7 +453,7 @@ export class BinaryCoStream
               }
             | {
                   fromRaw: RawBinaryCoStream;
-              }
+              },
     ) {
         super();
 
@@ -467,7 +477,7 @@ export class BinaryCoStream
 
     static create<S extends BinaryCoStream>(
         this: ClassOf<S>,
-        options: { owner: Account | Group }
+        options: { owner: Account | Group },
     ) {
         return new this(options);
     }
@@ -510,7 +520,7 @@ export class BinaryCoStream
             as: Account & Me;
             allowUnfinished?: boolean;
             onProgress?: (progress: number) => void;
-        }
+        },
     ): Promise<Blob | undefined> {
         const stream = await this.load(id, {
             as: options.as,
@@ -527,7 +537,7 @@ export class BinaryCoStream
         options: {
             owner: Group | Account;
             onProgress?: (progress: number) => void;
-        }
+        },
     ): Promise<BinaryCoStream> {
         const stream = this.create({ owner: options.owner });
 
@@ -560,7 +570,7 @@ export class BinaryCoStream
             "Finished creating binary stream in",
             (end - start) / 1000,
             "s - Throughput in MB/s",
-            (1000 * (blob.size / (end - start))) / (1024 * 1024)
+            (1000 * (blob.size / (end - start))) / (1024 * 1024),
         );
         options.onProgress?.(1);
 

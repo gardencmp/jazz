@@ -34,7 +34,7 @@ export function ShareButton({ petPost }: { petPost?: PetPost }) {
                                 description: (
                                     <img src={qr} className="w-20 h-20" />
                                 ),
-                            })
+                            }),
                         );
                     }
                 }}

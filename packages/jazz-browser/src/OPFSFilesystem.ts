@@ -1,4 +1,10 @@
-import { BlockFilename, FSErr, FileSystem, WalFilename, CryptoProvider } from "cojson";
+import {
+    BlockFilename,
+    FSErr,
+    FileSystem,
+    WalFilename,
+    CryptoProvider,
+} from "cojson";
 import { Effect } from "effect";
 
 export class OPFSFilesystem implements FileSystem<number, number> {
@@ -9,8 +15,8 @@ export class OPFSFilesystem implements FileSystem<number, number> {
     constructor(public crypto: CryptoProvider) {
         this.opfsWorker = new Worker(
             URL.createObjectURL(
-                new Blob([opfsWorkerJSSrc], { type: "text/javascript" })
-            )
+                new Blob([opfsWorkerJSSrc], { type: "text/javascript" }),
+            ),
         );
         this.opfsWorker.onmessage = (event) => {
             // console.log("Received from OPFS worker", event.data);
@@ -31,7 +37,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "listFiles" + requestId,
                     "listFiles" + requestId,
-                    "listFilesEnd" + requestId
+                    "listFilesEnd" + requestId,
                 );
                 cb(Effect.succeed(event.data.fileNames));
             });
@@ -40,7 +46,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
     }
 
     openToRead(
-        filename: string
+        filename: string,
     ): Effect.Effect<{ handle: number; size: number }, FSErr, never> {
         return Effect.async((cb) => {
             const requestId = this.nextRequestId++;
@@ -50,13 +56,13 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                     Effect.succeed({
                         handle: event.data.handle,
                         size: event.data.size,
-                    })
+                    }),
                 );
                 performance.mark("openToReadEnd" + requestId);
                 performance.measure(
                     "openToRead" + requestId,
                     "openToRead" + requestId,
-                    "openToReadEnd" + requestId
+                    "openToReadEnd" + requestId,
                 );
             });
             this.opfsWorker.postMessage({
@@ -76,7 +82,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "createFile" + requestId,
                     "createFile" + requestId,
-                    "createFileEnd" + requestId
+                    "createFileEnd" + requestId,
                 );
                 cb(Effect.succeed(event.data.handle));
             });
@@ -89,7 +95,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
     }
 
     openToWrite(
-        filename: string
+        filename: string,
     ): Effect.Effect<FileSystemFileHandle, FSErr, never> {
         return Effect.async((cb) => {
             const requestId = this.nextRequestId++;
@@ -99,7 +105,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "openToWrite" + requestId,
                     "openToWrite" + requestId,
-                    "openToWriteEnd" + requestId
+                    "openToWriteEnd" + requestId,
                 );
                 cb(Effect.succeed(event.data.handle));
             });
@@ -113,7 +119,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
 
     append(
         handle: number,
-        data: Uint8Array
+        data: Uint8Array,
     ): Effect.Effect<void, FSErr, never> {
         return Effect.async((cb) => {
             const requestId = this.nextRequestId++;
@@ -123,7 +129,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "append" + requestId,
                     "append" + requestId,
-                    "appendEnd" + requestId
+                    "appendEnd" + requestId,
                 );
                 cb(Effect.succeed(undefined));
             });
@@ -139,7 +145,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
     read(
         handle: number,
         offset: number,
-        length: number
+        length: number,
     ): Effect.Effect<Uint8Array, FSErr, never> {
         return Effect.async((cb) => {
             const requestId = this.nextRequestId++;
@@ -149,7 +155,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "read" + requestId,
                     "read" + requestId,
-                    "readEnd" + requestId
+                    "readEnd" + requestId,
                 );
                 cb(Effect.succeed(event.data.data));
             });
@@ -172,7 +178,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "close" + requestId,
                     "close" + requestId,
-                    "closeEnd" + requestId
+                    "closeEnd" + requestId,
                 );
                 cb(Effect.succeed(undefined));
             });
@@ -186,7 +192,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
 
     closeAndRename(
         handle: number,
-        filename: BlockFilename
+        filename: BlockFilename,
     ): Effect.Effect<void, FSErr, never> {
         return Effect.async((cb) => {
             const requestId = this.nextRequestId++;
@@ -196,7 +202,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "closeAndRename" + requestId,
                     "closeAndRename" + requestId,
-                    "closeAndRenameEnd" + requestId
+                    "closeAndRenameEnd" + requestId,
                 );
                 cb(Effect.succeed(undefined));
             });
@@ -209,7 +215,9 @@ export class OPFSFilesystem implements FileSystem<number, number> {
         });
     }
 
-    removeFile(filename: BlockFilename | WalFilename): Effect.Effect<void, FSErr, never> {
+    removeFile(
+        filename: BlockFilename | WalFilename,
+    ): Effect.Effect<void, FSErr, never> {
         return Effect.async((cb) => {
             const requestId = this.nextRequestId++;
             performance.mark("removeFile" + requestId);
@@ -218,7 +226,7 @@ export class OPFSFilesystem implements FileSystem<number, number> {
                 performance.measure(
                     "removeFile" + requestId,
                     "removeFile" + requestId,
-                    "removeFileEnd" + requestId
+                    "removeFileEnd" + requestId,
                 );
                 cb(Effect.succeed(undefined));
             });

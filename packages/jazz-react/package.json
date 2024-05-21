@@ -1,6 +1,7 @@
 {
   "name": "jazz-react",
   "version": "0.7.0-alpha.37",
+  "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
@@ -23,7 +24,7 @@
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",
     "lint": "eslint . --ext ts,tsx",
-    "format": "prettier --write src/**/*.ts",
+    "format": "prettier --write './src/**/*.{ts,tsx}'",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },
