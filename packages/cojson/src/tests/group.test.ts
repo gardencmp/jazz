@@ -1,5 +1,12 @@
 import { expect, test } from "vitest";
-import { LocalNode, RawCoMap, RawCoList, RawCoStream, RawBinaryCoStream, WasmCrypto } from "../index";
+import {
+    LocalNode,
+    RawCoMap,
+    RawCoList,
+    RawCoStream,
+    RawBinaryCoStream,
+    WasmCrypto,
+} from "../index.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 const Crypto = await WasmCrypto.create();
@@ -24,7 +31,7 @@ test("Can create a CoList in a group", () => {
 
     expect(list.core.getCurrentContent().type).toEqual("colist");
     expect(list instanceof RawCoList).toEqual(true);
-})
+});
 
 test("Can create a CoStream in a group", () => {
     const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
@@ -47,4 +54,4 @@ test("Can create a BinaryCoStream in a group", () => {
     expect(stream.core.getCurrentContent().type).toEqual("costream");
     expect(stream.headerMeta.type).toEqual("binary");
     expect(stream instanceof RawBinaryCoStream).toEqual(true);
-})
+});

@@ -1,4 +1,4 @@
-import { expect, test, beforeEach } from "vitest";
+import { expect, test } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { SyncMessage } from "../sync.js";
@@ -985,7 +985,7 @@ test.skip("When a peer's outgoing/writable stream closes, we remove the peer", a
 
     const group = node.createGroup();
 
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
+    const [inRx] = newStreamPair<SyncMessage>();
     const [outRx, outTx] = newStreamPair<SyncMessage>();
 
     node.syncManager.addPeer({
@@ -1079,7 +1079,7 @@ function groupContentEx(group: RawGroup) {
     };
 }
 
-function admContEx(adminID: AccountID) {
+function _admContEx(adminID: AccountID) {
     return {
         action: "content",
         id: adminID,
@@ -1093,7 +1093,7 @@ function groupStateEx(group: RawGroup) {
     };
 }
 
-function admStateEx(adminID: AccountID) {
+function _admStateEx(adminID: AccountID) {
     return {
         action: "known",
         id: adminID,

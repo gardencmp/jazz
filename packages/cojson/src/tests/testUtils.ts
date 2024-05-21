@@ -41,7 +41,7 @@ export function groupWithTwoAdmins() {
 
     const otherAdmin = node.createAccount();
 
-    let group = expectGroup(groupCore.getCurrentContent());
+    const group = expectGroup(groupCore.getCurrentContent());
 
         group.set(otherAdmin.id, "admin", "trusting");
         expect(group.get(otherAdmin.id)).toEqual("admin");
@@ -66,7 +66,7 @@ export function newGroupHighLevel() {
 }
 
 export function groupWithTwoAdminsHighLevel() {
-    let { admin, node, group } = newGroupHighLevel();
+    const { admin, node, group } = newGroupHighLevel();
 
     const otherAdmin = node.createAccount();
 

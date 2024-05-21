@@ -1,4 +1,4 @@
-import { expect, test, beforeEach } from "vitest";
+import { expect, test } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
 import { expectMap } from "../coValue.js";
 import {
@@ -41,7 +41,7 @@ test("Added admin can add a third admin to a group", () => {
 });
 
 test("Added adming can add a third admin to a group (high level)", () => {
-    const { group, otherAdmin, node } = groupWithTwoAdminsHighLevel();
+    const { group, otherAdmin } = groupWithTwoAdminsHighLevel();
 
     const groupAsOtherAdmin = expectGroup(
         group.core
@@ -234,14 +234,14 @@ test("Admins can write to an object that is owned by their group", () => {
         ...Crypto.createdNowUnique(),
     });
 
-    let childContent = expectMap(childObject.getCurrentContent());
+    const childContent = expectMap(childObject.getCurrentContent());
 
     childContent.set("foo", "bar", "trusting");
     expect(childContent.get("foo")).toEqual("bar");
 });
 
 test("Admins can write to an object that is owned by their group (high level)", () => {
-    const { node, group } = newGroupHighLevel();
+    const { group } = newGroupHighLevel();
 
     const childObject = group.createMap();
 
@@ -387,7 +387,7 @@ test("Admins can set group read key and then use it to create and read private t
 });
 
 test("Admins can set group read key and then use it to create and read private transactions in owned objects (high level)", () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { group } = newGroupHighLevel();
 
     const childObject = group.createMap();
 
@@ -456,7 +456,7 @@ test("Admins can set group read key and then writers can use it to create and re
 });
 
 test("Admins can set group read key and then writers can use it to create and read private transactions in owned objects (high level)", () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { node, group } = newGroupHighLevel();
 
     const writer = node.createAccount();
 
@@ -539,7 +539,7 @@ test("Admins can set group read key and then use it to create private transactio
 });
 
 test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read (high level)", () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { node, group } = newGroupHighLevel();
 
     const reader = node.createAccount();
 
@@ -651,7 +651,7 @@ test("Admins can set group read key and then use it to create private transactio
 });
 
 test("Admins can set group read key and then use it to create private transactions in owned objects, which readers can read, even with a separate later revelation for the same read key (high level)", () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { node, group } = newGroupHighLevel();
 
     const reader1 = node.createAccount();
 
@@ -1110,7 +1110,7 @@ test("Can create two owned objects in the same group and they will have differen
 });
 
 test("Admins can create an adminInvite, which can add an admin", () => {
-    const { node, groupCore, admin } = newGroup();
+    const { groupCore, admin } = newGroup();
 
     const inviteSecret = Crypto.newRandomAgentSecret();
     const inviteID = Crypto.getAgentID(inviteSecret);
@@ -1189,7 +1189,7 @@ test("Admins can create an adminInvite, which can add an admin", () => {
 });
 
 test("Admins can create an adminInvite, which can add an admin (high-level)", async () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { node, group } = newGroupHighLevel();
 
     const inviteSecret = group.createInvite("admin");
 
@@ -1206,7 +1206,7 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
     const thirdAdmin = Crypto.newRandomAgentSecret();
     const thirdAdminID = Crypto.getAgentID(thirdAdmin);
 
-    let groupAsInvitedAdmin = await nodeAsInvitedAdmin.load(group.id);
+    const groupAsInvitedAdmin = await nodeAsInvitedAdmin.load(group.id);
     if (groupAsInvitedAdmin === "unavailable") {
         throw new Error("groupAsInvitedAdmin is unavailable");
     }
@@ -1220,7 +1220,7 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
 });
 
 test("Admins can create a writerInvite, which can add a writer", () => {
-    const { node, groupCore, admin } = newGroup();
+    const { groupCore, admin } = newGroup();
 
     const inviteSecret = Crypto.newRandomAgentSecret();
     const inviteID = Crypto.getAgentID(inviteSecret);
@@ -1299,7 +1299,7 @@ test("Admins can create a writerInvite, which can add a writer", () => {
 });
 
 test("Admins can create a writerInvite, which can add a writer (high-level)", async () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { node, group } = newGroupHighLevel();
 
     const inviteSecret = group.createInvite("writer");
 
@@ -1323,7 +1323,7 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
 });
 
 test("Admins can create a readerInvite, which can add a reader", () => {
-    const { node, groupCore, admin } = newGroup();
+    const { groupCore, admin } = newGroup();
 
     const inviteSecret = Crypto.newRandomAgentSecret();
     const inviteID = Crypto.getAgentID(inviteSecret);
@@ -1380,15 +1380,6 @@ test("Admins can create a readerInvite, which can add a reader", () => {
 
     expect(readKeyAsInvite.secret).toBeDefined();
 
-    const revelation2 = Crypto.seal({
-        message: readKeyAsInvite.secret!,
-        from: Crypto.getAgentSealerSecret(invitedReaderSecret),
-        to: Crypto.getAgentSealerID(invitedReaderID),
-        nOnceMaterial: {
-            in: groupCore.id,
-            tx: groupCore.nextTransactionID(),
-        },
-    });
 
     groupAsInvite.set(
         `${readKeyAsInvite.id}_for_${invitedReaderID}`,
@@ -1402,7 +1393,7 @@ test("Admins can create a readerInvite, which can add a reader", () => {
 });
 
 test("Admins can create a readerInvite, which can add a reader (high-level)", async () => {
-    const { node, group, admin } = newGroupHighLevel();
+    const { node, group } = newGroupHighLevel();
 
     const inviteSecret = group.createInvite("reader");
 
@@ -1426,7 +1417,7 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
 });
 
 test("WriterInvites can not invite admins", () => {
-    const { node, groupCore, admin } = newGroup();
+    const { groupCore, admin } = newGroup();
 
     const inviteSecret = Crypto.newRandomAgentSecret();
     const inviteID = Crypto.getAgentID(inviteSecret);
@@ -1480,7 +1471,7 @@ test("WriterInvites can not invite admins", () => {
 });
 
 test("ReaderInvites can not invite admins", () => {
-    const { node, groupCore, admin } = newGroup();
+    const { groupCore, admin } = newGroup();
 
     const inviteSecret = Crypto.newRandomAgentSecret();
     const inviteID = Crypto.getAgentID(inviteSecret);
@@ -1534,7 +1525,7 @@ test("ReaderInvites can not invite admins", () => {
 });
 
 test("ReaderInvites can not invite writers", () => {
-    const { node, groupCore, admin } = newGroup();
+    const { groupCore, admin } = newGroup();
 
     const inviteSecret = Crypto.newRandomAgentSecret();
     const inviteID = Crypto.getAgentID(inviteSecret);

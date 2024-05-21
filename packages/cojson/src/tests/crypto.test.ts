@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { WasmCrypto } from "../crypto/WasmCrypto";
+import { WasmCrypto } from '../crypto/WasmCrypto.js';
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";

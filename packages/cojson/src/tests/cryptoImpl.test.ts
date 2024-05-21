@@ -1,8 +1,8 @@
-import { KeySecret } from "../crypto/crypto";
-import { WasmCrypto } from "../crypto/WasmCrypto";
-import { PureJSCrypto } from "../crypto/PureJSCrypto";
+import { KeySecret } from "../crypto/crypto.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
+import { PureJSCrypto } from "../crypto/PureJSCrypto.js";
 import { describe, test, expect } from "vitest";
-import { SessionID } from "..";
+import { SessionID } from "../index.js";
 
 describe.each([
     { impl: await WasmCrypto.create(), name: "Wasm" },
@@ -28,14 +28,17 @@ describe.each([
     });
 
     test("incrementalBlake3", () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state = impl.emptyBlake3State() as any;
         const data = new Uint8Array([1, 2, 3, 4, 5]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state2 = impl.blake3IncrementalUpdate(state, data) as any;
         expect(impl.blake3DigestForState(state2)).toEqual(
             // prettier-ignore
             new Uint8Array([2,79,103,192,66,90,61,192,47,186,245,140,185,61,229,19,46,61,117,197,25,250,160,186,218,33,73,29,136,201,112,87])
         );
         const data2 = new Uint8Array([6, 7, 8, 9, 10]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state3 = impl.blake3IncrementalUpdate(state2, data2) as any;
         expect(impl.blake3DigestForState(state3)).toEqual(
             // prettier-ignore
@@ -139,13 +142,28 @@ describe.each([
             nOnceMaterial,
         });
 
-        expect(sealed).toEqual("sealed_UtuddAQjop6zMR47aI7HOqj-f0kR2tdFvRxzDe4I=");
+        expect(sealed).toEqual(
+            "sealed_UtuddAQjop6zMR47aI7HOqj-f0kR2tdFvRxzDe4I="
+        );
 
-        const unsealed = impl.unseal(sealed, recipientSecret, impl.getSealerID(senderSecret), nOnceMaterial);
+        const unsealed = impl.unseal(
+            sealed,
+            recipientSecret,
+            impl.getSealerID(senderSecret),
+            nOnceMaterial
+        );
         expect(unsealed).toEqual(message);
 
-        const wrongRecipientSecret = "sealerSecret_zHV1Y1VPbc31B8bi7yw4oL5CPPnPFspKwUjkFErgJFuoB"
-        expect(() => impl.unseal(sealed, wrongRecipientSecret, impl.getSealerID(senderSecret), nOnceMaterial)).toThrow();
+        const wrongRecipientSecret =
+            "sealerSecret_zHV1Y1VPbc31B8bi7yw4oL5CPPnPFspKwUjkFErgJFuoB";
+        expect(() =>
+            impl.unseal(
+                sealed,
+                wrongRecipientSecret,
+                impl.getSealerID(senderSecret),
+                nOnceMaterial
+            )
+        ).toThrow();
         const wrongNOnceMaterial = {
             in: "co_zSomeCoValue" as const,
             tx: {
@@ -153,6 +171,13 @@ describe.each([
                 txIndex: 43,
             },
         };
-        expect(() => impl.unseal(sealed, recipientSecret, impl.getSealerID(senderSecret), wrongNOnceMaterial)).toThrow();
+        expect(() =>
+            impl.unseal(
+                sealed,
+                recipientSecret,
+                impl.getSealerID(senderSecret),
+                wrongNOnceMaterial
+            )
+        ).toThrow();
     });
 });

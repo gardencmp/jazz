@@ -1,4 +1,4 @@
-import { expect, test, beforeEach, vi } from "vitest";
+import { expect, test, vi } from "vitest";
 import { Transaction } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
@@ -138,7 +138,7 @@ test("New transactions in a group correctly update owned values, including subsc
 
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    let map = group.createMap();
+    const map = group.createMap();
 
     map.set("hello", "world");
 

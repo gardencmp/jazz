@@ -1,7 +1,6 @@
-import { expect, test, beforeEach } from "vitest";
-import { expectList, expectMap, expectStream } from "../coValue.js";
-import { RawBinaryCoStream } from "../coValues/coStream.js";
-import { MAX_RECOMMENDED_TX_SIZE, WasmCrypto } from "../index.js";
+import { expect, test } from "vitest";
+import { expectMap } from "../coValue.js";
+import { WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
@@ -64,13 +63,19 @@ test("Can get CoMap entry values at different points in time", () => {
     expect(content.type).toEqual("comap");
 
     const beforeA = Date.now();
-    while (Date.now() < beforeA + 10) {}
+    while (Date.now() < beforeA + 10) {
+        /* hot sleep */
+    }
     content.set("hello", "A", "trusting");
     const beforeB = Date.now();
-    while (Date.now() < beforeB + 10) {}
+    while (Date.now() < beforeB + 10) {
+        /* hot sleep */
+    }
     content.set("hello", "B", "trusting");
     const beforeC = Date.now();
-    while (Date.now() < beforeC + 10) {}
+    while (Date.now() < beforeC + 10) {
+        /* hot sleep */
+    }
     content.set("hello", "C", "trusting");
     expect(content.get("hello")).toEqual("C");
     expect(content.atTime(Date.now()).get("hello")).toEqual("C");
