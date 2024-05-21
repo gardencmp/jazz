@@ -1,3 +1,3 @@
-# CoJSON
+# `jazz-run`
 
-[See the top-level README](../../README.md#cojson)
+CLI tools for Jazz (see [jazz.tools](https://jazz.tools)), a framework for distributed state.
