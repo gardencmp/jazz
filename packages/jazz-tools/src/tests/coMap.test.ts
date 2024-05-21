@@ -74,7 +74,7 @@ describe("Simple CoMap operations", async () => {
 
     class RecursiveMap extends CoMap {
         name = co.string;
-        next: co<RecursiveMap | null> = co.ref(RecursiveMap);
+        next?: co<RecursiveMap | null> = co.ref(RecursiveMap);
     }
 
     const recursiveMap = RecursiveMap.create(

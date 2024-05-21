@@ -308,9 +308,7 @@ export type CoKeys<Fields extends object> = Exclude<
 export type CoMapInit<Fields extends object> = {
     [Key in CoKeys<Fields> as undefined extends Fields[Key]
         ? never
-        : null extends Fields[Key]
-          ? never
-          : IfCo<Fields[Key], Key>]: Fields[Key];
+        : IfCo<Fields[Key], Key>]: Fields[Key];
 } & { [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]?: Fields[Key] };
 
 function tryInit(map: CoMap) {
