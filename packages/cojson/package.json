@@ -35,27 +35,9 @@
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },
-    "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "transform": {
-            "\\.[jt]sx?$": [
-                "ts-jest",
-                {
-                    "useESM": true
-                }
-            ]
-        },
-        "moduleNameMapper": {
-            "(.+)\\.js": "$1"
-        },
-        "extensionsToTreatAsEsm": [
-            ".ts"
-        ],
-        "modulePathIgnorePatterns": [
-            "/node_modules/",
-            "/dist/"
-        ]
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
     },
     "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

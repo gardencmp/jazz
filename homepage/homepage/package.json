@@ -10,6 +10,10 @@
         "lint": "next lint",
         "format": "prettier --write './**/*.{ts,tsx,json}'"
     },
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
+    },
     "dependencies": {
         "@evilmartians/harmony": "^1.0.0",
         "@icons-pack/react-simple-icons": "^9.1.0",

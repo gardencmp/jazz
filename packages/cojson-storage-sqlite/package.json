@@ -21,5 +21,9 @@
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
+  },
   "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

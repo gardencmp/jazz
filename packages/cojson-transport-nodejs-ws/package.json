@@ -20,5 +20,9 @@
   },
   "devDependencies": {
     "@types/ws": "^8.5.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
   }
 }

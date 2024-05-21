@@ -31,5 +31,9 @@
                 "skipTypeImports": true
             }
         }
+    },
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
     }
 }
