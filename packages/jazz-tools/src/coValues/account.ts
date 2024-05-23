@@ -11,7 +11,7 @@ import type {
     RawControlledAccount,
     SessionID,
 } from "cojson";
-import { Context } from "effect";
+import { Context, Effect, Stream } from "effect";
 import type {
     CoMap,
     CoValue,
@@ -32,7 +32,7 @@ import {
     inspect,
     subscriptionsScopes,
 } from "../internal.js";
-import type { Stream } from "effect/Stream";
+import { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
 
 /** @category Identity & Permissions */
 export class Account
@@ -165,9 +165,11 @@ export class Account
             inviteSecret,
         );
 
-        return coValueClass.load(valueID, {
-            as: this as Account & Me,
-        });
+        return coValueClass.load(
+            valueID,
+            this as Account & Me,
+            {},
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any;
 
@@ -230,6 +232,53 @@ export class Account
             fromRaw: node.account as RawControlledAccount,
         }) as A & Me;
     }
+
+    declare load: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Promise<DeeplyLoaded<this, Depth> | undefined>;
+
+    declare loadEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Effect.Effect<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    declare subscribe: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+        listener: (update: DeeplyLoaded<this, Depth>) => void,
+    ) => () => void;
+
+    declare subscribeEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Stream.Stream<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    declare static load: <M extends CoValue, Depth extends object>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        as: Account & Me,
+        depth: Depth & DepthsIn<M>,
+    ) => Promise<DeeplyLoaded<M, Depth> | undefined>;
+
+    declare static loadEf: <M extends CoValue, Depth extends DepthsIn<M>>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        depth: Depth,
+    ) => Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx>;
+
+    declare static subscribe: <M extends CoValue, Depth extends DepthsIn<M>>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        as: Account & Me,
+        depth: Depth,
+        listener: (update: DeeplyLoaded<M, Depth>) => void,
+    ) => () => void;
+
+    declare static subscribeEf: <
+        M extends CoValue,
+        Depth extends DepthsIn<M>,
+    >(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        depth: Depth,
+    ) => Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(): object | any[] {
@@ -328,9 +377,23 @@ export interface Me {
     isMe: true;
     _raw: RawControlledAccount;
     sessionID: SessionID;
-    subscribe(listener: (update: this & Me) => void): () => void;
-    subscribeEf(): Stream<this & Me, UnavailableError, never>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    load: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Promise<DeeplyLoaded<this, Depth> | undefined>;
+
+    loadEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Effect.Effect<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    subscribe: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+        listener: (update: DeeplyLoaded<this, Depth>) => void,
+    ) => () => void;
+
+    subscribeEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Stream.Stream<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+    // // eslint-disable-next-line @typescript-eslint/no-explicit-any
     acceptInvite: (...args: any[]) => any;
 }
 

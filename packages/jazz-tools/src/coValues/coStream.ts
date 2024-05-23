@@ -471,6 +471,7 @@ export class BinaryCoStream
                 value: raw.id,
                 enumerable: false,
             },
+            _type: { value: "BinaryCoStream", enumerable: false },
             _raw: { value: raw, enumerable: false },
         });
     }
@@ -516,16 +517,12 @@ export class BinaryCoStream
 
     static async loadAsBlob(
         id: ID<BinaryCoStream>,
+        as: Account & Me,
         options: {
-            as: Account & Me;
             allowUnfinished?: boolean;
-            onProgress?: (progress: number) => void;
         },
     ): Promise<Blob | undefined> {
-        const stream = await this.load(id, {
-            as: options.as,
-            onProgress: options.onProgress,
-        });
+        const stream = await this.load(id, as, {});
 
         return stream?.toBlob({
             allowUnfinished: options.allowUnfinished,

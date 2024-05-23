@@ -1,5 +1,5 @@
 import type { AccountID, Everyone, RawGroup, Role } from "cojson";
-import type { CoValue, ID, RefEncoded, Schema, ClassOf } from "../internal.js";
+import type { CoValue, ID, RefEncoded, Schema, ClassOf, Me, UnavailableError, AccountCtx } from "../internal.js";
 import {
     Account,
     CoMap,
@@ -10,6 +10,8 @@ import {
     AccountAndGroupProxyHandler,
     MembersSym,
 } from "../internal.js";
+import { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
+import { Effect, Stream } from "effect";
 
 /** @category Identity & Permissions */
 export class Profile extends CoMap {
@@ -167,4 +169,52 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                 };
             });
     }
+
+    declare load: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Promise<DeeplyLoaded<this, Depth> | undefined>;
+
+    declare loadEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Effect.Effect<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    declare subscribe: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+        listener: (update: DeeplyLoaded<this, Depth>) => void,
+    ) => () => void;
+
+    declare subscribeEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Stream.Stream<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    declare static load: <M extends CoValue, Depth extends object>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        as: Account & Me,
+        depth: Depth & DepthsIn<M>,
+    ) => Promise<DeeplyLoaded<M, Depth> | undefined>;
+
+    declare static loadEf: <M extends CoValue, Depth extends DepthsIn<M>>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        depth: Depth,
+    ) => Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx>;
+
+    declare static subscribe: <M extends CoValue, Depth extends DepthsIn<M>>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        as: Account & Me,
+        depth: Depth,
+        listener: (update: DeeplyLoaded<M, Depth>) => void,
+    ) => () => void;
+
+    declare static subscribeEf: <
+        M extends CoValue,
+        Depth extends DepthsIn<M>,
+    >(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        depth: Depth,
+    ) => Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx>;
+
 }

@@ -10,6 +10,9 @@ import type {
     IfCo,
     RefIfCoValue,
     ClassOf,
+    UnavailableError,
+    AccountCtx,
+    Me,
 } from "../internal.js";
 import {
     Account,
@@ -23,6 +26,8 @@ import {
     InitValues,
     isRefEncoded,
 } from "../internal.js";
+import { Effect, Stream } from "effect";
+import { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -222,6 +227,53 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return new this({ init, owner: options.owner });
     }
 
+    declare load: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Promise<DeeplyLoaded<this, Depth> | undefined>;
+
+    declare loadEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Effect.Effect<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    declare subscribe: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+        listener: (update: DeeplyLoaded<this, Depth>) => void,
+    ) => () => void;
+
+    declare subscribeEf: <Depth extends object>(
+        depth: Depth & DepthsIn<this>,
+    ) => Stream.Stream<DeeplyLoaded<this, Depth>, UnavailableError, never>;
+
+    declare static load: <M extends CoValue, Depth extends object>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        as: Account & Me,
+        depth: Depth & DepthsIn<M>,
+    ) => Promise<DeeplyLoaded<M, Depth> | undefined>;
+
+    declare static loadEf: <M extends CoValue, Depth extends DepthsIn<M>>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        depth: Depth,
+    ) => Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx>;
+
+    declare static subscribe: <M extends CoValue, Depth extends DepthsIn<M>>(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        as: Account & Me,
+        depth: Depth,
+        listener: (update: DeeplyLoaded<M, Depth>) => void,
+    ) => () => void;
+
+    declare static subscribeEf: <
+        M extends CoValue,
+        Depth extends DepthsIn<M>,
+    >(
+        this: ClassOf<M> & typeof CoValueBase,
+        id: ID<M>,
+        depth: Depth,
+    ) => Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx>;
+
     toJSON() {
         const jsonedFields = this._raw.keys().map((key) => {
             const tKey = key as CoKeys<this>;
@@ -300,16 +352,16 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     }
 }
 
-export type CoKeys<Fields extends object> = Exclude<
-    keyof Fields & string,
+export type CoKeys<Map extends object> = Exclude<
+    keyof Map & string,
     keyof CoMap
 >;
 
-export type CoMapInit<Fields extends object> = {
-    [Key in CoKeys<Fields> as undefined extends Fields[Key]
+export type CoMapInit<Map extends object> = {
+    [Key in CoKeys<Map> as undefined extends Map[Key]
         ? never
-        : IfCo<Fields[Key], Key>]: Fields[Key];
-} & { [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]?: Fields[Key] };
+        : IfCo<Map[Key], Key>]: Map[Key];
+} & { [Key in CoKeys<Map> as IfCo<Map[Key], Key>]?: Map[Key] };
 
 function tryInit(map: CoMap) {
     if (

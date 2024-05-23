@@ -6,6 +6,7 @@ import type {
     ID,
     Me,
     RefEncoded,
+    UnCo,
     UnavailableError,
 } from "../internal.js";
 import {
@@ -188,6 +189,6 @@ export function makeRefs<Keys extends string | number>(
     });
 }
 
-export type RefIfCoValue<V> = NonNullable<V> extends CoValue
-    ? Ref<NonNullable<V>>
+export type RefIfCoValue<V> = Exclude<V, null> extends CoValue
+    ? Ref<UnCo<Exclude<V, null>>>
     : never;

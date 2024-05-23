@@ -95,9 +95,11 @@ describe("CoStream resolution", async () => {
             crypto: Crypto,
         });
 
-        const loadedStream = await TestStream.load(stream.id, {
-            as: meOnSecondPeer,
-        });
+        const loadedStream = await TestStream.load(
+            stream.id,
+            meOnSecondPeer,
+            []
+        );
 
         expect(loadedStream?.[me.id]?.value).toEqual(null);
         expect(loadedStream?.[me.id]?.ref?.id).toEqual(
@@ -106,7 +108,8 @@ describe("CoStream resolution", async () => {
 
         const loadedNestedStream = await NestedStream.load(
             stream[me.id]!.value!.id,
-            { as: meOnSecondPeer },
+            meOnSecondPeer,
+            []
         );
 
         // expect(loadedStream?.[me.id]?.value).toEqual(loadedNestedStream);
@@ -124,7 +127,8 @@ describe("CoStream resolution", async () => {
 
         const loadedTwiceNestedStream = await TwiceNestedStream.load(
             stream[me.id]!.value![me.id]!.value!.id,
-            { as: meOnSecondPeer },
+            meOnSecondPeer,
+            []
         );
 
         // expect(loadedStream?.[me.id]?.value?.[me.id]?.value).toEqual(
@@ -187,8 +191,7 @@ describe("CoStream resolution", async () => {
                 const queue = yield* $(Queue.unbounded<TestStream>());
 
                 TestStream.subscribe(
-                    stream.id,
-                    { as: meOnSecondPeer },
+                    stream.id, meOnSecondPeer , [],
                     (subscribedStream) => {
                         console.log(
                             "subscribedStream[me.id]",
@@ -328,9 +331,11 @@ describe("BinaryCoStream loading & Subscription", async () => {
             crypto: Crypto,
         });
 
-        const loadedStream = await BinaryCoStream.load(stream.id, {
-            as: meOnSecondPeer,
-        });
+        const loadedStream = await BinaryCoStream.load(
+            stream.id,
+            meOnSecondPeer,
+            []
+        );
 
         expect(loadedStream?.getChunks()).toEqual({
             mimeType: "text/plain",
@@ -366,8 +371,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
                 const queue = yield* $(Queue.unbounded<BinaryCoStream>());
 
                 BinaryCoStream.subscribe(
-                    stream.id,
-                    { as: meOnSecondPeer },
+                    stream.id, meOnSecondPeer, [],
                     (subscribedStream) => {
                         void Effect.runPromise(
                             Queue.offer(queue, subscribedStream),

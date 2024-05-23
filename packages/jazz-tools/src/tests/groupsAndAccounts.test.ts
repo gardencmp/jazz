@@ -56,7 +56,7 @@ describe("Custom accounts and groups", async () => {
         expect(group.nMembers).toBe(2);
 
         await new Promise<void>((resolve) => {
-            group.subscribe((update) => {
+            group.subscribe({  }, (update) => {
                 const meAsMember = update.members.find((member) => {
                     return member.id === me.id && member.account?.profile;
                 });

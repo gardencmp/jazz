@@ -4,7 +4,7 @@ import {
     createJazzBrowserContext,
 } from "jazz-browser";
 
-import { Account, CoValue, CoValueClass, ID, Me } from "jazz-tools";
+import { Account, CoValue, CoValueClass, DeeplyLoaded, DepthsIn, ID, Me } from "jazz-tools";
 import { ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
@@ -87,40 +87,42 @@ export function createJazzReactContext<Acc extends Account>({
         );
     }
 
-    function useAccount() {
+    function useAccount<D extends DepthsIn<Acc & Me>>(depth: D = [] as D) {
         const context = React.useContext(JazzContext);
 
         if (!context) {
             throw new Error("useAccount must be used within a JazzProvider");
         }
 
-        const me = useCoState<Acc & Me>(
+        const me = useCoState<Acc & Me, D>(
             context.me.constructor as CoValueClass<Acc & Me>,
             context.me.id,
+            depth,
         );
 
         return { me: me || context.me, logOut: context.logOut };
     }
 
-    function useCoState<V extends CoValue>(
+    function useCoState<V extends CoValue, D extends DepthsIn<V>>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema: { new (...args: any[]): V } & CoValueClass,
         id: ID<V> | undefined,
-        options?: { require?: (value: V) => boolean | undefined },
-    ): V | undefined {
+        depth: D = [] as D
+    ): DeeplyLoaded<V,D> | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
         const [_, setUpdates] = useState<number>(0);
-        const state = useRef<V | undefined>(undefined);
+        const state = useRef<DeeplyLoaded<V,D> | undefined>(undefined);
         const me = React.useContext(JazzContext)?.me;
 
         useEffect(() => {
             if (!id || !me) return;
             return Schema.subscribe(
                 id,
-                { as: me, require: options?.require },
+                me,
+                depth,
                 (update) => {
-                    state.current = update as V;
+                    state.current = update as DeeplyLoaded<V,D>;
 
                     setUpdates((u) => {
                         return u + 1;
@@ -173,18 +175,19 @@ export type Provider = React.FC<{
 }>;
 
 /** @category Context & Hooks */
-export type UseAccountHook<Acc extends Account> = () => {
-    me: Acc & Me;
+export type UseAccountHook<Acc extends Account> = <D extends DepthsIn<Acc & Me>>(depth?: D) => {
+    me: DeeplyLoaded<Acc & Me, D>;
     logOut: () => void;
 };
 
 /** @category Context & Hooks */
-export type UseCoStateHook = <V extends CoValue>(
+export type UseCoStateHook =
+<V extends CoValue, D extends DepthsIn<V>>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Schema: { new (...args: any[]): V } & CoValueClass,
     id: ID<V> | undefined,
-    options?: { require?: (value: V) => boolean | undefined },
-) => V | undefined;
+    depth?: D,
+) => DeeplyLoaded<V, D> | undefined;
 
 /** @category Context & Hooks */
 export type UseAcceptInviteHook = <V extends CoValue>({

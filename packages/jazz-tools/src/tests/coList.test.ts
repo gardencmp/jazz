@@ -166,14 +166,16 @@ describe("CoList resolution", async () => {
             crypto: Crypto,
         });
 
-        const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
+        const loadedList = await TestList.load(list.id, meOnSecondPeer, []);
 
         expect(loadedList?.[0]).toBe(null);
         expect(loadedList?._refs[0]?.id).toEqual(list[0]!.id);
 
-        const loadedNestedList = await NestedList.load(list[0]!.id, {
-            as: meOnSecondPeer,
-        });
+        const loadedNestedList = await NestedList.load(
+            list[0]!.id,
+            meOnSecondPeer,
+            [],
+        );
 
         expect(loadedList?.[0]).toBeDefined();
         expect(loadedList?.[0]?.[0]).toBe(null);
@@ -182,7 +184,8 @@ describe("CoList resolution", async () => {
 
         const loadedTwiceNestedList = await TwiceNestedList.load(
             list[0]![0]!.id,
-            { as: meOnSecondPeer },
+            meOnSecondPeer,
+            [],
         );
 
         expect(loadedList?.[0]?.[0]).toBeDefined();
@@ -225,7 +228,8 @@ describe("CoList resolution", async () => {
 
                 TestList.subscribe(
                     list.id,
-                    { as: meOnSecondPeer },
+                    meOnSecondPeer,
+                    [],
                     (subscribedList) => {
                         console.log(
                             "subscribedList?.[0]?.[0]?.[0]",
