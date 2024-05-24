@@ -1,5 +1,18 @@
 # jazz-autosub
 
+## 0.7.0-alpha.38
+
+### Patch Changes
+
+- Implement deep loading, simplify API
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.38
+  - cojson@0.7.0-alpha.38
+  - cojson-transport-nodejs-ws@0.7.0-alpha.38
+
 ## 0.7.0-alpha.37
 
 ### Patch Changes

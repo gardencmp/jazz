@@ -1,5 +1,16 @@
 # jazz-autosub
 
+## 0.7.0-alpha.38
+
+### Patch Changes
+
+- Fix infinite recursion in subscriptionScope
+- Fix type of init param for CoMap.create
+- Implement deep loading, simplify API
+- Updated dependencies
+  - cojson@0.7.0-alpha.38
+  - cojson-transport-nodejs-ws@0.7.0-alpha.38
+
 ## 0.7.0-alpha.37
 
 ### Patch Changes

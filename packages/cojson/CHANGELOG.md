@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.38
+
+### Patch Changes
+
+- Factor out implementation of crypto provider and provide pure JS implementation
+
 ## 0.7.0-alpha.37
 
 ### Patch Changes

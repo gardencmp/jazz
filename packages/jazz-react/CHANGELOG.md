@@ -1,5 +1,19 @@
 # jazz-react
 
+## 0.7.0-alpha.38
+
+### Patch Changes
+
+- Implement deep loading, simplify API
+- Only load each image resolution once
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.38
+  - jazz-browser@0.7.0-alpha.38
+  - cojson@0.7.0-alpha.38
+
 ## 0.7.0-alpha.37
 
 ### Patch Changes
