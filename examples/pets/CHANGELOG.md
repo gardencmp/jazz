@@ -1,5 +1,12 @@
 # jazz-example-pets
 
+## 0.0.65-alpha.40
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-react@0.7.0-alpha.40
+
 ## 0.0.65-alpha.39
 
 ### Patch Changes

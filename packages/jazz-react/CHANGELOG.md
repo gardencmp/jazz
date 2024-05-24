@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.7.0-alpha.40
+
+### Patch Changes
+
+- Fix useAccount
+
 ## 0.7.0-alpha.39
 
 ### Patch Changes
