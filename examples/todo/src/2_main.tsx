@@ -16,7 +16,7 @@ import {
 import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
-import { ListOfProjects, TodoAccount, TodoProject } from "./1_schema.ts";
+import { TodoAccount, TodoProject } from "./1_schema.ts";
 
 /**
  * Walkthrough: The top-level provider `<Jazz.Provider/>`
@@ -112,8 +112,8 @@ function HomeScreen() {
 
     return (
         <>
-            {me.root.projects.length ? <h1>My Projects</h1> : null}
-            {me.root.projects.map((project) => {
+            {me?.root.projects.length ? <h1>My Projects</h1> : null}
+            {me?.root.projects.map((project) => {
                 return (
                     <Button
                         key={project.id}

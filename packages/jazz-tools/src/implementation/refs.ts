@@ -4,7 +4,6 @@ import type {
     Account,
     CoValue,
     ID,
-    Me,
     RefEncoded,
     UnCo,
     UnavailableError,
@@ -22,7 +21,7 @@ const TRACE_ACCESSES = false;
 export class Ref<out V extends CoValue> {
     constructor(
         readonly id: ID<V>,
-        readonly controlledAccount: Account & Me,
+        readonly controlledAccount: Account,
         readonly schema: RefEncoded<V>,
     ) {
         if (!isRefEncoded(schema)) {
@@ -136,7 +135,7 @@ export class Ref<out V extends CoValue> {
 export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
-    controlledAccount: Account & Me,
+    controlledAccount: Account,
     refSchemaForKey: (key: Keys) => RefEncoded<CoValue>,
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
@@ -189,6 +188,6 @@ export function makeRefs<Keys extends string | number>(
     });
 }
 
-export type RefIfCoValue<V> = Exclude<V, null> extends CoValue
-    ? Ref<UnCo<Exclude<V, null>>>
+export type RefIfCoValue<V> = NonNullable<V> extends CoValue
+    ? Ref<UnCo<NonNullable<V>>>
     : never;

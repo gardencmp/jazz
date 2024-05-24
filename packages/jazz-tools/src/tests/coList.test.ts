@@ -2,7 +2,7 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, CoList, WasmCrypto, co } from "../index.js";
+import { Account, CoList, WasmCrypto, co, isControlledAccount } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -156,6 +156,7 @@ describe("CoList resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -212,6 +213,7 @@ describe("CoList resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,

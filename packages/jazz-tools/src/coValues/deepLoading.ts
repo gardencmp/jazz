@@ -1,5 +1,13 @@
 import { SessionID } from "cojson";
-import { Account, CoList, CoStream, CoStreamEntry, UnCo } from "../internal.js";
+import {
+    Account,
+    CoList,
+    CoStream,
+    CoStreamEntry,
+    ItemsSym,
+    Ref,
+    UnCo,
+} from "../internal.js";
 import { CoKeys } from "./coMap.js";
 import { CoValue, ID } from "./interfaces.js";
 
@@ -10,24 +18,44 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
         value._type === "Group" ||
         value._type === "Account"
     ) {
-        for (const key of Object.keys(depth)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const map = value as { [key: string]: any };
-            if (!map[key]) {
-                return false;
+        if (Array.isArray(depth) && depth.length === 1) {
+            return Object.entries(value).every(([key, item]) => {
+                return (
+                    value as unknown as {
+                        _refs: { [key: string]: Ref<CoValue> | undefined };
+                    }
+                )._refs[key]
+                    ? item && fulfillsDepth(depth[0], item)
+                    : true;
+            });
+        } else {
+            for (const key of Object.keys(depth)) {
+                const map = value as unknown as {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    [key: string]: any;
+                    _refs: { [key: string]: Ref<CoValue> | undefined };
+                };
+                if (!map._refs[key]) {
+                    continue;
+                }
+                if (!map[key]) {
+                    return false;
+                }
+                if (!fulfillsDepth(depth[key], map[key])) {
+                    return false;
+                }
             }
-            if (!fulfillsDepth(depth[key], map[key])) {
-                return false;
-            }
+            return true;
         }
-        return true;
     } else if (value._type === "CoList") {
         if (depth.length === 0) {
             return true;
         } else {
             const itemDepth = depth[0];
-            return (value as CoList).every(
-                (item) => item && fulfillsDepth(itemDepth, item),
+            return (value as CoList).every((item, i) =>
+                (value as CoList)._refs[i]
+                    ? item && fulfillsDepth(itemDepth, item)
+                    : true,
             );
         }
     } else if (value._type === "CoStream") {
@@ -47,7 +75,8 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
     }
 }
 
-type Clean<T> = UnCo<Exclude<T, null>>;
+type UnCoNotNull<T> = UnCo<Exclude<T, null>>;
+type Clean<T> = UnCo<NonNullable<T>>;
 
 export type DepthsIn<
     V,
@@ -60,9 +89,15 @@ export type DepthsIn<
           : // Basically V extends CoList - but if we used that we'd introduce circularity into the definition of CoList itself
             V extends Array<infer Item>
             ?
-                  | [DepthsIn<Clean<Item>, DepthLimit, [0, ...CurrentDepth]>]
+                  | [
+                        DepthsIn<
+                            UnCoNotNull<Item>,
+                            DepthLimit,
+                            [0, ...CurrentDepth]
+                        >,
+                    ]
                   | never[]
-            : // Basically V extends CoMap - but if we used that we'd introduce circularity into the definition of CoMap itself
+            : // Basically V extends CoMap | Group | Account - but if we used that we'd introduce circularity into the definition of CoMap itself
               V extends { _type: "CoMap" | "Group" | "Account" }
               ?
                     | {
@@ -74,6 +109,15 @@ export type DepthsIn<
                               [0, ...CurrentDepth]
                           >;
                       }
+                    | (ItemsSym extends keyof V
+                          ? [
+                                DepthsIn<
+                                    Clean<V[ItemsSym]>,
+                                    DepthLimit,
+                                    [0, ...CurrentDepth]
+                                >,
+                            ]
+                          : never)
                     | never[]
               : V extends {
                       _type: "CoStream";
@@ -82,7 +126,7 @@ export type DepthsIn<
                 ?
                       | [
                             DepthsIn<
-                                Clean<Item>,
+                                UnCoNotNull<Item>,
                                 DepthLimit,
                                 [0, ...CurrentDepth]
                             >,
@@ -90,7 +134,6 @@ export type DepthsIn<
                       | never[]
                 : never[])
     | never[];
-
 
 export type DeeplyLoaded<
     V,
@@ -100,50 +143,73 @@ export type DeeplyLoaded<
 > = DepthLimit extends CurrentDepth["length"]
     ? V
     : // Basically V extends CoList - but if we used that we'd introduce circularity into the definition of CoList itself
-      V extends Array<infer Item>
+      [V] extends [Array<infer Item>]
       ? Depth extends never[] // []
           ? V
-          : Clean<Item> extends CoValue
+          : UnCoNotNull<Item> extends CoValue
             ? Depth extends Array<infer ItemDepth> // [item-depth]
-                ?
-                      V &
-                      CoList<(Clean<Item> &
-                          DeeplyLoaded<
-                              Clean<Item>,
-                              ItemDepth,
-                              DepthLimit,
-                              [0, ...CurrentDepth]
-                          >)>
-
+                ? (UnCoNotNull<Item> &
+                      DeeplyLoaded<
+                          UnCoNotNull<Item>,
+                          ItemDepth,
+                          DepthLimit,
+                          [0, ...CurrentDepth]
+                      >)[] &
+                      V
                 : never
             : V
-      : // Basically V extends CoMap - but if we used that we'd introduce circularity into the definition of CoMap itself
-        V extends { _type: "CoMap" | "Group" | "Account" }
+      : // Basically V extends CoMap | Group | Account - but if we used that we'd introduce circularity into the definition of CoMap itself
+        [V] extends [{ _type: "CoMap" | "Group" | "Account" }]
         ? Depth extends never[]
             ? V
-            : keyof Depth extends never
-              ? V
-              : V & {
-                    [Key in keyof Depth]-?: Key extends CoKeys<V>
-                        ? Clean<V[Key]> extends CoValue
-                            ? DeeplyLoaded<
-                                  Clean<V[Key]>,
-                                  Depth[Key],
-                                  DepthLimit,
-                                  [0, ...CurrentDepth]
-                              >
-                            : never
-                        : never;
-                }
-        : V extends {
-                _type: "CoStream";
-                byMe: CoStreamEntry<infer Item> | undefined;
-            }
+            : Depth extends Array<infer ItemDepth>
+              ? ItemsSym extends keyof V
+                  ? V & {
+                        [key: string]: DeeplyLoaded<
+                            Clean<V[ItemsSym]>,
+                            ItemDepth,
+                            DepthLimit,
+                            [0, ...CurrentDepth]
+                        >;
+                    }
+                  : never
+              : keyof Depth extends never
+                ? V
+                : {
+                      [Key in keyof Depth]-?: Key extends CoKeys<V>
+                          ? Clean<V[Key]> extends CoValue
+                              ?
+                                    | DeeplyLoaded<
+                                          Clean<V[Key]>,
+                                          Depth[Key],
+                                          DepthLimit,
+                                          [0, ...CurrentDepth]
+                                      >
+                                    | (undefined extends V[Key]
+                                          ? undefined
+                                          : never)
+                              : never
+                          : never;
+                  } & V
+        : [V] extends [
+                {
+                    _type: "CoStream";
+                    byMe: CoStreamEntry<infer Item> | undefined;
+                },
+            ]
           ? Depth extends never[]
               ? V
               : V & {
-                    byMe?: { value: Clean<Item> };
-                    inCurrentSession?: { value: Clean<Item> };
-                    perSession: { [key: SessionID]: { value: Clean<Item> } };
-                } & { [key: ID<Account>]: { value: Clean<Item> } }
-          : never;
+                    byMe?: { value: UnCoNotNull<Item> };
+                    inCurrentSession?: { value: UnCoNotNull<Item> };
+                    perSession: {
+                        [key: SessionID]: { value: UnCoNotNull<Item> };
+                    };
+                } & { [key: ID<Account>]: { value: UnCoNotNull<Item> } }
+          : [V] extends [
+                  {
+                      _type: "BinaryCoStream";
+                  },
+              ]
+            ? V
+            : never;

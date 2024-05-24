@@ -1,16 +1,14 @@
 import type { RawCoList } from "cojson";
 import { RawAccount } from "cojson";
-import type { Effect, Stream } from "effect";
 import type {
-    AccountCtx,
     CoValue,
     Schema,
     SchemaFor,
     ID,
     RefEncoded,
     ClassOf,
-    UnavailableError,
     UnCo,
+    CoValueClass,
 } from "../internal.js";
 import {
     Account,
@@ -26,7 +24,6 @@ import {
     makeRefs,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
-import { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
 
 /** @category CoValues */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -243,43 +240,6 @@ export class CoList<Item = any>
         return this.toJSON();
     }
 
-    declare load: <Depth extends DepthsIn<this>>(
-        depth: Depth,
-    ) => Promise<DeeplyLoaded<this, Depth> | undefined>;
-    static {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.prototype.load = CoValueBase.prototype.load as any;
-    }
-
-    declare loadEf: <Depth extends DepthsIn<this>>(
-        depth: Depth,
-    ) => Effect.Effect<
-        DeeplyLoaded<this, Depth>,
-        UnavailableError,
-        AccountCtx
-    >;
-    static {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.prototype.loadEf = CoValueBase.prototype.loadEf as any;
-    }
-
-    declare subscribe: <Depth extends DepthsIn<this>>(
-        depth: Depth,
-        listener: (update: DeeplyLoaded<this, Depth>) => void,
-    ) => () => void;
-    static {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.prototype.subscribe = CoValueBase.prototype.subscribe as any;
-    }
-
-    declare subscribeEf: <Depth extends DepthsIn<this>>(
-        depth: Depth,
-    ) => Stream.Stream<DeeplyLoaded<this, Depth>, "unavailable", never>;
-    static {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.prototype.subscribeEf = CoValueBase.prototype.subscribeEf as any;
-    }
-
     static fromRaw<V extends CoList>(
         this: ClassOf<V> & typeof CoList,
         raw: RawCoList,
@@ -287,57 +247,10 @@ export class CoList<Item = any>
         return new this({ fromRaw: raw });
     }
 
-    static load = CoValueBase.load as <
-        V extends CoValue,
-        Depth extends DepthsIn<V>,
-    >(
-        this: ClassOf<V>,
-        id: ID<V>,
-        as: Account | Group,
-        depth: Depth,
-    ) => Promise<
-        | DeeplyLoaded<V, Depth>
-        | undefined
-    >;
-
-    static loadEf = CoValueBase.loadEf as <
-        V extends CoValue,
-        Depth extends DepthsIn<V>,
-    >(
-        this: ClassOf<V>,
-        id: ID<V>,
-        depth: Depth,
-    ) => Effect.Effect<
-        DeeplyLoaded<V, Depth>,
-        UnavailableError,
-        AccountCtx
-    >;
-
-    static subscribe = CoValueBase.subscribe as <
-        V extends CoValue,
-        Depth extends DepthsIn<V>,
-    >(
-        this: ClassOf<V>,
-        id: ID<V>,
-        as: Account | Group,
-        depth: Depth,
-        onUpdate: (
-            value: DeeplyLoaded<V, Depth>,
-        ) => void,
-    ) => () => void;
-
-    static subscribeEf = CoValueBase.subscribeEf as <
-        V extends CoValue,
-        Depth extends DepthsIn<V>,
-    >(
-        this: ClassOf<V>,
-        id: ID<V>,
-        depth: Depth,
-    ) => Stream.Stream<
-        DeeplyLoaded<V, Depth>,
-        UnavailableError,
-        AccountCtx
-    >;
+    static load = CoValueBase.load as CoValueClass['load'];
+    static loadEf = CoValueBase.loadEf as CoValueClass['loadEf'];
+    static subscribe = CoValueBase.subscribe as CoValueClass['subscribe'];
+    static subscribeEf = CoValueBase.subscribeEf as CoValueClass['subscribeEf'];
 
     static schema<V extends CoList>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

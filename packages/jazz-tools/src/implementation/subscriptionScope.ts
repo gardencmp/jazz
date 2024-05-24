@@ -4,7 +4,6 @@ import type {
     CoValue,
     CoValueBase,
     ID,
-    Me,
     ClassOf,
 } from "../internal.js";
 
@@ -18,7 +17,7 @@ const TRACE_INVALIDATIONS = false;
 
 export class SubscriptionScope<Root extends CoValue> {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
-    subscriber: Account & Me;
+    subscriber: Account;
     entries = new Map<
         ID<CoValue>,
         | { state: "loading"; immediatelyUnsub?: boolean }

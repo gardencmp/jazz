@@ -9,6 +9,7 @@ import {
     CoStream,
     co,
     WasmCrypto,
+    isControlledAccount,
 } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
@@ -18,7 +19,7 @@ describe("Simple CoStream operations", async () => {
         creationProps: { name: "Hermes Puggington" },
         crypto: Crypto,
     });
-
+    if (!isControlledAccount(me)) { throw("me is not a controlled account") }
     class TestStream extends CoStream.Of(co.string) {}
 
     const stream = TestStream.create(["milk"], { owner: me });
@@ -85,6 +86,7 @@ describe("CoStream resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -174,9 +176,8 @@ describe("CoStream resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
-
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
@@ -321,6 +322,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -354,9 +356,8 @@ describe("BinaryCoStream loading & Subscription", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
-
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,

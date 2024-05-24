@@ -13,7 +13,8 @@ export function useProgressiveImg({
 
     useEffect(() => {
         let lastHighestRes: string | undefined;
-        const unsub = image?.subscribe((update) => {
+        if (!image) return;
+        const unsub = ImageDefinition.subscribe(image, {}, (update) => {
             const highestRes = update?.highestResAvailable({ maxWidth });
             if (highestRes) {
                 if (highestRes.res !== lastHighestRes) {

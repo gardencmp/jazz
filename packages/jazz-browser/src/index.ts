@@ -10,7 +10,6 @@ import {
     InviteSecret,
     Account,
     CoValueClass,
-    Me,
     WasmCrypto,
     CryptoProvider,
 } from "jazz-tools";
@@ -21,8 +20,8 @@ import { IDBStorage } from "cojson-storage-indexeddb";
 export * from "./auth/auth.js";
 
 /** @category Context Creation */
-export type BrowserContext<A extends Account> = {
-    me: A & Me;
+export type BrowserContext<Acc extends Account> = {
+    me: Acc;
     // TODO: Symbol.dispose?
     done: () => void;
 };
@@ -413,7 +412,7 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
     forValueHint,
     invitedObjectSchema,
 }: {
-    as: Account & Me;
+    as: Account;
     forValueHint?: string;
     invitedObjectSchema: CoValueClass<V>;
 }): Promise<

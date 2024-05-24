@@ -2,7 +2,7 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, Encoders, CoMap, co, WasmCrypto } from "../index.js";
+import { Account, Encoders, CoMap, co, WasmCrypto, isControlledAccount } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -235,6 +235,7 @@ describe("CoMap resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -302,9 +303,8 @@ describe("CoMap resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
-
+        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,

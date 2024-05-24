@@ -15,7 +15,6 @@ import type {
     SchemaFor,
     Group,
     ID,
-    Me,
     IfCo,
     ClassOf,
     UnCo,
@@ -83,7 +82,7 @@ export class CoStream<Item = any>
         [key: SessionID]: CoStreamEntry<Item>;
     };
     get inCurrentSession(): CoStreamEntry<Item> | undefined {
-        return this.perSession[this._loadedAs.sessionID];
+        return this.perSession[this._loadedAs.sessionID!];
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -189,7 +188,7 @@ function entryFromRawEntry<Item>(
         at: Date;
         value: JsonValue;
     },
-    loadedAs: Account & Me,
+    loadedAs: Account,
     accountID: ID<Account> | undefined,
     itemField: Schema,
 ): Omit<CoStreamEntry<Item>, "all"> {
@@ -517,15 +516,15 @@ export class BinaryCoStream
 
     static async loadAsBlob(
         id: ID<BinaryCoStream>,
-        as: Account & Me,
-        options: {
+        as: Account,
+        options?: {
             allowUnfinished?: boolean;
         },
     ): Promise<Blob | undefined> {
-        const stream = await this.load(id, as, {});
+        const stream = await this.load(id, as, []);
 
         return stream?.toBlob({
-            allowUnfinished: options.allowUnfinished,
+            allowUnfinished: options?.allowUnfinished,
         });
     }
 

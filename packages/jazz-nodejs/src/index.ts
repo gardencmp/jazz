@@ -12,22 +12,22 @@ import {
     WasmCrypto,
     cojsonInternals,
 } from "cojson";
-import { Account, CoValueClass, ID, Me } from "jazz-tools";
+import { Account, CoValueClass, ID } from "jazz-tools";
 
 /** @category Context Creation */
-export async function startWorker<A extends Account>({
+export async function startWorker<Acc extends Account>({
     accountID = process.env.JAZZ_WORKER_ACCOUNT,
     accountSecret = process.env.JAZZ_WORKER_SECRET,
     sessionID = process.env.JAZZ_WORKER_SESSION,
     syncServer: peer = "wss://sync.jazz.tools",
-    accountSchema = Account as unknown as CoValueClass<A> & typeof Account,
+    accountSchema = Account as unknown as CoValueClass<Acc> & typeof Account,
 }: {
     accountID?: string;
     accountSecret?: string;
     sessionID?: string;
     syncServer?: string;
-    accountSchema?: CoValueClass<A> & typeof Account;
-}): Promise<{ worker: A & Me }> {
+    accountSchema?: CoValueClass<Acc> & typeof Account;
+}): Promise<{ worker: Acc }> {
     const ws = new WebSocket(peer);
 
     const wsPeer: Peer = {
@@ -64,7 +64,7 @@ export async function startWorker<A extends Account>({
     }
 
     const worker = await accountSchema.become({
-        accountID: accountID as ID<A>,
+        accountID: accountID as ID<Acc>,
         accountSecret: accountSecret as AgentSecret,
         sessionID: sessionIDToUse as SessionID,
         peersToLoadFrom: [wsPeer],
@@ -87,5 +87,5 @@ export async function startWorker<A extends Account>({
         }
     }, 5000);
 
-    return { worker: worker as A & Me };
+    return { worker: worker as Acc };
 }

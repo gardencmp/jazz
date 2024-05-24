@@ -1,7 +1,11 @@
-import { Effect, Sink, Stream } from "effect";
+import { Effect, Option, Sink, Stream } from "effect";
 import type { CojsonInternalTypes, RawCoValue } from "cojson";
 import { RawAccount } from "cojson";
-import type { Me, UnavailableError } from "../internal.js";
+import type {
+    DeeplyLoaded,
+    DepthsIn,
+    UnavailableError,
+} from "../internal.js";
 import {
     Account,
     AccountCtx,
@@ -21,49 +25,53 @@ export type ClassOf<T> = {
 /** @category Abstract interfaces */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface CoValueClass<Value extends CoValue = CoValue, Init = any> {
-    /** @category Construction and loading */
     new (init: Init, options: { owner: Account | Group }): Value;
 
     /** @ignore */
     fromRaw(raw: Value["_raw"]): Value;
 
-    /** @category Construction and loading */
-    load<V extends Value>(
+    /** @category Subscription & Loading */
+    load<V extends Value, Depth>(
         this: ClassOf<V>,
         id: ID<V>,
-        as: Account & Me,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-        options?: {
-            onProgress?: (progress: number) => void;
-        },
-    ): Promise<V | undefined>;
+        as: Account,
+        depth: Depth & DepthsIn<V>,
+    ): Promise<DeeplyLoaded<V, Depth> | undefined>;
+    /** @category Subscription & Loading */
+    load<V extends Value, Depth>(
+        this: ClassOf<V>,
+        existing: V,
+        depth: Depth & DepthsIn<V>,
+    ): Promise<DeeplyLoaded<V, Depth> | undefined>;
 
-    /** @category Construction and loading */
-    loadEf<V extends Value>(
+    /** @category Subscription & Loading */
+    loadEf<V extends Value, Depth>(
         this: ClassOf<V>,
         id: ID<V>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-    ): Effect.Effect<V, UnavailableError, AccountCtx>;
+        depth: Depth & DepthsIn<V>,
+    ): Effect.Effect<DeeplyLoaded<V, Depth>, UnavailableError, AccountCtx>;
 
-    /** @category Subscription */
-    subscribe<V extends Value>(
+    /** @category Subscription & Loading */
+    subscribe<V extends Value, Depth>(
         this: ClassOf<V>,
         id: ID<V>,
-        as: Account & Me,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-        listener: (value: V) => void,
+        as: Account,
+        depth: Depth & DepthsIn<V>,
+        listener: (value: DeeplyLoaded<V, Depth>) => void,
+    ): () => void;
+    subscribe<V extends Value, Depth>(
+        this: ClassOf<V>,
+        existing: V,
+        depth: Depth & DepthsIn<V>,
+        listener: (value: DeeplyLoaded<V, Depth>) => void,
     ): () => void;
 
-    /** @category Subscription */
-    subscribeEf<V extends Value>(
+    /** @category Subscription & Loading */
+    subscribeEf<V extends Value, Depth>(
         this: ClassOf<V>,
         id: ID<V>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-    ): Stream.Stream<V, UnavailableError, AccountCtx>;
+        depth: Depth & DepthsIn<V>,
+    ): Stream.Stream<DeeplyLoaded<V, Depth>, UnavailableError, AccountCtx>;
 }
 
 /** @category Abstract interfaces */
@@ -75,22 +83,10 @@ export interface CoValue<Type extends string = string, Raw = any> {
     _type: Type;
     /** @category Collaboration */
     _owner: Account | Group;
-    /** @category Subscription & Loading */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    load(depth: any): Promise<this | undefined>;
-    /** @category Subscription & Loading */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    loadEf(depth: any): Effect.Effect<this, UnavailableError, AccountCtx>;
-    /** @category Subscription & Loading */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe(depth: any, listener: (update: this) => void): () => void;
-    /** @category Subscription & Loading */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribeEf(depth: any): Stream.Stream<this, UnavailableError, never>;
     /** @category Internals */
     _raw: Raw;
     /** @internal */
-    readonly _loadedAs: Account & Me;
+    readonly _loadedAs: Account;
     /** @category Stringifying & Inspection */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(): any[] | object;
@@ -154,49 +150,30 @@ export class CoValueBase implements CoValue {
         return new this({ fromRaw: raw });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    load(depth: any): Promise<this | undefined> {
-        return (this.constructor as CoValueClass<this>).load(
-            this.id,
-            this._loadedAs,
-            depth,
-        );
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    loadEf(depth: any): Effect.Effect<this, UnavailableError, AccountCtx> {
-        return (this.constructor as CoValueClass<this>)
-            .loadEf(this.id, depth)
-            .pipe(Effect.provideService(AccountCtx, this._loadedAs));
-    }
-
     /** @category Subscription & Loading */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe(depth: any, listener: (update: this) => void): () => void {
-        return (this.constructor as CoValueClass<this>).subscribe(
-            this.id,
-            this._loadedAs,
-            depth,
-            listener,
-        );
-    }
-
-    /** @category Subscription & Loading */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribeEf(depth: any): Stream.Stream<this, UnavailableError, never> {
-        return (this.constructor as CoValueClass<this>)
-            .subscribeEf(this.id, depth)
-            .pipe(Stream.provideService(AccountCtx, this._loadedAs));
-    }
-
-    /** @category Subscription & Loading */
-    static load<V extends CoValue>(
+    static load<V extends CoValue, Depth>(
         this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
-        as: Account & Me,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-    ): Promise<V | undefined> {
+        as: Account,
+        depth: Depth & DepthsIn<V>,
+    ): Promise<DeeplyLoaded<V, Depth> | undefined>;
+    /** @category Subscription & Loading */
+    static load<V extends CoValue, Depth>(
+        this: ClassOf<V> & typeof CoValueBase,
+        existing: V,
+        depth: Depth & DepthsIn<V>,
+    ): Promise<DeeplyLoaded<V, Depth> | undefined>;
+    static load<V extends CoValue, Depth>(
+        this: ClassOf<V> & typeof CoValueBase,
+
+        ...args:
+            | [ID<V>, Account, Depth & DepthsIn<V>]
+            | [V, Depth & DepthsIn<V>]
+    ): Promise<DeeplyLoaded<V, Depth> | undefined> {
+        const { id, as, depth } =
+            args.length === 3
+                ? { id: args[0], as: args[1], depth: args[2] }
+                : { id: args[0].id, as: args[0]._loadedAs, depth: args[1] };
         return Effect.runPromise(
             this.loadEf(id, depth).pipe(
                 Effect.mapError(() => undefined),
@@ -207,12 +184,11 @@ export class CoValueBase implements CoValue {
     }
 
     /** @category Subscription & Loading */
-    static loadEf<V extends CoValue>(
+    static loadEf<V extends CoValue, Depth>(
         this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-    ): Effect.Effect<V, UnavailableError, AccountCtx> {
+        depth: Depth & DepthsIn<V>,
+    ): Effect.Effect<DeeplyLoaded<V, Depth>, UnavailableError, AccountCtx> {
         return this.subscribeEf(id, depth).pipe(
             Stream.runHead,
             Effect.andThen(
@@ -222,14 +198,44 @@ export class CoValueBase implements CoValue {
     }
 
     /** @category Subscription & Loading */
-    static subscribe<V extends CoValue>(
+    static subscribe<V extends CoValue, Depth>(
         this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
-        as: Account & Me,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-        listener: (value: V) => void,
+        as: Account,
+        depth: Depth & DepthsIn<V>,
+        listener: (value: DeeplyLoaded<V, Depth>) => void,
+    ): () => void;
+    static subscribe<V extends CoValue, Depth>(
+        this: ClassOf<V> & typeof CoValueBase,
+        existing: V,
+        depth: Depth & DepthsIn<V>,
+        listener: (value: DeeplyLoaded<V, Depth>) => void,
+    ): () => void;
+    static subscribe<V extends CoValue, Depth>(
+        this: ClassOf<V> & typeof CoValueBase,
+        ...args:
+            | [
+                  ID<V>,
+                  Account,
+                  Depth & DepthsIn<V>,
+                  (value: DeeplyLoaded<V, Depth>) => void,
+              ]
+            | [V, Depth & DepthsIn<V>, (value: DeeplyLoaded<V, Depth>) => void]
     ): () => void {
+        const { id, as, depth, listener } =
+            args.length === 4
+                ? {
+                      id: args[0],
+                      as: args[1],
+                      depth: args[2],
+                      listener: args[3],
+                  }
+                : {
+                      id: args[0].id,
+                      as: args[0]._loadedAs,
+                      depth: args[1],
+                      listener: args[2],
+                  };
         void Effect.runPromise(
             Effect.provideService(
                 this.subscribeEf(id, depth).pipe(
@@ -248,18 +254,17 @@ export class CoValueBase implements CoValue {
     }
 
     /** @category Subscription & Loading */
-    static subscribeEf<V extends CoValue>(
+    static subscribeEf<V extends CoValue, Depth>(
         this: ClassOf<V> & typeof CoValueBase,
         id: ID<V>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        depth: any,
-    ): Stream.Stream<V, UnavailableError, AccountCtx> {
+        depth: Depth & DepthsIn<V>,
+    ): Stream.Stream<DeeplyLoaded<V, Depth>, UnavailableError, AccountCtx> {
         return AccountCtx.pipe(
             Effect.andThen((account) =>
                 new Ref(id, account, this as CoValueClass<V>).loadEf(),
             ),
             Stream.fromEffect,
-            Stream.flatMap((value) =>
+            Stream.flatMap((value: V) =>
                 Stream.asyncScoped<V, UnavailableError>((emit) =>
                     Effect.gen(this, function* (_) {
                         const subscription = new SubscriptionScope(
@@ -278,7 +283,13 @@ export class CoValueBase implements CoValue {
                     }),
                 ),
             ),
-            Stream.filter((update) => fulfillsDepth(depth, update)),
+            Stream.filterMap((update: V) =>
+                Option.fromNullable(
+                    fulfillsDepth(depth, update)
+                        ? (update as DeeplyLoaded<V, Depth>)
+                        : undefined,
+                ),
+            ),
         );
     }
 
