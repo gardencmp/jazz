@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.0-alpha.41
+
+### Patch Changes
+
+- ignore error on ws close, fixing "Invalid state: Controller is already closed"
+
 ## 0.7.0-alpha.39
 
 ### Patch Changes

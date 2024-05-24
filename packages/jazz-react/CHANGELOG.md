@@ -1,5 +1,12 @@
 # jazz-react
 
+## 0.7.0-alpha.41
+
+### Patch Changes
+
+- jazz-tools@0.7.0-alpha.41
+- jazz-browser@0.7.0-alpha.41
+
 ## 0.7.0-alpha.40
 
 ### Patch Changes
