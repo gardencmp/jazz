@@ -110,7 +110,7 @@ export function createJazzReactContext<Acc extends Account>({
 
         return {
             me:
-                Array.isArray(depth) && depth?.length === 0
+                depth === undefined
                     ? me || context.me
                     : me,
             logOut: context.logOut,
