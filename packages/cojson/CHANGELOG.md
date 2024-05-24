@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.39
+
+### Patch Changes
+
+- Fix noble curves dependency
+
 ## 0.7.0-alpha.38
 
 ### Patch Changes

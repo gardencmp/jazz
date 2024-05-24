@@ -1,5 +1,14 @@
 # jazz-browser
 
+## 0.7.0-alpha.39
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.0-alpha.39
+  - cojson-storage-indexeddb@0.7.0-alpha.39
+  - jazz-tools@0.7.0-alpha.39
+
 ## 0.7.0-alpha.38
 
 ### Patch Changes
