@@ -74,7 +74,7 @@ jobs:
     - name: Docker Build & Push
       uses: docker/build-push-action@v4
       with:
-        context: ./homepage
+        context: ./homepage/homepage
         push: true
         tags: ghcr.io/gardencmp/${{github.event.repository.name}}-homepage-jazz:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
         cache-from: type=gha
