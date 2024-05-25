@@ -7,7 +7,7 @@ job "homepage-jazz$BRANCH_SUFFIX" {
 
     network {
       port "http" {
-        to = 3000
+        to = 3001
       }
     }
 
