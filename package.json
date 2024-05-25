@@ -24,7 +24,7 @@
     "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
-    "release": "pnpm changeset publish",
+    "release": "pnpm changeset publish && git push --follow-tags",
     "prepare": "husky"
   },
   "lint-staged": {},
