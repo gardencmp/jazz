@@ -114,11 +114,11 @@ export function createJazzReactContext<Acc extends Account>({
         };
     }
 
-    function useCoState<V extends CoValue, D extends DepthsIn<V>>(
+    function useCoState<V extends CoValue, D>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema: { new (...args: any[]): V } & CoValueClass,
         id: ID<V> | undefined,
-        depth: D = [] as D,
+        depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
     ): DeeplyLoaded<V, D> | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
@@ -196,11 +196,11 @@ export interface JazzReactContext<Acc extends Account> {
     };
 
     /** @category Hooks */
-    useCoState<V extends CoValue, D extends DepthsIn<V>>(
+    useCoState<V extends CoValue, D>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema: { new (...args: any[]): V } & CoValueClass,
         id: ID<V> | undefined,
-        depth?: D,
+        depth?: D & DepthsIn<V>,
     ): DeeplyLoaded<V, D> | undefined;
 
     /** @category Hooks */
