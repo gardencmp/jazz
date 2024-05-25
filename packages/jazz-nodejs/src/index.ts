@@ -4,14 +4,7 @@ import {
 } from "cojson-transport-nodejs-ws";
 import { WebSocket } from "ws";
 
-import {
-    AccountID,
-    AgentSecret,
-    Peer,
-    SessionID,
-    WasmCrypto,
-    cojsonInternals,
-} from "cojson";
+import { AgentSecret, Peer, SessionID, WasmCrypto } from "cojson";
 import { Account, CoValueClass, ID } from "jazz-tools";
 
 /** @category Context Creation */
@@ -37,18 +30,11 @@ export async function startWorker<Acc extends Account>({
         outgoing: websocketWritableStream(ws),
     };
 
-    // TODO: locked sessions similar to browser
-    const sessionIDToUse =
-        sessionID || cojsonInternals.newRandomSessionID(accountID as AccountID);
-
     if (!accountID) {
         throw new Error("No accountID provided");
     }
     if (!accountSecret) {
         throw new Error("No accountSecret provided");
-    }
-    if (!sessionIDToUse) {
-        throw new Error("No sessionID provided");
     }
     if (!accountID.startsWith("co_")) {
         throw new Error("Invalid accountID");
@@ -56,17 +42,12 @@ export async function startWorker<Acc extends Account>({
     if (!accountSecret?.startsWith("sealerSecret_")) {
         throw new Error("Invalid accountSecret");
     }
-    if (
-        !sessionIDToUse.startsWith("co_") ||
-        !sessionIDToUse.includes("_session")
-    ) {
-        throw new Error("Invalid sessionID");
-    }
 
     const worker = await accountSchema.become({
         accountID: accountID as ID<Acc>,
         accountSecret: accountSecret as AgentSecret,
-        sessionID: sessionIDToUse as SessionID,
+        // TODO: locked sessions similar to browser
+        sessionID: sessionID as SessionID | undefined,
         peersToLoadFrom: [wsPeer],
         crypto: await WasmCrypto.create(),
     });

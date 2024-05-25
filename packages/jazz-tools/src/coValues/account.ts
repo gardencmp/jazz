@@ -190,7 +190,7 @@ export class Account
         options: {
             accountID: ID<Account>;
             accountSecret: AgentSecret;
-            sessionID: SessionID;
+            sessionID?: SessionID;
             peersToLoadFrom: Peer[];
             crypto: CryptoProvider;
         },
