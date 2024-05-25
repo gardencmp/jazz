@@ -179,15 +179,18 @@ export function createJazzReactContext<Acc extends Account>({
 }
 
 /** @category Context & Hooks */
-interface JazzReactContext<Acc extends Account> {
+export interface JazzReactContext<Acc extends Account> {
+    /** @category Provider Component */
     Provider: React.FC<{
         children: React.ReactNode;
     }>;
 
+    /** @category Hooks */
     useAccount(): {
         me: Acc;
         logOut: () => void;
     };
+    /** @category Hooks */
     useAccount<D extends DepthsIn<Acc>>(
         depth: D,
     ): {
@@ -195,6 +198,7 @@ interface JazzReactContext<Acc extends Account> {
         logOut: () => void;
     };
 
+    /** @category Hooks */
     useCoState<V extends CoValue, D extends DepthsIn<V>>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Schema: { new (...args: any[]): V } & CoValueClass,
@@ -202,6 +206,7 @@ interface JazzReactContext<Acc extends Account> {
         depth?: D,
     ): DeeplyLoaded<V, D> | undefined;
 
+    /** @category Hooks */
     useAcceptInvite<V extends CoValue>({
         invitedObjectSchema,
         onAccept,
