@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.1
+
+### Patch Changes
+
+- Add runtime option for optional refs
+
 ## 0.7.0
 
 ### Minor Changes
