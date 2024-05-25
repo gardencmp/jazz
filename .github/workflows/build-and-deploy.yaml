@@ -83,7 +83,7 @@ jobs:
     - name: Pnpm Build
       run: |
         pnpm install
-        pnpm turbo build;
+        pnpm build;
       working-directory: ./homepage/homepage
 
     - name: Docker Build & Push
