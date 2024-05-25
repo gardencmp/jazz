@@ -1,18 +1,17 @@
-import { type CoValue } from "../coValue.js";
+import { type RawCoValue } from "../coValue.js";
 import type { JsonValue } from "../jsonValue.js";
-import { CoMap } from "../coValues/coMap.js";
-import { CoList } from "../coValues/coList.js";
-import { CoStream } from "../coValues/coStream.js";
-import { BinaryCoStream } from "../coValues/coStream.js";
-
+import { RawCoMap } from "../coValues/coMap.js";
+import { RawCoList } from "../coValues/coList.js";
+import { RawCoStream } from "../coValues/coStream.js";
+import { RawBinaryCoStream } from "../coValues/coStream.js";
 
 export function isCoValue(
-    value: JsonValue | CoValue | undefined
-): value is CoValue {
+    value: JsonValue | RawCoValue | undefined,
+): value is RawCoValue {
     return (
-        value instanceof CoMap ||
-        value instanceof CoList ||
-        value instanceof CoStream ||
-        value instanceof BinaryCoStream
+        value instanceof RawCoMap ||
+        value instanceof RawCoList ||
+        value instanceof RawCoStream ||
+        value instanceof RawBinaryCoStream
     );
 }

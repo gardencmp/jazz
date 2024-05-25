@@ -1,18 +1,20 @@
 import { useParams } from "react-router";
-import { CoID } from "cojson";
 
-import { PetPost, ReactionType, REACTION_TYPES, PetReactions } from "./1_types";
+import { PetPost, PetReactions, ReactionTypes } from "./1_schema";
 
 import { ShareButton } from "./components/ShareButton";
 import { Button, Skeleton } from "./basicComponents";
-import { BrowserImage } from "jazz-browser-media-images";
 import uniqolor from "uniqolor";
-import { Resolved, useAutoSub } from "jazz-react";
+import { ID } from "jazz-tools";
+import { useCoState } from "./2_main";
+import { ProgressiveImg } from "jazz-react";
 
 /** Walkthrough: TODO
  */
 
-const reactionEmojiMap: { [reaction in ReactionType]: string } = {
+const reactionEmojiMap: {
+    [reaction in (typeof ReactionTypes)[number]]: string;
+} = {
     aww: "😍",
     love: "❤️",
     haha: "😂",
@@ -22,9 +24,9 @@ const reactionEmojiMap: { [reaction in ReactionType]: string } = {
 };
 
 export function RatePetPostUI() {
-    const petPostID = useParams<{ petPostId: CoID<PetPost> }>().petPostId;
+    const petPostID = useParams<{ petPostId: ID<PetPost> }>().petPostId;
 
-    const petPost = useAutoSub(petPostID);
+    const petPost = useCoState(PetPost, petPostID);
 
     return (
         <div className="flex flex-col gap-8">
@@ -33,22 +35,18 @@ export function RatePetPostUI() {
                 <ShareButton petPost={petPost} />
             </div>
 
-            {petPost?.image && (
-                <img
-                    className="w-80 max-w-full rounded"
-                    src={
-                        petPost.image.as(BrowserImage())
-                            ?.highestResSrcOrPlaceholder
-                    }
-                />
-            )}
+            <ProgressiveImg image={petPost?.image}>
+                {({ src }) => (
+                    <img className="w-80 max-w-full rounded" src={src} />
+                )}
+            </ProgressiveImg>
 
             <div className="flex justify-between max-w-xs flex-wrap">
-                {REACTION_TYPES.map((reactionType) => (
+                {ReactionTypes.map((reactionType) => (
                     <Button
                         key={reactionType}
                         variant={
-                            petPost?.reactions?.me?.last === reactionType
+                            petPost?.reactions?.byMe?.value === reactionType
                                 ? "default"
                                 : "outline"
                         }
@@ -63,26 +61,22 @@ export function RatePetPostUI() {
                 ))}
             </div>
 
-            {petPost?.meta.group.myRole() === "admin" && petPost.reactions && (
+            {petPost?._owner.myRole() === "admin" && petPost.reactions && (
                 <ReactionOverview petReactions={petPost.reactions} />
             )}
         </div>
     );
 }
 
-function ReactionOverview({
-    petReactions,
-}: {
-    petReactions: Resolved<PetReactions>;
-}) {
+function ReactionOverview({ petReactions }: { petReactions: PetReactions }) {
     return (
         <div>
             <h2>Reactions</h2>
             <div className="flex flex-col gap-1">
-                {REACTION_TYPES.map((reactionType) => {
-                    const reactionsOfThisType = petReactions.perAccount
-                        .map(([, reaction]) => reaction)
-                        .filter(({ last }) => last === reactionType);
+                {ReactionTypes.map((reactionType) => {
+                    const reactionsOfThisType = Object.values(
+                        petReactions,
+                    ).filter((entry) => entry.value === reactionType);
 
                     if (reactionsOfThisType.length === 0) return null;
 
@@ -106,7 +100,7 @@ function ReactionOverview({
                                         className="mt-1 w-[50px] h-[1em] rounded-full"
                                         key={idx}
                                     />
-                                )
+                                ),
                             )}
                         </div>
                     );

@@ -1,15 +1,17 @@
+import { expect, test } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
-import { cojsonReady } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Can create a node while creating a new account with profile", async () => {
     const { node, accountID, accountSecret, sessionID } =
-        await LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
+        await LocalNode.withNewlyCreatedAccount({
+            creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
+        });
 
     expect(node).not.toBeNull();
     expect(accountID).not.toBeNull();
@@ -17,41 +19,38 @@ test("Can create a node while creating a new account with profile", async () => 
     expect(sessionID).not.toBeNull();
 
     expect(node.expectProfileLoaded(accountID).get("name")).toEqual(
-        "Hermes Puggington"
+        "Hermes Puggington",
     );
 });
 
 test("A node with an account can create groups and and objects within them", async () => {
     const { node, accountID } = await LocalNode.withNewlyCreatedAccount({
-        name: "Hermes Puggington",
+        creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
     });
 
     const group = await node.createGroup();
     expect(group).not.toBeNull();
 
-    let map = group.createMap();
-    map = map.edit((edit) => {
-        edit.set("foo", "bar", "private");
-        expect(edit.get("foo")).toEqual("bar");
-    });
-
+    const map = group.createMap();
+    map.set("foo", "bar", "private");
     expect(map.get("foo")).toEqual("bar");
-
     expect(map.lastEditAt("foo")?.by).toEqual(accountID);
 });
 
 test("Can create account with one node, and then load it on another", async () => {
     const { node, accountID, accountSecret } =
-        await LocalNode.withNewlyCreatedAccount({ name: "Hermes Puggington" });
+        await LocalNode.withNewlyCreatedAccount({
+            creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
+        });
 
     const group = await node.createGroup();
     expect(group).not.toBeNull();
 
-    let map = group.createMap();
-    map = map.edit((edit) => {
-        edit.set("foo", "bar", "private");
-        expect(edit.get("foo")).toEqual("bar");
-    });
+    const map = group.createMap();
+    map.set("foo", "bar", "private");
+    expect(map.get("foo")).toEqual("bar");
 
     const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {
         trace: true,
@@ -66,6 +65,7 @@ test("Can create account with one node, and then load it on another", async () =
         accountSecret,
         sessionID: newRandomSessionID(accountID),
         peersToLoadFrom: [node1asPeer],
+        crypto: Crypto,
     });
 
     const map2 = await node2.load(map.id);

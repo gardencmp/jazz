@@ -1,38 +1,40 @@
-import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
+import { expect } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import { ControlledAgent } from "../coValues/account.js";
 import { SessionID } from "../ids.js";
-// @ts-ignore
-import { expect } from "bun:test";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
-export function randomAnonymousAccountAndSessionID(): [ControlledAgent, SessionID] {
-    const agentSecret = newRandomAgentSecret();
+const Crypto = await WasmCrypto.create();
 
-    const sessionID = newRandomSessionID(getAgentID(agentSecret));
+export function randomAnonymousAccountAndSessionID(): [
+    ControlledAgent,
+    SessionID,
+] {
+    const agentSecret = Crypto.newRandomAgentSecret();
 
-    return [new ControlledAgent(agentSecret), sessionID];
+    const sessionID = newRandomSessionID(Crypto.getAgentID(agentSecret));
+
+    return [new ControlledAgent(agentSecret, Crypto), sessionID];
 }
 
 export function newGroup() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
-    const node = new LocalNode(admin, sessionID);
+    const node = new LocalNode(admin, sessionID, Crypto);
 
     const groupCore = node.createCoValue({
         type: "comap",
         ruleset: { type: "group", initialAdmin: admin.id },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const group = expectGroup(groupCore.getCurrentContent());
 
-    group.mutate((editable) => {
-        editable.set(admin.id, "admin", "trusting");
-        expect(editable.get(admin.id)).toEqual("admin");
-    });
+    group.set(admin.id, "admin", "trusting");
+    expect(group.get(admin.id)).toEqual("admin");
 
     return { node, groupCore, admin };
 }
@@ -40,14 +42,12 @@ export function newGroup() {
 export function groupWithTwoAdmins() {
     const { groupCore, admin, node } = newGroup();
 
-    const otherAdmin = node.createAccount("otherAdmin");
+    const otherAdmin = node.createAccount();
 
-    let group = expectGroup(groupCore.getCurrentContent());
+    const group = expectGroup(groupCore.getCurrentContent());
 
-    group = group.mutate((mutable) => {
-        mutable.set(otherAdmin.id, "admin", "trusting");
-        expect(mutable.get(otherAdmin.id)).toEqual("admin");
-    });
+    group.set(otherAdmin.id, "admin", "trusting");
+    expect(group.get(otherAdmin.id)).toEqual("admin");
 
     if (group.type !== "comap") {
         throw new Error("Expected map");
@@ -60,8 +60,7 @@ export function groupWithTwoAdmins() {
 export function newGroupHighLevel() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
-
-    const node = new LocalNode(admin, sessionID);
+    const node = new LocalNode(admin, sessionID, Crypto);
 
     const group = node.createGroup();
 
@@ -69,18 +68,18 @@ export function newGroupHighLevel() {
 }
 
 export function groupWithTwoAdminsHighLevel() {
-    let { admin, node, group } = newGroupHighLevel();
+    const { admin, node, group } = newGroupHighLevel();
 
-    const otherAdmin = node.createAccount("otherAdmin");
+    const otherAdmin = node.createAccount();
 
-    group = group.addMember(otherAdmin, "admin");
+    group.addMember(otherAdmin, "admin");
 
     return { admin, node, group, otherAdmin };
 }
 
 export function shouldNotResolve<T>(
     promise: Promise<T>,
-    ops: { timeout: number }
+    ops: { timeout: number },
 ): Promise<void> {
     return new Promise((resolve, reject) => {
         promise
@@ -88,12 +87,11 @@ export function shouldNotResolve<T>(
                 reject(
                     new Error(
                         "Should not have resolved, but resolved to " +
-                            JSON.stringify(v)
-                    )
-                )
+                            JSON.stringify(v),
+                    ),
+                ),
             )
             .catch(reject);
         setTimeout(resolve, ops.timeout);
     });
 }
-

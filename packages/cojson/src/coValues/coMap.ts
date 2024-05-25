@@ -1,11 +1,11 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { AgentID, TransactionID } from "../ids.js";
-import { CoID, CoValue } from "../coValue.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AccountID } from "./account.js";
-import type { Group } from "./group.js";
+import type { RawGroup } from "./group.js";
 
 type MapOp<K extends string, V extends JsonValue | undefined> = {
     txID: TransactionID;
@@ -25,12 +25,12 @@ export type MapOpPayload<K extends string, V extends JsonValue | undefined> =
           key: K;
       };
 
-export class CoMapView<
+export class RawCoMapView<
     Shape extends { [key: string]: JsonValue | undefined } = {
         [key: string]: JsonValue | undefined;
     },
-    Meta extends JsonObject | null = JsonObject | null
-> implements CoValue
+    Meta extends JsonObject | null = JsonObject | null,
+> implements RawCoValue
 {
     /** @category 6. Meta */
     id: CoID<this>;
@@ -50,14 +50,14 @@ export class CoMapView<
     /** @internal */
     constructor(
         core: CoValueCore,
-        options?: { ignorePrivateTransactions: true }
+        options?: { ignorePrivateTransactions: true },
     ) {
         this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
 
         for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
-            options
+            options,
         )) {
             for (const [changeIdx, changeUntyped] of changes.entries()) {
                 const change = changeUntyped as MapOpPayload<
@@ -88,7 +88,7 @@ export class CoMapView<
     }
 
     /** @category 6. Meta */
-    get group(): Group {
+    get group(): RawGroup {
         return this.core.getGroup();
     }
 
@@ -105,11 +105,11 @@ export class CoMapView<
 
     /** @internal */
     timeFilteredOps<K extends keyof Shape & string>(
-        key: K
+        key: K,
     ): MapOp<K, Shape[K]>[] | undefined {
         if (this.atTimeFilter) {
             return this.ops[key]?.filter(
-                (op) => op.madeAt <= this.atTimeFilter!
+                (op) => op.madeAt <= this.atTimeFilter!,
             );
         } else {
             return this.ops[key];
@@ -121,13 +121,23 @@ export class CoMapView<
      *
      * @category 1. Reading */
     keys<K extends keyof Shape & string = keyof Shape & string>(): K[] {
-        const keys = Object.keys(this.ops) as K[];
+        return (Object.keys(this.ops) as K[]).filter((key) => {
+            const ops = this.ops[key];
+            if (!ops) {
+                return undefined;
+            }
 
-        if (this.atTimeFilter) {
-            return keys.filter((key) => this.timeFilteredOps(key)?.length);
-        } else {
-            return keys;
-        }
+            const includeUntil = this.atTimeFilter;
+            const lastEntry = includeUntil
+                ? ops.findLast((entry) => entry.madeAt <= includeUntil)
+                : ops[ops.length - 1]!;
+
+            if (lastEntry?.op === "del") {
+                return false;
+            } else {
+                return true;
+            }
+        });
     }
 
     /**
@@ -136,7 +146,7 @@ export class CoMapView<
      * @category 1. Reading
      **/
     get<K extends keyof Shape & string>(key: K): Shape[K] | undefined {
-        const ops = this.timeFilteredOps(key);
+        const ops = this.ops[key];
         if (!ops) {
             return undefined;
         }
@@ -183,7 +193,7 @@ export class CoMapView<
     /** @category 5. Edit history */
     nthEditAt<K extends keyof Shape & string>(
         key: K,
-        n: number
+        n: number,
     ):
         | {
               by: AccountID | AgentID;
@@ -213,7 +223,7 @@ export class CoMapView<
 
     /** @category 5. Edit history */
     lastEditAt<K extends keyof Shape & string>(
-        key: K
+        key: K,
     ):
         | {
               by: AccountID | AgentID;
@@ -250,16 +260,16 @@ export class CoMapView<
 }
 
 /** A collaborative map with precise shape `Shape` and optional static metadata `Meta` */
-export class CoMap<
+export class RawCoMap<
         Shape extends { [key: string]: JsonValue | undefined } = {
             [key: string]: JsonValue | undefined;
         },
-        Meta extends JsonObject | null = JsonObject | null
+        Meta extends JsonObject | null = JsonObject | null,
     >
-    extends CoMapView<Shape, Meta>
-    implements CoValue
+    extends RawCoMapView<Shape, Meta>
+    implements RawCoValue
 {
-    /** Returns a new version of this CoMap with a new value for the given key.
+    /** Set a new value for the given key.
      *
      * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -270,64 +280,25 @@ export class CoMap<
     set<K extends keyof Shape & string>(
         key: K,
         value: Shape[K],
-        privacy?: "private" | "trusting"
-    ): this;
-    set(
-        kv: {
-            [K in keyof Shape & string]?: Shape[K];
-        },
-        privacy?: "private" | "trusting"
-    ): this;
-    set<K extends keyof Shape & string>(
-        ...args:
-            | [
-                  {
-                      [K in keyof Shape & string]?: Shape[K];
-                  },
-                  ("private" | "trusting")?
-              ]
-            | [K, Shape[K], ("private" | "trusting")?]
-    ): this {
-        if (typeof args[0] === "string") {
-            const [key, value, privacy = "private"] = args;
-            this.core.makeTransaction(
-                [
-                    {
-                        op: "set",
-                        key,
-                        value: isCoValue(value) ? value.id : value,
-                    },
-                ],
-                privacy
-            );
-        } else {
-            const [kv, privacy = "private"] = args as [
+        privacy: "private" | "trusting" = "private",
+    ): void {
+        this.core.makeTransaction(
+            [
                 {
-                    [K in keyof Shape & string]: Shape[K] extends CoValue
-                        ? Shape[K] | CoID<Shape[K]>
-                        : Shape[K];
+                    op: "set",
+                    key,
+                    value: isCoValue(value) ? value.id : value,
                 },
-                "private" | "trusting" | undefined
-            ];
+            ],
+            privacy,
+        );
 
-            for (const [key, value] of Object.entries(kv)) {
-                this.core.makeTransaction(
-                    [
-                        {
-                            op: "set",
-                            key,
-                            value: isCoValue(value) ? value.id : value,
-                        },
-                    ],
-                    privacy
-                );
-            }
-        }
+        const after = new RawCoMap(this.core) as this;
 
-        return new CoMap(this.core) as this;
+        this.ops = after.ops;
     }
 
-    /** Returns a new version of this CoMap with the given key deleted (setting it to undefined).
+    /** Delete the given key (setting it to undefined).
      *
      * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -337,8 +308,8 @@ export class CoMap<
      **/
     delete(
         key: keyof Shape & string,
-        privacy: "private" | "trusting" = "private"
-    ): this {
+        privacy: "private" | "trusting" = "private",
+    ) {
         this.core.makeTransaction(
             [
                 {
@@ -346,74 +317,11 @@ export class CoMap<
                     key,
                 },
             ],
-            privacy
+            privacy,
         );
 
-        return new CoMap(this.core) as this;
-    }
+        const after = new RawCoMap(this.core) as this;
 
-    /** @category 2. Editing */
-    mutate(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
-        const mutable = new MutableCoMap<Shape, Meta>(this.core);
-        mutator(mutable);
-        return new (this.constructor as new (core: CoValueCore) => this)(
-            this.core
-        );
-    }
-
-    /** @deprecated Use `mutate` instead. */
-    edit(mutator: (mutable: MutableCoMap<Shape, Meta>) => void): this {
-        return this.mutate(mutator);
-    }
-}
-
-export class MutableCoMap<
-        Shape extends { [key: string]: JsonValue | undefined } = {
-            [key: string]: JsonValue | undefined;
-        },
-        Meta extends JsonObject | null = JsonObject | null
-    >
-    extends CoMapView<Shape, Meta>
-    implements CoValue
-{
-    /** Sets a new value for the given key.
-     *
-     * If `privacy` is `"private"` **(default)**, both `key` and `value` are encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, both `key` and `value` are stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     *
-     * @category 2. Mutation
-     */
-    set<K extends keyof Shape & string>(
-        key: K,
-        value: Shape[K],
-        privacy: "private" | "trusting" = "private"
-    ): void {
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        const after = (CoMap.prototype.set as Function).call(
-            this,
-            key,
-            value,
-            privacy
-        ) as CoMap<Shape, Meta>;
-        this.ops = after.ops;
-    }
-
-    /** Deletes the value for the given key (setting it to undefined).
-     *
-     * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, `key` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     * @category 2. Mutation
-     */
-    delete(
-        key: keyof Shape & string,
-        privacy: "private" | "trusting" = "private"
-    ): void {
-        const after = CoMap.prototype.delete.call(this, key, privacy) as CoMap<
-            Shape,
-            Meta
-        >;
         this.ops = after.ops;
     }
 }

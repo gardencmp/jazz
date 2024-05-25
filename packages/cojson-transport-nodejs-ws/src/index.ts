@@ -10,7 +10,7 @@ export function websocketReadableStream<T>(ws: WebSocket) {
                 if (typeof event.data !== "string")
                     return console.warn(
                         "Got non-string message from client",
-                        event.data
+                        event.data,
                     );
                 const msg = JSON.parse(event.data);
                 if (msg.type === "ping") {
@@ -25,9 +25,15 @@ export function websocketReadableStream<T>(ws: WebSocket) {
                 }
                 controller.enqueue(msg);
             });
-            ws.addEventListener("close", () => controller.close());
+            ws.addEventListener("close", () => {
+                try {
+                    controller.close();
+                } catch (ignore) {
+                    // will throw if already closed, with no way to check before-hand
+                }
+            });
             ws.addEventListener("error", () =>
-                controller.error(new Error("The WebSocket errored!"))
+                controller.error(new Error("The WebSocket errored!")),
             );
         },
 
@@ -42,11 +48,11 @@ export function websocketWritableStream<T>(ws: WebSocket) {
         start(controller) {
             ws.addEventListener("close", () =>
                 controller.error(
-                    new Error("The WebSocket closed unexpectedly!")
-                )
+                    new Error("The WebSocket closed unexpectedly!"),
+                ),
             );
             ws.addEventListener("error", () =>
-                controller.error(new Error("The WebSocket errored!"))
+                controller.error(new Error("The WebSocket errored!")),
             );
 
             if (ws.readyState === WebSocket.OPEN) {
@@ -54,7 +60,7 @@ export function websocketWritableStream<T>(ws: WebSocket) {
             }
 
             return new Promise((resolve) =>
-                ws.addEventListener("open", resolve, { once: true })
+                ws.addEventListener("open", resolve, { once: true }),
             );
         },
 

@@ -1,11 +1,11 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoID, CoValue } from "../coValue.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { AccountID } from "./account.js";
-import { Group } from "./group.js";
+import { RawGroup } from "./group.js";
 
 type OpID = TransactionID & { changeIdx: number };
 
@@ -41,10 +41,10 @@ type DeletionEntry = {
     deletionID: OpID;
 } & DeletionOpPayload;
 
-export class CoListView<
+export class RawCoListView<
     Item extends JsonValue = JsonValue,
-    Meta extends JsonObject | null = null
-> implements CoValue
+    Meta extends JsonObject | null = null,
+> implements RawCoValue
 {
     /** @category 6. Meta */
     id: CoID<this>;
@@ -196,7 +196,7 @@ export class CoListView<
                 } else {
                     throw new Error(
                         "Unknown list operation " +
-                            (change as { op: unknown }).op
+                            (change as { op: unknown }).op,
                     );
                 }
             }
@@ -209,7 +209,7 @@ export class CoListView<
     }
 
     /** @category 6. Meta */
-    get group(): Group {
+    get group(): RawGroup {
         return this.core.getGroup();
     }
 
@@ -285,7 +285,7 @@ export class CoListView<
             value: Item;
             madeAt: number;
             opID: OpID;
-        }[]
+        }[],
     ) {
         const entry =
             this.insertions[opID.sessionID]?.[opID.txIndex]?.[opID.changeIdx];
@@ -306,7 +306,9 @@ export class CoListView<
                 opID,
             });
         }
-        for (const successor of entry.successors) {
+        // traverse successors in reverse for correct insertion behavior
+        for (let i = entry.successors.length - 1; i >= 0; i--) {
+            const successor = entry.successors[i]!;
             this.fillArrayFromOpID(successor, arr);
         }
     }
@@ -370,7 +372,7 @@ export class CoListView<
                     for (const deletion of changeEntry || []) {
                         const madeAt = new Date(deletion.madeAt);
                         const by = accountOrAgentIDfromSessionID(
-                            deletion.deletionID.sessionID
+                            deletion.deletionID.sessionID,
                         );
                         edits.push({
                             by,
@@ -393,14 +395,14 @@ export class CoListView<
     }
 }
 
-export class CoList<
+export class RawCoList<
         Item extends JsonValue = JsonValue,
-        Meta extends JsonObject | null = JsonObject | null
+        Meta extends JsonObject | null = JsonObject | null,
     >
-    extends CoListView<Item, Meta>
-    implements CoValue
+    extends RawCoListView<Item, Meta>
+    implements RawCoValue
 {
-    /** Returns a new version of this CoList with `item` appended after the item currently at index `after`.
+    /** Appends `item` after the item currently at index `after`.
      *
      * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -411,15 +413,15 @@ export class CoList<
     append(
         item: Item,
         after?: number,
-        privacy: "private" | "trusting" = "private"
-    ): this {
+        privacy: "private" | "trusting" = "private",
+    ) {
         const entries = this.entries();
         after =
             after === undefined
                 ? entries.length > 0
                     ? entries.length - 1
                     : 0
-                : 0;
+                : after;
         let opIDBefore;
         if (entries.length > 0) {
             const entryBefore = entries[after];
@@ -441,14 +443,20 @@ export class CoList<
                     after: opIDBefore,
                 },
             ],
-            privacy
+            privacy,
         );
 
-        return new CoList(this.core) as this;
+        const listAfter = new RawCoList(this.core) as this;
+
+        this.afterStart = listAfter.afterStart;
+        this.beforeEnd = listAfter.beforeEnd;
+        this.insertions = listAfter.insertions;
+        this.deletionsByInsertion = listAfter.deletionsByInsertion;
+        this._cachedEntries = undefined;
     }
 
     /**
-     * Returns a new version of this CoList with `item` prepended before the item currently at index `before`.
+     * Prepends `item` before the item currently at index `before`.
      *
      * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -459,8 +467,8 @@ export class CoList<
     prepend(
         item: Item,
         before?: number,
-        privacy: "private" | "trusting" = "private"
-    ): this {
+        privacy: "private" | "trusting" = "private",
+    ) {
         const entries = this.entries();
         before = before === undefined ? 0 : before;
         let opIDAfter;
@@ -488,13 +496,19 @@ export class CoList<
                     before: opIDAfter,
                 },
             ],
-            privacy
+            privacy,
         );
 
-        return new CoList(this.core) as this;
+        const listAfter = new RawCoList(this.core) as this;
+
+        this.afterStart = listAfter.afterStart;
+        this.beforeEnd = listAfter.beforeEnd;
+        this.insertions = listAfter.insertions;
+        this.deletionsByInsertion = listAfter.deletionsByInsertion;
+        this._cachedEntries = undefined;
     }
 
-    /** Returns a new version of this CoList with the item at index `at` deleted from the list.
+    /** Deletes the item at index `at`.
      *
      * If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
      *
@@ -502,7 +516,7 @@ export class CoList<
      *
      * @category 2. Editing
      **/
-    delete(at: number, privacy: "private" | "trusting" = "private"): this {
+    delete(at: number, privacy: "private" | "trusting" = "private") {
         const entries = this.entries();
         const entry = entries[at];
         if (!entry) {
@@ -515,51 +529,11 @@ export class CoList<
                     insertion: entry.opID,
                 },
             ],
-            privacy
+            privacy,
         );
 
-        return new CoList(this.core) as this;
-    }
+        const listAfter = new RawCoList(this.core) as this;
 
-    /** @category 2. Editing */
-    mutate(mutator: (mutable: MutableCoList<Item, Meta>) => void): this {
-        const mutable = new MutableCoList<Item, Meta>(this.core);
-        mutator(mutable);
-        return new CoList(this.core) as this;
-    }
-
-    /** @deprecated Use `mutate` instead. */
-    edit(mutator: (mutable: MutableCoList<Item, Meta>) => void): this {
-        return this.mutate(mutator);
-    }
-}
-
-export class MutableCoList<
-        Item extends JsonValue = JsonValue,
-        Meta extends JsonObject | null = JsonObject | null
-    >
-    extends CoListView<Item, Meta>
-    implements CoValue
-{
-    /** Appends `item` after the item currently at index `after`.
-     *
-     * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     *
-     * @category 2. Mutating
-     **/
-    append(
-        item: Item,
-        after?: number,
-        privacy: "private" | "trusting" = "private"
-    ): void {
-        const listAfter = CoList.prototype.append.call(
-            this,
-            item,
-            after,
-            privacy
-        ) as CoList<Item, Meta>;
         this.afterStart = listAfter.afterStart;
         this.beforeEnd = listAfter.beforeEnd;
         this.insertions = listAfter.insertions;
@@ -567,46 +541,33 @@ export class MutableCoList<
         this._cachedEntries = undefined;
     }
 
-    /** Prepends `item` before the item currently at index `before`.
-     *
-     * If `privacy` is `"private"` **(default)**, `item` is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, `item` is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     *
-     * * @category 2. Mutating
-     **/
-    prepend(
-        item: Item,
-        before?: number,
-        privacy: "private" | "trusting" = "private"
-    ): void {
-        const listAfter = CoList.prototype.prepend.call(
-            this,
-            item,
-            before,
-            privacy
-        ) as CoList<Item, Meta>;
-        this.afterStart = listAfter.afterStart;
-        this.beforeEnd = listAfter.beforeEnd;
-        this.insertions = listAfter.insertions;
-        this.deletionsByInsertion = listAfter.deletionsByInsertion;
-        this._cachedEntries = undefined;
-    }
+    replace(
+        at: number,
+        newItem: Item,
+        privacy: "private" | "trusting" = "private",
+    ) {
+        const entries = this.entries();
+        const entry = entries[at];
+        if (!entry) {
+            throw new Error("Invalid index " + at);
+        }
 
-    /** Deletes the item at index `at` from the list.
-     *
-     * If `privacy` is `"private"` **(default)**, the fact of this deletion is encrypted in the transaction, only readable by other members of the group this `CoList` belongs to. Not even sync servers can see the content in plaintext.
-     *
-     * If `privacy` is `"trusting"`, the fact of this deletion is stored in plaintext in the transaction, visible to everyone who gets a hold of it, including sync servers.
-     *
-     * * @category 2. Mutating
-     **/
-    delete(at: number, privacy: "private" | "trusting" = "private"): void {
-        const listAfter = CoList.prototype.delete.call(
-            this,
-            at,
-            privacy
-        ) as CoList<Item, Meta>;
+        this.core.makeTransaction(
+            [
+                {
+                    op: "app",
+                    value: isCoValue(newItem) ? newItem.id : newItem,
+                    after: entry.opID,
+                },
+                {
+                    op: "del",
+                    insertion: entry.opID,
+                },
+            ],
+            privacy,
+        );
+        const listAfter = new RawCoList(this.core) as this;
+
         this.afterStart = listAfter.afterStart;
         this.beforeEnd = listAfter.beforeEnd;
         this.insertions = listAfter.insertions;

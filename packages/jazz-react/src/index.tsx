@@ -1,315 +1,221 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
-    LocalNode,
-    CoID,
-    CoValue,
-    BinaryCoStream,
-    Account,
-    AccountMeta,
-    AccountMigration,
-    Profile,
-    CoMap,
-} from "cojson";
-import React, { useEffect, useState } from "react";
-import {
-    AuthProvider,
     consumeInviteLinkFromWindowLocation,
-    createBrowserNode,
-    readBlobFromBinaryStream,
+    createJazzBrowserContext,
 } from "jazz-browser";
 
-import { Resolved, ResolvedAccount, autoSub } from "jazz-autosub";
-export type { Resolved, ResolvedCoMap } from "jazz-autosub";
-export {
-    ResolvedAccount,
-    ResolvedCoList,
-    ResolvedCoMapBase,
-    ResolvedCoStream,
-    ResolvedGroup,
-} from "jazz-autosub";
+import {
+    Account,
+    CoValue,
+    CoValueClass,
+    DeeplyLoaded,
+    DepthsIn,
+    ID,
+} from "jazz-tools";
+import { ReactAuthHook } from "./auth/auth.js";
 
-const JazzContext = React.createContext<
-    | {
-          me: Resolved<Account>;
-          localNode: LocalNode;
-          logOut: () => void;
-      }
-    | undefined
->(undefined);
+/** @category Context & Hooks */
+export function createJazzReactContext<Acc extends Account>({
+    auth: authHook,
+    peer,
+    storage = "indexedDB",
+}: {
+    auth: ReactAuthHook<Acc>;
+    peer: `wss://${string}` | `ws://${string}`;
+    storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
+}): JazzReactContext<Acc> {
+    const JazzContext = React.createContext<
+        | {
+              me: Acc;
+              logOut: () => void;
+          }
+        | undefined
+    >(undefined);
 
-export type ReactAuthHook = () => {
-    auth: AuthProvider;
-    AuthUI: React.ReactNode;
-    logOut?: () => void;
-};
+    function Provider({ children }: { children: React.ReactNode }) {
+        const [me, setMe] = useState<Acc | undefined>();
 
-/**
- * Top-level component that provides Jazz context to your whole app, so you can use Jazz hooks in your components.
- *
- * @param props.auth An auth provider (renders login/sign-up UI if not logged in) - see available providers in the [Documentation](../../../DOCS.md#auth-providers)
- *
- * @param props.syncAddress The address of the upstream syncing peer. Defaults to `wss://sync.jazz.tool` (Jazz Global Mesh). If not set explicitly, it can also be temporarily overwritten by setting the `sync` query parameter in the URL, like `https://your-app.example.net?sync=ws://localhost:4200`.
- *
- * @example How to use `WithJazz` with the `jazz-react-auth-local` auth provider:
- *
- * ```typescript
- * import { WithJazz } from "jazz-react";
- * import { LocalAuth } from "jazz-react-auth-local";
- *
- * ReactDOM.createRoot(document.getElementById("root")!).render(
- *    <React.StrictMode>
- *       <WithJazz auth={LocalAuth({ appName: "My App" })}>
- *          <App />
- *      </WithJazz>
- *   </React.StrictMode>
- * );
- * ```
- * */
-export function WithJazz(props: {
-    auth: ReactAuthHook;
-    syncAddress?: string;
-    children: React.ReactNode;
-    migration?: AccountMigration;
-    apiKey?: string
-}) {
-    const { auth: authHook, syncAddress, children } = props;
+        const { auth, AuthUI, logOut } = authHook();
 
-    const [node, setNode] = useState<LocalNode | undefined>();
+        useEffect(() => {
+            let done: (() => void) | undefined = undefined;
+            let stop = false;
 
-    const { auth, AuthUI, logOut } = authHook();
+            (async () => {
+                const context = await createJazzBrowserContext<Acc>({
+                    auth: auth,
+                    peer:
+                        (new URLSearchParams(window.location.search).get(
+                            "peer",
+                        ) as typeof peer) || peer,
+                    storage,
+                });
 
-    useEffect(() => {
-        let done: (() => void) | undefined = undefined;
-        let stop = false;
+                if (stop) {
+                    context.done();
+                    return;
+                }
 
-        (async () => {
-            const nodeHandle = await createBrowserNode({
-                auth: auth,
-                syncAddress:
-                    syncAddress ||
-                    new URLSearchParams(window.location.search).get("sync") ||
-                    undefined,
-                migration: props.migration,
+                setMe(context.me);
+
+                done = () => {
+                    context.done();
+                };
+            })().catch((e) => {
+                console.error("Failed to create browser node", e);
             });
 
-            if (stop) {
-                nodeHandle.done();
-                return;
-            }
+            return () => {
+                stop = true;
+                done && done();
+            };
+        }, [auth]);
 
-            setNode(nodeHandle.node);
+        return (
+            <>
+                {me && logOut ? (
+                    <JazzContext.Provider
+                        value={{
+                            me,
+                            logOut,
+                        }}
+                    >
+                        {children}
+                    </JazzContext.Provider>
+                ) : (
+                    AuthUI
+                )}
+            </>
+        );
+    }
 
-            done = nodeHandle.done;
-        })().catch((e) => {
-            console.error("Failed to create browser node", e);
-        });
+    function useAccount(): { me: Acc; logOut: () => void };
+    function useAccount<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
+    function useAccount<D extends DepthsIn<Acc>>(
+        depth?: D,
+    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
+        const context = React.useContext(JazzContext);
 
-        return () => {
-            stop = true;
-            done && done();
+        if (!context) {
+            throw new Error("useAccount must be used within a JazzProvider");
+        }
+
+        const me = useCoState<Acc, D>(
+            context.me.constructor as CoValueClass<Acc>,
+            context.me.id,
+            depth,
+        );
+
+        return {
+            me: depth === undefined ? me || context.me : me,
+            logOut: context.logOut,
         };
-    }, [auth, syncAddress]);
+    }
 
-    const me = useAutoSubWithNode("me", node) as ResolvedAccount | undefined;
+    function useCoState<V extends CoValue, D extends DepthsIn<V>>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Schema: { new (...args: any[]): V } & CoValueClass,
+        id: ID<V> | undefined,
+        depth: D = [] as D,
+    ): DeeplyLoaded<V, D> | undefined {
+        // for some reason (at least in React 18) - if we use state directly,
+        // some updates get swallowed/UI doesn't update
+        const [_, setUpdates] = useState<number>(0);
+        const state = useRef<DeeplyLoaded<V, D> | undefined>(undefined);
+        const me = React.useContext(JazzContext)?.me;
 
-    return (
-        <>
-            {node && me && logOut ? (
-                <JazzContext.Provider
-                    value={{
-                        me,
-                        localNode: node,
-                        logOut,
-                    }}
-                >
-                    <>{children}</>
-                </JazzContext.Provider>
-            ) : (
-                AuthUI
-            )}
-        </>
-    );
-}
+        useEffect(() => {
+            if (!id || !me) return;
+            return Schema.subscribe(id, me, depth, (update) => {
+                state.current = update as DeeplyLoaded<V, D>;
 
-/**
- * Hook that exposes the Jazz context provided by `<WithJazz/>`, most importantly `me`, the account of
- * the current in user (which you can use access the account's `root` or `profile`,
- * and to create `Group`s as the current user, in which you can then create `CoValue`s).
- *
- * Also provides a `logOut` function, which invokes the log-out logic of the Auth Provider passed to `<WithJazz/>`.
- */
-export function useJazz<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
-    Meta extends AccountMeta = AccountMeta
->() {
-    const context = React.useContext(JazzContext);
+                setUpdates((u) => {
+                    return u + 1;
+                });
+            });
+        }, [Schema, id, me]);
 
-    if (!context) {
-        throw new Error("useJazz must be used within a WithJazz provider");
+        return state.current;
+    }
+
+    function useAcceptInvite<V extends CoValue>({
+        invitedObjectSchema,
+        onAccept,
+        forValueHint,
+    }: {
+        invitedObjectSchema: CoValueClass<V>;
+        onAccept: (projectID: ID<V>) => void;
+        forValueHint?: string;
+    }): void {
+        const me = React.useContext(JazzContext)?.me;
+        useEffect(() => {
+            if (!me) return;
+
+            const result = consumeInviteLinkFromWindowLocation({
+                as: me,
+                invitedObjectSchema,
+                forValueHint,
+            });
+
+            result
+                .then((result) => result && onAccept(result?.valueID))
+                .catch((e) => {
+                    console.error("Failed to accept invite", e);
+                });
+        }, [onAccept]);
     }
 
     return {
-        me: context.me as ResolvedAccount<Account<P, R, Meta>>,
-        localNode: context.localNode,
-        logOut: context.logOut,
+        Provider,
+        useAccount,
+        useCoState,
+        useAcceptInvite,
     };
 }
 
-/**
- * Hook that subscribes to all updates of a given `CoValue` (identified by its `CoID`) and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
- *
- * See `Resolved<T>` in `jazz-autosub` to see which fields and methods are available on the returned object.
- *
- * @param id The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined).
- */
+/** @category Context & Hooks */
+export interface JazzReactContext<Acc extends Account> {
+    /** @category Provider Component */
+    Provider: React.FC<{
+        children: React.ReactNode;
+    }>;
 
-export function useAutoSub<T extends CoValue>(
-    id?: CoID<T>
-): Resolved<T> | undefined;
+    /** @category Hooks */
+    useAccount(): {
+        me: Acc;
+        logOut: () => void;
+    };
+    /** @category Hooks */
+    useAccount<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): {
+        me: DeeplyLoaded<Acc, D> | undefined;
+        logOut: () => void;
+    };
 
-/**
- * Hook that subscribes to all updates the current user account and that automatically resolves references to nested `CoValue`s, loading and subscribing to them as well.
- *
- * See `Resolved<T>` in `jazz-autosub` to see which fields and methods are available on the returned object.
- *
- */
-export function useAutoSub<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
-    Meta extends AccountMeta = AccountMeta
->(id: "me"): ResolvedAccount<Account<P, R, Meta>> | undefined;
-export function useAutoSub(
-    id?: CoID<CoValue> | "me"
-): Resolved<CoValue> | ResolvedAccount | undefined {
-    return useAutoSubWithNode(id, useJazz().localNode);
-}
+    /** @category Hooks */
+    useCoState<V extends CoValue, D extends DepthsIn<V>>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Schema: { new (...args: any[]): V } & CoValueClass,
+        id: ID<V> | undefined,
+        depth?: D,
+    ): DeeplyLoaded<V, D> | undefined;
 
-/** @internal */
-function useAutoSubWithNode(
-    id?: CoID<CoValue> | "me",
-    localNode?: LocalNode
-): Resolved<CoValue> | ResolvedAccount | undefined {
-    const [result, setResult] = useState<
-        Resolved<CoValue> | ResolvedAccount | undefined
-    >();
-
-    useEffect(() => {
-        if (!id || !localNode) return;
-        const unsubscribe = autoSub(id, localNode, setResult);
-        return unsubscribe;
-    }, [id, localNode]);
-
-    return result;
-}
-
-/**
- * Lower-level hook that loads and subscribes to updates of a single `CoValue` (identified by its `CoID`).
- *
- * References to nested `CoValue`s are not automatically resolved, they are returned as `CoID`s.
- *
- * @param id The `CoID` of the `CoValue` to subscribe to. Can be undefined (in which case the hook returns undefined).
- */
-export function useSyncedValue<T extends CoValue>(id?: CoID<T>) {
-    const [state, setState] = useState<T>();
-
-    const { localNode } = useJazz();
-
-    useEffect(() => {
-        if (!id) return;
-        let unsubscribe: (() => void) | undefined = undefined;
-
-        let done = false;
-
-        localNode
-            .load(id)
-            .then((state) => {
-                if (done) return;
-                if (state === "unavailable") return;
-                unsubscribe = state.subscribe((newState) => {
-                    // console.log(
-                    //     "Got update",
-                    //     id,
-                    //     newState.toJSON(),
-                    // );
-                    setState(newState as T);
-                });
-            })
-            .catch((e) => {
-                console.log("Failed to load", id, e);
-            });
-
-        return () => {
-            done = true;
-            unsubscribe && unsubscribe();
-        };
-    }, [localNode, id]);
-
-    return state;
-}
-
-/** @deprecated Use the higher-level `useSyncedQuery` or the equivalent `useSyncedValue` instead */
-export function useTelepathicState<T extends CoValue>(id?: CoID<T>) {
-    return useSyncedValue(id);
-}
-
-export function useBinaryStream<C extends BinaryCoStream>(
-    streamID?: CoID<C>,
-    allowUnfinished?: boolean
-): { blob: Blob; blobURL: string } | undefined {
-    const { localNode } = useJazz();
-
-    const stream = useSyncedValue(streamID);
-
-    const [blob, setBlob] = useState<
-        { blob: Blob; blobURL: string } | undefined
-    >();
-
-    useEffect(() => {
-        if (!stream) return;
-        readBlobFromBinaryStream(stream.id, localNode, allowUnfinished)
-            .then((blob) =>
-                setBlob(
-                    blob && {
-                        blob,
-                        blobURL: URL.createObjectURL(blob),
-                    }
-                )
-            )
-            .catch((e) => console.error("Failed to read binary stream", e));
-    }, [stream, localNode]);
-
-    useEffect(() => {
-        return () => {
-            blob && URL.revokeObjectURL(blob.blobURL);
-        };
-    }, [blob?.blobURL]);
-
-    return blob;
-}
-
-export function useAcceptInvite<C extends CoValue = CoValue>(
-    onInvite: (valueID: CoID<C>, valueHint?: string) => void
-) {
-    const { localNode } = useJazz();
-
-    useEffect(() => {
-        const listener = async () => {
-            const acceptedInvitation =
-                await consumeInviteLinkFromWindowLocation<C>(localNode);
-
-            if (acceptedInvitation) {
-                onInvite(acceptedInvitation.valueID);
-            }
-        };
-        window.addEventListener("hashchange", listener);
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        listener();
-
-        return () => {
-            window.removeEventListener("hashchange", listener);
-        };
-    }, [localNode]);
+    /** @category Hooks */
+    useAcceptInvite<V extends CoValue>({
+        invitedObjectSchema,
+        onAccept,
+        forValueHint,
+    }: {
+        invitedObjectSchema: CoValueClass<V>;
+        onAccept: (projectID: ID<V>) => void;
+        forValueHint?: string;
+    }): void;
 }
 
 export { createInviteLink, parseInviteLink } from "jazz-browser";
-export { DemoAuth } from './DemoAuth'
+
+export * from "./auth/auth.js";
+export * from "./media.js";

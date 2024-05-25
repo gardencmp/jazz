@@ -13,7 +13,7 @@ import {
     ReadableStreamDefaultReader,
     WritableStreamDefaultWriter,
 } from "isomorphic-streams";
-import { SyncPromise } from "./syncPromises";
+import { SyncPromise } from "./syncPromises.js";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;
@@ -52,13 +52,13 @@ export class IDBStorage {
     constructor(
         db: IDBDatabase,
         fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>
+        toLocalNode: WritableStream<SyncMessage>,
     ) {
         this.db = db;
         this.fromLocalNode = fromLocalNode.getReader();
         this.toLocalNode = toLocalNode.getWriter();
 
-        (async () => {
+        void (async () => {
             let done = false;
             while (!done) {
                 const result = await this.fromLocalNode.read();
@@ -87,17 +87,17 @@ export class IDBStorage {
             localNodeName = "local",
         }: { trace?: boolean; localNodeName?: string } | undefined = {
             localNodeName: "local",
-        }
+        },
     ): Promise<Peer> {
         const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
             localNodeName,
             "storage",
-            { peer1role: "client", peer2role: "server", trace }
+            { peer1role: "client", peer2role: "server", trace },
         );
 
         await IDBStorage.open(
             localNodeAsPeer.incoming,
-            localNodeAsPeer.outgoing
+            localNodeAsPeer.outgoing,
         );
 
         return { ...storageAsPeer, priority: 100 };
@@ -105,7 +105,7 @@ export class IDBStorage {
 
     static async open(
         fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>
+        toLocalNode: WritableStream<SyncMessage>,
     ) {
         const dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
             const request = indexedDB.open("jazz-storage", 4);
@@ -138,7 +138,7 @@ export class IDBStorage {
                         ["coValue", "sessionID"],
                         {
                             unique: true,
-                        }
+                        },
                     );
 
                     db.createObjectStore("transactions", {
@@ -219,7 +219,7 @@ export class IDBStorage {
             sessions: IDBObjectStore;
             transactions: IDBObjectStore;
             signatureAfter: IDBObjectStore;
-        }) => IDBRequest
+        }) => IDBRequest,
     ): SyncPromise<T> {
         return new SyncPromise((resolve, reject) => {
             let txEntry = this.currentTx;
@@ -260,7 +260,7 @@ export class IDBStorage {
             if (!txEntry || performance.now() - txEntry.startedAt > 20) {
                 const tx = this.db.transaction(
                     ["coValues", "sessions", "transactions", "signatureAfter"],
-                    "readwrite"
+                    "readwrite",
                 );
                 txEntry = {
                     id: this.currentTxID++,
@@ -296,10 +296,10 @@ export class IDBStorage {
 
     sendNewContentAfter(
         theirKnown: CojsonInternalTypes.CoValueKnownState,
-        asDependencyOf?: CojsonInternalTypes.RawCoID
+        asDependencyOf?: CojsonInternalTypes.RawCoID,
     ): SyncPromise<void> {
         return this.makeRequest<StoredCoValueRow | undefined>(({ coValues }) =>
-            coValues.index("coValuesById").get(theirKnown.id)
+            coValues.index("coValuesById").get(theirKnown.id),
         )
             .then((coValueRow) => {
                 return (
@@ -307,7 +307,7 @@ export class IDBStorage {
                         ? this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
                               sessions
                                   .index("sessionsByCoValue")
-                                  .getAll(coValueRow.rowID)
+                                  .getAll(coValueRow.rowID),
                           )
                         : SyncPromise.resolve([])
                 ).then((allOurSessions) => {
@@ -350,9 +350,9 @@ export class IDBStorage {
                                                     sessionRow.rowID,
                                                     firstNewTxIdx,
                                                 ],
-                                                [sessionRow.rowID, Infinity]
-                                            )
-                                        )
+                                                [sessionRow.rowID, Infinity],
+                                            ),
+                                        ),
                                 ).then((signaturesAndIdxs) => {
                                     // console.log(
                                     //     theirKnown.id,
@@ -368,9 +368,12 @@ export class IDBStorage {
                                                         sessionRow.rowID,
                                                         firstNewTxIdx,
                                                     ],
-                                                    [sessionRow.rowID, Infinity]
-                                                )
-                                            )
+                                                    [
+                                                        sessionRow.rowID,
+                                                        Infinity,
+                                                    ],
+                                                ),
+                                            ),
                                     ).then((newTxsInSession) => {
                                         collectNewTxs(
                                             newTxsInSession,
@@ -378,19 +381,19 @@ export class IDBStorage {
                                             sessionRow,
                                             signaturesAndIdxs,
                                             theirKnown,
-                                            firstNewTxIdx
+                                            firstNewTxIdx,
                                         );
                                     });
                                 });
                             } else {
                                 return SyncPromise.resolve();
                             }
-                        })
+                        }),
                     ).then(() => {
                         const dependedOnCoValues = getDependedOnCoValues(
                             coValueRow,
                             newContentPieces,
-                            theirKnown
+                            theirKnown,
                         );
 
                         return SyncPromise.all(
@@ -401,9 +404,9 @@ export class IDBStorage {
                                         header: false,
                                         sessions: {},
                                     },
-                                    asDependencyOf || theirKnown.id
-                                )
-                            )
+                                    asDependencyOf || theirKnown.id,
+                                ),
+                            ),
                         ).then(() => {
                             // we're done with IndexedDB stuff here so can use native Promises again
                             setTimeout(async () => {
@@ -417,7 +420,7 @@ export class IDBStorage {
                                     newContentPieces.filter(
                                         (piece) =>
                                             piece.header ||
-                                            Object.keys(piece.new).length > 0
+                                            Object.keys(piece.new).length > 0,
                                     );
 
                                 // console.log(theirKnown.id, nonEmptyNewContentPieces);
@@ -425,7 +428,7 @@ export class IDBStorage {
                                 for (const piece of nonEmptyNewContentPieces) {
                                     await this.toLocalNode.write(piece);
                                     await new Promise((resolve) =>
-                                        setTimeout(resolve, 0)
+                                        setTimeout(resolve, 0),
                                     );
                                 }
                             }, 0);
@@ -443,17 +446,17 @@ export class IDBStorage {
     }
 
     handleContent(
-        msg: CojsonInternalTypes.NewContentMessage
+        msg: CojsonInternalTypes.NewContentMessage,
     ): SyncPromise<void> {
         return this.makeRequest<StoredCoValueRow | undefined>(({ coValues }) =>
-            coValues.index("coValuesById").get(msg.id)
+            coValues.index("coValuesById").get(msg.id),
         )
             .then((coValueRow) => {
                 if (coValueRow?.rowID === undefined) {
                     const header = msg.header;
                     if (!header) {
                         console.error("Expected to be sent header first");
-                        this.toLocalNode.write({
+                        void this.toLocalNode.write({
                             action: "known",
                             id: msg.id,
                             header: false,
@@ -467,22 +470,25 @@ export class IDBStorage {
                         coValues.put({
                             id: msg.id,
                             header: header,
-                        } satisfies CoValueRow)
+                        } satisfies CoValueRow),
                     ) as SyncPromise<number>;
                 } else {
                     return SyncPromise.resolve(coValueRow.rowID);
                 }
             })
             .then((storedCoValueRowID: number) => {
-                this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
+                void this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
                     sessions
                         .index("sessionsByCoValue")
-                        .getAll(storedCoValueRowID)
+                        .getAll(storedCoValueRowID),
                 ).then((allOurSessionsEntries) => {
                     const allOurSessions: {
                         [sessionID: SessionID]: StoredSessionRow;
                     } = Object.fromEntries(
-                        allOurSessionsEntries.map((row) => [row.sessionID, row])
+                        allOurSessionsEntries.map((row) => [
+                            row.sessionID,
+                            row,
+                        ]),
                     );
 
                     const ourKnown: CojsonInternalTypes.CoValueKnownState = {
@@ -511,14 +517,14 @@ export class IDBStorage {
                                         msg,
                                         sessionID,
                                         sessionRow,
-                                        storedCoValueRowID
+                                        storedCoValueRowID,
                                     );
                                 }
-                            }
-                        )
+                            },
+                        ),
                     ).then(() => {
                         if (invalidAssumptions) {
-                            this.toLocalNode.write({
+                            void this.toLocalNode.write({
                                 action: "known",
                                 ...ourKnown,
                                 isCorrection: invalidAssumptions,
@@ -533,7 +539,7 @@ export class IDBStorage {
         msg: CojsonInternalTypes.NewContentMessage,
         sessionID: SessionID,
         sessionRow: StoredSessionRow | undefined,
-        storedCoValueRowID: number
+        storedCoValueRowID: number,
     ) {
         const newTransactions = msg.new[sessionID]?.newTransactions || [];
 
@@ -551,7 +557,7 @@ export class IDBStorage {
                     (tx.privacy === "private"
                         ? tx.encryptedChanges.length
                         : tx.changes.length),
-                0
+                0,
             );
 
         const newLastIdx =
@@ -581,8 +587,8 @@ export class IDBStorage {
                           rowID: sessionRow.rowID,
                           ...sessionUpdate,
                       }
-                    : sessionUpdate
-            )
+                    : sessionUpdate,
+            ),
         ).then((sessionRowID) => {
             let maybePutRequest;
             if (shouldWriteSignature) {
@@ -592,7 +598,7 @@ export class IDBStorage {
                         // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
                         idx: newLastIdx - 1,
                         signature: msg.new[sessionID]!.lastSignature,
-                    } satisfies SignatureAfterRow)
+                    } satisfies SignatureAfterRow),
                 );
             } else {
                 maybePutRequest = SyncPromise.resolve();
@@ -606,10 +612,10 @@ export class IDBStorage {
                                 ses: sessionRowID,
                                 idx: nextIdx + i,
                                 tx: newTransaction,
-                            } satisfies TransactionRow)
+                            } satisfies TransactionRow),
                         );
-                    })
-                )
+                    }),
+                ),
             );
         });
     }
@@ -663,7 +669,7 @@ function collectNewTxs(
     sessionRow: StoredSessionRow,
     signaturesAndIdxs: SignatureAfterRow[],
     theirKnown: CojsonInternalTypes.CoValueKnownState,
-    firstNewTxIdx: number
+    firstNewTxIdx: number,
 ) {
     let idx = firstNewTxIdx;
 
@@ -709,7 +715,7 @@ function collectNewTxs(
 function getDependedOnCoValues(
     coValueRow: StoredCoValueRow | undefined,
     newContentPieces: CojsonInternalTypes.NewContentMessage[],
-    theirKnown: CojsonInternalTypes.CoValueKnownState
+    theirKnown: CojsonInternalTypes.CoValueKnownState,
 ) {
     return coValueRow?.header.ruleset.type === "group"
         ? newContentPieces
@@ -727,35 +733,35 @@ function getDependedOnCoValues(
                                   "op" in change &&
                                   change.op === "set" &&
                                   "key" in change &&
-                                  change.key
+                                  change.key,
                           )
                           .filter(
                               (key): key is CojsonInternalTypes.RawCoID =>
                                   typeof key === "string" &&
-                                  key.startsWith("co_")
+                                  key.startsWith("co_"),
                           );
-                  })
+                  }),
               )
         : coValueRow?.header.ruleset.type === "ownedByGroup"
-        ? [
-              coValueRow?.header.ruleset.group,
-              ...new Set(
-                  newContentPieces.flatMap((piece) =>
-                      Object.keys(piece)
-                          .map((sessionID) =>
-                              cojsonInternals.accountOrAgentIDfromSessionID(
-                                  sessionID as SessionID
-                              )
-                          )
-                          .filter(
-                              (accountID): accountID is AccountID =>
-                                  cojsonInternals.isAccountID(accountID) &&
-                                  accountID !== theirKnown.id
-                          )
-                  )
-              ),
-          ]
-        : [];
+          ? [
+                coValueRow?.header.ruleset.group,
+                ...new Set(
+                    newContentPieces.flatMap((piece) =>
+                        Object.keys(piece)
+                            .map((sessionID) =>
+                                cojsonInternals.accountOrAgentIDfromSessionID(
+                                    sessionID as SessionID,
+                                ),
+                            )
+                            .filter(
+                                (accountID): accountID is AccountID =>
+                                    cojsonInternals.isAccountID(accountID) &&
+                                    accountID !== theirKnown.id,
+                            ),
+                    ),
+                ),
+            ]
+          : [];
 }
 // let lastTx = 0;
 

@@ -5,7 +5,7 @@ import {
     CojsonInternalTypes,
     SessionID,
     MAX_RECOMMENDED_TX_SIZE,
-    AccountID
+    AccountID,
 } from "cojson";
 import {
     ReadableStream,
@@ -53,13 +53,13 @@ export class SQLiteStorage {
     constructor(
         db: DatabaseT,
         fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>
+        toLocalNode: WritableStream<SyncMessage>,
     ) {
         this.db = db;
         this.fromLocalNode = fromLocalNode.getReader();
         this.toLocalNode = toLocalNode.getWriter();
 
-        (async () => {
+        void (async () => {
             let done = false;
             while (!done) {
                 const result = await this.fromLocalNode.read();
@@ -84,22 +84,22 @@ export class SQLiteStorage {
         const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
             localNodeName,
             "storage",
-            { peer1role: "client", peer2role: "server", trace }
+            { peer1role: "client", peer2role: "server", trace },
         );
 
         await SQLiteStorage.open(
             filename,
             localNodeAsPeer.incoming,
-            localNodeAsPeer.outgoing
+            localNodeAsPeer.outgoing,
         );
 
-        return {...storageAsPeer, priority: 100};
+        return { ...storageAsPeer, priority: 100 };
     }
 
     static async open(
         filename: string,
         fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>
+        toLocalNode: WritableStream<SyncMessage>,
     ) {
         const db = Database(filename);
         db.pragma("journal_mode = WAL");
@@ -118,7 +118,7 @@ export class SQLiteStorage {
                     idx INTEGER,
                     tx TEXT NOT NULL,
                     PRIMARY KEY (ses, idx)
-                ) WITHOUT ROWID;`
+                ) WITHOUT ROWID;`,
             ).run();
 
             db.prepare(
@@ -129,11 +129,11 @@ export class SQLiteStorage {
                     lastIdx INTEGER,
                     lastSignature TEXT,
                     UNIQUE (sessionID, coValue)
-                );`
+                );`,
             ).run();
 
             db.prepare(
-                `CREATE INDEX IF NOT EXISTS sessionsByCoValue ON sessions (coValue);`
+                `CREATE INDEX IF NOT EXISTS sessionsByCoValue ON sessions (coValue);`,
             ).run();
 
             db.prepare(
@@ -141,11 +141,11 @@ export class SQLiteStorage {
                     rowID INTEGER PRIMARY KEY,
                     id TEXT NOT NULL UNIQUE,
                     header TEXT NOT NULL UNIQUE
-                );`
+                );`,
             ).run();
 
             db.prepare(
-                `CREATE INDEX IF NOT EXISTS coValuesByID ON coValues (id);`
+                `CREATE INDEX IF NOT EXISTS coValuesByID ON coValues (id);`,
             ).run();
 
             db.pragma("user_version = 1");
@@ -155,7 +155,7 @@ export class SQLiteStorage {
         if (oldVersion <= 1) {
             // fix embarrassing off-by-one error for transaction indices
             console.log(
-                "Migration 1 -> 2: Fix off-by-one error for transaction indices"
+                "Migration 1 -> 2: Fix off-by-one error for transaction indices",
             );
 
             const txs = db
@@ -164,17 +164,17 @@ export class SQLiteStorage {
 
             for (const tx of txs) {
                 db.prepare(
-                    `DELETE FROM transactions WHERE ses = ? AND idx = ?`
+                    `DELETE FROM transactions WHERE ses = ? AND idx = ?`,
                 ).run(tx.ses, tx.idx);
                 tx.idx -= 1;
                 db.prepare(
-                    `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
+                    `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`,
                 ).run(tx.ses, tx.idx, tx.tx);
             }
 
             db.pragma("user_version = 2");
             console.log(
-                "Migration 1 -> 2: Fix off-by-one error for transaction indices - done"
+                "Migration 1 -> 2: Fix off-by-one error for transaction indices - done",
             );
         }
 
@@ -187,11 +187,11 @@ export class SQLiteStorage {
                     idx INTEGER,
                     signature TEXT NOT NULL,
                     PRIMARY KEY (ses, idx)
-                ) WITHOUT ROWID;`
+                ) WITHOUT ROWID;`,
             ).run();
 
             db.prepare(
-                `ALTER TABLE sessions ADD COLUMN bytesSinceLastSignature INTEGER;`
+                `ALTER TABLE sessions ADD COLUMN bytesSinceLastSignature INTEGER;`,
             ).run();
 
             db.pragma("user_version = 3");
@@ -220,7 +220,7 @@ export class SQLiteStorage {
 
     async sendNewContentAfter(
         theirKnown: CojsonInternalTypes.CoValueKnownState,
-        asDependencyOf?: CojsonInternalTypes.RawCoID
+        asDependencyOf?: CojsonInternalTypes.RawCoID,
     ) {
         const coValueRow = (await this.db
             .prepare(`SELECT * FROM coValues WHERE id = ?`)
@@ -250,7 +250,7 @@ export class SQLiteStorage {
                 theirKnown.id,
                 "Invalid JSON in header",
                 e,
-                coValueRow?.header
+                coValueRow?.header,
             );
             return;
         }
@@ -276,11 +276,11 @@ export class SQLiteStorage {
 
                 const signaturesAndIdxs = this.db
                     .prepare<[number, number]>(
-                        `SELECT * FROM signatureAfter WHERE ses = ? AND idx >= ?`
+                        `SELECT * FROM signatureAfter WHERE ses = ? AND idx >= ?`,
                     )
                     .all(
                         sessionRow.rowID,
-                        firstNewTxIdx
+                        firstNewTxIdx,
                     ) as SignatureAfterRow[];
 
                 // console.log(
@@ -291,7 +291,7 @@ export class SQLiteStorage {
 
                 const newTxInSession = this.db
                     .prepare<[number, number]>(
-                        `SELECT * FROM transactions WHERE ses = ? AND idx >= ?`
+                        `SELECT * FROM transactions WHERE ses = ? AND idx >= ?`,
                     )
                     .all(sessionRow.rowID, firstNewTxIdx) as TransactionRow[];
 
@@ -329,7 +329,7 @@ export class SQLiteStorage {
                             theirKnown.id,
                             "Invalid JSON in transaction",
                             e,
-                            tx.tx
+                            tx.tx,
                         );
                         break;
                     }
@@ -371,14 +371,14 @@ export class SQLiteStorage {
 
                               try {
                                   parsedChanges = cojsonInternals.parseJSON(
-                                      tx.changes
+                                      tx.changes,
                                   );
                               } catch (e) {
                                   console.warn(
                                       theirKnown.id,
                                       "Invalid JSON in transaction",
                                       e,
-                                      tx.changes
+                                      tx.changes,
                                   );
                                   return [];
                               }
@@ -391,42 +391,43 @@ export class SQLiteStorage {
                                           "op" in change &&
                                           change.op === "set" &&
                                           "key" in change &&
-                                          change.key
+                                          change.key,
                                   )
                                   .filter(
                                       (
-                                          key
+                                          key,
                                       ): key is CojsonInternalTypes.RawCoID =>
                                           typeof key === "string" &&
-                                          key.startsWith("co_")
+                                          key.startsWith("co_"),
                                   );
-                          })
+                          }),
                       )
                 : parsedHeader?.ruleset.type === "ownedByGroup"
-                ? [
-                      parsedHeader?.ruleset.group,
-                      ...new Set(
-                          newContentPieces.flatMap((piece) =>
-                              Object.keys(piece)
-                                  .map((sessionID) =>
-                                  cojsonInternals.accountOrAgentIDfromSessionID(
-                                          sessionID as SessionID
-                                      )
-                                  )
-                                  .filter(
-                                      (accountID): accountID is AccountID =>
-                                      cojsonInternals.isAccountID(accountID) &&
-                                          accountID !== theirKnown.id
-                                  )
-                          )
-                      ),
-                  ]
-                : [];
+                  ? [
+                        parsedHeader?.ruleset.group,
+                        ...new Set(
+                            newContentPieces.flatMap((piece) =>
+                                Object.keys(piece)
+                                    .map((sessionID) =>
+                                        cojsonInternals.accountOrAgentIDfromSessionID(
+                                            sessionID as SessionID,
+                                        ),
+                                    )
+                                    .filter(
+                                        (accountID): accountID is AccountID =>
+                                            cojsonInternals.isAccountID(
+                                                accountID,
+                                            ) && accountID !== theirKnown.id,
+                                    ),
+                            ),
+                        ),
+                    ]
+                  : [];
 
         for (const dependedOnCoValue of dependedOnCoValues) {
             await this.sendNewContentAfter(
                 { id: dependedOnCoValue, header: false, sessions: {} },
-                asDependencyOf || theirKnown.id
+                asDependencyOf || theirKnown.id,
             );
         }
 
@@ -437,7 +438,7 @@ export class SQLiteStorage {
         });
 
         const nonEmptyNewContentPieces = newContentPieces.filter(
-            (piece) => piece.header || Object.keys(piece.new).length > 0
+            (piece) => piece.header || Object.keys(piece.new).length > 0,
         );
 
         // console.log(theirKnown.id, nonEmptyNewContentPieces);
@@ -456,7 +457,7 @@ export class SQLiteStorage {
         let storedCoValueRowID = (
             this.db
                 .prepare<CojsonInternalTypes.RawCoID>(
-                    `SELECT rowID FROM coValues WHERE id = ?`
+                    `SELECT rowID FROM coValues WHERE id = ?`,
                 )
                 .get(msg.id) as StoredCoValueRow | undefined
         )?.rowID;
@@ -477,7 +478,7 @@ export class SQLiteStorage {
 
             storedCoValueRowID = this.db
                 .prepare<[CojsonInternalTypes.RawCoID, string]>(
-                    `INSERT INTO coValues (id, header) VALUES (?, ?)`
+                    `INSERT INTO coValues (id, header) VALUES (?, ?)`,
                 )
                 .run(msg.id, JSON.stringify(header)).lastInsertRowid as number;
         }
@@ -494,10 +495,13 @@ export class SQLiteStorage {
                 this.db
                     .prepare<number>(`SELECT * FROM sessions WHERE coValue = ?`)
                     .all(storedCoValueRowID!) as StoredSessionRow[]
-            ).reduce((acc, row) => {
-                acc[row.sessionID] = row;
-                return acc;
-            }, {} as { [sessionID: string]: StoredSessionRow });
+            ).reduce(
+                (acc, row) => {
+                    acc[row.sessionID] = row;
+                    return acc;
+                },
+                {} as { [sessionID: string]: StoredSessionRow },
+            );
 
             for (const sessionID of Object.keys(msg.new) as SessionID[]) {
                 const sessionRow = allOurSessions[sessionID];
@@ -530,7 +534,7 @@ export class SQLiteStorage {
                                 (tx.privacy === "private"
                                     ? tx.encryptedChanges.length
                                     : tx.changes.length),
-                            0
+                            0,
                         );
 
                     const newLastIdx =
@@ -558,14 +562,14 @@ export class SQLiteStorage {
                         .prepare<[number, string, number, string, number]>(
                             `INSERT INTO sessions (coValue, sessionID, lastIdx, lastSignature, bytesSinceLastSignature) VALUES (?, ?, ?, ?, ?)
                             ON CONFLICT(coValue, sessionID) DO UPDATE SET lastIdx=excluded.lastIdx, lastSignature=excluded.lastSignature, bytesSinceLastSignature=excluded.bytesSinceLastSignature
-                            RETURNING rowID`
+                            RETURNING rowID`,
                         )
                         .get(
                             sessionUpdate.coValue,
                             sessionUpdate.sessionID,
                             sessionUpdate.lastIdx,
                             sessionUpdate.lastSignature,
-                            sessionUpdate.bytesSinceLastSignature
+                            sessionUpdate.bytesSinceLastSignature,
                         ) as { rowID: number };
 
                     const sessionRowID = upsertedSession.rowID;
@@ -573,25 +577,25 @@ export class SQLiteStorage {
                     if (shouldWriteSignature) {
                         this.db
                             .prepare<[number, number, string]>(
-                                `INSERT INTO signatureAfter (ses, idx, signature) VALUES (?, ?, ?)`
+                                `INSERT INTO signatureAfter (ses, idx, signature) VALUES (?, ?, ?)`,
                             )
                             .run(
                                 sessionRowID,
                                 // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
                                 newLastIdx - 1,
-                                msg.new[sessionID]!.lastSignature
+                                msg.new[sessionID]!.lastSignature,
                             );
                     }
 
                     for (const newTransaction of actuallyNewTransactions) {
                         this.db
                             .prepare<[number, number, string]>(
-                                `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`
+                                `INSERT INTO transactions (ses, idx, tx) VALUES (?, ?, ?)`,
                             )
                             .run(
                                 sessionRowID,
                                 nextIdx,
-                                JSON.stringify(newTransaction)
+                                JSON.stringify(newTransaction),
                             );
                         nextIdx++;
                     }

@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: ["twit", "chat", "counter-js-auth0", "pets", "twit", "file-drop", "inspector"]
+        example: ["chat", "pets", "todo"]
+        # example: ["twit", "chat", "counter-js-auth0", "pets", "twit", "file-drop", "inspector"]
 
     steps:
     - uses: actions/checkout@v3
@@ -60,6 +61,15 @@ jobs:
       with:
         submodules: true
 
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: 'pnpm'
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
@@ -69,6 +79,17 @@ jobs:
         registry: ghcr.io
         username: gardencmp
         password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pnpm Install (root)
+      run: |
+        pnpm install
+      working-directory: .
+
+    - name: Pnpm Install & Build (homepage)
+      run: |
+        pnpm install
+        pnpm build;
+      working-directory: ./homepage/homepage
 
     - name: Docker Build & Push
       uses: docker/build-push-action@v4
@@ -84,7 +105,8 @@ jobs:
     needs: build-examples
     strategy:
       matrix:
-        example: ["twit", "chat", "counter-js-auth0", "pets", "twit", "file-drop", "inspector"]
+        example: ["chat", "pets", "todo"]
+        # example: ["twit", "chat", "counter-js-auth0", "pets", "twit", "file-drop", "inspector"]
 
     steps:
     - uses: actions/checkout@v3

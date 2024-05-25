@@ -1,35 +1,42 @@
-import { WithJazz, useJazz, DemoAuth } from 'jazz-react';
-import ReactDOM from 'react-dom/client';
-import { HashRoute } from 'hash-slash';
-import { ChatWindow } from './chatWindow.tsx';
-import { Chat } from './dataModel.ts';
+import { CoMap, CoList, co, Group, ID } from "jazz-tools";
+import { createJazzReactContext, DemoAuth } from "jazz-react";
+import { createRoot } from "react-dom/client";
+import { useIframeHashRouter } from "hash-slash";
+import { ChatScreen } from "./chatScreen.tsx";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <WithJazz auth={DemoAuth({ appName: 'Jazz Chat Example' })} apiKey="api_z9d034j3t34ht034ir">
-    <App />
-  </WithJazz>,
-);
+export class Message extends CoMap {
+  text = co.string;
+}
+
+export class Chat extends CoList.Of(co.ref(Message)) {}
+
+const Jazz = createJazzReactContext({
+  auth: DemoAuth({ appName: "Jazz Chat" }),
+  peer: `wss://mesh.jazz.tools/?key=you@example.com`
+});
+export const { useAccount, useCoState } = Jazz;
+
 
 function App() {
-  return <div className='flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white'>
-    <button onClick={useJazz().logOut} className='rounded mb-5 px-2 py-1 bg-stone-200 dark:bg-stone-800 dark:text-white self-end'>
-      Log Out
-    </button>
-    {HashRoute({
-      '/': <Home />,
-      '/chat/:id': (id) => <ChatWindow chatId={id as Chat['id']} />,
-    }, { reportToParentFrame: true })}
-  </div>
+  const { me, logOut } = useAccount();
+
+  const createChat = () => {
+    const group = Group.create({ owner: me });
+    group.addMember("everyone", "writer");
+    const chat = Chat.create([], { owner: group });
+    location.hash = "/chat/" + chat.id;
+  };
+
+  return <div className="flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white">
+    <div className="rounded mb-5 px-2 py-1 text-sm self-end">
+      {me.profile?.name} · <button onClick={logOut}>Log Out</button>
+    </div>
+    {useIframeHashRouter().route({
+      '/': () => createChat() as never,
+      '/chat/:id': (id) => <ChatScreen chatID={id as ID<Chat>} />
+    })}
+  </div>;
 }
 
-function Home() {
-  const { me } = useJazz();
-  return <button className='rounded py-2 px-4 bg-stone-200 dark:bg-stone-800 dark:text-white my-auto'
-    onClick={() => {
-      const group = me.createGroup().addMember('everyone', 'writer');
-      const chat = group.createList<Chat>();
-      location.hash = '/chat/' + chat.id;
-    }}>
-    Create New Chat
-  </button>
-}
+createRoot(document.getElementById("root")!)
+  .render(<Jazz.Provider><App/></Jazz.Provider>);

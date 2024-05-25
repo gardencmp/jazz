@@ -1,10 +1,126 @@
 # cojson
 
-## 0.6.7
+## 0.7.0
+
+### Minor Changes
+
+- e299c3e: New simplified API
 
 ### Patch Changes
 
-- Mute most annoying log messages
+- 1a35307: WIP working-ish version of LSM storage
+- 96c494f: Implement profile visibility based on groups & new migration signature
+- 19f52b7: Fixed bug with newRandomSessionID being called before crypto was ready
+- d8fe2b1: Expose experimental OPFS storage
+- 1200aae: CoJSON performance improvement
+- 52675c9: Fix CoList.splice / RawCoList.append
+- 1a35307: Optimizations for incoming sync messages
+- bf0f8ec: Fix noble curves dependency
+- c4151fc: Support stricter TS lint rules
+- 8636319: Factor out implementation of crypto provider and provide pure JS implementation
+- 952982e: Consistent proxy based API
+- 21771c4: Reintroduce changes from main
+- 69ac514: Use effect schema much less
+- f0f6f1b: Clean up API more & re-add jazz-nodejs
+- 1a44f87: Refactoring
+- 63374cc: Make sure delete on CoMaps deletes keys
+
+## 0.7.0-alpha.42
+
+### Patch Changes
+
+- Fixed bug with newRandomSessionID being called before crypto was ready
+
+## 0.7.0-alpha.39
+
+### Patch Changes
+
+- Fix noble curves dependency
+
+## 0.7.0-alpha.38
+
+### Patch Changes
+
+- Factor out implementation of crypto provider and provide pure JS implementation
+
+## 0.7.0-alpha.37
+
+### Patch Changes
+
+- Expose experimental OPFS storage
+
+## 0.7.0-alpha.36
+
+### Patch Changes
+
+- 1a35307: WIP working-ish version of LSM storage
+- 1a35307: Optimizations for incoming sync messages
+
+## 0.7.0-alpha.35
+
+### Patch Changes
+
+- CoJSON performance improvement
+
+## 0.7.0-alpha.29
+
+### Patch Changes
+
+- Reintroduce changes from main
+
+## 0.7.0-alpha.28
+
+### Patch Changes
+
+- Implement profile visibility based on groups & new migration signature
+
+## 0.7.0-alpha.27
+
+### Patch Changes
+
+- Fix CoList.splice / RawCoList.append
+
+## 0.7.0-alpha.24
+
+### Patch Changes
+
+- Make sure delete on CoMaps deletes keys
+
+## 0.7.0-alpha.11
+
+### Patch Changes
+
+- Support stricter TS lint rules
+
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+
+## 0.7.0-alpha.7
+
+### Patch Changes
+
+- Consistent proxy based API
+
+## 0.7.0-alpha.5
+
+### Patch Changes
+
+- Refactoring
+
+## 0.7.0-alpha.1
+
+### Patch Changes
+
+- Use effect schema much less
+
+## 0.7.0-alpha.0
+
+### Minor Changes
+
+- New simplified API
 
 ## 0.6.6
 

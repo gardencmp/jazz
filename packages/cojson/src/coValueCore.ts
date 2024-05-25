@@ -1,21 +1,13 @@
-import { AnyCoValue, CoValue } from "./coValue.js";
+import { AnyRawCoValue, RawCoValue } from "./coValue.js";
 import {
     Encrypted,
     Hash,
     KeySecret,
     Signature,
     StreamingHash,
-    unseal,
-    shortHash,
-    sign,
-    verify,
-    encryptForTransaction,
     KeyID,
-    decryptKeySecret,
-    getAgentSignerID,
-    getAgentSealerID,
-    decryptRawForTransaction,
-} from "./crypto.js";
+    CryptoProvider,
+} from "./crypto/crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
 import {
@@ -23,7 +15,7 @@ import {
     determineValidTransactions,
     isKeyForKeyField,
 } from "./permissions.js";
-import { Group } from "./coValues/group.js";
+import { RawGroup } from "./coValues/group.js";
 import { LocalNode } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
@@ -37,22 +29,25 @@ import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromS
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
 export type CoValueHeader = {
-    type: AnyCoValue["type"];
+    type: AnyRawCoValue["type"];
     ruleset: RulesetDef;
     meta: JsonObject | null;
     createdAt: `2${string}` | null;
     uniqueness: `z${string}` | null;
 };
 
-export function idforHeader(header: CoValueHeader): RawCoID {
-    const hash = shortHash(header);
+export function idforHeader(
+    header: CoValueHeader,
+    crypto: CryptoProvider,
+): RawCoID {
+    const hash = crypto.shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
 }
 
 export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {
     return `${accountID}_session_z${base58.encode(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).crypto.getRandomValues(new Uint8Array(8))
+        (globalThis as any).crypto.getRandomValues(new Uint8Array(8)),
     )}`;
 }
 
@@ -93,10 +88,11 @@ const readKeyCache = new WeakMap<CoValueCore, { [id: KeyID]: KeySecret }>();
 export class CoValueCore {
     id: RawCoID;
     node: LocalNode;
+    crypto: CryptoProvider;
     header: CoValueHeader;
     _sessionLogs: Map<SessionID, SessionLog>;
-    _cachedContent?: CoValue;
-    listeners: Set<(content?: CoValue) => void> = new Set();
+    _cachedContent?: RawCoValue;
+    listeners: Set<(content?: RawCoValue) => void> = new Set();
     _decryptionCache: {
         [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined;
     } = {};
@@ -108,9 +104,10 @@ export class CoValueCore {
     constructor(
         header: CoValueHeader,
         node: LocalNode,
-        internalInitSessions: Map<SessionID, SessionLog> = new Map()
+        internalInitSessions: Map<SessionID, SessionLog> = new Map(),
     ) {
-        this.id = idforHeader(header);
+        this.crypto = node.crypto;
+        this.id = idforHeader(header, node.crypto);
         this.header = header;
         this._sessionLogs = internalInitSessions;
         this.node = node;
@@ -134,11 +131,11 @@ export class CoValueCore {
 
     testWithDifferentAccount(
         account: ControlledAccountOrAgent,
-        currentSessionID: SessionID
+        currentSessionID: SessionID,
     ): CoValueCore {
         const newNode = this.node.testWithDifferentAccount(
             account,
-            currentSessionID
+            currentSessionID,
         );
 
         return newNode.expectCoValueLoaded(this.id);
@@ -163,7 +160,7 @@ export class CoValueCore {
                 [...this.sessionLogs.entries()].map(([k, v]) => [
                     k,
                     v.transactions.length,
-                ])
+                ]),
             ),
         };
     }
@@ -178,7 +175,7 @@ export class CoValueCore {
             this.header.meta?.type === "account"
                 ? (this.node.currentSessionID.replace(
                       this.node.account.id,
-                      this.node.account.currentAgentID()
+                      this.node.account.currentAgentID(),
                   ) as SessionID)
                 : this.node.currentSessionID;
 
@@ -192,19 +189,19 @@ export class CoValueCore {
         sessionID: SessionID,
         newTransactions: Transaction[],
         givenExpectedNewHash: Hash | undefined,
-        newSignature: Signature
+        newSignature: Signature,
     ): boolean {
-        const signerID = getAgentSignerID(
+        const signerID = this.crypto.getAgentSignerID(
             this.node.resolveAccountAgent(
                 accountOrAgentIDfromSessionID(sessionID),
-                "Expected to know signer of transaction"
-            )
+                "Expected to know signer of transaction",
+            ),
         );
 
         if (!signerID) {
             console.warn(
                 "Unknown agent",
-                accountOrAgentIDfromSessionID(sessionID)
+                accountOrAgentIDfromSessionID(sessionID),
             );
             return false;
         }
@@ -212,7 +209,7 @@ export class CoValueCore {
         // const beforeHash = performance.now();
         const { expectedNewHash, newStreamingHash } = this.expectedNewHashAfter(
             sessionID,
-            newTransactions
+            newTransactions,
         );
         // const afterHash = performance.now();
         // console.log(
@@ -229,13 +226,13 @@ export class CoValueCore {
         }
 
         // const beforeVerify = performance.now();
-        if (!verify(newSignature, expectedNewHash, signerID)) {
+        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
                 "Invalid signature in",
                 this.id,
                 newSignature,
                 expectedNewHash,
-                signerID
+                signerID,
             );
             return false;
         }
@@ -250,7 +247,8 @@ export class CoValueCore {
             newTransactions,
             newSignature,
             expectedNewHash,
-            newStreamingHash
+            newStreamingHash,
+            "immediate",
         );
 
         return true;
@@ -260,7 +258,7 @@ export class CoValueCore {
         sessionID: SessionID,
         newTransactions: Transaction[],
         givenExpectedNewHash: Hash | undefined,
-        newSignature: Signature
+        newSignature: Signature,
     ): Promise<boolean> {
         if (this.currentlyAsyncApplyingTxDone) {
             await this.currentlyAsyncApplyingTxDone;
@@ -271,23 +269,24 @@ export class CoValueCore {
             resolveDone = resolve;
         });
 
-        const signerID = getAgentSignerID(
+        const signerID = this.crypto.getAgentSignerID(
             await this.node.resolveAccountAgentAsync(
                 accountOrAgentIDfromSessionID(sessionID),
-                "Expected to know signer of transaction"
-            )
+                "Expected to know signer of transaction",
+            ),
         );
 
         if (!signerID) {
             console.warn(
                 "Unknown agent",
-                accountOrAgentIDfromSessionID(sessionID)
+                accountOrAgentIDfromSessionID(sessionID),
             );
             resolveDone();
             return false;
         }
 
-        const nTxBefore = this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
+        const nTxBefore =
+            this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
 
         // const beforeHash = performance.now();
         const { expectedNewHash, newStreamingHash } =
@@ -298,7 +297,8 @@ export class CoValueCore {
         //     afterHash - beforeHash
         // );
 
-        const nTxAfter = this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
+        const nTxAfter =
+            this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
 
         if (nTxAfter !== nTxBefore) {
             const newTransactionLengthBefore = newTransactions.length;
@@ -320,30 +320,32 @@ export class CoValueCore {
             return false;
         }
 
-        // const beforeVerify = performance.now();
-        if (!verify(newSignature, expectedNewHash, signerID)) {
+        performance.mark("verifyStart" + this.id);
+        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
             console.warn(
                 "Invalid signature in",
                 this.id,
                 newSignature,
                 expectedNewHash,
-                signerID
+                signerID,
             );
             resolveDone();
             return false;
         }
-        // const afterVerify = performance.now();
-        // console.log(
-        //     "Verify took",
-        //     afterVerify - beforeVerify
-        // );
+        performance.mark("verifyEnd" + this.id);
+        performance.measure(
+            "verify" + this.id,
+            "verifyStart" + this.id,
+            "verifyEnd" + this.id,
+        );
 
         this.doAddTransactions(
             sessionID,
             newTransactions,
             newSignature,
             expectedNewHash,
-            newStreamingHash
+            newStreamingHash,
+            "deferred",
         );
 
         resolveDone();
@@ -355,16 +357,19 @@ export class CoValueCore {
         newTransactions: Transaction[],
         newSignature: Signature,
         expectedNewHash: Hash,
-        newStreamingHash: StreamingHash
+        newStreamingHash: StreamingHash,
+        notifyMode: "immediate" | "deferred",
     ) {
-        const transactions = this.sessionLogs.get(sessionID)?.transactions ?? [];
+        const transactions =
+            this.sessionLogs.get(sessionID)?.transactions ?? [];
         transactions.push(...newTransactions);
 
-        const signatureAfter = this.sessionLogs.get(sessionID)?.signatureAfter ?? {};
+        const signatureAfter =
+            this.sessionLogs.get(sessionID)?.signatureAfter ?? {};
 
         const lastInbetweenSignatureIdx = Object.keys(signatureAfter).reduce(
             (max, idx) => (parseInt(idx) > max ? parseInt(idx) : max),
-            -1
+            -1,
         );
 
         const sizeOfTxsSinceLastInbetweenSignature = transactions
@@ -375,7 +380,7 @@ export class CoValueCore {
                     (tx.privacy === "private"
                         ? tx.encryptedChanges.length
                         : tx.changes.length),
-                0
+                0,
             );
 
         if (sizeOfTxsSinceLastInbetweenSignature > 100 * 1024) {
@@ -402,14 +407,34 @@ export class CoValueCore {
         this._cachedNewContentSinceEmpty = undefined;
 
         if (this.listeners.size > 0) {
-            const content = this.getCurrentContent();
-            for (const listener of this.listeners) {
-                listener(content);
+            if (notifyMode === "immediate") {
+                const content = this.getCurrentContent();
+                for (const listener of this.listeners) {
+                    listener(content);
+                }
+            } else {
+                if (!this.nextDeferredNotify) {
+                    this.nextDeferredNotify = new Promise((resolve) => {
+                        setTimeout(() => {
+                            this.nextDeferredNotify = undefined;
+                            this.deferredUpdates = 0;
+                            const content = this.getCurrentContent();
+                            for (const listener of this.listeners) {
+                                listener(content);
+                            }
+                            resolve();
+                        }, 0);
+                    });
+                }
+                this.deferredUpdates++;
             }
         }
     }
 
-    subscribe(listener: (content?: CoValue) => void): () => void {
+    deferredUpdates = 0;
+    nextDeferredNotify: Promise<void> | undefined;
+
+    subscribe(listener: (content?: RawCoValue) => void): () => void {
         this.listeners.add(listener);
         listener(this.getCurrentContent());
 
@@ -420,11 +445,11 @@ export class CoValueCore {
 
     expectedNewHashAfter(
         sessionID: SessionID,
-        newTransactions: Transaction[]
+        newTransactions: Transaction[],
     ): { expectedNewHash: Hash; newStreamingHash: StreamingHash } {
         const streamingHash =
             this.sessionLogs.get(sessionID)?.streamingHash.clone() ??
-            new StreamingHash();
+            new StreamingHash(this.crypto);
         for (const transaction of newTransactions) {
             streamingHash.update(transaction);
         }
@@ -439,11 +464,11 @@ export class CoValueCore {
 
     async expectedNewHashAfterAsync(
         sessionID: SessionID,
-        newTransactions: Transaction[]
+        newTransactions: Transaction[],
     ): Promise<{ expectedNewHash: Hash; newStreamingHash: StreamingHash }> {
         const streamingHash =
             this.sessionLogs.get(sessionID)?.streamingHash.clone() ??
-            new StreamingHash();
+            new StreamingHash(this.crypto);
         let before = performance.now();
         for (const transaction of newTransactions) {
             streamingHash.update(transaction);
@@ -465,7 +490,7 @@ export class CoValueCore {
 
     makeTransaction(
         changes: JsonValue[],
-        privacy: "private" | "trusting"
+        privacy: "private" | "trusting",
     ): boolean {
         const madeAt = Date.now();
 
@@ -476,14 +501,18 @@ export class CoValueCore {
 
             if (!keySecret) {
                 throw new Error(
-                    "Can't make transaction without read key secret"
+                    "Can't make transaction without read key secret",
                 );
             }
 
-            const encrypted = encryptForTransaction(changes, keySecret, {
-                in: this.id,
-                tx: this.nextTransactionID(),
-            });
+            const encrypted = this.crypto.encryptForTransaction(
+                changes,
+                keySecret,
+                {
+                    in: this.id,
+                    tx: this.nextTransactionID(),
+                },
+            );
 
             this._decryptionCache[encrypted] = changes;
 
@@ -506,7 +535,7 @@ export class CoValueCore {
             this.header.meta?.type === "account"
                 ? (this.node.currentSessionID.replace(
                       this.node.account.id,
-                      this.node.account.currentAgentID()
+                      this.node.account.currentAgentID(),
                   ) as SessionID)
                 : this.node.currentSessionID;
 
@@ -514,16 +543,16 @@ export class CoValueCore {
             transaction,
         ]);
 
-        const signature = sign(
+        const signature = this.crypto.sign(
             this.node.account.currentSignerSecret(),
-            expectedNewHash
+            expectedNewHash,
         );
 
         const success = this.tryAddTransactions(
             sessionID,
             [transaction],
             expectedNewHash,
-            signature
+            signature,
         );
 
         if (success) {
@@ -533,7 +562,9 @@ export class CoValueCore {
         return success;
     }
 
-    getCurrentContent(options?: { ignorePrivateTransactions: true }): CoValue {
+    getCurrentContent(options?: {
+        ignorePrivateTransactions: true;
+    }): RawCoValue {
         if (!options?.ignorePrivateTransactions && this._cachedContent) {
             return this._cachedContent;
         }
@@ -573,14 +604,15 @@ export class CoValueCore {
                             this._decryptionCache[tx.encryptedChanges];
 
                         if (!decrytedChanges) {
-                            const decryptedString = decryptRawForTransaction(
-                                tx.encryptedChanges,
-                                readKey,
-                                {
-                                    in: this.id,
-                                    tx: txID,
-                                }
-                            );
+                            const decryptedString =
+                                this.crypto.decryptRawForTransaction(
+                                    tx.encryptedChanges,
+                                    readKey,
+                                    {
+                                        in: this.id,
+                                        tx: txID,
+                                    },
+                                );
                             decrytedChanges =
                                 decryptedString && parseJSON(decryptedString);
                             this._decryptionCache[tx.encryptedChanges] =
@@ -589,7 +621,7 @@ export class CoValueCore {
 
                         if (!decrytedChanges) {
                             console.error(
-                                "Failed to decrypt transaction despite having key"
+                                "Failed to decrypt transaction despite having key",
                             );
                             return undefined;
                         }
@@ -606,7 +638,7 @@ export class CoValueCore {
             (a, b) =>
                 a.madeAt - b.madeAt ||
                 (a.txID.sessionID < b.txID.sessionID ? -1 : 1) ||
-                a.txID.txIndex - b.txID.txIndex
+                a.txID.txIndex - b.txID.txIndex,
         );
 
         return allTransactions;
@@ -634,7 +666,7 @@ export class CoValueCore {
                 .getCurrentReadKey();
         } else {
             throw new Error(
-                "Only groups or values owned by groups have read secrets"
+                "Only groups or values owned by groups have read secrets",
             );
         }
     }
@@ -658,7 +690,7 @@ export class CoValueCore {
     getUncachedReadKey(keyID: KeyID): KeySecret | undefined {
         if (this.header.ruleset.type === "group") {
             const content = expectGroup(
-                this.getCurrentContent({ ignorePrivateTransactions: true })
+                this.getCurrentContent({ ignorePrivateTransactions: true }),
             );
 
             const keyForEveryone = content.get(`${keyID}_for_everyone`);
@@ -671,24 +703,24 @@ export class CoValueCore {
                     : this.node.account.id;
 
             const lastReadyKeyEdit = content.lastEditAt(
-                `${keyID}_for_${lookupAccountOrAgentID}`
+                `${keyID}_for_${lookupAccountOrAgentID}`,
             );
 
             if (lastReadyKeyEdit?.value) {
                 const revealer = lastReadyKeyEdit.by;
                 const revealerAgent = this.node.resolveAccountAgent(
                     revealer,
-                    "Expected to know revealer"
+                    "Expected to know revealer",
                 );
 
-                const secret = unseal(
+                const secret = this.crypto.unseal(
                     lastReadyKeyEdit.value,
                     this.node.account.currentSealerSecret(),
-                    getAgentSealerID(revealerAgent),
+                    this.crypto.getAgentSealerID(revealerAgent),
                     {
                         in: this.id,
                         tx: lastReadyKeyEdit.tx,
-                    }
+                    },
                 );
 
                 if (secret) {
@@ -698,9 +730,9 @@ export class CoValueCore {
 
             // Try to find indirect revelation through previousKeys
 
-            for (const field of content.keys()) {
-                if (isKeyForKeyField(field) && field.startsWith(keyID)) {
-                    const encryptingKeyID = field.split("_for_")[1] as KeyID;
+            for (const co of content.keys()) {
+                if (isKeyForKeyField(co) && co.startsWith(keyID)) {
+                    const encryptingKeyID = co.split("_for_")[1] as KeyID;
                     const encryptingKeySecret =
                         this.getReadKey(encryptingKeyID);
 
@@ -708,22 +740,22 @@ export class CoValueCore {
                         continue;
                     }
 
-                    const encryptedPreviousKey = content.get(field)!;
+                    const encryptedPreviousKey = content.get(co)!;
 
-                    const secret = decryptKeySecret(
+                    const secret = this.crypto.decryptKeySecret(
                         {
                             encryptedID: keyID,
                             encryptingID: encryptingKeyID,
                             encrypted: encryptedPreviousKey,
                         },
-                        encryptingKeySecret
+                        encryptingKeySecret,
                     );
 
                     if (secret) {
                         return secret as KeySecret;
                     } else {
                         console.error(
-                            `Encrypting ${encryptingKeyID} key didn't decrypt ${keyID}`
+                            `Encrypting ${encryptingKeyID} key didn't decrypt ${keyID}`,
                         );
                     }
                 }
@@ -736,12 +768,12 @@ export class CoValueCore {
                 .getReadKey(keyID);
         } else {
             throw new Error(
-                "Only groups or values owned by groups have read secrets"
+                "Only groups or values owned by groups have read secrets",
             );
         }
     }
 
-    getGroup(): Group {
+    getGroup(): RawGroup {
         if (this.header.ruleset.type !== "ownedByGroup") {
             throw new Error("Only values owned by groups have groups");
         }
@@ -749,7 +781,7 @@ export class CoValueCore {
         return expectGroup(
             this.node
                 .expectCoValueLoaded(this.header.ruleset.group)
-                .getCurrentContent()
+                .getCurrentContent(),
         );
     }
 
@@ -758,7 +790,7 @@ export class CoValueCore {
     }
 
     newContentSince(
-        knownState: CoValueKnownState | undefined
+        knownState: CoValueKnownState | undefined,
     ): NewContentMessage[] | undefined {
         const isKnownStateEmpty = !knownState?.header && !knownState?.sessions;
 
@@ -781,7 +813,11 @@ export class CoValueCore {
 
         let sessionsTodoAgain: Set<SessionID> | undefined | "first" = "first";
 
-        while (sessionsTodoAgain === "first" || (sessionsTodoAgain?.size || 0 > 0)) {
+        while (
+            sessionsTodoAgain === "first" ||
+            sessionsTodoAgain?.size ||
+            0 > 0
+        ) {
             if (sessionsTodoAgain === "first") {
                 sessionsTodoAgain = undefined;
             }
@@ -795,13 +831,15 @@ export class CoValueCore {
                 const nextKnownSignatureIdx = getNextKnownSignatureIdx(
                     log,
                     knownStateForSessionID,
-                    sentStateForSessionID
+                    sentStateForSessionID,
                 );
 
-                const firstNewTxIdx = sentStateForSessionID ?? knownStateForSessionID ?? 0;
-                const afterLastNewTxIdx = nextKnownSignatureIdx === undefined
-                ? log.transactions.length
-                : nextKnownSignatureIdx + 1;
+                const firstNewTxIdx =
+                    sentStateForSessionID ?? knownStateForSessionID ?? 0;
+                const afterLastNewTxIdx =
+                    nextKnownSignatureIdx === undefined
+                        ? log.transactions.length
+                        : nextKnownSignatureIdx + 1;
 
                 const nNewTx = Math.max(0, afterLastNewTxIdx - firstNewTxIdx);
 
@@ -818,11 +856,16 @@ export class CoValueCore {
                 }
 
                 const oldPieceSize = pieceSize;
-                for (let txIdx = firstNewTxIdx; txIdx < afterLastNewTxIdx; txIdx++) {
+                for (
+                    let txIdx = firstNewTxIdx;
+                    txIdx < afterLastNewTxIdx;
+                    txIdx++
+                ) {
                     const tx = log.transactions[txIdx]!;
-                    pieceSize += (tx.privacy === "private"
-                    ? tx.encryptedChanges.length
-                    : tx.changes.length);
+                    pieceSize +=
+                        tx.privacy === "private"
+                            ? tx.encryptedChanges.length
+                            : tx.changes.length;
                 }
 
                 if (pieceSize >= MAX_RECOMMENDED_TX_SIZE) {
@@ -839,18 +882,24 @@ export class CoValueCore {
                 let sessionEntry = currentPiece.new[sessionID];
                 if (!sessionEntry) {
                     sessionEntry = {
-                        after: sentStateForSessionID ?? knownStateForSessionID ?? 0,
+                        after:
+                            sentStateForSessionID ??
+                            knownStateForSessionID ??
+                            0,
                         newTransactions: [],
                         lastSignature: "WILL_BE_REPLACED" as Signature,
                     };
                     currentPiece.new[sessionID] = sessionEntry;
                 }
 
-                for (let txIdx = firstNewTxIdx; txIdx < afterLastNewTxIdx; txIdx++) {
+                for (
+                    let txIdx = firstNewTxIdx;
+                    txIdx < afterLastNewTxIdx;
+                    txIdx++
+                ) {
                     const tx = log.transactions[txIdx]!;
                     sessionEntry.newTransactions.push(tx);
                 }
-
 
                 sessionEntry.lastSignature =
                     nextKnownSignatureIdx === undefined
@@ -858,12 +907,13 @@ export class CoValueCore {
                         : log.signatureAfter[nextKnownSignatureIdx]!;
 
                 sentState[sessionID] =
-                    (sentStateForSessionID ?? knownStateForSessionID ?? 0) + nNewTx;
+                    (sentStateForSessionID ?? knownStateForSessionID ?? 0) +
+                    nNewTx;
             }
         }
 
         const piecesWithContent = pieces.filter(
-            (piece) => Object.keys(piece.new).length > 0 || piece.header
+            (piece) => Object.keys(piece.new).length > 0 || piece.header,
         );
 
         if (piecesWithContent.length === 0) {
@@ -894,22 +944,22 @@ export class CoValueCore {
                   .keys()
                   .filter((k): k is AccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByGroup"
-            ? [
-                  this.header.ruleset.group,
-                  ...new Set(
-                      [...this.sessionLogs.keys()]
-                          .map((sessionID) =>
-                              accountOrAgentIDfromSessionID(
-                                  sessionID as SessionID
-                              )
-                          )
-                          .filter(
-                              (session): session is AccountID =>
-                                  isAccountID(session) && session !== this.id
-                          )
-                  ),
-              ]
-            : [];
+              ? [
+                    this.header.ruleset.group,
+                    ...new Set(
+                        [...this.sessionLogs.keys()]
+                            .map((sessionID) =>
+                                accountOrAgentIDfromSessionID(
+                                    sessionID as SessionID,
+                                ),
+                            )
+                            .filter(
+                                (session): session is AccountID =>
+                                    isAccountID(session) && session !== this.id,
+                            ),
+                    ),
+                ]
+              : [];
     }
 }
 
@@ -921,5 +971,8 @@ function getNextKnownSignatureIdx(
     return Object.keys(log.signatureAfter)
         .map(Number)
         .sort((a, b) => a - b)
-        .find((idx) => idx >= (sentStateForSessionID ?? knownStateForSessionID ?? -1));
+        .find(
+            (idx) =>
+                idx >= (sentStateForSessionID ?? knownStateForSessionID ?? -1),
+        );
 }

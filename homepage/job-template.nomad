@@ -7,7 +7,7 @@ job "homepage-jazz$BRANCH_SUFFIX" {
 
     network {
       port "http" {
-        to = 3000
+        to = 3001
       }
     }
 
@@ -48,7 +48,7 @@ job "homepage-jazz$BRANCH_SUFFIX" {
 
       resources {
         cpu    = 100 # MHz
-        memory = 100 # MB
+        memory = 300 # MB
       }
     }
   }

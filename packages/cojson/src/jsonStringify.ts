@@ -2,9 +2,11 @@
 
 export type Stringified<T> = string & { __type: T };
 
-export function stableStringify<T>(data: T): Stringified<T>
-export function stableStringify(data: undefined): undefined
-export function stableStringify<T>(data: T | undefined): Stringified<T> | undefined {
+export function stableStringify<T>(data: T): Stringified<T>;
+export function stableStringify(data: undefined): undefined;
+export function stableStringify<T>(
+    data: T | undefined,
+): Stringified<T> | undefined {
     const cycles = false;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -16,7 +16,7 @@ export function connectedPeers(
         trace?: boolean;
         peer1role?: Peer["role"];
         peer2role?: Peer["role"];
-    } = {}
+    } = {},
 ): [Peer, Peer] {
     const [inRx1, inTx1] = newStreamPair<SyncMessage>(peer1id + "_in");
     const [outRx1, outTx1] = newStreamPair<SyncMessage>(peer1id + "_out");
@@ -29,7 +29,7 @@ export function connectedPeers(
             new TransformStream({
                 transform(
                     chunk: SyncMessage,
-                    controller: { enqueue: (msg: SyncMessage) => void }
+                    controller: { enqueue: (msg: SyncMessage) => void },
                 ) {
                     trace &&
                         console.debug(
@@ -40,12 +40,12 @@ export function connectedPeers(
                                     k === "changes" || k === "encryptedChanges"
                                         ? v.slice(0, 20) + "..."
                                         : v,
-                                2
-                            )
+                                2,
+                            ),
                         );
                     controller.enqueue(chunk);
                 },
-            })
+            }),
         )
         .pipeTo(inTx1);
 
@@ -54,7 +54,7 @@ export function connectedPeers(
             new TransformStream({
                 transform(
                     chunk: SyncMessage,
-                    controller: { enqueue: (msg: SyncMessage) => void }
+                    controller: { enqueue: (msg: SyncMessage) => void },
                 ) {
                     trace &&
                         console.debug(
@@ -65,12 +65,12 @@ export function connectedPeers(
                                     k === "changes" || k === "encryptedChanges"
                                         ? v.slice(0, 20) + "..."
                                         : v,
-                                2
-                            )
+                                2,
+                            ),
                         );
                     controller.enqueue(chunk);
                 },
-            })
+            }),
         )
         .pipeTo(inTx2);
 
@@ -92,7 +92,7 @@ export function connectedPeers(
 }
 
 export function newStreamPair<T>(
-    pairName?: string
+    pairName?: string,
 ): [ReadableStream<T>, WritableStream<T>] {
     let queueLength = 0;
     let readerClosed = false;
@@ -138,13 +138,13 @@ export function newStreamPair<T>(
         new TransformStream<any, any>({
             transform(
                 chunk: SyncMessage,
-                controller: { enqueue: (msg: SyncMessage) => void }
+                controller: { enqueue: (msg: SyncMessage) => void },
             ) {
                 queueLength -= 1;
                 maybeReportQueueLength();
                 controller.enqueue(chunk);
             },
-        })
+        }),
     ) as ReadableStream<T>;
 
     let lastWritePromise = Promise.resolve();

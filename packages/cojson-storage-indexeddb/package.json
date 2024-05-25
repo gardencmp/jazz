@@ -1,7 +1,8 @@
 {
   "name": "cojson-storage-indexeddb",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "main": "dist/index.js",
+  "type": "module",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
@@ -16,10 +17,14 @@
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",
-    "test": "vitest --browser chrome",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint . --ext ts,tsx",
+    "format": "prettier --write './src/**/*.{ts,tsx}'",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

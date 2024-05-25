@@ -18,7 +18,7 @@ export function SubmittableInput({
             onSubmit={(e) => {
                 e.preventDefault();
                 const textEl = e.currentTarget.elements.namedItem(
-                    "text"
+                    "text",
                 ) as HTMLInputElement;
                 onSubmit(textEl.value);
                 textEl.value = "";
@@ -31,7 +31,11 @@ export function SubmittableInput({
                 autoComplete="off"
                 disabled={disabled}
             />
-            <Button asChild type="submit" className="flex-shrink flex-1 cursor-pointer">
+            <Button
+                asChild
+                type="submit"
+                className="flex-shrink flex-1 cursor-pointer"
+            >
                 <Input type="submit" value={label} disabled={disabled} />
             </Button>
         </form>

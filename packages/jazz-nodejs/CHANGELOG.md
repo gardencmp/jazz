@@ -1,19 +1,356 @@
 # jazz-autosub
 
-## 0.6.6
-
-### Patch Changes
-
-- Simple reconnect logic
-
-## 0.6.5
+## 0.7.1
 
 ### Patch Changes
 
 - Updated dependencies
-  - cojson@0.6.7
-  - cojson-transport-nodejs-ws@0.5.2
-  - jazz-autosub@0.6.2
+  - jazz-tools@0.7.1
+
+## 0.7.0
+
+### Patch Changes
+
+- 19f52b7: Fixed bug with newRandomSessionID being called before crypto was ready
+- 8636319: Implement deep loading, simplify API
+- 60d5ca2: Simplify jazz-nodejs
+- c4151fc: Support stricter TS lint rules
+- d2e03ff: Fix variance of ID.\_\_type
+- f0f6f1b: Clean up API more & re-add jazz-nodejs
+- Updated dependencies [8636319]
+- Updated dependencies [1a35307]
+- Updated dependencies [8636319]
+- Updated dependencies [1a35307]
+- Updated dependencies [96c494f]
+- Updated dependencies [59c18c3]
+- Updated dependencies [19f52b7]
+- Updated dependencies [8636319]
+- Updated dependencies [d8fe2b1]
+- Updated dependencies [19004b4]
+- Updated dependencies [a78f168]
+- Updated dependencies [1200aae]
+- Updated dependencies [52675c9]
+- Updated dependencies [129e2c1]
+- Updated dependencies [1cfa279]
+- Updated dependencies [704af7d]
+- Updated dependencies [1a35307]
+- Updated dependencies [460478f]
+- Updated dependencies [6b0418f]
+- Updated dependencies [e299c3e]
+- Updated dependencies [ed5643a]
+- Updated dependencies [bde684f]
+- Updated dependencies [bf0f8ec]
+- Updated dependencies [c4151fc]
+- Updated dependencies [63374cc]
+- Updated dependencies [8636319]
+- Updated dependencies [01ac646]
+- Updated dependencies [a5e68a4]
+- Updated dependencies [952982e]
+- Updated dependencies [1a35307]
+- Updated dependencies [5fa277c]
+- Updated dependencies [60d5ca2]
+- Updated dependencies [21771c4]
+- Updated dependencies [77c2b56]
+- Updated dependencies [63374cc]
+- Updated dependencies [d2e03ff]
+- Updated dependencies [354bdcd]
+- Updated dependencies [60d5ca2]
+- Updated dependencies [69ac514]
+- Updated dependencies [f8a5c46]
+- Updated dependencies [f0f6f1b]
+- Updated dependencies [e5eed5b]
+- Updated dependencies [1a44f87]
+- Updated dependencies [627d895]
+- Updated dependencies [1200aae]
+- Updated dependencies [63374cc]
+- Updated dependencies [ece35b3]
+- Updated dependencies [38d4410]
+- Updated dependencies [85d2b62]
+- Updated dependencies [fd86c11]
+- Updated dependencies [52675c9]
+- Updated dependencies [a423eee]
+  - jazz-tools@0.7.0
+  - cojson@0.7.0
+  - cojson-transport-nodejs-ws@0.7.0
+
+## 0.7.0-alpha.42
+
+### Patch Changes
+
+- Fixed bug with newRandomSessionID being called before crypto was ready
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.42
+  - cojson@0.7.0-alpha.42
+  - cojson-transport-nodejs-ws@0.7.0-alpha.42
+
+## 0.7.0-alpha.41
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.7.0-alpha.41
+  - jazz-tools@0.7.0-alpha.41
+
+## 0.7.0-alpha.39
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.0-alpha.39
+  - cojson-transport-nodejs-ws@0.7.0-alpha.39
+  - jazz-tools@0.7.0-alpha.39
+
+## 0.7.0-alpha.38
+
+### Patch Changes
+
+- Implement deep loading, simplify API
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.38
+  - cojson@0.7.0-alpha.38
+  - cojson-transport-nodejs-ws@0.7.0-alpha.38
+
+## 0.7.0-alpha.37
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.0-alpha.37
+  - cojson-transport-nodejs-ws@0.7.0-alpha.37
+  - jazz-tools@0.7.0-alpha.37
+
+## 0.7.0-alpha.36
+
+### Patch Changes
+
+- Updated dependencies [1a35307]
+- Updated dependencies [1a35307]
+- Updated dependencies [1a35307]
+- Updated dependencies [6b0418f]
+- Updated dependencies [1a35307]
+  - cojson@0.7.0-alpha.36
+  - jazz-tools@0.7.0-alpha.36
+  - cojson-transport-nodejs-ws@0.7.0-alpha.36
+
+## 0.7.0-alpha.35
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - cojson@0.7.0-alpha.35
+  - jazz-tools@0.7.0-alpha.35
+  - cojson-transport-nodejs-ws@0.7.0-alpha.35
+
+## 0.7.0-alpha.34
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.34
+
+## 0.7.0-alpha.32
+
+### Patch Changes
+
+- Simplify jazz-nodejs
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.32
+
+## 0.7.0-alpha.31
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.31
+
+## 0.7.0-alpha.30
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.30
+
+## 0.7.0-alpha.29
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.7.0-alpha.29
+  - jazz-tools@0.7.0-alpha.29
+  - cojson@0.7.0-alpha.29
+
+## 0.7.0-alpha.28
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.28
+  - cojson@0.7.0-alpha.28
+  - cojson-transport-nodejs-ws@0.7.0-alpha.28
+
+## 0.7.0-alpha.27
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.27
+  - cojson@0.7.0-alpha.27
+  - cojson-transport-nodejs-ws@0.7.0-alpha.27
+
+## 0.7.0-alpha.26
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.26
+
+## 0.7.0-alpha.25
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.25
+
+## 0.7.0-alpha.24
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.24
+  - cojson@0.7.0-alpha.24
+  - cojson-transport-nodejs-ws@0.7.0-alpha.24
+
+## 0.7.0-alpha.23
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.23
+
+## 0.7.0-alpha.22
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.22
+
+## 0.7.0-alpha.21
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.21
+
+## 0.7.0-alpha.20
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.20
+
+## 0.7.0-alpha.19
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.19
+
+## 0.7.0-alpha.17
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.17
+
+## 0.7.0-alpha.16
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.16
+
+## 0.7.0-alpha.15
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.15
+
+## 0.7.0-alpha.14
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.14
+
+## 0.7.0-alpha.13
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.13
+
+## 0.7.0-alpha.12
+
+### Patch Changes
+
+- Fix variance of ID.\_\_type
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.12
+
+## 0.7.0-alpha.11
+
+### Patch Changes
+
+- Support stricter TS lint rules
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.7.0-alpha.11
+  - jazz-tools@0.7.0-alpha.11
+  - cojson@0.7.0-alpha.11
+
+## 0.7.0-alpha.10
+
+### Patch Changes
+
+- Clean up API more & re-add jazz-nodejs
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.7.0-alpha.10
+  - jazz-tools@0.7.0-alpha.10
+  - cojson@0.7.0-alpha.10
+
+## 0.6.5-alpha.2
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson-transport-nodejs-ws@0.5.2-alpha.2
+  - jazz-tools@0.7.0-alpha.2
+
+## 0.6.5-alpha.1
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.1
+  - cojson@0.7.0-alpha.1
+  - cojson-transport-nodejs-ws@0.5.2-alpha.1
+
+## 0.6.5-alpha.0
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.0
+  - cojson@0.7.0-alpha.0
+  - cojson-transport-nodejs-ws@0.5.2-alpha.0
 
 ## 0.6.4
 

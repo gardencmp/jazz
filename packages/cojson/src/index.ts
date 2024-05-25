@@ -6,73 +6,67 @@ import {
 } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { LocalNode } from "./localNode.js";
-import type { CoValue } from "./coValue.js";
-import { CoMap, MutableCoMap } from "./coValues/coMap.js";
-import { CoList, MutableCoList } from "./coValues/coList.js";
+import type { RawCoValue } from "./coValue.js";
+import { RawCoMap } from "./coValues/coMap.js";
+import { RawCoList } from "./coValues/coList.js";
+import { RawCoStream, RawBinaryCoStream } from "./coValues/coStream.js";
 import {
-    CoStream,
-    MutableCoStream,
-    BinaryCoStream,
-    MutableBinaryCoStream,
-} from "./coValues/coStream.js";
-import {
-    agentSecretFromBytes,
-    agentSecretToBytes,
-    getAgentID,
-    newRandomAgentSecret,
-    newRandomSecretSeed,
-    agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    cryptoReady,
-} from "./crypto.js";
+    StreamingHash,
+    CryptoProvider,
+} from "./crypto/crypto.js";
+import { WasmCrypto } from "./crypto/WasmCrypto.js";
+import { PureJSCrypto } from "./crypto/PureJSCrypto.js";
 import { connectedPeers } from "./streamUtils.js";
-import {
-    ControlledAgent,
-    ControlledAccount,
-} from "./coValues/account.js";
+import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
-import { rawCoIDtoBytes, rawCoIDfromBytes } from "./ids.js";
-import { Group, EVERYONE } from "./coValues/group.js";
+import { rawCoIDtoBytes, rawCoIDfromBytes, isRawCoID } from "./ids.js";
+import { RawGroup, EVERYONE } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { parseJSON } from "./jsonStringify.js";
-import { Account, Profile, accountHeaderForInitialAgentSecret } from "./coValues/account.js";
+import {
+    RawAccount,
+    RawProfile,
+    accountHeaderForInitialAgentSecret,
+} from "./coValues/account.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 
 import type { SessionID, AgentID } from "./ids.js";
-import type { CoID, AnyCoValue } from "./coValue.js";
+import type { CoID, AnyRawCoValue } from "./coValue.js";
 import type {
     BinaryStreamInfo,
     BinaryCoStreamMeta,
 } from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
-import type { AgentSecret } from "./crypto.js";
+import type { AgentSecret } from "./crypto/crypto.js";
 import type {
     AccountID,
     AccountMeta,
-    AccountMigration,
-    ProfileMeta,
+    RawAccountMigration,
 } from "./coValues/account.js";
 import type { InviteSecret } from "./coValues/group.js";
 import type * as Media from "./media.js";
 
-type Value = JsonValue | AnyCoValue;
+type Value = JsonValue | AnyRawCoValue;
+
+import {
+    LSMStorage,
+    FSErr,
+    BlockFilename,
+    WalFilename,
+} from "./storage/index.js";
+import { FileSystem } from "./storage/FileSystem.js";
 
 /** @hidden */
 export const cojsonInternals = {
-    agentSecretFromBytes,
-    agentSecretToBytes,
     newRandomSessionID,
-    newRandomAgentSecret,
     connectedPeers,
-    getAgentID,
     rawCoIDtoBytes,
     rawCoIDfromBytes,
-    newRandomSecretSeed,
-    agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
     expectGroup,
@@ -82,38 +76,33 @@ export const cojsonInternals = {
     accountOrAgentIDfromSessionID,
     isAccountID,
     accountHeaderForInitialAgentSecret,
-    idforHeader
+    idforHeader,
+    StreamingHash,
 };
 
 export {
     LocalNode,
-    Group,
+    RawGroup,
     Role,
     EVERYONE,
     Everyone,
-    CoMap,
-    MutableCoMap,
-    CoList,
-    MutableCoList,
-    CoStream,
-    MutableCoStream,
-    BinaryCoStream,
-    MutableBinaryCoStream,
-    CoValue,
+    RawCoMap,
+    RawCoList,
+    RawCoStream,
+    RawBinaryCoStream,
+    RawCoValue,
     CoID,
-    AnyCoValue,
-    Account,
+    AnyRawCoValue,
+    RawAccount,
     AccountID,
     AccountMeta,
-    AccountMigration,
-    Profile,
-    ProfileMeta,
+    RawAccountMigration,
+    RawProfile as Profile,
     SessionID,
     Media,
     CoValueCore,
     ControlledAgent,
-    ControlledAccount,
-    cryptoReady as cojsonReady,
+    RawControlledAccount,
     MAX_RECOMMENDED_TX_SIZE,
     JsonValue,
     Peer,
@@ -122,12 +111,15 @@ export {
     AgentID,
     AgentSecret,
     InviteSecret,
+    CryptoProvider,
+    WasmCrypto,
+    PureJSCrypto,
     SyncMessage,
+    isRawCoID,
+    LSMStorage,
 };
 
-export type {
-    Value,
-}
+export type { Value, FileSystem, FSErr, BlockFilename, WalFilename };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CojsonInternalTypes {
@@ -139,10 +131,10 @@ export namespace CojsonInternalTypes {
     export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
     export type Transaction = import("./coValueCore.js").Transaction;
     export type TransactionID = import("./ids.js").TransactionID;
-    export type Signature = import("./crypto.js").Signature;
+    export type Signature = import("./crypto/crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
     export type ProfileShape = import("./coValues/account.js").ProfileShape;
-    export type ProfileMeta = import("./coValues/account.js").ProfileMeta;
-    export type SealerSecret = import("./crypto.js").SealerSecret;
-    export type SignerSecret = import("./crypto.js").SignerSecret;
+    export type SealerSecret = import("./crypto/crypto.js").SealerSecret;
+    export type SignerSecret = import("./crypto/crypto.js").SignerSecret;
+    export type JsonObject = import("./jsonValue.js").JsonObject;
 }

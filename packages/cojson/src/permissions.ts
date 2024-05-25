@@ -1,11 +1,11 @@
 import { CoID } from "./coValue.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { JsonValue } from "./jsonValue.js";
-import { KeyID } from "./crypto.js";
+import { KeyID } from "./crypto/crypto.js";
 import { CoValueCore, Transaction } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { Account, AccountID, Profile } from "./coValues/account.js";
+import { RawAccount, AccountID, RawProfile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
 import { EVERYONE, Everyone } from "./coValues/group.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -25,7 +25,7 @@ export type Role =
     | "readerInvite";
 
 export function determineValidTransactions(
-    coValue: CoValueCore
+    coValue: CoValueCore,
 ): { txID: TransactionID; tx: Transaction }[] {
     if (coValue.header.ruleset.type === "group") {
         const allTransactionsSorted = [
@@ -73,7 +73,7 @@ export function determineValidTransactions(
                     continue;
                 } else {
                     console.warn(
-                        "Only admins can make private transactions in groups"
+                        "Only admins can make private transactions in groups",
                     );
                     continue;
                 }
@@ -92,8 +92,8 @@ export function determineValidTransactions(
                     JSON.stringify(tx.changes, (k, v) =>
                         k === "changes" || k === "encryptedChanges"
                             ? v.slice(0, 20) + "..."
-                            : v
-                    )
+                            : v,
+                    ),
                 );
                 continue;
             }
@@ -101,7 +101,7 @@ export function determineValidTransactions(
             const change = changes[0] as
                 | MapOpPayload<AccountID | AgentID | Everyone, Role>
                 | MapOpPayload<"readKey", JsonValue>
-                | MapOpPayload<"profile", CoID<Profile>>;
+                | MapOpPayload<"profile", CoID<RawProfile>>;
             if (changes.length !== 1) {
                 console.warn("Group transaction must have exactly one change");
                 continue;
@@ -173,7 +173,7 @@ export function determineValidTransactions(
                 )
             ) {
                 console.warn(
-                    "Everyone can only be set to reader, writer or revoked"
+                    "Everyone can only be set to reader, writer or revoked",
                 );
                 continue;
             }
@@ -212,7 +212,7 @@ export function determineValidTransactions(
                     }
                 } else {
                     console.warn(
-                        "Group transaction must be made by current admin or invite"
+                        "Group transaction must be made by current admin or invite",
                     );
                     continue;
                 }
@@ -230,9 +230,9 @@ export function determineValidTransactions(
             coValue.node
                 .expectCoValueLoaded(
                     coValue.header.ruleset.group,
-                    "Determining valid transaction in owned object but its group wasn't loaded"
+                    "Determining valid transaction in owned object but its group wasn't loaded",
                 )
-                .getCurrentContent()
+                .getCurrentContent(),
         );
 
         if (groupContent.type !== "comap") {
@@ -248,7 +248,7 @@ export function determineValidTransactions(
                         const groupAtTime = groupContent.atTime(tx.madeAt);
                         const effectiveTransactor =
                             transactor === groupContent.id &&
-                            groupAtTime instanceof Account
+                            groupAtTime instanceof RawAccount
                                 ? groupAtTime.currentAgentID()
                                 : transactor;
                         const transactorRoleAtTxTime =
@@ -264,7 +264,7 @@ export function determineValidTransactions(
                         txID: { sessionID: sessionID, txIndex },
                         tx,
                     }));
-            }
+            },
         );
     } else if (coValue.header.ruleset.type === "unsafeAllowAll") {
         return [...coValue.sessionLogs.entries()].flatMap(
@@ -273,28 +273,26 @@ export function determineValidTransactions(
                     txID: { sessionID: sessionID, txIndex },
                     tx,
                 }));
-            }
+            },
         );
     } else {
         throw new Error(
             "Unknown ruleset type " +
-                (coValue.header.ruleset as { type: string }).type
+                (coValue.header.ruleset as { type: string }).type,
         );
     }
 }
 
-export function isKeyForKeyField(
-    field: string
-): field is `${KeyID}_for_${KeyID}` {
-    return field.startsWith("key_") && field.includes("_for_key");
+export function isKeyForKeyField(co: string): co is `${KeyID}_for_${KeyID}` {
+    return co.startsWith("key_") && co.includes("_for_key");
 }
 
 export function isKeyForAccountField(
-    field: string
-): field is `${KeyID}_for_${AccountID | AgentID}` {
+    co: string,
+): co is `${KeyID}_for_${AccountID | AgentID}` {
     return (
-        (field.startsWith("key_") &&
-            (field.includes("_for_sealer") || field.includes("_for_co"))) ||
-        field.includes("_for_everyone")
+        (co.startsWith("key_") &&
+            (co.includes("_for_sealer") || co.includes("_for_co"))) ||
+        co.includes("_for_everyone")
     );
 }

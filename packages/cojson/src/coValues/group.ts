@@ -1,33 +1,20 @@
 import { CoID } from "../coValue.js";
-import { CoMap } from "./coMap.js";
-import { CoList } from "./coList.js";
+import { RawCoMap } from "./coMap.js";
+import { RawCoList } from "./coList.js";
 import { JsonObject } from "../jsonValue.js";
-import { BinaryCoStream, CoStream } from "./coStream.js";
-import {
-    Encrypted,
-    KeyID,
-    KeySecret,
-    createdNowUnique,
-    newRandomKeySecret,
-    seal,
-    encryptKeySecret,
-    getAgentSealerID,
-    Sealed,
-    newRandomSecretSeed,
-    agentSecretFromSecretSeed,
-    getAgentID,
-} from "../crypto.js";
+import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
+import { Encrypted, KeyID, KeySecret, Sealed } from "../crypto/crypto.js";
 import { AgentID, isAgentID } from "../ids.js";
-import { Account, AccountID, ControlledAccountOrAgent, Profile } from "./account.js";
+import { RawAccount, AccountID, ControlledAccountOrAgent } from "./account.js";
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
 
 export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
 
-export type GroupShape<P extends Profile, R extends CoMap> = {
-    profile?: CoID<P> | null;
-    root?: CoID<R> | null;
+export type GroupShape = {
+    profile: CoID<RawCoMap> | null;
+    root: CoID<RawCoMap> | null;
     [key: AccountID | AgentID]: Role;
     [EVERYONE]?: Role;
     readKey?: KeyID;
@@ -60,11 +47,9 @@ export type GroupShape<P extends Profile, R extends CoMap> = {
  *  const localNode.createGroup();
  *  ```
  * */
-export class Group<
-    P extends Profile = Profile,
-    R extends CoMap = CoMap,
-    Meta extends JsonObject | null = JsonObject | null
-> extends CoMap<GroupShape<P, R>, Meta> {
+export class RawGroup<
+    Meta extends JsonObject | null = JsonObject | null,
+> extends RawCoMap<GroupShape, Meta> {
     /**
      * Returns the current role of a given account.
      *
@@ -94,67 +79,72 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    addMember(account: Account | ControlledAccountOrAgent | Everyone, role: Role): this {
-        return this.addMemberInternal(account, role);
+    addMember(
+        account: RawAccount | ControlledAccountOrAgent | Everyone,
+        role: Role,
+    ) {
+        this.addMemberInternal(account, role);
     }
 
     /** @internal */
     addMemberInternal(
-        account: Account | ControlledAccountOrAgent | AgentID | Everyone,
-        role: Role
-    ): this {
-        return this.mutate((mutable) => {
-            const currentReadKey = this.core.getCurrentReadKey();
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
+        role: Role,
+    ) {
+        const currentReadKey = this.core.getCurrentReadKey();
 
-            if (!currentReadKey.secret) {
-                throw new Error("Can't add member without read key secret");
-            }
+        if (!currentReadKey.secret) {
+            throw new Error("Can't add member without read key secret");
+        }
 
-            if (account === EVERYONE) {
-                if (!(role === "reader" || role === "writer")) {
-                    throw new Error(
-                        "Can't make everyone something other than reader or writer"
-                    );
-                }
-                mutable.set(account, role, "trusting");
-
-                if (mutable.get(account) !== role) {
-                    throw new Error("Failed to set role");
-                }
-
-                mutable.set(
-                    `${currentReadKey.id}_for_${EVERYONE}`,
-                    currentReadKey.secret,
-                    "trusting"
-                );
-            } else {
-                const memberKey = typeof account === "string" ? account : account.id;
-                const agent = typeof account === "string" ? account : account.currentAgentID();
-                mutable.set(memberKey, role, "trusting");
-
-                if (mutable.get(memberKey) !== role) {
-                    throw new Error("Failed to set role");
-                }
-
-                mutable.set(
-                    `${currentReadKey.id}_for_${memberKey}`,
-                    seal({
-                        message: currentReadKey.secret,
-                        from: this.core.node.account.currentSealerSecret(),
-                        to: getAgentSealerID(agent),
-                        nOnceMaterial: {
-                            in: this.id,
-                            tx: this.core.nextTransactionID(),
-                        },
-                    }),
-                    "trusting"
+        if (account === EVERYONE) {
+            if (!(role === "reader" || role === "writer")) {
+                throw new Error(
+                    "Can't make everyone something other than reader or writer",
                 );
             }
-        });
+            this.set(account, role, "trusting");
+
+            if (this.get(account) !== role) {
+                throw new Error("Failed to set role");
+            }
+
+            this.set(
+                `${currentReadKey.id}_for_${EVERYONE}`,
+                currentReadKey.secret,
+                "trusting",
+            );
+        } else {
+            const memberKey =
+                typeof account === "string" ? account : account.id;
+            const agent =
+                typeof account === "string"
+                    ? account
+                    : account.currentAgentID();
+            this.set(memberKey, role, "trusting");
+
+            if (this.get(memberKey) !== role) {
+                throw new Error("Failed to set role");
+            }
+
+            this.set(
+                `${currentReadKey.id}_for_${memberKey}`,
+                this.core.crypto.seal({
+                    message: currentReadKey.secret,
+                    from: this.core.node.account.currentSealerSecret(),
+                    to: this.core.crypto.getAgentSealerID(agent),
+                    nOnceMaterial: {
+                        in: this.id,
+                        tx: this.core.nextTransactionID(),
+                    },
+                }),
+                "trusting",
+            );
+        }
     }
 
     /** @internal */
-    rotateReadKey(): this {
+    rotateReadKey() {
         const currentlyPermittedReaders = this.keys().filter((key) => {
             if (key.startsWith("co_") || isAgentID(key)) {
                 const role = this.get(key);
@@ -170,7 +160,7 @@ export class Group<
 
         if (!maybeCurrentReadKey.secret) {
             throw new Error(
-                "Can't rotate read key secret we don't have access to"
+                "Can't rotate read key secret we don't have access to",
             );
         }
 
@@ -179,41 +169,39 @@ export class Group<
             secret: maybeCurrentReadKey.secret,
         };
 
-        const newReadKey = newRandomKeySecret();
+        const newReadKey = this.core.crypto.newRandomKeySecret();
 
-        return this.mutate((mutable) => {
-            for (const readerID of currentlyPermittedReaders) {
-                const reader = this.core.node.resolveAccountAgent(
-                    readerID,
-                    "Expected to know currently permitted reader"
-                );
-
-                mutable.set(
-                    `${newReadKey.id}_for_${readerID}`,
-                    seal({
-                        message: newReadKey.secret,
-                        from: this.core.node.account.currentSealerSecret(),
-                        to: getAgentSealerID(reader),
-                        nOnceMaterial: {
-                            in: this.id,
-                            tx: this.core.nextTransactionID(),
-                        },
-                    }),
-                    "trusting"
-                );
-            }
-
-            mutable.set(
-                `${currentReadKey.id}_for_${newReadKey.id}`,
-                encryptKeySecret({
-                    encrypting: newReadKey,
-                    toEncrypt: currentReadKey,
-                }).encrypted,
-                "trusting"
+        for (const readerID of currentlyPermittedReaders) {
+            const reader = this.core.node.resolveAccountAgent(
+                readerID,
+                "Expected to know currently permitted reader",
             );
 
-            mutable.set("readKey", newReadKey.id, "trusting");
-        });
+            this.set(
+                `${newReadKey.id}_for_${readerID}`,
+                this.core.crypto.seal({
+                    message: newReadKey.secret,
+                    from: this.core.node.account.currentSealerSecret(),
+                    to: this.core.crypto.getAgentSealerID(reader),
+                    nOnceMaterial: {
+                        in: this.id,
+                        tx: this.core.nextTransactionID(),
+                    },
+                }),
+                "trusting",
+            );
+        }
+
+        this.set(
+            `${currentReadKey.id}_for_${newReadKey.id}`,
+            this.core.crypto.encryptKeySecret({
+                encrypting: newReadKey,
+                toEncrypt: currentReadKey,
+            }).encrypted,
+            "trusting",
+        );
+
+        this.set("readKey", newReadKey.id, "trusting");
     }
 
     /**
@@ -223,16 +211,17 @@ export class Group<
      *
      * @category 2. Role changing
      */
-    removeMember(account: Account | ControlledAccountOrAgent | Everyone): this {
-        return this.removeMemberInternal(account);
+    removeMember(account: RawAccount | ControlledAccountOrAgent | Everyone) {
+        this.removeMemberInternal(account);
     }
 
     /** @internal */
-    removeMemberInternal(account: Account | ControlledAccountOrAgent | AgentID | Everyone): this {
+    removeMemberInternal(
+        account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
+    ) {
         const memberKey = typeof account === "string" ? account : account.id;
-        const afterRevoke = this.set(memberKey, "revoked", "trusting");
-
-        return afterRevoke.rotateReadKey();
+        this.set(memberKey, "revoked", "trusting");
+        this.rotateReadKey();
     }
 
     /**
@@ -243,10 +232,11 @@ export class Group<
      * @category 2. Role changing
      */
     createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
-        const secretSeed = newRandomSecretSeed();
+        const secretSeed = this.core.crypto.newRandomSecretSeed();
 
-        const inviteSecret = agentSecretFromSecretSeed(secretSeed);
-        const inviteID = getAgentID(inviteSecret);
+        const inviteSecret =
+            this.core.crypto.agentSecretFromSecretSeed(secretSeed);
+        const inviteID = this.core.crypto.getAgentID(inviteSecret);
 
         this.addMemberInternal(inviteID, `${role}Invite` as Role);
 
@@ -259,12 +249,12 @@ export class Group<
      *
      * @category 3. Value creation
      */
-    createMap<M extends CoMap>(
+    createMap<M extends RawCoMap>(
         init?: M["_shape"],
         meta?: M["headerMeta"],
-        initPrivacy: "trusting" | "private" = "private"
+        initPrivacy: "trusting" | "private" = "private",
     ): M {
-        let map = this.core.node
+        const map = this.core.node
             .createCoValue({
                 type: "comap",
                 ruleset: {
@@ -272,13 +262,13 @@ export class Group<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...createdNowUnique(),
+                ...this.core.crypto.createdNowUnique(),
             })
             .getCurrentContent() as M;
 
         if (init) {
             for (const [key, value] of Object.entries(init)) {
-                map = map.set(key, value, initPrivacy);
+                map.set(key, value, initPrivacy);
             }
         }
 
@@ -291,12 +281,12 @@ export class Group<
      *
      * @category 3. Value creation
      */
-    createList<L extends CoList>(
+    createList<L extends RawCoList>(
         init?: L["_item"][],
         meta?: L["headerMeta"],
-        initPrivacy: "trusting" | "private" = "private"
+        initPrivacy: "trusting" | "private" = "private",
     ): L {
-        let list = this.core.node
+        const list = this.core.node
             .createCoValue({
                 type: "colist",
                 ruleset: {
@@ -304,13 +294,13 @@ export class Group<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...createdNowUnique(),
+                ...this.core.crypto.createdNowUnique(),
             })
             .getCurrentContent() as L;
 
         if (init) {
             for (const item of init) {
-                list = list.append(item, undefined, initPrivacy);
+                list.append(item, undefined, initPrivacy);
             }
         }
 
@@ -318,7 +308,7 @@ export class Group<
     }
 
     /** @category 3. Value creation */
-    createStream<C extends CoStream>(meta?: C["headerMeta"]): C {
+    createStream<C extends RawCoStream>(meta?: C["headerMeta"]): C {
         return this.core.node
             .createCoValue({
                 type: "costream",
@@ -327,14 +317,14 @@ export class Group<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...createdNowUnique(),
+                ...this.core.crypto.createdNowUnique(),
             })
             .getCurrentContent() as C;
     }
 
     /** @category 3. Value creation */
-    createBinaryStream<C extends BinaryCoStream>(
-        meta: C["headerMeta"] = { type: "binary" }
+    createBinaryStream<C extends RawBinaryCoStream>(
+        meta: C["headerMeta"] = { type: "binary" },
     ): C {
         return this.core.node
             .createCoValue({
@@ -344,7 +334,7 @@ export class Group<
                     group: this.id,
                 },
                 meta: meta,
-                ...createdNowUnique(),
+                ...this.core.crypto.createdNowUnique(),
             })
             .getCurrentContent() as C;
     }

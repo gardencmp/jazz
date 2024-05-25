@@ -4,20 +4,21 @@ export type Routes = {
     [Key: `/${string}`]: ReactNode | ((param: string) => ReactNode);
 };
 
-export function HashRoute(
-    routes: Routes,
-    { reportToParentFrame }: { reportToParentFrame?: boolean } = {}
-): ReactNode {
+export function useHashRouter(options?: { tellParentFrame?: boolean }) {
     const [hash, setHash] = useState(location.hash.slice(1));
 
     useEffect(() => {
         const onHashChange = () => {
             setHash(location.hash.slice(1));
-            reportToParentFrame && window.parent.postMessage({
-                type: "navigate",
-                url: location.href,
-            }, "*");
-            console.log("Posting", location.href + "-navigate")
+            options?.tellParentFrame &&
+                window.parent.postMessage(
+                    {
+                        type: "navigate",
+                        url: location.href,
+                    },
+                    "*",
+                );
+            console.log("Posting", location.href + "-navigate");
         };
 
         window.addEventListener("hashchange", onHashChange);
@@ -27,25 +28,33 @@ export function HashRoute(
         };
     });
 
-    for (const route of Object.keys(routes)) {
-        if (hash === route || (hash === "" && route === "/")) {
-            const elem = routes[route as keyof Routes];
-            if (typeof elem === "function") {
-                return null;
-            } else {
-                return elem;
-            }
-        } else if (route.includes("/:")) {
-            const [prefix] = route.split(":");
-
-            if (!prefix || hash.startsWith(prefix)) {
-                const handler = routes[route as keyof Routes];
-                if (typeof handler === "function") {
-                    return handler(hash.slice(prefix?.length || 0));
+    return {
+        navigate: (url: string) => {
+            location.hash = url;
+        },
+        route: function (routes: {
+            [route: `${string}` | `/${string}/:${string}`]: (
+                param: string,
+            ) => ReactNode;
+        }) {
+            for (const [route, paramUser] of Object.entries(routes)) {
+                if (route.includes(":")) {
+                    const [routePath, _paramName] = route.split(":");
+                    if (routePath && hash.startsWith(routePath)) {
+                        const param = hash.split(routePath!)[1];
+                        return paramUser(param!);
+                    }
                 } else {
-                    return "No route found for " + hash;
+                    if (hash === route || (route === "/" && hash === "")) {
+                        return paramUser("");
+                    }
                 }
             }
-        }
-    }
+            return null;
+        },
+    };
+}
+
+export function useIframeHashRouter() {
+    return useHashRouter({ tellParentFrame: true });
 }

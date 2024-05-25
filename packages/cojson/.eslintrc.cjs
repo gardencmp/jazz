@@ -3,13 +3,15 @@ module.exports = {
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:require-extensions/recommended",
+        "prettier"
     ],
     parser: "@typescript-eslint/parser",
     plugins: ["@typescript-eslint", "require-extensions"],
     parserOptions: {
         project: "./tsconfig.json",
+        tsconfigRootDir: __dirname,
     },
-    ignorePatterns: [".eslint.cjs", "**/tests/*"],
+    ignorePatterns: [".eslint.cjs"],
     root: true,
     rules: {
         "no-unused-vars": "off",
@@ -19,4 +21,4 @@ module.exports = {
         ],
         "@typescript-eslint/no-floating-promises": "error",
     },
-};
+}
