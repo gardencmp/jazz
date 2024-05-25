@@ -48,7 +48,7 @@ job "homepage-jazz$BRANCH_SUFFIX" {
 
       resources {
         cpu    = 100 # MHz
-        memory = 100 # MB
+        memory = 300 # MB
       }
     }
   }
