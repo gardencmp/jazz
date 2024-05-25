@@ -61,6 +61,15 @@ jobs:
       with:
         submodules: true
 
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: 'pnpm'
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
@@ -71,10 +80,16 @@ jobs:
         username: gardencmp
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Pnpm Build
+      run: |
+        pnpm install
+        pnpm turbo build;
+      working-directory: ./homepage/homepage
+
     - name: Docker Build & Push
       uses: docker/build-push-action@v4
       with:
-        context: ./homepage/homepage
+        context: ./homepage
         push: true
         tags: ghcr.io/gardencmp/${{github.event.repository.name}}-homepage-jazz:${{github.head_ref || github.ref_name}}-${{github.sha}}-${{github.run_number}}-${{github.run_attempt}}
         cache-from: type=gha
