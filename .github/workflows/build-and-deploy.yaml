@@ -80,7 +80,12 @@ jobs:
         username: gardencmp
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Pnpm Build
+    - name: Pnpm Install (root)
+      run: |
+        pnpm install
+      working-directory: .
+
+    - name: Pnpm Install & Build (homepage)
       run: |
         pnpm install
         pnpm build;
