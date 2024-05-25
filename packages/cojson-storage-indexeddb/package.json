@@ -1,6 +1,6 @@
 {
   "name": "cojson-storage-indexeddb",
-  "version": "0.7.0-alpha.39",
+  "version": "0.7.0-alpha.42",
   "main": "dist/index.js",
   "type": "module",
   "types": "src/index.ts",

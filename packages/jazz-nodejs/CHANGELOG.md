@@ -1,5 +1,15 @@
 # jazz-autosub
 
+## 0.7.0-alpha.42
+
+### Patch Changes
+
+- Fixed bug with newRandomSessionID being called before crypto was ready
+- Updated dependencies
+  - jazz-tools@0.7.0-alpha.42
+  - cojson@0.7.0-alpha.42
+  - cojson-transport-nodejs-ws@0.7.0-alpha.42
+
 ## 0.7.0-alpha.41
 
 ### Patch Changes

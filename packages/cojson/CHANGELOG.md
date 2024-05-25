@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.0-alpha.42
+
+### Patch Changes
+
+- Fixed bug with newRandomSessionID being called before crypto was ready
+
 ## 0.7.0-alpha.39
 
 ### Patch Changes
