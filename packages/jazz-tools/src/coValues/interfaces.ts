@@ -261,7 +261,7 @@ export class CoValueBase implements CoValue {
     ): Stream.Stream<DeeplyLoaded<V, Depth>, UnavailableError, AccountCtx> {
         return AccountCtx.pipe(
             Effect.andThen((account) =>
-                new Ref(id, account, this as CoValueClass<V>).loadEf(),
+                new Ref(id, account, {ref: this as CoValueClass<V>, optional: false}).loadEf(),
             ),
             Stream.fromEffect,
             Stream.flatMap((value: V) =>

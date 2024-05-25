@@ -17,7 +17,7 @@ import { newRandomSessionID } from "cojson/src/coValueCore.js";
 
 class TestMap extends CoMap {
     list = co.ref(TestList);
-    optionalRef? = co.ref(InnermostMap);
+    optionalRef = co.ref(InnermostMap, { optional: true });
 }
 
 class TestList extends CoList.Of(co.ref(() => InnerMap)) {}

@@ -52,7 +52,7 @@ export class Account
     }
     static {
         this._schema = {
-            profile: () => Profile satisfies Schema,
+            profile: {ref: () => Profile, optional: false} satisfies Schema,
             root: "json" satisfies Schema,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;

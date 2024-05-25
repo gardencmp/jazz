@@ -238,7 +238,7 @@ function entryFromRawEntry<Item>(
                 new Ref<Account>(
                     accountID as unknown as ID<Account>,
                     loadedAs,
-                    Account,
+                    {ref: Account, optional: false},
                 )?.accessFrom(
                     accessFrom,
                     rawEntry.by +

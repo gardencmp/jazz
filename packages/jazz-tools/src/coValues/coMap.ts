@@ -164,7 +164,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                         new Ref(
                             rawEdit.by as ID<Account>,
                             target._loadedAs,
-                            Account,
+                            {ref: Account, optional: false},
                         ).accessFrom(
                             target,
                             "_edits." + key.toString() + ".by",

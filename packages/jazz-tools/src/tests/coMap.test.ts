@@ -387,7 +387,7 @@ describe("CoMap resolution", async () => {
 
     class TestMapWithOptionalRef extends CoMap {
         color = co.string;
-        nested? = co.ref(NestedMap);
+        nested = co.ref(NestedMap, { optional: true });
     }
 
     test("Construction with optional", async () => {

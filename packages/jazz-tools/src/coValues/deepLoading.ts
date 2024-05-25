@@ -6,9 +6,10 @@ import {
     CoStreamEntry,
     ItemsSym,
     Ref,
+    RefEncoded,
     UnCo,
 } from "../internal.js";
-import { CoKeys } from "./coMap.js";
+import { CoKeys, CoMap } from "./coMap.js";
 import { CoValue, ID } from "./interfaces.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +27,9 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
                     }
                 )._refs[key]
                     ? item && fulfillsDepth(depth[0], item)
-                    : true;
+                    : ((value as CoMap)._schema[
+                          ItemsSym
+                      ] as RefEncoded<CoValue>)!.optional;
             });
         } else {
             for (const key of Object.keys(depth)) {
@@ -35,7 +38,7 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
                     [key: string]: any;
                     _refs: { [key: string]: Ref<CoValue> | undefined };
                 };
-                if (!map._refs[key]) {
+                if (!map._refs[key] && map._schema[key].optional) {
                     continue;
                 }
                 if (!map[key]) {
@@ -55,7 +58,11 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
             return (value as CoList).every((item, i) =>
                 (value as CoList)._refs[i]
                     ? item && fulfillsDepth(itemDepth, item)
-                    : true,
+                    : (
+                          (value as CoList)._schema[
+                              ItemsSym
+                          ] as RefEncoded<CoValue>
+                      ).optional,
             );
         }
     } else if (value._type === "CoStream") {
@@ -64,7 +71,14 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
         } else {
             const itemDepth = depth[0];
             return Object.values((value as CoStream).perSession).every(
-                (entry) => entry.value && fulfillsDepth(itemDepth, entry.value),
+                (entry) =>
+                    entry.ref
+                        ? entry.value && fulfillsDepth(itemDepth, entry.value)
+                        : (
+                              (value as CoStream)._schema[
+                                  ItemsSym
+                              ] as RefEncoded<CoValue>
+                          ).optional,
             );
         }
     } else if (value._type === "BinaryCoStream") {
