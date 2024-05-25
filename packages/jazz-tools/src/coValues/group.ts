@@ -38,7 +38,10 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
         this._schema = {
             profile: "json" satisfies Schema,
             root: "json" satisfies Schema,
-            [MembersSym]: {ref: () => Account, optional: false} satisfies Schema,
+            [MembersSym]: {
+                ref: () => Account,
+                optional: false,
+            } satisfies Schema,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         Object.defineProperty(this.prototype, "_schema", {

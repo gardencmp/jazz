@@ -109,10 +109,7 @@ export function createJazzReactContext<Acc extends Account>({
         );
 
         return {
-            me:
-                depth === undefined
-                    ? me || context.me
-                    : me,
+            me: depth === undefined ? me || context.me : me,
             logOut: context.logOut,
         };
     }

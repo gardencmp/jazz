@@ -247,10 +247,10 @@ export class CoList<Item = any>
         return new this({ fromRaw: raw });
     }
 
-    static load = CoValueBase.load as CoValueClass['load'];
-    static loadEf = CoValueBase.loadEf as CoValueClass['loadEf'];
-    static subscribe = CoValueBase.subscribe as CoValueClass['subscribe'];
-    static subscribeEf = CoValueBase.subscribeEf as CoValueClass['subscribeEf'];
+    static load = CoValueBase.load as CoValueClass["load"];
+    static loadEf = CoValueBase.loadEf as CoValueClass["loadEf"];
+    static subscribe = CoValueBase.subscribe as CoValueClass["subscribe"];
+    static subscribeEf = CoValueBase.subscribeEf as CoValueClass["subscribeEf"];
 
     static schema<V extends CoList>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

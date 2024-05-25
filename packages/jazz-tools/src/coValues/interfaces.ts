@@ -1,11 +1,7 @@
 import { Effect, Option, Sink, Stream } from "effect";
 import type { CojsonInternalTypes, RawCoValue } from "cojson";
 import { RawAccount } from "cojson";
-import type {
-    DeeplyLoaded,
-    DepthsIn,
-    UnavailableError,
-} from "../internal.js";
+import type { DeeplyLoaded, DepthsIn, UnavailableError } from "../internal.js";
 import {
     Account,
     AccountCtx,
@@ -261,7 +257,10 @@ export class CoValueBase implements CoValue {
     ): Stream.Stream<DeeplyLoaded<V, Depth>, UnavailableError, AccountCtx> {
         return AccountCtx.pipe(
             Effect.andThen((account) =>
-                new Ref(id, account, {ref: this as CoValueClass<V>, optional: false}).loadEf(),
+                new Ref(id, account, {
+                    ref: this as CoValueClass<V>,
+                    optional: false,
+                }).loadEf(),
             ),
             Stream.fromEffect,
             Stream.flatMap((value: V) =>

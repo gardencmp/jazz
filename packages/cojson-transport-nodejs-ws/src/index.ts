@@ -27,8 +27,8 @@ export function websocketReadableStream<T>(ws: WebSocket) {
             });
             ws.addEventListener("close", () => {
                 try {
-                    controller.close()
-                } catch(ignore) {
+                    controller.close();
+                } catch (ignore) {
                     // will throw if already closed, with no way to check before-hand
                 }
             });

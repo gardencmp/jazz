@@ -19,7 +19,9 @@ describe("Simple CoStream operations", async () => {
         creationProps: { name: "Hermes Puggington" },
         crypto: Crypto,
     });
-    if (!isControlledAccount(me)) { throw("me is not a controlled account") }
+    if (!isControlledAccount(me)) {
+        throw "me is not a controlled account";
+    }
     class TestStream extends CoStream.Of(co.string) {}
 
     const stream = TestStream.create(["milk"], { owner: me });
@@ -86,7 +88,9 @@ describe("CoStream resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
-        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -100,7 +104,7 @@ describe("CoStream resolution", async () => {
         const loadedStream = await TestStream.load(
             stream.id,
             meOnSecondPeer,
-            []
+            [],
         );
 
         expect(loadedStream?.[me.id]?.value).toEqual(null);
@@ -111,7 +115,7 @@ describe("CoStream resolution", async () => {
         const loadedNestedStream = await NestedStream.load(
             stream[me.id]!.value!.id,
             meOnSecondPeer,
-            []
+            [],
         );
 
         // expect(loadedStream?.[me.id]?.value).toEqual(loadedNestedStream);
@@ -130,7 +134,7 @@ describe("CoStream resolution", async () => {
         const loadedTwiceNestedStream = await TwiceNestedStream.load(
             stream[me.id]!.value![me.id]!.value!.id,
             meOnSecondPeer,
-            []
+            [],
         );
 
         // expect(loadedStream?.[me.id]?.value?.[me.id]?.value).toEqual(
@@ -177,7 +181,9 @@ describe("CoStream resolution", async () => {
             { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
@@ -192,7 +198,9 @@ describe("CoStream resolution", async () => {
                 const queue = yield* $(Queue.unbounded<TestStream>());
 
                 TestStream.subscribe(
-                    stream.id, meOnSecondPeer , [],
+                    stream.id,
+                    meOnSecondPeer,
+                    [],
                     (subscribedStream) => {
                         console.log(
                             "subscribedStream[me.id]",
@@ -322,7 +330,9 @@ describe("BinaryCoStream loading & Subscription", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
-        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -336,7 +346,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
         const loadedStream = await BinaryCoStream.load(
             stream.id,
             meOnSecondPeer,
-            []
+            [],
         );
 
         expect(loadedStream?.getChunks()).toEqual({
@@ -357,7 +367,9 @@ describe("BinaryCoStream loading & Subscription", async () => {
             { peer1role: "server", peer2role: "client" },
         );
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-        if (!isControlledAccount(me)) { throw("me is not a controlled account") }
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
@@ -372,7 +384,9 @@ describe("BinaryCoStream loading & Subscription", async () => {
                 const queue = yield* $(Queue.unbounded<BinaryCoStream>());
 
                 BinaryCoStream.subscribe(
-                    stream.id, meOnSecondPeer, [],
+                    stream.id,
+                    meOnSecondPeer,
+                    [],
                     (subscribedStream) => {
                         void Effect.runPromise(
                             Queue.offer(queue, subscribedStream),

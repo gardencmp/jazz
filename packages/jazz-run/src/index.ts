@@ -7,7 +7,12 @@ import {
     websocketWritableStream,
 } from "cojson-transport-nodejs-ws";
 import { WebSocket } from "ws";
-import { Account, WasmCrypto, cojsonInternals, isControlledAccount } from "jazz-tools";
+import {
+    Account,
+    WasmCrypto,
+    cojsonInternals,
+    isControlledAccount,
+} from "jazz-tools";
 import type { AccountID } from "cojson";
 
 const jazzTools = Command.make("jazz-tools");

@@ -52,7 +52,7 @@ export class Account
     }
     static {
         this._schema = {
-            profile: {ref: () => Profile, optional: false} satisfies Schema,
+            profile: { ref: () => Profile, optional: false } satisfies Schema,
             root: "json" satisfies Schema,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
@@ -62,9 +62,7 @@ export class Account
         return this as Account;
     }
     get _loadedAs(): Account {
-        return this.isMe
-            ? this
-            : Account.fromNode(this._raw.core.node);
+        return this.isMe ? this : Account.fromNode(this._raw.core.node);
     }
 
     declare profile: Profile | null;
@@ -124,8 +122,7 @@ export class Account
         });
 
         if (this.isMe) {
-            this.sessionID =
-                options.fromRaw.core.node.currentSessionID;
+            this.sessionID = options.fromRaw.core.node.currentSessionID;
         }
 
         return new Proxy(
@@ -140,7 +137,7 @@ export class Account
         }
     }
 
-    async acceptInvite <V extends CoValue>(
+    async acceptInvite<V extends CoValue>(
         valueID: ID<V>,
         inviteSecret: InviteSecret,
         coValueClass: CoValueClass<V>,
@@ -154,11 +151,7 @@ export class Account
             inviteSecret,
         );
 
-        return coValueClass.load(
-            valueID,
-            this as Account,
-            [],
-        );
+        return coValueClass.load(valueID, this as Account, []);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
 
@@ -213,10 +206,7 @@ export class Account
         return this.fromNode(node) as A;
     }
 
-    static fromNode<A extends Account>(
-        this: ClassOf<A>,
-        node: LocalNode,
-    ): A {
+    static fromNode<A extends Account>(this: ClassOf<A>, node: LocalNode): A {
         return new this({
             fromRaw: node.account as RawControlledAccount,
         }) as A;
@@ -313,10 +303,7 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
 };
 
 /** @category Identity & Permissions */
-export class AccountCtx extends Context.Tag("Account")<
-    AccountCtx,
-    Account
->() {}
+export class AccountCtx extends Context.Tag("Account")<AccountCtx, Account>() {}
 
 /** @category Identity & Permissions */
 export function isControlledAccount(account: Account): account is Account & {

@@ -7,7 +7,6 @@ export function ResponsiveIframe(
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
 
-
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [url, setUrl] = useState<string | undefined>();
     const [src, setSrc] = useState<string | undefined>();
@@ -41,8 +40,16 @@ export function ResponsiveIframe(
     }, [containerRef]);
 
     useLayoutEffect(() => {
-        setSrc(window.location.hostname === "localhost" ? props.localSrc : props.src);
-        setUrl(window.location.hostname === "localhost" ? props.localSrc : props.src);
+        setSrc(
+            window.location.hostname === "localhost"
+                ? props.localSrc
+                : props.src,
+        );
+        setUrl(
+            window.location.hostname === "localhost"
+                ? props.localSrc
+                : props.src,
+        );
     }, [props.src, props.localSrc]);
 
     return (

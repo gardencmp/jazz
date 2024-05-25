@@ -118,7 +118,11 @@ export class SubscriptionScope<Root extends CoValue> {
         }
     }
 
-    invalidate(id: ID<CoValue>, fromChild?: ID<CoValue>, seen: Set<ID<CoValue>> = new Set()) {
+    invalidate(
+        id: ID<CoValue>,
+        fromChild?: ID<CoValue>,
+        seen: Set<ID<CoValue>> = new Set(),
+    ) {
         if (seen.has(id)) return;
         TRACE_INVALIDATIONS &&
             console.log(

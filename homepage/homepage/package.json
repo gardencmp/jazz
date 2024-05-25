@@ -12,7 +12,7 @@
     },
     "lint-staged": {
         "*.{ts,tsx}": "eslint --fix",
-    "*.{js,jsx,mdx,json}": "prettier --write"
+        "*.{js,jsx,mdx,json}": "prettier --write"
     },
     "dependencies": {
         "@evilmartians/harmony": "^1.0.0",
