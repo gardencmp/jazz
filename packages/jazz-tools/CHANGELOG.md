@@ -1,5 +1,79 @@
 # jazz-autosub
 
+## 0.7.0
+
+### Minor Changes
+
+- e299c3e: New simplified API
+
+### Patch Changes
+
+- 8636319: Fix infinite recursion in subscriptionScope
+- 8636319: Fix type of init param for CoMap.create
+- 1a35307: Implement first devtools formatters
+- 96c494f: Implement profile visibility based on groups & new migration signature
+- 59c18c3: CoMap fix
+- 19f52b7: Fixed bug with newRandomSessionID being called before crypto was ready
+- 8636319: Implement deep loading, simplify API
+- 19004b4: Add .all to CoStreamEntry
+- a78f168: Make Account -> Profile a lazy ref schema
+- 52675c9: Fix CoList.splice / RawCoList.append
+- 129e2c1: More precise imports from @effect/schema
+- 1cfa279: More superclass-compatible CoMaps
+- 704af7d: Add maxWidth option for loading images
+- 460478f: Use effect 3.0
+- 6b0418f: Fix image resolution loading
+- ed5643a: Fix CoMap \_refs for co.items
+- bde684f: CoValue casting & auto-subbing \_owner
+- c4151fc: Support stricter TS lint rules
+- 63374cc: Relax types of CoMap.\_schema
+- 01ac646: Make CoMaps even more subclassable
+- a5e68a4: Make refs type more precise
+- 952982e: Consistent proxy based API
+- 1a35307: Add ability to declare minimum required data in subscribe & Improve property access tracing
+- 5fa277c: Fix CoMap.Record.toJSON()
+- 60d5ca2: Introduce jazz-tools CLI
+- 21771c4: Reintroduce changes from main
+- 77c2b56: Get rid of self generics, new create syntax
+- 63374cc: Fix schema of Account & Group
+- d2e03ff: Fix variance of ID.\_\_type
+- 354bdcd: Even friendlier for subclassing CoMap
+- 60d5ca2: Clean up exports
+- 69ac514: Use effect schema much less
+- f8a5c46: Fix CoStream types
+- f0f6f1b: Clean up API more & re-add jazz-nodejs
+- e5eed5b: Make refs on list more precise
+- 1a44f87: Refactoring
+- 627d895: Get rid of Co namespace
+- 1200aae: Cache CoValue proxies
+- 63374cc: Make sure delete on CoMaps deletes keys
+- ece35b3: Make fast-check a direct dependency to help dev time resolution
+- 38d4410: CoMap fixes and improvements
+- 85d2b62: More subclass-friendly types in CoMap
+- fd86c11: Extract jazz cli into jazz-run package
+- 52675c9: Fix Costream[...].all
+- Updated dependencies [1a35307]
+- Updated dependencies [96c494f]
+- Updated dependencies [19f52b7]
+- Updated dependencies [d8fe2b1]
+- Updated dependencies [1200aae]
+- Updated dependencies [52675c9]
+- Updated dependencies [1a35307]
+- Updated dependencies [e299c3e]
+- Updated dependencies [bf0f8ec]
+- Updated dependencies [c4151fc]
+- Updated dependencies [8636319]
+- Updated dependencies [952982e]
+- Updated dependencies [21771c4]
+- Updated dependencies [69ac514]
+- Updated dependencies [f0f6f1b]
+- Updated dependencies [1a44f87]
+- Updated dependencies [627d895]
+- Updated dependencies [63374cc]
+- Updated dependencies [a423eee]
+  - cojson@0.7.0
+  - cojson-transport-nodejs-ws@0.7.0
+
 ## 0.7.0-alpha.42
 
 ### Patch Changes

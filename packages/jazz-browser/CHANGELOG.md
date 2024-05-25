@@ -1,5 +1,83 @@
 # jazz-browser
 
+## 0.7.0
+
+### Minor Changes
+
+- e299c3e: New simplified API
+
+### Patch Changes
+
+- 1a35307: WIP working-ish version of LSM storage
+- 59c18c3: CoMap fix
+- 8636319: Implement deep loading, simplify API
+- d8fe2b1: Expose experimental OPFS storage
+- c4151fc: Support stricter TS lint rules
+- daee49c: Add missing @scure/bip39 dep
+- 952982e: Consistent proxy based API
+- d2e03ff: Fix variance of ID.\_\_type
+- 354bdcd: Even friendlier for subclassing CoMap
+- 60d5ca2: Clean up exports
+- 69ac514: Use effect schema much less
+- f0f6f1b: Clean up API more & re-add jazz-nodejs
+- 1a44f87: Refactoring
+- 627d895: Get rid of Co namespace
+- 85d2b62: More subclass-friendly types in CoMap
+- Updated dependencies [8636319]
+- Updated dependencies [1a35307]
+- Updated dependencies [8636319]
+- Updated dependencies [1a35307]
+- Updated dependencies [96c494f]
+- Updated dependencies [59c18c3]
+- Updated dependencies [19f52b7]
+- Updated dependencies [8636319]
+- Updated dependencies [d8fe2b1]
+- Updated dependencies [19004b4]
+- Updated dependencies [a78f168]
+- Updated dependencies [1200aae]
+- Updated dependencies [52675c9]
+- Updated dependencies [129e2c1]
+- Updated dependencies [1cfa279]
+- Updated dependencies [704af7d]
+- Updated dependencies [1a35307]
+- Updated dependencies [460478f]
+- Updated dependencies [6b0418f]
+- Updated dependencies [e299c3e]
+- Updated dependencies [ed5643a]
+- Updated dependencies [bde684f]
+- Updated dependencies [bf0f8ec]
+- Updated dependencies [c4151fc]
+- Updated dependencies [63374cc]
+- Updated dependencies [8636319]
+- Updated dependencies [01ac646]
+- Updated dependencies [a5e68a4]
+- Updated dependencies [952982e]
+- Updated dependencies [1a35307]
+- Updated dependencies [5fa277c]
+- Updated dependencies [60d5ca2]
+- Updated dependencies [21771c4]
+- Updated dependencies [77c2b56]
+- Updated dependencies [63374cc]
+- Updated dependencies [d2e03ff]
+- Updated dependencies [354bdcd]
+- Updated dependencies [60d5ca2]
+- Updated dependencies [69ac514]
+- Updated dependencies [f8a5c46]
+- Updated dependencies [f0f6f1b]
+- Updated dependencies [e5eed5b]
+- Updated dependencies [1a44f87]
+- Updated dependencies [627d895]
+- Updated dependencies [1200aae]
+- Updated dependencies [63374cc]
+- Updated dependencies [ece35b3]
+- Updated dependencies [38d4410]
+- Updated dependencies [85d2b62]
+- Updated dependencies [fd86c11]
+- Updated dependencies [52675c9]
+  - jazz-tools@0.7.0
+  - cojson@0.7.0
+  - cojson-storage-indexeddb@0.7.0
+
 ## 0.7.0-alpha.42
 
 ### Patch Changes

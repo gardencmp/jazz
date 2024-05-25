@@ -1,6 +1,6 @@
 {
   "name": "jazz-react",
-  "version": "0.7.0-alpha.42",
+  "version": "0.7.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
