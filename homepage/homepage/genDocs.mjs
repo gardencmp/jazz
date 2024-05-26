@@ -40,8 +40,14 @@ for (const { packageName, entryPoint } of [
         pretty: false,
         preserveWatchOutput: true,
     });
-    app.convertAndWatch(async (project) => {
+    if (process.argv.includes("--build")) {
+        const project = await app.convert();
         await app.generateJson(project, "typedoc/" + packageName + ".json");
-        console.log(packageName + " done.");
-    });
+            console.log(packageName + " done.");
+    } else {
+        app.convertAndWatch(async (project) => {
+            await app.generateJson(project, "typedoc/" + packageName + ".json");
+            console.log(packageName + " done.");
+        });
+    }
 }

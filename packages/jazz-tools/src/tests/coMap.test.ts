@@ -2,7 +2,14 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, Encoders, CoMap, co, WasmCrypto } from "../index.js";
+import {
+    Account,
+    Encoders,
+    CoMap,
+    co,
+    WasmCrypto,
+    isControlledAccount,
+} from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -74,7 +81,7 @@ describe("Simple CoMap operations", async () => {
 
     class RecursiveMap extends CoMap {
         name = co.string;
-        next: co<RecursiveMap | null> = co.ref(RecursiveMap);
+        next?: co<RecursiveMap | null> = co.ref(RecursiveMap);
     }
 
     const recursiveMap = RecursiveMap.create(
@@ -235,6 +242,9 @@ describe("CoMap resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -245,7 +255,7 @@ describe("CoMap resolution", async () => {
             crypto: Crypto,
         });
 
-        const loadedMap = await TestMap.load(map.id, { as: meOnSecondPeer });
+        const loadedMap = await TestMap.load(map.id, meOnSecondPeer, {});
 
         expect(loadedMap?.color).toEqual("red");
         expect(loadedMap?.height).toEqual(10);
@@ -253,9 +263,11 @@ describe("CoMap resolution", async () => {
         expect(loadedMap?._refs.nested?.id).toEqual(map.nested?.id);
         expect(loadedMap?._refs.nested?.value).toEqual(null);
 
-        const loadedNestedMap = await NestedMap.load(map.nested!.id, {
-            as: meOnSecondPeer,
-        });
+        const loadedNestedMap = await NestedMap.load(
+            map.nested!.id,
+            meOnSecondPeer,
+            {},
+        );
 
         expect(loadedMap?.nested?.name).toEqual("nested");
         expect(loadedMap?.nested?._fancyName).toEqual("Sir nested");
@@ -264,7 +276,8 @@ describe("CoMap resolution", async () => {
 
         const loadedTwiceNestedMap = await TwiceNestedMap.load(
             map.nested!.twiceNested!.id,
-            { as: meOnSecondPeer },
+            meOnSecondPeer,
+            {},
         );
 
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sour");
@@ -299,9 +312,10 @@ describe("CoMap resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
-
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
@@ -317,7 +331,8 @@ describe("CoMap resolution", async () => {
 
                 TestMap.subscribe(
                     map.id,
-                    { as: meOnSecondPeer },
+                    meOnSecondPeer,
+                    {},
                     (subscribedMap) => {
                         console.log(
                             "subscribedMap.nested?.twiceNested?.taste",
@@ -383,7 +398,7 @@ describe("CoMap resolution", async () => {
 
     class TestMapWithOptionalRef extends CoMap {
         color = co.string;
-        nested? = co.ref(NestedMap);
+        nested = co.ref(NestedMap, { optional: true });
     }
 
     test("Construction with optional", async () => {

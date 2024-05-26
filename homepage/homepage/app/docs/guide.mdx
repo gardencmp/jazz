@@ -313,8 +313,8 @@ You'll immediately notice that we're doing something non-idiomatic for React: we
 
 This works because CoValues intercept these edits, update their local view accordingly (React doesn't really care after rendering) and then notify subscribers of the change, who will receive a fresh, updated view of the CoValue.
 
-<aside className="text-sm border rounded px-4 my-4 max-w-3xl [&_pre]:mx-0">
-    <h4 className="not-prose text-base py-2 mb-3 -mx-4 px-4 border-b">💡 A Quick Overview of Subscribing to CoValues</h4>
+<aside className="text-sm border border-stone-300 dark:border-stone-700 rounded px-4 my-4 max-w-3xl [&_pre]:mx-0">
+    <h4 className="not-prose text-base py-2 mb-3 -mx-4 px-4 border-b border-stone-300 dark:border-stone-700">💡 A Quick Overview of Subscribing to CoValues</h4>
 
     There are three main ways to subscribe to a CoValue:
 
@@ -352,19 +352,70 @@ This works because CoValues intercept these edits, update their local view accor
 
 </aside>
 
-We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which will cause the `App` component and its children to re-render whenever the Issue changes.
+We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which will cause the `App` component and its children **to** re-render whenever the Issue changes.
 
 <h3>Automatic local & cloud persistence</h3>
 
 So far our Issue CoValues just looked like ephemeral local state. We'll now start exploring the first main feature that makes CoValues special: **automatic persistence.**
 
-<span className="text-amber-500">
-    🚧 OH NO - This is as far as we've written the Guide. 🚧
-</span>
-{" -> "}
-<a href="https://github.com/gardencmp/jazz/issues/186">Complain on GitHub</a>
+Actually, all the Issue CoValues we've created so far **have already been automatically persisted** to the cloud and locally - but we loose track of their ID after a reload.
+
+So let's store the ID in URL state and make sure our useState is in sync with that.
+
+```tsx subtle=1,2,3,4,5,6,7,12,13,14,15,16,17,18,19,20,21,22,23,24,26,27,28,29,30,31,32,33,34,35
+import { useState } from "react";
+import { Issue } from "./schema";
+import { IssueComponent } from "./components/Issue";
+import { useAccount } from "./main";
+
+function App() {
+    const { me } = useAccount();
+    const [issueID, setIssueID] = useState<ID<Issue>>(
+        window.location.search?.replace("?issue=", "") || undefined
+    );
+
+    const issue = useCoState(Issue, issueID);
+
+    const createIssue = () => {
+        const newIssue = Issue.create(
+            {
+                title: "Buy terrarium",
+                description: "Make sure it's big enough for 10 snails.",
+                estimate: 5,
+                status: "backlog",
+            },
+            { owner: me },
+        );
+        setIssueID(newIssue.id);
+        window.history.pushState({}, "", `?issue=${newIssue.id}`);
+    };
+
+    if (issue) {
+        return <IssueComponent issue={issue} />;
+    } else {
+        return <button onClick={createIssue}>Create Issue</button>;
+    }
+}
+
+export default App;
+```
+
+Now you should be able to create an issue, reload the page, and still see the same issue.
+
 
 <h3>Remote sync</h3>
+
+But even better, you should be able to:
+
+- copy the URL to a new tab and see the same issue
+- edit the issue and see the changes reflected in the other tab
+
+
+<div className="text-amber-500 mt-52">
+    🚧 OH NO - This is as far as we've written the Guide. 🚧
+</div>
+{" -> "}
+<a href="https://github.com/gardencmp/jazz/issues/186">Complain on GitHub</a>
 
 <h2 id="refs-and-on-demand-subscribe">Refs & Auto-Subscribe</h2>
 

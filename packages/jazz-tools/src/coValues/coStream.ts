@@ -15,10 +15,13 @@ import type {
     SchemaFor,
     Group,
     ID,
-    Me,
     IfCo,
-    ClassOf,
     UnCo,
+    AccountCtx,
+    CoValueClass,
+    DeeplyLoaded,
+    DepthsIn,
+    UnavailableError,
 } from "../internal.js";
 import {
     ItemsSym,
@@ -30,8 +33,15 @@ import {
     InitValues,
     SchemaInit,
     isRefEncoded,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
+import { Effect, Stream } from "effect";
 
 export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
     all: IterableIterator<SingleCoStreamEntry<Item>>;
@@ -47,10 +57,7 @@ export type SingleCoStreamEntry<Item> = {
 
 /** @category CoValues */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class CoStream<Item = any>
-    extends CoValueBase
-    implements CoValue<"CoStream", RawCoStream>
-{
+export class CoStream<Item = any> extends CoValueBase implements CoValue {
     static Of<Item>(item: IfCo<Item, Item>): typeof CoStream<Item> {
         return class CoStreamOf extends CoStream<Item> {
             [co.items] = item;
@@ -83,7 +90,7 @@ export class CoStream<Item = any>
         [key: SessionID]: CoStreamEntry<Item>;
     };
     get inCurrentSession(): CoStreamEntry<Item> | undefined {
-        return this.perSession[this._loadedAs.sessionID];
+        return this.perSession[this._loadedAs.sessionID!];
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,7 +122,7 @@ export class CoStream<Item = any>
     }
 
     static create<S extends CoStream>(
-        this: ClassOf<S>,
+        this: CoValueClass<S>,
         init: S extends CoStream<infer Item> ? UnCo<Item>[] : never,
         options: { owner: Account | Group },
     ) {
@@ -179,6 +186,62 @@ export class CoStream<Item = any>
         this._schema ||= {};
         Object.assign(this._schema, def);
     }
+
+    /** @category Subscription & Loading */
+    static load<S extends CoStream, Depth>(
+        this: CoValueClass<S>,
+        id: ID<S>,
+        as: Account,
+        depth: Depth & DepthsIn<S>,
+    ): Promise<DeeplyLoaded<S, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<S extends CoStream, Depth>(
+        this: CoValueClass<S>,
+        id: ID<S>,
+        depth: Depth & DepthsIn<S>,
+    ): Effect.Effect<DeeplyLoaded<S, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<S, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<S extends CoStream, Depth>(
+        this: CoValueClass<S>,
+        id: ID<S>,
+        as: Account,
+        depth: Depth & DepthsIn<S>,
+        listener: (value: DeeplyLoaded<S, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<S, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<S extends CoStream, Depth>(
+        this: CoValueClass<S>,
+        id: ID<S>,
+        depth: Depth & DepthsIn<S>,
+    ): Stream.Stream<DeeplyLoaded<S, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<S, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<S extends CoStream, Depth>(
+        this: S,
+        depth: Depth & DepthsIn<S>,
+    ): Promise<DeeplyLoaded<S, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<S extends CoStream, Depth>(
+        this: S,
+        depth: Depth & DepthsIn<S>,
+        listener: (value: DeeplyLoaded<S, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
+    }
 }
 
 function entryFromRawEntry<Item>(
@@ -189,7 +252,7 @@ function entryFromRawEntry<Item>(
         at: Date;
         value: JsonValue;
     },
-    loadedAs: Account & Me,
+    loadedAs: Account,
     accountID: ID<Account> | undefined,
     itemField: Schema,
 ): Omit<CoStreamEntry<Item>, "all"> {
@@ -239,7 +302,7 @@ function entryFromRawEntry<Item>(
                 new Ref<Account>(
                     accountID as unknown as ID<Account>,
                     loadedAs,
-                    Account,
+                    { ref: Account, optional: false },
                 )?.accessFrom(
                     accessFrom,
                     rawEntry.by +
@@ -438,10 +501,7 @@ const CoStreamPerSessionProxyHandler = (
 });
 
 /** @category CoValues */
-export class BinaryCoStream
-    extends CoValueBase
-    implements CoValue<"BinaryCoStream", RawBinaryCoStream>
-{
+export class BinaryCoStream extends CoValueBase implements CoValue {
     declare id: ID<this>;
     declare _type: "BinaryCoStream";
     declare _raw: RawBinaryCoStream;
@@ -471,12 +531,13 @@ export class BinaryCoStream
                 value: raw.id,
                 enumerable: false,
             },
+            _type: { value: "BinaryCoStream", enumerable: false },
             _raw: { value: raw, enumerable: false },
         });
     }
 
     static create<S extends BinaryCoStream>(
-        this: ClassOf<S>,
+        this: CoValueClass<S>,
         options: { owner: Account | Group },
     ) {
         return new this(options);
@@ -516,19 +577,15 @@ export class BinaryCoStream
 
     static async loadAsBlob(
         id: ID<BinaryCoStream>,
-        options: {
-            as: Account & Me;
+        as: Account,
+        options?: {
             allowUnfinished?: boolean;
-            onProgress?: (progress: number) => void;
         },
     ): Promise<Blob | undefined> {
-        const stream = await this.load(id, {
-            as: options.as,
-            onProgress: options.onProgress,
-        });
+        const stream = await this.load(id, as, []);
 
         return stream?.toBlob({
-            allowUnfinished: options.allowUnfinished,
+            allowUnfinished: options?.allowUnfinished,
         });
     }
 
@@ -587,5 +644,61 @@ export class BinaryCoStream
 
     [inspect]() {
         return this.toJSON();
+    }
+
+    /** @category Subscription & Loading */
+    static load<B extends BinaryCoStream, Depth>(
+        this: CoValueClass<B>,
+        id: ID<B>,
+        as: Account,
+        depth: Depth & DepthsIn<B>,
+    ): Promise<DeeplyLoaded<B, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<B extends BinaryCoStream, Depth>(
+        this: CoValueClass<B>,
+        id: ID<B>,
+        depth: Depth & DepthsIn<B>,
+    ): Effect.Effect<DeeplyLoaded<B, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<B, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<B extends BinaryCoStream, Depth>(
+        this: CoValueClass<B>,
+        id: ID<B>,
+        as: Account,
+        depth: Depth & DepthsIn<B>,
+        listener: (value: DeeplyLoaded<B, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<B, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<B extends BinaryCoStream, Depth>(
+        this: CoValueClass<B>,
+        id: ID<B>,
+        depth: Depth & DepthsIn<B>,
+    ): Stream.Stream<DeeplyLoaded<B, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<B, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<B extends BinaryCoStream, Depth>(
+        this: B,
+        depth: Depth & DepthsIn<B>,
+    ): Promise<DeeplyLoaded<B, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<B extends BinaryCoStream, Depth>(
+        this: B,
+        depth: Depth & DepthsIn<B>,
+        listener: (value: DeeplyLoaded<B, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
     }
 }

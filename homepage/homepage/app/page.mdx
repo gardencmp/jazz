@@ -8,7 +8,7 @@ import {
     ResponsiveIframe,
     ComingSoonBadge,
 } from "@/components/forMdx";
-import { JazzLogo } from "@/components/logos";
+import { JazzLogo, LocalFirstConfLogo } from "@/components/logos";
 import {
     WorkflowIcon,
     UploadCloudIcon,
@@ -18,11 +18,17 @@ import {
     UsersIcon,
     FileLock2Icon,
     HardDriveDownloadIcon,
+    KeyRoundIcon
 } from "lucide-react";
 import { App_tsx, ChatScreen_tsx } from "@/codeSamples/examples/chat/src";
 import Link from "next/link";
 
 <div className="md:pt-20" />
+
+<a href="https://app.localfirstconf.com/schedule/conference/every-app-secretly-wants-to-be-local-first" className="-mt-8 md:-mt-20 float-right top-[5rem] right-4 border border-stone-700 dark:border-stone-300 rounded flex gap-3 items-center px-4 py-2 mb-4 rotate-2 md:rotate-6 no-underline hover:scale-105 transition-transform">
+<div className="text-sm font-bold uppercase">See you in Berlin<br/>May 30-31!</div>
+<LocalFirstConfLogo className="w-24"/>
+</a>
 
 # Instant sync.
 
@@ -32,12 +38,12 @@ import Link from "next/link";
 <GridFeature icon={<MonitorSmartphoneIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Cross-device sync</GridFeature>
 <GridFeature icon={<MultiplayerIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Real-time multiplayer</GridFeature>
 <GridFeature icon={<UsersIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Team/social features</GridFeature>
-<GridFeature icon={<FileLock2Icon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Precise permissions</GridFeature>
-{/* <GridFeature icon={<WorkflowIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>On-demand granular data‑fetching</GridFeature> */}
+<GridFeature icon={<FileLock2Icon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Built-in permissions</GridFeature>
 <GridFeature icon={<UploadCloudIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Cloud sync & storage</GridFeature>
 <GridFeature icon={<HardDriveDownloadIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>On-device storage</GridFeature>
-<GridFeature icon={<PlaneIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Full offline support</GridFeature>
 <GridFeature icon={<GaugeIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>Instant UI updates</GridFeature>
+<GridFeature icon={<KeyRoundIcon strokeWidth={1} strokeLinecap="butt" size={40}/>}>E2EE & signatures</GridFeature>
+
 <div className="col-start-1 row-start-1 row-span-2 col-span-2 px-4 md:px-6 text-base">
 <h2 className="not-prose text-2xl font-medium tracking-tight mt-3 md:mt-5 mb-6">Hard things are easy now.</h2>
 
@@ -69,10 +75,6 @@ Features that used to take months to build now work out-of-the-box.
 </Grid>
 </div>
 
-{/\* ### Wait, where's the backend?
-
-TODO... \*/}
-
 ## Collaborative Values
 
 <Slogan small>Your new building blocks.</Slogan>
@@ -84,7 +86,8 @@ Based on CRDTs and public-key cryptography, CoValues...
 -   Can be created anywhere, are automatically synced & persisted
 -   Always keep full edit history & author metadata
 -   Automatically resolve most conflicts
-    </div>
+
+</div>
 
 ### Bread-and-butter datastructures
 

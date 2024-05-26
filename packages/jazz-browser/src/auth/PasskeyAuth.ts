@@ -5,7 +5,7 @@ import {
     CryptoProvider,
     Peer,
 } from "cojson";
-import { Account, CoValueClass, ID, Me } from "jazz-tools";
+import { Account, CoValueClass, ID, isControlledAccount } from "jazz-tools";
 import { AuthProvider } from "./auth.js";
 import { SessionProvider } from "../index.js";
 
@@ -31,7 +31,7 @@ export class BrowserPasskeyAuth<Acc extends Account>
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
         crypto: CryptoProvider,
-    ): Promise<Acc & Me> {
+    ): Promise<Acc> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey],
@@ -45,13 +45,13 @@ export class BrowserPasskeyAuth<Acc extends Account>
                 sessionID,
                 peersToLoadFrom: initialPeers,
                 crypto,
-            })) as Acc & Me;
+            })) as Acc;
 
             this.driver.onSignedIn({ logOut });
 
             return Promise.resolve(account);
         } else {
-            return new Promise<Acc & Me>((resolveAccount) => {
+            return new Promise<Acc>((resolveAccount) => {
                 this.driver.onReady({
                     signUp: async (username) => {
                         const account = await signUp<Acc>(
@@ -104,7 +104,7 @@ async function signUp<Acc extends Account>(
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
     crypto: CryptoProvider,
-): Promise<Acc & Me> {
+): Promise<Acc> {
     const secretSeed = crypto.newRandomSecretSeed();
 
     const account = (await accountSchema.create({
@@ -112,7 +112,10 @@ async function signUp<Acc extends Account>(
         initialAgentSecret: crypto.agentSecretFromSecretSeed(secretSeed),
         peersToLoadFrom: initialPeers,
         crypto: crypto,
-    })) as Acc & Me;
+    })) as Acc;
+    if (!isControlledAccount(account)) {
+        throw "account is not a controlled account";
+    }
 
     const webAuthNCredentialPayload = new Uint8Array(
         cojsonInternals.secretSeedLength + cojsonInternals.shortHashLength,
@@ -163,7 +166,7 @@ async function logIn<Acc extends Account>(
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
     crypto: CryptoProvider,
-): Promise<Acc & Me> {
+): Promise<Acc> {
     const webAuthNCredential = (await navigator.credentials.get({
         publicKey: {
             challenge: Uint8Array.from([0, 1, 2]),
@@ -210,7 +213,7 @@ async function logIn<Acc extends Account>(
         sessionID: await getSessionFor(accountID),
         peersToLoadFrom: initialPeers,
         crypto,
-    })) as Acc & Me;
+    })) as Acc;
 
     return account;
 }

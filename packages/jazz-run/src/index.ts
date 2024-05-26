@@ -7,8 +7,12 @@ import {
     websocketWritableStream,
 } from "cojson-transport-nodejs-ws";
 import { WebSocket } from "ws";
-import type { Me } from "jazz-tools";
-import { Account, WasmCrypto, cojsonInternals } from "jazz-tools";
+import {
+    Account,
+    WasmCrypto,
+    cojsonInternals,
+    isControlledAccount,
+} from "jazz-tools";
 import type { AccountID } from "cojson";
 
 const jazzTools = Command.make("jazz-tools");
@@ -26,7 +30,7 @@ const accountCreate = Command.make(
 
             const crypto = yield* Effect.promise(() => WasmCrypto.create());
 
-            const account: Account & Me = yield* Effect.promise(async () =>
+            const account: Account = yield* Effect.promise(async () =>
                 Account.create({
                     creationProps: { name },
                     peersToLoadFrom: [
@@ -40,6 +44,9 @@ const accountCreate = Command.make(
                     crypto,
                 }),
             );
+            if (!isControlledAccount(account)) {
+                throw new Error("account is not a controlled account");
+            }
 
             yield* Effect.promise(() =>
                 account._raw.core.node.syncManager.syncCoValue(

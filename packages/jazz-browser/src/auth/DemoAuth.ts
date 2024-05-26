@@ -1,5 +1,5 @@
 import { AgentSecret, CryptoProvider, Peer } from "cojson";
-import { Account, CoValueClass, ID, Me } from "jazz-tools";
+import { Account, CoValueClass, ID, isControlledAccount } from "jazz-tools";
 import { AuthProvider } from "./auth.js";
 import { SessionProvider } from "../index.js";
 
@@ -21,7 +21,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
         crypto: CryptoProvider,
-    ): Promise<Acc & Me> {
+    ): Promise<Acc> {
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey],
@@ -35,19 +35,22 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                 sessionID,
                 peersToLoadFrom: initialPeers,
                 crypto,
-            })) as Acc & Me;
+            })) as Acc;
 
             this.driver.onSignedIn({ logOut });
             return Promise.resolve(account);
         } else {
-            return new Promise<Acc & Me>((resolveAccount) => {
+            return new Promise<Acc>((resolveAccount) => {
                 this.driver.onReady({
                     signUp: async (username) => {
                         const account = (await this.accountSchema.create({
                             creationProps: { name: username },
                             peersToLoadFrom: initialPeers,
                             crypto,
-                        })) as Acc & Me;
+                        })) as Acc;
+                        if (!isControlledAccount(account)) {
+                            throw "account is not a controlled account";
+                        }
 
                         const storageData = JSON.stringify({
                             accountID: account.id,
@@ -91,7 +94,7 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                             ),
                             peersToLoadFrom: initialPeers,
                             crypto,
-                        })) as Acc & Me;
+                        })) as Acc;
 
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });

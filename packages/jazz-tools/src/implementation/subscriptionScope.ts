@@ -2,10 +2,9 @@ import type { RawCoValue } from "cojson";
 import type {
     Account,
     CoValue,
-    CoValueBase,
     ID,
-    Me,
-    ClassOf,
+    CoValueClass,
+    CoValueFromRaw,
 } from "../internal.js";
 
 export const subscriptionsScopes = new WeakMap<
@@ -18,7 +17,7 @@ const TRACE_INVALIDATIONS = false;
 
 export class SubscriptionScope<Root extends CoValue> {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
-    subscriber: Account & Me;
+    subscriber: Account;
     entries = new Map<
         ID<CoValue>,
         | { state: "loading"; immediatelyUnsub?: boolean }
@@ -36,7 +35,7 @@ export class SubscriptionScope<Root extends CoValue> {
 
     constructor(
         root: Root,
-        rootSchema: ClassOf<Root> & typeof CoValueBase,
+        rootSchema: CoValueClass<Root> & CoValueFromRaw<Root>,
         onUpdate: (newRoot: Root) => void,
     ) {
         this.rootEntry = {
@@ -119,7 +118,12 @@ export class SubscriptionScope<Root extends CoValue> {
         }
     }
 
-    invalidate(id: ID<CoValue>, fromChild?: ID<CoValue>) {
+    invalidate(
+        id: ID<CoValue>,
+        fromChild?: ID<CoValue>,
+        seen: Set<ID<CoValue>> = new Set(),
+    ) {
+        if (seen.has(id)) return;
         TRACE_INVALIDATIONS &&
             console.log(
                 "invalidating",
@@ -129,8 +133,9 @@ export class SubscriptionScope<Root extends CoValue> {
                 this.cachedValues[id],
             );
         delete this.cachedValues[id];
+        seen.add(id);
         for (const parent of this.parents[id] || []) {
-            this.invalidate(parent, id);
+            this.invalidate(parent, id, seen);
         }
     }
 

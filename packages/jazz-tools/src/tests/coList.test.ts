@@ -2,7 +2,13 @@ import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, CoList, WasmCrypto, co } from "../index.js";
+import {
+    Account,
+    CoList,
+    WasmCrypto,
+    co,
+    isControlledAccount,
+} from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -156,6 +162,9 @@ describe("CoList resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -166,14 +175,16 @@ describe("CoList resolution", async () => {
             crypto: Crypto,
         });
 
-        const loadedList = await TestList.load(list.id, { as: meOnSecondPeer });
+        const loadedList = await TestList.load(list.id, meOnSecondPeer, []);
 
         expect(loadedList?.[0]).toBe(null);
         expect(loadedList?._refs[0]?.id).toEqual(list[0]!.id);
 
-        const loadedNestedList = await NestedList.load(list[0]!.id, {
-            as: meOnSecondPeer,
-        });
+        const loadedNestedList = await NestedList.load(
+            list[0]!.id,
+            meOnSecondPeer,
+            [],
+        );
 
         expect(loadedList?.[0]).toBeDefined();
         expect(loadedList?.[0]?.[0]).toBe(null);
@@ -182,7 +193,8 @@ describe("CoList resolution", async () => {
 
         const loadedTwiceNestedList = await TwiceNestedList.load(
             list[0]![0]!.id,
-            { as: meOnSecondPeer },
+            meOnSecondPeer,
+            [],
         );
 
         expect(loadedList?.[0]?.[0]).toBeDefined();
@@ -209,6 +221,9 @@ describe("CoList resolution", async () => {
             "second",
             { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
@@ -225,7 +240,8 @@ describe("CoList resolution", async () => {
 
                 TestList.subscribe(
                     list.id,
-                    { as: meOnSecondPeer },
+                    meOnSecondPeer,
+                    [],
                     (subscribedList) => {
                         console.log(
                             "subscribedList?.[0]?.[0]?.[0]",

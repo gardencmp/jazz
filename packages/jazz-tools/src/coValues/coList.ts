@@ -1,39 +1,74 @@
 import type { RawCoList } from "cojson";
 import { RawAccount } from "cojson";
-import type { Effect, Stream } from "effect";
 import type {
-    AccountCtx,
     CoValue,
     Schema,
     SchemaFor,
     ID,
     RefEncoded,
-    ClassOf,
-    UnavailableError,
     UnCo,
-    RequireOptions,
+    CoValueClass,
+    DepthsIn,
+    DeeplyLoaded,
+    UnavailableError,
+    AccountCtx,
+    CoValueFromRaw,
 } from "../internal.js";
 import {
     Account,
-    CoValueBase,
     Group,
     InitValues,
     ItemsSym,
     Ref,
     SchemaInit,
     co,
+    ensureCoValueLoaded,
     inspect,
     isRefEncoded,
+    loadCoValue,
+    loadCoValueEf,
     makeRefs,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
+import { Effect, Stream } from "effect";
 
-/** @category CoValues */
+/**
+ * CoLists are collaborative versions of plain arrays.
+ *
+ *  * @categoryDescription Content
+ * You can access items on a `CoList` as if they were normal items on a plain array, using `[]` notation, etc.
+ *
+ * Since `CoList` is a subclass of `Array`, you can use all the normal array methods like `push`, `pop`, `splice`, etc.
+ *
+ * ```ts
+ * colorList[0];
+ * colorList[3] = "yellow";
+ * colorList.push("Kawazaki Green");
+ * colorList.splice(1, 1);
+ * ```
+ *
+ * @category CoValues
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class CoList<Item = any>
-    extends Array<Item>
-    implements CoValue<"CoList", RawCoList>
-{
+export class CoList<Item = any> extends Array<Item> implements CoValue {
+    /**
+     * Declare a `CoList` by subclassing `CoList.Of(...)` and passing the item schema using `co`.
+     *
+     * @example
+     * ```ts
+     * class ColorList extends CoList.Of(
+     *   co.string
+     * ) {}
+     * class AnimalList extends CoList.Of(
+     *   co.ref(Animal)
+     * ) {}
+     * ```
+     *
+     * @category Declaration
+     */
     static Of<Item>(item: Item): typeof CoList<Item> {
         // TODO: cache superclass for item class
         return class CoListOf extends CoList<Item> {
@@ -41,44 +76,72 @@ export class CoList<Item = any>
         };
     }
 
-    /** @deprecated Use UPPERCASE `CoList.Of` instead! */
+    /**
+     * @ignore
+     * @deprecated Use UPPERCASE `CoList.Of` instead! */
     static of(..._args: never): never {
         throw new Error("Can't use Array.of with CoLists");
     }
 
+    /**
+     * The ID of this `CoList`
+     * @category Content */
     id!: ID<this>;
+    /** @category Type Helpers */
     _type!: "CoList";
     static {
         this.prototype._type = "CoList";
     }
+    /** @category Internals */
     _raw!: RawCoList;
+    /** @category Internals */
     _instanceID!: string;
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
+    /** @internal */
     get _schema(): {
         [ItemsSym]: SchemaFor<Item>;
     } {
         return (this.constructor as typeof CoList)._schema;
     }
 
+    /** @category Collaboration */
     get _owner(): Account | Group {
         return this._raw.group instanceof RawAccount
             ? Account.fromRaw(this._raw.group)
             : Group.fromRaw(this._raw.group);
     }
 
-    /** @category Content */
+    /**
+     * If a `CoList`'s items are a `co.ref(...)`, you can use `coList._refs[i]` to access
+     * the `Ref` instead of the potentially loaded/null value.
+     *
+     * This allows you to always get the ID or load the value manually.
+     *
+     * @example
+     * ```ts
+     * animals._refs[0].id; // => ID<Animal>
+     * animals._refs[0].value;
+     * // => Animal | null
+     * const animal = await animals._refs[0].load();
+     * ```
+     *
+     * @category Content
+     **/
     get _refs(): {
-        [idx: number]: NonNullable<Item> extends CoValue
-            ? Ref<NonNullable<Item>>
+        [idx: number]: Exclude<Item, null> extends CoValue
+            ? Ref<UnCo<Exclude<Item, null>>>
             : never;
     } & {
         length: number;
         [Symbol.iterator](): IterableIterator<
-            NonNullable<Item> extends CoValue ? Ref<NonNullable<Item>> : never
+            Exclude<Item, null> extends CoValue
+                ? Ref<Exclude<Item, null>>
+                : never
         >;
     } {
         return makeRefs<number>(
@@ -146,17 +209,35 @@ export class CoList<Item = any>
         return new Proxy(this, CoListProxyHandler as ProxyHandler<this>);
     }
 
+    /**
+     * Create a new CoList with the given initial values and owner.
+     *
+     * The owner (a Group or Account) determines access rights to the CoMap.
+     *
+     * The CoList will immediately be persisted and synced to connected peers.
+     *
+     * @example
+     * ```ts
+     * const colours = ColorList.create(
+     *   ["red", "green", "blue"],
+     *   { owner: me }
+     * );
+     * const animals = AnimalList.create(
+     *   [cat, dog, fish],
+     *   { owner: me }
+     * );
+     * ```
+     *
+     * @category Creation
+     **/
     static create<L extends CoList>(
-        this: ClassOf<L>,
+        this: CoValueClass<L>,
         items: UnCo<L[number]>[],
         options: { owner: Account | Group },
     ) {
         return new this({ init: items, owner: options.owner });
     }
 
-    push(...items: Item[]): number;
-    /** @private For exact type compatibility with Array superclass */
-    push(...items: Item[]): number;
     push(...items: Item[]): number {
         for (const item of toRawItems(
             items as Item[],
@@ -168,9 +249,6 @@ export class CoList<Item = any>
         return this._raw.entries().length;
     }
 
-    unshift(...items: Item[]): number;
-    /** @private For exact type compatibility with Array superclass */
-    unshift(...items: Item[]): number;
     unshift(...items: Item[]): number {
         for (const item of toRawItems(
             items as Item[],
@@ -241,56 +319,15 @@ export class CoList<Item = any>
         return this.toJSON();
     }
 
-    subscribe!: (
-        listener: (update: this) => void,
-        options?: RequireOptions<this>,
-    ) => () => void;
-    static {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.prototype.subscribe = CoValueBase.prototype.subscribe as any;
-    }
-
-    subscribeEf!: (
-        options?: RequireOptions<this>,
-    ) => Stream.Stream<this, "unavailable", never>;
-    static {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.prototype.subscribeEf = CoValueBase.prototype.subscribeEf as any;
-    }
-
+    /** @category Internals */
     static fromRaw<V extends CoList>(
-        this: ClassOf<V> & typeof CoList,
+        this: CoValueClass<V> & typeof CoList,
         raw: RawCoList,
     ) {
         return new this({ fromRaw: raw });
     }
 
-    static loadEf = CoValueBase.loadEf as unknown as <V extends CoValue>(
-        this: ClassOf<V>,
-        id: ID<V>,
-    ) => Effect.Effect<V, UnavailableError, AccountCtx>;
-    static load = CoValueBase.load as unknown as <V extends CoValue>(
-        this: ClassOf<V>,
-        id: ID<V>,
-        options: { as: Account | Group },
-    ) => Promise<V | undefined>;
-    static subscribeEf = CoValueBase.subscribeEf as unknown as <
-        V extends CoValue,
-    >(
-        this: ClassOf<V>,
-        id: ID<V>,
-        options?: { require?: (value: V) => boolean | undefined },
-    ) => Stream.Stream<V, UnavailableError, AccountCtx>;
-    static subscribe = CoValueBase.subscribe as unknown as <V extends CoValue>(
-        this: ClassOf<V>,
-        id: ID<V>,
-        options: {
-            as: Account | Group;
-            require?: (value: V) => boolean | undefined;
-        },
-        onUpdate: (value: V) => void,
-    ) => () => void;
-
+    /** @internal */
     static schema<V extends CoList>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this: { new (...args: any): V } & typeof CoList,
@@ -298,6 +335,143 @@ export class CoList<Item = any>
     ) {
         this._schema ||= {};
         Object.assign(this._schema, def);
+    }
+
+    /**
+     * Load a `CoList` with a given ID, as a given account.
+     *
+     * `depth` specifies if item CoValue references should be loaded as well before resolving.
+     * The `DeeplyLoaded` return type guarantees that corresponding referenced CoValues are loaded to the specified depth.
+     *
+     * You can pass `[]` or for shallowly loading only this CoList, or `[itemDepth]` for recursively loading referenced CoValues.
+     *
+     * Check out the `load` methods on `CoMap`/`CoList`/`CoStream`/`Group`/`Account` to see which depth structures are valid to nest.
+     *
+     * @example
+     * ```ts
+     * const animalsWithVets =
+     *   await ListOfAnimals.load(
+     *     "co_zdsMhHtfG6VNKt7RqPUPvUtN2Ax",
+     *     me,
+     *     [{ vet: {} }]
+     *   );
+     * ```
+     *
+     * @category Subscription & Loading
+     */
+    static load<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        as: Account,
+        depth: Depth & DepthsIn<L>,
+    ): Promise<DeeplyLoaded<L, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /**
+     * Effectful version of `CoList.load()`.
+     *
+     * Needs to be run inside an `AccountCtx` context.
+     *
+     * @category Subscription & Loading
+     */
+    static loadEf<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        depth: Depth & DepthsIn<L>,
+    ): Effect.Effect<DeeplyLoaded<L, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<L, Depth>(this, id, depth);
+    }
+
+    /**
+     * Load and subscribe to a `CoList` with a given ID, as a given account.
+     *
+     * Automatically also subscribes to updates to all referenced/nested CoValues as soon as they are accessed in the listener.
+     *
+     * `depth` specifies if item CoValue references should be loaded as well before calling `listener` for the first time.
+     * The `DeeplyLoaded` return type guarantees that corresponding referenced CoValues are loaded to the specified depth.
+     *
+     * You can pass `[]` or for shallowly loading only this CoList, or `[itemDepth]` for recursively loading referenced CoValues.
+     *
+     * Check out the `load` methods on `CoMap`/`CoList`/`CoStream`/`Group`/`Account` to see which depth structures are valid to nest.
+     *
+     * Returns an unsubscribe function that you should call when you no longer need updates.
+     *
+     * Also see the `useCoState` hook to reactively subscribe to a CoValue in a React component.
+     *
+     * @example
+     * ```ts
+     * const unsub = ListOfAnimals.subscribe(
+     *   "co_zdsMhHtfG6VNKt7RqPUPvUtN2Ax",
+     *   me,
+     *   { vet: {} },
+     *   (animalsWithVets) => console.log(animalsWithVets)
+     * );
+     * ```
+     *
+     * @category Subscription & Loading
+     */
+    static subscribe<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        as: Account,
+        depth: Depth & DepthsIn<L>,
+        listener: (value: DeeplyLoaded<L, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<L, Depth>(this, id, as, depth, listener);
+    }
+
+    /**
+     * Effectful version of `CoList.subscribe()` that returns a stream of updates.
+     *
+     * Needs to be run inside an `AccountCtx` context.
+     *
+     * @category Subscription & Loading
+     */
+    static subscribeEf<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        depth: Depth & DepthsIn<L>,
+    ): Stream.Stream<DeeplyLoaded<L, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<L, Depth>(this, id, depth);
+    }
+
+    /**
+     * Given an already loaded `CoList`, ensure that items are loaded to the specified depth.
+     *
+     * Works like `CoList.load()`, but you don't need to pass the ID or the account to load as again.
+     *
+     * @category Subscription & Loading
+     */
+    ensureLoaded<L extends CoList, Depth>(
+        this: L,
+        depth: Depth & DepthsIn<L>,
+    ): Promise<DeeplyLoaded<L, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /**
+     * Given an already loaded `CoList`, subscribe to updates to the `CoList` and ensure that items are loaded to the specified depth.
+     *
+     * Works like `CoList.subscribe()`, but you don't need to pass the ID or the account to load as again.
+     *
+     * Returns an unsubscribe function that you should call when you no longer need updates.
+     *
+     * @category Subscription & Loading
+     **/
+    subscribe<L extends CoList, Depth>(
+        this: L,
+        depth: Depth & DepthsIn<L>,
+        listener: (value: DeeplyLoaded<L, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
+    }
+
+    /** @category Type Helpers */
+    castAs<Cl extends CoValueClass & CoValueFromRaw<CoValue>>(
+        cl: Cl,
+    ): InstanceType<Cl> {
+        return cl.fromRaw(this._raw) as InstanceType<Cl>;
     }
 }
 

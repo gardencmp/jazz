@@ -2,11 +2,11 @@ import { ID } from 'jazz-tools';
 import { Chat, Message, useCoState } from './app.tsx';
 
 export function ChatScreen(props: { chatID: ID<Chat> }) {
-  const chat = useCoState(Chat, props.chatID);
+  const chat = useCoState(Chat, props.chatID, [{}]);
 
   return chat ? <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
     {chat.length > 0
-      ? chat.map((msg) => msg && <ChatBubble msg={msg} key={msg.id} />)
+      ? chat.map((msg) => <ChatBubble msg={msg} key={msg.id} />)
       : <div className='m-auto text-sm'>(Empty chat)</div>}
     <ChatInput onSubmit={(text) => {
       chat.push(

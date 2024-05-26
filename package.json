@@ -7,7 +7,7 @@
     "examples/*"
   ],
   "devDependencies": {
-    "@changesets/cli": "^2.26.2",
+    "@changesets/cli": "^2.27.3",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.1.1",
@@ -24,7 +24,7 @@
     "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
-    "release": "pnpm publish -r",
+    "release": "pnpm changeset publish && git push --follow-tags",
     "prepare": "husky"
   },
   "lint-staged": {},

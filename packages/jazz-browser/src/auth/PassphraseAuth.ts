@@ -1,5 +1,5 @@
 import { AgentSecret, cojsonInternals, CryptoProvider, Peer } from "cojson";
-import { Account, CoValueClass, ID, Me } from "jazz-tools";
+import { Account, CoValueClass, ID, isControlledAccount } from "jazz-tools";
 import * as bip39 from "@scure/bip39";
 import { AuthProvider } from "./auth.js";
 import { SessionProvider } from "../index.js";
@@ -27,7 +27,7 @@ export class BrowserPassphraseAuth<Acc extends Account>
         getSessionFor: SessionProvider,
         initialPeers: Peer[],
         crypto: CryptoProvider,
-    ): Promise<Acc & Me> {
+    ): Promise<Acc> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey],
@@ -41,13 +41,13 @@ export class BrowserPassphraseAuth<Acc extends Account>
                 sessionID,
                 peersToLoadFrom: initialPeers,
                 crypto,
-            })) as Acc & Me;
+            })) as Acc;
 
             this.driver.onSignedIn({ logOut });
 
             return Promise.resolve(account);
         } else {
-            return new Promise<Acc & Me>((resolveAccount) => {
+            return new Promise<Acc>((resolveAccount) => {
                 this.driver.onReady({
                     signUp: async (username, passphrase) => {
                         const account = await signUp<Acc>(
@@ -105,7 +105,7 @@ async function signUp<Acc extends Account>(
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
     crypto: CryptoProvider,
-): Promise<Acc & Me> {
+): Promise<Acc> {
     const secretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
     const account = (await accountSchema.create({
@@ -113,7 +113,10 @@ async function signUp<Acc extends Account>(
         initialAgentSecret: crypto.agentSecretFromSecretSeed(secretSeed),
         peersToLoadFrom: initialPeers,
         crypto,
-    })) as Acc & Me;
+    })) as Acc;
+    if (!isControlledAccount(account)) {
+        throw "account is not a controlled account";
+    }
 
     localStorage[localStorageKey] = JSON.stringify({
         accountID: account.id as ID<Account>,
@@ -133,7 +136,7 @@ async function logIn<Acc extends Account>(
     accountSchema: CoValueClass<Acc> & typeof Account,
     initialPeers: Peer[],
     crypto: CryptoProvider,
-): Promise<Acc & Me> {
+): Promise<Acc> {
     const accountSecretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
     const accountSecret = crypto.agentSecretFromSecretSeed(accountSecretSeed);
@@ -161,7 +164,7 @@ async function logIn<Acc extends Account>(
         sessionID: await getSessionFor(accountID),
         peersToLoadFrom: initialPeers,
         crypto,
-    })) as Acc & Me;
+    })) as Acc;
 
     return account;
 }

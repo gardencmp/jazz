@@ -13,7 +13,7 @@ import { ProgressiveImg } from "jazz-react";
 
 class PartialPetPost extends CoMap {
     name = co.string;
-    image? = co.ref(ImageDefinition);
+    image = co.ref(ImageDefinition, { optional: true });
     reactions = co.ref(PetReactions);
 }
 

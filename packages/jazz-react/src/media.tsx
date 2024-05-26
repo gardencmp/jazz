@@ -12,16 +12,21 @@ export function useProgressiveImg({
     const [src, setSrc] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        const unsub = image?.subscribe((update) => {
+        let lastHighestRes: string | undefined;
+        if (!image) return;
+        const unsub = image.subscribe({}, (update) => {
             const highestRes = update?.highestResAvailable({ maxWidth });
             if (highestRes) {
-                const blob = highestRes.stream.toBlob();
-                if (blob) {
-                    const blobURI = URL.createObjectURL(blob);
-                    setSrc(blobURI);
-                    return () => {
-                        setTimeout(() => URL.revokeObjectURL(blobURI), 200);
-                    };
+                if (highestRes.res !== lastHighestRes) {
+                    lastHighestRes = highestRes.res;
+                    const blob = highestRes.stream.toBlob();
+                    if (blob) {
+                        const blobURI = URL.createObjectURL(blob);
+                        setSrc(blobURI);
+                        return () => {
+                            setTimeout(() => URL.revokeObjectURL(blobURI), 200);
+                        };
+                    }
                 }
             } else {
                 setSrc(update?.placeholderDataURL);

@@ -9,7 +9,11 @@ import type {
     RefEncoded,
     IfCo,
     RefIfCoValue,
-    ClassOf,
+    DepthsIn,
+    DeeplyLoaded,
+    UnavailableError,
+    AccountCtx,
+    CoValueClass,
 } from "../internal.js";
 import {
     Account,
@@ -22,7 +26,14 @@ import {
     ItemsSym,
     InitValues,
     isRefEncoded,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
+import { Effect, Stream } from "effect";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -42,6 +53,8 @@ type InitValuesFor<C extends CoMap> = {
  * @categoryDescription Declaration
  * Declare your own CoMap schemas by subclassing `CoMap` and assigning field schemas with `co`.
  *
+ * Optional `co.ref(...)` fields must be marked with `{ optional: true }`.
+ *
  * ```ts
  * import { co, CoMap } from "jazz-tools";
  *
@@ -49,6 +62,7 @@ type InitValuesFor<C extends CoMap> = {
  *   name = co.string;
  *   age = co.number;
  *   pet = co.ref(Animal);
+ *   car = co.ref(Car, { optional: true });
  * }
  * ```
  *
@@ -66,7 +80,7 @@ type InitValuesFor<C extends CoMap> = {
  *
  * @category CoValues
  *  */
-export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
+export class CoMap extends CoValueBase implements CoValue {
     /**
      * The ID of this `CoMap`
      * @category Content */
@@ -92,17 +106,19 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
     /**
      * If property `prop` is a `co.ref(...)`, you can use `coMaps._refs.prop` to access
      * the `Ref` instead of the potentially loaded/null value.
+     *
      * This allows you to always get the ID or load the value manually.
      *
      * @example
      * ```ts
      * person._refs.pet.id; // => ID<Animal>
      * person._refs.pet.value;
-     * // => Animal | undefined
+     * // => Animal | null
      * const pet = await person._refs.pet.load();
      * ```
      *
-     * @category Content */
+     * @category Content
+     **/
     get _refs(): {
         [Key in CoKeys<this>]: IfCo<this[Key], RefIfCoValue<this[Key]>>;
     } {
@@ -161,10 +177,13 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                             : undefined,
                     by:
                         rawEdit.by &&
-                        new Ref(
+                        new Ref<Account>(
                             rawEdit.by as ID<Account>,
                             target._loadedAs,
-                            Account,
+                            {
+                                ref: Account,
+                                optional: false,
+                            },
                         ).accessFrom(
                             target,
                             "_edits." + key.toString() + ".by",
@@ -213,9 +232,26 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return new Proxy(this, CoMapProxyHandler as ProxyHandler<this>);
     }
 
-    /** @category Creation */
+    /**
+     * Create a new CoMap with the given initial values and owner.
+     *
+     * The owner (a Group or Account) determines access rights to the CoMap.
+     *
+     * The CoMap will immediately be persisted and synced to connected peers.
+     *
+     * @example
+     * ```ts
+     * const person = Person.create({
+     *   name: "Alice",
+     *   age: 42,
+     *   pet: cat,
+     * }, { owner: friendGroup });
+     * ```
+     *
+     * @category Creation
+     **/
     static create<M extends CoMap>(
-        this: ClassOf<M>,
+        this: CoValueClass<M>,
         init: Simplify<CoMapInit<M>>,
         options: { owner: Account | Group },
     ) {
@@ -287,7 +323,24 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return rawOwner.createMap(rawInit);
     }
 
-    /** @category Declaration */
+    /**
+     * Declare a Record-like CoMap schema, by extending `CoMap.Record(...)` and passing the value schema using `co`. Keys are always `string`.
+     *
+     * @example
+     * ```ts
+     * import { co, CoMap } from "jazz-tools";
+     *
+     * class ColorToFruitMap extends CoMap.Record(
+     *  co.ref(Fruit)
+     * ) {}
+     *
+     * // assume we have map: ColorToFruitMap
+     * // and strawberry: Fruit
+     * map["red"] = strawberry;
+     * ```
+     *
+     * @category Declaration
+     */
     static Record<Value>(value: IfCo<Value, Value>) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
         class RecordLikeCoMap extends CoMap {
@@ -298,20 +351,147 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
 
         return RecordLikeCoMap;
     }
+
+    /**
+     * Load a `CoMap` with a given ID, as a given account.
+     *
+     * `depth` specifies which (if any) fields that reference other CoValues to load as well before resolving.
+     * The `DeeplyLoaded` return type guarantees that corresponding referenced CoValues are loaded to the specified depth.
+     *
+     * You can pass `[]` or `{}` for shallowly loading only this CoMap, or `{ fieldA: depthA, fieldB: depthB }` for recursively loading referenced CoValues.
+     *
+     * Check out the `load` methods on `CoMap`/`CoList`/`CoStream`/`Group`/`Account` to see which depth structures are valid to nest.
+     *
+     * @example
+     * ```ts
+     * const person = await Person.load(
+     *   "co_zdsMhHtfG6VNKt7RqPUPvUtN2Ax",
+     *   me,
+     *   { pet: {} }
+     * );
+     * ```
+     *
+     * @category Subscription & Loading
+     */
+    static load<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        as: Account,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<DeeplyLoaded<M, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /**
+     * Effectful version of `CoMap.load()`.
+     *
+     * Needs to be run inside an `AccountCtx` context.
+     *
+     * @category Subscription & Loading
+     */
+    static loadEf<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        depth: Depth & DepthsIn<M>,
+    ): Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<M, Depth>(this, id, depth);
+    }
+
+    /**
+     * Load and subscribe to a `CoMap` with a given ID, as a given account.
+     *
+     * Automatically also subscribes to updates to all referenced/nested CoValues as soon as they are accessed in the listener.
+     *
+     * `depth` specifies which (if any) fields that reference other CoValues to load as well before calling `listener` for the first time.
+     * The `DeeplyLoaded` return type guarantees that corresponding referenced CoValues are loaded to the specified depth.
+     *
+     * You can pass `[]` or `{}` for shallowly loading only this CoMap, or `{ fieldA: depthA, fieldB: depthB }` for recursively loading referenced CoValues.
+     *
+     * Check out the `load` methods on `CoMap`/`CoList`/`CoStream`/`Group`/`Account` to see which depth structures are valid to nest.
+     *
+     * Returns an unsubscribe function that you should call when you no longer need updates.
+     *
+     * Also see the `useCoState` hook to reactively subscribe to a CoValue in a React component.
+     *
+     * @example
+     * ```ts
+     * const unsub = Person.subscribe(
+     *   "co_zdsMhHtfG6VNKt7RqPUPvUtN2Ax",
+     *   me,
+     *   { pet: {} },
+     *   (person) => console.log(person)
+     * );
+     * ```
+     *
+     * @category Subscription & Loading
+     */
+    static subscribe<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        as: Account,
+        depth: Depth & DepthsIn<M>,
+        listener: (value: DeeplyLoaded<M, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<M, Depth>(this, id, as, depth, listener);
+    }
+
+    /**
+     * Effectful version of `CoMap.subscribe()` that returns a stream of updates.
+     *
+     * Needs to be run inside an `AccountCtx` context.
+     *
+     * @category Subscription & Loading
+     */
+    static subscribeEf<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        depth: Depth & DepthsIn<M>,
+    ): Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<M, Depth>(this, id, depth);
+    }
+
+    /**
+     * Given an already loaded `CoMap`, ensure that the specified fields are loaded to the specified depth.
+     *
+     * Works like `CoMap.load()`, but you don't need to pass the ID or the account to load as again.
+     *
+     * @category Subscription & Loading
+     */
+    ensureLoaded<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<DeeplyLoaded<M, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /**
+     * Given an already loaded `CoMap`, subscribe to updates to the `CoMap` and ensure that the specified fields are loaded to the specified depth.
+     *
+     * Works like `CoMap.subscribe()`, but you don't need to pass the ID or the account to load as again.
+     *
+     * Returns an unsubscribe function that you should call when you no longer need updates.
+     *
+     * @category Subscription & Loading
+     **/
+    subscribe<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+        listener: (value: DeeplyLoaded<M, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
+    }
 }
 
-export type CoKeys<Fields extends object> = Exclude<
-    keyof Fields & string,
+export type CoKeys<Map extends object> = Exclude<
+    keyof Map & string,
     keyof CoMap
 >;
 
-export type CoMapInit<Fields extends object> = {
-    [Key in CoKeys<Fields> as undefined extends Fields[Key]
+export type CoMapInit<Map extends object> = {
+    [Key in CoKeys<Map> as undefined extends Map[Key]
         ? never
-        : null extends Fields[Key]
-          ? never
-          : IfCo<Fields[Key], Key>]: Fields[Key];
-} & { [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]?: Fields[Key] };
+        : IfCo<Map[Key], Key>]: Map[Key];
+} & { [Key in CoKeys<Map> as IfCo<Map[Key], Key>]?: Map[Key] };
 
 function tryInit(map: CoMap) {
     if (

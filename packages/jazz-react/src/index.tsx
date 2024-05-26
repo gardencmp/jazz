@@ -4,7 +4,16 @@ import {
     createJazzBrowserContext,
 } from "jazz-browser";
 
-import { Account, CoValue, CoValueClass, ID, Me } from "jazz-tools";
+
+import {
+    Account,
+    CoValue,
+    CoValueClass,
+    DeeplyLoaded,
+    DepthsIn,
+    ID,
+    subscribeToCoValue,
+} from "jazz-tools";
 import { AuthState, ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
@@ -16,15 +25,10 @@ export function createJazzReactContext<Acc extends Account>({
     auth: ReactAuthHook<Acc>;
     peer: `wss://${string}` | `ws://${string}`;
     storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
-}): {
-    Provider: Provider;
-    useAccount: UseAccountHook<Acc>;
-    useCoState: UseCoStateHook;
-    useAcceptInvite: UseAcceptInviteHook;
-} {
+}): JazzReactContext<Acc> {
     const JazzContext = React.createContext<
         | {
-              me: Acc & Me;
+              me: Acc;
               logOut: () => void;
           }
         | undefined
@@ -37,9 +41,8 @@ export function createJazzReactContext<Acc extends Account>({
         children: React.ReactNode;
         loading?: React.ReactNode;
     }) {
-        const [me, setMe] = useState<(Acc & Me) | undefined>();
+        const [me, setMe] = useState<Acc | undefined>();
         const [authState, setAuthState] = useState<AuthState>("loading");
-
         const { auth, AuthUI, logOut } = authHook(setAuthState);
 
         useEffect(() => {
@@ -94,46 +97,52 @@ export function createJazzReactContext<Acc extends Account>({
         );
     }
 
-    function useAccount() {
+    function useAccount(): { me: Acc; logOut: () => void };
+    function useAccount<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
+    function useAccount<D extends DepthsIn<Acc>>(
+        depth?: D,
+    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
         const context = React.useContext(JazzContext);
 
         if (!context) {
             throw new Error("useAccount must be used within a JazzProvider");
         }
 
-        const me = useCoState<Acc & Me>(
-            context.me.constructor as CoValueClass<Acc & Me>,
+        const me = useCoState<Acc, D>(
+            context.me.constructor as CoValueClass<Acc>,
             context.me.id,
+            depth,
         );
 
-        return { me: me || context.me, logOut: context.logOut };
+        return {
+            me: depth === undefined ? me || context.me : me,
+            logOut: context.logOut,
+        };
     }
 
-    function useCoState<V extends CoValue>(
+    function useCoState<V extends CoValue, D>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Schema: { new (...args: any[]): V } & CoValueClass,
+        Schema: CoValueClass<V>,
         id: ID<V> | undefined,
-        options?: { require?: (value: V) => boolean | undefined },
-    ): V | undefined {
+        depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
+    ): DeeplyLoaded<V, D> | undefined {
         // for some reason (at least in React 18) - if we use state directly,
         // some updates get swallowed/UI doesn't update
         const [_, setUpdates] = useState<number>(0);
-        const state = useRef<V | undefined>(undefined);
+        const state = useRef<DeeplyLoaded<V, D> | undefined>(undefined);
         const me = React.useContext(JazzContext)?.me;
 
         useEffect(() => {
             if (!id || !me) return;
-            return Schema.subscribe(
-                id,
-                { as: me, require: options?.require },
-                (update) => {
-                    state.current = update as V;
+            return subscribeToCoValue(Schema, id, me, depth, (update) => {
+                state.current = update as DeeplyLoaded<V, D>;
 
-                    setUpdates((u) => {
-                        return u + 1;
-                    });
-                },
-            );
+                setUpdates((u) => {
+                    return u + 1;
+                });
+            });
         }, [Schema, id, me]);
 
         return state.current;
@@ -175,34 +184,44 @@ export function createJazzReactContext<Acc extends Account>({
 }
 
 /** @category Context & Hooks */
-export type Provider = React.FC<{
-    children: React.ReactNode;
-}>;
+export interface JazzReactContext<Acc extends Account> {
+    /** @category Provider Component */
+    Provider: React.FC<{
+        children: React.ReactNode;
+    }>;
 
-/** @category Context & Hooks */
-export type UseAccountHook<Acc extends Account> = () => {
-    me: Acc & Me;
-    logOut: () => void;
-};
+    /** @category Hooks */
+    useAccount(): {
+        me: Acc;
+        logOut: () => void;
+    };
+    /** @category Hooks */
+    useAccount<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): {
+        me: DeeplyLoaded<Acc, D> | undefined;
+        logOut: () => void;
+    };
 
-/** @category Context & Hooks */
-export type UseCoStateHook = <V extends CoValue>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Schema: { new (...args: any[]): V } & CoValueClass,
-    id: ID<V> | undefined,
-    options?: { require?: (value: V) => boolean | undefined },
-) => V | undefined;
+    /** @category Hooks */
+    useCoState<V extends CoValue, D>(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Schema: { new (...args: any[]): V } & CoValueClass,
+        id: ID<V> | undefined,
+        depth?: D & DepthsIn<V>,
+    ): DeeplyLoaded<V, D> | undefined;
 
-/** @category Context & Hooks */
-export type UseAcceptInviteHook = <V extends CoValue>({
-    invitedObjectSchema,
-    onAccept,
-    forValueHint,
-}: {
-    invitedObjectSchema: CoValueClass<V>;
-    onAccept: (projectID: ID<V>) => void;
-    forValueHint?: string;
-}) => void;
+    /** @category Hooks */
+    useAcceptInvite<V extends CoValue>({
+        invitedObjectSchema,
+        onAccept,
+        forValueHint,
+    }: {
+        invitedObjectSchema: CoValueClass<V>;
+        onAccept: (projectID: ID<V>) => void;
+        forValueHint?: string;
+    }): void;
+}
 
 export { createInviteLink, parseInviteLink } from "jazz-browser";
 

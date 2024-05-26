@@ -171,7 +171,7 @@ export class LocalNode {
     }: {
         accountID: AccountID;
         accountSecret: AgentSecret;
-        sessionID: SessionID;
+        sessionID: SessionID | undefined;
         peersToLoadFrom: Peer[];
         crypto: CryptoProvider;
         migration?: RawAccountMigration<Meta>;
@@ -202,7 +202,7 @@ export class LocalNode {
         // since this is all synchronous, we can just swap out nodes for the SyncManager
         const node = loadingNode.testWithDifferentAccount(
             controlledAccount,
-            sessionID,
+            sessionID || newRandomSessionID(accountID),
         );
         node.syncManager = loadingNode.syncManager;
         node.syncManager.local = node;

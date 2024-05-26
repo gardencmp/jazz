@@ -3,6 +3,7 @@ import {
     type CoValue,
     type CoValueClass,
     isCoValueClass,
+    CoValueFromRaw,
 } from "../internal.js";
 import type { Schema as EffectSchema, TypeId } from "@effect/schema/Schema";
 
@@ -30,49 +31,79 @@ export const co = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null>,
-    literal: <T extends (string | number | boolean)[]>(
+    literal<T extends (string | number | boolean)[]>(
         ..._lit: T
-    ): co<T[number]> => {
+    ): co<T[number]> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
-    json: <T extends JsonValue>(): co<T> => {
+    json<T extends JsonValue>(): co<T> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
-    encoded: <T>(arg: Encoder<T>): co<T> => {
+    encoded<T>(arg: Encoder<T>): co<T> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: { encoded: arg } satisfies Schema } as any;
     },
-    ref: <C extends CoValueClass>(
-        arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
-    ): co<InstanceType<C> | null> => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return { [SchemaInit]: arg satisfies Schema } as any;
-    },
+    ref,
     items: ItemsSym as ItemsSym,
     members: MembersSym as MembersSym,
 };
 
+function ref<C extends CoValueClass>(
+    arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
+): co<InstanceType<C> | null>;
+function ref<C extends CoValueClass>(
+    arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
+    options: { optional: true },
+): co<InstanceType<C> | null | undefined>;
+function ref<
+    C extends CoValueClass,
+    Options extends { optional?: boolean } | undefined,
+>(
+    arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
+    options?: Options,
+): Options extends { optional: true }
+    ? co<InstanceType<C> | null | undefined>
+    : co<InstanceType<C> | null> {
+    return {
+        [SchemaInit]: {
+            ref: arg,
+            optional: options?.optional || false,
+        } satisfies Schema,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+}
+
 export type JsonEncoded = "json";
 export type EncodedAs<V> = { encoded: Encoder<V> };
-export type RefEncoded<V extends CoValue> =
-    | CoValueClass<V>
-    | ((raw: RawCoValue) => CoValueClass<V>);
+export type RefEncoded<V extends CoValue> = {
+    ref: CoValueClass<V> | ((raw: RawCoValue) => CoValueClass<V>);
+    optional: boolean;
+};
 
 export function isRefEncoded<V extends CoValue>(
     schema: Schema,
 ): schema is RefEncoded<V> {
-    return typeof schema === "function";
+    return (
+        typeof schema === "object" &&
+        "ref" in schema &&
+        "optional" in schema &&
+        typeof schema.ref === "function"
+    );
 }
 
 export function instantiateRefEncoded<V extends CoValue>(
     schema: RefEncoded<V>,
     raw: RawCoValue,
 ): V {
-    return isCoValueClass(schema)
-        ? schema.fromRaw(raw)
-        : (schema as (raw: RawCoValue) => CoValueClass<V>)(raw).fromRaw(raw);
+    return isCoValueClass<V>(schema.ref)
+        ? schema.ref.fromRaw(raw)
+        : (
+              schema.ref as (
+                  raw: RawCoValue,
+              ) => CoValueClass<V> & CoValueFromRaw<V>
+          )(raw).fromRaw(raw);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

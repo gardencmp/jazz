@@ -1,13 +1,3 @@
-import {
-    Highlight,
-    ClassOrInterface,
-    PropDecl,
-    ClassRef,
-    PropRef,
-    PropCategory,
-    FnDecl,
-    NewCoValueExplainer,
-} from "@/components/docs/tags";
 import { DocNav } from "@/components/docs/nav";
 import { PackageDocs } from "@/components/docs/packageDocs";
 import Guide from "./guide.mdx";
