@@ -43,12 +43,14 @@ export async function Highlight({
 export function ClassOrInterface({
     inPackage,
     name,
+    typeParameters,
     children,
     doc,
     isInterface,
 }: {
     inPackage: string;
     name: string;
+    typeParameters?: string;
     children: ReactNode;
     doc: ReactNode;
     isInterface?: boolean;
@@ -66,7 +68,9 @@ export function ClassOrInterface({
             <h4 className="peer sticky top-0 pt-[0.5rem] md:top-[2.5rem] md:pt-[3rem] bg-stone-50 dark:bg-stone-950 z-20">
                 <a href={"#" + inPackage + "/" + name}>
                     <Highlight>
-                        {(isInterface ? "interface " : "class ") + name}
+                        {(isInterface ? "interface " : "class ") +
+                            name +
+                            typeParameters}
                     </Highlight>
                 </a>
             </h4>
@@ -131,12 +135,14 @@ export function PropDecl({
 
 export function FnDecl({
     signature,
+    typeParams,
     paramTypes,
     returnType,
     doc,
     example,
 }: {
     signature: string;
+    typeParams: string[];
     paramTypes: string[];
     returnType: string;
     doc: ReactNode;
@@ -150,7 +156,16 @@ export function FnDecl({
                     <Highlight>{returnType}</Highlight>
                 </span>
             </div>
-            <div className="ml-4 mt-2 text-xs opacity-75 flex">
+            <div className="ml-4 mt-2 text-xs opacity-75 flex flex-col gap-2">
+                {typeParams.length > 0 && (
+                    <div>
+                        <Highlight
+                            hide={[0, 1 + typeParams.length]}
+                        >{`class Thing<\n${typeParams.join(
+                            ",\n",
+                        )}\n]> {}`}</Highlight>
+                    </div>
+                )}
                 {paramTypes.length > 0 && (
                     <div>
                         <Highlight

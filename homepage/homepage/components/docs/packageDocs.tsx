@@ -5,6 +5,7 @@ import {
     SignatureReflection,
     SomeType,
     TypeContext,
+    TypeParameterReflection,
 } from "typedoc";
 import {
     ClassOrInterface,
@@ -115,13 +116,18 @@ function RenderTypeAlias({
     inPackage: string;
     child: DeclarationReflection;
 }) {
+    const typeParameters = child.typeParameters?.map(
+        (tParam) =>
+            tParam.name +
+            (tParam.type ? ` extends ${printType(tParam.type)}` : ""),
+    );
     return (
         <div className="mt-4">
             <h4 className="not-prose" id={inPackage + "/" + child.name}>
                 <Highlight>{`type ${child.name}`}</Highlight>
             </h4>
             <p className="not-prose text-sm ml-4">
-                <Highlight>{`type ${child.name} = ${printType(
+                <Highlight>{`type ${child.name}${typeParameters?.length && `<${typeParameters?.join(", ")}>`} = ${printType(
                     child.type,
                 )}`}</Highlight>
             </p>
@@ -144,13 +150,34 @@ function RenderClassOrInterface({
     classOrInterface: DeclarationReflection;
 }) {
     const commentSummary = classOrInterface.comment?.summary;
+    const typeParamsWithConstraints = printTypeParamsWithConstraints(
+        classOrInterface.typeParameters,
+    );
     return (
         <ClassOrInterface
             inPackage={inPackage}
             name={classOrInterface.name}
             doc={renderSummary(commentSummary)}
             isInterface={classOrInterface.kind === ReflectionKind.Interface}
+            typeParameters={
+                classOrInterface.typeParameters?.length
+                    ? "<" +
+                      classOrInterface.typeParameters
+                          .map((tParam) => tParam.name)
+                          .join(", ") +
+                      ">"
+                    : ""
+            }
         >
+            {typeParamsWithConstraints.length > 0 && (
+                <div className="text-sm -mt-4">
+                    <Highlight
+                        hide={[0, 1 + typeParamsWithConstraints.length]}
+                    >{`class Thing<\n${typeParamsWithConstraints.join(
+                        ",\n",
+                    )}\n]> {}`}</Highlight>
+                </div>
+            )}
             {classOrInterface.categories?.map((category) => (
                 <div key={category.title}>
                     <PropCategory
@@ -222,6 +249,9 @@ function RenderProp({
                 <FnDecl
                     key={signature.id}
                     signature={printSimplePropSignature(prop, klass, signature)}
+                    typeParams={printTypeParamsWithConstraints(
+                        signature.typeParameters,
+                    )}
                     paramTypes={printParamsWithTypes(signature)}
                     returnType={printType(signature.type)}
                     doc={renderSummary(signature.comment?.summary)}
@@ -267,15 +297,7 @@ function printSimpleSignature(
     return `${item.name}${
         signature.typeParameters?.length
             ? "<" +
-              signature.typeParameters
-                  .map(
-                      (tParam) =>
-                          tParam.name +
-                          (tParam.type
-                              ? " extends " + printType(tParam.type)
-                              : ""),
-                  )
-                  .join(", ") +
+              signature.typeParameters.map((tParam) => tParam.name).join(", ") +
               ">"
             : ""
     }(${printParams(signature)?.join(", ")})`;
@@ -283,18 +305,23 @@ function printSimpleSignature(
 
 function printParams(signature: SignatureReflection) {
     return (
-        signature.parameters?.map((param) =>
-            param.name === "__namedParameters" &&
-            param.type?.type === "reflection"
-                ? "{ " +
-                  param.type.declaration.children
-                      ?.map(
-                          (child) =>
-                              child.name + (child.flags.isOptional ? "?" : ""),
-                      )
-                      .join(", ") +
-                  " }"
-                : param.name + (param.defaultValue ? "?" : ""),
+        signature.parameters?.flatMap((param) =>
+            param.name === "this"
+                ? []
+                : [
+                      param.name === "__namedParameters" &&
+                      param.type?.type === "reflection"
+                          ? "{ " +
+                            param.type.declaration.children
+                                ?.map(
+                                    (child) =>
+                                        child.name +
+                                        (child.flags.isOptional ? "?" : ""),
+                                )
+                                .join(", ") +
+                            " }"
+                          : param.name + (param.defaultValue ? "?" : ""),
+                  ],
         ) || []
     );
 }
@@ -307,6 +334,18 @@ function printParamsWithTypes(signature: SignatureReflection) {
                     ? ""
                     : param.name + (param.defaultValue ? "?" : "") + ": ") +
                 printType(param.type),
+        ) || []
+    );
+}
+
+function printTypeParamsWithConstraints(
+    typeParams: TypeParameterReflection[] | undefined,
+): string[] {
+    return (
+        typeParams?.flatMap((tParam) =>
+            tParam.type
+                ? [`${tParam.name} extends ${printType(tParam.type)}`]
+                : [],
         ) || []
     );
 }
