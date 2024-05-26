@@ -51,8 +51,8 @@ export function isCoValue(value: any): value is CoValue {
     return value && value._type !== undefined;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isCoValueClass<V extends CoValue>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any,
 ): value is CoValueClass<V> & CoValueFromRaw<V> {
     return typeof value === "function" && value.fromRaw !== undefined;
