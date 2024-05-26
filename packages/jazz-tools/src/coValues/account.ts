@@ -11,7 +11,7 @@ import type {
     RawControlledAccount,
     SessionID,
 } from "cojson";
-import { Context } from "effect";
+import { Context, Effect, Stream } from "effect";
 import type {
     CoMap,
     CoValue,
@@ -19,8 +19,10 @@ import type {
     Schema,
     ID,
     RefEncoded,
-    ClassOf,
     RefIfCoValue,
+    DeeplyLoaded,
+    DepthsIn,
+    UnavailableError,
 } from "../internal.js";
 import {
     Group,
@@ -31,13 +33,16 @@ import {
     SchemaInit,
     inspect,
     subscriptionsScopes,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
 
 /** @category Identity & Permissions */
-export class Account
-    extends CoValueBase
-    implements CoValue<"Account", RawAccount | RawControlledAccount>
-{
+export class Account extends CoValueBase implements CoValue {
     declare id: ID<this>;
     declare _type: "Account";
     declare _raw: RawAccount | RawControlledAccount;
@@ -52,7 +57,10 @@ export class Account
     }
     static {
         this._schema = {
-            profile: { ref: () => Profile, optional: false } satisfies Schema,
+            profile: {
+                ref: () => Profile,
+                optional: false,
+            } satisfies RefEncoded<Profile>,
             root: "json" satisfies Schema,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
@@ -151,12 +159,12 @@ export class Account
             inviteSecret,
         );
 
-        return coValueClass.load(valueID, this as Account, []);
+        return loadCoValue(coValueClass, valueID, this as Account, []);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
 
     static async create<A extends Account>(
-        this: ClassOf<A> & typeof Account,
+        this: CoValueClass<A> & typeof Account,
         options: {
             creationProps: { name: string };
             initialAgentSecret?: AgentSecret;
@@ -179,7 +187,7 @@ export class Account
     }
 
     static async become<A extends Account>(
-        this: ClassOf<A> & typeof Account,
+        this: CoValueClass<A> & typeof Account,
         options: {
             accountID: ID<Account>;
             accountSecret: AgentSecret;
@@ -206,7 +214,10 @@ export class Account
         return this.fromNode(node) as A;
     }
 
-    static fromNode<A extends Account>(this: ClassOf<A>, node: LocalNode): A {
+    static fromNode<A extends Account>(
+        this: CoValueClass<A>,
+        node: LocalNode,
+    ): A {
         return new this({
             fromRaw: node.account as RawControlledAccount,
         }) as A;
@@ -224,7 +235,10 @@ export class Account
         return this.toJSON();
     }
 
-    migrate(creationProps?: { name: string }): void | Promise<void> {
+    migrate(
+        this: Account,
+        creationProps?: { name: string },
+    ): void | Promise<void> {
         if (creationProps) {
             const profileGroup = Group.create({ owner: this });
             profileGroup.addMember("everyone", "reader");
@@ -233,6 +247,62 @@ export class Account
                 { owner: profileGroup },
             );
         }
+    }
+
+    /** @category Subscription & Loading */
+    static load<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        as: Account,
+        depth: Depth & DepthsIn<A>,
+    ): Promise<DeeplyLoaded<A, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        depth: Depth & DepthsIn<A>,
+    ): Effect.Effect<DeeplyLoaded<A, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<A, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        as: Account,
+        depth: Depth & DepthsIn<A>,
+        listener: (value: DeeplyLoaded<A, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<A, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        depth: Depth & DepthsIn<A>,
+    ): Stream.Stream<DeeplyLoaded<A, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<A, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<A extends Account, Depth>(
+        this: A,
+        depth: Depth & DepthsIn<A>,
+    ): Promise<DeeplyLoaded<A, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<A extends Account, Depth>(
+        this: A,
+        depth: Depth & DepthsIn<A>,
+        listener: (value: DeeplyLoaded<A, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
     }
 }
 

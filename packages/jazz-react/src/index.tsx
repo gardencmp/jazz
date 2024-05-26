@@ -11,6 +11,7 @@ import {
     DeeplyLoaded,
     DepthsIn,
     ID,
+    subscribeToCoValue,
 } from "jazz-tools";
 import { ReactAuthHook } from "./auth/auth.js";
 
@@ -116,7 +117,7 @@ export function createJazzReactContext<Acc extends Account>({
 
     function useCoState<V extends CoValue, D>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Schema: { new (...args: any[]): V } & CoValueClass,
+        Schema: CoValueClass<V>,
         id: ID<V> | undefined,
         depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
     ): DeeplyLoaded<V, D> | undefined {
@@ -128,7 +129,7 @@ export function createJazzReactContext<Acc extends Account>({
 
         useEffect(() => {
             if (!id || !me) return;
-            return Schema.subscribe(id, me, depth, (update) => {
+            return subscribeToCoValue(Schema, id, me, depth, (update) => {
                 state.current = update as DeeplyLoaded<V, D>;
 
                 setUpdates((u) => {

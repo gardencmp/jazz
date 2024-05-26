@@ -180,7 +180,10 @@ class CustomAccount extends Account {
     profile = co.ref(CustomProfile);
     root = co.ref(TestMap);
 
-    async migrate(creationProps?: { name: string } | undefined) {
+    async migrate(
+        this: CustomAccount,
+        creationProps?: { name: string } | undefined,
+    ) {
         if (creationProps) {
             this.profile = CustomProfile.create(
                 {
@@ -195,7 +198,7 @@ class CustomAccount extends Account {
             );
         }
 
-        const thisLoaded = await CustomAccount.load(this, {
+        const thisLoaded = await this.ensureLoaded({
             profile: { stream: [] },
             root: { list: [] },
         });
@@ -219,7 +222,7 @@ test("Deep loading within account", async () => {
         crypto: Crypto,
     });
 
-    const meLoaded = await CustomAccount.load(me, {
+    const meLoaded = await me.ensureLoaded({
         profile: { stream: [] },
         root: { list: [] },
     });

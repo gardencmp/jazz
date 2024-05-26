@@ -25,3 +25,10 @@ export { Account, isControlledAccount } from "./internal.js";
 export { ImageDefinition } from "./internal.js";
 export { CoValueBase, type CoValueClass } from "./internal.js";
 export type { DepthsIn, DeeplyLoaded } from "./internal.js";
+
+export {
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+} from "./internal.js";

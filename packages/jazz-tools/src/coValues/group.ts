@@ -1,5 +1,15 @@
 import type { AccountID, Everyone, RawGroup, Role } from "cojson";
-import type { CoValue, ID, RefEncoded, Schema, ClassOf } from "../internal.js";
+import type {
+    CoValue,
+    ID,
+    RefEncoded,
+    Schema,
+    AccountCtx,
+    CoValueClass,
+    DeeplyLoaded,
+    DepthsIn,
+    UnavailableError,
+} from "../internal.js";
 import {
     Account,
     CoMap,
@@ -9,7 +19,14 @@ import {
     isControlledAccount,
     AccountAndGroupProxyHandler,
     MembersSym,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
+import { Effect, Stream } from "effect";
 
 /** @category Identity & Permissions */
 export class Profile extends CoMap {
@@ -17,7 +34,7 @@ export class Profile extends CoMap {
 }
 
 /** @category Identity & Permissions */
-export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
+export class Group extends CoValueBase implements CoValue {
     declare id: ID<this>;
     declare _type: "Group";
     static {
@@ -41,7 +58,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
             [MembersSym]: {
                 ref: () => Account,
                 optional: false,
-            } satisfies Schema,
+            } satisfies RefEncoded<Account>,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         Object.defineProperty(this.prototype, "_schema", {
@@ -124,7 +141,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
     }
 
     static create<G extends Group>(
-        this: ClassOf<G>,
+        this: CoValueClass<G>,
         options: { owner: Account },
     ) {
         return new this(options);
@@ -169,5 +186,61 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     },
                 };
             });
+    }
+
+    /** @category Subscription & Loading */
+    static load<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        as: Account,
+        depth: Depth & DepthsIn<G>,
+    ): Promise<DeeplyLoaded<G, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        depth: Depth & DepthsIn<G>,
+    ): Effect.Effect<DeeplyLoaded<G, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<G, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        as: Account,
+        depth: Depth & DepthsIn<G>,
+        listener: (value: DeeplyLoaded<G, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<G, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        depth: Depth & DepthsIn<G>,
+    ): Stream.Stream<DeeplyLoaded<G, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<G, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<G extends Group, Depth>(
+        this: G,
+        depth: Depth & DepthsIn<G>,
+    ): Promise<DeeplyLoaded<G, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<G extends Group, Depth>(
+        this: G,
+        depth: Depth & DepthsIn<G>,
+        listener: (value: DeeplyLoaded<G, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
     }
 }

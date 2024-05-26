@@ -9,7 +9,11 @@ import type {
     RefEncoded,
     IfCo,
     RefIfCoValue,
-    ClassOf,
+    DepthsIn,
+    DeeplyLoaded,
+    UnavailableError,
+    AccountCtx,
+    CoValueClass,
 } from "../internal.js";
 import {
     Account,
@@ -22,7 +26,14 @@ import {
     ItemsSym,
     InitValues,
     isRefEncoded,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
+import { Effect, Stream } from "effect";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -66,7 +77,7 @@ type InitValuesFor<C extends CoMap> = {
  *
  * @category CoValues
  *  */
-export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
+export class CoMap extends CoValueBase implements CoValue {
     /**
      * The ID of this `CoMap`
      * @category Content */
@@ -161,10 +172,14 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                             : undefined,
                     by:
                         rawEdit.by &&
-                        new Ref(rawEdit.by as ID<Account>, target._loadedAs, {
-                            ref: Account,
-                            optional: false,
-                        }).accessFrom(
+                        new Ref<Account>(
+                            rawEdit.by as ID<Account>,
+                            target._loadedAs,
+                            {
+                                ref: Account,
+                                optional: false,
+                            },
+                        ).accessFrom(
                             target,
                             "_edits." + key.toString() + ".by",
                         ),
@@ -214,7 +229,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
 
     /** @category Creation */
     static create<M extends CoMap>(
-        this: ClassOf<M>,
+        this: CoValueClass<M>,
         init: Simplify<CoMapInit<M>>,
         options: { owner: Account | Group },
     ) {
@@ -296,6 +311,62 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         interface RecordLikeCoMap extends Record<string, Value> {}
 
         return RecordLikeCoMap;
+    }
+
+    /** @category Subscription & Loading */
+    static load<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        as: Account,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<DeeplyLoaded<M, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        depth: Depth & DepthsIn<M>,
+    ): Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<M, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        as: Account,
+        depth: Depth & DepthsIn<M>,
+        listener: (value: DeeplyLoaded<M, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<M, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        depth: Depth & DepthsIn<M>,
+    ): Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<M, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<DeeplyLoaded<M, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+        listener: (value: DeeplyLoaded<M, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
     }
 }
 

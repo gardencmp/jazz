@@ -6,31 +6,38 @@ import type {
     SchemaFor,
     ID,
     RefEncoded,
-    ClassOf,
     UnCo,
     CoValueClass,
+    DepthsIn,
+    DeeplyLoaded,
+    UnavailableError,
+    AccountCtx,
+    CoValueFromRaw,
 } from "../internal.js";
 import {
     Account,
-    CoValueBase,
     Group,
     InitValues,
     ItemsSym,
     Ref,
     SchemaInit,
     co,
+    ensureCoValueLoaded,
     inspect,
     isRefEncoded,
+    loadCoValue,
+    loadCoValueEf,
     makeRefs,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
+import { Effect, Stream } from "effect";
 
 /** @category CoValues */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class CoList<Item = any>
-    extends Array<Item>
-    implements CoValue<"CoList", RawCoList>
-{
+export class CoList<Item = any> extends Array<Item> implements CoValue {
     static Of<Item>(item: Item): typeof CoList<Item> {
         // TODO: cache superclass for item class
         return class CoListOf extends CoList<Item> {
@@ -146,7 +153,7 @@ export class CoList<Item = any>
     }
 
     static create<L extends CoList>(
-        this: ClassOf<L>,
+        this: CoValueClass<L>,
         items: UnCo<L[number]>[],
         options: { owner: Account | Group },
     ) {
@@ -241,16 +248,11 @@ export class CoList<Item = any>
     }
 
     static fromRaw<V extends CoList>(
-        this: ClassOf<V> & typeof CoList,
+        this: CoValueClass<V> & typeof CoList,
         raw: RawCoList,
     ) {
         return new this({ fromRaw: raw });
     }
-
-    static load = CoValueBase.load as CoValueClass["load"];
-    static loadEf = CoValueBase.loadEf as CoValueClass["loadEf"];
-    static subscribe = CoValueBase.subscribe as CoValueClass["subscribe"];
-    static subscribeEf = CoValueBase.subscribeEf as CoValueClass["subscribeEf"];
 
     static schema<V extends CoList>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -259,6 +261,69 @@ export class CoList<Item = any>
     ) {
         this._schema ||= {};
         Object.assign(this._schema, def);
+    }
+
+    /** @category Subscription & Loading */
+    static load<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        as: Account,
+        depth: Depth & DepthsIn<L>,
+    ): Promise<DeeplyLoaded<L, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        depth: Depth & DepthsIn<L>,
+    ): Effect.Effect<DeeplyLoaded<L, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<L, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        as: Account,
+        depth: Depth & DepthsIn<L>,
+        listener: (value: DeeplyLoaded<L, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<L, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<L extends CoList, Depth>(
+        this: CoValueClass<L>,
+        id: ID<L>,
+        depth: Depth & DepthsIn<L>,
+    ): Stream.Stream<DeeplyLoaded<L, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<L, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<L extends CoList, Depth>(
+        this: L,
+        depth: Depth & DepthsIn<L>,
+    ): Promise<DeeplyLoaded<L, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<L extends CoList, Depth>(
+        this: L,
+        depth: Depth & DepthsIn<L>,
+        listener: (value: DeeplyLoaded<L, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
+    }
+
+    /** @category Type Helpers */
+    castAs<Cl extends CoValueClass & CoValueFromRaw<CoValue>>(
+        cl: Cl,
+    ): InstanceType<Cl> {
+        return cl.fromRaw(this._raw) as InstanceType<Cl>;
     }
 }
 

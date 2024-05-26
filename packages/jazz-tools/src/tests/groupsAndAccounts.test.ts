@@ -13,7 +13,7 @@ describe("Custom accounts and groups", async () => {
         profile = co.ref(CustomProfile);
         root = co.ref(CoMap);
 
-        migrate(creationProps?: { name: string }) {
+        migrate(this: CustomAccount, creationProps?: { name: string }) {
             if (creationProps) {
                 const profileGroup = Group.create({ owner: this });
                 profileGroup.addMember("everyone", "reader");
@@ -56,7 +56,7 @@ describe("Custom accounts and groups", async () => {
         expect(group.nMembers).toBe(2);
 
         await new Promise<void>((resolve) => {
-            CustomGroup.subscribe(group, {}, (update) => {
+            group.subscribe({}, (update) => {
                 const meAsMember = update.members.find((member) => {
                     return member.id === me.id && member.account?.profile;
                 });
@@ -77,7 +77,7 @@ describe("Custom accounts and groups", async () => {
         const map = MyMap.create({ name: "test" }, { owner: group });
 
         const meAsCastMember = map._owner
-            .as(CustomGroup)
+            .castAs(CustomGroup)
             .members.find((member) => member.id === me.id);
         expect(meAsCastMember?.account?.profile?.name).toBe(
             "Hermes Puggington",
@@ -86,6 +86,6 @@ describe("Custom accounts and groups", async () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map._owner as any).nMembers).toBeUndefined();
-        expect(map._owner.as(CustomGroup).nMembers).toBe(2);
+        expect(map._owner.castAs(CustomGroup).nMembers).toBe(2);
     });
 });

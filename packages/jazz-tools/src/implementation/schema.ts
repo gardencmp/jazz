@@ -3,6 +3,7 @@ import {
     type CoValue,
     type CoValueClass,
     isCoValueClass,
+    CoValueFromRaw,
 } from "../internal.js";
 import type { Schema as EffectSchema, TypeId } from "@effect/schema/Schema";
 
@@ -96,11 +97,13 @@ export function instantiateRefEncoded<V extends CoValue>(
     schema: RefEncoded<V>,
     raw: RawCoValue,
 ): V {
-    return isCoValueClass(schema.ref)
+    return isCoValueClass<V>(schema.ref)
         ? schema.ref.fromRaw(raw)
-        : (schema.ref as (raw: RawCoValue) => CoValueClass<V>)(raw).fromRaw(
-              raw,
-          );
+        : (
+              schema.ref as (
+                  raw: RawCoValue,
+              ) => CoValueClass<V> & CoValueFromRaw<V>
+          )(raw).fromRaw(raw);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
