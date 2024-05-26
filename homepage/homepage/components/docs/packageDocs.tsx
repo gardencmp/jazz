@@ -213,7 +213,10 @@ function RenderClassOrInterface({
 function renderSummary(commentSummary: CommentDisplayPart[] | undefined) {
     return commentSummary?.map((part, idx) =>
         part.kind === "text" ? (
-            <span key={idx}>{part.text}</span>
+            <span key={idx}>{part.text.split("\n").map((line, i, lines) => <>
+                {line}
+                {i !== lines.length - 1 && <br />}
+            </>)}</span>
         ) : part.kind === "inline-tag" ? (
             <code key={idx}>
                 {part.tag} {part.text}

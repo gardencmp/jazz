@@ -68,6 +68,7 @@ export class CoValueBase implements CoValue {
     id!: ID<this>;
     _type!: string;
     _raw!: RawCoValue;
+    /** @category Internals */
     _instanceID!: string;
 
     get _owner(): Account | Group {
