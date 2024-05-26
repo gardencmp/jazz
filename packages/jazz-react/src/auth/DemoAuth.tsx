@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
 import { Account, CoValueClass } from "jazz-tools";
 import { ReactAuthHook } from "./auth.js";
@@ -15,7 +15,7 @@ export function DemoAuth<Acc extends Account = Account>({
     appHostname?: string;
     Component?: DemoAuth.Component;
 }): ReactAuthHook<Acc> {
-    return function useLocalAuth() {
+    return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
@@ -28,6 +28,10 @@ export function DemoAuth<Acc extends Account = Account>({
         >({ state: "loading" });
 
         const [logOutCounter, setLogOutCounter] = useState(0);
+
+        useEffect(() => {
+            setJazzAuthState(authState.state);
+        }, [authState]);
 
         const auth = useMemo(() => {
             return new BrowserDemoAuth<Acc>(

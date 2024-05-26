@@ -5,7 +5,7 @@ import {
 } from "jazz-browser";
 
 import { Account, CoValue, CoValueClass, ID, Me } from "jazz-tools";
-import { ReactAuthHook } from "./auth/auth.js";
+import { AuthState, ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
 export function createJazzReactContext<Acc extends Account>({
@@ -30,10 +30,17 @@ export function createJazzReactContext<Acc extends Account>({
         | undefined
     >(undefined);
 
-    function Provider({ children }: { children: React.ReactNode }) {
+    function Provider({
+        children,
+        loading,
+    }: {
+        children: React.ReactNode;
+        loading?: React.ReactNode;
+    }) {
         const [me, setMe] = useState<(Acc & Me) | undefined>();
+        const [authState, setAuthState] = useState<AuthState>("loading");
 
-        const { auth, AuthUI, logOut } = authHook();
+        const { auth, AuthUI, logOut } = authHook(setAuthState);
 
         useEffect(() => {
             let done: (() => void) | undefined = undefined;
@@ -71,7 +78,8 @@ export function createJazzReactContext<Acc extends Account>({
 
         return (
             <>
-                {me && logOut ? (
+                {authState === "loading" ? loading : null}
+                {authState === "signedIn" && me && logOut ? (
                     <JazzContext.Provider
                         value={{
                             me,
@@ -80,9 +88,8 @@ export function createJazzReactContext<Acc extends Account>({
                     >
                         {children}
                     </JazzContext.Provider>
-                ) : (
-                    AuthUI
-                )}
+                ) : null}
+                {authState === "ready" && AuthUI}
             </>
         );
     }

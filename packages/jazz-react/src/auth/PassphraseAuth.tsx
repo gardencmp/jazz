@@ -1,4 +1,4 @@
-import { useMemo, useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode, useEffect } from "react";
 import { BrowserPassphraseAuth } from "jazz-browser";
 import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
@@ -19,7 +19,7 @@ export function PassphraseAuth<Acc extends Account>({
     wordlist: string[];
     Component?: PassphraseAuth.Component;
 }): ReactAuthHook<Acc> {
-    return function useLocalAuth() {
+    return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
@@ -31,6 +31,10 @@ export function PassphraseAuth<Acc extends Account>({
         >({ state: "loading" });
 
         const [logOutCounter, setLogOutCounter] = useState(0);
+
+        useEffect(() => {
+            setJazzAuthState(authState.state);
+        }, [authState]);
 
         const auth = useMemo(() => {
             return new BrowserPassphraseAuth<Acc>(

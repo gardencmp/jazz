@@ -1,4 +1,4 @@
-import { useMemo, useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode, useEffect } from "react";
 import { BrowserPasskeyAuth } from "jazz-browser";
 import { Account, CoValueClass } from "jazz-tools";
 import { ReactAuthHook } from "./auth.js";
@@ -15,7 +15,7 @@ export function PasskeyAuth<Acc extends Account>({
     appHostname?: string;
     Component?: PasskeyAuth.Component;
 }): ReactAuthHook<Acc> {
-    return function useLocalAuth() {
+    return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
@@ -25,6 +25,10 @@ export function PasskeyAuth<Acc extends Account>({
               }
             | { state: "signedIn"; logOut: () => void }
         >({ state: "loading" });
+
+        useEffect(() => {
+            setJazzAuthState(authState.state);
+        }, [authState]);
 
         const [logOutCounter, setLogOutCounter] = useState(0);
 
