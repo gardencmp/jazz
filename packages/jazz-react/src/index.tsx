@@ -188,6 +188,7 @@ export interface JazzReactContext<Acc extends Account> {
     /** @category Provider Component */
     Provider: React.FC<{
         children: React.ReactNode;
+        loading?: React.ReactNode;
     }>;
 
     /** @category Hooks */
