@@ -4,6 +4,7 @@ import {
     createJazzBrowserContext,
 } from "jazz-browser";
 
+
 import {
     Account,
     CoValue,
@@ -13,7 +14,7 @@ import {
     ID,
     subscribeToCoValue,
 } from "jazz-tools";
-import { ReactAuthHook } from "./auth/auth.js";
+import { AuthState, ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
 export function createJazzReactContext<Acc extends Account>({
@@ -33,10 +34,16 @@ export function createJazzReactContext<Acc extends Account>({
         | undefined
     >(undefined);
 
-    function Provider({ children }: { children: React.ReactNode }) {
+    function Provider({
+        children,
+        loading,
+    }: {
+        children: React.ReactNode;
+        loading?: React.ReactNode;
+    }) {
         const [me, setMe] = useState<Acc | undefined>();
-
-        const { auth, AuthUI, logOut } = authHook();
+        const [authState, setAuthState] = useState<AuthState>("loading");
+        const { auth, AuthUI, logOut } = authHook(setAuthState);
 
         useEffect(() => {
             let done: (() => void) | undefined = undefined;
@@ -74,7 +81,8 @@ export function createJazzReactContext<Acc extends Account>({
 
         return (
             <>
-                {me && logOut ? (
+                {authState === "loading" ? loading : null}
+                {authState === "signedIn" && me && logOut ? (
                     <JazzContext.Provider
                         value={{
                             me,
@@ -83,9 +91,8 @@ export function createJazzReactContext<Acc extends Account>({
                     >
                         {children}
                     </JazzContext.Provider>
-                ) : (
-                    AuthUI
-                )}
+                ) : null}
+                {authState === "ready" && AuthUI}
             </>
         );
     }
@@ -181,6 +188,7 @@ export interface JazzReactContext<Acc extends Account> {
     /** @category Provider Component */
     Provider: React.FC<{
         children: React.ReactNode;
+        loading?: React.ReactNode;
     }>;
 
     /** @category Hooks */
