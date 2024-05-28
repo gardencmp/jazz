@@ -95,9 +95,6 @@ const config: Config = {
     plugins: [
         tailwindCSSAnimate,
         typography(),
-        typography({
-            className: "prose-inner",
-        }),
     ],
 };
 export default config;

@@ -394,12 +394,12 @@ body {
     --shiki-color-text: #606060;
     --shiki-color-background: transparent;
     --shiki-token-constant: #00a5a5;
-    --shiki-token-string: #1aa245;
+    --shiki-token-string: #4e3a2c;
     --shiki-token-comment: #aaa;
     --shiki-token-keyword: #7b8bff;
     --shiki-token-parameter: #ff9800;
     --shiki-token-function: #445dd7;
-    --shiki-token-string-expression: #1aa245;
+    --shiki-token-string-expression: #38a35f;
     --shiki-token-punctuation: #969696;
     --shiki-token-link: #1aa245;
 }
@@ -407,7 +407,7 @@ body {
 .dark body {
     --shiki-color-text: #d1d1d1;
     --shiki-token-constant: #2dc9c9;
-    --shiki-token-string: #ffab70;
+    --shiki-token-string: #feb179;
     --shiki-token-comment: #6b737c;
     --shiki-token-keyword: #7b8bff;
     --shiki-token-parameter: #ff9800;

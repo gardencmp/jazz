@@ -6,7 +6,7 @@ import { PackageIcon } from "lucide-react";
 export function DocNav() {
     return (
         <>
-            <p className="mt-0 not-prose font-medium">
+            <p className="mt-0 font-medium">
                 <DocNavLink href="#guide">Guide</DocNavLink>
             </p>
 
@@ -20,38 +20,38 @@ export function DocNav() {
                     </DocNavLink>
                     <ul>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
+                            <DocNavLink href="#declaring-covalues">
                                 Declaration
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
+                            <DocNavLink href="#reading-covalues">
                                 Reading
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
+                            <DocNavLink href="#creating-covalues">
                                 Creation
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
+                            <DocNavLink href="#editing-and-subscription">
                                 Editing & Subscription
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
+                            <DocNavLink href="#persistence">
                                 Persistence
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
+                            <DocNavLink href="#remote-sync">
                                 Remote Sync
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#intro-to-covalues">
-                                Public Sharing
+                            <DocNavLink href="#simple-public-sharing">
+                                Simple Public Sharing
                             </DocNavLink>
                         </li>
                     </ul>
@@ -67,8 +67,13 @@ export function DocNav() {
                     </DocNavLink>
                 </li>
                 <li>
-                    <DocNavLink href="#accounts-and-migrations">
-                        Accounts & Migrations
+                    <DocNavLink href="#auth-accounts-and-migrations">
+                        Auth, Accounts & Migrations
+                    </DocNavLink>
+                </li>
+                <li>
+                    <DocNavLink href="#edits-and-time-travel">
+                        Edit Metadata & Time Travel
                     </DocNavLink>
                 </li>
                 <li>
@@ -100,7 +105,7 @@ export async function NavPackage({
 
     return (
         <>
-            <h2 className="text-sm not-prose mt-4 flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 ">
+            <h2 className="text-sm mt-4 flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 ">
                 <code className="font-bold">{packageName}</code>{" "}
                 <PackageIcon size={15} strokeWidth={1.5} />
             </h2>
@@ -123,7 +128,7 @@ export async function NavPackage({
                                         <>
                                             <a
                                                 key={child.id}
-                                                className="inline-block not-prose px-1 m-0.5 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
+                                                className="text-sm inline-block px-2 m-0.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
                                                 href={`#${packageName}/${child.name}`}
                                             >
                                                 <code>{child.name}</code>
@@ -150,7 +155,7 @@ export function DocNavLink({
     return (
         <a
             href={href}
-            className="not-prose hover:text-black dark:hover:text-white"
+            className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
         >
             {children}
         </a>

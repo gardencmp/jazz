@@ -101,22 +101,7 @@ export default function RootLayout({
                         docNav={<DocNav />}
                     />
                     <main className="flex min-h-screen flex-col p-8 max-w-[80rem] w-full [&_*]:scroll-mt-[6rem]">
-                        <article
-                            className={[
-                                "prose lg:prose-lg max-w-none prose-stone dark:prose-invert",
-                                "prose-headings:font-display",
-                                "prose-h1:text-5xl lg:prose-h1:text-6xl prose-h1:font-medium prose-h1:tracking-tighter",
-                                "prose-h2:text-2xl lg:prose-h2:text-3xl prose-h2:font-medium prose-h2:tracking-tight",
-                                "prose-p:max-w-3xl prose-p:leading-snug",
-                                "prose-strong:font-medium",
-                                "prose-code:font-normal prose-code:leading-tight prose-code:before:content-none prose-code:after:content-none prose-code:bg-stone-100 prose-code:dark:bg-stone-900 prose-code:p-1 prose-code:-my-1 prose-code:rounded",
-                                "prose-pre:max-w-3xl prose-pre:text-[0.8em] prose-pre:leading-[1.3] prose-pre:-mt-4 prose-pre:my-4 prose-pre:px-3 prose-pre:py-2 md:prose-pre:-mx-3 prose-pre:bg-stone-100 dark:prose-pre:bg-stone-900",
-
-                                "prose-inner-code:font-normal prose-inner-code:text-[1em]",
-                            ].join(" ")}
-                        >
-                            {children}
-                        </article>
+                        {children}
                     </main>
                     <footer className="flex z-10 mt-10 min-h-[15rem] -mb-20 bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-400 w-full justify-center">
                         <div className="p-8 max-w-[80rem] w-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-8 max-sm:mb-12">

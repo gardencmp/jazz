@@ -41,22 +41,32 @@ function highlightPlugin() {
                 "css-variables",
             );
 
-            // match a meta tag like `subtle=0,1,2,3` and parse out the line numbers
-            const subtleTag = node.meta && node.meta.match(/subtle=\S+/);
-            const subtle =
-                subtleTag && subtleTag[0].split("=")[1].split(",").map(Number);
+            let lineNo = -1;
 
             node.type = "html";
             node.value = `<pre><code class="not-prose">${lines
-                .map((line, lineI) =>
-                    line
-                        .map(
-                            (token) =>
-                                `<span style="color: ${token.color};${subtle?.includes(lineI + 1) ? "opacity: 0.3;" : ""}">${escape(token.content)}</span>`,
-                        )
-                        .join(""),
-                )
-                .join("\n")}</code></pre>`;
+                .map((line) => {
+                    const isSubduedLine = line.some((token) =>
+                        token.content.includes("// old"),
+                    );
+                    const isBinnedLine = line.some((token) =>
+                        token.content.includes("// *bin*"),
+                    );
+                    if (!isBinnedLine) {
+                        lineNo++;
+                    }
+                    return (
+                        `<div class="line" style="${isBinnedLine ? "opacity: 0.3; text-decoration: line-through;" : ""}"><div class="lineNo" style="${isSubduedLine ? "opacity: 0.3;" : ""}${isBinnedLine ? "color: red;" : ""}">${node.lang === "bash" ? ">" : isBinnedLine ? "✕" : (lineNo + 1)}</div>` +
+                        line
+                            .map(
+                                (token) =>
+                                    `<span style="color: ${isBinnedLine ? "red" : token.color};${isSubduedLine ? "opacity: 0.3;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`,
+                            )
+                            .join("") +
+                        "</div>"
+                    );
+                })
+                .join("")}</code></pre>`;
             node.children = [];
             return SKIP;
         }
