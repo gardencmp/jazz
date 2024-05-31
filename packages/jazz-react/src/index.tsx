@@ -18,7 +18,7 @@ import { AuthState, ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
 export function createJazzReactContext<Acc extends Account>({
-    auth: authHook,
+    auth: useAuthHook,
     peer,
     storage = "indexedDB",
 }: {
@@ -43,7 +43,7 @@ export function createJazzReactContext<Acc extends Account>({
     }) {
         const [me, setMe] = useState<Acc | undefined>();
         const [authState, setAuthState] = useState<AuthState>("loading");
-        const { auth, AuthUI, logOut } = authHook(setAuthState);
+        const { auth, AuthUI, logOut } = useAuthHook(setAuthState);
 
         useEffect(() => {
             let done: (() => void) | undefined = undefined;
@@ -128,24 +128,18 @@ export function createJazzReactContext<Acc extends Account>({
         id: ID<V> | undefined,
         depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
     ): DeeplyLoaded<V, D> | undefined {
-        // for some reason (at least in React 18) - if we use state directly,
-        // some updates get swallowed/UI doesn't update
-        const [_, setUpdates] = useState<number>(0);
-        const state = useRef<DeeplyLoaded<V, D> | undefined>(undefined);
+        const [state, setState] = useState<{ value: DeeplyLoaded<V, D> | undefined }>({ value: undefined });
         const me = React.useContext(JazzContext)?.me;
 
         useEffect(() => {
             if (!id || !me) return;
-            return subscribeToCoValue(Schema, id, me, depth, (update) => {
-                state.current = update as DeeplyLoaded<V, D>;
-
-                setUpdates((u) => {
-                    return u + 1;
-                });
+        
+            return subscribeToCoValue(Schema, id, me, depth, (value) => {
+                setState({ value })
             });
         }, [Schema, id, me]);
 
-        return state.current;
+        return state.value;
     }
 
     function useAcceptInvite<V extends CoValue>({
