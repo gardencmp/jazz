@@ -439,12 +439,12 @@ import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
 import { IssueComponent } from "./components/Issue.tsx"; // old
 import { useAccount, useCoState } from "./main"; // old
-import { ID } from "jazz-tools" // old
+import { ID, Group } from "jazz-tools"
 // old
 function App() { // old
     const { me } = useAccount(); // old
-    const [issueID, setIssueID] = useState<ID<Issue>>( // old
-        window.location.search?.replace("?issue=", "") || undefined, // old
+    const [issueID, setIssueID] = useState<ID<Issue> | undefined>(// old
+        (window.location.search?.replace("?issue=", "") || undefined) as ID<Issue> | undefined,// old
     ); // old
     // old
     const issue = useCoState(Issue, issueID); // old
@@ -524,14 +524,15 @@ First, we'll change `App.tsx` to create and render `Project`s instead of `Issue`
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
-import { Project } from "./schema";
-import { ProjectComponent } from "./components/Project";
+import { Project, ListOfIssues } from "./schema";
+import { ProjectComponent } from "./components/Project.tsx";
 import { useAccount } from "./main";
+import { ID, Group } from "jazz-tools"
 // old
 function App() { // old
     const { me } = useAccount(); // old
-    const [projectID, setProjectID] = useState<ID<Project>>(
-        window.location.search?.replace("?issue=", "") || undefined,
+    const [projectID, setProjectID] = useState<ID<Project> | undefined>(
+        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined,// old
     );
     // old
     const issue = useCoState(Issue, issueID); // *bin*
@@ -541,11 +542,14 @@ function App() { // old
         group.addMember("everyone", "writer");
 
         const newProject = Project.create(
-            { issues: ListOfIssues.create([], { owner: group }) },
+            {
+                name: "New Project",
+                issues: ListOfIssues.create([], { owner: group })
+            },
             { owner: group },
         );
-        setIssueID(newIssue.id);
-        window.history.pushState({}, "", `?issue=${newIssue.id}`);
+        setProjectID(newProject.id);
+        window.history.pushState({}, "", `?project=${newProject.id}`);
     };
     // old
     if (projectID) {
