@@ -56,17 +56,17 @@ function highlightPlugin() {
                         lineNo++;
                     }
                     return (
-                        `<div class="line" style="${isBinnedLine ? "opacity: 0.3; text-decoration: line-through;" : ""}"><div class="lineNo" style="${isSubduedLine ? "opacity: 0.3;" : ""}${isBinnedLine ? "color: red;" : ""}">${node.lang === "bash" ? ">" : isBinnedLine ? "✕" : (lineNo + 1)}</div>` +
+                        `<span class="line" style="${isBinnedLine ? "opacity: 0.3; text-decoration: line-through; user-select: none" : ""}"><div class="lineNo" style="${isSubduedLine ? "opacity: 0.3;" : ""}${isBinnedLine ? "color: red;" : ""}">${node.lang === "bash" ? ">" : isBinnedLine ? "✕" : (lineNo + 1)}</div>` +
                         line
                             .map(
                                 (token) =>
                                     `<span style="color: ${isBinnedLine ? "red" : token.color};${isSubduedLine ? "opacity: 0.3;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`,
                             )
                             .join("") +
-                        "</div>"
+                        "</span>"
                     );
                 })
-                .join("")}</code></pre>`;
+                .join("\n")}</code></pre>`;
             node.children = [];
             return SKIP;
         }
