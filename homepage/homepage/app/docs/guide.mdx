@@ -616,7 +616,8 @@ But you can also take more precise control over loading by defining a minimum-de
 {/* prettier-ignore */}
 ```tsx
 import { ID } from "jazz-tools";// old
-import { Project } from "../schema";// old
+import { Project, Issue } from "../schema"; // old
+import { IssueComponent } from "./Issue.tsx"; // old
 import { useCoState } from "../main"; // old
 // old
 export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// old
