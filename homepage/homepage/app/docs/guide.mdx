@@ -569,7 +569,8 @@ Create a new file `src/components/Project.tsx` and add the following:
 {/* prettier-ignore */}
 ```tsx
 import { ID } from "jazz-tools";
-import { Project } from "../schema";
+import { Project, Issue } from "../schema";
+import { IssueComponent } from "./Issue.tsx";
 import { useCoState } from "../main";
 
 export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {
