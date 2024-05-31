@@ -1,8 +1,8 @@
 import { Slogan } from "@/components/forMdx";
 import { JazzLogo } from "@/components/logos";
 
-<h1 id="guide">Learn some Jazz.</h1>
-<Slogan>Build an issue tracking app with distributed state.</Slogan>
+<h1 id="guide">Learn some <JazzLogo className="h-[1.3em] relative -top-0.5 inline-block -ml-[0.1em] -mr-[0.1em]"/></h1>
+<Slogan>Build an issue tracker with distributed state.</Slogan>
 
 Our issues app will be quite simple, but it will have team collaboration. <span className="text-nowrap">**Let's call it... &ldquo;Circular.&rdquo;**</span>
 
@@ -44,7 +44,7 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
     import ReactDOM from "react-dom/client"; // old
     import App from "./App.tsx"; // old
     import "./index.css"; // old
-    import { JazzReact } from "jazz-react"; // old
+    import { createJazzReactContext, DemoAuth } from "jazz-react";
      // old
     const Jazz = createJazzReactContext({
         auth: DemoAuth({ appName: "Circular" }),
@@ -110,7 +110,7 @@ Create a new file `src/components/Issue.tsx` and add the following:
 ```tsx
 import { Issue } from "../schema";
 
-export function IssueComponent({ issue }, { issue: Issue }) {
+export function IssueComponent({ issue }: { issue: Issue }) {
     return (
         <div className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t">
             <h2>{issue.title}</h2>
@@ -132,9 +132,9 @@ Let's modify `src/App.tsx` to prepare for creating an Issue and then rendering i
 
 {/* prettier-ignore */}
 ```tsx
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Issue } from "./schema";
-import { IssueComponent } from "./components/Issue";
+import { IssueComponent } from "./components/Issue.tsx";
 // old
 function App() {// old
     const [issue, setIssue] = useState<Issue>();
@@ -155,7 +155,7 @@ Now, finally, let's implement creating an issue:
 ```tsx
 import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
-import { IssueComponent } from "./components/Issue"; // old
+import { IssueComponent } from "./components/Issue.tsx"; // old
 import { useAccount } from "./main";
 // old
 function App() {// old
@@ -227,8 +227,9 @@ Let's modify `src/App.tsx`:
 ```tsx
 import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
-import { IssueComponent } from "./components/Issue"; // old
+import { IssueComponent } from "./components/Issue.tsx"; // old
 import { useAccount, useCoState } from "./main";
+import { ID } from "jazz-tools"
 // old
 function App() { // old
     const { me } = useAccount(); // old
@@ -265,7 +266,7 @@ And now for the exciting part! Let's make `src/components/Issue.tsx` an editing 
 ```tsx
 import { Issue } from "../schema"; // old
 // old
-export function IssueComponent({ issue }, { issue: Issue }) { // old
+export function IssueComponent({ issue }: { issue: Issue }) { // old
     return ( // old
         <div className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t"> // old
             <input type="text"
@@ -288,7 +289,7 @@ export function IssueComponent({ issue }, { issue: Issue }) { // old
             >
                 <option value="backlog">Backlog</option>
                 <option value="in progress">In Progress</option>
-                <option value="done">Done</options>
+                <option value="done">Done</option>
             </select>
         </div> // old
     ); // old
@@ -381,13 +382,14 @@ So let's store the ID in window URL state and make sure our useState is in sync 
 ```tsx
 import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
-import { IssueComponent } from "./components/Issue"; // old
+import { IssueComponent } from "./components/Issue.tsx"; // old
 import { useAccount, useCoState } from "./main"; // old
+import { ID } from "jazz-tools" // old
 // old
 function App() { // old
     const { me } = useAccount(); // old
-    const [issueID, setIssueID] = useState<ID<Issue>>(
-        window.location.search?.replace("?issue=", "") || undefined,
+    const [issueID, setIssueID] = useState<ID<Issue> | undefined>(
+        (window.location.search?.replace("?issue=", "") || undefined) as ID<Issue> | undefined,
     );
     // old
     const issue = useCoState(Issue, issueID); // old
@@ -435,8 +437,9 @@ All we have to do is create a new group to own each new issue and add "everyone"
 ```tsx
 import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
-import { IssueComponent } from "./components/Issue"; // old
+import { IssueComponent } from "./components/Issue.tsx"; // old
 import { useAccount, useCoState } from "./main"; // old
+import { ID } from "jazz-tools" // old
 // old
 function App() { // old
     const { me } = useAccount(); // old
