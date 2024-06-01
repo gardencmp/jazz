@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.6
+
+### Patch Changes
+
+-   Provide way to create accounts as another account
+
 ## 0.7.3
 
 ### Patch Changes
