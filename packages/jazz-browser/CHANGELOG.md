@@ -1,5 +1,11 @@
 # jazz-browser
 
+## 0.7.5
+
+### Patch Changes
+
+-   Ability to add seed accounts to DemoAuth
+
 ## 0.7.3
 
 ### Patch Changes

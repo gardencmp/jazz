@@ -1,5 +1,13 @@
 # jazz-react
 
+## 0.7.5
+
+### Patch Changes
+
+-   Ability to add seed accounts to DemoAuth
+-   Updated dependencies
+    -   jazz-browser@0.7.5
+
 ## 0.7.4
 
 ### Patch Changes
