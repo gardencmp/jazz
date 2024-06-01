@@ -43,7 +43,7 @@ export type CoStreamItem<Item extends JsonValue> = {
 
 export class RawCoStreamView<
     Item extends JsonValue = JsonValue,
-    Meta extends JsonObject | null = JsonObject | null
+    Meta extends JsonObject | null = JsonObject | null,
 > implements RawCoValue
 {
     id: CoID<this>;
@@ -100,7 +100,7 @@ export class RawCoStreamView<
             return undefined;
         } else if (Object.keys(this.items).length !== 1) {
             throw new Error(
-                "CoStream.getSingleStream() can only be called when there is exactly one stream"
+                "CoStream.getSingleStream() can only be called when there is exactly one stream",
             );
         }
 
@@ -115,13 +115,13 @@ export class RawCoStreamView<
         return new Set(
             this.sessions()
                 .map(accountOrAgentIDfromSessionID)
-                .filter(isAccountID)
+                .filter(isAccountID),
         );
     }
 
     nthItemIn(
         sessionID: SessionID,
-        n: number
+        n: number,
     ):
         | {
               by: AccountID | AgentID;
@@ -214,7 +214,7 @@ export class RawCoStreamView<
                           in: sessionID as SessionID,
                           ...item,
                       }))
-                    : []
+                    : [],
             ),
         ];
 
@@ -232,7 +232,7 @@ export class RawCoStreamView<
             Object.entries(this.items).map(([sessionID, items]) => [
                 sessionID,
                 items.map((item) => item.value),
-            ])
+            ]),
         );
     }
 
@@ -245,7 +245,7 @@ export class RawCoStreamView<
 
 export class RawCoStream<
         Item extends JsonValue = JsonValue,
-        Meta extends JsonObject | null = JsonObject | null
+        Meta extends JsonObject | null = JsonObject | null,
     >
     extends RawCoStreamView<Item, Meta>
     implements RawCoValue
@@ -259,13 +259,13 @@ export class RawCoStream<
 const binary_U_prefixLength = 8; // "binary_U".length;
 
 export class RawBinaryCoStreamView<
-        Meta extends BinaryCoStreamMeta = { type: "binary" }
+        Meta extends BinaryCoStreamMeta = { type: "binary" },
     >
     extends RawCoStreamView<BinaryStreamItem, Meta>
     implements RawCoValue
 {
     getBinaryChunks(
-        allowUnfinished?: boolean
+        allowUnfinished?: boolean,
     ):
         | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
@@ -304,7 +304,7 @@ export class RawBinaryCoStreamView<
             }
 
             const chunk = base64URLtoBytes(
-                item.chunk.slice(binary_U_prefixLength)
+                item.chunk.slice(binary_U_prefixLength),
             );
             // totalLength += chunk.length;
             chunks.push(chunk);
@@ -331,7 +331,7 @@ export class RawBinaryCoStreamView<
 }
 
 export class RawBinaryCoStream<
-        Meta extends BinaryCoStreamMeta = { type: "binary" }
+        Meta extends BinaryCoStreamMeta = { type: "binary" },
     >
     extends RawBinaryCoStreamView<Meta>
     implements RawCoValue
@@ -340,7 +340,7 @@ export class RawBinaryCoStream<
     push(
         item: BinaryStreamItem,
         privacy: "private" | "trusting" = "private",
-        updateView: boolean = true
+        updateView: boolean = true,
     ): void {
         this.core.makeTransaction([item], privacy);
         if (updateView) {
@@ -350,7 +350,7 @@ export class RawBinaryCoStream<
 
     startBinaryStream(
         settings: BinaryStreamInfo,
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ): void {
         this.push(
             {
@@ -358,13 +358,13 @@ export class RawBinaryCoStream<
                 ...settings,
             } satisfies BinaryStreamStart,
             privacy,
-            false
+            false,
         );
     }
 
     pushBinaryStreamChunk(
         chunk: Uint8Array,
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ): void {
         // const before = performance.now();
         this.push(
@@ -373,7 +373,7 @@ export class RawBinaryCoStream<
                 chunk: `binary_U${bytesToBase64url(chunk)}`,
             } satisfies BinaryStreamChunk,
             privacy,
-            false
+            false,
         );
         // const after = performance.now();
         // console.log(
@@ -388,7 +388,7 @@ export class RawBinaryCoStream<
                 type: "end",
             } satisfies BinaryStreamEnd,
             privacy,
-            true
+            true,
         );
     }
 }

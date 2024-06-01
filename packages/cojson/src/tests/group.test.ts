@@ -1,19 +1,18 @@
-import { expect, test, beforeEach } from "vitest";
-import { LocalNode, RawCoMap, RawCoList, RawCoStream, RawBinaryCoStream, cojsonReady } from "../index";
+import { expect, test } from "vitest";
+import {
+    LocalNode,
+    RawCoMap,
+    RawCoList,
+    RawCoStream,
+    RawBinaryCoStream,
+    WasmCrypto,
+} from "../index.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Can create a RawCoMap in a group", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const group = node.createGroup();
 
@@ -24,7 +23,7 @@ test("Can create a RawCoMap in a group", () => {
 });
 
 test("Can create a CoList in a group", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const group = node.createGroup();
 
@@ -32,10 +31,10 @@ test("Can create a CoList in a group", () => {
 
     expect(list.core.getCurrentContent().type).toEqual("colist");
     expect(list instanceof RawCoList).toEqual(true);
-})
+});
 
 test("Can create a CoStream in a group", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const group = node.createGroup();
 
@@ -46,7 +45,7 @@ test("Can create a CoStream in a group", () => {
 });
 
 test("Can create a BinaryCoStream in a group", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const group = node.createGroup();
 
@@ -55,4 +54,4 @@ test("Can create a BinaryCoStream in a group", () => {
     expect(stream.core.getCurrentContent().type).toEqual("costream");
     expect(stream.headerMeta.type).toEqual("binary");
     expect(stream instanceof RawBinaryCoStream).toEqual(true);
-})
+});

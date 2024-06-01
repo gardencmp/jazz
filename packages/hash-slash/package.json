@@ -1,6 +1,7 @@
 {
   "name": "hash-slash",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0",
+  "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",
@@ -14,9 +15,14 @@
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",
-    "lint": "eslint src/**/*.tsx",
+    "lint": "eslint . --ext ts,tsx",
+    "format": "prettier --write './src/**/*.{ts,tsx}'",
     "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

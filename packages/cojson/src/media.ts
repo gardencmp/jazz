@@ -1,5 +1,5 @@
-import { RawCoMap } from './coValues/coMap.js'
-import { RawBinaryCoStream } from './coValues/coStream.js'
+import { RawCoMap } from "./coValues/coMap.js";
+import { RawBinaryCoStream } from "./coValues/coStream.js";
 
 export type ImageDefinition = RawCoMap<{
     originalSize: [number, number];

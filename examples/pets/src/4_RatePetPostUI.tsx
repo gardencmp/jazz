@@ -13,7 +13,7 @@ import { ProgressiveImg } from "jazz-react";
  */
 
 const reactionEmojiMap: {
-    [reaction in typeof ReactionTypes[number]]: string;
+    [reaction in (typeof ReactionTypes)[number]]: string;
 } = {
     aww: "😍",
     love: "❤️",
@@ -68,18 +68,15 @@ export function RatePetPostUI() {
     );
 }
 
-function ReactionOverview({
-    petReactions,
-}: {
-    petReactions: PetReactions;
-}) {
+function ReactionOverview({ petReactions }: { petReactions: PetReactions }) {
     return (
         <div>
             <h2>Reactions</h2>
             <div className="flex flex-col gap-1">
                 {ReactionTypes.map((reactionType) => {
-                    const reactionsOfThisType = Object.values(petReactions)
-                        .filter((entry) => entry.value === reactionType);
+                    const reactionsOfThisType = Object.values(
+                        petReactions,
+                    ).filter((entry) => entry.value === reactionType);
 
                     if (reactionsOfThisType.length === 0) return null;
 
@@ -103,7 +100,7 @@ function ReactionOverview({
                                         className="mt-1 w-[50px] h-[1em] rounded-full"
                                         key={idx}
                                     />
-                                )
+                                ),
                             )}
                         </div>
                     );

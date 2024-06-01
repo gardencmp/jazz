@@ -1,32 +1,23 @@
-import { expect, test, beforeEach, vi } from "vitest";
+import { expect, test, vi } from "vitest";
 import { Transaction } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
-import { createdNowUnique, getAgentSignerSecret, newRandomAgentSecret, sign } from "../crypto.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 import { MapOpPayload } from "../coValues/coMap.js";
 import { Role } from "../permissions.js";
-import { cojsonReady } from "../index.js";
 import { stableStringify } from "../jsonStringify.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Can create coValue with new agent credentials and add transaction to it", () => {
     const [account, sessionID] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(account, sessionID);
+    const node = new LocalNode(account, sessionID, Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const transaction: Transaction = {
@@ -41,7 +32,7 @@ test("Can create coValue with new agent credentials and add transaction to it", 
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.currentSessionID,
-        [transaction]
+        [transaction],
     );
 
     expect(
@@ -49,21 +40,21 @@ test("Can create coValue with new agent credentials and add transaction to it", 
             node.currentSessionID,
             [transaction],
             expectedNewHash,
-            sign(account.currentSignerSecret(), expectedNewHash)
-        )
+            Crypto.sign(account.currentSignerSecret(), expectedNewHash),
+        ),
     ).toBe(true);
 });
 
 test("transactions with wrong signature are rejected", () => {
-    const wrongAgent = newRandomAgentSecret();
+    const wrongAgent = Crypto.newRandomAgentSecret();
     const [agentSecret, sessionID] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(agentSecret, sessionID);
+    const node = new LocalNode(agentSecret, sessionID, Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const transaction: Transaction = {
@@ -78,7 +69,7 @@ test("transactions with wrong signature are rejected", () => {
 
     const { expectedNewHash } = coValue.expectedNewHashAfter(
         node.currentSessionID,
-        [transaction]
+        [transaction],
     );
 
     expect(
@@ -86,20 +77,23 @@ test("transactions with wrong signature are rejected", () => {
             node.currentSessionID,
             [transaction],
             expectedNewHash,
-            sign(getAgentSignerSecret(wrongAgent), expectedNewHash)
-        )
+            Crypto.sign(
+                Crypto.getAgentSignerSecret(wrongAgent),
+                expectedNewHash,
+            ),
+        ),
     ).toBe(false);
 });
 
 test("transactions with correctly signed, but wrong hash are rejected", () => {
     const [account, sessionID] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(account, sessionID);
+    const node = new LocalNode(account, sessionID, Crypto);
 
     const coValue = node.createCoValue({
         type: "costream",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const transaction: Transaction = {
@@ -124,7 +118,7 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
                     },
                 ]),
             },
-        ]
+        ],
     );
 
     expect(
@@ -132,14 +126,14 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
             node.currentSessionID,
             [transaction],
             expectedNewHash,
-            sign(account.currentSignerSecret(), expectedNewHash)
-        )
+            Crypto.sign(account.currentSignerSecret(), expectedNewHash),
+        ),
     ).toBe(false);
 });
 
 test("New transactions in a group correctly update owned values, including subscriptions", async () => {
     const [account, sessionID] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(account, sessionID);
+    const node = new LocalNode(account, sessionID, Crypto);
 
     const group = node.createGroup();
 
@@ -147,7 +141,7 @@ test("New transactions in a group correctly update owned values, including subsc
 
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    let map = group.createMap();
+    const map = group.createMap();
 
     map.set("hello", "world");
 
@@ -164,23 +158,28 @@ test("New transactions in a group correctly update owned values, including subsc
             {
                 op: "set",
                 key: account.id,
-                value: "revoked"
-            } satisfies MapOpPayload<typeof account.id, Role>
-        ])
+                value: "revoked",
+            } satisfies MapOpPayload<typeof account.id, Role>,
+        ]),
     } satisfies Transaction;
 
     const { expectedNewHash } = group.core.expectedNewHashAfter(sessionID, [
         resignationThatWeJustLearnedAbout,
     ]);
 
-    const signature = sign(
+    const signature = Crypto.sign(
         node.account.currentSignerSecret(),
-        expectedNewHash
+        expectedNewHash,
     );
 
     expect(map.core.getValidSortedTransactions().length).toBe(1);
 
-    const manuallyAdddedTxSuccess = group.core.tryAddTransactions(node.currentSessionID, [resignationThatWeJustLearnedAbout], expectedNewHash, signature);
+    const manuallyAdddedTxSuccess = group.core.tryAddTransactions(
+        node.currentSessionID,
+        [resignationThatWeJustLearnedAbout],
+        expectedNewHash,
+        signature,
+    );
 
     expect(manuallyAdddedTxSuccess).toBe(true);
 

@@ -1,28 +1,24 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
+import { Account, CoValueClass, ID } from "jazz-tools";
 import { ReactAuthHook } from "./auth.js";
-import { Account, CoValueClass } from "jazz-tools";
+import { AgentSecret } from "cojson";
 
-export type DemoAuthComponent = (props: {
-    appName: string;
-    loading: boolean;
-    existingUsers: string[];
-    logInAs: (existingUser: string) => void;
-    signUp: (username: string) => void;
-}) => ReactNode;
-
+/** @category Auth Providers */
 export function DemoAuth<Acc extends Account = Account>({
     accountSchema = Account as CoValueClass<Acc> & typeof Account,
     appName,
     appHostname,
-    Component = DemoAuthBasicUI,
+    Component = DemoAuth.BasicUI,
+    seedAccounts
 }: {
     accountSchema?: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
-    Component?: DemoAuthComponent;
+    Component?: DemoAuth.Component;
+    seedAccounts?: {[name: string]: {accountID: ID<Account>, accountSecret: AgentSecret}}
 }): ReactAuthHook<Acc> {
-    return function useLocalAuth() {
+    return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
@@ -35,6 +31,10 @@ export function DemoAuth<Acc extends Account = Account>({
         >({ state: "loading" });
 
         const [logOutCounter, setLogOutCounter] = useState(0);
+
+        useEffect(() => {
+            setJazzAuthState(authState.state);
+        }, [authState]);
 
         const auth = useMemo(() => {
             return new BrowserDemoAuth<Acc>(
@@ -59,9 +59,10 @@ export function DemoAuth<Acc extends Account = Account>({
                         });
                     },
                 },
-                appName
+                appName,
+                seedAccounts
             );
-        }, [appName, appHostname, logOutCounter]);
+        }, [appName, appHostname, logOutCounter, seedAccounts]);
 
         const AuthUI =
             authState.state === "ready"
@@ -89,7 +90,7 @@ export function DemoAuth<Acc extends Account = Account>({
     };
 }
 
-export const DemoAuthBasicUI = ({
+const DemoAuthBasicUI = ({
     appName,
     existingUsers,
     logInAs,
@@ -198,3 +199,16 @@ export const DemoAuthBasicUI = ({
         </div>
     );
 };
+
+/** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace DemoAuth {
+    export type Component = (props: {
+        appName: string;
+        loading: boolean;
+        existingUsers: string[];
+        logInAs: (existingUser: string) => void;
+        signUp: (username: string) => void;
+    }) => ReactNode;
+    export const BasicUI = DemoAuthBasicUI;
+}

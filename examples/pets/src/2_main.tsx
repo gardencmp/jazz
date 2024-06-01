@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { JazzReact, PasskeyAuth } from "jazz-react";
+import { createJazzReactContext, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -30,7 +30,11 @@ const auth = PasskeyAuth<PetAccount>({
     accountSchema: PetAccount,
 });
 
-const Jazz = JazzReact({ auth });
+const Jazz = createJazzReactContext({
+    auth,
+    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+});
+// eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -38,12 +42,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider>
+                <Jazz.Provider loading={<div>Loading</div>}>
                     <App />
                 </Jazz.Provider>
             </div>
         </ThemeProvider>
-    </React.StrictMode>
+    </React.StrictMode>,
 );
 
 /** Walkthrough: Creating pet posts & routing in `<App/>`
@@ -110,7 +114,7 @@ export function PostOverview() {
                                 <Link key={post.id} to={"/pet/" + post.id}>
                                     {post.name}
                                 </Link>
-                            )
+                            ),
                     )}
                 </>
             ) : undefined}

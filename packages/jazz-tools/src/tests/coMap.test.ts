@@ -1,23 +1,22 @@
-import { expect, describe, test, beforeEach } from "vitest";
-
-import { webcrypto } from "node:crypto";
+import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import { Effect, Queue } from "effect";
-import { Account, jazzReady, Encoders, CoMap, co } from "..";
+import {
+    Account,
+    Encoders,
+    CoMap,
+    co,
+    WasmCrypto,
+    isControlledAccount,
+} from "../index.js";
 
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await jazzReady;
-});
+const Crypto = await WasmCrypto.create();
 
 describe("Simple CoMap operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
     });
 
     class TestMap extends CoMap {
@@ -41,7 +40,7 @@ describe("Simple CoMap operations", async () => {
             _height: 10,
             birthday: birthday,
         },
-        { owner: me }
+        { owner: me },
     );
 
     test("Construction", () => {
@@ -82,7 +81,7 @@ describe("Simple CoMap operations", async () => {
 
     class RecursiveMap extends CoMap {
         name = co.string;
-        next: co<RecursiveMap | null> = co.ref(RecursiveMap);
+        next?: co<RecursiveMap | null> = co.ref(RecursiveMap);
     }
 
     const recursiveMap = RecursiveMap.create(
@@ -95,13 +94,13 @@ describe("Simple CoMap operations", async () => {
                         {
                             name: "third",
                         },
-                        { owner: me }
+                        { owner: me },
                     ),
                 },
-                { owner: me }
+                { owner: me },
             ),
         },
-        { owner: me }
+        { owner: me },
     );
 
     describe("Recursive CoMap", () => {
@@ -115,7 +114,7 @@ describe("Simple CoMap operations", async () => {
     class MapWithEnumOfMaps extends CoMap {
         name = co.string;
         child = co.ref<typeof ChildA | typeof ChildB>((raw) =>
-            raw.get("type") === "a" ? ChildA : ChildB
+            raw.get("type") === "a" ? ChildA : ChildB,
         );
     }
 
@@ -137,10 +136,10 @@ describe("Simple CoMap operations", async () => {
                     type: "a",
                     value: 5,
                 },
-                { owner: me }
+                { owner: me },
             ),
         },
-        { owner: me }
+        { owner: me },
     );
 
     test("Enum of maps", () => {
@@ -154,19 +153,18 @@ describe("Simple CoMap operations", async () => {
         name = co.string;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class SubClassMap extends SuperClassMap {
         name = co.literal("specificString");
         value = co.number;
         extra = co.ref(TestMap);
     }
-    interface SubClassMap extends CoMap {}
 
-    class GenericMapWithLoose<
-        out T extends string = string,
-    > extends CoMap {
+    class GenericMapWithLoose<out T extends string = string> extends CoMap {
         name = co.json<T>();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const loose: GenericMapWithLoose<string> = {} as GenericMapWithLoose<
         "a" | "b"
     >;
@@ -199,6 +197,7 @@ describe("CoMap resolution", async () => {
     const initNodeAndMap = async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const map = TestMap.create(
@@ -210,13 +209,13 @@ describe("CoMap resolution", async () => {
                         name: "nested",
                         twiceNested: TwiceNestedMap.create(
                             { taste: "sour" },
-                            { owner: me }
+                            { owner: me },
                         ),
                     },
-                    { owner: me }
+                    { owner: me },
                 ),
             },
-            { owner: me }
+            { owner: me },
         );
 
         return { me, map };
@@ -241,17 +240,22 @@ describe("CoMap resolution", async () => {
         const [initialAsPeer, secondPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondPeer);
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
-        const loadedMap = await TestMap.load(map.id, { as: meOnSecondPeer });
+        const loadedMap = await TestMap.load(map.id, meOnSecondPeer, {});
 
         expect(loadedMap?.color).toEqual("red");
         expect(loadedMap?.height).toEqual(10);
@@ -259,9 +263,11 @@ describe("CoMap resolution", async () => {
         expect(loadedMap?._refs.nested?.id).toEqual(map.nested?.id);
         expect(loadedMap?._refs.nested?.value).toEqual(null);
 
-        const loadedNestedMap = await NestedMap.load(map.nested!.id, {
-            as: meOnSecondPeer,
-        });
+        const loadedNestedMap = await NestedMap.load(
+            map.nested!.id,
+            meOnSecondPeer,
+            {},
+        );
 
         expect(loadedMap?.nested?.name).toEqual("nested");
         expect(loadedMap?.nested?._fancyName).toEqual("Sir nested");
@@ -270,12 +276,13 @@ describe("CoMap resolution", async () => {
 
         const loadedTwiceNestedMap = await TwiceNestedMap.load(
             map.nested!.twiceNested!.id,
-            { as: meOnSecondPeer }
+            meOnSecondPeer,
+            {},
         );
 
         expect(loadedMap?.nested?.twiceNested?.taste).toEqual("sour");
         expect(loadedMap?.nested?._refs.twiceNested?.value).toEqual(
-            loadedTwiceNestedMap
+            loadedTwiceNestedMap,
         );
 
         const otherNestedMap = NestedMap.create(
@@ -283,10 +290,10 @@ describe("CoMap resolution", async () => {
                 name: "otherNested",
                 twiceNested: TwiceNestedMap.create(
                     { taste: "sweet" },
-                    { owner: meOnSecondPeer }
+                    { owner: meOnSecondPeer },
                 ),
             },
-            { owner: meOnSecondPeer }
+            { owner: meOnSecondPeer },
         );
 
         loadedMap!.nested = otherNestedMap;
@@ -303,16 +310,19 @@ describe("CoMap resolution", async () => {
         const [initialAsPeer, secondAsPeer] = connectedPeers(
             "initial",
             "second",
-            { peer1role: "server", peer2role: "client" }
+            { peer1role: "server", peer2role: "client" },
         );
-
+        if (!isControlledAccount(me)) {
+            throw "me is not a controlled account";
+        }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-
         const meOnSecondPeer = await Account.become({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sessionID: newRandomSessionID(me.id as any),
+            crypto: Crypto,
         });
 
         await Effect.runPromise(
@@ -321,14 +331,17 @@ describe("CoMap resolution", async () => {
 
                 TestMap.subscribe(
                     map.id,
-                    { as: meOnSecondPeer },
+                    meOnSecondPeer,
+                    {},
                     (subscribedMap) => {
                         console.log(
                             "subscribedMap.nested?.twiceNested?.taste",
-                            subscribedMap.nested?.twiceNested?.taste
+                            subscribedMap.nested?.twiceNested?.taste,
                         );
-                        Effect.runPromise(Queue.offer(queue, subscribedMap));
-                    }
+                        void Effect.runPromise(
+                            Queue.offer(queue, subscribedMap),
+                        );
+                    },
                 );
 
                 const update1 = yield* $(Queue.take(queue));
@@ -351,7 +364,7 @@ describe("CoMap resolution", async () => {
                     {
                         taste: "sweet",
                     },
-                    { owner: meOnSecondPeer }
+                    { owner: meOnSecondPeer },
                 );
 
                 const newNested = NestedMap.create(
@@ -359,7 +372,7 @@ describe("CoMap resolution", async () => {
                         name: "newNested",
                         twiceNested: newTwiceNested,
                     },
-                    { owner: meOnSecondPeer }
+                    { owner: meOnSecondPeer },
                 );
 
                 update3.nested = newNested;
@@ -379,25 +392,26 @@ describe("CoMap resolution", async () => {
                 newTwiceNested.taste = "umami";
                 const update6 = yield* $(Queue.take(queue));
                 expect(update6.nested?.twiceNested?.taste).toEqual("umami");
-            })
+            }),
         );
     });
 
     class TestMapWithOptionalRef extends CoMap {
         color = co.string;
-        nested? = co.ref(NestedMap);
+        nested = co.ref(NestedMap, { optional: true });
     }
 
     test("Construction with optional", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const mapWithout = TestMapWithOptionalRef.create(
             {
                 color: "red",
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(mapWithout.color).toEqual("red");
@@ -411,13 +425,13 @@ describe("CoMap resolution", async () => {
                         name: "wow!",
                         twiceNested: TwiceNestedMap.create(
                             { taste: "sour" },
-                            { owner: me }
+                            { owner: me },
                         ),
                     },
-                    { owner: me }
+                    { owner: me },
                 ),
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(mapWith.color).toEqual("red");
@@ -426,14 +440,17 @@ describe("CoMap resolution", async () => {
         expect(mapWith.nested?._raw).toBeDefined();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
     class TestRecord extends CoMap {
         [co.items] = co.number;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
     interface TestRecord extends Record<string, number> {}
 
     test("Construction with index signature", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const record = TestRecord.create(
@@ -441,7 +458,7 @@ describe("CoMap resolution", async () => {
                 height: 5,
                 other: 3,
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(record.height).toEqual(5);
@@ -462,6 +479,7 @@ describe("CoMap resolution", async () => {
     test("Construction with index signature (shorthand)", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const record = TestRecord2.create(
@@ -469,7 +487,7 @@ describe("CoMap resolution", async () => {
                 height: 5,
                 other: 3,
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(record.height).toEqual(5);
@@ -484,20 +502,21 @@ describe("CoMap resolution", async () => {
     test("Construction with index signature ref", async () => {
         const me = await Account.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         const record = TestRecordRef.create(
             {
                 firstNested: TwiceNestedMap.create(
                     { taste: "sour" },
-                    { owner: me }
+                    { owner: me },
                 ),
                 secondNested: TwiceNestedMap.create(
                     { taste: "sweet" },
-                    { owner: me }
+                    { owner: me },
                 ),
             },
-            { owner: me }
+            { owner: me },
         );
 
         expect(record.firstNested?.taste).toEqual("sour");

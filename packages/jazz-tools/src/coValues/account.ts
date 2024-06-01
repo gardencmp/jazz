@@ -1,7 +1,8 @@
-import { LocalNode } from "cojson";
+import { LocalNode, cojsonInternals } from "cojson";
 import type {
     AgentSecret,
     CoID,
+    CryptoProvider,
     InviteSecret,
     Peer,
     RawAccount,
@@ -10,7 +11,7 @@ import type {
     RawControlledAccount,
     SessionID,
 } from "cojson";
-import { Context } from "effect";
+import { Context, Effect, Stream } from "effect";
 import type {
     CoMap,
     CoValue,
@@ -18,7 +19,9 @@ import type {
     Schema,
     ID,
     RefEncoded,
-    SubclassedConstructor,
+    RefIfCoValue,
+    DeeplyLoaded,
+    DepthsIn,
     UnavailableError,
 } from "../internal.js";
 import {
@@ -30,17 +33,21 @@ import {
     SchemaInit,
     inspect,
     subscriptionsScopes,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
-import type { Stream } from "effect/Stream";
 
-export class Account
-    extends CoValueBase
-    implements CoValue<"Account", RawAccount | RawControlledAccount>
-{
+/** @category Identity & Permissions */
+export class Account extends CoValueBase implements CoValue {
     declare id: ID<this>;
     declare _type: "Account";
     declare _raw: RawAccount | RawControlledAccount;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     get _schema(): {
         profile: Schema;
@@ -50,18 +57,20 @@ export class Account
     }
     static {
         this._schema = {
-            profile: () => Profile satisfies Schema,
+            profile: {
+                ref: () => Profile,
+                optional: false,
+            } satisfies RefEncoded<Profile>,
             root: "json" satisfies Schema,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
     }
 
     get _owner(): Account {
         return this as Account;
     }
-    get _loadedAs(): Account & Me {
-        return this.isMe
-            ? (this as Account & Me)
-            : Account.fromNode(this._raw.core.node);
+    get _loadedAs(): Account {
+        return this.isMe ? this : Account.fromNode(this._raw.core.node);
     }
 
     declare profile: Profile | null;
@@ -83,10 +92,9 @@ export class Account
                     this._loadedAs,
                     this._schema.profile as RefEncoded<
                         NonNullable<this["profile"]> & CoValue
-                    >
-                ) as any as NonNullable<this["profile"]> extends Profile
-                    ? Ref<NonNullable<this["profile"]>> | null
-                    : null),
+                    >,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ) as any as RefIfCoValue<this["profile"]>),
             root:
                 rootID &&
                 (new Ref(
@@ -94,10 +102,9 @@ export class Account
                     this._loadedAs,
                     this._schema.root as RefEncoded<
                         NonNullable<this["root"]> & CoValue
-                    >
-                ) as any as NonNullable<this["root"]> extends CoMap
-                    ? Ref<NonNullable<this["root"]>> | null
-                    : null),
+                    >,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ) as any as RefIfCoValue<this["root"]>),
         };
     }
 
@@ -108,7 +115,7 @@ export class Account
         super();
         if (!("fromRaw" in options)) {
             throw new Error(
-                "Can only construct account from raw or with .create()"
+                "Can only construct account from raw or with .create()",
             );
         }
         this.isMe = options.fromRaw.id == options.fromRaw.core.node.account.id;
@@ -119,16 +126,16 @@ export class Account
                 enumerable: false,
             },
             _raw: { value: options.fromRaw, enumerable: false },
+            _type: { value: "Account", enumerable: false },
         });
 
         if (this.isMe) {
-            (this as Account & Me).sessionID =
-                options.fromRaw.core.node.currentSessionID;
+            this.sessionID = options.fromRaw.core.node.currentSessionID;
         }
 
         return new Proxy(
             this,
-            AccountAndGroupProxyHandler as ProxyHandler<this>
+            AccountAndGroupProxyHandler as ProxyHandler<this>,
         );
     }
 
@@ -138,88 +145,108 @@ export class Account
         }
     }
 
-    acceptInvite:
-        | (<V extends CoValue>(
-              valueID: ID<V>,
-              inviteSecret: InviteSecret,
-              coValueClass: CoValueClass<V>
-          ) => Promise<V | undefined>)
-        | undefined = (async <V extends CoValue>(
+    async acceptInvite<V extends CoValue>(
         valueID: ID<V>,
         inviteSecret: InviteSecret,
-        coValueClass: CoValueClass<V>
-    ) => {
+        coValueClass: CoValueClass<V>,
+    ) {
         if (!this.isMe) {
             throw new Error("Only a controlled account can accept invites");
         }
 
         await (this._raw as RawControlledAccount).acceptInvite(
             valueID as unknown as CoID<RawCoValue>,
-            inviteSecret
+            inviteSecret,
         );
 
-        return coValueClass.load(valueID, {
-            as: this as Account & Me,
-        });
-    }) as any;
+        return loadCoValue(coValueClass, valueID, this as Account, []);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }
 
     static async create<A extends Account>(
-        this: SubclassedConstructor<A> & typeof Account,
+        this: CoValueClass<A> & typeof Account,
         options: {
             creationProps: { name: string };
             initialAgentSecret?: AgentSecret;
             peersToLoadFrom?: Peer[];
-        }
-    ): Promise<A & Me> {
+            crypto: CryptoProvider;
+        },
+    ): Promise<A> {
         const { node } = await LocalNode.withNewlyCreatedAccount({
             ...options,
             migration: async (rawAccount, _node, creationProps) => {
                 const account = new this({
                     fromRaw: rawAccount,
-                }) as A & Me;
+                }) as A;
 
                 await account.migrate?.(creationProps);
             },
         });
 
-        return this.fromNode(node) as A & Me;
+        return this.fromNode(node) as A;
     }
 
     static async become<A extends Account>(
-        this: SubclassedConstructor<A> & typeof Account,
+        this: CoValueClass<A> & typeof Account,
         options: {
             accountID: ID<Account>;
             accountSecret: AgentSecret;
-            sessionID: SessionID;
+            sessionID?: SessionID;
             peersToLoadFrom: Peer[];
-        }
-    ): Promise<A & Me> {
+            crypto: CryptoProvider;
+        },
+    ): Promise<A> {
         const node = await LocalNode.withLoadedAccount({
             accountID: options.accountID as unknown as CoID<RawAccount>,
             accountSecret: options.accountSecret,
             sessionID: options.sessionID,
             peersToLoadFrom: options.peersToLoadFrom,
+            crypto: options.crypto,
             migration: async (rawAccount, _node, creationProps) => {
                 const account = new this({
                     fromRaw: rawAccount,
-                }) as A & Me;
+                }) as A;
 
                 await account.migrate?.(creationProps);
             },
         });
 
-        return this.fromNode(node) as A & Me;
+        return this.fromNode(node) as A;
+    }
+
+    static createAs<A extends Account>(
+        this: CoValueClass<A> & typeof Account,
+        as: Account,
+        options: {
+            creationProps: { name: string };
+        },
+    ) {
+        // TODO: is there a cleaner way to do this?
+        const connectedPeers = cojsonInternals.connectedPeers(
+            "creatingAccount",
+            "createdAccount",
+            { peer1role: "server", peer2role: "client" },
+        );
+
+        as._raw.core.node.syncManager.addPeer(connectedPeers[1]);
+
+        return this.create<A>({
+            creationProps: options.creationProps,
+            crypto: as._raw.core.node.crypto,
+            peersToLoadFrom: [connectedPeers[0]],
+        });
     }
 
     static fromNode<A extends Account>(
-        this: SubclassedConstructor<A>,
-        node: LocalNode
-    ): A & Me {
+        this: CoValueClass<A>,
+        node: LocalNode,
+    ): A {
         return new this({
             fromRaw: node.account as RawControlledAccount,
-        }) as A & Me;
+        }) as A;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(): object | any[] {
         return {
             id: this.id,
@@ -231,15 +258,74 @@ export class Account
         return this.toJSON();
     }
 
-    migrate(creationProps?: { name: string }): void | Promise<void> {
+    migrate(
+        this: Account,
+        creationProps?: { name: string },
+    ): void | Promise<void> {
         if (creationProps) {
             const profileGroup = Group.create({ owner: this });
             profileGroup.addMember("everyone", "reader");
             this.profile = Profile.create(
                 { name: creationProps.name },
-                { owner: profileGroup }
+                { owner: profileGroup },
             );
         }
+    }
+
+    /** @category Subscription & Loading */
+    static load<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        as: Account,
+        depth: Depth & DepthsIn<A>,
+    ): Promise<DeeplyLoaded<A, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        depth: Depth & DepthsIn<A>,
+    ): Effect.Effect<DeeplyLoaded<A, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<A, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        as: Account,
+        depth: Depth & DepthsIn<A>,
+        listener: (value: DeeplyLoaded<A, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<A, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<A extends Account, Depth>(
+        this: CoValueClass<A>,
+        id: ID<A>,
+        depth: Depth & DepthsIn<A>,
+    ): Stream.Stream<DeeplyLoaded<A, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<A, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<A extends Account, Depth>(
+        this: A,
+        depth: Depth & DepthsIn<A>,
+    ): Promise<DeeplyLoaded<A, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<A extends Account, Depth>(
+        this: A,
+        depth: Depth & DepthsIn<A>,
+        listener: (value: DeeplyLoaded<A, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
     }
 }
 
@@ -247,10 +333,14 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     get(target, key, receiver) {
         if (key === "profile") {
             const ref = target._refs.profile;
-            return ref ? ref.accessFrom(receiver) : (undefined as any);
+            return ref
+                ? ref.accessFrom(receiver, "profile")
+                : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (undefined as any);
         } else if (key === "root") {
             const ref = target._refs.root;
-            return ref ? ref.accessFrom(receiver) : (undefined as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return ref ? ref.accessFrom(receiver, "root") : (undefined as any);
         } else {
             return Reflect.get(target, key, receiver);
         }
@@ -270,16 +360,20 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
                 target._raw.set(
                     "profile",
                     value.id as unknown as CoID<RawCoMap>,
-                    "trusting"
+                    "trusting",
                 );
             }
-            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
+            subscriptionsScopes
+                .get(receiver)
+                ?.onRefAccessedOrSet(target.id, value.id);
             return true;
         } else if (key === "root") {
             if (value) {
                 target._raw.set("root", value.id as unknown as CoID<RawCoMap>);
             }
-            subscriptionsScopes.get(receiver)?.onRefAccessedOrSet(value.id);
+            subscriptionsScopes
+                .get(receiver)
+                ?.onRefAccessedOrSet(target.id, value.id);
             return true;
         } else {
             return Reflect.set(target, key, value, receiver);
@@ -301,21 +395,14 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
     },
 };
 
-export interface Me {
-    id: ID<any>;
+/** @category Identity & Permissions */
+export class AccountCtx extends Context.Tag("Account")<AccountCtx, Account>() {}
+
+/** @category Identity & Permissions */
+export function isControlledAccount(account: Account): account is Account & {
     isMe: true;
-    _raw: RawControlledAccount;
     sessionID: SessionID;
-    subscribe(listener: (update: this & Me) => void): () => void;
-    subscribeEf(): Stream<this & Me, UnavailableError, never>;
-    acceptInvite: (...args: any[]) => any;
-}
-
-export class AccountCtx extends Context.Tag("Account")<
-    AccountCtx,
-    Account & Me
->() {}
-
-export function isControlledAccount(account: Account): account is Account & Me {
+    _raw: RawControlledAccount;
+} {
     return account.isMe;
 }

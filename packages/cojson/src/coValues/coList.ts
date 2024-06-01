@@ -196,7 +196,7 @@ export class RawCoListView<
                 } else {
                     throw new Error(
                         "Unknown list operation " +
-                            (change as { op: unknown }).op
+                            (change as { op: unknown }).op,
                     );
                 }
             }
@@ -285,7 +285,7 @@ export class RawCoListView<
             value: Item;
             madeAt: number;
             opID: OpID;
-        }[]
+        }[],
     ) {
         const entry =
             this.insertions[opID.sessionID]?.[opID.txIndex]?.[opID.changeIdx];
@@ -372,7 +372,7 @@ export class RawCoListView<
                     for (const deletion of changeEntry || []) {
                         const madeAt = new Date(deletion.madeAt);
                         const by = accountOrAgentIDfromSessionID(
-                            deletion.deletionID.sessionID
+                            deletion.deletionID.sessionID,
                         );
                         edits.push({
                             by,
@@ -413,7 +413,7 @@ export class RawCoList<
     append(
         item: Item,
         after?: number,
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ) {
         const entries = this.entries();
         after =
@@ -443,7 +443,7 @@ export class RawCoList<
                     after: opIDBefore,
                 },
             ],
-            privacy
+            privacy,
         );
 
         this.rebuildFromCore();
@@ -461,7 +461,7 @@ export class RawCoList<
     prepend(
         item: Item,
         before?: number,
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ) {
         const entries = this.entries();
         before = before === undefined ? 0 : before;
@@ -490,7 +490,7 @@ export class RawCoList<
                     before: opIDAfter,
                 },
             ],
-            privacy
+            privacy,
         );
 
         this.rebuildFromCore();
@@ -517,7 +517,7 @@ export class RawCoList<
                     insertion: entry.opID,
                 },
             ],
-            privacy
+            privacy,
         );
 
         this.rebuildFromCore();
@@ -526,7 +526,7 @@ export class RawCoList<
     replace(
         at: number,
         newItem: Item,
-        privacy: "private" | "trusting" = "private"
+        privacy: "private" | "trusting" = "private",
     ) {
         const entries = this.entries();
         const entry = entries[at];
@@ -546,7 +546,7 @@ export class RawCoList<
                     insertion: entry.opID,
                 },
             ],
-            privacy
+            privacy,
         );
         this.rebuildFromCore();
     }

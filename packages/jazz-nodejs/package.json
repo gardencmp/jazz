@@ -5,7 +5,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.0-alpha.31",
+    "version": "0.7.6",
     "dependencies": {
         "cojson": "workspace:*",
         "cojson-transport-nodejs-ws": "workspace:*",
@@ -18,31 +18,13 @@
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",
-        "test": "jest",
-        "lint": "eslint src/**/*.ts",
+        "lint": "eslint . --ext ts,tsx",
+        "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
         "prepublishOnly": "npm run build"
     },
-    "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "transform": {
-            "\\.[jt]sx?$": [
-                "ts-jest",
-                {
-                    "useESM": true
-                }
-            ]
-        },
-        "moduleNameMapper": {
-            "(.+)\\.js": "$1"
-        },
-        "extensionsToTreatAsEsm": [
-            ".ts"
-        ],
-        "modulePathIgnorePatterns": [
-            "/node_modules/",
-            "/dist/"
-        ]
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+        "*.{js,jsx,mdx,json}": "prettier --write"
     }
 }

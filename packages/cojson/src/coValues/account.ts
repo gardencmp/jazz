@@ -2,16 +2,12 @@ import { CoValueCore, CoValueHeader } from "../coValueCore.js";
 import { CoID, RawCoValue } from "../coValue.js";
 import {
     AgentSecret,
+    CryptoProvider,
     SealerID,
     SealerSecret,
     SignerID,
     SignerSecret,
-    getAgentID,
-    getAgentSealerID,
-    getAgentSealerSecret,
-    getAgentSignerID,
-    getAgentSignerSecret,
-} from "../crypto.js";
+} from "../crypto/crypto.js";
 import { AgentID } from "../ids.js";
 import { RawCoMap } from "./coMap.js";
 import { RawGroup, InviteSecret } from "./group.js";
@@ -19,9 +15,10 @@ import { LocalNode } from "../index.js";
 import { JsonObject } from "../jsonValue.js";
 
 export function accountHeaderForInitialAgentSecret(
-    agentSecret: AgentSecret
+    agentSecret: AgentSecret,
+    crypto: CryptoProvider,
 ): CoValueHeader {
-    const agent = getAgentID(agentSecret);
+    const agent = crypto.getAgentID(agentSecret);
     return {
         type: "comap",
         ruleset: { type: "group", initialAdmin: agent },
@@ -38,12 +35,12 @@ export class RawAccount<
 > extends RawGroup<Meta> {
     currentAgentID(): AgentID {
         const agents = this.keys().filter((k): k is AgentID =>
-            k.startsWith("sealer_")
+            k.startsWith("sealer_"),
         );
 
         if (agents.length !== 1) {
             throw new Error(
-                "Expected exactly one agent in account, got " + agents.length
+                "Expected exactly one agent in account, got " + agents.length,
             );
         }
 
@@ -68,11 +65,13 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
     implements ControlledAccountOrAgent
 {
     agentSecret: AgentSecret;
+    crypto: CryptoProvider;
 
     constructor(core: CoValueCore, agentSecret: AgentSecret) {
         super(core);
 
         this.agentSecret = agentSecret;
+        this.crypto = core.node.crypto;
     }
 
     /**
@@ -85,62 +84,61 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
 
     async acceptInvite<T extends RawCoValue>(
         groupOrOwnedValueID: CoID<T>,
-        inviteSecret: InviteSecret
+        inviteSecret: InviteSecret,
     ): Promise<void> {
         return this.core.node.acceptInvite(groupOrOwnedValueID, inviteSecret);
     }
 
     currentAgentID(): AgentID {
-        return getAgentID(this.agentSecret);
+        return this.crypto.getAgentID(this.agentSecret);
     }
 
     currentSignerID(): SignerID {
-        return getAgentSignerID(this.currentAgentID());
+        return this.crypto.getAgentSignerID(this.currentAgentID());
     }
 
     currentSignerSecret(): SignerSecret {
-        return getAgentSignerSecret(this.agentSecret);
+        return this.crypto.getAgentSignerSecret(this.agentSecret);
     }
 
     currentSealerID(): SealerID {
-        return getAgentSealerID(this.currentAgentID());
+        return this.crypto.getAgentSealerID(this.currentAgentID());
     }
 
     currentSealerSecret(): SealerSecret {
-        return getAgentSealerSecret(this.agentSecret);
+        return this.crypto.getAgentSealerSecret(this.agentSecret);
     }
 }
 
 /** @hidden */
 export class ControlledAgent implements ControlledAccountOrAgent {
-    agentSecret: AgentSecret;
-
-    constructor(agentSecret: AgentSecret) {
-        this.agentSecret = agentSecret;
-    }
+    constructor(
+        public agentSecret: AgentSecret,
+        public crypto: CryptoProvider,
+    ) {}
 
     get id(): AgentID {
-        return getAgentID(this.agentSecret);
+        return this.crypto.getAgentID(this.agentSecret);
     }
 
     currentAgentID(): AgentID {
-        return getAgentID(this.agentSecret);
+        return this.crypto.getAgentID(this.agentSecret);
     }
 
     currentSignerID(): SignerID {
-        return getAgentSignerID(this.currentAgentID());
+        return this.crypto.getAgentSignerID(this.currentAgentID());
     }
 
     currentSignerSecret(): SignerSecret {
-        return getAgentSignerSecret(this.agentSecret);
+        return this.crypto.getAgentSignerSecret(this.agentSecret);
     }
 
     currentSealerID(): SealerID {
-        return getAgentSealerID(this.currentAgentID());
+        return this.crypto.getAgentSealerID(this.currentAgentID());
     }
 
     currentSealerSecret(): SealerSecret {
-        return getAgentSealerSecret(this.agentSecret);
+        return this.crypto.getAgentSealerSecret(this.agentSecret);
     }
 }
 
@@ -159,5 +157,5 @@ export class RawProfile<
 export type RawAccountMigration<Meta extends AccountMeta = AccountMeta> = (
     account: RawControlledAccount<Meta>,
     localNode: LocalNode,
-    creationProps?: { name: string }
+    creationProps?: { name: string },
 ) => void | Promise<void>;

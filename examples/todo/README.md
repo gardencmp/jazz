@@ -53,7 +53,7 @@ pnpm dev
 
 ### Helpers
 
-- (not yet explained) Creating invite links/QR codes with `<InviteButton/>`: [`src/components/InviteButton.tsx`](./src/components/InviteButton.tsx)
+- (not yet explained) Creating Invite Links/QR codes with `<InviteButton/>`: [`src/components/InviteButton.tsx`](./src/components/InviteButton.tsx)
 
 This is the whole Todo List app!
 

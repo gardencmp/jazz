@@ -1,35 +1,40 @@
 import { expect } from "vitest";
-import { AgentSecret, createdNowUnique, getAgentID, newRandomAgentSecret  } from "../crypto.js";
 import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import { ControlledAgent } from "../coValues/account.js";
 import { SessionID } from "../ids.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
-export function randomAnonymousAccountAndSessionID(): [ControlledAgent, SessionID] {
-    const agentSecret = newRandomAgentSecret();
+const Crypto = await WasmCrypto.create();
 
-    const sessionID = newRandomSessionID(getAgentID(agentSecret));
+export function randomAnonymousAccountAndSessionID(): [
+    ControlledAgent,
+    SessionID,
+] {
+    const agentSecret = Crypto.newRandomAgentSecret();
 
-    return [new ControlledAgent(agentSecret), sessionID];
+    const sessionID = newRandomSessionID(Crypto.getAgentID(agentSecret));
+
+    return [new ControlledAgent(agentSecret, Crypto), sessionID];
 }
 
 export function newGroup() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
-    const node = new LocalNode(admin, sessionID);
+    const node = new LocalNode(admin, sessionID, Crypto);
 
     const groupCore = node.createCoValue({
         type: "comap",
         ruleset: { type: "group", initialAdmin: admin.id },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const group = expectGroup(groupCore.getCurrentContent());
 
     group.set(admin.id, "admin", "trusting");
-        expect(group.get(admin.id)).toEqual("admin");
+    expect(group.get(admin.id)).toEqual("admin");
 
     return { node, groupCore, admin };
 }
@@ -39,10 +44,10 @@ export function groupWithTwoAdmins() {
 
     const otherAdmin = node.createAccount();
 
-    let group = expectGroup(groupCore.getCurrentContent());
+    const group = expectGroup(groupCore.getCurrentContent());
 
-        group.set(otherAdmin.id, "admin", "trusting");
-        expect(group.get(otherAdmin.id)).toEqual("admin");
+    group.set(otherAdmin.id, "admin", "trusting");
+    expect(group.get(otherAdmin.id)).toEqual("admin");
 
     if (group.type !== "comap") {
         throw new Error("Expected map");
@@ -55,8 +60,7 @@ export function groupWithTwoAdmins() {
 export function newGroupHighLevel() {
     const [admin, sessionID] = randomAnonymousAccountAndSessionID();
 
-
-    const node = new LocalNode(admin, sessionID);
+    const node = new LocalNode(admin, sessionID, Crypto);
 
     const group = node.createGroup();
 
@@ -64,7 +68,7 @@ export function newGroupHighLevel() {
 }
 
 export function groupWithTwoAdminsHighLevel() {
-    let { admin, node, group } = newGroupHighLevel();
+    const { admin, node, group } = newGroupHighLevel();
 
     const otherAdmin = node.createAccount();
 
@@ -75,7 +79,7 @@ export function groupWithTwoAdminsHighLevel() {
 
 export function shouldNotResolve<T>(
     promise: Promise<T>,
-    ops: { timeout: number }
+    ops: { timeout: number },
 ): Promise<void> {
     return new Promise((resolve, reject) => {
         promise
@@ -83,12 +87,11 @@ export function shouldNotResolve<T>(
                 reject(
                     new Error(
                         "Should not have resolved, but resolved to " +
-                            JSON.stringify(v)
-                    )
-                )
+                            JSON.stringify(v),
+                    ),
+                ),
             )
             .catch(reject);
         setTimeout(resolve, ops.timeout);
     });
 }
-

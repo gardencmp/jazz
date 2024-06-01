@@ -1,26 +1,21 @@
-import { useMemo, useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode, useEffect } from "react";
 import { BrowserPasskeyAuth } from "jazz-browser";
-import { ReactAuthHook } from "./auth";
 import { Account, CoValueClass } from "jazz-tools";
+import { ReactAuthHook } from "./auth.js";
 
-export type PasskeyAuthComponent = (props: {
-    loading: boolean;
-    logIn: () => void;
-    signUp: (username: string) => void;
-}) => ReactNode;
-
+/** @category Auth Providers */
 export function PasskeyAuth<Acc extends Account>({
     accountSchema,
     appName,
     appHostname,
-    Component = LocalAuthBasicUI,
+    Component = PasskeyAuth.BasicUI,
 }: {
     accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
-    Component?: PasskeyAuthComponent;
+    Component?: PasskeyAuth.Component;
 }): ReactAuthHook<Acc> {
-    return function useLocalAuth() {
+    return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
@@ -30,6 +25,10 @@ export function PasskeyAuth<Acc extends Account>({
               }
             | { state: "signedIn"; logOut: () => void }
         >({ state: "loading" });
+
+        useEffect(() => {
+            setJazzAuthState(authState.state);
+        }, [authState]);
 
         const [logOutCounter, setLogOutCounter] = useState(0);
 
@@ -56,7 +55,7 @@ export function PasskeyAuth<Acc extends Account>({
                     },
                 },
                 appName,
-                appHostname
+                appHostname,
             );
         }, [appName, appHostname, logOutCounter]);
 
@@ -82,7 +81,7 @@ export function PasskeyAuth<Acc extends Account>({
     };
 }
 
-export const LocalAuthBasicUI = ({
+const PasskeyAuthBasicUI = ({
     logIn,
     signUp,
 }: {
@@ -162,3 +161,14 @@ export const LocalAuthBasicUI = ({
         </div>
     );
 };
+
+/** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace PasskeyAuth {
+    export type Component = (props: {
+        loading: boolean;
+        logIn: () => void;
+        signUp: (username: string) => void;
+    }) => ReactNode;
+    export const BasicUI = PasskeyAuthBasicUI;
+}

@@ -4,7 +4,11 @@ import type {
     ID,
     RefEncoded,
     Schema,
-    SubclassedConstructor,
+    AccountCtx,
+    CoValueClass,
+    DeeplyLoaded,
+    DepthsIn,
+    UnavailableError,
 } from "../internal.js";
 import {
     Account,
@@ -15,13 +19,22 @@ import {
     isControlledAccount,
     AccountAndGroupProxyHandler,
     MembersSym,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
+import { Effect, Stream } from "effect";
 
+/** @category Identity & Permissions */
 export class Profile extends CoMap {
     name = co.string;
 }
 
-export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
+/** @category Identity & Permissions */
+export class Group extends CoValueBase implements CoValue {
     declare id: ID<this>;
     declare _type: "Group";
     static {
@@ -29,6 +42,7 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
     }
     declare _raw: RawGroup;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
     get _schema(): {
         profile: Schema;
@@ -41,7 +55,11 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
         this._schema = {
             profile: "json" satisfies Schema,
             root: "json" satisfies Schema,
-            [MembersSym]: () => Account satisfies Schema,
+            [MembersSym]: {
+                ref: () => Account,
+                optional: false,
+            } satisfies RefEncoded<Account>,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         Object.defineProperty(this.prototype, "_schema", {
             get: () => this._schema,
@@ -67,7 +85,8 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     this._loadedAs,
                     this._schema.profile as RefEncoded<
                         NonNullable<this["profile"]>
-                    >
+                    >,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["profile"] extends Profile
                     ? Ref<this["profile"]>
                     : never),
@@ -76,7 +95,8 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                 (new Ref(
                     rootID,
                     this._loadedAs,
-                    this._schema.root as RefEncoded<NonNullable<this["root"]>>
+                    this._schema.root as RefEncoded<NonNullable<this["root"]>>,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["root"] extends CoMap
                     ? Ref<this["root"]>
                     : never),
@@ -94,14 +114,14 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
             const initOwner = options.owner;
             if (!initOwner) throw new Error("No owner provided");
             if (
-                initOwner instanceof Account &&
+                initOwner._type === "Account" &&
                 isControlledAccount(initOwner)
             ) {
                 const rawOwner = initOwner._raw;
                 raw = rawOwner.createGroup();
             } else {
                 throw new Error(
-                    "Can only construct group as a controlled account"
+                    "Can only construct group as a controlled account",
                 );
             }
         }
@@ -116,13 +136,13 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
 
         return new Proxy(
             this,
-            AccountAndGroupProxyHandler as ProxyHandler<this>
+            AccountAndGroupProxyHandler as ProxyHandler<this>,
         );
     }
 
     static create<G extends Group>(
-        this: SubclassedConstructor<G>,
-        options: { owner: Account }
+        this: CoValueClass<G>,
+        options: { owner: Account },
     ) {
         return new this(options);
     }
@@ -153,9 +173,9 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     new Ref<NonNullable<this[MembersSym]>>(
                         accountID,
                         this._loadedAs,
-                        this._schema[MembersSym]
+                        this._schema[MembersSym],
                     );
-                const accessRef = () => ref?.accessFrom(this);
+                const accessRef = () => ref?.accessFrom(this, "members." + id);
 
                 return {
                     id: id as unknown as Everyone | ID<this[MembersSym]>,
@@ -166,5 +186,61 @@ export class Group extends CoValueBase implements CoValue<"Group", RawGroup> {
                     },
                 };
             });
+    }
+
+    /** @category Subscription & Loading */
+    static load<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        as: Account,
+        depth: Depth & DepthsIn<G>,
+    ): Promise<DeeplyLoaded<G, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static loadEf<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        depth: Depth & DepthsIn<G>,
+    ): Effect.Effect<DeeplyLoaded<G, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<G, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribe<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        as: Account,
+        depth: Depth & DepthsIn<G>,
+        listener: (value: DeeplyLoaded<G, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<G, Depth>(this, id, as, depth, listener);
+    }
+
+    /** @category Subscription & Loading */
+    static subscribeEf<G extends Group, Depth>(
+        this: CoValueClass<G>,
+        id: ID<G>,
+        depth: Depth & DepthsIn<G>,
+    ): Stream.Stream<DeeplyLoaded<G, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<G, Depth>(this, id, depth);
+    }
+
+    /** @category Subscription & Loading */
+    ensureLoaded<G extends Group, Depth>(
+        this: G,
+        depth: Depth & DepthsIn<G>,
+    ): Promise<DeeplyLoaded<G, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /** @category Subscription & Loading */
+    subscribe<G extends Group, Depth>(
+        this: G,
+        depth: Depth & DepthsIn<G>,
+        listener: (value: DeeplyLoaded<G, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
     }
 }

@@ -41,7 +41,7 @@ export function InviteButton<T extends CoValue>({
                                 description: (
                                     <img src={qr} className="w-20 h-20" />
                                 ),
-                            })
+                            }),
                         );
                     }
                 }}

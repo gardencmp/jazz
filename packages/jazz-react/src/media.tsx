@@ -1,39 +1,49 @@
 import React, { useEffect, useState } from "react";
-import { blobFromBinaryStream } from "jazz-browser";
 import { ImageDefinition } from "jazz-tools";
 
+/** @category Media */
 export function useProgressiveImg({
     image,
-    maxWidth
+    maxWidth,
 }: {
     image: ImageDefinition | null | undefined;
-    maxWidth?: number
+    maxWidth?: number;
 }) {
     const [src, setSrc] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        const highestRes = image?.highestResAvailable({ maxWidth });
-        if (highestRes) {
-            const blob = blobFromBinaryStream(highestRes.stream);
-            if (blob) {
-                const blobURI = URL.createObjectURL(blob);
-                setSrc(blobURI);
-                return () => {
-                    setTimeout(() => URL.revokeObjectURL(blobURI), 200);
-                };
+        let lastHighestRes: string | undefined;
+        if (!image) return;
+        const unsub = image.subscribe({}, (update) => {
+            const highestRes = update?.highestResAvailable({ maxWidth });
+            if (highestRes) {
+                if (highestRes.res !== lastHighestRes) {
+                    lastHighestRes = highestRes.res;
+                    const blob = highestRes.stream.toBlob();
+                    if (blob) {
+                        const blobURI = URL.createObjectURL(blob);
+                        setSrc(blobURI);
+                        return () => {
+                            setTimeout(() => URL.revokeObjectURL(blobURI), 200);
+                        };
+                    }
+                }
+            } else {
+                setSrc(update?.placeholderDataURL);
             }
-        } else {
-            setSrc(image?.placeholderDataURL);
-        }
-    }, [image?.highestResAvailable?.({ maxWidth })?.res]);
+        });
+
+        return unsub;
+    }, [image?.id, maxWidth]);
 
     return { src, originalSize: image?.originalSize };
 }
 
+/** @category Media */
 export function ProgressiveImg({
     children,
     image,
-    maxWidth
+    maxWidth,
 }: {
     children: (result: {
         src: string | undefined;

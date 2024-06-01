@@ -1,4 +1,4 @@
-import { Signature } from "./crypto.js";
+import { Signature } from "./crypto/crypto.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode } from "./localNode.js";
@@ -82,7 +82,7 @@ export interface PeerState {
 
 export function combinedKnownStates(
     stateA: CoValueKnownState,
-    stateB: CoValueKnownState
+    stateB: CoValueKnownState,
 ): CoValueKnownState {
     const sessionStates: CoValueKnownState["sessions"] = {};
 
@@ -108,7 +108,11 @@ export function combinedKnownStates(
 export class SyncManager {
     peers: { [key: PeerID]: PeerState } = {};
     local: LocalNode;
-    requestedSyncs: { [id: RawCoID]: {done: Promise<void>, nRequestsThisTick: number} | undefined } = {};
+    requestedSyncs: {
+        [id: RawCoID]:
+            | { done: Promise<void>; nRequestsThisTick: number }
+            | undefined;
+    } = {};
 
     constructor(local: LocalNode) {
         this.local = local;
@@ -151,31 +155,31 @@ export class SyncManager {
                 throw new Error("Expected firstPeerState to be waiting " + id);
             }
             await new Promise<void>((resolve) => {
-                const timeout = setTimeout(() => {
-                    if (this.local.coValues[id]?.state === "loading") {
-                        // console.warn(
-                        //     "Timeout waiting for peer to load",
-                        //     id,
-                        //     "from",
-                        //     peer.id,
-                        //     "and it hasn't loaded from other peers yet"
-                        // );
-                    }
-                    resolve();
-                }, 1000);
+                // const timeout = setTimeout(() => {
+                //     if (this.local.coValues[id]?.state === "loading") {
+                //         console.warn(
+                //             "Timeout waiting for peer to load",
+                //             id,
+                //             "from",
+                //             peer.id,
+                //             "and it hasn't loaded from other peers yet"
+                //         );
+                //     }
+                //     resolve();
+                // }, 1000);
                 firstStateEntry.done
                     .then(() => {
-                        clearTimeout(timeout);
+                        // clearTimeout(timeout);
                         resolve();
                     })
                     .catch((e) => {
-                        clearTimeout(timeout);
+                        // clearTimeout(timeout);
                         console.error(
                             "Error waiting for peer to load",
                             id,
                             "from",
                             peer.id,
-                            e
+                            e,
                         );
                         resolve();
                     });
@@ -203,7 +207,7 @@ export class SyncManager {
                 throw new Error(
                     `Unknown message type ${
                         (msg as { action: "string" }).action
-                    }`
+                    }`,
                 );
         }
     }
@@ -243,15 +247,21 @@ export class SyncManager {
     async tellUntoldKnownStateIncludingDependencies(
         id: RawCoID,
         peer: PeerState,
-        asDependencyOf?: RawCoID
+        asDependencyOf?: RawCoID,
     ) {
         const coValue = this.local.expectCoValueLoaded(id);
 
-        await Promise.all(coValue.getDependedOnCoValues().map(dependentCoID => this.tellUntoldKnownStateIncludingDependencies(
-            dependentCoID,
-            peer,
-            asDependencyOf || id
-        )));
+        await Promise.all(
+            coValue
+                .getDependedOnCoValues()
+                .map((dependentCoID) =>
+                    this.tellUntoldKnownStateIncludingDependencies(
+                        dependentCoID,
+                        peer,
+                        asDependencyOf || id,
+                    ),
+                ),
+        );
 
         if (!peer.toldKnownState.has(id)) {
             await this.trySendToPeer(peer, {
@@ -267,10 +277,16 @@ export class SyncManager {
     async sendNewContentIncludingDependencies(id: RawCoID, peer: PeerState) {
         const coValue = this.local.expectCoValueLoaded(id);
 
-        await Promise.all(coValue.getDependedOnCoValues().map(id => this.sendNewContentIncludingDependencies(id, peer)));
+        await Promise.all(
+            coValue
+                .getDependedOnCoValues()
+                .map((id) =>
+                    this.sendNewContentIncludingDependencies(id, peer),
+                ),
+        );
 
         const newContentPieces = coValue.newContentSince(
-            peer.optimisticKnownStates[id]
+            peer.optimisticKnownStates[id],
         );
 
         if (newContentPieces) {
@@ -302,7 +318,7 @@ export class SyncManager {
 
             peer.optimisticKnownStates[id] = combinedKnownStates(
                 optimisticKnownStateBefore,
-                coValue.knownState()
+                coValue.knownState(),
             );
         }
     }
@@ -323,7 +339,7 @@ export class SyncManager {
         if (peer.role === "server") {
             const initialSync = async () => {
                 for (const id of Object.keys(
-                    this.local.coValues
+                    this.local.coValues,
                 ) as RawCoID[]) {
                     // console.log("subscribing to after peer added", id, peer.id)
                     await this.subscribeToIncludingDependencies(id, peerState);
@@ -350,9 +366,9 @@ export class SyncManager {
                                 JSON.stringify(msg, (k, v) =>
                                     k === "changes" || k === "encryptedChanges"
                                         ? v.slice(0, 20) + "..."
-                                        : v
+                                        : v,
                                 ),
-                                e
+                                e,
                             );
                         });
                         // await new Promise<void>((resolve) => {
@@ -365,9 +381,9 @@ export class SyncManager {
                             JSON.stringify(msg, (k, v) =>
                                 k === "changes" || k === "encryptedChanges"
                                     ? v.slice(0, 20) + "..."
-                                    : v
+                                    : v,
                             ),
-                            e
+                            e,
                         );
                         if (peerState.delayOnError) {
                             await new Promise<void>((resolve) => {
@@ -417,8 +433,8 @@ export class SyncManager {
                             `Error writing to peer ${peer.id}, disconnecting`,
                             {
                                 cause: e,
-                            }
-                        )
+                            },
+                        ),
                     );
                     delete this.peers[peer.id];
                 });
@@ -470,7 +486,7 @@ export class SyncManager {
 
         peer.optimisticKnownStates[msg.id] = combinedKnownStates(
             peer.optimisticKnownStates[msg.id] || emptyKnownState(msg.id),
-            knownStateIn(msg)
+            knownStateIn(msg),
         );
 
         if (!entry) {
@@ -481,18 +497,18 @@ export class SyncManager {
                         .catch((e) => {
                             console.error(
                                 `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
-                                e
+                                e,
                             );
                         });
                     entry = this.local.coValues[msg.id]!; // must exist after loadCoValueCore
                 } else {
                     throw new Error(
-                        "Expected coValue dependency entry to be created, missing subscribe?"
+                        "Expected coValue dependency entry to be created, missing subscribe?",
                     );
                 }
             } else {
                 throw new Error(
-                    "Expected coValue entry to be created, missing subscribe?"
+                    "Expected coValue entry to be created, missing subscribe?",
                 );
             }
         }
@@ -516,7 +532,7 @@ export class SyncManager {
             // );
             if (
                 Object.values(entry.firstPeerState).every(
-                    (s) => s.type === "unavailable"
+                    (s) => s.type === "unavailable",
                 )
             ) {
                 entry.resolve("unavailable");
@@ -533,7 +549,7 @@ export class SyncManager {
 
         if (!entry) {
             throw new Error(
-                "Expected coValue entry to be created, missing subscribe?"
+                "Expected coValue entry to be created, missing subscribe?",
             );
         }
 
@@ -543,7 +559,7 @@ export class SyncManager {
 
         if (!peerOptimisticKnownState) {
             throw new Error(
-                "Expected optimisticKnownState to be set for coValue we receive new content for"
+                "Expected optimisticKnownState to be set for coValue we receive new content for",
             );
         }
 
@@ -578,7 +594,7 @@ export class SyncManager {
         let invalidStateAssumed = false;
 
         for (const [sessionID, newContentForSession] of Object.entries(
-            msg.new
+            msg.new,
         ) as [SessionID, SessionNewContent][]) {
             const ourKnownTxIdx =
                 coValue.sessionLogs.get(sessionID)?.transactions.length;
@@ -605,7 +621,7 @@ export class SyncManager {
                 sessionID,
                 newTransactions,
                 undefined,
-                newContentForSession.lastSignature
+                newContentForSession.lastSignature,
             );
             const after = performance.now();
             if (after - before > 80) {
@@ -613,7 +629,7 @@ export class SyncManager {
                     .map((t) =>
                         t.privacy === "private"
                             ? t.encryptedChanges.length
-                            : t.changes.length
+                            : t.changes.length,
                     )
                     .reduce((a, b) => a + b, 0);
                 console.log(
@@ -623,16 +639,16 @@ export class SyncManager {
                         (1000 * totalTxLength) /
                         (after - before) /
                         (1024 * 1024)
-                    ).toFixed(2)} MB/s`
+                    ).toFixed(2)} MB/s`,
                 );
             }
 
             const theirTotalnTxs = Object.values(
-                peer.optimisticKnownStates[msg.id]?.sessions || {}
+                peer.optimisticKnownStates[msg.id]?.sessions || {},
             ).reduce((sum, nTxs) => sum + nTxs, 0);
             const ourTotalnTxs = [...coValue.sessionLogs.values()].reduce(
                 (sum, session) => sum + session.transactions.length,
-                0
+                0,
             );
 
             entry.onProgress?.(ourTotalnTxs / theirTotalnTxs);
@@ -644,8 +660,8 @@ export class SyncManager {
                     JSON.stringify(newTransactions, (k, v) =>
                         k === "changes" || k === "encryptedChanges"
                             ? v.slice(0, 20) + "..."
-                            : v
-                    )
+                            : v,
+                    ),
                 );
                 continue;
             }
@@ -653,7 +669,7 @@ export class SyncManager {
             peerOptimisticKnownState.sessions[sessionID] = Math.max(
                 peerOptimisticKnownState.sessions[sessionID] || 0,
                 newContentForSession.after +
-                    newContentForSession.newTransactions.length
+                    newContentForSession.newTransactions.length,
             );
         }
 
@@ -688,14 +704,14 @@ export class SyncManager {
             return this.requestedSyncs[coValue.id]!.done;
         } else {
             const done = new Promise<void>((resolve) => {
-                setTimeout(async () => {
+                queueMicrotask(async () => {
                     delete this.requestedSyncs[coValue.id];
                     // if (entry.nRequestsThisTick >= 2) {
                     //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
                     // }
                     await this.actuallySyncCoValue(coValue);
                     resolve();
-                }, 0);
+                });
             });
             const entry = {
                 done,
@@ -707,30 +723,30 @@ export class SyncManager {
     }
 
     async actuallySyncCoValue(coValue: CoValueCore) {
-        let blockingSince = performance.now();
+        // let blockingSince = performance.now();
         for (const peer of this.peersInPriorityOrder()) {
-            if (performance.now() - blockingSince > 5) {
-                await new Promise<void>((resolve) => {
-                    setTimeout(resolve, 0);
-                });
-                blockingSince = performance.now();
-            }
+            // if (performance.now() - blockingSince > 5) {
+            //     await new Promise<void>((resolve) => {
+            //         setTimeout(resolve, 0);
+            //     });
+            //     blockingSince = performance.now();
+            // }
             const optimisticKnownState = peer.optimisticKnownStates[coValue.id];
 
             if (optimisticKnownState) {
                 await this.tellUntoldKnownStateIncludingDependencies(
                     coValue.id,
-                    peer
+                    peer,
                 );
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,
-                    peer
+                    peer,
                 );
             } else if (peer.role === "server") {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,
-                    peer
+                    peer,
                 );
             }
         }

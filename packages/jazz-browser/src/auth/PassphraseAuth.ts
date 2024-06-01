@@ -1,7 +1,8 @@
-import { AgentSecret, cojsonInternals, Peer } from "cojson";
-import { Account, CoValueClass, ID, Me } from "jazz-tools";
-import { AuthProvider, SessionProvider } from "jazz-browser";
+import { AgentSecret, cojsonInternals, CryptoProvider, Peer } from "cojson";
+import { Account, CoValueClass, ID, isControlledAccount } from "jazz-tools";
 import * as bip39 from "@scure/bip39";
+import { AuthProvider } from "./auth.js";
+import { SessionProvider } from "../index.js";
 
 type LocalStorageData = {
     accountID: ID<Account>;
@@ -10,33 +11,26 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
-export interface BrowserPassphraseAuthDriver {
-    onReady: (next: {
-        signUp: (username: string, passphrase: string) => Promise<void>;
-        logIn: (passphrase: string) => Promise<void>;
-    }) => void;
-    onSignedIn: (next: { logOut: () => void }) => void;
-}
-
 export class BrowserPassphraseAuth<Acc extends Account>
     implements AuthProvider<Acc>
 {
     constructor(
         public accountSchema: CoValueClass<Acc> & typeof Account,
-        public driver: BrowserPassphraseAuthDriver,
+        public driver: BrowserPassphraseAuth.Driver,
         public wordlist: string[],
         public appName: string,
         // TODO: is this a safe default?
-        public appHostname: string = window.location.hostname
+        public appHostname: string = window.location.hostname,
     ) {}
 
     async createOrLoadAccount(
         getSessionFor: SessionProvider,
-        initialPeers: Peer[]
-    ): Promise<Acc & Me> {
+        initialPeers: Peer[],
+        crypto: CryptoProvider,
+    ): Promise<Acc> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
-                localStorage[localStorageKey]
+                localStorage[localStorageKey],
             ) as LocalStorageData;
 
             const sessionID = await getSessionFor(localStorageData.accountID);
@@ -46,13 +40,14 @@ export class BrowserPassphraseAuth<Acc extends Account>
                 accountSecret: localStorageData.accountSecret,
                 sessionID,
                 peersToLoadFrom: initialPeers,
-            })) as Acc & Me;
+                crypto,
+            })) as Acc;
 
             this.driver.onSignedIn({ logOut });
 
             return Promise.resolve(account);
         } else {
-            return new Promise<Acc & Me>((resolveAccount) => {
+            return new Promise<Acc>((resolveAccount) => {
                 this.driver.onReady({
                     signUp: async (username, passphrase) => {
                         const account = await signUp<Acc>(
@@ -63,7 +58,8 @@ export class BrowserPassphraseAuth<Acc extends Account>
                             this.appName,
                             this.appHostname,
                             this.accountSchema,
-                            initialPeers
+                            initialPeers,
+                            crypto,
                         );
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });
@@ -75,7 +71,8 @@ export class BrowserPassphraseAuth<Acc extends Account>
                             getSessionFor,
                             this.appHostname,
                             this.accountSchema,
-                            initialPeers
+                            initialPeers,
+                            crypto,
                         );
                         resolveAccount(account);
                         this.driver.onSignedIn({ logOut });
@@ -83,6 +80,18 @@ export class BrowserPassphraseAuth<Acc extends Account>
                 });
             });
         }
+    }
+}
+
+/** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace BrowserPassphraseAuth {
+    export interface Driver {
+        onReady: (next: {
+            signUp: (username: string, passphrase: string) => Promise<void>;
+            logIn: (passphrase: string) => Promise<void>;
+        }) => void;
+        onSignedIn: (next: { logOut: () => void }) => void;
     }
 }
 
@@ -94,16 +103,20 @@ async function signUp<Acc extends Account>(
     _appName: string,
     _appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
-    initialPeers: Peer[]
-): Promise<Acc & Me> {
+    initialPeers: Peer[],
+    crypto: CryptoProvider,
+): Promise<Acc> {
     const secretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
     const account = (await accountSchema.create({
         creationProps: { name: username },
-        initialAgentSecret:
-            cojsonInternals.agentSecretFromSecretSeed(secretSeed),
+        initialAgentSecret: crypto.agentSecretFromSecretSeed(secretSeed),
         peersToLoadFrom: initialPeers,
-    })) as Acc & Me;
+        crypto,
+    })) as Acc;
+    if (!isControlledAccount(account)) {
+        throw "account is not a controlled account";
+    }
 
     localStorage[localStorageKey] = JSON.stringify({
         accountID: account.id as ID<Account>,
@@ -121,19 +134,23 @@ async function logIn<Acc extends Account>(
     getSessionFor: SessionProvider,
     _appHostname: string,
     accountSchema: CoValueClass<Acc> & typeof Account,
-    initialPeers: Peer[]
-): Promise<Acc & Me> {
+    initialPeers: Peer[],
+    crypto: CryptoProvider,
+): Promise<Acc> {
     const accountSecretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
 
-    const accountSecret =
-        cojsonInternals.agentSecretFromSecretSeed(accountSecretSeed);
+    const accountSecret = crypto.agentSecretFromSecretSeed(accountSecretSeed);
 
     if (!accountSecret) {
         throw new Error("Invalid credential");
     }
 
     const accountID = cojsonInternals.idforHeader(
-        cojsonInternals.accountHeaderForInitialAgentSecret(accountSecret)
+        cojsonInternals.accountHeaderForInitialAgentSecret(
+            accountSecret,
+            crypto,
+        ),
+        crypto,
     ) as ID<Acc>;
 
     localStorage[localStorageKey] = JSON.stringify({
@@ -146,7 +163,8 @@ async function logIn<Acc extends Account>(
         accountSecret,
         sessionID: await getSessionFor(accountID),
         peersToLoadFrom: initialPeers,
-    })) as Acc & Me;
+        crypto,
+    })) as Acc;
 
     return account;
 }

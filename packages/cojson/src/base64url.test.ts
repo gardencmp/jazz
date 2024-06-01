@@ -1,5 +1,5 @@
-import { base64URLtoBytes, bytesToBase64url } from "./base64url";
-import { test, expect } from 'vitest';
+import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
+import { test, expect } from "vitest";
 
 const txt = new TextEncoder();
 
@@ -23,11 +23,11 @@ test("Test our Base64 URL encoding and decoding", () => {
     expect(base64URLtoBytes("Zm9vYmE=")).toEqual(txt.encode("fooba"));
     expect(base64URLtoBytes("Zm9vYmFy")).toEqual(txt.encode("foobar"));
 
-    expect(base64URLtoBytes("V2hhdCBkb2VzIDIgKyAyLjEgZXF1YWw_PyB-IDQ=")).toEqual(
-        txt.encode("What does 2 + 2.1 equal?? ~ 4")
-    );
+    expect(
+        base64URLtoBytes("V2hhdCBkb2VzIDIgKyAyLjEgZXF1YWw_PyB-IDQ="),
+    ).toEqual(txt.encode("What does 2 + 2.1 equal?? ~ 4"));
     // reverse
     expect(
-        bytesToBase64url(txt.encode("What does 2 + 2.1 equal?? ~ 4"))
+        bytesToBase64url(txt.encode("What does 2 + 2.1 equal?? ~ 4")),
     ).toEqual("V2hhdCBkb2VzIDIgKyAyLjEgZXF1YWw_PyB-IDQ=");
 });

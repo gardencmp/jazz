@@ -13,7 +13,7 @@ import { ProgressiveImg } from "jazz-react";
 
 class PartialPetPost extends CoMap {
     name = co.string;
-    image? = co.ref(ImageDefinition);
+    image = co.ref(ImageDefinition, { optional: true });
     reactions = co.ref(PetReactions);
 }
 
@@ -22,7 +22,7 @@ export function NewPetPostForm() {
     const navigate = useNavigate();
 
     const [newPostId, setNewPostId] = useState<ID<PartialPetPost> | undefined>(
-        undefined
+        undefined,
     );
 
     const newPetPost = useCoState(PartialPetPost, newPostId);
@@ -38,13 +38,13 @@ export function NewPetPostForm() {
                         name,
                         reactions: PetReactions.create([], { owner: me }),
                     },
-                    { owner: petPostGroup }
+                    { owner: petPostGroup },
                 );
 
                 setNewPostId(petPost.id);
             }
         },
-        [me, newPetPost]
+        [me, newPetPost],
     );
 
     const onImageSelected = useCallback(
@@ -57,7 +57,7 @@ export function NewPetPostForm() {
 
             newPetPost.image = image;
         },
-        [newPetPost]
+        [newPetPost],
     );
 
     const onSubmit = useCallback(() => {

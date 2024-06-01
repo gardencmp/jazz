@@ -1,31 +1,20 @@
-import { expect, test, beforeEach } from "vitest";
-import { expectList, expectMap, expectStream } from "../coValue.js";
-import { RawBinaryCoStream } from "../coValues/coStream.js";
-import { createdNowUnique } from "../crypto.js";
-import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
+import { expect, test } from "vitest";
+import { expectMap } from "../coValue.js";
+import { WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
-
+const Crypto = await WasmCrypto.create();
 
 test("Empty CoMap works", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectMap(coValue.getCurrentContent());
@@ -36,13 +25,13 @@ test("Empty CoMap works", () => {
 });
 
 test("Can insert and delete CoMap entries in edit()", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectMap(coValue.getCurrentContent());
@@ -60,13 +49,13 @@ test("Can insert and delete CoMap entries in edit()", () => {
 });
 
 test("Can get CoMap entry values at different points in time", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectMap(coValue.getCurrentContent());
@@ -74,13 +63,19 @@ test("Can get CoMap entry values at different points in time", () => {
     expect(content.type).toEqual("comap");
 
     const beforeA = Date.now();
-    while (Date.now() < beforeA + 10) {}
+    while (Date.now() < beforeA + 10) {
+        /* hot sleep */
+    }
     content.set("hello", "A", "trusting");
     const beforeB = Date.now();
-    while (Date.now() < beforeB + 10) {}
+    while (Date.now() < beforeB + 10) {
+        /* hot sleep */
+    }
     content.set("hello", "B", "trusting");
     const beforeC = Date.now();
-    while (Date.now() < beforeC + 10) {}
+    while (Date.now() < beforeC + 10) {
+        /* hot sleep */
+    }
     content.set("hello", "C", "trusting");
     expect(content.get("hello")).toEqual("C");
     expect(content.atTime(Date.now()).get("hello")).toEqual("C");
@@ -90,13 +85,13 @@ test("Can get CoMap entry values at different points in time", () => {
 });
 
 test("Can get all historic values of key in CoMap", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectMap(coValue.getCurrentContent());
@@ -140,13 +135,13 @@ test("Can get all historic values of key in CoMap", () => {
 });
 
 test("Can get last tx ID for a key in CoMap", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "comap",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectMap(coValue.getCurrentContent());
@@ -157,7 +152,7 @@ test("Can get last tx ID for a key in CoMap", () => {
     content.set("hello", "A", "trusting");
     const sessionID = content.lastEditAt("hello")?.tx.sessionID;
     expect(sessionID && accountOrAgentIDfromSessionID(sessionID)).toEqual(
-        node.account.id
+        node.account.id,
     );
     expect(content.lastEditAt("hello")?.tx.txIndex).toEqual(0);
     content.set("hello", "B", "trusting");

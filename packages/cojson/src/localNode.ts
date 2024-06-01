@@ -1,14 +1,4 @@
-import {
-    AgentSecret,
-    agentSecretFromSecretSeed,
-    createdNowUnique,
-    getAgentID,
-    getAgentSealerID,
-    getAgentSealerSecret,
-    newRandomAgentSecret,
-    newRandomKeySecret,
-    seal,
-} from "./crypto.js";
+import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
 import {
     CoValueCore,
     CoValueHeader,
@@ -49,6 +39,8 @@ const { localNode } = useJazz();
 */
 export class LocalNode {
     /** @internal */
+    crypto: CryptoProvider;
+    /** @internal */
     coValues: { [key: RawCoID]: CoValueState } = {};
     /** @category 3. Low-level */
     account: ControlledAccountOrAgent;
@@ -60,24 +52,28 @@ export class LocalNode {
     /** @category 3. Low-level */
     constructor(
         account: ControlledAccountOrAgent,
-        currentSessionID: SessionID
+        currentSessionID: SessionID,
+        crypto: CryptoProvider,
     ) {
         this.account = account;
         this.currentSessionID = currentSessionID;
+        this.crypto = crypto;
     }
 
     /** @category 2. Node Creation */
     static async withNewlyCreatedAccount<
-        Meta extends AccountMeta = AccountMeta
+        Meta extends AccountMeta = AccountMeta,
     >({
         creationProps,
         peersToLoadFrom,
         migration,
-        initialAgentSecret = newRandomAgentSecret(),
+        crypto,
+        initialAgentSecret = crypto.newRandomAgentSecret(),
     }: {
-        creationProps: {name: string};
+        creationProps: { name: string };
         peersToLoadFrom?: Peer[];
         migration?: RawAccountMigration<Meta>;
+        crypto: CryptoProvider;
         initialAgentSecret?: AgentSecret;
     }): Promise<{
         node: LocalNode;
@@ -85,17 +81,18 @@ export class LocalNode {
         accountSecret: AgentSecret;
         sessionID: SessionID;
     }> {
-        const throwawayAgent = newRandomAgentSecret();
+        const throwawayAgent = crypto.newRandomAgentSecret();
         const setupNode = new LocalNode(
-            new ControlledAgent(throwawayAgent),
-            newRandomSessionID(getAgentID(throwawayAgent))
+            new ControlledAgent(throwawayAgent, crypto),
+            newRandomSessionID(crypto.getAgentID(throwawayAgent)),
+            crypto,
         );
 
         const account = setupNode.createAccount(initialAgentSecret);
 
         const nodeWithAccount = account.core.node.testWithDifferentAccount(
             account,
-            newRandomSessionID(account.id)
+            newRandomSessionID(account.id),
         );
 
         const accountOnNodeWithAccount =
@@ -108,22 +105,26 @@ export class LocalNode {
         }
 
         if (migration) {
-            await migration(accountOnNodeWithAccount, nodeWithAccount, creationProps);
+            await migration(
+                accountOnNodeWithAccount,
+                nodeWithAccount,
+                creationProps,
+            );
         } else {
             const profileGroup = accountOnNodeWithAccount.createGroup();
             profileGroup.addMember("everyone", "reader");
             const profile = profileGroup.createMap<Profile>({
                 name: creationProps.name,
             });
-            accountOnNodeWithAccount.set('profile', profile.id, "trusting");
+            accountOnNodeWithAccount.set("profile", profile.id, "trusting");
         }
 
         const controlledAccount = new RawControlledAccount(
             accountOnNodeWithAccount.core,
-            accountOnNodeWithAccount.agentSecret
+            accountOnNodeWithAccount.agentSecret,
         );
 
-        nodeWithAccount.account = controlledAccount
+        nodeWithAccount.account = controlledAccount;
         nodeWithAccount.coValues[controlledAccount.id] = {
             state: "loaded",
             coValue: controlledAccount.core,
@@ -137,11 +138,11 @@ export class LocalNode {
         // we shouldn't need this, but it fixes account data not syncing for new accounts
         function syncAllCoValuesAfterCreateAccount() {
             for (const coValueEntry of Object.values(
-                nodeWithAccount.coValues
+                nodeWithAccount.coValues,
             )) {
                 if (coValueEntry.state === "loaded") {
                     void nodeWithAccount.syncManager.syncCoValue(
-                        coValueEntry.coValue
+                        coValueEntry.coValue,
                     );
                 }
             }
@@ -165,17 +166,20 @@ export class LocalNode {
         accountSecret,
         sessionID,
         peersToLoadFrom,
+        crypto,
         migration,
     }: {
         accountID: AccountID;
         accountSecret: AgentSecret;
-        sessionID: SessionID;
+        sessionID: SessionID | undefined;
         peersToLoadFrom: Peer[];
+        crypto: CryptoProvider;
         migration?: RawAccountMigration<Meta>;
     }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
-            new ControlledAgent(accountSecret),
-            newRandomSessionID(accountID)
+            new ControlledAgent(accountSecret, crypto),
+            newRandomSessionID(accountID),
+            crypto,
         );
 
         for (const peer of peersToLoadFrom) {
@@ -192,13 +196,13 @@ export class LocalNode {
 
         const controlledAccount = new RawControlledAccount(
             account.core,
-            accountSecret
+            accountSecret,
         );
 
         // since this is all synchronous, we can just swap out nodes for the SyncManager
         const node = loadingNode.testWithDifferentAccount(
             controlledAccount,
-            sessionID
+            sessionID || newRandomSessionID(accountID),
         );
         node.syncManager = loadingNode.syncManager;
         node.syncManager.local = node;
@@ -223,11 +227,11 @@ export class LocalNode {
         if (migration) {
             await migration(
                 controlledAccount as RawControlledAccount<Meta>,
-                node
+                node,
             );
             node.account = new RawControlledAccount(
                 controlledAccount.core,
-                controlledAccount.agentSecret
+                controlledAccount.agentSecret,
             );
         }
 
@@ -251,14 +255,14 @@ export class LocalNode {
             dontLoadFrom?: PeerID;
             dontWaitFor?: PeerID;
             onProgress?: (progress: number) => void;
-        } = {}
+        } = {},
     ): Promise<CoValueCore | "unavailable"> {
         let entry = this.coValues[id];
         if (!entry) {
             const peersToWaitFor = new Set(
                 Object.values(this.syncManager.peers)
                     .filter((peer) => peer.role === "server")
-                    .map((peer) => peer.id)
+                    .map((peer) => peer.id),
             );
             if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
             entry = newLoadingState(peersToWaitFor, options.onProgress);
@@ -272,7 +276,7 @@ export class LocalNode {
                         "Error loading from peers",
                         id,
 
-                        e
+                        e,
                     );
                 });
         }
@@ -291,7 +295,7 @@ export class LocalNode {
      */
     async load<T extends RawCoValue>(
         id: CoID<T>,
-        onProgress?: (progress: number) => void
+        onProgress?: (progress: number) => void,
     ): Promise<T | "unavailable"> {
         const core = await this.loadCoValueCore(id, { onProgress });
 
@@ -316,7 +320,7 @@ export class LocalNode {
     /** @category 3. Low-level */
     subscribe<T extends RawCoValue>(
         id: CoID<T>,
-        callback: (update: T | "unavailable") => void
+        callback: (update: T | "unavailable") => void,
     ): () => void {
         let stopped = false;
         let unsubscribe!: () => void;
@@ -348,20 +352,20 @@ export class LocalNode {
     /** @deprecated Use Account.acceptInvite instead */
     async acceptInvite<T extends RawCoValue>(
         groupOrOwnedValueID: CoID<T>,
-        inviteSecret: InviteSecret
+        inviteSecret: InviteSecret,
     ): Promise<void> {
         const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
 
         if (groupOrOwnedValue === "unavailable") {
             throw new Error(
-                "Trying to accept invite: Group/owned value unavailable from all peers"
+                "Trying to accept invite: Group/owned value unavailable from all peers",
             );
         }
 
         if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
             return this.acceptInvite(
                 groupOrOwnedValue.core.header.ruleset.group as CoID<RawGroup>,
-                inviteSecret
+                inviteSecret,
             );
         } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
             throw new Error("Can only accept invites to groups");
@@ -369,10 +373,10 @@ export class LocalNode {
 
         const group = expectGroup(groupOrOwnedValue);
 
-        const inviteAgentSecret = agentSecretFromSecretSeed(
-            secretSeedFromInviteSecret(inviteSecret)
+        const inviteAgentSecret = this.crypto.agentSecretFromSecretSeed(
+            secretSeedFromInviteSecret(inviteSecret),
         );
-        const inviteAgentID = getAgentID(inviteAgentSecret);
+        const inviteAgentID = this.crypto.getAgentID(inviteAgentSecret);
 
         const inviteRole = await new Promise((resolve, reject) => {
             group.subscribe((groupUpdate) => {
@@ -383,7 +387,7 @@ export class LocalNode {
             });
             setTimeout(
                 () => reject(new Error("Couldn't find invite before timeout")),
-                2000
+                2000,
             );
         });
 
@@ -400,7 +404,7 @@ export class LocalNode {
             (existingRole === "reader" && inviteRole === "readerInvite")
         ) {
             console.debug(
-                "Not accepting invite that would replace or downgrade role"
+                "Not accepting invite that would replace or downgrade role",
             );
             return;
         }
@@ -408,10 +412,10 @@ export class LocalNode {
         const groupAsInvite = expectGroup(
             group.core
                 .testWithDifferentAccount(
-                    new ControlledAgent(inviteAgentSecret),
-                    newRandomSessionID(inviteAgentID)
+                    new ControlledAgent(inviteAgentSecret, this.crypto),
+                    newRandomSessionID(inviteAgentID),
                 )
-                .getCurrentContent()
+                .getCurrentContent(),
         );
 
         groupAsInvite.addMemberInternal(
@@ -419,8 +423,8 @@ export class LocalNode {
             inviteRole === "adminInvite"
                 ? "admin"
                 : inviteRole === "writerInvite"
-                ? "writer"
-                : "reader"
+                  ? "writer"
+                  : "reader",
         );
 
         group.core._sessionLogs = groupAsInvite.core.sessionLogs;
@@ -436,14 +440,14 @@ export class LocalNode {
         const entry = this.coValues[id];
         if (!entry) {
             throw new Error(
-                `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`
+                `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`,
             );
         }
         if (entry.state === "loading") {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }CoValue ${id} not yet loaded`
+                }CoValue ${id} not yet loaded`,
             );
         }
         return entry.coValue;
@@ -453,43 +457,45 @@ export class LocalNode {
     expectProfileLoaded(id: AccountID, expectation?: string): RawProfile {
         const account = this.expectCoValueLoaded(id, expectation);
         const profileID = expectGroup(account.getCurrentContent()).get(
-            "profile"
+            "profile",
         );
         if (!profileID) {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }Account ${id} has no profile`
+                }Account ${id} has no profile`,
             );
         }
         return this.expectCoValueLoaded(
             profileID,
-            expectation
+            expectation,
         ).getCurrentContent() as RawProfile;
     }
 
     /** @internal */
     createAccount(
-        agentSecret = newRandomAgentSecret()
+        agentSecret = this.crypto.newRandomAgentSecret(),
     ): RawControlledAccount {
-        const accountAgentID = getAgentID(agentSecret);
+        const accountAgentID = this.crypto.getAgentID(agentSecret);
         const account = expectGroup(
-            this.createCoValue(accountHeaderForInitialAgentSecret(agentSecret))
+            this.createCoValue(
+                accountHeaderForInitialAgentSecret(agentSecret, this.crypto),
+            )
                 .testWithDifferentAccount(
-                    new ControlledAgent(agentSecret),
-                    newRandomSessionID(accountAgentID)
+                    new ControlledAgent(agentSecret, this.crypto),
+                    newRandomSessionID(accountAgentID),
                 )
-                .getCurrentContent()
+                .getCurrentContent(),
         );
 
         account.set(accountAgentID, "admin", "trusting");
 
-        const readKey = newRandomKeySecret();
+        const readKey = this.crypto.newRandomKeySecret();
 
-        const sealed = seal({
+        const sealed = this.crypto.seal({
             message: readKey.secret,
-            from: getAgentSealerSecret(agentSecret),
-            to: getAgentSealerID(accountAgentID),
+            from: this.crypto.getAgentSealerSecret(agentSecret),
+            to: this.crypto.getAgentSealerID(accountAgentID),
             nOnceMaterial: {
                 in: account.id,
                 tx: account.core.nextTransactionID(),
@@ -512,7 +518,7 @@ export class LocalNode {
     /** @internal */
     resolveAccountAgent(
         id: AccountID | AgentID,
-        expectation?: string
+        expectation?: string,
     ): AgentID {
         if (isAgentID(id)) {
             return id;
@@ -530,16 +536,16 @@ export class LocalNode {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }CoValue ${id} is not an account`
+                }CoValue ${id} is not an account`,
             );
         }
 
-        return new RawAccount(coValue).currentAgentID();
+        return (coValue.getCurrentContent() as RawAccount).currentAgentID();
     }
 
     async resolveAccountAgentAsync(
         id: AccountID | AgentID,
-        expectation?: string
+        expectation?: string,
     ): Promise<AgentID> {
         if (isAgentID(id)) {
             return id;
@@ -551,7 +557,7 @@ export class LocalNode {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }Account ${id} is unavailable from all peers`
+                }Account ${id} is unavailable from all peers`,
             );
         }
 
@@ -565,11 +571,11 @@ export class LocalNode {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
-                }CoValue ${id} is not an account`
+                }CoValue ${id} is not an account`,
             );
         }
 
-        return new RawAccount(coValue).currentAgentID();
+        return (coValue.getCurrentContent() as RawAccount).currentAgentID();
     }
 
     /**
@@ -580,18 +586,18 @@ export class LocalNode {
             type: "comap",
             ruleset: { type: "group", initialAdmin: this.account.id },
             meta: null,
-            ...createdNowUnique(),
+            ...this.crypto.createdNowUnique(),
         });
 
-        let group = expectGroup(groupCoValue.getCurrentContent());
+        const group = expectGroup(groupCoValue.getCurrentContent());
 
         group.set(this.account.id, "admin", "trusting");
 
-        const readKey = newRandomKeySecret();
+        const readKey = this.crypto.newRandomKeySecret();
 
         group.set(
             `${readKey.id}_for_${this.account.id}`,
-            seal({
+            this.crypto.seal({
                 message: readKey.secret,
                 from: this.account.currentSealerSecret(),
                 to: this.account.currentSealerID(),
@@ -600,7 +606,7 @@ export class LocalNode {
                     tx: groupCoValue.nextTransactionID(),
                 },
             }),
-            "trusting"
+            "trusting",
         );
 
         group.set("readKey", readKey.id, "trusting");
@@ -611,9 +617,9 @@ export class LocalNode {
     /** @internal */
     testWithDifferentAccount(
         account: ControlledAccountOrAgent,
-        currentSessionID: SessionID
+        currentSessionID: SessionID,
     ): LocalNode {
-        const newNode = new LocalNode(account, currentSessionID);
+        const newNode = new LocalNode(account, currentSessionID, this.crypto);
 
         const coValuesToCopy = Object.entries(this.coValues);
 
@@ -638,7 +644,7 @@ export class LocalNode {
                 const newCoValue = new CoValueCore(
                     entry.coValue.header,
                     newNode,
-                    new Map(entry.coValue.sessionLogs)
+                    new Map(entry.coValue.sessionLogs),
                 );
 
                 newNode.coValues[coValueID as RawCoID] = {
@@ -654,7 +660,7 @@ export class LocalNode {
             // To make sure that when we edit the account, we're modifying the correct sessions
             const accountInNode = new RawControlledAccount(
                 newNode.expectCoValueLoaded(account.id),
-                account.agentSecret
+                account.agentSecret,
             );
             if (accountInNode.core.node !== newNode) {
                 throw new Error("Account's node is not the new node");
@@ -693,7 +699,7 @@ type CoValueState =
 /** @internal */
 export function newLoadingState(
     currentPeerIds: Set<PeerID>,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
 ): CoValueState {
     let resolve: (coValue: CoValueCore | "unavailable") => void;
 
@@ -713,7 +719,7 @@ export function newLoadingState(
                     resolve = r;
                 });
                 return [id, { type: "waiting", done, resolve: resolve! }];
-            })
+            }),
         ),
     };
 }

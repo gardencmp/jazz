@@ -1,23 +1,16 @@
-import { expect, test, beforeEach } from "vitest";
+import { expect, test } from "vitest";
 import { newRandomSessionID } from "../coValueCore.js";
-import { cojsonReady } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Can create a node while creating a new account with profile", async () => {
     const { node, accountID, accountSecret, sessionID } =
         await LocalNode.withNewlyCreatedAccount({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
     expect(node).not.toBeNull();
@@ -26,13 +19,14 @@ test("Can create a node while creating a new account with profile", async () => 
     expect(sessionID).not.toBeNull();
 
     expect(node.expectProfileLoaded(accountID).get("name")).toEqual(
-        "Hermes Puggington"
+        "Hermes Puggington",
     );
 });
 
 test("A node with an account can create groups and and objects within them", async () => {
     const { node, accountID } = await LocalNode.withNewlyCreatedAccount({
         creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
     });
 
     const group = await node.createGroup();
@@ -48,6 +42,7 @@ test("Can create account with one node, and then load it on another", async () =
     const { node, accountID, accountSecret } =
         await LocalNode.withNewlyCreatedAccount({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
     const group = await node.createGroup();
@@ -70,6 +65,7 @@ test("Can create account with one node, and then load it on another", async () =
         accountSecret,
         sessionID: newRandomSessionID(accountID),
         peersToLoadFrom: [node1asPeer],
+        crypto: Crypto,
     });
 
     const map2 = await node2.load(map.id);

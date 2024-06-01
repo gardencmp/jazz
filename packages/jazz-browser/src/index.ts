@@ -1,45 +1,49 @@
 import { ReadableStream, WritableStream } from "isomorphic-streams";
-import { IDBStorage } from "cojson-storage-indexeddb";
 import {
     CoValue,
     ID,
-    BinaryCoStream,
-    jazzReady,
     Peer,
     AgentID,
     SessionID,
     SyncMessage,
     cojsonInternals,
     InviteSecret,
-    MAX_RECOMMENDED_TX_SIZE,
     Account,
     CoValueClass,
-    Group,
-    Me,
+    WasmCrypto,
+    CryptoProvider,
 } from "jazz-tools";
-import { AccountID } from "cojson";
-import { AuthProvider } from "./auth/auth";
-export * from './auth/auth.js';
+import { AccountID, LSMStorage } from "cojson";
+import { AuthProvider } from "./auth/auth.js";
+import { OPFSFilesystem } from "./OPFSFilesystem.js";
+import { IDBStorage } from "cojson-storage-indexeddb";
+export * from "./auth/auth.js";
 
-export type BrowserContext<A extends Account> = {
-    me: A & Me;
+/** @category Context Creation */
+export type BrowserContext<Acc extends Account> = {
+    me: Acc;
     // TODO: Symbol.dispose?
     done: () => void;
 };
 
-export async function createBrowserContext<Acc extends Account>({
+/** @category Context Creation */
+export async function createJazzBrowserContext<Acc extends Account>({
     auth,
-    syncAddress = "wss://sync.jazz.tools",
+    peer,
     reconnectionTimeout: initialReconnectionTimeout = 500,
+    storage = "indexedDB",
+    crypto: customCrypto,
 }: {
     auth: AuthProvider<Acc>;
-    syncAddress?: string;
+    peer: `wss://${string}` | `ws://${string}`;
     reconnectionTimeout?: number;
+    storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
+    crypto?: CryptoProvider;
 }): Promise<BrowserContext<Acc>> {
-    await jazzReady;
+    const crypto = customCrypto || (await WasmCrypto.create());
     let sessionDone: () => void;
 
-    const firstWsPeer = createWebSocketPeer(syncAddress);
+    const firstWsPeer = createWebSocketPeer(peer);
     let shouldTryToReconnect = true;
 
     let currentReconnectionTimeout = initialReconnectionTimeout;
@@ -57,14 +61,23 @@ export async function createBrowserContext<Acc extends Account>({
             sessionDone = sessionHandle.done;
             return sessionHandle.session;
         },
-        [await IDBStorage.asPeer(), firstWsPeer],
+        [
+            storage === "indexedDB"
+                ? await IDBStorage.asPeer()
+                : await LSMStorage.asPeer({
+                      fs: new OPFSFilesystem(crypto),
+                      // trace: true,
+                  }),
+            firstWsPeer,
+        ],
+        await WasmCrypto.create(),
     );
 
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
                 Object.keys(me._raw.core.node.syncManager.peers).some(
-                    (peerId) => peerId.includes(syncAddress)
+                    (peerId) => peerId.includes(peer),
                 )
             ) {
                 // TODO: this might drain battery, use listeners instead
@@ -73,11 +86,11 @@ export async function createBrowserContext<Acc extends Account>({
                 console.log(
                     "Websocket disconnected, trying to reconnect in " +
                         currentReconnectionTimeout +
-                        "ms"
+                        "ms",
                 );
                 currentReconnectionTimeout = Math.min(
                     currentReconnectionTimeout * 2,
-                    30000
+                    30000,
                 );
                 await new Promise<void>((resolve) => {
                     setTimeout(resolve, currentReconnectionTimeout);
@@ -85,16 +98,16 @@ export async function createBrowserContext<Acc extends Account>({
                         "online",
                         () => {
                             console.log(
-                                "Online, trying to reconnect immediately"
+                                "Online, trying to reconnect immediately",
                             );
                             resolve();
                         },
-                        { once: true }
+                        { once: true },
                     );
                 });
 
                 me._raw.core.node.syncManager.addPeer(
-                    createWebSocketPeer(syncAddress)
+                    createWebSocketPeer(peer),
                 );
             }
         }
@@ -109,7 +122,7 @@ export async function createBrowserContext<Acc extends Account>({
             window.removeEventListener("online", onOnline);
             console.log("Cleaning up node");
             for (const peer of Object.values(
-                me._raw.core.node.syncManager.peers
+                me._raw.core.node.syncManager.peers,
             )) {
                 peer.outgoing
                     .close()
@@ -120,17 +133,19 @@ export async function createBrowserContext<Acc extends Account>({
     };
 }
 
+/** @category Auth Providers */
 export type SessionProvider = (
-    accountID: ID<Account> | AgentID
+    accountID: ID<Account> | AgentID,
 ) => Promise<SessionID>;
 
+/** @category Auth Providers */
 export type SessionHandle = {
     session: Promise<SessionID>;
     done: () => void;
 };
 
-function getSessionHandleFor(
-    accountID: ID<Account> | AgentID
+export function getSessionHandleFor(
+    accountID: ID<Account> | AgentID,
 ): SessionHandle {
     let done!: () => void;
     const donePromise = new Promise<void>((resolve) => {
@@ -156,7 +171,7 @@ function getSessionHandleFor(
                         const sessionID =
                             localStorage[accountID + "_" + idx] ||
                             cojsonInternals.newRandomSessionID(
-                                accountID as AccountID | AgentID
+                                accountID as AccountID | AgentID,
                             );
                         localStorage[accountID + "_" + idx] = sessionID;
 
@@ -172,10 +187,10 @@ function getSessionHandleFor(
                         console.log(
                             "Done with lock",
                             accountID + "_" + idx,
-                            sessionID
+                            sessionID,
                         );
                         return "sessionFinished";
-                    }
+                    },
                 );
 
                 if (sessionFinishedOrNoLock === "sessionFinished") {
@@ -214,7 +229,7 @@ function websocketReadableStream<T>(ws: WebSocket) {
                     } catch (e) {
                         console.error(
                             "Error while trying to close ws on ping timeout",
-                            e
+                            e,
                         );
                     }
                 }, 2500);
@@ -227,7 +242,7 @@ function websocketReadableStream<T>(ws: WebSocket) {
                         received: Date.now(),
                         sent: msg.time,
                         dc: msg.dc,
-                    })
+                    });
                     return;
                 }
                 controller.enqueue(msg);
@@ -249,7 +264,7 @@ function websocketReadableStream<T>(ws: WebSocket) {
     });
 }
 
-function createWebSocketPeer(syncAddress: string): Peer {
+export function createWebSocketPeer(syncAddress: string): Peer {
     const ws = new WebSocket(syncAddress);
 
     const incoming = websocketReadableStream<SyncMessage>(ws);
@@ -271,12 +286,12 @@ function websocketWritableStream<T>(ws: WebSocket) {
         start(controller) {
             ws.addEventListener("error", (event) => {
                 controller.error(
-                    new Error("The WebSocket errored!" + JSON.stringify(event))
+                    new Error("The WebSocket errored!" + JSON.stringify(event)),
                 );
             });
             ws.addEventListener("close", () => {
                 controller.error(
-                    new Error("The server closed the connection unexpectedly!")
+                    new Error("The server closed the connection unexpectedly!"),
                 );
             });
             ws.addEventListener("open", () => {
@@ -315,17 +330,18 @@ function websocketWritableStream<T>(ws: WebSocket) {
                         resolve();
                     } else {
                         reject(
-                            new Error("The connection was not closed cleanly")
+                            new Error("The connection was not closed cleanly"),
                         );
                     }
                 },
-                { once: true }
+                { once: true },
             );
             ws.close(code, reasonString);
         });
     }
 }
 
+/** @category Invite Links */
 export function createInviteLink<C extends CoValue>(
     value: C,
     role: "reader" | "writer" | "admin",
@@ -333,7 +349,7 @@ export function createInviteLink<C extends CoValue>(
     {
         baseURL = window.location.href.replace(/#.*$/, ""),
         valueHint,
-    }: { baseURL?: string; valueHint?: string } = {}
+    }: { baseURL?: string; valueHint?: string } = {},
 ): string {
     const coValueCore = value._raw.core;
     let currentCoValue = coValueCore;
@@ -347,7 +363,7 @@ export function createInviteLink<C extends CoValue>(
     }
 
     const group = cojsonInternals.expectGroup(
-        currentCoValue.getCurrentContent()
+        currentCoValue.getCurrentContent(),
     );
     const inviteSecret = group.createInvite(role);
 
@@ -356,8 +372,9 @@ export function createInviteLink<C extends CoValue>(
     }/${inviteSecret}`;
 }
 
+/** @category Invite Links */
 export function parseInviteLink<C extends CoValue>(
-    inviteURL: string
+    inviteURL: string,
 ):
     | {
           valueID: ID<C>;
@@ -389,14 +406,15 @@ export function parseInviteLink<C extends CoValue>(
     }
 }
 
+/** @category Invite Links */
 export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
     as,
     forValueHint,
     invitedObjectSchema,
 }: {
-    as: Account & Me;
+    as: Account;
     forValueHint?: string;
-    invitedObjectSchema: CoValueClass<V>
+    invitedObjectSchema: CoValueClass<V>;
 }): Promise<
     | {
           valueID: ID<V>;
@@ -412,14 +430,14 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
             as.acceptInvite(
                 result.valueID,
                 result.inviteSecret,
-                invitedObjectSchema
+                invitedObjectSchema,
             )
                 .then(() => {
                     resolve(result);
                     window.history.replaceState(
                         {},
                         "",
-                        window.location.href.replace(/#.*$/, "")
+                        window.location.href.replace(/#.*$/, ""),
                     );
                 })
                 .catch(reject);
@@ -427,96 +445,4 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
             resolve(undefined);
         }
     });
-}
-
-export async function createBinaryStreamFromBlob(
-    blob: Blob | File,
-    options: {
-        owner: Group | Account;
-        onProgress?: (progress: number) => void;
-    }
-): Promise<BinaryCoStream> {
-    const stream = BinaryCoStream.create({ owner: options.owner });
-
-    const start = Date.now();
-
-    const reader = new FileReader();
-    const done = new Promise<void>((resolve) => {
-        reader.onload = async () => {
-            const data = new Uint8Array(reader.result as ArrayBuffer);
-            stream.start({
-                mimeType: blob.type,
-                totalSizeBytes: blob.size,
-                fileName: blob instanceof File ? blob.name : undefined,
-            });
-            const chunkSize = MAX_RECOMMENDED_TX_SIZE;
-
-            let lastProgressUpdate = Date.now();
-
-            for (let idx = 0; idx < data.length; idx += chunkSize) {
-                stream.push(data.slice(idx, idx + chunkSize));
-
-                if (Date.now() - lastProgressUpdate > 100) {
-                    options.onProgress?.(idx / data.length);
-                    lastProgressUpdate = Date.now();
-                }
-
-                await new Promise((resolve) => setTimeout(resolve, 0));
-            }
-            stream.end();
-            const end = Date.now();
-
-            console.debug(
-                "Finished creating binary stream in",
-                (end - start) / 1000,
-                "s - Throughput in MB/s",
-                (1000 * (blob.size / (end - start))) / (1024 * 1024)
-            );
-            options.onProgress?.(1);
-            resolve();
-        };
-    });
-    setTimeout(() => {
-        reader.readAsArrayBuffer(blob);
-    });
-
-    await done;
-
-    return stream;
-}
-
-export async function readBlobFromBinaryStream(
-    streamId: ID<BinaryCoStream>,
-    options: {
-        as: Account & Me;
-        allowUnfinished?: boolean;
-        onProgress?: (progress: number) => void;
-    }
-): Promise<Blob | undefined> {
-    const stream = await BinaryCoStream.load(streamId, {
-        as: options.as,
-        onProgress: options.onProgress,
-    });
-
-    return (
-        stream &&
-        blobFromBinaryStream(stream, {
-            allowUnfinished: options.allowUnfinished,
-        })
-    );
-}
-
-export function blobFromBinaryStream(
-    stream: BinaryCoStream,
-    options?: { allowUnfinished?: boolean }
-): Blob | undefined {
-    const chunks = stream?.getChunks({
-        allowUnfinished: options?.allowUnfinished,
-    });
-
-    if (!chunks) {
-        return undefined;
-    }
-
-    return new Blob(chunks.chunks, { type: chunks.mimeType });
 }

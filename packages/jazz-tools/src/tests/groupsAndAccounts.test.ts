@@ -1,16 +1,7 @@
-import { expect, describe, test, beforeEach } from "vitest";
+import { expect, describe, test } from "vitest";
+import { Account, CoMap, co, Group, WasmCrypto } from "../index.js";
 
-import { webcrypto } from "node:crypto";
-import { Account, jazzReady, CoMap, co, Group } from "..";
-
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await jazzReady;
-});
+const Crypto = await WasmCrypto.create();
 
 describe("Custom accounts and groups", async () => {
     class CustomProfile extends CoMap {
@@ -22,13 +13,13 @@ describe("Custom accounts and groups", async () => {
         profile = co.ref(CustomProfile);
         root = co.ref(CoMap);
 
-        migrate(creationProps?: { name: string }) {
+        migrate(this: CustomAccount, creationProps?: { name: string }) {
             if (creationProps) {
                 const profileGroup = Group.create({ owner: this });
                 profileGroup.addMember("everyone", "reader");
                 this.profile = CustomProfile.create(
                     { name: creationProps.name, color: "blue" },
-                    { owner: this }
+                    { owner: this },
                 );
             }
         }
@@ -44,11 +35,10 @@ describe("Custom accounts and groups", async () => {
         }
     }
 
-    type T = CustomGroup[typeof co.members];
-
     test("Custom account and group", async () => {
         const me = await CustomAccount.create({
             creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
         });
 
         expect(me.profile).toBeDefined();
@@ -66,13 +56,13 @@ describe("Custom accounts and groups", async () => {
         expect(group.nMembers).toBe(2);
 
         await new Promise<void>((resolve) => {
-            group.subscribe((update) => {
+            group.subscribe({}, (update) => {
                 const meAsMember = update.members.find((member) => {
                     return member.id === me.id && member.account?.profile;
                 });
                 if (meAsMember) {
                     expect(meAsMember.account?.profile?.name).toBe(
-                        "Hermes Puggington"
+                        "Hermes Puggington",
                     );
                     expect(meAsMember.account?.profile?.color).toBe("blue");
                     resolve();
@@ -87,14 +77,15 @@ describe("Custom accounts and groups", async () => {
         const map = MyMap.create({ name: "test" }, { owner: group });
 
         const meAsCastMember = map._owner
-            .as(CustomGroup)
+            .castAs(CustomGroup)
             .members.find((member) => member.id === me.id);
         expect(meAsCastMember?.account?.profile?.name).toBe(
-            "Hermes Puggington"
+            "Hermes Puggington",
         );
         expect(meAsCastMember?.account?.profile?.color).toBe("blue");
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map._owner as any).nMembers).toBeUndefined();
-        expect(map._owner.as(CustomGroup).nMembers).toBe(2);
+        expect(map._owner.castAs(CustomGroup).nMembers).toBe(2);
     });
 });

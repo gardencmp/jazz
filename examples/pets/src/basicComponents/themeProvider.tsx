@@ -25,7 +25,7 @@ export function ThemeProvider({
     ...props
 }: ThemeProviderProps) {
     const [theme, setTheme] = useState(
-        () => localStorage.getItem(storageKey) || defaultTheme
+        () => localStorage.getItem(storageKey) || defaultTheme,
     );
 
     useEffect(() => {
@@ -35,7 +35,7 @@ export function ThemeProvider({
 
         if (theme === "system") {
             const systemTheme = window.matchMedia(
-                "(prefers-color-scheme: dark)"
+                "(prefers-color-scheme: dark)",
             ).matches
                 ? "dark"
                 : "light";
@@ -62,6 +62,7 @@ export function ThemeProvider({
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
     const context = useContext(ThemeProviderContext);
 

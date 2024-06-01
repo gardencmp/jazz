@@ -4,8 +4,8 @@ import type {
     Account,
     CoValue,
     ID,
-    Me,
     RefEncoded,
+    UnCo,
     UnavailableError,
 } from "../internal.js";
 import {
@@ -14,13 +14,15 @@ import {
     subscriptionsScopes,
 } from "../internal.js";
 
-export class Ref<out V extends CoValue> {
-    private cachedValue: V | undefined;
+const refCache = new WeakMap<RawCoValue, CoValue>();
 
+const TRACE_ACCESSES = false;
+
+export class Ref<out V extends CoValue> {
     constructor(
         readonly id: ID<V>,
-        readonly controlledAccount: Account & Me,
-        readonly schema: RefEncoded<V>
+        readonly controlledAccount: Account,
+        readonly schema: RefEncoded<V>,
     ) {
         if (!isRefEncoded(schema)) {
             throw new Error("Ref must be constructed with a ref schema");
@@ -28,15 +30,18 @@ export class Ref<out V extends CoValue> {
     }
 
     get value() {
-        if (this.cachedValue) return this.cachedValue;
-        // TODO: cache it for object identity!!!
         const raw = this.controlledAccount._raw.core.node.getLoaded(
-            this.id as unknown as CoID<RawCoValue>
+            this.id as unknown as CoID<RawCoValue>,
         );
         if (raw) {
-            const value = instantiateRefEncoded(this.schema, raw);
-            this.cachedValue = value;
-            return value;
+            let value = refCache.get(raw);
+            if (value) {
+                // console.log("Using cached value for " + this.id);
+            } else {
+                value = instantiateRefEncoded(this.schema, raw);
+                refCache.set(raw, value);
+            }
+            return value as V;
         } else {
             return null;
         }
@@ -63,7 +68,7 @@ export class Ref<out V extends CoValue> {
     }): Promise<V | "unavailable"> {
         const raw = await this.controlledAccount._raw.core.node.load(
             this.id as unknown as CoID<RawCoValue>,
-            options?.onProgress
+            options?.onProgress,
         );
         if (raw === "unavailable") {
             return "unavailable";
@@ -83,24 +88,55 @@ export class Ref<out V extends CoValue> {
         }
     }
 
-    accessFrom(fromScopeValue: CoValue): V | null {
+    accessFrom(
+        fromScopeValue: CoValue,
+        key: string | number | symbol,
+    ): V | null {
         const subScope = subscriptionsScopes.get(fromScopeValue);
 
-        subScope?.onRefAccessedOrSet(this.id);
+        subScope?.onRefAccessedOrSet(fromScopeValue.id, this.id);
+        TRACE_ACCESSES &&
+            console.log(
+                subScope?.scopeID,
+                "accessing",
+                fromScopeValue,
+                key,
+                this.id,
+            );
 
         if (this.value && subScope) {
             subscriptionsScopes.set(this.value, subScope);
         }
 
-        return this.value;
+        if (subScope) {
+            const cached = subScope.cachedValues[this.id];
+            if (cached) {
+                TRACE_ACCESSES && console.log("cached", cached);
+                return cached as V;
+            } else if (this.value !== null) {
+                const freshValueInstance = instantiateRefEncoded(
+                    this.schema,
+                    this.value?._raw,
+                );
+                TRACE_ACCESSES &&
+                    console.log("freshValueInstance", freshValueInstance);
+                subScope.cachedValues[this.id] = freshValueInstance;
+                subscriptionsScopes.set(freshValueInstance, subScope);
+                return freshValueInstance as V;
+            } else {
+                return null;
+            }
+        } else {
+            return this.value;
+        }
     }
 }
 
 export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
-    controlledAccount: Account & Me,
-    refSchemaForKey: (key: Keys) => RefEncoded<CoValue>
+    controlledAccount: Account,
+    refSchemaForKey: (key: Keys) => RefEncoded<CoValue>,
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;
     length: number;
@@ -117,7 +153,7 @@ export function makeRefs<Keys extends string | number>(
                         yield new Ref(
                             getIdForKey(key)!,
                             controlledAccount,
-                            refSchemaForKey(key)
+                            refSchemaForKey(key),
                         );
                     }
                 };
@@ -131,7 +167,7 @@ export function makeRefs<Keys extends string | number>(
             return new Ref(
                 id as ID<CoValue>,
                 controlledAccount,
-                refSchemaForKey(key as Keys)
+                refSchemaForKey(key as Keys),
             );
         },
         ownKeys() {
@@ -153,5 +189,5 @@ export function makeRefs<Keys extends string | number>(
 }
 
 export type RefIfCoValue<V> = NonNullable<V> extends CoValue
-    ? Ref<NonNullable<V>>
+    ? Ref<UnCo<NonNullable<V>>>
     : never;

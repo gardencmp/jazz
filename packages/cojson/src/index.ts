@@ -12,16 +12,13 @@ import { RawCoList } from "./coValues/coList.js";
 import { RawCoPlainText, stringifyOpID } from "./coValues/coPlainText.js";
 import { RawCoStream, RawBinaryCoStream } from "./coValues/coStream.js";
 import {
-    agentSecretFromBytes,
-    agentSecretToBytes,
-    getAgentID,
-    newRandomAgentSecret,
-    newRandomSecretSeed,
-    agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
-    cryptoReady,
-} from "./crypto.js";
+    StreamingHash,
+    CryptoProvider,
+} from "./crypto/crypto.js";
+import { WasmCrypto } from "./crypto/WasmCrypto.js";
+import { PureJSCrypto } from "./crypto/PureJSCrypto.js";
 import { connectedPeers } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
@@ -46,7 +43,7 @@ import type {
 } from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
 import type { SyncMessage, Peer } from "./sync.js";
-import type { AgentSecret } from "./crypto.js";
+import type { AgentSecret } from "./crypto/crypto.js";
 import type {
     AccountID,
     AccountMeta,
@@ -57,18 +54,20 @@ import type * as Media from "./media.js";
 
 type Value = JsonValue | AnyRawCoValue;
 
+import {
+    LSMStorage,
+    FSErr,
+    BlockFilename,
+    WalFilename,
+} from "./storage/index.js";
+import { FileSystem } from "./storage/FileSystem.js";
+
 /** @hidden */
 export const cojsonInternals = {
-    agentSecretFromBytes,
-    agentSecretToBytes,
     newRandomSessionID,
-    newRandomAgentSecret,
     connectedPeers,
-    getAgentID,
     rawCoIDtoBytes,
     rawCoIDfromBytes,
-    newRandomSecretSeed,
-    agentSecretFromSecretSeed,
     secretSeedLength,
     shortHashLength,
     expectGroup,
@@ -79,6 +78,7 @@ export const cojsonInternals = {
     isAccountID,
     accountHeaderForInitialAgentSecret,
     idforHeader,
+    StreamingHash,
 };
 
 export {
@@ -105,7 +105,6 @@ export {
     CoValueCore,
     ControlledAgent,
     RawControlledAccount,
-    cryptoReady as cojsonReady,
     MAX_RECOMMENDED_TX_SIZE,
     JsonValue,
     Peer,
@@ -114,12 +113,16 @@ export {
     AgentID,
     AgentSecret,
     InviteSecret,
+    CryptoProvider,
+    WasmCrypto,
+    PureJSCrypto,
     SyncMessage,
     isRawCoID,
-    stringifyOpID
+    stringifyOpID,
+    LSMStorage,
 };
 
-export type { Value };
+export type { Value, FileSystem, FSErr, BlockFilename, WalFilename };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CojsonInternalTypes {
@@ -131,11 +134,11 @@ export namespace CojsonInternalTypes {
     export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
     export type Transaction = import("./coValueCore.js").Transaction;
     export type TransactionID = import("./ids.js").TransactionID;
-    export type Signature = import("./crypto.js").Signature;
+    export type Signature = import("./crypto/crypto.js").Signature;
     export type RawCoID = import("./ids.js").RawCoID;
     export type ProfileShape = import("./coValues/account.js").ProfileShape;
-    export type SealerSecret = import("./crypto.js").SealerSecret;
-    export type SignerSecret = import("./crypto.js").SignerSecret;
+    export type SealerSecret = import("./crypto/crypto.js").SealerSecret;
+    export type SignerSecret = import("./crypto/crypto.js").SignerSecret;
     export type JsonObject = import("./jsonValue.js").JsonObject;
     export type OpID = import("./coValues/coList.js").OpID;
 }

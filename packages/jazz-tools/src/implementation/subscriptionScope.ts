@@ -1,16 +1,23 @@
 import type { RawCoValue } from "cojson";
-import type { Account, CoValue, CoValueBase, ID, Me, SubclassedConstructor } from "../internal.js";
+import type {
+    Account,
+    CoValue,
+    ID,
+    CoValueClass,
+    CoValueFromRaw,
+} from "../internal.js";
 
 export const subscriptionsScopes = new WeakMap<
     CoValue,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SubscriptionScope<any>
 >();
 
-export class SubscriptionScope<
-    Root extends CoValue
-> {
+const TRACE_INVALIDATIONS = false;
+
+export class SubscriptionScope<Root extends CoValue> {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
-    subscriber: Account & Me;
+    subscriber: Account;
     entries = new Map<
         ID<CoValue>,
         | { state: "loading"; immediatelyUnsub?: boolean }
@@ -23,11 +30,13 @@ export class SubscriptionScope<
     };
     onUpdate: (newRoot: Root) => void;
     scheduledUpdate: boolean = false;
+    cachedValues: { [id: ID<CoValue>]: CoValue } = {};
+    parents: { [id: ID<CoValue>]: Set<ID<CoValue>> } = {};
 
     constructor(
         root: Root,
-        rootSchema: SubclassedConstructor<Root> & typeof CoValueBase,
-        onUpdate: (newRoot: Root) => void
+        rootSchema: CoValueClass<Root> & CoValueFromRaw<Root>,
+        onUpdate: (newRoot: Root) => void,
     ) {
         this.rootEntry = {
             state: "loaded" as const,
@@ -43,13 +52,11 @@ export class SubscriptionScope<
         this.rootEntry.rawUnsub = root._raw.core.subscribe(
             (rawUpdate: RawCoValue | undefined) => {
                 if (!rawUpdate) return;
-                this.rootEntry.value = rootSchema.fromRaw(
-                    rawUpdate
-                ) as Root;
+                this.rootEntry.value = rootSchema.fromRaw(rawUpdate) as Root;
                 // console.log("root update", this.rootEntry.value.toJSON());
                 subscriptionsScopes.set(this.rootEntry.value, this);
                 this.scheduleUpdate();
-            }
+            },
         );
     }
 
@@ -63,11 +70,18 @@ export class SubscriptionScope<
         }
     }
 
-    onRefAccessedOrSet(accessedOrSetId: ID<CoValue> | undefined) {
+    onRefAccessedOrSet(
+        fromId: ID<CoValue>,
+        accessedOrSetId: ID<CoValue> | undefined,
+    ) {
         // console.log("onRefAccessedOrSet", this.scopeID, accessedOrSetId);
         if (!accessedOrSetId) {
             return;
         }
+
+        this.parents[accessedOrSetId] =
+            this.parents[accessedOrSetId] || new Set();
+        this.parents[accessedOrSetId]!.add(fromId);
 
         if (!this.entries.has(accessedOrSetId)) {
             const loadingEntry = {
@@ -94,12 +108,34 @@ export class SubscriptionScope<
                         const rawUnsub = core.subscribe((rawUpdate) => {
                             // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
                             if (!rawUpdate) return;
+                            this.invalidate(accessedOrSetId);
                             this.scheduleUpdate();
                         });
 
                         entry.rawUnsub = rawUnsub;
                     }
                 });
+        }
+    }
+
+    invalidate(
+        id: ID<CoValue>,
+        fromChild?: ID<CoValue>,
+        seen: Set<ID<CoValue>> = new Set(),
+    ) {
+        if (seen.has(id)) return;
+        TRACE_INVALIDATIONS &&
+            console.log(
+                "invalidating",
+                fromChild,
+                "->",
+                id,
+                this.cachedValues[id],
+            );
+        delete this.cachedValues[id];
+        seen.add(id);
+        for (const parent of this.parents[id] || []) {
+            this.invalidate(parent, id, seen);
         }
     }
 

@@ -1,13 +1,18 @@
 {
   "name": "jazz-example-pets",
   "private": true,
-  "version": "0.0.65-alpha.31",
+  "version": "0.0.72",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write './src/**/*.{ts,tsx}'",
     "preview": "vite preview"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.4",

@@ -5,6 +5,7 @@ import {
     subscriptionsScopes,
 } from "../../internal.js";
 
+/** @category Media */
 export class ImageDefinition extends CoMap {
     originalSize = co.json<[number, number]>();
     placeholderDataURL? = co.string;
@@ -17,15 +18,15 @@ export class ImageDefinition extends CoMap {
     }): { res: `${number}x${number}`; stream: BinaryCoStream } | undefined {
         if (!subscriptionsScopes.get(this)) {
             console.warn(
-                "highestResAvailable() only makes sense when used within a subscription."
+                "highestResAvailable() only makes sense when used within a subscription.",
             );
         }
 
         const resolutions = Object.keys(this).filter(
             (key) =>
                 key.match(/^\d+x\d+$/) &&
-                (!options?.maxWidth ||
-                    Number(key.split("x")[0]) <= options.maxWidth)
+                (options?.maxWidth === undefined ||
+                    Number(key.split("x")[0]) <= options.maxWidth),
         ) as `${number}x${number}`[];
 
         resolutions.sort((a, b) => {

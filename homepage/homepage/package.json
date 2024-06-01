@@ -1,0 +1,55 @@
+{
+    "name": "homepage-jazz",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "NODE_OPTIONS=--max-old-space-size=8192 next dev",
+        "build": "node genDocs.mjs --build && node renderCodeSamples.mjs && next build",
+        "start": "next start",
+        "lint": "next lint",
+        "format": "prettier --write './**/*.{ts,tsx,json}'"
+    },
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+        "*.{js,jsx,mdx,json}": "prettier --write"
+    },
+    "dependencies": {
+        "@evilmartians/harmony": "^1.0.0",
+        "@icons-pack/react-simple-icons": "^9.1.0",
+        "@mdx-js/loader": "^2.3.0",
+        "@mdx-js/react": "^2.3.0",
+        "@next/mdx": "^13.5.4",
+        "@types/mdx": "^2.0.8",
+        "class-variance-authority": "^0.7.0",
+        "clsx": "^2.0.0",
+        "lucide-react": "^0.284.0",
+        "mdast-util-from-markdown": "^2.0.0",
+        "mdast-util-mdx": "^3.0.0",
+        "micromark-extension-mdxjs": "^3.0.0",
+        "next": "13.5.4",
+        "next-themes": "^0.2.1",
+        "react": "^18",
+        "react-dom": "^18",
+        "shiki": "^0.14.6",
+        "shiki-twoslash": "^3.1.2",
+        "tailwind-merge": "^1.14.0",
+        "tailwindcss-animate": "^1.0.7",
+        "unist-util-visit": "^5.0.0"
+    },
+    "devDependencies": {
+        "@csstools/postcss-oklab-function": "^3.0.6",
+        "@tailwindcss/typography": "^0.5.10",
+        "@types/node": "^20",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "autoprefixer": "^10",
+        "eslint": "^8",
+        "eslint-config-next": "13.5.4",
+        "postcss": "^8",
+        "prettier": "^3.2.5",
+        "tailwindcss": "^3",
+        "typedoc": "^0.25.13",
+        "typescript": "^5"
+    }
+}

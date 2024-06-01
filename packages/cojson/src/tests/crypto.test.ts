@@ -1,93 +1,84 @@
-import { expect, test, beforeEach } from "vitest";
-import {
-    getSealerID,
-    getSignerID,
-    secureHash,
-    newRandomSealer,
-    newRandomSigner,
-    seal,
-    sign,
-    unseal,
-    verify,
-    shortHash,
-    newRandomKeySecret,
-    encryptForTransaction,
-    decryptForTransaction,
-    encryptKeySecret,
-    decryptKeySecret,
-} from "../crypto.js";
+import { expect, test } from "vitest";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { base58, base64url } from "@scure/base";
 import { x25519 } from "@noble/curves/ed25519";
 import { xsalsa20_poly1305 } from "@noble/ciphers/salsa";
 import { blake3 } from "@noble/hashes/blake3";
-import stableStringify from "fast-json-stable-stringify";
 import { SessionID } from "../ids.js";
-import { cojsonReady } from "../index.js";
+import { stableStringify } from "../jsonStringify.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Signatures round-trip and use stable stringify", () => {
     const data = { b: "world", a: "hello" };
-    const signer = newRandomSigner();
-    const signature = sign(signer, data);
+    const signer = Crypto.newRandomSigner();
+    const signature = Crypto.sign(signer, data);
 
     expect(signature).toMatch(/^signature_z/);
     expect(
-        verify(signature, { a: "hello", b: "world" }, getSignerID(signer))
+        Crypto.verify(
+            signature,
+            { a: "hello", b: "world" },
+            Crypto.getSignerID(signer),
+        ),
     ).toBe(true);
 });
 
 test("Invalid signatures don't verify", () => {
     const data = { b: "world", a: "hello" };
-    const signer = newRandomSigner();
-    const signer2 = newRandomSigner();
-    const wrongSignature = sign(signer2, data);
+    const signer = Crypto.newRandomSigner();
+    const signer2 = Crypto.newRandomSigner();
+    const wrongSignature = Crypto.sign(signer2, data);
 
-    expect(verify(wrongSignature, data, getSignerID(signer))).toBe(false);
+    expect(
+        Crypto.verify(wrongSignature, data, Crypto.getSignerID(signer)),
+    ).toBe(false);
 });
 
 test("encrypting round-trips, but invalid receiver can't unseal", () => {
     const data = { b: "world", a: "hello" };
-    const sender = newRandomSealer();
-    const sealer = newRandomSealer();
-    const wrongSealer = newRandomSealer();
+    const sender = Crypto.newRandomSealer();
+    const sealer = Crypto.newRandomSealer();
+    const wrongSealer = Crypto.newRandomSealer();
 
     const nOnceMaterial = {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     } as const;
 
-    const sealed = seal({
+    const sealed = Crypto.seal({
         message: data,
         from: sender,
-        to: getSealerID(sealer),
+        to: Crypto.getSealerID(sealer),
         nOnceMaterial,
     });
 
-    expect(unseal(sealed, sealer, getSealerID(sender), nOnceMaterial)).toEqual(
-        data
-    );
+    expect(
+        Crypto.unseal(
+            sealed,
+            sealer,
+            Crypto.getSealerID(sender),
+            nOnceMaterial,
+        ),
+    ).toEqual(data);
     expect(() =>
-        unseal(sealed, wrongSealer, getSealerID(sender), nOnceMaterial)
+        Crypto.unseal(
+            sealed,
+            wrongSealer,
+            Crypto.getSealerID(sender),
+            nOnceMaterial,
+        ),
     ).toThrow(/Wrong tag/);
 
     // trying with wrong sealer secret, by hand
     const nOnce = blake3(
-        new TextEncoder().encode(stableStringify(nOnceMaterial))
+        new TextEncoder().encode(stableStringify(nOnceMaterial)),
     ).slice(0, 24);
     const sealer3priv = base58.decode(
-        wrongSealer.substring("sealerSecret_z".length)
+        wrongSealer.substring("sealerSecret_z".length),
     );
     const senderPub = base58.decode(
-        getSealerID(sender).substring("sealer_z".length)
+        Crypto.getSealerID(sender).substring("sealer_z".length),
     );
     const sealedBytes = base64url.decode(sealed.substring("sealed_U".length));
     const sharedSecret = x25519.getSharedSecret(sealer3priv, senderPub);
@@ -98,34 +89,34 @@ test("encrypting round-trips, but invalid receiver can't unseal", () => {
 });
 
 test("Hashing is deterministic", () => {
-    expect(secureHash({ b: "world", a: "hello" })).toEqual(
-        secureHash({ a: "hello", b: "world" })
+    expect(Crypto.secureHash({ b: "world", a: "hello" })).toEqual(
+        Crypto.secureHash({ a: "hello", b: "world" }),
     );
 
-    expect(shortHash({ b: "world", a: "hello" })).toEqual(
-        shortHash({ a: "hello", b: "world" })
+    expect(Crypto.shortHash({ b: "world", a: "hello" })).toEqual(
+        Crypto.shortHash({ a: "hello", b: "world" }),
     );
 });
 
 test("Encryption for transactions round-trips", () => {
-    const { secret } = newRandomKeySecret();
+    const { secret } = Crypto.newRandomKeySecret();
 
-    const encrypted1 = encryptForTransaction({ a: "hello" }, secret, {
+    const encrypted1 = Crypto.encryptForTransaction({ a: "hello" }, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
 
-    const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
+    const encrypted2 = Crypto.encryptForTransaction({ b: "world" }, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 1 },
     });
 
-    const decrypted1 = decryptForTransaction(encrypted1, secret, {
+    const decrypted1 = Crypto.decryptForTransaction(encrypted1, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
 
-    const decrypted2 = decryptForTransaction(encrypted2, secret, {
+    const decrypted2 = Crypto.decryptForTransaction(encrypted2, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 1 },
     });
@@ -134,25 +125,25 @@ test("Encryption for transactions round-trips", () => {
 });
 
 test("Encryption for transactions doesn't decrypt with a wrong key", () => {
-    const { secret } = newRandomKeySecret();
-    const { secret: secret2 } = newRandomKeySecret();
+    const { secret } = Crypto.newRandomKeySecret();
+    const { secret: secret2 } = Crypto.newRandomKeySecret();
 
-    const encrypted1 = encryptForTransaction({ a: "hello" }, secret, {
+    const encrypted1 = Crypto.encryptForTransaction({ a: "hello" }, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
 
-    const encrypted2 = encryptForTransaction({ b: "world" }, secret, {
+    const encrypted2 = Crypto.encryptForTransaction({ b: "world" }, secret, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 1 },
     });
 
-    const decrypted1 = decryptForTransaction(encrypted1, secret2, {
+    const decrypted1 = Crypto.decryptForTransaction(encrypted1, secret2, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 0 },
     });
 
-    const decrypted2 = decryptForTransaction(encrypted2, secret2, {
+    const decrypted2 = Crypto.decryptForTransaction(encrypted2, secret2, {
         in: "co_zTEST",
         tx: { sessionID: "co_zTEST_session_zTEST" as SessionID, txIndex: 1 },
     });
@@ -161,34 +152,37 @@ test("Encryption for transactions doesn't decrypt with a wrong key", () => {
 });
 
 test("Encryption of keySecrets round-trips", () => {
-    const toEncrypt = newRandomKeySecret();
-    const encrypting = newRandomKeySecret();
+    const toEncrypt = Crypto.newRandomKeySecret();
+    const encrypting = Crypto.newRandomKeySecret();
 
     const keys = {
         toEncrypt,
         encrypting,
     };
 
-    const encrypted = encryptKeySecret(keys);
+    const encrypted = Crypto.encryptKeySecret(keys);
 
-    const decrypted = decryptKeySecret(encrypted, encrypting.secret);
+    const decrypted = Crypto.decryptKeySecret(encrypted, encrypting.secret);
 
     expect(decrypted).toEqual(toEncrypt.secret);
 });
 
 test("Encryption of keySecrets doesn't decrypt with a wrong key", () => {
-    const toEncrypt = newRandomKeySecret();
-    const encrypting = newRandomKeySecret();
-    const encryptingWrong = newRandomKeySecret();
+    const toEncrypt = Crypto.newRandomKeySecret();
+    const encrypting = Crypto.newRandomKeySecret();
+    const encryptingWrong = Crypto.newRandomKeySecret();
 
     const keys = {
         toEncrypt,
         encrypting,
     };
 
-    const encrypted = encryptKeySecret(keys);
+    const encrypted = Crypto.encryptKeySecret(keys);
 
-    const decrypted = decryptKeySecret(encrypted, encryptingWrong.secret);
+    const decrypted = Crypto.decryptKeySecret(
+        encrypted,
+        encryptingWrong.secret,
+    );
 
     expect(decrypted).toBeUndefined();
 });

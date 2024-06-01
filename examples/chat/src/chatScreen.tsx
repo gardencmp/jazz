@@ -2,23 +2,18 @@ import { ID } from 'jazz-tools';
 import { Chat, Message, useCoState } from './app.tsx';
 
 export function ChatScreen(props: { chatID: ID<Chat> }) {
-  const chat = useCoState(Chat, props.chatID);
+  const chat = useCoState(Chat, props.chatID, [{}]);
 
-  if (!chat) return <div>Loading...</div>;
-
-  return <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
-    {chat.map((msg) => (
-      msg && <ChatBubble msg={msg} key={msg.id} />
-    ))}
-    <ChatInput
-      onSubmit={(text) => {
-        const message = Message.create(
-          { text }, { owner: chat._owner }
-        );
-        chat.push(message);
-      }}
-    />
-  </div>;
+  return chat ? <div className='w-full max-w-xl h-full flex flex-col items-stretch'>
+    {chat.length > 0
+      ? chat.map((msg) => <ChatBubble msg={msg} key={msg.id} />)
+      : <div className='m-auto text-sm'>(Empty chat)</div>}
+    <ChatInput onSubmit={(text) => {
+      chat.push(
+        Message.create({ text }, { owner: chat._owner })
+      );
+    }} />
+  </div> : <div>Loading...</div>;
 }
 
 function ChatBubble(props: { msg: Message }) {
@@ -37,13 +32,11 @@ function ChatBubble(props: { msg: Message }) {
 }
 
 function ChatInput(props: { onSubmit: (text: string) => void }) {
-  return <input
+  return <input className='rounded p-2 border mt-auto dark:bg-black dark:text-white border-stone-300 dark:border-stone-700'
     placeholder='Type a message and press Enter'
-    className='rounded p-2 border mt-auto dark:bg-black dark:text-white dark:border-stone-700'
     onKeyDown={({ key, currentTarget: input }) => {
       if (key !== 'Enter' || !input.value) return;
       props.onSubmit(input.value);
       input.value = '';
-    }}
-  />;
+    }} />;
 }

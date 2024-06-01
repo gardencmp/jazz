@@ -9,7 +9,11 @@ import type {
     RefEncoded,
     IfCo,
     RefIfCoValue,
-    SubclassedConstructor,
+    DepthsIn,
+    DeeplyLoaded,
+    UnavailableError,
+    AccountCtx,
+    CoValueClass,
 } from "../internal.js";
 import {
     Account,
@@ -22,7 +26,14 @@ import {
     ItemsSym,
     InitValues,
     isRefEncoded,
+    loadCoValue,
+    loadCoValueEf,
+    subscribeToCoValue,
+    subscribeToCoValueEf,
+    ensureCoValueLoaded,
+    subscribeToExistingCoValue,
 } from "../internal.js";
+import { Effect, Stream } from "effect";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -36,21 +47,78 @@ type InitValuesFor<C extends CoMap> = {
     owner: Account | Group;
 };
 
-export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
+/**
+ * CoMaps are collaborative versions of plain objects, mapping string-like keys to values.
+ *
+ * @categoryDescription Declaration
+ * Declare your own CoMap schemas by subclassing `CoMap` and assigning field schemas with `co`.
+ *
+ * Optional `co.ref(...)` fields must be marked with `{ optional: true }`.
+ *
+ * ```ts
+ * import { co, CoMap } from "jazz-tools";
+ *
+ * class Person extends CoMap {
+ *   name = co.string;
+ *   age = co.number;
+ *   pet = co.ref(Animal);
+ *   car = co.ref(Car, { optional: true });
+ * }
+ * ```
+ *
+ * @categoryDescription Content
+ * You can access properties you declare on a `CoMap` (using `co`) as if they were normal properties on a plain object, using dot notation, `Object.keys()`, etc.
+ *
+ * ```ts
+ * person.name;
+ * person["age"];
+ * person.age = 42;
+ * person.pet?.name;
+ * Object.keys(person);
+ * // => ["name", "age", "pet"]
+ * ```
+ *
+ * @category CoValues
+ *  */
+export class CoMap extends CoValueBase implements CoValue {
+    /**
+     * The ID of this `CoMap`
+     * @category Content */
     declare id: ID<this>;
+    /** @category Type Helpers */
     declare _type: "CoMap";
     static {
         this.prototype._type = "CoMap";
     }
+    /** @category Internals */
     declare _raw: RawCoMap;
 
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static _schema: any;
+    /** @internal */
     get _schema() {
         return (this.constructor as typeof CoMap)._schema as {
             [key: string]: Schema;
         } & { [ItemsSym]?: Schema };
     }
 
+    /**
+     * If property `prop` is a `co.ref(...)`, you can use `coMaps._refs.prop` to access
+     * the `Ref` instead of the potentially loaded/null value.
+     *
+     * This allows you to always get the ID or load the value manually.
+     *
+     * @example
+     * ```ts
+     * person._refs.pet.id; // => ID<Animal>
+     * person._refs.pet.value;
+     * // => Animal | null
+     * const pet = await person._refs.pet.load();
+     * ```
+     *
+     * @category Content
+     **/
     get _refs(): {
         [Key in CoKeys<this>]: IfCo<this[Key], RefIfCoValue<this[Key]>>;
     } {
@@ -69,10 +137,12 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
             this._loadedAs,
             (key) =>
                 (this._schema[key] ||
-                    this._schema[ItemsSym]) as RefEncoded<CoValue>
+                    this._schema[ItemsSym]) as RefEncoded<CoValue>,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ) as any;
     }
 
+    /** @category Collaboration */
     get _edits() {
         return new Proxy(this, {
             get(target, key) {
@@ -92,23 +162,32 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                               : new Ref(
                                     rawEdit.value as ID<CoValue>,
                                     target._loadedAs,
-                                    descriptor
-                                ).accessFrom(target),
+                                    descriptor,
+                                ).accessFrom(
+                                    target,
+                                    "_edits." + key.toString() + ".value",
+                                ),
                     ref:
                         descriptor !== "json" && isRefEncoded(descriptor)
                             ? new Ref(
                                   rawEdit.value as ID<CoValue>,
                                   target._loadedAs,
-                                  descriptor
+                                  descriptor,
                               )
                             : undefined,
                     by:
                         rawEdit.by &&
-                        new Ref(
+                        new Ref<Account>(
                             rawEdit.by as ID<Account>,
                             target._loadedAs,
-                            Account
-                        ).accessFrom(target),
+                            {
+                                ref: Account,
+                                optional: false,
+                            },
+                        ).accessFrom(
+                            target,
+                            "_edits." + key.toString() + ".by",
+                        ),
                     madeAt: rawEdit.at,
                 };
             },
@@ -117,14 +196,19 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         };
     }
 
+    /** @internal */
     get _loadedAs() {
         return Account.fromNode(this._raw.core.node);
     }
 
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [InitValues]?: any;
 
+    /** @internal */
     constructor(
-        options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group },
     ) {
         super();
 
@@ -148,10 +232,28 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return new Proxy(this, CoMapProxyHandler as ProxyHandler<this>);
     }
 
+    /**
+     * Create a new CoMap with the given initial values and owner.
+     *
+     * The owner (a Group or Account) determines access rights to the CoMap.
+     *
+     * The CoMap will immediately be persisted and synced to connected peers.
+     *
+     * @example
+     * ```ts
+     * const person = Person.create({
+     *   name: "Alice",
+     *   age: 42,
+     *   pet: cat,
+     * }, { owner: friendGroup });
+     * ```
+     *
+     * @category Creation
+     **/
     static create<M extends CoMap>(
-        this: SubclassedConstructor<M>,
+        this: CoValueClass<M>,
         init: Simplify<CoMapInit<M>>,
-        options: { owner: Account | Group }
+        options: { owner: Account | Group },
     ) {
         return new this({ init, owner: options.owner });
     }
@@ -165,6 +267,7 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
             if (descriptor == "json" || "encode" in descriptor) {
                 return [key, this._raw.get(key)];
             } else if (isRefEncoded(descriptor)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const jsonedRef = (this as any)[tKey]?.toJSON();
                 return [key, jsonedRef];
             } else {
@@ -183,9 +286,11 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return this.toJSON();
     }
 
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawFromInit<Fields extends object = Record<string, any>>(
         init: Simplify<CoMapInit<Fields>> | undefined,
-        owner: Account | Group
+        owner: Account | Group,
     ) {
         const rawOwner = owner._raw;
 
@@ -209,7 +314,8 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
                     }
                 } else if ("encoded" in descriptor) {
                     rawInit[key] = encodeSync(descriptor.encoded)(
-                        initValue as any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        initValue as any,
                     );
                 }
             }
@@ -217,6 +323,24 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
         return rawOwner.createMap(rawInit);
     }
 
+    /**
+     * Declare a Record-like CoMap schema, by extending `CoMap.Record(...)` and passing the value schema using `co`. Keys are always `string`.
+     *
+     * @example
+     * ```ts
+     * import { co, CoMap } from "jazz-tools";
+     *
+     * class ColorToFruitMap extends CoMap.Record(
+     *  co.ref(Fruit)
+     * ) {}
+     *
+     * // assume we have map: ColorToFruitMap
+     * // and strawberry: Fruit
+     * map["red"] = strawberry;
+     * ```
+     *
+     * @category Declaration
+     */
     static Record<Value>(value: IfCo<Value, Value>) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
         class RecordLikeCoMap extends CoMap {
@@ -227,32 +351,160 @@ export class CoMap extends CoValueBase implements CoValue<"CoMap", RawCoMap> {
 
         return RecordLikeCoMap;
     }
+
+    /**
+     * Load a `CoMap` with a given ID, as a given account.
+     *
+     * `depth` specifies which (if any) fields that reference other CoValues to load as well before resolving.
+     * The `DeeplyLoaded` return type guarantees that corresponding referenced CoValues are loaded to the specified depth.
+     *
+     * You can pass `[]` or `{}` for shallowly loading only this CoMap, or `{ fieldA: depthA, fieldB: depthB }` for recursively loading referenced CoValues.
+     *
+     * Check out the `load` methods on `CoMap`/`CoList`/`CoStream`/`Group`/`Account` to see which depth structures are valid to nest.
+     *
+     * @example
+     * ```ts
+     * const person = await Person.load(
+     *   "co_zdsMhHtfG6VNKt7RqPUPvUtN2Ax",
+     *   me,
+     *   { pet: {} }
+     * );
+     * ```
+     *
+     * @category Subscription & Loading
+     */
+    static load<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        as: Account,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<DeeplyLoaded<M, Depth> | undefined> {
+        return loadCoValue(this, id, as, depth);
+    }
+
+    /**
+     * Effectful version of `CoMap.load()`.
+     *
+     * Needs to be run inside an `AccountCtx` context.
+     *
+     * @category Subscription & Loading
+     */
+    static loadEf<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        depth: Depth & DepthsIn<M>,
+    ): Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
+        return loadCoValueEf<M, Depth>(this, id, depth);
+    }
+
+    /**
+     * Load and subscribe to a `CoMap` with a given ID, as a given account.
+     *
+     * Automatically also subscribes to updates to all referenced/nested CoValues as soon as they are accessed in the listener.
+     *
+     * `depth` specifies which (if any) fields that reference other CoValues to load as well before calling `listener` for the first time.
+     * The `DeeplyLoaded` return type guarantees that corresponding referenced CoValues are loaded to the specified depth.
+     *
+     * You can pass `[]` or `{}` for shallowly loading only this CoMap, or `{ fieldA: depthA, fieldB: depthB }` for recursively loading referenced CoValues.
+     *
+     * Check out the `load` methods on `CoMap`/`CoList`/`CoStream`/`Group`/`Account` to see which depth structures are valid to nest.
+     *
+     * Returns an unsubscribe function that you should call when you no longer need updates.
+     *
+     * Also see the `useCoState` hook to reactively subscribe to a CoValue in a React component.
+     *
+     * @example
+     * ```ts
+     * const unsub = Person.subscribe(
+     *   "co_zdsMhHtfG6VNKt7RqPUPvUtN2Ax",
+     *   me,
+     *   { pet: {} },
+     *   (person) => console.log(person)
+     * );
+     * ```
+     *
+     * @category Subscription & Loading
+     */
+    static subscribe<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        as: Account,
+        depth: Depth & DepthsIn<M>,
+        listener: (value: DeeplyLoaded<M, Depth>) => void,
+    ): () => void {
+        return subscribeToCoValue<M, Depth>(this, id, as, depth, listener);
+    }
+
+    /**
+     * Effectful version of `CoMap.subscribe()` that returns a stream of updates.
+     *
+     * Needs to be run inside an `AccountCtx` context.
+     *
+     * @category Subscription & Loading
+     */
+    static subscribeEf<M extends CoMap, Depth>(
+        this: CoValueClass<M>,
+        id: ID<M>,
+        depth: Depth & DepthsIn<M>,
+    ): Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
+        return subscribeToCoValueEf<M, Depth>(this, id, depth);
+    }
+
+    /**
+     * Given an already loaded `CoMap`, ensure that the specified fields are loaded to the specified depth.
+     *
+     * Works like `CoMap.load()`, but you don't need to pass the ID or the account to load as again.
+     *
+     * @category Subscription & Loading
+     */
+    ensureLoaded<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<DeeplyLoaded<M, Depth> | undefined> {
+        return ensureCoValueLoaded(this, depth);
+    }
+
+    /**
+     * Given an already loaded `CoMap`, subscribe to updates to the `CoMap` and ensure that the specified fields are loaded to the specified depth.
+     *
+     * Works like `CoMap.subscribe()`, but you don't need to pass the ID or the account to load as again.
+     *
+     * Returns an unsubscribe function that you should call when you no longer need updates.
+     *
+     * @category Subscription & Loading
+     **/
+    subscribe<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+        listener: (value: DeeplyLoaded<M, Depth>) => void,
+    ): () => void {
+        return subscribeToExistingCoValue(this, depth, listener);
+    }
 }
 
-export type CoKeys<Fields extends object> = Exclude<
-    keyof Fields & string,
+export type CoKeys<Map extends object> = Exclude<
+    keyof Map & string,
     keyof CoMap
 >;
 
-export type CoMapInit<Fields extends object> = {
-    [Key in CoKeys<Fields> as undefined extends Fields[Key]
+export type CoMapInit<Map extends object> = {
+    [Key in CoKeys<Map> as undefined extends Map[Key]
         ? never
-        : null extends Fields[Key]
-          ? never
-          : IfCo<Fields[Key], Key>]: Fields[Key];
-} & { [Key in CoKeys<Fields> as IfCo<Fields[Key], Key>]?: Fields[Key] };
+        : IfCo<Map[Key], Key>]: Map[Key];
+} & { [Key in CoKeys<Map> as IfCo<Map[Key], Key>]?: Map[Key] };
 
 function tryInit(map: CoMap) {
     if (
         map[InitValues] &&
         (map._schema[ItemsSym] ||
             Object.keys(map[InitValues].init).every(
-                (key) => (map._schema as any)[key]
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (key) => (map._schema as any)[key],
             ))
     ) {
         const raw = map.rawFromInit(
             map[InitValues].init,
-            map[InitValues].owner
+            map[InitValues].owner,
         );
         Object.defineProperties(map, {
             id: {
@@ -290,8 +542,8 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                         : new Ref(
                               raw as unknown as ID<CoValue>,
                               target._loadedAs,
-                              descriptor
-                          ).accessFrom(receiver);
+                              descriptor,
+                          ).accessFrom(receiver, key);
                 }
             } else {
                 return undefined;
@@ -320,7 +572,9 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                 target._raw.set(key, encodeSync(descriptor.encoded)(value));
             } else if (isRefEncoded(descriptor)) {
                 target._raw.set(key, value.id);
-                subscriptionsScopes.get(target)?.onRefAccessedOrSet(value.id);
+                subscriptionsScopes
+                    .get(target)
+                    ?.onRefAccessedOrSet(target.id, value.id);
             }
             return true;
         } else {

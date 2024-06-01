@@ -4,17 +4,21 @@ export type Routes = {
     [Key: `/${string}`]: ReactNode | ((param: string) => ReactNode);
 };
 
-export function useHashRouter(options?: {tellParentFrame?: boolean}) {
+export function useHashRouter(options?: { tellParentFrame?: boolean }) {
     const [hash, setHash] = useState(location.hash.slice(1));
 
     useEffect(() => {
         const onHashChange = () => {
             setHash(location.hash.slice(1));
-            options?.tellParentFrame && window.parent.postMessage({
-                type: "navigate",
-                url: location.href,
-            }, "*");
-            console.log("Posting", location.href + "-navigate")
+            options?.tellParentFrame &&
+                window.parent.postMessage(
+                    {
+                        type: "navigate",
+                        url: location.href,
+                    },
+                    "*",
+                );
+            console.log("Posting", location.href + "-navigate");
         };
 
         window.addEventListener("hashchange", onHashChange);
@@ -28,7 +32,11 @@ export function useHashRouter(options?: {tellParentFrame?: boolean}) {
         navigate: (url: string) => {
             location.hash = url;
         },
-        route: function (routes: {[route: `${string}` | `/${string}/:${string}`]: (param: string) => ReactNode}) {
+        route: function (routes: {
+            [route: `${string}` | `/${string}/:${string}`]: (
+                param: string,
+            ) => ReactNode;
+        }) {
             for (const [route, paramUser] of Object.entries(routes)) {
                 if (route.includes(":")) {
                     const [routePath, _paramName] = route.split(":");
@@ -37,13 +45,16 @@ export function useHashRouter(options?: {tellParentFrame?: boolean}) {
                         return paramUser(param!);
                     }
                 } else {
-                    return (hash === route || route === "/" && hash === "") ? paramUser('') : null;
+                    if (hash === route || (route === "/" && hash === "")) {
+                        return paramUser("");
+                    }
                 }
             }
-        }
-    }
+            return null;
+        },
+    };
 }
 
 export function useIframeHashRouter() {
-    return useHashRouter({tellParentFrame: true});
+    return useHashRouter({ tellParentFrame: true });
 }

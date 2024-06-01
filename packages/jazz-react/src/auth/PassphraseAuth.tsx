@@ -1,32 +1,25 @@
-import { useMemo, useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode, useEffect } from "react";
 import { BrowserPassphraseAuth } from "jazz-browser";
-import { ReactAuthHook } from "jazz-react";
-
 import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
 import { Account, CoValueClass } from "jazz-tools";
+import { ReactAuthHook } from "./auth.js";
 
-export type PassphraseAuthComponent = (props: {
-    loading: boolean;
-    logIn: (passphrase: string) => void;
-    signUp: (username: string, passphrase: string) => void;
-    generateRandomPassphrase: () => string;
-}) => ReactNode;
-
+/** @category Auth Providers */
 export function PassphraseAuth<Acc extends Account>({
     accountSchema,
     appName,
     appHostname,
     wordlist,
-    Component = PassphraseAuthBasicUI,
+    Component = PassphraseAuth.BasicUI,
 }: {
     accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     wordlist: string[];
-    Component?: PassphraseAuthComponent;
+    Component?: PassphraseAuth.Component;
 }): ReactAuthHook<Acc> {
-    return function useLocalAuth() {
+    return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
             | { state: "loading" }
             | {
@@ -38,6 +31,10 @@ export function PassphraseAuth<Acc extends Account>({
         >({ state: "loading" });
 
         const [logOutCounter, setLogOutCounter] = useState(0);
+
+        useEffect(() => {
+            setJazzAuthState(authState.state);
+        }, [authState]);
 
         const auth = useMemo(() => {
             return new BrowserPassphraseAuth<Acc>(
@@ -63,14 +60,14 @@ export function PassphraseAuth<Acc extends Account>({
                 },
                 wordlist,
                 appName,
-                appHostname
+                appHostname,
             );
         }, [appName, appHostname, logOutCounter]);
 
         const generateRandomPassphrase = () => {
             return generateMnemonic(
                 wordlist,
-                cojsonInternals.secretSeedLength * 8
+                cojsonInternals.secretSeedLength * 8,
             );
         };
 
@@ -98,7 +95,7 @@ export function PassphraseAuth<Acc extends Account>({
     };
 }
 
-export const PassphraseAuthBasicUI = ({
+const PassphraseAuthBasicUI = ({
     logIn,
     signUp,
     generateRandomPassphrase,
@@ -236,3 +233,15 @@ export const PassphraseAuthBasicUI = ({
         </div>
     );
 };
+
+/** @category Auth Providers */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace PassphraseAuth {
+    export type Component = (props: {
+        loading: boolean;
+        logIn: (passphrase: string) => void;
+        signUp: (username: string, passphrase: string) => void;
+        generateRandomPassphrase: () => string;
+    }) => ReactNode;
+    export const BasicUI = PassphraseAuthBasicUI;
+}

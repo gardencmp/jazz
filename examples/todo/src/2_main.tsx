@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import {
     RouterProvider,
@@ -7,7 +6,7 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { JazzReact, PasskeyAuth } from "jazz-react";
+import { createJazzReactContext, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -37,20 +36,24 @@ const auth = PasskeyAuth<TodoAccount>({
     Component: PrettyAuthUI,
     accountSchema: TodoAccount,
 });
-const Jazz = JazzReact<TodoAccount>({ auth });
+const Jazz = createJazzReactContext<TodoAccount>({
+    auth,
+    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+});
+// eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <ThemeProvider>
-            <TitleAndLogo name={appName} />
-            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider>
-                    <App />
-                </Jazz.Provider>
-            </div>
-        </ThemeProvider>
-    </React.StrictMode>
+    // <React.StrictMode>
+    <ThemeProvider>
+        <TitleAndLogo name={appName} />
+        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+            <Jazz.Provider>
+                <App />
+            </Jazz.Provider>
+        </div>
+    </ThemeProvider>,
+    // </React.StrictMode>
 );
 
 /**
@@ -60,8 +63,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  * on the CoValue ID (CoID) of our TodoProject, stored in the URL hash
  * - which can also contain invite links.
  */
-
-function App() {
+export default function App() {
     // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
     const { logOut } = useAccount();
 
@@ -102,21 +104,23 @@ function App() {
     );
 }
 
-export function HomeScreen() {
-    const { me } = useAccount();
+function HomeScreen() {
+    const { me } = useAccount({
+        root: { projects: [{}] },
+    });
     const navigate = useNavigate();
 
     return (
         <>
-            {me.root?.projects?.length ? <h1>My Projects</h1> : null}
-            {me.root?.projects?.map((project) => {
+            {me?.root.projects.length ? <h1>My Projects</h1> : null}
+            {me?.root.projects.map((project) => {
                 return (
                     <Button
-                        key={project?.id}
+                        key={project.id}
                         onClick={() => navigate("/project/" + project?.id)}
                         variant="ghost"
                     >
-                        {project?.title}
+                        {project.title}
                     </Button>
                 );
             })}
