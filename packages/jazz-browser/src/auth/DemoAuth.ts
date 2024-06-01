@@ -15,7 +15,27 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
         public accountSchema: CoValueClass<Acc> & typeof Account,
         public driver: BrowserDemoAuth.Driver,
         public appName: string,
-    ) {}
+        seedAccounts?: {
+            [name: string]: {
+                accountID: ID<Account>;
+                accountSecret: AgentSecret;
+            };
+        },
+    ) {
+        for (const [name, credentials] of Object.entries(seedAccounts || {})) {
+            const storageData = JSON.stringify(
+                credentials satisfies StorageData,
+            );
+            if (!(localStorage["demo-auth-existing-users"]?.split(",") as string[] | undefined)?.includes(name)) {
+                localStorage["demo-auth-existing-users"] = localStorage[
+                    "demo-auth-existing-users"
+                ]
+                    ? localStorage["demo-auth-existing-users"] + "," + name
+                    : name;
+            }
+            localStorage["demo-auth-existing-users-" + name] = storageData;
+        }
+    }
 
     async createOrLoadAccount(
         getSessionFor: SessionProvider,

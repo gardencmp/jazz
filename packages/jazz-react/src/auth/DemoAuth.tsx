@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
-import { Account, CoValueClass } from "jazz-tools";
+import { Account, CoValueClass, ID } from "jazz-tools";
 import { ReactAuthHook } from "./auth.js";
+import { AgentSecret } from "cojson";
 
 /** @category Auth Providers */
 export function DemoAuth<Acc extends Account = Account>({
@@ -9,11 +10,13 @@ export function DemoAuth<Acc extends Account = Account>({
     appName,
     appHostname,
     Component = DemoAuth.BasicUI,
+    seedAccounts
 }: {
     accountSchema?: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     Component?: DemoAuth.Component;
+    seedAccounts?: {[name: string]: {accountID: ID<Account>, accountSecret: AgentSecret}}
 }): ReactAuthHook<Acc> {
     return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
@@ -57,8 +60,9 @@ export function DemoAuth<Acc extends Account = Account>({
                     },
                 },
                 appName,
+                seedAccounts
             );
-        }, [appName, appHostname, logOutCounter]);
+        }, [appName, appHostname, logOutCounter, seedAccounts]);
 
         const AuthUI =
             authState.state === "ready"
