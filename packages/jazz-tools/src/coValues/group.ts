@@ -114,7 +114,7 @@ export class Group extends CoValueBase implements CoValue {
             const initOwner = options.owner;
             if (!initOwner) throw new Error("No owner provided");
             if (
-                initOwner instanceof Account &&
+                initOwner._type === "Account" &&
                 isControlledAccount(initOwner)
             ) {
                 const rawOwner = initOwner._raw;

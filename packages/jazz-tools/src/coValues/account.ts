@@ -1,4 +1,4 @@
-import { LocalNode } from "cojson";
+import { LocalNode, cojsonInternals } from "cojson";
 import type {
     AgentSecret,
     CoID,
@@ -212,6 +212,29 @@ export class Account extends CoValueBase implements CoValue {
         });
 
         return this.fromNode(node) as A;
+    }
+
+    static createAs<A extends Account>(
+        this: CoValueClass<A> & typeof Account,
+        as: Account,
+        options: {
+            creationProps: { name: string };
+        },
+    ) {
+        // TODO: is there a cleaner way to do this?
+        const connectedPeers = cojsonInternals.connectedPeers(
+            "creatingAccount",
+            "createdAccount",
+            { peer1role: "server", peer2role: "client" },
+        );
+
+        as._raw.core.node.syncManager.addPeer(connectedPeers[1]);
+
+        return this.create<A>({
+            creationProps: options.creationProps,
+            crypto: as._raw.core.node.crypto,
+            peersToLoadFrom: [connectedPeers[0]],
+        });
     }
 
     static fromNode<A extends Account>(
