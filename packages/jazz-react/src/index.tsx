@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     consumeInviteLinkFromWindowLocation,
     createJazzBrowserContext,
 } from "jazz-browser";
-
 
 import {
     Account,
@@ -128,14 +127,16 @@ export function createJazzReactContext<Acc extends Account>({
         id: ID<V> | undefined,
         depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
     ): DeeplyLoaded<V, D> | undefined {
-        const [state, setState] = useState<{ value: DeeplyLoaded<V, D> | undefined }>({ value: undefined });
+        const [state, setState] = useState<{
+            value: DeeplyLoaded<V, D> | undefined;
+        }>({ value: undefined });
         const me = React.useContext(JazzContext)?.me;
 
         useEffect(() => {
             if (!id || !me) return;
-        
+
             return subscribeToCoValue(Schema, id, me, depth, (value) => {
-                setState({ value })
+                setState({ value });
             });
         }, [Schema, id, me]);
 
