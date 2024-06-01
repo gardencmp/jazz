@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.7.7
+
+### Patch Changes
+
+-   9fdc91c: Improve compatibility with React compiler and concurrent features
+
 ## 0.7.6
 
 ### Patch Changes

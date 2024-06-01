@@ -1,5 +1,12 @@
 # jazz-example-pets
 
+## 0.0.72
+
+### Patch Changes
+
+-   Updated dependencies [9fdc91c]
+    -   jazz-react@0.7.7
+
 ## 0.0.71
 
 ### Patch Changes
