@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.8
+
+### Patch Changes
+
+-   Fix CoMaps not initialising properly when passing too many init options
+
 ## 0.7.6
 
 ### Patch Changes
