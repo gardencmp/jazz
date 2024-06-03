@@ -1,20 +1,12 @@
-import { expect, describe, test, beforeEach } from "vitest";
+import { expect, describe, test } from "vitest";
+import { Account, CoRichText, Ranges, WasmCrypto } from "../index.js";
 
-import { webcrypto } from "node:crypto";
-import { Account, CoList, CoRichText, Ranges, co, jazzReady } from "..";
-
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await jazzReady;
-});
+const Crypto = await WasmCrypto.create();
 
 describe("Simple CoRichText operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto
     });
 
     const text = CoRichText.createFromPlainText("hello world", { owner: me });
