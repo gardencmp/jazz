@@ -30,7 +30,6 @@ import {
     Ref,
     inspect,
     co,
-    InitValues,
     SchemaInit,
     isRefEncoded,
     loadCoValue,
@@ -93,9 +92,6 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
         return this.perSession[this._loadedAs.sessionID!];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [InitValues]?: any;
-
     constructor(
         options:
             | { init: Item[]; owner: Account | Group }
@@ -103,7 +99,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     ) {
         super();
 
-        if ("fromRaw" in options) {
+        if (options && "fromRaw" in options) {
             Object.defineProperties(this, {
                 id: {
                     value: options.fromRaw.id,
@@ -111,11 +107,6 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
                 },
                 _raw: { value: options.fromRaw, enumerable: false },
             });
-        } else {
-            this[InitValues] = {
-                init: options.init,
-                owner: options.owner,
-            };
         }
 
         return new Proxy(this, CoStreamProxyHandler as ProxyHandler<this>);
@@ -126,7 +117,21 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
         init: S extends CoStream<infer Item> ? UnCo<Item>[] : never,
         options: { owner: Account | Group },
     ) {
-        return new this({ init, owner: options.owner });
+        const instance = new this({ init, owner: options.owner });
+        const raw = options.owner._raw.createStream();
+
+        Object.defineProperties(instance, {
+            id: {
+                value: raw.id,
+                enumerable: false,
+            },
+            _raw: { value: raw, enumerable: false },
+        });
+
+        if (init) {
+            instance.push(...init);
+        }
+        return instance;
     }
 
     push(...items: Item[]) {
@@ -317,27 +322,6 @@ function entryFromRawEntry<Item>(
     };
 }
 
-function init(stream: CoStream) {
-    const init = stream[InitValues];
-    if (!init) return;
-
-    const raw = init.owner._raw.createStream();
-
-    Object.defineProperties(stream, {
-        id: {
-            value: raw.id,
-            enumerable: false,
-        },
-        _raw: { value: raw, enumerable: false },
-    });
-
-    if (init.init) {
-        stream.push(...init.init);
-    }
-
-    delete stream[InitValues];
-}
-
 export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
     get(target, key, receiver) {
         if (typeof key === "string" && key.startsWith("co_")) {
@@ -391,7 +375,6 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
             (target.constructor as typeof CoStream)._schema ||= {};
             (target.constructor as typeof CoStream)._schema[ItemsSym] =
                 value[SchemaInit];
-            init(target);
             return true;
         } else {
             return Reflect.set(target, key, value, receiver);
@@ -407,7 +390,6 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
             (target.constructor as typeof CoStream)._schema ||= {};
             (target.constructor as typeof CoStream)._schema[ItemsSym] =
                 descriptor.value[SchemaInit];
-            init(target);
             return true;
         } else {
             return Reflect.defineProperty(target, key, descriptor);
