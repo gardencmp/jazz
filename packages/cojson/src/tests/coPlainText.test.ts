@@ -1,30 +1,19 @@
-import { expect, test, beforeEach } from "vitest";
-import { expectList, expectMap, expectPlainText, expectStream } from "../coValue.js";
-import { RawBinaryCoStream } from "../coValues/coStream.js";
-import { createdNowUnique } from "../crypto.js";
-import { MAX_RECOMMENDED_TX_SIZE, cojsonReady } from "../index.js";
+import { expect, test } from "vitest";
+import { expectPlainText } from "../coValue.js";
+import { WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
-import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
-import { webcrypto } from "node:crypto";
-if (!("crypto" in globalThis)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).crypto = webcrypto;
-}
-
-beforeEach(async () => {
-    await cojsonReady;
-});
+const Crypto = await WasmCrypto.create();
 
 test("Empty CoPlainText works", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "coplaintext",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectPlainText(coValue.getCurrentContent());
@@ -34,13 +23,13 @@ test("Empty CoPlainText works", () => {
 });
 
 test("Can insert into empty CoPlainText", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "coplaintext",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectPlainText(coValue.getCurrentContent());
@@ -52,13 +41,13 @@ test("Can insert into empty CoPlainText", () => {
 });
 
 test("Can insert and delete in CoPlainText", () => {
-    const node = new LocalNode(...randomAnonymousAccountAndSessionID());
+    const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
     const coValue = node.createCoValue({
         type: "coplaintext",
         ruleset: { type: "unsafeAllowAll" },
         meta: null,
-        ...createdNowUnique(),
+        ...Crypto.createdNowUnique(),
     });
 
     const content = expectPlainText(coValue.getCurrentContent());
