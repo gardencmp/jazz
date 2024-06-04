@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.10
+
+### Patch Changes
+
+-   Also cache agent ID in RawControlledAccount
+
 ## 0.7.9
 
 ### Patch Changes
