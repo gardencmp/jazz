@@ -1,5 +1,27 @@
 # jazz-autosub
 
+## 0.7.10
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.10
+    -   cojson-transport-nodejs-ws@0.7.10
+
+## 0.7.9
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.9
+    -   cojson-transport-nodejs-ws@0.7.9
+
+## 0.7.8
+
+### Patch Changes
+
+-   Fix CoMaps not initialising properly when passing too many init options
+
 ## 0.7.6
 
 ### Patch Changes

@@ -52,6 +52,22 @@ describe("Simple CoMap operations", async () => {
         expect(Object.keys(map)).toEqual(["color", "_height", "birthday"]);
     });
 
+    test("Construction with too many things provided", () => {
+        const mapWithExtra = TestMap.create(
+            {
+                color: "red",
+                _height: 10,
+                birthday: birthday,
+                name: "Hermes",
+                extra: "extra",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any,
+            { owner: me },
+        );
+
+        expect(mapWithExtra.color).toEqual("red");
+    });
+
     describe("Mutation", () => {
         test("assignment & deletion", () => {
             map.color = "blue";

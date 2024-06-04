@@ -24,7 +24,6 @@ import {
     makeRefs,
     subscriptionsScopes,
     ItemsSym,
-    InitValues,
     isRefEncoded,
     loadCoValue,
     loadCoValueEf,
@@ -40,11 +39,6 @@ type CoMapEdit<V> = {
     ref?: RefIfCoValue<V>;
     by?: Account;
     madeAt: Date;
-};
-
-type InitValuesFor<C extends CoMap> = {
-    init: Simplify<CoMapInit<C>>;
-    owner: Account | Group;
 };
 
 /**
@@ -202,31 +196,24 @@ export class CoMap extends CoValueBase implements CoValue {
     }
 
     /** @internal */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [InitValues]?: any;
-
-    /** @internal */
     constructor(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        options: { fromRaw: RawCoMap } | { init: any; owner: Account | Group },
+        options: { fromRaw: RawCoMap } | undefined,
     ) {
         super();
 
-        if ("owner" in options) {
-            this[InitValues] = {
-                init: options.init,
-                owner: options.owner,
-            } as InitValuesFor<this>;
-        } else if ("fromRaw" in options) {
-            Object.defineProperties(this, {
-                id: {
-                    value: options.fromRaw.id as unknown as ID<this>,
-                    enumerable: false,
-                },
-                _raw: { value: options.fromRaw, enumerable: false },
-            });
-        } else {
-            throw new Error("Invalid CoMap constructor arguments");
+        if (options) {
+            if ("fromRaw" in options) {
+                Object.defineProperties(this, {
+                    id: {
+                        value: options.fromRaw.id as unknown as ID<this>,
+                        enumerable: false,
+                    },
+                    _raw: { value: options.fromRaw, enumerable: false },
+                });
+            } else {
+                throw new Error("Invalid CoMap constructor arguments");
+            }
         }
 
         return new Proxy(this, CoMapProxyHandler as ProxyHandler<this>);
@@ -255,7 +242,16 @@ export class CoMap extends CoValueBase implements CoValue {
         init: Simplify<CoMapInit<M>>,
         options: { owner: Account | Group },
     ) {
-        return new this({ init, owner: options.owner });
+        const instance = new this();
+        const raw = instance.rawFromInit(init, options.owner);
+        Object.defineProperties(instance, {
+            id: {
+                value: raw.id,
+                enumerable: false,
+            },
+            _raw: { value: raw, enumerable: false },
+        });
+        return instance;
     }
 
     toJSON() {
@@ -305,6 +301,10 @@ export class CoMap extends CoValueBase implements CoValue {
                 const descriptor = (this._schema[
                     key as keyof typeof this._schema
                 ] || this._schema[ItemsSym]) as Schema;
+
+                if (!descriptor) {
+                    continue;
+                }
 
                 if (descriptor === "json") {
                     rawInit[key] = initValue as JsonValue;
@@ -493,30 +493,6 @@ export type CoMapInit<Map extends object> = {
         : IfCo<Map[Key], Key>]: Map[Key];
 } & { [Key in CoKeys<Map> as IfCo<Map[Key], Key>]?: Map[Key] };
 
-function tryInit(map: CoMap) {
-    if (
-        map[InitValues] &&
-        (map._schema[ItemsSym] ||
-            Object.keys(map[InitValues].init).every(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (key) => (map._schema as any)[key],
-            ))
-    ) {
-        const raw = map.rawFromInit(
-            map[InitValues].init,
-            map[InitValues].owner,
-        );
-        Object.defineProperties(map, {
-            id: {
-                value: raw.id,
-                enumerable: false,
-            },
-            _raw: { value: raw, enumerable: false },
-        });
-        delete map[InitValues];
-    }
-}
-
 // TODO: cache handlers per descriptor for performance?
 const CoMapProxyHandler: ProxyHandler<CoMap> = {
     get(target, key, receiver) {
@@ -559,7 +535,6 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             (target.constructor as typeof CoMap)._schema ||= {};
             (target.constructor as typeof CoMap)._schema[key] =
                 value[SchemaInit];
-            tryInit(target);
             return true;
         }
 
@@ -590,7 +565,6 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             (target.constructor as typeof CoMap)._schema ||= {};
             (target.constructor as typeof CoMap)._schema[key as string] =
                 attributes.value[SchemaInit];
-            tryInit(target);
             return true;
         } else {
             return Reflect.defineProperty(target, key, attributes);

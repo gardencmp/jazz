@@ -17,7 +17,7 @@ export type { ID, CoValue } from "./internal.js";
 
 export { Encoders, co } from "./internal.js";
 
-export { CoMap } from "./internal.js";
+export { CoMap, type CoMapInit } from "./internal.js";
 export { CoList } from "./internal.js";
 export { CoPlainText, TextPos } from "./internal.js";
 export { CoRichText, Range, Ranges } from "./internal.js";

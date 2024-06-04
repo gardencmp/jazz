@@ -33,7 +33,12 @@ export function accountHeaderForInitialAgentSecret(
 export class RawAccount<
     Meta extends AccountMeta = AccountMeta,
 > extends RawGroup<Meta> {
+    _cachedCurrentAgentID: AgentID | undefined;
+
     currentAgentID(): AgentID {
+        if (this._cachedCurrentAgentID) {
+            return this._cachedCurrentAgentID;
+        }
         const agents = this.keys().filter((k): k is AgentID =>
             k.startsWith("sealer_"),
         );
@@ -43,6 +48,8 @@ export class RawAccount<
                 "Expected exactly one agent in account, got " + agents.length,
             );
         }
+
+        this._cachedCurrentAgentID = agents[0];
 
         return agents[0]!;
     }
@@ -90,7 +97,12 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
     }
 
     currentAgentID(): AgentID {
-        return this.crypto.getAgentID(this.agentSecret);
+        if (this._cachedCurrentAgentID) {
+            return this._cachedCurrentAgentID;
+        }
+        const agentID = this.crypto.getAgentID(this.agentSecret);
+        this._cachedCurrentAgentID = agentID;
+        return agentID;
     }
 
     currentSignerID(): SignerID {

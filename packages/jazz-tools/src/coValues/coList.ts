@@ -17,7 +17,6 @@ import type {
 import {
     Account,
     Group,
-    InitValues,
     ItemsSym,
     Ref,
     SchemaInit,
@@ -172,18 +171,11 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         return Account.fromNode(this._raw.core.node);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [InitValues]?: any;
-
     static get [Symbol.species]() {
         return Array;
     }
 
-    constructor(
-        options:
-            | { init: Item[]; owner: Account | Group }
-            | { fromRaw: RawCoList },
-    ) {
+    constructor(options: { fromRaw: RawCoList } | undefined) {
         super();
 
         Object.defineProperty(this, "_instanceID", {
@@ -191,12 +183,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
             enumerable: false,
         });
 
-        if ("owner" in options) {
-            this[InitValues] = {
-                init: options.init,
-                owner: options.owner,
-            };
-        } else if ("fromRaw" in options) {
+        if (options && "fromRaw" in options) {
             Object.defineProperties(this, {
                 id: {
                     value: options.fromRaw.id,
@@ -235,7 +222,20 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         items: UnCo<L[number]>[],
         options: { owner: Account | Group },
     ) {
-        return new this({ init: items, owner: options.owner });
+        const instance = new this({ init: items, owner: options.owner });
+        const raw = options.owner._raw.createList(
+            toRawItems(items, instance._schema[ItemsSym]),
+        );
+
+        Object.defineProperties(instance, {
+            id: {
+                value: raw.id,
+                enumerable: false,
+            },
+            _raw: { value: raw, enumerable: false },
+        });
+
+        return instance;
     }
 
     push(...items: Item[]): number {
@@ -489,24 +489,6 @@ function toRawItems<Item>(items: Item[], itemDescriptor: Schema) {
     return rawItems;
 }
 
-function init(list: CoList) {
-    if (list[InitValues]) {
-        const { init, owner } = list[InitValues];
-        const raw = owner._raw.createList(
-            toRawItems(init, list._schema[ItemsSym]),
-        );
-
-        Object.defineProperties(list, {
-            id: {
-                value: raw.id,
-                enumerable: false,
-            },
-            _raw: { value: raw, enumerable: false },
-        });
-        delete list[InitValues];
-    }
-}
-
 const CoListProxyHandler: ProxyHandler<CoList> = {
     get(target, key, receiver) {
         if (typeof key === "string" && !isNaN(+key)) {
@@ -542,7 +524,6 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             (target.constructor as typeof CoList)._schema ||= {};
             (target.constructor as typeof CoList)._schema[ItemsSym] =
                 value[SchemaInit];
-            init(target);
             return true;
         }
         if (typeof key === "string" && !isNaN(+key)) {
@@ -571,7 +552,6 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             (target.constructor as typeof CoList)._schema ||= {};
             (target.constructor as typeof CoList)._schema[ItemsSym] =
                 descriptor.value[SchemaInit];
-            init(target);
             return true;
         } else {
             return Reflect.defineProperty(target, key, descriptor);

@@ -49,11 +49,11 @@ export default function Page() {
                     </Prose>
 
                     <div className="text-stone-800 dark:text-stone-200">
-                    <PackageDocs package="jazz-tools" />
-                    <PackageDocs package="jazz-react" />
-                    <PackageDocs package="jazz-browser" />
-                    <PackageDocs package="jazz-browser-media-images" />
-                    <PackageDocs package="jazz-nodejs" />
+                        <PackageDocs package="jazz-tools" />
+                        <PackageDocs package="jazz-react" />
+                        <PackageDocs package="jazz-browser" />
+                        <PackageDocs package="jazz-browser-media-images" />
+                        <PackageDocs package="jazz-nodejs" />
                     </div>
                 </div>
             </div>

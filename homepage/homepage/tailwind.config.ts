@@ -92,9 +92,6 @@ const config: Config = {
             },
         },
     },
-    plugins: [
-        tailwindCSSAnimate,
-        typography(),
-    ],
+    plugins: [tailwindCSSAnimate, typography()],
 };
 export default config;

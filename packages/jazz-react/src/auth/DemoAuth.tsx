@@ -10,13 +10,15 @@ export function DemoAuth<Acc extends Account = Account>({
     appName,
     appHostname,
     Component = DemoAuth.BasicUI,
-    seedAccounts
+    seedAccounts,
 }: {
     accountSchema?: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
     Component?: DemoAuth.Component;
-    seedAccounts?: {[name: string]: {accountID: ID<Account>, accountSecret: AgentSecret}}
+    seedAccounts?: {
+        [name: string]: { accountID: ID<Account>; accountSecret: AgentSecret };
+    };
 }): ReactAuthHook<Acc> {
     return function useLocalAuth(setJazzAuthState) {
         const [authState, setAuthState] = useState<
@@ -60,7 +62,7 @@ export function DemoAuth<Acc extends Account = Account>({
                     },
                 },
                 appName,
-                seedAccounts
+                seedAccounts,
             );
         }, [appName, appHostname, logOutCounter, seedAccounts]);
 
