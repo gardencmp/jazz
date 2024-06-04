@@ -175,11 +175,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         return Array;
     }
 
-    constructor(
-        options:
-            | { fromRaw: RawCoList }
-            | undefined
-    ) {
+    constructor(options: { fromRaw: RawCoList } | undefined) {
         super();
 
         Object.defineProperty(this, "_instanceID", {

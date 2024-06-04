@@ -198,7 +198,7 @@ export class CoMap extends CoValueBase implements CoValue {
     /** @internal */
     constructor(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        options: { fromRaw: RawCoMap } | undefined
+        options: { fromRaw: RawCoMap } | undefined,
     ) {
         super();
 
@@ -243,10 +243,7 @@ export class CoMap extends CoValueBase implements CoValue {
         options: { owner: Account | Group },
     ) {
         const instance = new this();
-        const raw = instance.rawFromInit(
-            init,
-            options.owner,
-        );
+        const raw = instance.rawFromInit(init, options.owner);
         Object.defineProperties(instance, {
             id: {
                 value: raw.id,

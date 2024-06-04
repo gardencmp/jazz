@@ -26,7 +26,13 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
             const storageData = JSON.stringify(
                 credentials satisfies StorageData,
             );
-            if (!(localStorage["demo-auth-existing-users"]?.split(",") as string[] | undefined)?.includes(name)) {
+            if (
+                !(
+                    localStorage["demo-auth-existing-users"]?.split(",") as
+                        | string[]
+                        | undefined
+                )?.includes(name)
+            ) {
                 localStorage["demo-auth-existing-users"] = localStorage[
                     "demo-auth-existing-users"
                 ]

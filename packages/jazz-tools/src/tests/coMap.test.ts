@@ -60,13 +60,13 @@ describe("Simple CoMap operations", async () => {
                 birthday: birthday,
                 name: "Hermes",
                 extra: "extra",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any,
             { owner: me },
         );
 
         expect(mapWithExtra.color).toEqual("red");
-    })
+    });
 
     describe("Mutation", () => {
         test("assignment & deletion", () => {
