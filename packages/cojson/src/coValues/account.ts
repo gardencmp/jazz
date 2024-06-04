@@ -97,7 +97,12 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
     }
 
     currentAgentID(): AgentID {
-        return this.crypto.getAgentID(this.agentSecret);
+        if (this._cachedCurrentAgentID) {
+            return this._cachedCurrentAgentID;
+        }
+        const agentID = this.crypto.getAgentID(this.agentSecret);
+        this._cachedCurrentAgentID = agentID;
+        return agentID;
     }
 
     currentSignerID(): SignerID {
