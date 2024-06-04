@@ -311,6 +311,36 @@ export class RawGroup<
     return list;
   }
 
+  /**
+   * Creates a new `CoList` within this group, with the specified specialized
+   * `CoList` type `L` and optional static metadata.
+   *
+   * @category 3. Value creation
+   */
+  createPlainText<T extends RawCoPlainText>(
+    init?: string,
+    meta?: T["headerMeta"],
+    initPrivacy: "trusting" | "private" = "private",
+  ): T {
+    const text = this.core.node
+      .createCoValue({
+        type: "coplaintext",
+        ruleset: {
+          type: "ownedByGroup",
+          group: this.id,
+        },
+        meta: meta || null,
+        ...this.core.crypto.createdNowUnique(),
+      })
+      .getCurrentContent() as T;
+
+    if (init) {
+      text.insertAfter(0, init, initPrivacy);
+    }
+
+    return text;
+  }
+
   /** @category 3. Value creation */
   createStream<C extends RawCoStream>(
     meta?: C["headerMeta"],
@@ -345,36 +375,6 @@ export class RawGroup<
         ...uniqueness,
       })
       .getCurrentContent() as C;
-  }
-
-  /**
-   * Creates a new `CoList` within this group, with the specified specialized
-   * `CoList` type `L` and optional static metadata.
-   *
-   * @category 3. Value creation
-   */
-  createPlainText<T extends RawCoPlainText>(
-    init?: string,
-    meta?: T["headerMeta"],
-    initPrivacy: "trusting" | "private" = "private",
-  ): T {
-    const text = this.core.node
-      .createCoValue({
-        type: "coplaintext",
-        ruleset: {
-          type: "ownedByGroup",
-          group: this.id,
-        },
-        meta: meta || null,
-        ...this.core.crypto.createdNowUnique(),
-      })
-      .getCurrentContent() as T;
-
-    if (init) {
-      text.insertAfter(0, init, initPrivacy);
-    }
-
-    return text;
   }
 }
 export type InviteSecret = `inviteSecret_z${string}`;
