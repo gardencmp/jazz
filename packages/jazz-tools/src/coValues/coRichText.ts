@@ -46,15 +46,15 @@ export class CoRichText extends CoMap {
         text: string,
         options: { owner: Account | Group }
     ) {
-        return new this({
-            init: {
+        return this.create(
+            {
                 text: CoPlainText.create(text, { owner: options.owner }),
                 ranges: CoList.Of(co.ref(Range)).create([], {
                     owner: options.owner,
                 }),
             },
-            owner: options.owner,
-        });
+            {owner: options.owner,}
+        );
     }
 
     insertAfter(idx: number, text: string) {
@@ -107,7 +107,9 @@ export class CoRichText extends CoMap {
 
     insertRange<
         RC extends {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             new (...args: any[]): Range;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             create(init: any, options: { owner: Account | Group }): Range;
         },
     >(
@@ -158,6 +160,7 @@ export class CoRichText extends CoMap {
             }
             return [
                 {
+                    sourceRange: range,
                     startAfter,
                     startBefore,
                     endAfter,
@@ -196,7 +199,7 @@ export class CoRichText extends CoMap {
     }
 
     resolveAndDiffuseAndFocuseRanges(): ResolvedAndFocusedRange[] {
-
+        throw new Error("Not implemented");
     }
 
     toString() {

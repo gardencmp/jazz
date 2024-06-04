@@ -67,7 +67,10 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
               .optional,
       );
     }
-  } else if (value._type === "BinaryCoStream") {
+  } else if (
+    value._type === "BinaryCoStream" ||
+    value._type === "CoPlainText"
+  ) {
     return true;
   } else {
     console.error(value);
@@ -203,5 +206,25 @@ export type DeeplyLoaded<
                 _type: "BinaryCoStream";
               },
             ]
-          ? V
-          : never;
+          ? Depth extends never[]
+            ? V
+            : V & {
+                byMe?: { value: UnCoNotNull<Item> };
+                inCurrentSession?: { value: UnCoNotNull<Item> };
+                perSession: {
+                  [key: SessionID]: { value: UnCoNotNull<Item> };
+                };
+              } & { [key: ID<Account>]: { value: UnCoNotNull<Item> } }
+          : [V] extends [
+                {
+                  _type: "BinaryCoStream";
+                },
+              ]
+            ? V
+            : [V] extends [
+                  {
+                    _type: "CoPlainText";
+                  },
+                ]
+              ? V
+              : never;
