@@ -7,7 +7,7 @@ import type {
     ID,
     UnavailableError,
 } from "../internal.js";
-import { Account, CoValueBase, Group, ensureCoValueLoaded, inspect, loadCoValue, loadCoValueEf, subscribeToCoValue, subscribeToCoValueEf, subscribeToExistingCoValue } from "../internal.js";
+import { Account, Group, inspect, loadCoValue, loadCoValueEf, subscribeToCoValue, subscribeToCoValueEf, subscribeToExistingCoValue } from "../internal.js";
 import type { Effect, Stream } from "effect";
 
 export type TextPos = CojsonInternalTypes.OpID;

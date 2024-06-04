@@ -327,7 +327,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...createdNowUnique(),
+                ...this.core.crypto.createdNowUnique(),
             })
             .getCurrentContent() as T;
 
