@@ -30,7 +30,7 @@ describe("Simple CoRichText operations", async () => {
                 owner: me,
             });
 
-            text.deleteFrom(3, 5);
+            text.deleteRange({from: 3, to: 8});
             expect(text + "").toEqual("helrld");
         });
 

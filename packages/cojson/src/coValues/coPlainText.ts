@@ -104,17 +104,23 @@ export class RawCoPlainText<
         this.rebuildFromCore();
     }
 
-    deleteFrom(idx: number, length: number, privacy: "private" | "trusting" = "private") {
+    deleteRange({from, to}: {from: number, to: number}, privacy: "private" | "trusting" = "private") {
         const ops: DeletionOpPayload[] = [];
-        for (let i = 0; i < length; i++) {
-            const insertion = this.mapping.opIDafterIdx[idx + i];
+        for (let idx = from; idx < to;) {
+            const insertion = this.mapping.opIDafterIdx[idx];
             if (!insertion) {
-                throw new Error("Invalid idx to delete " + (idx + i));
+                throw new Error("Invalid idx to delete " + (idx));
             }
             ops.push({
                 op: "del",
                 insertion,
             });
+            console.log("deleting idx", idx)
+            let nextIdx = idx + 1;
+            while (!this.mapping.opIDbeforeIdx[nextIdx] && nextIdx < to) {
+                nextIdx++;
+            }
+            idx = nextIdx;
         }
         this.core.makeTransaction(ops, privacy);
 

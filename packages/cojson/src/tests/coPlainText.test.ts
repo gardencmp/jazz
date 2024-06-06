@@ -60,6 +60,14 @@ test("Can insert and delete in CoPlainText", () => {
     content.insertAfter(5, " world", "trusting");
     expect(content.toString()).toEqual("hello world");
 
-    content.deleteFrom(3, 5, "trusting");
+    console.log("first delete")
+    content.deleteRange({from: 3, to: 8}, "trusting");
+    expect(content.toString()).toEqual("helrld");
+
+    content.insertAfter(2, "😍", "trusting");
+    expect(content.toString()).toEqual("he😍lrld")
+
+    console.log("second delete")
+    content.deleteRange({from: 2, to: 4}, "trusting");
     expect(content.toString()).toEqual("helrld");
 })
