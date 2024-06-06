@@ -65,12 +65,12 @@ export class CoRichText extends CoMap {
         this.text.insertAfter(idx, text);
     }
 
-    deleteFrom(idx: number, length: number) {
+    deleteRange(range: {from: number, to: number}) {
         if (!this.text)
             throw new Error(
                 "Cannot delete from a CoRichText without loaded text"
             );
-        this.text.deleteFrom(idx, length);
+        this.text.deleteRange(range);
     }
 
     posBefore(idx: number): TextPos | undefined {
