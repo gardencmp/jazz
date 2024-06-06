@@ -72,8 +72,8 @@ export class CoPlainText
         this._raw.insertAfter(idx, text);
     }
 
-    deleteFrom(idx: number, length: number) {
-        this._raw.deleteFrom(idx, length);
+    deleteRange(range: {from: number, to: number}) {
+        this._raw.deleteRange(range);
     }
 
     posBefore(idx: number): TextPos | undefined {

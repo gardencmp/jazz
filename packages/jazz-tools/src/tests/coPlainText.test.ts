@@ -26,7 +26,7 @@ describe("Simple CoPlainText operations", async () => {
         test("deletion", () => {
             const text = CoPlainText.create("hello world", { owner: me });
 
-            text.deleteFrom(3, 5);
+            text.deleteRange({from: 3, to: 8});
             expect(text + "").toEqual("helrld");
         });
     });
