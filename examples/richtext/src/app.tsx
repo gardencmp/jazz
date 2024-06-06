@@ -57,49 +57,77 @@ import "prosemirror-menu/style/menu.css";
 import "prosemirror-view/style/prosemirror.css";
 
 function DocumentComponent({ docID }: { docID: ID<Document> }) {
-    const doc = useCoState(Document, docID);
-
+    const { me } = useAccount();
     const [mount, setMount] = useState<HTMLElement | null>(null);
 
-    const view = useRef<EditorView | null>(null);
+    console.log("rerendering");
 
     useEffect(() => {
-        if (!mount || !doc) return;
+        if (!mount) return;
+
         console.log("Creating EditorView");
-        view.current = new EditorView(mount, {
+        const editorView = new EditorView(mount, {
             state: EditorState.create({
-                doc: plainTextToProsemirrorDoc(doc),
+                doc: undefined,
+                schema: schema,
+                plugins: exampleSetup({ schema, history: false }),
             }),
             dispatchTransaction(tr) {
-                if (!view.current) return;
-                console.log("dispatchTransaction", tr);
-                const expectedNewState = view.current!.state.apply(tr);
+                const expectedNewState = editorView.state.apply(tr);
 
-                console.log("doc before", doc.toString());
+                if (lastDoc) {
+                    applyTxToPlainText(lastDoc, tr);
+                }
 
-                applyTxToPlainText(doc, tr);
-
-                console.log("doc after", doc.toString());
-
-                view.current.updateState(
-                    EditorState.create({
-                        doc: plainTextToProsemirrorDoc(doc),
-                        plugins: expectedNewState.plugins,
-                        selection: expectedNewState.selection,
-                        schema: expectedNewState.schema,
-                    })
+                console.log(
+                    "Setting view state to normal new state",
+                    expectedNewState
                 );
+
+                editorView.updateState(expectedNewState);
             },
         });
-        return () => view.current?.destroy();
-    }, [mount, !!doc]);
+
+        let lastDoc: Document | undefined;
+
+        const unsub = Document.subscribe(docID, me, (doc) => {
+            lastDoc = doc;
+
+            console.log(
+                "Applying doc update",
+                doc,
+                plainTextToProsemirrorDoc(doc)
+            );
+
+            const focusedBefore = editorView.hasFocus();
+
+            editorView.updateState(
+                EditorState.create({
+                    doc: plainTextToProsemirrorDoc(doc),
+                    plugins: editorView.state.plugins,
+                    selection: editorView.state.selection,
+                    schema: editorView.state.schema,
+                    storedMarks: editorView.state.storedMarks,
+                })
+            );
+
+            if (focusedBefore) {
+                editorView.focus();
+            }
+        });
+
+        return () => {
+            console.log("Destroying");
+            editorView.destroy();
+            unsub();
+        };
+    }, [mount, docID, !!me]);
 
     return (
-        <>
+        <div>
             <h1>Document</h1>
-
-            <div ref={setMount} className="border min-w-96" />
-        </>
+            <div ref={setMount} className="border min-w-96 p-5" />
+        </div>
     );
 }
 
@@ -114,10 +142,15 @@ function plainTextToProsemirrorDoc(text: CoPlainText): ProsemirrorNode {
 function applyTxToPlainText(text: CoPlainText, tr: ProsemirrorTransaction) {
     for (const step of tr.steps) {
         if (step instanceof ReplaceStep) {
+            console.log(step);
             if (step.from !== step.to) {
-                text.deleteFrom(step.from, step.to - step.from);
+                text.deleteRange({ from: step.from, to: step.to });
             }
-            text.insertAfter(step.from, step.slice.content.toString());
+            if (step.slice.content.firstChild?.text) {
+                text.insertAfter(step.from, step.slice.content.firstChild.text);
+            }
+        } else {
+            console.warn("Unsupported step type", step);
         }
     }
 }
