@@ -44,11 +44,13 @@ export class WasmCrypto extends CryptoProvider<Uint8Array> {
                 if ("crypto" in globalThis) {
                     resolve();
                 } else {
-                    return import("node:crypto").then(({ webcrypto }) => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (globalThis as any).crypto = webcrypto;
-                        resolve();
-                    });
+                    return import(/*webpackIgnore: true*/ "node:crypto").then(
+                        ({ webcrypto }) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (globalThis as any).crypto = webcrypto;
+                            resolve();
+                        },
+                    );
                 }
             }),
         ]).then(([blake3instance]) => new WasmCrypto(blake3instance));
