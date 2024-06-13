@@ -479,7 +479,7 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
 
         const map = group.createMap();
 
-        const [inRx, inTx] = yield* newQueuePair();
+        const [inRx, _inTx] = yield* newQueuePair();
         const [outRx, outTx] = yield* newQueuePair();
         const outRxQ = yield* Queue.unbounded<SyncMessage>();
         yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
@@ -515,7 +515,7 @@ test.todo(
 
             const map = group.createMap();
 
-            const [inRx, inTx] = yield* newQueuePair();
+            const [inRx, _inTx] = yield* newQueuePair();
             const [outRx, outTx] = yield* newQueuePair();
             const outRxQ = yield* Queue.unbounded<SyncMessage>();
             yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
@@ -592,7 +592,7 @@ test.skip("If we add a server peer, newly created coValues are auto-subscribed t
 
         const group = node.createGroup();
 
-        const [inRx, inTx] = yield* newQueuePair();
+        const [inRx, _inTx] = yield* newQueuePair();
         const [outRx, outTx] = yield* newQueuePair();
         const outRxQ = yield* Queue.unbounded<SyncMessage>();
         yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
@@ -648,7 +648,7 @@ test("When we connect a new server peer, we try to sync all existing coValues to
 
         const map = group.createMap();
 
-        const [inRx, inTx] = yield* newQueuePair();
+        const [inRx, _inTx] = yield* newQueuePair();
         const [outRx, outTx] = yield* newQueuePair();
         const outRxQ = yield* Queue.unbounded<SyncMessage>();
         yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
@@ -883,8 +883,8 @@ test("Can sync a coValue through a server to another client", () =>
 
         const server = new LocalNode(serverUser, serverSession, Crypto);
 
-        const [serverAsPeer, client1AsPeer] = yield* connectedPeers(
-            "server",
+        const [serverAsPeerForClient1, client1AsPeer] = yield* connectedPeers(
+            "serverFor1",
             "client1",
             {
                 peer1role: "server",
@@ -893,7 +893,7 @@ test("Can sync a coValue through a server to another client", () =>
             },
         );
 
-        client1.syncManager.addPeer(serverAsPeer);
+        client1.syncManager.addPeer(serverAsPeerForClient1);
         server.syncManager.addPeer(client1AsPeer);
 
         const client2 = new LocalNode(
@@ -902,8 +902,8 @@ test("Can sync a coValue through a server to another client", () =>
             Crypto,
         );
 
-        const [serverAsOtherPeer, client2AsPeer] = yield* connectedPeers(
-            "server",
+        const [serverAsPeerForClient2, client2AsPeer] = yield* connectedPeers(
+            "serverFor2",
             "client2",
             {
                 peer1role: "server",
@@ -912,7 +912,7 @@ test("Can sync a coValue through a server to another client", () =>
             },
         );
 
-        client2.syncManager.addPeer(serverAsOtherPeer);
+        client2.syncManager.addPeer(serverAsPeerForClient2);
         server.syncManager.addPeer(client2AsPeer);
 
         const mapOnClient2 = yield* Effect.promise(() =>

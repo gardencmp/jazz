@@ -1,7 +1,7 @@
 import { Signature } from "./crypto/crypto.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
-import { LocalNode } from "./localNode.js";
+import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { Effect, Queue, Stream } from "effect";
 
@@ -59,7 +59,7 @@ export type PeerID = string;
 export class DisconnectedError extends Error {
     readonly _tag = "DisconnectedError";
     constructor(public message: string) {
-        super(message)
+        super(message);
     }
 }
 
@@ -140,14 +140,12 @@ export class SyncManager {
         });
     }
 
-    async loadFromPeers(id: RawCoID, excludePeer?: PeerID) {
-        for (const peer of this.peersInPriorityOrder()) {
-            if (peer.id === excludePeer) {
-                continue;
-            }
-            if (peer.role !== "server") {
-                continue;
-            }
+    async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
+        const eligiblePeers = this.peersInPriorityOrder().filter(
+            (peer) => peer.id !== forPeer && peer.role === "server",
+        );
+
+        for (const peer of eligiblePeers) {
             // console.log("loading", id, "from", peer.id);
             Effect.runPromise(
                 Queue.offer(peer.outgoing, {
@@ -311,7 +309,9 @@ export class SyncManager {
                 let lastYield = performance.now();
                 for (const [_i, piece] of newContentPieces.entries()) {
                     // console.log(
-                    //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${newContentPieces.length} header: ${!!piece.header}`,
+                    //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${
+                    //         newContentPieces.length
+                    //     } header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
                     await this.trySendToPeer(peer, piece);
@@ -393,48 +393,30 @@ export class SyncManager {
                                 )}`,
                                 { cause: e },
                             ),
-                    }),
+                    }).pipe(
+                        Effect.timeoutFail({
+                            duration: 10000,
+                            onTimeout: () =>
+                                new Error("Took >10s to process message"),
+                        }),
+                    ),
                 ),
-                Effect.catchAll((e) => Effect.log("Error in peer", {peer: peer.id, error: e})),
+                Effect.catchAll((e) =>
+                    Effect.logError(
+                        "Error in peer",
+                        peer.id,
+                        e.message,
+                        typeof e.cause === "object" &&
+                            e.cause instanceof Error &&
+                            e.cause.message,
+                    ),
+                ),
             ),
         );
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
-        if (!this.peers[peer.id]) {
-            // already disconnected, return to drain potential queue
-            return Promise.resolve();
-        }
-
-        return new Promise<void>((resolve) => {
-            const start = Date.now();
-            Effect.runPromise(Queue.offer(peer.outgoing, msg))
-                .then(() => {
-                    const end = Date.now();
-                    if (end - start > 1000) {
-                        // console.error(
-                        //     new Error(
-                        //         `Writing to peer "${peer.id}" took ${
-                        //             Math.round((Date.now() - start) / 100) / 10
-                        //         }s - this should never happen as write should resolve quickly or error`
-                        //     )
-                        // );
-                    } else {
-                        resolve();
-                    }
-                })
-                .catch((e) => {
-                    console.error(
-                        new Error(
-                            `Error writing to peer ${peer.id}, disconnecting`,
-                            {
-                                cause: e,
-                            },
-                        ),
-                    );
-                    delete this.peers[peer.id];
-                });
-        });
+        return Effect.runPromise(Queue.offer(peer.outgoing, msg));
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
@@ -443,21 +425,50 @@ export class SyncManager {
 
         if (!entry) {
             // console.log(`Loading ${msg.id} from all peers except ${peer.id}`);
-            this.local
-                .loadCoValueCore(msg.id, {
-                    dontLoadFrom: peer.id,
-                    dontWaitFor: peer.id,
-                })
-                .catch((e) => {
-                    console.error("Error loading coValue in handleLoad", e);
-                });
+
+            // special case: we should be able to solve this much more neatly
+            // with an explicit state machine in the future
+            const eligiblePeers = this.peersInPriorityOrder().filter(
+                (other) => other.id !== peer.id && peer.role === "server",
+            );
+            if (eligiblePeers.length === 0) {
+                if (msg.header || Object.keys(msg.sessions).length > 0) {
+                    this.local.coValues[msg.id] = newLoadingState(
+                        new Set([peer.id]),
+                    );
+                    this.trySendToPeer(peer, {
+                        action: "known",
+                        id: msg.id,
+                        header: false,
+                        sessions: {},
+                    }).catch((e) => {
+                        console.error("Error sending known state back", e);
+                    });
+                }
+                return;
+            } else {
+                this.local
+                    .loadCoValueCore(msg.id, {
+                        dontLoadFrom: peer.id,
+                        dontWaitFor: peer.id,
+                    })
+                    .catch((e) => {
+                        console.error("Error loading coValue in handleLoad", e);
+                    });
+            }
 
             entry = this.local.coValues[msg.id]!;
         }
 
         if (entry.state === "loading") {
+            console.log(
+                "Waiting for loaded",
+                msg.id,
+                "after message from",
+                peer.id,
+            );
             const loaded = await entry.done;
-
+            console.log("Loaded", msg.id, loaded);
             if (loaded === "unavailable") {
                 peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
                 peer.toldKnownState.add(msg.id);
@@ -504,7 +515,7 @@ export class SyncManager {
                 }
             } else {
                 throw new Error(
-                    "Expected coValue entry to be created, missing subscribe?",
+                    `Expected coValue entry for ${msg.id} to be created on known state, missing subscribe?`,
                 );
             }
         }
@@ -545,7 +556,7 @@ export class SyncManager {
 
         if (!entry) {
             throw new Error(
-                "Expected coValue entry to be created, missing subscribe?",
+                `Expected coValue entry for ${msg.id} to be created on new content, missing subscribe?`,
             );
         }
 

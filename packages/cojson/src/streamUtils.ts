@@ -15,24 +15,24 @@ export function connectedPeers(
     } = {},
 ): Effect.Effect<[Peer, Peer]> {
     return Effect.gen(function* () {
-        const [incoming2, outgoing1] = yield* newQueuePair(
+        const [from1to2Rx, from1to2Tx] = yield* newQueuePair(
             trace ? { traceAs: `${peer1id} -> ${peer2id}` } : undefined,
         );
-        const [incoming1, outgoing2] = yield* newQueuePair(
+        const [from2to1Rx, from2to1Tx] = yield* newQueuePair(
             trace ? { traceAs: `${peer2id} -> ${peer1id}` } : undefined,
         );
 
         const peer2AsPeer: Peer = {
             id: peer2id,
-            incoming: incoming2,
-            outgoing: outgoing2,
+            incoming: from2to1Rx,
+            outgoing: from1to2Tx,
             role: peer2role,
         };
 
         const peer1AsPeer: Peer = {
             id: peer1id,
-            incoming: incoming1,
-            outgoing: outgoing1,
+            incoming: from1to2Rx,
+            outgoing: from2to1Tx,
             role: peer1role,
         };
 
