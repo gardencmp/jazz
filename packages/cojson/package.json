@@ -23,8 +23,7 @@
         "@noble/hashes": "^1.4.0",
         "@scure/base": "^1.1.1",
         "effect": "^3.1.5",
-        "hash-wasm": "^4.9.0",
-        "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+        "hash-wasm": "^4.9.0"
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",

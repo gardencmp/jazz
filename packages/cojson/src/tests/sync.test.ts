@@ -1,500 +1,21 @@
 import { expect, test } from "vitest";
-import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { SyncMessage } from "../sync.js";
-import { expectMap } from "../coValue.js";
 import { MapOpPayload } from "../coValues/coMap.js";
 import { RawGroup } from "../coValues/group.js";
-import {
-    randomAnonymousAccountAndSessionID,
-    shouldNotResolve,
-} from "./testUtils.js";
-import { connectedPeers, newStreamPair } from "../streamUtils.js";
+import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+import { connectedPeers, newQueuePair } from "../streamUtils.js";
 import { AccountID } from "../coValues/account.js";
 import { stableStringify } from "../jsonStringify.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
+import { Effect, Queue, Sink, Stream } from "effect";
+import { newRandomSessionID } from "../coValueCore.js";
+import { expectMap } from "../coValue.js";
 
 const Crypto = await WasmCrypto.create();
 
-test("Node replies with initial tx and header to empty subscribe", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
-
-    const group = node.createGroup();
-
-    const map = group.createMap();
-
-    map.set("hello", "world", "trusting");
-
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
-
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
-
-    const writer = inTx.getWriter();
-
-    await writer.write({
-        action: "load",
-        id: map.core.id,
-        header: false,
-        sessions: {},
-    });
-
-    const reader = outRx.getReader();
-
-    // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-
-    const mapTellKnownStateMsg = await reader.read();
-    expect(mapTellKnownStateMsg.value).toEqual({
-        action: "known",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
-
-    const newContentMsg = await reader.read();
-
-    expect(newContentMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: {
-            type: "comap",
-            ruleset: { type: "ownedByGroup", group: group.id },
-            meta: null,
-            createdAt: map.core.header.createdAt,
-            uniqueness: map.core.header.uniqueness,
-        },
-        new: {
-            [node.currentSessionID]: {
-                after: 0,
-                newTransactions: [
-                    {
-                        privacy: "trusting" as const,
-                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
-                            .transactions[0]!.madeAt,
-                        changes: stableStringify([
-                            {
-                                op: "set",
-                                key: "hello",
-                                value: "world",
-                            } satisfies MapOpPayload<string, string>,
-                        ]),
-                    },
-                ],
-                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
-                    .lastSignature!,
-            },
-        },
-    } satisfies SyncMessage);
-});
-
-test("Node replies with only new tx to subscribe with some known state", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
-
-    const group = node.createGroup();
-
-    const map = group.createMap();
-
-    map.set("hello", "world", "trusting");
-    map.set("goodbye", "world", "trusting");
-
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
-
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
-
-    const writer = inTx.getWriter();
-
-    await writer.write({
-        action: "load",
-        id: map.core.id,
-        header: true,
-        sessions: {
-            [node.currentSessionID]: 1,
-        },
-    });
-
-    const reader = outRx.getReader();
-
-    // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-
-    const mapTellKnownStateMsg = await reader.read();
-    expect(mapTellKnownStateMsg.value).toEqual({
-        action: "known",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
-
-    const mapNewContentMsg = await reader.read();
-
-    expect(mapNewContentMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: undefined,
-        new: {
-            [node.currentSessionID]: {
-                after: 1,
-                newTransactions: [
-                    {
-                        privacy: "trusting" as const,
-                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
-                            .transactions[1]!.madeAt,
-                        changes: stableStringify([
-                            {
-                                op: "set",
-                                key: "goodbye",
-                                value: "world",
-                            } satisfies MapOpPayload<string, string>,
-                        ]),
-                    },
-                ],
-                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
-                    .lastSignature!,
-            },
-        },
-    } satisfies SyncMessage);
-});
-
-test.todo(
-    "TODO: node only replies with new tx to subscribe with some known state, even in the depended on coValues",
-);
-
-test("After subscribing, node sends own known state and new txs to peer", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
-
-    const group = node.createGroup();
-
-    const map = group.createMap();
-
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
-
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
-
-    const writer = inTx.getWriter();
-
-    await writer.write({
-        action: "load",
-        id: map.core.id,
-        header: false,
-        sessions: {
-            [node.currentSessionID]: 0,
-        },
-    });
-
-    const reader = outRx.getReader();
-
-    // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-
-    const mapTellKnownStateMsg = await reader.read();
-    expect(mapTellKnownStateMsg.value).toEqual({
-        action: "known",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
-
-    const mapNewContentHeaderOnlyMsg = await reader.read();
-
-    expect(mapNewContentHeaderOnlyMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: map.core.header,
-        new: {},
-    } satisfies SyncMessage);
-
-    map.set("hello", "world", "trusting");
-
-    const mapEditMsg1 = await reader.read();
-
-    expect(mapEditMsg1.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        new: {
-            [node.currentSessionID]: {
-                after: 0,
-                newTransactions: [
-                    {
-                        privacy: "trusting" as const,
-                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
-                            .transactions[0]!.madeAt,
-                        changes: stableStringify([
-                            {
-                                op: "set",
-                                key: "hello",
-                                value: "world",
-                            } satisfies MapOpPayload<string, string>,
-                        ]),
-                    },
-                ],
-                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
-                    .lastSignature!,
-            },
-        },
-    } satisfies SyncMessage);
-
-    map.set("goodbye", "world", "trusting");
-
-    const mapEditMsg2 = await reader.read();
-
-    expect(mapEditMsg2.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        new: {
-            [node.currentSessionID]: {
-                after: 1,
-                newTransactions: [
-                    {
-                        privacy: "trusting" as const,
-                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
-                            .transactions[1]!.madeAt,
-                        changes: stableStringify([
-                            {
-                                op: "set",
-                                key: "goodbye",
-                                value: "world",
-                            } satisfies MapOpPayload<string, string>,
-                        ]),
-                    },
-                ],
-                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
-                    .lastSignature!,
-            },
-        },
-    } satisfies SyncMessage);
-});
-
-test("Client replies with known new content to tellKnownState from server", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
-
-    const group = node.createGroup();
-
-    const map = group.createMap();
-
-    map.set("hello", "world", "trusting");
-
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
-
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
-
-    const reader = outRx.getReader();
-
-    // expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-
-    const writer = inTx.getWriter();
-
-    await writer.write({
-        action: "known",
-        id: map.core.id,
-        header: false,
-        sessions: {
-            [node.currentSessionID]: 0,
-        },
-    });
-
-    // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-
-    const mapTellKnownStateMsg = await reader.read();
-    expect(mapTellKnownStateMsg.value).toEqual({
-        action: "known",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
-
-    const mapNewContentMsg = await reader.read();
-
-    expect(mapNewContentMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: map.core.header,
-        new: {
-            [node.currentSessionID]: {
-                after: 0,
-                newTransactions: [
-                    {
-                        privacy: "trusting" as const,
-                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
-                            .transactions[0]!.madeAt,
-                        changes: stableStringify([
-                            {
-                                op: "set",
-                                key: "hello",
-                                value: "world",
-                            } satisfies MapOpPayload<string, string>,
-                        ]),
-                    },
-                ],
-                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
-                    .lastSignature!,
-            },
-        },
-    } satisfies SyncMessage);
-});
-
-test("No matter the optimistic known state, node respects invalid known state messages and resyncs", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
-
-    const group = node.createGroup();
-
-    const map = group.createMap();
-
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
-
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
-
-    const writer = inTx.getWriter();
-
-    await writer.write({
-        action: "load",
-        id: map.core.id,
-        header: false,
-        sessions: {
-            [node.currentSessionID]: 0,
-        },
-    });
-
-    const reader = outRx.getReader();
-
-    // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-
-    const mapTellKnownStateMsg = await reader.read();
-    expect(mapTellKnownStateMsg.value).toEqual({
-        action: "known",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
-
-    const mapNewContentHeaderOnlyMsg = await reader.read();
-
-    expect(mapNewContentHeaderOnlyMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: map.core.header,
-        new: {},
-    } satisfies SyncMessage);
-
-    map.set("hello", "world", "trusting");
-
-    map.set("goodbye", "world", "trusting");
-
-    const _mapEditMsgs = await reader.read();
-
-    console.log("Sending correction");
-
-    await writer.write({
-        action: "known",
-        isCorrection: true,
-        id: map.core.id,
-        header: true,
-        sessions: {
-            [node.currentSessionID]: 1,
-        },
-    } satisfies SyncMessage);
-
-    const newContentAfterWrongAssumedState = await reader.read();
-
-    expect(newContentAfterWrongAssumedState.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: undefined,
-        new: {
-            [node.currentSessionID]: {
-                after: 1,
-                newTransactions: [
-                    {
-                        privacy: "trusting" as const,
-                        madeAt: map.core.sessionLogs.get(node.currentSessionID)!
-                            .transactions[1]!.madeAt,
-                        changes: stableStringify([
-                            {
-                                op: "set",
-                                key: "goodbye",
-                                value: "world",
-                            } satisfies MapOpPayload<string, string>,
-                        ]),
-                    },
-                ],
-                lastSignature: map.core.sessionLogs.get(node.currentSessionID)!
-                    .lastSignature!,
-            },
-        },
-    } satisfies SyncMessage);
-});
-
-test("If we add a peer, but it never subscribes to a coValue, it won't get any messages", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
-
-    const group = node.createGroup();
-
-    const map = group.createMap();
-
-    const [inRx, _inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
-
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
-
-    map.set("hello", "world", "trusting");
-
-    const reader = outRx.getReader();
-
-    await expect(
-        shouldNotResolve(reader.read(), { timeout: 100 }),
-    ).resolves.toBeUndefined();
-});
-
-test.todo(
-    "If we add a server peer, all updates to all coValues are sent to it, even if it doesn't subscribe",
-    async () => {
+test("Node replies with initial tx and header to empty subscribe", () =>
+    Effect.gen(function* () {
         const [admin, session] = randomAnonymousAccountAndSessionID();
         const node = new LocalNode(admin, session, Crypto);
 
@@ -502,45 +23,323 @@ test.todo(
 
         const map = group.createMap();
 
-        const [inRx, _inTx] = newStreamPair<SyncMessage>();
-        const [outRx, outTx] = newStreamPair<SyncMessage>();
+        map.set("hello", "world", "trusting");
+
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
 
         node.syncManager.addPeer({
             id: "test",
             incoming: inRx,
             outgoing: outTx,
-            role: "server",
+            role: "peer",
         });
 
-        const reader = outRx.getReader();
-        // expect((await reader.read()).value).toMatchObject({
-        //     action: "load",
-        //     id: adminID,
-        // });
-        expect((await reader.read()).value).toMatchObject({
+        yield* Queue.offer(inTx, {
             action: "load",
-            id: group.core.id,
+            id: map.core.id,
+            header: false,
+            sessions: {},
         });
 
-        const mapSubscribeMsg = await reader.read();
+        // expect((yield* Queue.take(outRxQ))).toMatchObject(admStateEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
 
-        expect(mapSubscribeMsg.value).toEqual({
+        const mapTellKnownStateMsg = yield* Queue.take(outRxQ);
+        expect(mapTellKnownStateMsg).toEqual({
+            action: "known",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+
+        // expect((yield * Queue.take(outRxQ))).toMatchObject(admContEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
+
+        const newContentMsg = yield* Queue.take(outRxQ);
+
+        expect(newContentMsg).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: {
+                type: "comap",
+                ruleset: { type: "ownedByGroup", group: group.id },
+                meta: null,
+                createdAt: map.core.header.createdAt,
+                uniqueness: map.core.header.uniqueness,
+            },
+            new: {
+                [node.currentSessionID]: {
+                    after: 0,
+                    newTransactions: [
+                        {
+                            privacy: "trusting" as const,
+                            madeAt: map.core.sessionLogs.get(
+                                node.currentSessionID,
+                            )!.transactions[0]!.madeAt,
+                            changes: stableStringify([
+                                {
+                                    op: "set",
+                                    key: "hello",
+                                    value: "world",
+                                } satisfies MapOpPayload<string, string>,
+                            ]),
+                        },
+                    ],
+                    lastSignature: map.core.sessionLogs.get(
+                        node.currentSessionID,
+                    )!.lastSignature!,
+                },
+            },
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+test("Node replies with only new tx to subscribe with some known state", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
+
+        const group = node.createGroup();
+
+        const map = group.createMap();
+
+        map.set("hello", "world", "trusting");
+        map.set("goodbye", "world", "trusting");
+
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
+
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "peer",
+        });
+
+        yield* Queue.offer(inTx, {
             action: "load",
             id: map.core.id,
             header: true,
-            sessions: {},
+            sessions: {
+                [node.currentSessionID]: 1,
+            },
+        });
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admStateEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
+
+        const mapTellKnownStateMsg = yield* Queue.take(outRxQ);
+        expect(mapTellKnownStateMsg).toEqual({
+            action: "known",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+
+        // expect(yield* Queue.take(outRxQ))).toMatchObject(admContEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
+
+        const mapNewContentMsg = yield* Queue.take(outRxQ);
+
+        expect(mapNewContentMsg).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: undefined,
+            new: {
+                [node.currentSessionID]: {
+                    after: 1,
+                    newTransactions: [
+                        {
+                            privacy: "trusting" as const,
+                            madeAt: map.core.sessionLogs.get(
+                                node.currentSessionID,
+                            )!.transactions[1]!.madeAt,
+                            changes: stableStringify([
+                                {
+                                    op: "set",
+                                    key: "goodbye",
+                                    value: "world",
+                                } satisfies MapOpPayload<string, string>,
+                            ]),
+                        },
+                    ],
+                    lastSignature: map.core.sessionLogs.get(
+                        node.currentSessionID,
+                    )!.lastSignature!,
+                },
+            },
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+test.todo(
+    "TODO: node only replies with new tx to subscribe with some known state, even in the depended on coValues",
+);
+
+test("After subscribing, node sends own known state and new txs to peer", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
+
+        const group = node.createGroup();
+
+        const map = group.createMap();
+
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
+
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "peer",
+        });
+
+        yield* Queue.offer(inTx, {
+            action: "load",
+            id: map.core.id,
+            header: false,
+            sessions: {
+                [node.currentSessionID]: 0,
+            },
+        });
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admStateEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
+
+        const mapTellKnownStateMsg = yield* Queue.take(outRxQ);
+        expect(mapTellKnownStateMsg).toEqual({
+            action: "known",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
+
+        const mapNewContentHeaderOnlyMsg = yield* Queue.take(outRxQ);
+
+        expect(mapNewContentHeaderOnlyMsg).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: map.core.header,
+            new: {},
         } satisfies SyncMessage);
 
         map.set("hello", "world", "trusting");
 
-        // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-        expect((await reader.read()).value).toMatchObject(
-            groupContentEx(group),
-        );
+        const mapEditMsg1 = yield* Queue.take(outRxQ);
 
-        const mapNewContentMsg = await reader.read();
+        expect(mapEditMsg1).toEqual({
+            action: "content",
+            id: map.core.id,
+            new: {
+                [node.currentSessionID]: {
+                    after: 0,
+                    newTransactions: [
+                        {
+                            privacy: "trusting" as const,
+                            madeAt: map.core.sessionLogs.get(
+                                node.currentSessionID,
+                            )!.transactions[0]!.madeAt,
+                            changes: stableStringify([
+                                {
+                                    op: "set",
+                                    key: "hello",
+                                    value: "world",
+                                } satisfies MapOpPayload<string, string>,
+                            ]),
+                        },
+                    ],
+                    lastSignature: map.core.sessionLogs.get(
+                        node.currentSessionID,
+                    )!.lastSignature!,
+                },
+            },
+        } satisfies SyncMessage);
 
-        expect(mapNewContentMsg.value).toEqual({
+        map.set("goodbye", "world", "trusting");
+
+        const mapEditMsg2 = yield* Queue.take(outRxQ);
+
+        expect(mapEditMsg2).toEqual({
+            action: "content",
+            id: map.core.id,
+            new: {
+                [node.currentSessionID]: {
+                    after: 1,
+                    newTransactions: [
+                        {
+                            privacy: "trusting" as const,
+                            madeAt: map.core.sessionLogs.get(
+                                node.currentSessionID,
+                            )!.transactions[1]!.madeAt,
+                            changes: stableStringify([
+                                {
+                                    op: "set",
+                                    key: "goodbye",
+                                    value: "world",
+                                } satisfies MapOpPayload<string, string>,
+                            ]),
+                        },
+                    ],
+                    lastSignature: map.core.sessionLogs.get(
+                        node.currentSessionID,
+                    )!.lastSignature!,
+                },
+            },
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+test("Client replies with known new content to tellKnownState from server", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
+
+        const group = node.createGroup();
+
+        const map = group.createMap();
+
+        map.set("hello", "world", "trusting");
+
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
+
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "peer",
+        });
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
+
+        yield* Queue.offer(inTx, {
+            action: "known",
+            id: map.core.id,
+            header: false,
+            sessions: {
+                [node.currentSessionID]: 0,
+            },
+        });
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admStateEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
+
+        const mapTellKnownStateMsg = yield* Queue.take(outRxQ);
+        expect(mapTellKnownStateMsg).toEqual({
+            action: "known",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
+
+        const mapNewContentMsg = yield* Queue.take(outRxQ);
+
+        expect(mapNewContentMsg).toEqual({
             action: "content",
             id: map.core.id,
             header: map.core.header,
@@ -568,256 +367,479 @@ test.todo(
                 },
             },
         } satisfies SyncMessage);
-    },
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+test("No matter the optimistic known state, node respects invalid known state messages and resyncs", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
+
+        const group = node.createGroup();
+
+        const map = group.createMap();
+
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
+
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "peer",
+        });
+
+        yield* Queue.offer(inTx, {
+            action: "load",
+            id: map.core.id,
+            header: false,
+            sessions: {
+                [node.currentSessionID]: 0,
+            },
+        });
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admStateEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
+
+        const mapTellKnownStateMsg = yield* Queue.take(outRxQ);
+        expect(mapTellKnownStateMsg).toEqual({
+            action: "known",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
+
+        const mapNewContentHeaderOnlyMsg = yield* Queue.take(outRxQ);
+
+        expect(mapNewContentHeaderOnlyMsg).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: map.core.header,
+            new: {},
+        } satisfies SyncMessage);
+
+        map.set("hello", "world", "trusting");
+
+        map.set("goodbye", "world", "trusting");
+
+        const _mapEditMsgs = yield* Queue.take(outRxQ);
+
+        console.log("Sending correction");
+
+        yield* Queue.offer(inTx, {
+            action: "known",
+            isCorrection: true,
+            id: map.core.id,
+            header: true,
+            sessions: {
+                [node.currentSessionID]: 1,
+            },
+        } satisfies SyncMessage);
+
+        const newContentAfterWrongAssumedState = yield* Queue.take(outRxQ);
+
+        expect(newContentAfterWrongAssumedState).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: undefined,
+            new: {
+                [node.currentSessionID]: {
+                    after: 1,
+                    newTransactions: [
+                        {
+                            privacy: "trusting" as const,
+                            madeAt: map.core.sessionLogs.get(
+                                node.currentSessionID,
+                            )!.transactions[1]!.madeAt,
+                            changes: stableStringify([
+                                {
+                                    op: "set",
+                                    key: "goodbye",
+                                    value: "world",
+                                } satisfies MapOpPayload<string, string>,
+                            ]),
+                        },
+                    ],
+                    lastSignature: map.core.sessionLogs.get(
+                        node.currentSessionID,
+                    )!.lastSignature!,
+                },
+            },
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+test("If we add a peer, but it never subscribes to a coValue, it won't get any messages", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
+
+        const group = node.createGroup();
+
+        const map = group.createMap();
+
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
+
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "peer",
+        });
+
+        map.set("hello", "world", "trusting");
+
+        expect(
+            yield* Queue.take(outRxQ).pipe(
+                Effect.timeout(100),
+                Effect.catch("_tag", {
+                    failure: "TimeoutException",
+                    onFailure: () => Effect.succeed("neverHappened"),
+                }),
+            ),
+        ).toEqual("neverHappened");
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+test.todo(
+    "If we add a server peer, all updates to all coValues are sent to it, even if it doesn't subscribe",
+    () =>
+        Effect.gen(function* () {
+            const [admin, session] = randomAnonymousAccountAndSessionID();
+            const node = new LocalNode(admin, session, Crypto);
+
+            const group = node.createGroup();
+
+            const map = group.createMap();
+
+            const [inRx, inTx] = yield* newQueuePair();
+            const [outRx, outTx] = yield* newQueuePair();
+            const outRxQ = yield* Queue.unbounded<SyncMessage>();
+            yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
+
+            node.syncManager.addPeer({
+                id: "test",
+                incoming: inRx,
+                outgoing: outTx,
+                role: "server",
+            });
+
+            // expect(yield* Queue.take(outRxQ)).toMatchObject({
+            //     action: "load",
+            //     id: adminID,
+            // });
+            expect(yield* Queue.take(outRxQ)).toMatchObject({
+                action: "load",
+                id: group.core.id,
+            });
+
+            const mapSubscribeMsg = Queue.take(outRxQ);
+
+            expect(mapSubscribeMsg).toEqual({
+                action: "load",
+                id: map.core.id,
+                header: true,
+                sessions: {},
+            } satisfies SyncMessage);
+
+            map.set("hello", "world", "trusting");
+
+            // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(admin.id));
+            expect(yield* Queue.take(outRxQ)).toMatchObject(
+                groupContentEx(group),
+            );
+
+            const mapNewContentMsg = Queue.take(outRxQ);
+
+            expect(mapNewContentMsg).toEqual({
+                action: "content",
+                id: map.core.id,
+                header: map.core.header,
+                new: {
+                    [node.currentSessionID]: {
+                        after: 0,
+                        newTransactions: [
+                            {
+                                privacy: "trusting" as const,
+                                madeAt: map.core.sessionLogs.get(
+                                    node.currentSessionID,
+                                )!.transactions[0]!.madeAt,
+                                changes: stableStringify([
+                                    {
+                                        op: "set",
+                                        key: "hello",
+                                        value: "world",
+                                    } satisfies MapOpPayload<string, string>,
+                                ]),
+                            },
+                        ],
+                        lastSignature: map.core.sessionLogs.get(
+                            node.currentSessionID,
+                        )!.lastSignature!,
+                    },
+                },
+            } satisfies SyncMessage);
+        }).pipe(Effect.scoped, Effect.runPromise),
 );
 
-test.skip("If we add a server peer, newly created coValues are auto-subscribed to", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
+test.skip("If we add a server peer, newly created coValues are auto-subscribed to", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
 
-    const group = node.createGroup();
+        const group = node.createGroup();
 
-    const [inRx, _inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
 
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "server",
-    });
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "server",
+        });
 
-    const reader = outRx.getReader();
-    // expect((await reader.read()).value).toMatchObject({
-    //     action: "load",
-    //     id: admin.id,
-    // });
-    expect((await reader.read()).value).toMatchObject({
-        action: "load",
-        id: group.core.id,
-    });
+        // expect(yield* Queue.take(outRxQ)).toMatchObject({
+        //     action: "load",
+        //     id: admin.id,
+        // });
+        expect(yield* Queue.take(outRxQ)).toMatchObject({
+            action: "load",
+            id: group.core.id,
+        });
 
-    const map = group.createMap();
+        const map = group.createMap();
 
-    const mapSubscribeMsg = await reader.read();
+        const mapSubscribeMsg = Queue.take(outRxQ);
 
-    expect(mapSubscribeMsg.value).toEqual({
-        action: "load",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
+        expect(mapSubscribeMsg).toEqual({
+            action: "load",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
 
-    // expect((await reader.read()).value).toMatchObject(admContEx(adminID));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(adminID));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
 
-    const mapContentMsg = await reader.read();
+        const mapContentMsg = Queue.take(outRxQ);
 
-    expect(mapContentMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: map.core.header,
-        new: {},
-    } satisfies SyncMessage);
-});
+        expect(mapContentMsg).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: map.core.header,
+            new: {},
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
 
 test.todo(
     "TODO: when receiving a subscribe response that is behind our optimistic state (due to already sent content), we ignore it",
 );
 
-test("When we connect a new server peer, we try to sync all existing coValues to it", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
+test("When we connect a new server peer, we try to sync all existing coValues to it", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
 
-    const group = node.createGroup();
+        const group = node.createGroup();
 
-    const map = group.createMap();
+        const map = group.createMap();
 
-    const [inRx, _inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
 
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "server",
-    });
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "server",
+        });
 
-    const reader = outRx.getReader();
+        // const _adminSubscribeMessage = yield* Queue.take(outRxQ);
+        const groupSubscribeMessage = yield* Queue.take(outRxQ);
 
-    // const _adminSubscribeMessage = await reader.read();
-    const groupSubscribeMessage = await reader.read();
+        expect(groupSubscribeMessage).toEqual({
+            action: "load",
+            ...group.core.knownState(),
+        } satisfies SyncMessage);
 
-    expect(groupSubscribeMessage.value).toEqual({
-        action: "load",
-        ...group.core.knownState(),
-    } satisfies SyncMessage);
+        const secondMessage = yield* Queue.take(outRxQ);
 
-    const secondMessage = await reader.read();
+        expect(secondMessage).toEqual({
+            action: "load",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
 
-    expect(secondMessage.value).toEqual({
-        action: "load",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-});
+test("When receiving a subscribe with a known state that is ahead of our own, peers should respond with a corresponding subscribe response message", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
+        const node = new LocalNode(admin, session, Crypto);
 
-test("When receiving a subscribe with a known state that is ahead of our own, peers should respond with a corresponding subscribe response message", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
-    const node = new LocalNode(admin, session, Crypto);
+        const group = node.createGroup();
 
-    const group = node.createGroup();
+        const map = group.createMap();
 
-    const map = group.createMap();
+        const [inRx, inTx] = yield* newQueuePair();
+        const [outRx, outTx] = yield* newQueuePair();
+        const outRxQ = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx, Sink.fromQueue(outRxQ)));
 
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
+        node.syncManager.addPeer({
+            id: "test",
+            incoming: inRx,
+            outgoing: outTx,
+            role: "peer",
+        });
 
-    node.syncManager.addPeer({
-        id: "test",
-        incoming: inRx,
-        outgoing: outTx,
-        role: "peer",
-    });
+        yield* Queue.offer(inTx, {
+            action: "load",
+            id: map.core.id,
+            header: true,
+            sessions: {
+                [node.currentSessionID]: 1,
+            },
+        });
 
-    const writer = inTx.getWriter();
+        // expect(yield* Queue.take(outRxQ)).toMatchObject(admStateEx(admin.id));
+        expect(yield* Queue.take(outRxQ)).toMatchObject(groupStateEx(group));
+        const mapTellKnownState = yield* Queue.take(outRxQ);
 
-    await writer.write({
-        action: "load",
-        id: map.core.id,
-        header: true,
-        sessions: {
-            [node.currentSessionID]: 1,
-        },
-    });
+        expect(mapTellKnownState).toEqual({
+            action: "known",
+            ...map.core.knownState(),
+        } satisfies SyncMessage);
+    }).pipe(Effect.scoped, Effect.runPromise));
 
-    const reader = outRx.getReader();
+test.skip("When replaying creation and transactions of a coValue as new content, the receiving peer integrates this information", () =>
+    Effect.gen(function* () {
+        // TODO: this test is mostly correct but also slightly unrealistic, make sure we pass all messages back and forth as expected and then it should work
+        const [admin, session] = randomAnonymousAccountAndSessionID();
 
-    // expect((await reader.read()).value).toMatchObject(admStateEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupStateEx(group));
-    const mapTellKnownState = await reader.read();
+        const node1 = new LocalNode(admin, session, Crypto);
 
-    expect(mapTellKnownState.value).toEqual({
-        action: "known",
-        ...map.core.knownState(),
-    } satisfies SyncMessage);
-});
+        const group = node1.createGroup();
 
-test.skip("When replaying creation and transactions of a coValue as new content, the receiving peer integrates this information", async () => {
-    // TODO: this test is mostly correct but also slightly unrealistic, make sure we pass all messages back and forth as expected and then it should work
-    const [admin, session] = randomAnonymousAccountAndSessionID();
+        const [inRx1, inTx1] = yield* newQueuePair();
+        const [outRx1, outTx1] = yield* newQueuePair();
+        const outRxQ1 = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx1, Sink.fromQueue(outRxQ1)));
 
-    const node1 = new LocalNode(admin, session, Crypto);
+        node1.syncManager.addPeer({
+            id: "test2",
+            incoming: inRx1,
+            outgoing: outTx1,
+            role: "server",
+        });
 
-    const group = node1.createGroup();
+        const node2 = new LocalNode(
+            admin,
+            newRandomSessionID(admin.id),
+            Crypto,
+        );
 
-    const [inRx1, inTx1] = newStreamPair<SyncMessage>();
-    const [outRx1, outTx1] = newStreamPair<SyncMessage>();
+        const [inRx2, inTx2] = yield* newQueuePair();
+        const [outRx2, outTx2] = yield* newQueuePair();
+        const outRxQ2 = yield* Queue.unbounded<SyncMessage>();
+        yield* Effect.fork(Stream.run(outRx2, Sink.fromQueue(outRxQ1)));
 
-    node1.syncManager.addPeer({
-        id: "test2",
-        incoming: inRx1,
-        outgoing: outTx1,
-        role: "server",
-    });
+        node2.syncManager.addPeer({
+            id: "test1",
+            incoming: inRx2,
+            outgoing: outTx2,
+            role: "client",
+        });
 
-    const to1 = inTx1.getWriter();
-    const from1 = outRx1.getReader();
+        const adminSubscribeMessage: SyncMessage = yield* Queue.take(outRxQ1);
+        expect(adminSubscribeMessage).toMatchObject({
+            action: "load",
+            id: admin.id,
+        });
+        const groupSubscribeMsg = yield* Queue.take(outRxQ1);
+        expect(groupSubscribeMsg).toMatchObject({
+            action: "load",
+            id: group.core.id,
+        });
 
-    const node2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+        yield* Queue.offer(inTx2, adminSubscribeMessage);
+        yield* Queue.offer(inTx2, groupSubscribeMsg);
 
-    const [inRx2, inTx2] = newStreamPair<SyncMessage>();
-    const [outRx2, outTx2] = newStreamPair<SyncMessage>();
+        // const adminTellKnownStateMsg = yield* Queue.take(outRxQ2);
+        // expect(adminTellKnownStateMsg).toMatchObject(admStateEx(admin.id));
 
-    node2.syncManager.addPeer({
-        id: "test1",
-        incoming: inRx2,
-        outgoing: outTx2,
-        role: "client",
-    });
+        const groupTellKnownStateMsg = yield* Queue.take(outRxQ2);
+        expect(groupTellKnownStateMsg).toMatchObject(groupStateEx(group));
 
-    const to2 = inTx2.getWriter();
-    const from2 = outRx2.getReader();
+        expect(
+            node2.syncManager.peers["test1"]!.optimisticKnownStates[
+                group.core.id
+            ],
+        ).toBeDefined();
 
-    const adminSubscribeMessage = await from1.read();
-    expect(adminSubscribeMessage.value).toMatchObject({
-        action: "load",
-        id: admin.id,
-    });
-    const groupSubscribeMsg = await from1.read();
-    expect(groupSubscribeMsg.value).toMatchObject({
-        action: "load",
-        id: group.core.id,
-    });
+        // yield* Queue.offer(inTx1, adminTellKnownStateMsg);
+        yield* Queue.offer(inTx1, groupTellKnownStateMsg);
 
-    await to2.write(adminSubscribeMessage.value!);
-    await to2.write(groupSubscribeMsg.value!);
+        // const adminContentMsg = yield* Queue.take(outRxQ1);
+        // expect(adminContentMsg).toMatchObject(admContEx(admin.id));
 
-    // const adminTellKnownStateMsg = await from2.read();
-    // expect(adminTellKnownStateMsg.value).toMatchObject(admStateEx(admin.id));
+        const groupContentMsg = yield* Queue.take(outRxQ1);
+        expect(groupContentMsg).toMatchObject(groupContentEx(group));
 
-    const groupTellKnownStateMsg = await from2.read();
-    expect(groupTellKnownStateMsg.value).toMatchObject(groupStateEx(group));
+        // yield* Queue.offer(inTx2, adminContentMsg);
+        yield* Queue.offer(inTx2, groupContentMsg);
 
-    expect(
-        node2.syncManager.peers["test1"]!.optimisticKnownStates[group.core.id],
-    ).toBeDefined();
+        const map = group.createMap();
 
-    // await to1.write(adminTellKnownStateMsg.value!);
-    await to1.write(groupTellKnownStateMsg.value!);
+        const mapSubscriptionMsg = yield* Queue.take(outRxQ1);
+        expect(mapSubscriptionMsg).toMatchObject({
+            action: "load",
+            id: map.core.id,
+        });
 
-    // const adminContentMsg = await from1.read();
-    // expect(adminContentMsg.value).toMatchObject(admContEx(admin.id));
+        const mapNewContentMsg = yield* Queue.take(outRxQ1);
+        expect(mapNewContentMsg).toEqual({
+            action: "content",
+            id: map.core.id,
+            header: map.core.header,
+            new: {},
+        } satisfies SyncMessage);
 
-    const groupContentMsg = await from1.read();
-    expect(groupContentMsg.value).toMatchObject(groupContentEx(group));
+        yield* Queue.offer(inTx2, mapSubscriptionMsg);
 
-    // await to2.write(adminContentMsg.value!);
-    await to2.write(groupContentMsg.value!);
+        const mapTellKnownStateMsg = yield* Queue.take(outRxQ2);
+        expect(mapTellKnownStateMsg).toEqual({
+            action: "known",
+            id: map.core.id,
+            header: false,
+            sessions: {},
+        } satisfies SyncMessage);
 
-    const map = group.createMap();
+        expect(node2.coValues[map.core.id]?.state).toEqual("loading");
 
-    const mapSubscriptionMsg = await from1.read();
-    expect(mapSubscriptionMsg.value).toMatchObject({
-        action: "load",
-        id: map.core.id,
-    });
+        yield* Queue.offer(inTx2, mapNewContentMsg);
 
-    const mapNewContentMsg = await from1.read();
-    expect(mapNewContentMsg.value).toEqual({
-        action: "content",
-        id: map.core.id,
-        header: map.core.header,
-        new: {},
-    } satisfies SyncMessage);
+        map.set("hello", "world", "trusting");
 
-    await to2.write(mapSubscriptionMsg.value!);
+        const mapEditMsg = yield* Queue.take(outRxQ1);
 
-    const mapTellKnownStateMsg = await from2.read();
-    expect(mapTellKnownStateMsg.value).toEqual({
-        action: "known",
-        id: map.core.id,
-        header: false,
-        sessions: {},
-    } satisfies SyncMessage);
+        yield* Queue.offer(inTx2, mapEditMsg);
 
-    expect(node2.coValues[map.core.id]?.state).toEqual("loading");
+        yield* Effect.sleep(100);
 
-    await to2.write(mapNewContentMsg.value!);
-
-    map.set("hello", "world", "trusting");
-
-    const mapEditMsg = await from1.read();
-
-    await to2.write(mapEditMsg.value!);
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(
-        expectMap(
-            node2.expectCoValueLoaded(map.core.id).getCurrentContent(),
-        ).get("hello"),
-    ).toEqual("world");
-});
+        expect(
+            expectMap(
+                node2.expectCoValueLoaded(map.core.id).getCurrentContent(),
+            ).get("hello"),
+        ).toEqual("world");
+    }).pipe(Effect.scoped, Effect.runPromise));
 
 test.skip("When loading a coValue on one node, the server node it is requested from replies with all the necessary depended on coValues to make it work", async () => {
+    /*
     // TODO: this test is mostly correct but also slightly unrealistic, make sure we pass all messages back and forth as expected and then it should work
     const [admin, session] = randomAnonymousAccountAndSessionID();
 
@@ -842,104 +864,138 @@ test.skip("When loading a coValue on one node, the server node it is requested f
             node2.expectCoValueLoaded(map.core.id).getCurrentContent(),
         ).get("hello"),
     ).toEqual("world");
+    */
 });
 
-test("Can sync a coValue through a server to another client", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
+test("Can sync a coValue through a server to another client", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
 
-    const client1 = new LocalNode(admin, session, Crypto);
+        const client1 = new LocalNode(admin, session, Crypto);
 
-    const group = client1.createGroup();
+        const group = client1.createGroup();
 
-    const map = group.createMap();
-    map.set("hello", "world", "trusting");
+        const map = group.createMap();
+        map.set("hello", "world", "trusting");
 
-    const [serverUser, serverSession] = randomAnonymousAccountAndSessionID();
+        const [serverUser, serverSession] =
+            randomAnonymousAccountAndSessionID();
 
-    const server = new LocalNode(serverUser, serverSession, Crypto);
+        const server = new LocalNode(serverUser, serverSession, Crypto);
 
-    const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
-        peer1role: "server",
-        peer2role: "client",
-        trace: true,
-    });
+        const [serverAsPeer, client1AsPeer] = yield* connectedPeers(
+            "server",
+            "client1",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                trace: true,
+            },
+        );
 
-    client1.syncManager.addPeer(serverAsPeer);
-    server.syncManager.addPeer(client1AsPeer);
+        client1.syncManager.addPeer(serverAsPeer);
+        server.syncManager.addPeer(client1AsPeer);
 
-    const client2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+        const client2 = new LocalNode(
+            admin,
+            newRandomSessionID(admin.id),
+            Crypto,
+        );
 
-    const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
-        "server",
-        "client2",
-        { peer1role: "server", peer2role: "client", trace: true },
-    );
+        const [serverAsOtherPeer, client2AsPeer] = yield* connectedPeers(
+            "server",
+            "client2",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                trace: true,
+            },
+        );
 
-    client2.syncManager.addPeer(serverAsOtherPeer);
-    server.syncManager.addPeer(client2AsPeer);
+        client2.syncManager.addPeer(serverAsOtherPeer);
+        server.syncManager.addPeer(client2AsPeer);
 
-    const mapOnClient2 = await client2.loadCoValueCore(map.core.id);
-    if (mapOnClient2 === "unavailable") {
-        throw new Error("Map is unavailable");
-    }
+        const mapOnClient2 = yield* Effect.promise(() =>
+            client2.loadCoValueCore(map.core.id),
+        );
+        if (mapOnClient2 === "unavailable") {
+            throw new Error("Map is unavailable");
+        }
 
-    expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
-        "world",
-    );
-});
+        expect(
+            expectMap(mapOnClient2.getCurrentContent()).get("hello"),
+        ).toEqual("world");
+    }).pipe(Effect.scoped, Effect.runPromise));
 
-test("Can sync a coValue with private transactions through a server to another client", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
+test("Can sync a coValue with private transactions through a server to another client", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
 
-    const client1 = new LocalNode(admin, session, Crypto);
+        const client1 = new LocalNode(admin, session, Crypto);
 
-    const group = client1.createGroup();
+        const group = client1.createGroup();
 
-    const map = group.createMap();
-    map.set("hello", "world", "private");
+        const map = group.createMap();
+        map.set("hello", "world", "private");
 
-    const [serverUser, serverSession] = randomAnonymousAccountAndSessionID();
+        const [serverUser, serverSession] =
+            randomAnonymousAccountAndSessionID();
 
-    const server = new LocalNode(serverUser, serverSession, Crypto);
+        const server = new LocalNode(serverUser, serverSession, Crypto);
 
-    const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
-        trace: true,
-        peer1role: "server",
-        peer2role: "client",
-    });
+        const [serverAsPeer, client1AsPeer] = yield* connectedPeers(
+            "server",
+            "client1",
+            {
+                trace: true,
+                peer1role: "server",
+                peer2role: "client",
+            },
+        );
 
-    client1.syncManager.addPeer(serverAsPeer);
-    server.syncManager.addPeer(client1AsPeer);
+        client1.syncManager.addPeer(serverAsPeer);
+        server.syncManager.addPeer(client1AsPeer);
 
-    const client2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+        const client2 = new LocalNode(
+            admin,
+            newRandomSessionID(admin.id),
+            Crypto,
+        );
 
-    const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
-        "server",
-        "client2",
-        { trace: true, peer1role: "server", peer2role: "client" },
-    );
+        const [serverAsOtherPeer, client2AsPeer] = yield* connectedPeers(
+            "server",
+            "client2",
+            {
+                trace: true,
+                peer1role: "server",
+                peer2role: "client",
+            },
+        );
 
-    client2.syncManager.addPeer(serverAsOtherPeer);
-    server.syncManager.addPeer(client2AsPeer);
+        client2.syncManager.addPeer(serverAsOtherPeer);
+        server.syncManager.addPeer(client2AsPeer);
 
-    const mapOnClient2 = await client2.loadCoValueCore(map.core.id);
-    if (mapOnClient2 === "unavailable") {
-        throw new Error("Map is unavailable");
-    }
+        const mapOnClient2 = yield* Effect.promise(() =>
+            client2.loadCoValueCore(map.core.id),
+        );
+        if (mapOnClient2 === "unavailable") {
+            throw new Error("Map is unavailable");
+        }
 
-    expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
-        "world",
-    );
-});
+        expect(
+            expectMap(mapOnClient2.getCurrentContent()).get("hello"),
+        ).toEqual("world");
+    }).pipe(Effect.scoped, Effect.runPromise));
 
 test.skip("When a peer's incoming/readable stream closes, we remove the peer", async () => {
+    /*
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session, Crypto);
 
     const group = node.createGroup();
 
-    const [inRx, inTx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
+    const [inRx, inTx] = await Effect.runPromise(newStreamPair());
+    const [outRx, outTx] = await Effect.runPromise(newStreamPair());
 
     node.syncManager.addPeer({
         id: "test",
@@ -948,12 +1004,11 @@ test.skip("When a peer's incoming/readable stream closes, we remove the peer", a
         role: "server",
     });
 
-    const reader = outRx.getReader();
-    // expect((await reader.read()).value).toMatchObject({
+    // expect(yield* Queue.take(outRxQ)).toMatchObject({
     //     action: "load",
     //     id: admin.id,
     // });
-    expect((await reader.read()).value).toMatchObject({
+    expect(yield * Queue.take(outRxQ)).toMatchObject({
         action: "load",
         id: group.core.id,
     });
@@ -967,8 +1022,8 @@ test.skip("When a peer's incoming/readable stream closes, we remove the peer", a
         ...map.core.knownState(),
     } satisfies SyncMessage);
 
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
+    // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(admin.id));
+    expect(yield * Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
 
     const mapContentMsg = await reader.read();
 
@@ -984,16 +1039,18 @@ test.skip("When a peer's incoming/readable stream closes, we remove the peer", a
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(node.syncManager.peers["test"]).toBeUndefined();
+    */
 });
 
 test.skip("When a peer's outgoing/writable stream closes, we remove the peer", async () => {
+    /*
     const [admin, session] = randomAnonymousAccountAndSessionID();
     const node = new LocalNode(admin, session, Crypto);
 
     const group = node.createGroup();
 
-    const [inRx] = newStreamPair<SyncMessage>();
-    const [outRx, outTx] = newStreamPair<SyncMessage>();
+    const [inRx] = await Effect.runPromise(newStreamPair());
+    const [outRx, outTx] = await Effect.runPromise(newStreamPair());
 
     node.syncManager.addPeer({
         id: "test",
@@ -1002,12 +1059,11 @@ test.skip("When a peer's outgoing/writable stream closes, we remove the peer", a
         role: "server",
     });
 
-    const reader = outRx.getReader();
-    // expect((await reader.read()).value).toMatchObject({
+    // expect(yield* Queue.take(outRxQ)).toMatchObject({
     //     action: "load",
     //     id: admin.id,
     // });
-    expect((await reader.read()).value).toMatchObject({
+    expect(yield * Queue.take(outRxQ)).toMatchObject({
         action: "load",
         id: group.core.id,
     });
@@ -1021,8 +1077,8 @@ test.skip("When a peer's outgoing/writable stream closes, we remove the peer", a
         ...map.core.knownState(),
     } satisfies SyncMessage);
 
-    // expect((await reader.read()).value).toMatchObject(admContEx(admin.id));
-    expect((await reader.read()).value).toMatchObject(groupContentEx(group));
+    // expect(yield* Queue.take(outRxQ)).toMatchObject(admContEx(admin.id));
+    expect(yield * Queue.take(outRxQ)).toMatchObject(groupContentEx(group));
 
     const mapContentMsg = await reader.read();
 
@@ -1041,43 +1097,53 @@ test.skip("When a peer's outgoing/writable stream closes, we remove the peer", a
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(node.syncManager.peers["test"]).toBeUndefined();
+    */
 });
 
-test("If we start loading a coValue before connecting to a peer that has it, it will load it once we connect", async () => {
-    const [admin, session] = randomAnonymousAccountAndSessionID();
+test("If we start loading a coValue before connecting to a peer that has it, it will load it once we connect", () =>
+    Effect.gen(function* () {
+        const [admin, session] = randomAnonymousAccountAndSessionID();
 
-    const node1 = new LocalNode(admin, session, Crypto);
+        const node1 = new LocalNode(admin, session, Crypto);
 
-    const group = node1.createGroup();
+        const group = node1.createGroup();
 
-    const map = group.createMap();
-    map.set("hello", "world", "trusting");
+        const map = group.createMap();
+        map.set("hello", "world", "trusting");
 
-    const node2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+        const node2 = new LocalNode(
+            admin,
+            newRandomSessionID(admin.id),
+            Crypto,
+        );
 
-    const [node1asPeer, node2asPeer] = connectedPeers("peer1", "peer2", {
-        peer1role: "server",
-        peer2role: "client",
-        trace: true,
-    });
+        const [node1asPeer, node2asPeer] = yield* connectedPeers(
+            "peer1",
+            "peer2",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                trace: true,
+            },
+        );
 
-    node1.syncManager.addPeer(node2asPeer);
+        node1.syncManager.addPeer(node2asPeer);
 
-    const mapOnNode2Promise = node2.loadCoValueCore(map.core.id);
+        const mapOnNode2Promise = node2.loadCoValueCore(map.core.id);
 
-    expect(node2.coValues[map.core.id]?.state).toEqual("loading");
+        expect(node2.coValues[map.core.id]?.state).toEqual("loading");
 
-    node2.syncManager.addPeer(node1asPeer);
+        node2.syncManager.addPeer(node1asPeer);
 
-    const mapOnNode2 = await mapOnNode2Promise;
-    if (mapOnNode2 === "unavailable") {
-        throw new Error("Map is unavailable");
-    }
+        const mapOnNode2 = yield* Effect.promise(() => mapOnNode2Promise);
+        if (mapOnNode2 === "unavailable") {
+            throw new Error("Map is unavailable");
+        }
 
-    expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
-        "world",
-    );
-});
+        expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
+            "world",
+        );
+    }).pipe(Effect.scoped, Effect.runPromise));
 
 function groupContentEx(group: RawGroup) {
     return {

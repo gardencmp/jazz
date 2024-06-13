@@ -1,11 +1,8 @@
-import {
-    websocketReadableStream,
-    websocketWritableStream,
-} from "cojson-transport-nodejs-ws";
-import { WebSocket } from "ws";
-
 import { AgentSecret, Peer, SessionID, WasmCrypto } from "cojson";
+import { createWebSocketPeer } from "cojson-transport-ws";
 import { Account, CoValueClass, ID } from "jazz-tools";
+import { Effect } from "effect";
+import { WebSocket } from "ws";
 
 /** @category Context Creation */
 export async function startWorker<Acc extends Account>({
@@ -21,14 +18,13 @@ export async function startWorker<Acc extends Account>({
     syncServer?: string;
     accountSchema?: CoValueClass<Acc> & typeof Account;
 }): Promise<{ worker: Acc }> {
-    const ws = new WebSocket(peer);
-
-    const wsPeer: Peer = {
-        id: "upstream",
-        role: "server",
-        incoming: websocketReadableStream(ws),
-        outgoing: websocketWritableStream(ws),
-    };
+    const wsPeer: Peer = await Effect.runPromise(
+        createWebSocketPeer({
+            id: "upstream",
+            websocket: new WebSocket(peer),
+            role: "server",
+        }),
+    );
 
     if (!accountID) {
         throw new Error("No accountID provided");
@@ -52,17 +48,17 @@ export async function startWorker<Acc extends Account>({
         crypto: await WasmCrypto.create(),
     });
 
-    setInterval(() => {
+    setInterval(async () => {
         if (!worker._raw.core.node.syncManager.peers["upstream"]) {
             console.log(new Date(), "Reconnecting to upstream " + peer);
-            const ws = new WebSocket(peer);
 
-            const wsPeer: Peer = {
-                id: "upstream",
-                role: "server",
-                incoming: websocketReadableStream(ws),
-                outgoing: websocketWritableStream(ws),
-            };
+            const wsPeer: Peer = await Effect.runPromise(
+                createWebSocketPeer({
+                    id: "upstream",
+                    websocket: new WebSocket(peer),
+                    role: "server",
+                }),
+            );
 
             worker._raw.core.node.syncManager.addPeer(wsPeer);
         }

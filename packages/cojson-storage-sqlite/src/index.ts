@@ -6,15 +6,12 @@ import {
     SessionID,
     MAX_RECOMMENDED_TX_SIZE,
     AccountID,
+    IncomingSyncStream,
+    OutgoingSyncQueue,
 } from "cojson";
-import {
-    ReadableStream,
-    WritableStream,
-    ReadableStreamDefaultReader,
-    WritableStreamDefaultWriter,
-} from "isomorphic-streams";
 
 import Database, { Database as DatabaseT } from "better-sqlite3";
+import { Effect, Queue, Stream } from "effect";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;
@@ -46,30 +43,36 @@ type SignatureAfterRow = {
 };
 
 export class SQLiteStorage {
-    fromLocalNode!: ReadableStreamDefaultReader<SyncMessage>;
-    toLocalNode: WritableStreamDefaultWriter<SyncMessage>;
+    toLocalNode: OutgoingSyncQueue;
     db: DatabaseT;
 
     constructor(
         db: DatabaseT,
-        fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>,
+        fromLocalNode: IncomingSyncStream,
+        toLocalNode: OutgoingSyncQueue,
     ) {
         this.db = db;
-        this.fromLocalNode = fromLocalNode.getReader();
-        this.toLocalNode = toLocalNode.getWriter();
+        this.toLocalNode = toLocalNode;
 
-        void (async () => {
-            let done = false;
-            while (!done) {
-                const result = await this.fromLocalNode.read();
-                done = result.done;
-
-                if (result.value) {
-                    await this.handleSyncMessage(result.value);
-                }
-            }
-        })();
+        void fromLocalNode.pipe(
+            Stream.runForEach((msg) =>
+                Effect.tryPromise({
+                    try: () => this.handleSyncMessage(msg),
+                    catch: (e) =>
+                        new Error(
+                            `Error reading from localNode, handling msg\n\n${JSON.stringify(
+                                msg,
+                                (k, v) =>
+                                    k === "changes" || k === "encryptedChanges"
+                                        ? v.slice(0, 20) + "..."
+                                        : v,
+                            )}`,
+                            { cause: e },
+                        ),
+                }),
+            ),
+            Effect.runPromise,
+        );
     }
 
     static async asPeer({
@@ -81,25 +84,32 @@ export class SQLiteStorage {
         trace?: boolean;
         localNodeName?: string;
     }): Promise<Peer> {
-        const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
-            localNodeName,
-            "storage",
-            { peer1role: "client", peer2role: "server", trace },
-        );
+        return Effect.runPromise(
+            Effect.gen(function* () {
+                const [localNodeAsPeer, storageAsPeer] =
+                    yield* cojsonInternals.connectedPeers(
+                        localNodeName,
+                        "storage",
+                        { peer1role: "client", peer2role: "server", trace },
+                    );
 
-        await SQLiteStorage.open(
-            filename,
-            localNodeAsPeer.incoming,
-            localNodeAsPeer.outgoing,
-        );
+                yield* Effect.promise(() =>
+                    SQLiteStorage.open(
+                        filename,
+                        localNodeAsPeer.incoming,
+                        localNodeAsPeer.outgoing,
+                    ),
+                );
 
-        return { ...storageAsPeer, priority: 100 };
+                return { ...storageAsPeer, priority: 100 };
+            }),
+        );
     }
 
     static async open(
         filename: string,
-        fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>,
+        fromLocalNode: IncomingSyncStream,
+        toLocalNode: OutgoingSyncQueue,
     ) {
         const db = Database(filename);
         db.pragma("journal_mode = WAL");
@@ -431,11 +441,13 @@ export class SQLiteStorage {
             );
         }
 
-        await this.toLocalNode.write({
-            action: "known",
-            ...ourKnown,
-            asDependencyOf,
-        });
+        await Effect.runPromise(
+            Queue.offer(this.toLocalNode, {
+                action: "known",
+                ...ourKnown,
+                asDependencyOf,
+            }),
+        );
 
         const nonEmptyNewContentPieces = newContentPieces.filter(
             (piece) => piece.header || Object.keys(piece.new).length > 0,
@@ -444,7 +456,7 @@ export class SQLiteStorage {
         // console.log(theirKnown.id, nonEmptyNewContentPieces);
 
         for (const piece of nonEmptyNewContentPieces) {
-            await this.toLocalNode.write(piece);
+            await Effect.runPromise(Queue.offer(this.toLocalNode, piece));
             await new Promise((resolve) => setTimeout(resolve, 0));
         }
     }
@@ -466,13 +478,15 @@ export class SQLiteStorage {
             const header = msg.header;
             if (!header) {
                 console.error("Expected to be sent header first");
-                await this.toLocalNode.write({
-                    action: "known",
-                    id: msg.id,
-                    header: false,
-                    sessions: {},
-                    isCorrection: true,
-                });
+                await Effect.runPromise(
+                    Queue.offer(this.toLocalNode, {
+                        action: "known",
+                        id: msg.id,
+                        header: false,
+                        sessions: {},
+                        isCorrection: true,
+                    }),
+                );
                 return;
             }
 
@@ -604,11 +618,13 @@ export class SQLiteStorage {
         })();
 
         if (invalidAssumptions) {
-            await this.toLocalNode.write({
-                action: "known",
-                ...ourKnown,
-                isCorrection: invalidAssumptions,
-            });
+            await Effect.runPromise(
+                Queue.offer(this.toLocalNode, {
+                    action: "known",
+                    ...ourKnown,
+                    isCorrection: invalidAssumptions,
+                }),
+            );
         }
     }
 

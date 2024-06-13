@@ -2,11 +2,8 @@
 import { Command, Options } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Console, Effect } from "effect";
-import {
-    websocketReadableStream,
-    websocketWritableStream,
-} from "cojson-transport-nodejs-ws";
-import { WebSocket } from "ws";
+import { createWebSocketPeer } from "cojson-transport-ws";
+import { WebSocket } from "ws"
 import {
     Account,
     WasmCrypto,
@@ -24,23 +21,20 @@ const peer = Options.text("peer")
 const accountCreate = Command.make(
     "create",
     { name, peer },
-    ({ name, peer }) => {
+    ({ name, peer: peerAddr }) => {
         return Effect.gen(function* () {
-            const ws = new WebSocket(peer);
-
             const crypto = yield* Effect.promise(() => WasmCrypto.create());
+
+            const peer = yield* createWebSocketPeer({
+                id: "upstream",
+                websocket: new WebSocket(peerAddr),
+                role: "server",
+            });
 
             const account: Account = yield* Effect.promise(async () =>
                 Account.create({
                     creationProps: { name },
-                    peersToLoadFrom: [
-                        {
-                            id: "upstream",
-                            role: "server",
-                            incoming: websocketReadableStream(ws),
-                            outgoing: websocketWritableStream(ws),
-                        },
-                    ],
+                    peersToLoadFrom: [peer],
                     crypto,
                 }),
             );
@@ -59,7 +53,11 @@ const accountCreate = Command.make(
                 ),
             );
 
-            const ws2 = new WebSocket(peer);
+            const peer2 = yield* createWebSocketPeer({
+                id: "upstream2",
+                websocket: new WebSocket(peerAddr),
+                role: "server",
+            });
 
             yield* Effect.promise(async () =>
                 Account.become({
@@ -68,14 +66,7 @@ const accountCreate = Command.make(
                     sessionID: cojsonInternals.newRandomSessionID(
                         account.id as unknown as AccountID,
                     ),
-                    peersToLoadFrom: [
-                        {
-                            id: "upstream",
-                            role: "server",
-                            incoming: websocketReadableStream(ws2),
-                            outgoing: websocketWritableStream(ws2),
-                        },
-                    ],
+                    peersToLoadFrom: [peer2],
                     crypto,
                 }),
             );

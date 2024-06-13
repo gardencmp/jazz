@@ -6,14 +6,11 @@ import {
     CojsonInternalTypes,
     MAX_RECOMMENDED_TX_SIZE,
     AccountID,
+    IncomingSyncStream,
+    OutgoingSyncQueue,
 } from "cojson";
-import {
-    ReadableStream,
-    WritableStream,
-    ReadableStreamDefaultReader,
-    WritableStreamDefaultWriter,
-} from "isomorphic-streams";
 import { SyncPromise } from "./syncPromises.js";
+import { Effect, Queue, Stream } from "effect";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;
@@ -46,39 +43,35 @@ type SignatureAfterRow = {
 
 export class IDBStorage {
     db: IDBDatabase;
-    fromLocalNode!: ReadableStreamDefaultReader<SyncMessage>;
-    toLocalNode: WritableStreamDefaultWriter<SyncMessage>;
+    toLocalNode: OutgoingSyncQueue;
 
     constructor(
         db: IDBDatabase,
-        fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>,
+        fromLocalNode: IncomingSyncStream,
+        toLocalNode: OutgoingSyncQueue,
     ) {
         this.db = db;
-        this.fromLocalNode = fromLocalNode.getReader();
-        this.toLocalNode = toLocalNode.getWriter();
+        this.toLocalNode = toLocalNode;
 
-        void (async () => {
-            let done = false;
-            while (!done) {
-                const result = await this.fromLocalNode.read();
-                done = result.done;
-
-                if (result.value) {
-                    // console.log(
-                    //     "IDB: handling msg",
-                    //     result.value.id,
-                    //     result.value.action
-                    // );
-                    await this.handleSyncMessage(result.value);
-                    // console.log(
-                    //     "IDB: handled msg",
-                    //     result.value.id,
-                    //     result.value.action
-                    // );
-                }
-            }
-        })();
+        void fromLocalNode.pipe(
+            Stream.runForEach((msg) =>
+                Effect.tryPromise({
+                    try: () => this.handleSyncMessage(msg),
+                    catch: (e) =>
+                        new Error(
+                            `Error reading from localNode, handling msg\n\n${JSON.stringify(
+                                msg,
+                                (k, v) =>
+                                    k === "changes" || k === "encryptedChanges"
+                                        ? v.slice(0, 20) + "..."
+                                        : v,
+                            )}`,
+                            { cause: e },
+                        ),
+                }),
+            ),
+            Effect.runPromise,
+        );
     }
 
     static async asPeer(
@@ -89,23 +82,30 @@ export class IDBStorage {
             localNodeName: "local",
         },
     ): Promise<Peer> {
-        const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
-            localNodeName,
-            "storage",
-            { peer1role: "client", peer2role: "server", trace },
-        );
+        return Effect.runPromise(
+            Effect.gen(function* () {
+                const [localNodeAsPeer, storageAsPeer] =
+                    yield* cojsonInternals.connectedPeers(
+                        localNodeName,
+                        "storage",
+                        { peer1role: "client", peer2role: "server", trace },
+                    );
 
-        await IDBStorage.open(
-            localNodeAsPeer.incoming,
-            localNodeAsPeer.outgoing,
-        );
+                yield* Effect.promise(() =>
+                    IDBStorage.open(
+                        localNodeAsPeer.incoming,
+                        localNodeAsPeer.outgoing,
+                    ),
+                );
 
-        return { ...storageAsPeer, priority: 100 };
+                return { ...storageAsPeer, priority: 100 };
+            }),
+        );
     }
 
     static async open(
-        fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>,
+        fromLocalNode: IncomingSyncStream,
+        toLocalNode: OutgoingSyncQueue,
     ) {
         const dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
             const request = indexedDB.open("jazz-storage", 4);
@@ -150,23 +150,6 @@ export class IDBStorage {
                         keyPath: ["ses", "idx"],
                     });
                 }
-                // if (ev.oldVersion !== 0 && ev.oldVersion <= 3) {
-                //     // fix embarrassing off-by-one error for transaction indices
-                //     console.log("Migration: fixing off-by-one error");
-                //     const transaction = (
-                //         ev.target as unknown as { transaction: IDBTransaction }
-                //     ).transaction;
-
-                //     const txsStore = transaction.objectStore("transactions");
-                //     const txs = await promised(txsStore.getAll());
-
-                //     for (const tx of txs) {
-                //         await promised(txsStore.delete([tx.ses, tx.idx]));
-                //         tx.idx -= 1;
-                //         await promised(txsStore.add(tx));
-                //     }
-                //     console.log("Migration: fixing off-by-one error - done");
-                // }
             };
         });
 
@@ -409,29 +392,35 @@ export class IDBStorage {
                             ),
                         ).then(() => {
                             // we're done with IndexedDB stuff here so can use native Promises again
-                            setTimeout(async () => {
-                                await this.toLocalNode.write({
-                                    action: "known",
-                                    ...ourKnown,
-                                    asDependencyOf,
-                                });
+                            setTimeout(() =>
+                                Effect.runPromise(
+                                    Effect.gen(this, function* () {
+                                        yield* Queue.offer(this.toLocalNode, {
+                                            action: "known",
+                                            ...ourKnown,
+                                            asDependencyOf,
+                                        });
 
-                                const nonEmptyNewContentPieces =
-                                    newContentPieces.filter(
-                                        (piece) =>
-                                            piece.header ||
-                                            Object.keys(piece.new).length > 0,
-                                    );
+                                        const nonEmptyNewContentPieces =
+                                            newContentPieces.filter(
+                                                (piece) =>
+                                                    piece.header ||
+                                                    Object.keys(piece.new)
+                                                        .length > 0,
+                                            );
 
-                                // console.log(theirKnown.id, nonEmptyNewContentPieces);
+                                        // console.log(theirKnown.id, nonEmptyNewContentPieces);
 
-                                for (const piece of nonEmptyNewContentPieces) {
-                                    await this.toLocalNode.write(piece);
-                                    await new Promise((resolve) =>
-                                        setTimeout(resolve, 0),
-                                    );
-                                }
-                            }, 0);
+                                        for (const piece of nonEmptyNewContentPieces) {
+                                            yield* Queue.offer(
+                                                this.toLocalNode,
+                                                piece,
+                                            );
+                                            yield* Effect.yieldNow();
+                                        }
+                                    }),
+                                ),
+                            );
 
                             return Promise.resolve();
                         });
@@ -456,13 +445,15 @@ export class IDBStorage {
                     const header = msg.header;
                     if (!header) {
                         console.error("Expected to be sent header first");
-                        void this.toLocalNode.write({
-                            action: "known",
-                            id: msg.id,
-                            header: false,
-                            sessions: {},
-                            isCorrection: true,
-                        });
+                        void Effect.runPromise(
+                            Queue.offer(this.toLocalNode, {
+                                action: "known",
+                                id: msg.id,
+                                header: false,
+                                sessions: {},
+                                isCorrection: true,
+                            }),
+                        );
                         throw new Error("Expected to be sent header first");
                     }
 
@@ -524,11 +515,13 @@ export class IDBStorage {
                         ),
                     ).then(() => {
                         if (invalidAssumptions) {
-                            void this.toLocalNode.write({
-                                action: "known",
-                                ...ourKnown,
-                                isCorrection: invalidAssumptions,
-                            });
+                            void Effect.runPromise(
+                                Queue.offer(this.toLocalNode, {
+                                    action: "known",
+                                    ...ourKnown,
+                                    isCorrection: invalidAssumptions,
+                                }),
+                            );
                         }
                     });
                 });

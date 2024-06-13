@@ -83,10 +83,11 @@ describe("CoStream resolution", async () => {
 
     test("Loading and availability", async () => {
         const { me, stream } = await initNodeAndStream();
-        const [initialAsPeer, secondPeer] = connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
+        const [initialAsPeer, secondPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
         );
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
@@ -175,10 +176,11 @@ describe("CoStream resolution", async () => {
     test("Subscription & auto-resolution", async () => {
         const { me, stream } = await initNodeAndStream();
 
-        const [initialAsPeer, secondAsPeer] = connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
+        const [initialAsPeer, secondAsPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
         );
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
         if (!isControlledAccount(me)) {
@@ -325,10 +327,11 @@ describe("BinaryCoStream loading & Subscription", async () => {
 
     test("Loading and availability", async () => {
         const { me, stream } = await initNodeAndStream();
-        const [initialAsPeer, secondAsPeer] = connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
+        const [initialAsPeer, secondAsPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
         );
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
@@ -357,30 +360,32 @@ describe("BinaryCoStream loading & Subscription", async () => {
     });
 
     test("Subscription", async () => {
-        const { me } = await initNodeAndStream();
-
-        const stream = BinaryCoStream.create({ owner: me });
-
-        const [initialAsPeer, secondAsPeer] = connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
-        );
-        me._raw.core.node.syncManager.addPeer(secondAsPeer);
-        if (!isControlledAccount(me)) {
-            throw "me is not a controlled account";
-        }
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
-            peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
-            crypto: Crypto,
-        });
-
         await Effect.runPromise(
             Effect.gen(function* ($) {
+                const { me } = yield* Effect.promise(() => initNodeAndStream());
+
+                const stream = BinaryCoStream.create({ owner: me });
+
+                const [initialAsPeer, secondAsPeer] = yield* connectedPeers(
+                    "initial",
+                    "second",
+                    { peer1role: "server", peer2role: "client" },
+                );
+                me._raw.core.node.syncManager.addPeer(secondAsPeer);
+                if (!isControlledAccount(me)) {
+                    throw "me is not a controlled account";
+                }
+                const meOnSecondPeer = yield* Effect.promise(() =>
+                    Account.become({
+                        accountID: me.id,
+                        accountSecret: me._raw.agentSecret,
+                        peersToLoadFrom: [initialAsPeer],
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        sessionID: newRandomSessionID(me.id as any),
+                        crypto: Crypto,
+                    }),
+                );
+
                 const queue = yield* $(Queue.unbounded<BinaryCoStream>());
 
                 BinaryCoStream.subscribe(

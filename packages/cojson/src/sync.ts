@@ -2,12 +2,8 @@ import { Signature } from "./crypto/crypto.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode } from "./localNode.js";
-import {
-    ReadableStream,
-    WritableStream,
-    WritableStreamDefaultWriter,
-} from "isomorphic-streams";
 import { RawCoID, SessionID } from "./ids.js";
+import { Effect, Queue, Stream } from "effect";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -60,10 +56,27 @@ export type DoneMessage = {
 
 export type PeerID = string;
 
+export class DisconnectedError extends Error {
+    readonly _tag = "DisconnectedError";
+    constructor(public message: string) {
+        super(message)
+    }
+}
+
+export class PingTimeoutError extends Error {
+    readonly _tag = "PingTimeoutError";
+}
+
+export type IncomingSyncStream = Stream.Stream<
+    SyncMessage,
+    DisconnectedError | PingTimeoutError
+>;
+export type OutgoingSyncQueue = Queue.Enqueue<SyncMessage>;
+
 export interface Peer {
     id: PeerID;
-    incoming: ReadableStream<SyncMessage>;
-    outgoing: WritableStream<SyncMessage>;
+    incoming: IncomingSyncStream;
+    outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
     delayOnError?: number;
     priority?: number;
@@ -73,8 +86,8 @@ export interface PeerState {
     id: PeerID;
     optimisticKnownStates: { [id: RawCoID]: CoValueKnownState };
     toldKnownState: Set<RawCoID>;
-    incoming: ReadableStream<SyncMessage>;
-    outgoing: WritableStreamDefaultWriter<SyncMessage>;
+    incoming: IncomingSyncStream;
+    outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
     delayOnError?: number;
     priority?: number;
@@ -136,16 +149,17 @@ export class SyncManager {
                 continue;
             }
             // console.log("loading", id, "from", peer.id);
-            peer.outgoing
-                .write({
+            Effect.runPromise(
+                Queue.offer(peer.outgoing, {
                     action: "load",
                     id: id,
                     header: false,
                     sessions: {},
-                })
-                .catch((e) => {
-                    console.error("Error writing to peer", e);
-                });
+                }),
+            ).catch((e) => {
+                console.error("Error writing to peer", e);
+            });
+
             const coValueEntry = this.local.coValues[id];
             if (coValueEntry?.state !== "loading") {
                 continue;
@@ -328,7 +342,7 @@ export class SyncManager {
             id: peer.id,
             optimisticKnownStates: {},
             incoming: peer.incoming,
-            outgoing: peer.outgoing.getWriter(),
+            outgoing: peer.outgoing,
             toldKnownState: new Set(),
             role: peer.role,
             delayOnError: peer.delayOnError,
@@ -354,53 +368,36 @@ export class SyncManager {
             void initialSync();
         }
 
-        const readIncoming = async () => {
-            try {
-                for await (const msg of peerState.incoming) {
-                    try {
-                        // await this.handleSyncMessage(msg, peerState);
-                        this.handleSyncMessage(msg, peerState).catch((e) => {
-                            console.error(
-                                new Date(),
-                                `Error reading from peer ${peer.id}, handling msg`,
-                                JSON.stringify(msg, (k, v) =>
-                                    k === "changes" || k === "encryptedChanges"
-                                        ? v.slice(0, 20) + "..."
-                                        : v,
-                                ),
-                                e,
-                            );
-                        });
-                        // await new Promise<void>((resolve) => {
-                        //     setTimeout(resolve, 0);
-                        // });
-                    } catch (e) {
-                        console.error(
-                            new Date(),
-                            `Error reading from peer ${peer.id}, handling msg`,
-                            JSON.stringify(msg, (k, v) =>
-                                k === "changes" || k === "encryptedChanges"
-                                    ? v.slice(0, 20) + "..."
-                                    : v,
+        void Effect.runPromise(
+            peerState.incoming.pipe(
+                Stream.ensuring(
+                    Effect.sync(() => {
+                        console.log("Peer disconnected:", peer.id);
+                        delete this.peers[peer.id];
+                    }),
+                ),
+                Stream.runForEach((msg) =>
+                    Effect.tryPromise({
+                        try: () => this.handleSyncMessage(msg, peerState),
+                        catch: (e) =>
+                            new Error(
+                                `Error reading from peer ${
+                                    peer.id
+                                }, handling msg\n\n${JSON.stringify(
+                                    msg,
+                                    (k, v) =>
+                                        k === "changes" ||
+                                        k === "encryptedChanges"
+                                            ? v.slice(0, 20) + "..."
+                                            : v,
+                                )}`,
+                                { cause: e },
                             ),
-                            e,
-                        );
-                        if (peerState.delayOnError) {
-                            await new Promise<void>((resolve) => {
-                                setTimeout(resolve, peerState.delayOnError);
-                            });
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error(`Error reading from peer ${peer.id}`, e);
-            }
-
-            console.log("Peer disconnected:", peer.id);
-            delete this.peers[peer.id];
-        };
-
-        void readIncoming();
+                    }),
+                ),
+                Effect.catchAll((e) => Effect.log("Error in peer", {peer: peer.id, error: e})),
+            ),
+        );
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
@@ -411,8 +408,7 @@ export class SyncManager {
 
         return new Promise<void>((resolve) => {
             const start = Date.now();
-            peer.outgoing
-                .write(msg)
+            Effect.runPromise(Queue.offer(peer.outgoing, msg))
                 .then(() => {
                     const end = Date.now();
                     if (end - start > 1000) {
