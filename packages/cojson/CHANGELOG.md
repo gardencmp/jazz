@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.11
+
+### Patch Changes
+
+-   Fix webpack import of node:crypto module
+
 ## 0.7.10
 
 ### Patch Changes
