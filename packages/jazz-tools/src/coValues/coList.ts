@@ -311,7 +311,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
                 .map((e) => encodeSync(itemDescriptor.encoded)(e));
         } else if (isRefEncoded(itemDescriptor)) {
             return this.map((item, idx) =>
-                seenAbove?.includes((item as CoValue).id)
+                seenAbove?.includes((item as CoValue)?.id)
                     ? { _circular: (item as CoValue).id }
                     : (item as unknown as CoValue)?.toJSON(idx + "", [
                           ...(seenAbove || []),
