@@ -40,7 +40,7 @@ export interface CoValue {
     readonly _loadedAs: Account;
     /** @category Stringifying & Inspection */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toJSON(): any[] | object;
+    toJSON(key?: string, seenAbove?: ID<CoValue>[]): any[] | object | string;
     /** @category Stringifying & Inspection */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [inspect](): any;
@@ -108,7 +108,7 @@ export class CoValueBase implements CoValue {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toJSON(): object | any[] {
+    toJSON(): object | any[] | string {
         return {
             id: this.id,
             type: this._type,

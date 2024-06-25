@@ -254,7 +254,8 @@ export class CoMap extends CoValueBase implements CoValue {
         return instance;
     }
 
-    toJSON() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toJSON(_key?: string, seenAbove?: ID<CoValue>[]): any[] {
         const jsonedFields = this._raw.keys().map((key) => {
             const tKey = key as CoKeys<this>;
             const descriptor = (this._schema[tKey] ||
@@ -264,7 +265,15 @@ export class CoMap extends CoValueBase implements CoValue {
                 return [key, this._raw.get(key)];
             } else if (isRefEncoded(descriptor)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const jsonedRef = (this as any)[tKey]?.toJSON();
+                if (seenAbove?.includes((this as any)[tKey]?.id)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return [key, { _circular: (this as any)[tKey]?.id }];
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const jsonedRef = (this as any)[tKey]?.toJSON(tKey, [
+                    ...(seenAbove || []),
+                    this.id,
+                ]);
                 return [key, jsonedRef];
             } else {
                 return [key, undefined];
