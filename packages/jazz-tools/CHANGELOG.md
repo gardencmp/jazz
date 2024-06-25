@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.12
+
+### Patch Changes
+
+-   Fix: toJSON infinitely recurses on circular CoValue structures
+
 ## 0.7.11
 
 ### Patch Changes
