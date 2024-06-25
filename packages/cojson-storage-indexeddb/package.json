@@ -7,8 +7,8 @@
   "license": "MIT",
   "dependencies": {
     "cojson": "workspace:*",
-    "typescript": "^5.1.6",
-    "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+    "effect": "^3.1.5",
+    "typescript": "^5.1.6"
   },
   "devDependencies": {
     "@vitest/browser": "^0.34.1",

@@ -14,6 +14,7 @@ import {
     ID,
 } from "../index.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
+import { Effect } from "effect";
 
 class TestMap extends CoMap {
     list = co.ref(TestList);
@@ -38,10 +39,10 @@ describe("Deep loading with depth arg", async () => {
         crypto: Crypto,
     });
 
-    const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
+    const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers("initial", "second", {
         peer1role: "server",
         peer2role: "client",
-    });
+    }));
     if (!isControlledAccount(me)) {
         throw "me is not a controlled account";
     }
@@ -137,9 +138,8 @@ describe("Deep loading with depth arg", async () => {
             throw new Error("map4 is undefined");
         }
         expect(map4.list[0]?.stream).not.toBe(null);
-        // TODO: we should expect null here, but apparently we don't even have the id/ref?
-        expect(map4.list[0]?.stream?.[me.id]?.value).not.toBeDefined();
-        expect(map4.list[0]?.stream?.byMe?.value).not.toBeDefined();
+        expect(map4.list[0]?.stream?.[me.id]?.value).toBe(null);
+        expect(map4.list[0]?.stream?.byMe?.value).toBe(null);
 
         const map5 = await TestMap.load(map.id, meOnSecondPeer, {
             list: [{ stream: [{}] }],
@@ -252,10 +252,10 @@ test("Deep loading a record-like coMap", async () => {
         crypto: Crypto,
     });
 
-    const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
+    const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers("initial", "second", {
         peer1role: "server",
         peer2role: "client",
-    });
+    }));
     if (!isControlledAccount(me)) {
         throw "me is not a controlled account";
     }

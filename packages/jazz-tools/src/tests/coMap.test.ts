@@ -253,11 +253,11 @@ describe("CoMap resolution", async () => {
 
     test("Loading and availability", async () => {
         const { me, map } = await initNodeAndMap();
-        const [initialAsPeer, secondPeer] = connectedPeers(
+        const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers(
             "initial",
             "second",
             { peer1role: "server", peer2role: "client" },
-        );
+        ));
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
@@ -323,11 +323,11 @@ describe("CoMap resolution", async () => {
     test("Subscription & auto-resolution", async () => {
         const { me, map } = await initNodeAndMap();
 
-        const [initialAsPeer, secondAsPeer] = connectedPeers(
+        const [initialAsPeer, secondAsPeer] = await Effect.runPromise(connectedPeers(
             "initial",
             "second",
             { peer1role: "server", peer2role: "client" },
-        );
+        ));
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }

@@ -1,18 +1,13 @@
-import {
-    ReadableStream,
-    WritableStream,
-    ReadableStreamDefaultReader,
-    WritableStreamDefaultWriter,
-} from "isomorphic-streams";
-import { Effect, Either, SynchronizedRef } from "effect";
+import { Effect, Either, Queue, Stream, SynchronizedRef } from "effect";
 import { RawCoID } from "../ids.js";
 import { CoValueHeader, Transaction } from "../coValueCore.js";
 import { Signature } from "../crypto/crypto.js";
 import {
     CoValueKnownState,
+    IncomingSyncStream,
     NewContentMessage,
+    OutgoingSyncQueue,
     Peer,
-    SyncMessage,
 } from "../sync.js";
 import { CoID, RawCoValue } from "../index.js";
 import { connectedPeers } from "../streamUtils.js";
@@ -47,9 +42,6 @@ export type CoValueChunk = {
 };
 
 export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
-    fromLocalNode!: ReadableStreamDefaultReader<SyncMessage>;
-    toLocalNode: WritableStreamDefaultWriter<SyncMessage>;
-    fs: FS;
     currentWal: SynchronizedRef.SynchronizedRef<WH | undefined>;
     coValues: SynchronizedRef.SynchronizedRef<{
         [id: RawCoID]: CoValueChunk | undefined;
@@ -61,44 +53,28 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
     >();
 
     constructor(
-        fs: FS,
-        fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>,
+        public fs: FS,
+        public fromLocalNode: IncomingSyncStream,
+        public toLocalNode: OutgoingSyncQueue,
     ) {
-        this.fs = fs;
-        this.fromLocalNode = fromLocalNode.getReader();
-        this.toLocalNode = toLocalNode.getWriter();
         this.coValues = SynchronizedRef.unsafeMake({});
         this.currentWal = SynchronizedRef.unsafeMake<WH | undefined>(undefined);
 
-        void Effect.runPromise(
-            Effect.gen(this, function* () {
-                let done = false;
-                while (!done) {
-                    const result = yield* Effect.promise(() =>
-                        this.fromLocalNode.read(),
-                    );
-                    done = result.done;
-
-                    if (result.value) {
-                        if (result.value.action === "done") {
-                            continue;
-                        }
-
-                        if (result.value.action === "content") {
-                            yield* this.handleNewContent(result.value);
-                        } else {
-                            yield* this.sendNewContent(
-                                result.value.id,
-                                result.value,
-                                undefined,
-                            );
-                        }
+        void this.fromLocalNode.pipe(
+            Stream.runForEach((msg) =>
+                Effect.gen(this, function* () {
+                    if (msg.action === "done") {
+                        return;
                     }
-                }
 
-                return;
-            }),
+                    if (msg.action === "content") {
+                        yield* this.handleNewContent(msg);
+                    } else {
+                        yield* this.sendNewContent(msg.id, msg, undefined);
+                    }
+                }),
+            ),
+            Effect.runPromise,
         );
 
         setTimeout(() => this.compact(), 20000);
@@ -132,15 +108,13 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
             }
 
             if (!coValue) {
-                yield* Effect.promise(() =>
-                    this.toLocalNode.write({
-                        id: id,
-                        action: "known",
-                        header: false,
-                        sessions: {},
-                        asDependencyOf,
-                    }),
-                );
+                yield* Queue.offer(this.toLocalNode, {
+                    id: id,
+                    action: "known",
+                    header: false,
+                    sessions: {},
+                    asDependencyOf,
+                });
 
                 return coValues;
             }
@@ -195,17 +169,15 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
             const ourKnown: CoValueKnownState = chunkToKnownState(id, coValue);
 
-            yield* Effect.promise(() =>
-                this.toLocalNode.write({
-                    action: "known",
-                    ...ourKnown,
-                    asDependencyOf,
-                }),
-            );
+            yield* Queue.offer(this.toLocalNode, {
+                action: "known",
+                ...ourKnown,
+                asDependencyOf,
+            });
 
             for (const message of newContentMessages) {
                 if (Object.keys(message.new).length === 0) continue;
-                yield* Effect.promise(() => this.toLocalNode.write(message));
+                yield* Queue.offer(this.toLocalNode, message);
             }
 
             return { ...coValues, [id]: coValue };
@@ -452,7 +424,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         setTimeout(() => this.compact(), 5000);
     }
 
-    static asPeer<WH, RH, FS extends FileSystem<WH, RH>>({
+    static async asPeer<WH, RH, FS extends FileSystem<WH, RH>>({
         fs,
         trace,
         localNodeName = "local",
@@ -460,15 +432,13 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         fs: FS;
         trace?: boolean;
         localNodeName?: string;
-    }): Peer {
-        const [localNodeAsPeer, storageAsPeer] = connectedPeers(
-            localNodeName,
-            "storage",
-            {
+    }): Promise<Peer> {
+        const [localNodeAsPeer, storageAsPeer] = await Effect.runPromise(
+            connectedPeers(localNodeName, "storage", {
                 peer1role: "client",
                 peer2role: "server",
                 trace,
-            },
+            }),
         );
 
         new LSMStorage(fs, localNodeAsPeer.incoming, localNodeAsPeer.outgoing);

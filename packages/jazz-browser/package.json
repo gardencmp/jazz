@@ -9,8 +9,8 @@
     "@scure/bip39": "^1.3.0",
     "cojson": "workspace:*",
     "cojson-storage-indexeddb": "workspace:*",
+    "cojson-transport-ws": "workspace:*",
     "effect": "^3.1.5",
-    "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae",
     "jazz-tools": "workspace:*",
     "typescript": "^5.1.6"
   },

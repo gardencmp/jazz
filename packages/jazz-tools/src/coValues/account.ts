@@ -12,7 +12,7 @@ import type {
     SessionID,
 } from "cojson";
 import { Context, Effect, Stream } from "effect";
-import type {
+import {
     CoMap,
     CoValue,
     CoValueClass,
@@ -61,9 +61,11 @@ export class Account extends CoValueBase implements CoValue {
                 ref: () => Profile,
                 optional: false,
             } satisfies RefEncoded<Profile>,
-            root: "json" satisfies Schema,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any;
+            root: {
+                ref: () => CoMap,
+                optional: true,
+            } satisfies RefEncoded<CoMap>,
+        };
     }
 
     get _owner(): Account {
@@ -214,7 +216,7 @@ export class Account extends CoValueBase implements CoValue {
         return this.fromNode(node) as A;
     }
 
-    static createAs<A extends Account>(
+    static async createAs<A extends Account>(
         this: CoValueClass<A> & typeof Account,
         as: Account,
         options: {
@@ -222,11 +224,11 @@ export class Account extends CoValueBase implements CoValue {
         },
     ) {
         // TODO: is there a cleaner way to do this?
-        const connectedPeers = cojsonInternals.connectedPeers(
+        const connectedPeers = await Effect.runPromise(cojsonInternals.connectedPeers(
             "creatingAccount",
             "createdAccount",
             { peer1role: "server", peer2role: "client" },
-        );
+        ));
 
         as._raw.core.node.syncManager.addPeer(connectedPeers[1]);
 

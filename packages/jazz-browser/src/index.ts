@@ -1,11 +1,8 @@
-import { ReadableStream, WritableStream } from "isomorphic-streams";
 import {
     CoValue,
     ID,
-    Peer,
     AgentID,
     SessionID,
-    SyncMessage,
     cojsonInternals,
     InviteSecret,
     Account,
@@ -13,10 +10,15 @@ import {
     WasmCrypto,
     CryptoProvider,
 } from "jazz-tools";
-import { AccountID, LSMStorage } from "cojson";
+import {
+    AccountID,
+    LSMStorage,
+} from "cojson";
 import { AuthProvider } from "./auth/auth.js";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
+import { Effect, Queue } from "effect";
+import { createWebSocketPeer } from "cojson-transport-ws";
 export * from "./auth/auth.js";
 
 /** @category Context Creation */
@@ -29,7 +31,7 @@ export type BrowserContext<Acc extends Account> = {
 /** @category Context Creation */
 export async function createJazzBrowserContext<Acc extends Account>({
     auth,
-    peer,
+    peer: peerAddr,
     reconnectionTimeout: initialReconnectionTimeout = 500,
     storage = "indexedDB",
     crypto: customCrypto,
@@ -43,7 +45,13 @@ export async function createJazzBrowserContext<Acc extends Account>({
     const crypto = customCrypto || (await WasmCrypto.create());
     let sessionDone: () => void;
 
-    const firstWsPeer = createWebSocketPeer(peer);
+    const firstWsPeer = await Effect.runPromise(
+        createWebSocketPeer({
+            websocket: new WebSocket(peerAddr),
+            id: peerAddr + "@" + new Date().toISOString(),
+            role: "server",
+        }),
+    );
     let shouldTryToReconnect = true;
 
     let currentReconnectionTimeout = initialReconnectionTimeout;
@@ -77,7 +85,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
         while (shouldTryToReconnect) {
             if (
                 Object.keys(me._raw.core.node.syncManager.peers).some(
-                    (peerId) => peerId.includes(peer),
+                    (peerId) => peerId.includes(peerAddr),
                 )
             ) {
                 // TODO: this might drain battery, use listeners instead
@@ -107,7 +115,13 @@ export async function createJazzBrowserContext<Acc extends Account>({
                 });
 
                 me._raw.core.node.syncManager.addPeer(
-                    createWebSocketPeer(peer),
+                    await Effect.runPromise(
+                        createWebSocketPeer({
+                            websocket: new WebSocket(peerAddr),
+                            id: peerAddr + "@" + new Date().toISOString(),
+                            role: "server",
+                        }),
+                    ),
                 );
             }
         }
@@ -124,9 +138,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
             for (const peer of Object.values(
                 me._raw.core.node.syncManager.peers,
             )) {
-                peer.outgoing
-                    .close()
-                    .catch((e) => console.error("Error while closing peer", e));
+                void Effect.runPromise(Queue.shutdown(peer.outgoing));
             }
             sessionDone?.();
         },
@@ -205,140 +217,6 @@ export function getSessionHandleFor(
         session: sessionPromise,
         done,
     };
-}
-
-function websocketReadableStream<T>(ws: WebSocket) {
-    ws.binaryType = "arraybuffer";
-
-    return new ReadableStream<T>({
-        start(controller) {
-            let pingTimeout: ReturnType<typeof setTimeout> | undefined;
-
-            ws.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-
-                if (pingTimeout) {
-                    clearTimeout(pingTimeout);
-                }
-
-                pingTimeout = setTimeout(() => {
-                    console.debug("Ping timeout");
-                    try {
-                        controller.close();
-                        ws.close();
-                    } catch (e) {
-                        console.error(
-                            "Error while trying to close ws on ping timeout",
-                            e,
-                        );
-                    }
-                }, 2500);
-
-                if (msg.type === "ping") {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (window as any).jazzPings = (window as any).jazzPings || [];
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (window as any).jazzPings.push({
-                        received: Date.now(),
-                        sent: msg.time,
-                        dc: msg.dc,
-                    });
-                    return;
-                }
-                controller.enqueue(msg);
-            };
-            const closeListener = () => {
-                controller.close();
-                clearTimeout(pingTimeout);
-            };
-            ws.addEventListener("close", closeListener);
-            ws.addEventListener("error", () => {
-                controller.error(new Error("The WebSocket errored!"));
-                ws.removeEventListener("close", closeListener);
-            });
-        },
-
-        cancel() {
-            ws.close();
-        },
-    });
-}
-
-export function createWebSocketPeer(syncAddress: string): Peer {
-    const ws = new WebSocket(syncAddress);
-
-    const incoming = websocketReadableStream<SyncMessage>(ws);
-    const outgoing = websocketWritableStream<SyncMessage>(ws);
-
-    return {
-        id: syncAddress + "@" + new Date().toISOString(),
-        incoming,
-        outgoing,
-        role: "server",
-    };
-}
-
-function websocketWritableStream<T>(ws: WebSocket) {
-    const initialQueue = [] as T[];
-    let isOpen = false;
-
-    return new WritableStream<T>({
-        start(controller) {
-            ws.addEventListener("error", (event) => {
-                controller.error(
-                    new Error("The WebSocket errored!" + JSON.stringify(event)),
-                );
-            });
-            ws.addEventListener("close", () => {
-                controller.error(
-                    new Error("The server closed the connection unexpectedly!"),
-                );
-            });
-            ws.addEventListener("open", () => {
-                for (const item of initialQueue) {
-                    ws.send(JSON.stringify(item));
-                }
-                isOpen = true;
-            });
-        },
-
-        async write(chunk) {
-            if (isOpen) {
-                ws.send(JSON.stringify(chunk));
-                // Return immediately, since the web socket gives us no easy way to tell
-                // when the write completes.
-            } else {
-                initialQueue.push(chunk);
-            }
-        },
-
-        close() {
-            return closeWS(1000);
-        },
-
-        abort(reason) {
-            return closeWS(4000, reason && reason.message);
-        },
-    });
-
-    function closeWS(code: number, reasonString?: string) {
-        return new Promise<void>((resolve, reject) => {
-            ws.addEventListener(
-                "close",
-                (e) => {
-                    if (e.wasClean) {
-                        resolve();
-                    } else {
-                        reject(
-                            new Error("The connection was not closed cleanly"),
-                        );
-                    }
-                },
-                { once: true },
-            );
-            ws.close(code, reasonString);
-        });
-    }
 }
 
 /** @category Invite Links */
