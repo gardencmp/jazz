@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.14
+
+### Patch Changes
+
+-   Use Effect Queues and Streams instead of custom queue implementation
+
 ## 0.7.11
 
 ### Patch Changes

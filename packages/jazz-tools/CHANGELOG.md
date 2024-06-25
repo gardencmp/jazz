@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.14
+
+### Patch Changes
+
+-   Use Effect Queues and Streams instead of custom queue implementation
+-   Updated dependencies
+    -   cojson@0.7.14
+
 ## 0.7.13
 
 ### Patch Changes
