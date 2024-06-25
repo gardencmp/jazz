@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.13
+
+### Patch Changes
+
+-   Fix CoList.toJSON()
+
 ## 0.7.12
 
 ### Patch Changes
