@@ -118,20 +118,21 @@ export function writeBlock<WH, RH, FS extends FileSystem<WH, RH>>(
         const headerBytes = textEncoder.encode(JSON.stringify(blockHeader));
         yield* $(fs.append(file, headerBytes));
 
-        console.log(
-            "full file",
-            yield* $(
-                fs.read(file as unknown as RH, 0, offset + headerBytes.length),
-            ),
-        );
+        // console.log(
+        //     "full file",
+        //     yield* $(
+        //         fs.read(file as unknown as RH, 0, offset + headerBytes.length),
+        //     ),
+        // );
 
         const filename: BlockFilename = `${hash.digest()}-L${level}-H${
             headerBytes.length
         }.jsonl`;
-        console.log("renaming to" + filename);
+        // console.log("renaming to" + filename);
         yield* $(fs.closeAndRename(file, filename));
 
-        console.log("Wrote block", filename, blockHeader);
+        // console.log("Wrote block", filename, blockHeader);
+        // console.log("IDs in block", blockHeader.map(e => e.id));
     });
 }
 

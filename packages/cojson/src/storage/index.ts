@@ -232,7 +232,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                 if (!coValue) {
                     if (newContent.header) {
-                        console.log("Creating in WAL", newContent.id);
+                        // console.log("Creating in WAL", newContent.id);
                         yield* this.withWAL((wal) =>
                             writeToWal(
                                 wal,
@@ -258,7 +258,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         //         })
                         //     )
                         // );
-                        console.warn(
+                        yield* Effect.logWarning(
                             "Incontiguous incoming update for " + newContent.id,
                         );
                         return coValues;
@@ -268,6 +268,23 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     if (Either.isRight(merged)) {
                         yield* Effect.logWarning(
                             "Non-contigous new content for " + newContent.id,
+                            Object.entries(coValue.sessionEntries).map(
+                                ([session, entries]) =>
+                                    entries.map((entry) => ({
+                                        session: session,
+                                        after: entry.after,
+                                        length: entry.transactions.length,
+                                    })),
+                            ),
+                            Object.entries(
+                                newContentAsChunk.sessionEntries,
+                            ).map(([session, entries]) =>
+                                entries.map((entry) => ({
+                                    session: session,
+                                    after: entry.after,
+                                    length: entry.transactions.length,
+                                })),
+                            ),
                         );
 
                         // yield* Effect.promise(() =>
@@ -280,7 +297,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                         return coValues;
                     } else {
-                        console.log("Appending to WAL", newContent.id);
+                        // console.log("Appending to WAL", newContent.id);
                         yield* this.withWAL((wal) =>
                             writeToWal(
                                 wal,
@@ -316,6 +333,8 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                 const { handle, size } = yield* fs.openToRead(blockFile);
 
+                // console.log("Attempting to load", id, blockFile);
+
                 if (!cachedHeader) {
                     cachedHeader = {};
                     const header = yield* readHeader(
@@ -334,6 +353,8 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     this.headerCache.set(blockFile, cachedHeader);
                 }
                 const headerEntry = cachedHeader[id];
+
+                // console.log("Header entry", id, headerEntry);
 
                 let result;
                 if (headerEntry) {
@@ -361,7 +382,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                 const coValues = new Map<RawCoID, CoValueChunk>();
 
-                console.log("Compacting WAL files", walFiles);
+                yield* Effect.log("Compacting WAL files", walFiles);
                 if (walFiles.length === 0) return;
 
                 yield* SynchronizedRef.updateEffect(this.currentWal, (wal) =>
@@ -374,7 +395,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 );
 
                 for (const fileName of walFiles) {
-                    const { handle, size } =
+                    const { handle, size }: { handle: RH; size: number } =
                         yield* this.fs.openToRead(fileName);
                     if (size === 0) {
                         yield* this.fs.close(handle);
@@ -394,7 +415,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         if (existingChunk) {
                             const merged = mergeChunks(existingChunk, chunk);
                             if (Either.isRight(merged)) {
-                                console.warn(
+                                yield* Effect.logWarning(
                                     "Non-contigous chunks in " +
                                         chunk.id +
                                         ", " +
