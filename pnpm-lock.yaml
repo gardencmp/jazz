@@ -136,6 +136,109 @@ importers:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@20.10.5)
 
+  examples/inspector:
+    dependencies:
+      '@radix-ui/react-checkbox':
+        specifier: ^1.0.4
+        version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@radix-ui/react-slot':
+        specifier: ^1.0.2
+        version: 1.0.2(@types/react@18.2.45)(react@18.2.0)
+      '@radix-ui/react-toast':
+        specifier: ^1.1.4
+        version: 1.1.5(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@types/qrcode':
+        specifier: ^1.5.1
+        version: 1.5.5
+      class-variance-authority:
+        specifier: ^0.7.0
+        version: 0.7.0
+      clsx:
+        specifier: ^2.0.0
+        version: 2.0.0
+      cojson:
+        specifier: workspace:*
+        version: link:../../packages/cojson
+      cojson-transport-ws:
+        specifier: workspace:*
+        version: link:../../packages/cojson-transport-ws
+      effect:
+        specifier: ^3.1.5
+        version: 3.2.1
+      hash-slash:
+        specifier: workspace:*
+        version: link:../../packages/hash-slash
+      lucide-react:
+        specifier: ^0.274.0
+        version: 0.274.0(react@18.2.0)
+      qrcode:
+        specifier: ^1.5.3
+        version: 1.5.3
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      react-router:
+        specifier: ^6.16.0
+        version: 6.21.0(react@18.2.0)
+      react-router-dom:
+        specifier: ^6.16.0
+        version: 6.21.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-use:
+        specifier: ^17.4.0
+        version: 17.4.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      tailwind-merge:
+        specifier: ^1.14.0
+        version: 1.14.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.0(ts-node@10.9.2(@swc/core@1.3.101)(@types/node@20.10.5)(typescript@5.3.3)))
+      uniqolor:
+        specifier: ^1.1.0
+        version: 1.1.1
+    devDependencies:
+      '@types/react':
+        specifier: ^18.2.15
+        version: 18.2.45
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.18
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.0.0
+        version: 6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.0.0
+        version: 6.15.0(eslint@8.56.0)(typescript@5.3.3)
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.3.2
+        version: 3.5.0(vite@5.0.10(@types/node@20.10.5))
+      autoprefixer:
+        specifier: ^10.4.14
+        version: 10.4.16(postcss@8.4.32)
+      eslint:
+        specifier: ^8.45.0
+        version: 8.56.0
+      eslint-plugin-react-hooks:
+        specifier: ^4.6.0
+        version: 4.6.0(eslint@8.56.0)
+      eslint-plugin-react-refresh:
+        specifier: ^0.4.3
+        version: 0.4.5(eslint@8.56.0)
+      postcss:
+        specifier: ^8.4.27
+        version: 8.4.32
+      tailwindcss:
+        specifier: ^3.3.3
+        version: 3.4.0(ts-node@10.9.2(@swc/core@1.3.101)(@types/node@20.10.5)(typescript@5.3.3))
+      typescript:
+        specifier: ^5.0.2
+        version: 5.3.3
+      vite:
+        specifier: ^5.0.10
+        version: 5.0.10(@types/node@20.10.5)
+
   examples/pets:
     dependencies:
       '@radix-ui/react-checkbox':
@@ -428,9 +531,6 @@ importers:
       effect:
         specifier: ^3.1.5
         version: 3.2.1
-      isomorphic-ws:
-        specifier: 5.0.0
-        version: 5.0.0(ws@8.17.0)
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -3029,11 +3129,6 @@ packages:
   isexe@3.1.1:
     resolution: {integrity: sha512-LpB/54B+/2J5hqQ7imZHfdU31OlgQqx7ZicVlkm9kzg9/w8GKLEcFfJl/t7DCEDueOyBAD6zCCwTO6Fzs0NoEQ==}
     engines: {node: '>=16'}
-
-  isomorphic-ws@5.0.0:
-    resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
-    peerDependencies:
-      ws: '*'
 
   jackspeak@2.3.6:
     resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
@@ -7383,10 +7478,6 @@ snapshots:
   isexe@2.0.0: {}
 
   isexe@3.1.1: {}
-
-  isomorphic-ws@5.0.0(ws@8.17.0):
-    dependencies:
-      ws: 8.17.0
 
   jackspeak@2.3.6:
     dependencies:

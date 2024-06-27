@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: ["chat", "pets", "todo"]
+        example: ["chat", "pets", "todo", "inspector"]
         # example: ["twit", "chat", "counter-js-auth0", "pets", "twit", "file-drop", "inspector"]
 
     steps:
@@ -105,7 +105,7 @@ jobs:
     needs: build-examples
     strategy:
       matrix:
-        example: ["chat", "pets", "todo"]
+        example: ["chat", "pets", "todo", "inspector"]
         # example: ["twit", "chat", "counter-js-auth0", "pets", "twit", "file-drop", "inspector"]
 
     steps:
