@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.7.15
+
+### Patch Changes
+
+-   Provide current res in ProgressiveImg
+
 ## 0.7.14
 
 ### Patch Changes
