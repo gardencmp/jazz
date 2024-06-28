@@ -9,8 +9,10 @@ import localFont from "next/font/local";
 import { GcmpLogo, JazzLogo } from "@/components/logos";
 import { SiGithub, SiDiscord, SiTwitter } from "@icons-pack/react-simple-icons";
 import { Nav, NavLink, Newsletter, NewsletterButton } from "@/components/nav";
-import { MailIcon } from "lucide-react";
 import { DocNav } from "@/components/docs/nav";
+
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -48,6 +50,8 @@ export default function RootLayout({
                     "flex flex-col items-center bg-stone-50 dark:bg-stone-950 overflow-x-hidden",
                 ].join(" ")}
             >
+                <SpeedInsights/>
+                <Analytics/>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
@@ -192,12 +196,6 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </ThemeProvider>
-                <script
-                    defer
-                    data-api="/api/event"
-                    data-domain="jazz.tools"
-                    src="/js/script.js"
-                ></script>
             </body>
         </html>
     );
