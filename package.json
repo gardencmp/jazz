@@ -6,6 +6,7 @@
     "packages/*",
     "examples/*"
   ],
+  "packageManager": "pnpm@9.1.4",
   "devDependencies": {
     "@changesets/cli": "^2.27.3",
     "husky": "^9.0.11",

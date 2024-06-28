@@ -14,6 +14,7 @@
         "*.{ts,tsx}": "eslint --fix",
         "*.{js,jsx,mdx,json}": "prettier --write"
     },
+    "packageManager": "pnpm@9.1.4",
     "dependencies": {
         "@evilmartians/harmony": "^1.0.0",
         "@icons-pack/react-simple-icons": "^9.1.0",
