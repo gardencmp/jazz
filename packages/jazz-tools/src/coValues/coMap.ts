@@ -539,6 +539,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         if (
             (typeof key === "string" || ItemsSym) &&
             typeof value === "object" &&
+            value !== null &&
             SchemaInit in value
         ) {
             (target.constructor as typeof CoMap)._schema ||= {};

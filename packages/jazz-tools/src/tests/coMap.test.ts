@@ -10,6 +10,7 @@ import {
     WasmCrypto,
     isControlledAccount,
 } from "../index.js";
+import { Schema } from "@effect/schema";
 
 const Crypto = await WasmCrypto.create();
 
@@ -24,6 +25,7 @@ describe("Simple CoMap operations", async () => {
         _height = co.number;
         birthday = co.encoded(Encoders.Date);
         name? = co.string;
+        nullable = co.encoded(Schema.NullOr(Schema.String));
 
         get roughColor() {
             return this.color + "ish";
@@ -39,6 +41,7 @@ describe("Simple CoMap operations", async () => {
             color: "red",
             _height: 10,
             birthday: birthday,
+            nullable: null,
         },
         { owner: me },
     );
@@ -49,7 +52,12 @@ describe("Simple CoMap operations", async () => {
         expect(map._height).toEqual(10);
         expect(map.birthday).toEqual(birthday);
         expect(map._raw.get("birthday")).toEqual(birthday.toISOString());
-        expect(Object.keys(map)).toEqual(["color", "_height", "birthday"]);
+        expect(Object.keys(map)).toEqual([
+            "color",
+            "_height",
+            "birthday",
+            "nullable",
+        ]);
     });
 
     test("Construction with too many things provided", () => {
@@ -83,6 +91,9 @@ describe("Simple CoMap operations", async () => {
             expect(map._raw.get("color")).toEqual("green");
             expect(map._height).toEqual(20);
             expect(map._raw.get("_height")).toEqual(20);
+
+            map.nullable = "not null";
+            map.nullable = null;
 
             map.name = "Secret name";
             expect(map.name).toEqual("Secret name");
@@ -253,11 +264,12 @@ describe("CoMap resolution", async () => {
 
     test("Loading and availability", async () => {
         const { me, map } = await initNodeAndMap();
-        const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
-        ));
+        const [initialAsPeer, secondPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
+        );
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
@@ -323,11 +335,12 @@ describe("CoMap resolution", async () => {
     test("Subscription & auto-resolution", async () => {
         const { me, map } = await initNodeAndMap();
 
-        const [initialAsPeer, secondAsPeer] = await Effect.runPromise(connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
-        ));
+        const [initialAsPeer, secondAsPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
+        );
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
