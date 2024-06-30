@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.16
+
+### Patch Changes
+
+-   Fix: allow null in encoded fields
+
 ## 0.7.14
 
 ### Patch Changes
