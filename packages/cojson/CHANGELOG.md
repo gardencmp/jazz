@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.17
+
+### Patch Changes
+
+-   Fix bugs in new storage interface
+
 ## 0.7.14
 
 ### Patch Changes
