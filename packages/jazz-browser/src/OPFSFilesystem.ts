@@ -309,7 +309,7 @@ const opfsWorkerJSSrc = `
             postMessage({requestId: event.data.requestId, data: buffer, result: "done"});
         } else if (event.data.type === "close") {
             const handle = handlesByRequest.get(event.data.handle);
-            console.log("Closing handle", filenamesForHandles.get(handle), event.data.handle, handle);
+            // console.log("Closing handle", filenamesForHandles.get(handle), event.data.handle, handle);
             handle.flush();
             handle.close();
             handlesByRequest.delete(handle);

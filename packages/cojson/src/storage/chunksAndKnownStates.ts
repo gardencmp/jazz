@@ -126,10 +126,12 @@ export function mergeChunks(
                 } else {
                     const lastNewEntry = newEntries[newEntries.length - 1]!;
                     lastNewEntry.transactions.push(...entry.transactions);
+                    lastNewEntry.lastSignature = entry.lastSignature;
 
                     bytesSinceLastSignature += entry.transactions.length;
                 }
             }
+            newSessions[sessionID] = newEntries;
         } else {
             return Either.right("nonContigous" as const);
         }
