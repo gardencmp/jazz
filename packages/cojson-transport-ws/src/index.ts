@@ -82,29 +82,29 @@ export function createWebSocketPeer(options: {
                     yield* Queue.offer(
                         incoming,
                         Either.left(new PingTimeoutError()),
-                    ).pipe(Effect.forkDaemon);
-                    yield* Effect.sync(() => {
-                        try {
-                            ws.close();
-                        } catch (e) {
-                            console.error(
-                                "Error while trying to close ws on ping timeout",
-                                e,
-                            );
-                        }
-                    });
-
-                    if (msg.type !== "ping") {
-                        yield* Queue.offer(incoming, Either.right(msg));
-                        return;
+                    ).pipe(Effect.forkScoped);
+                    try {
+                        ws.close();
+                    } catch (e) {
+                        yield* Console.error(
+                            "Error while trying to close ws on ping timeout",
+                            e,
+                        );
                     }
+                }).pipe(Effect.scoped, Effect.forkDaemon);
 
-                    jazzPings.push({
-                        received: Date.now(),
-                        sent: msg.time,
-                        dc: msg.dc,
-                    });
-                }).pipe(Effect.forkDaemon);
+                if (msg?.type !== "ping") {
+                    yield* Queue.offer(incoming, Either.right(msg)).pipe(
+                        Effect.forkDaemon,
+                    );
+                    return;
+                }
+
+                jazzPings.push({
+                    received: Date.now(),
+                    sent: msg.time,
+                    dc: msg.dc,
+                });
             }),
         );
 
