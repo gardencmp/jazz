@@ -8,7 +8,6 @@ import {
     Runtime,
     Console,
     Fiber,
-    GlobalValue,
 } from "effect";
 
 interface WebsocketEvents {
@@ -26,13 +25,13 @@ interface AnyWebSocket {
     send(data: string): void;
 }
 
-const jazzPings = GlobalValue.globalValue<
-    Array<{
+const g: typeof globalThis & {
+    jazzPings?: {
         received: number;
         sent: number;
         dc: string;
-    }>
->("jazzPings", () => []);
+    }[];
+} = globalThis;
 
 export function createWebSocketPeer(options: {
     id: string;
@@ -100,7 +99,8 @@ export function createWebSocketPeer(options: {
                     return;
                 }
 
-                jazzPings.push({
+                g.jazzPings ||= [];
+                g.jazzPings.push({
                     received: Date.now(),
                     sent: msg.time,
                     dc: msg.dc,
