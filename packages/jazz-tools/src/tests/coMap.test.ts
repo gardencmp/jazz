@@ -25,7 +25,7 @@ describe("Simple CoMap operations", async () => {
         _height = co.number;
         birthday = co.encoded(Encoders.Date);
         name? = co.string;
-        nullable = co.encoded(Schema.NullOr(Schema.String));
+        nilable? = co.encoded(Schema.NullishOr(Schema.String));
 
         get roughColor() {
             return this.color + "ish";
@@ -41,7 +41,7 @@ describe("Simple CoMap operations", async () => {
             color: "red",
             _height: 10,
             birthday: birthday,
-            nullable: null,
+            nilable: null,
         },
         { owner: me },
     );
@@ -56,7 +56,7 @@ describe("Simple CoMap operations", async () => {
             "color",
             "_height",
             "birthday",
-            "nullable",
+            "nilable",
         ]);
     });
 
@@ -92,8 +92,10 @@ describe("Simple CoMap operations", async () => {
             expect(map._height).toEqual(20);
             expect(map._raw.get("_height")).toEqual(20);
 
-            map.nullable = "not null";
-            map.nullable = null;
+            map.nilable = "not null";
+            map.nilable = null;
+            delete map.nilable;
+            map.nilable = undefined;
 
             map.name = "Secret name";
             expect(map.name).toEqual("Secret name");

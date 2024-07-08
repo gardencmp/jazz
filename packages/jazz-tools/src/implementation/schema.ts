@@ -130,7 +130,10 @@ export type EffectSchemaWithInputAndOutput<A, I = A> = EffectSchema<
     };
 };
 
-export type Encoder<V> = EffectSchemaWithInputAndOutput<V, JsonValue>;
+export type Encoder<V> = EffectSchemaWithInputAndOutput<
+    V,
+    JsonValue | undefined
+>;
 
 import { Date } from "@effect/schema/Schema";
 import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
