@@ -1,16 +1,26 @@
 import { DisconnectedError, Peer, PingTimeoutError, SyncMessage } from "cojson";
-import { Either, Stream, Queue, Effect, Exit } from "effect";
+import {
+    Either,
+    Stream,
+    Queue,
+    Effect,
+    Exit,
+    Runtime,
+    Console,
+    Fiber,
+} from "effect";
+
+interface WebsocketEvents {
+    close: { code: number; reason: string };
+    message: { data: string | unknown };
+    open: void;
+}
 
 interface AnyWebSocket {
-    addEventListener(
-        type: "close",
-        listener: (event: { code: number; reason: string }) => void,
+    addEventListener<K extends keyof WebsocketEvents>(
+        type: K,
+        listener: (event: WebsocketEvents[K]) => void,
     ): void;
-    addEventListener(
-        type: "message",
-        listener: (event: { data: string | unknown }) => void,
-    ): void;
-    addEventListener(type: "open", listener: () => void): void;
     close(): void;
     send(data: string): void;
 }
@@ -29,72 +39,81 @@ export function createWebSocketPeer(options: {
             >();
         const outgoing = yield* Queue.unbounded<SyncMessage>();
 
-        ws.addEventListener("close", (event) => {
-            void Effect.runPromiseExit(
-                Queue.offer(
-                    incoming,
-                    Either.left(
-                        new DisconnectedError(`${event.code}: ${event.reason}`),
-                    ),
+        yield* addEventListener(ws, "close", (event) =>
+            Queue.offer(
+                incoming,
+                Either.left(
+                    new DisconnectedError(`${event.code}: ${event.reason}`),
                 ),
-            ).then((e) => {
-                if (Exit.isFailure(e) && !Exit.isInterrupted(e)) {
-                    console.warn("Failed closing ws", e);
-                }
-            });
-        });
+            ).pipe(
+                Effect.onExit((e) => {
+                    if (Exit.isFailure(e) || Exit.isInterrupted(e)) {
+                        return Console.warn("Failed closing ws", e);
+                    }
+                    return Effect.void;
+                }),
+            ),
+        );
 
-        let pingTimeout: ReturnType<typeof setTimeout> | undefined;
+        let pingTimeout: Fiber.Fiber<void> | undefined;
 
-        ws.addEventListener("message", (event) => {
-            const msg = JSON.parse(event.data as string);
-
-            if (pingTimeout) {
-                clearTimeout(pingTimeout);
-            }
-
-            pingTimeout = setTimeout(() => {
-                console.debug("Ping timeout");
-                void Effect.runPromise(
-                    Queue.offer(incoming, Either.left(new PingTimeoutError())),
+        yield* addEventListener(ws, "message", (event) =>
+            Effect.gen(function* () {
+                const msg = yield* Effect.sync(() =>
+                    JSON.parse(event.data as string),
                 );
-                try {
-                    ws.close();
-                } catch (e) {
-                    console.error(
-                        "Error while trying to close ws on ping timeout",
-                        e,
-                    );
+
+                if (pingTimeout) {
+                    yield* Fiber.interrupt(pingTimeout);
                 }
-            }, 2500);
 
-            if (msg.type === "ping") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (globalThis as any).jazzPings =
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (globalThis as any).jazzPings || [];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (globalThis as any).jazzPings.push({
-                    received: Date.now(),
-                    sent: msg.time,
-                    dc: msg.dc,
-                });
-                return;
-            } else {
-                void Effect.runPromise(
-                    Queue.offer(incoming, Either.right(msg)),
-                );
-            }
-        });
+                pingTimeout = yield* Effect.gen(function* () {
+                    yield* Effect.sleep("2500 millis");
+                    yield* Console.warn("Ping timeout");
+                    yield* Queue.offer(
+                        incoming,
+                        Either.left(new PingTimeoutError()),
+                    ).pipe(Effect.forkDaemon);
+                    yield* Effect.sync(() => {
+                        try {
+                            ws.close();
+                        } catch (e) {
+                            console.error(
+                                "Error while trying to close ws on ping timeout",
+                                e,
+                            );
+                        }
+                    });
 
-        ws.addEventListener("open", () => {
-            void Stream.fromQueue(outgoing).pipe(
-                Stream.runForEach((msg) =>
-                    Effect.sync(() => ws.send(JSON.stringify(msg))),
-                ),
-                Effect.runPromise,
-            );
-        });
+                    if (msg.type !== "ping") {
+                        yield* Queue.offer(incoming, Either.right(msg));
+                        return;
+                    }
+
+                    const g: typeof globalThis & {
+                        jazzPings?: Array<{
+                            received: number;
+                            sent: number;
+                            dc: string;
+                        }>;
+                    } = globalThis;
+
+                    g.jazzPings ||= [];
+                    g.jazzPings.push({
+                        received: Date.now(),
+                        sent: msg.time,
+                        dc: msg.dc,
+                    });
+                }).pipe(Effect.forkDaemon);
+            }),
+        );
+
+        yield* addEventListener(ws, "open", () =>
+            Queue.take(outgoing).pipe(
+                Effect.andThen((message) => ws.send(JSON.stringify(message))),
+                Effect.forever,
+            ),
+        );
 
         return {
             id: options.id,
@@ -106,3 +125,15 @@ export function createWebSocketPeer(options: {
         };
     });
 }
+
+const addEventListener = <Event extends keyof WebsocketEvents, R>(
+    ws: AnyWebSocket,
+    event: Event,
+    listener: (msg: WebsocketEvents[Event]) => Effect.Effect<void, never, R>,
+) =>
+    Effect.gen(function* () {
+        const runFork = Runtime.runFork(yield* Effect.runtime<R>());
+        ws.addEventListener(event, (msg) => {
+            runFork(listener(msg));
+        });
+    });
