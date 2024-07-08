@@ -1,23 +1,22 @@
 import { DisconnectedError, Peer, PingTimeoutError, SyncMessage } from "cojson";
-import {
-    Either,
-    Stream,
-    Queue,
-    Effect,
-    Exit,
-    Runtime,
-    Console,
-    Fiber,
-} from "effect";
+import { Stream, Queue, Effect, Console } from "effect";
 
 interface WebsocketEvents {
     close: { code: number; reason: string };
-    message: { data: string | unknown };
+    message: { data: unknown };
     open: void;
+}
+interface PingMsg {
+    time: number;
+    dc: string;
 }
 
 interface AnyWebSocket {
     addEventListener<K extends keyof WebsocketEvents>(
+        type: K,
+        listener: (event: WebsocketEvents[K]) => void,
+    ): void;
+    removeEventListener<K extends keyof WebsocketEvents>(
         type: K,
         listener: (event: WebsocketEvents[K]) => void,
     ): void;
@@ -40,100 +39,83 @@ export function createWebSocketPeer(options: {
 }): Effect.Effect<Peer> {
     return Effect.gen(function* () {
         const ws = options.websocket;
+        const ws_ = ws as unknown as EventTarget;
 
-        const incoming =
-            yield* Queue.unbounded<
-                Either.Either<SyncMessage, DisconnectedError | PingTimeoutError>
-            >();
         const outgoing = yield* Queue.unbounded<SyncMessage>();
 
-        yield* addEventListener(ws, "close", (event) =>
-            Queue.offer(
-                incoming,
-                Either.left(
+        const closed = fromEventListener(ws, "close").pipe(
+            Effect.map(
+                (event) =>
                     new DisconnectedError(`${event.code}: ${event.reason}`),
-                ),
-            ).pipe(
-                Effect.onExit((e) => {
-                    if (Exit.isFailure(e) || Exit.isInterrupted(e)) {
-                        return Console.warn("Failed closing ws", e);
-                    }
-                    return Effect.void;
-                }),
             ),
+            Effect.flip,
+            Stream.fromEffect,
         );
 
-        let pingTimeout: Fiber.Fiber<void> | undefined;
+        const isSyncMessage = (msg: unknown): msg is SyncMessage => {
+            // boo side-effects
 
-        yield* addEventListener(ws, "message", (event) =>
-            Effect.gen(function* () {
-                const msg = yield* Effect.sync(() =>
-                    JSON.parse(event.data as string),
-                );
-
-                if (pingTimeout) {
-                    yield* Fiber.interrupt(pingTimeout);
-                }
-
-                pingTimeout = yield* Effect.gen(function* () {
-                    yield* Effect.sleep("2500 millis");
-                    yield* Console.warn("Ping timeout");
-                    yield* Queue.offer(
-                        incoming,
-                        Either.left(new PingTimeoutError()),
-                    ).pipe(Effect.forkScoped);
-                    try {
-                        ws.close();
-                    } catch (e) {
-                        yield* Console.error(
-                            "Error while trying to close ws on ping timeout",
-                            e,
-                        );
-                    }
-                }).pipe(Effect.scoped, Effect.forkDaemon);
-
-                if (msg?.type !== "ping") {
-                    yield* Queue.offer(incoming, Either.right(msg)).pipe(
-                        Effect.forkDaemon,
-                    );
-                    return;
-                }
-
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((msg as any)?.type === "ping") {
+                const ping = msg as PingMsg;
                 g.jazzPings ||= [];
                 g.jazzPings.push({
                     received: Date.now(),
-                    sent: msg.time,
-                    dc: msg.dc,
+                    sent: ping.time,
+                    dc: ping.dc,
                 });
-            }),
+                return false;
+            }
+            return true;
+        };
+
+        yield* Queue.take(outgoing).pipe(
+            Effect.andThen((message) => ws.send(JSON.stringify(message))),
+            Effect.forever,
+            Effect.whenEffect(
+                fromEventListener(ws, "open").pipe(Effect.as(true)),
+            ),
+            Effect.forkDaemon, // :/
         );
 
-        yield* addEventListener(ws, "open", () =>
-            Queue.take(outgoing).pipe(
-                Effect.andThen((message) => ws.send(JSON.stringify(message))),
-                Effect.forever,
+        type E = WebsocketEvents["message"];
+        const messages = Stream.fromEventListener<E>(ws_, "message").pipe(
+            Stream.timeoutFail(() => new PingTimeoutError(), "2.5 seconds"),
+            Stream.tapError((_e) =>
+                Console.warn("Ping timeout").pipe(
+                    Effect.zipRight(Effect.try(() => ws.close())),
+                    Effect.catchAll((e) =>
+                        Console.error(
+                            "Error while trying to close ws on ping timeout",
+                            e,
+                        ),
+                    ),
+                ),
             ),
+            Stream.mergeLeft(closed),
+            Stream.map((_) => JSON.parse(_.data as string)),
+            Stream.filter(isSyncMessage),
+            Stream.buffer({ capacity: "unbounded" }),
+            Stream.onDone(() => Queue.shutdown(outgoing)),
         );
 
         return {
             id: options.id,
-            incoming: Stream.fromQueue(incoming, { shutdown: true }).pipe(
-                Stream.mapEffect((either) => either),
-            ),
+            incoming: messages,
             outgoing,
             role: options.role,
         };
     });
 }
 
-const addEventListener = <Event extends keyof WebsocketEvents, R>(
+const fromEventListener = <Event extends keyof WebsocketEvents>(
     ws: AnyWebSocket,
     event: Event,
-    listener: (msg: WebsocketEvents[Event]) => Effect.Effect<void, never, R>,
 ) =>
-    Effect.gen(function* () {
-        const runFork = Runtime.runFork(yield* Effect.runtime<R>());
-        ws.addEventListener(event, (msg) => {
-            runFork(listener(msg));
-        });
+    Effect.async<WebsocketEvents[Event]>((register) => {
+        const cb = (msg: WebsocketEvents[Event]) => {
+            ws.removeEventListener(event, cb);
+            register(Effect.succeed(msg));
+        };
+        ws.addEventListener(event, cb);
     });
