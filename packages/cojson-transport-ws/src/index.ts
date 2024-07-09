@@ -43,7 +43,7 @@ export function createWebSocketPeer(options: {
 
         const outgoing = yield* Queue.unbounded<SyncMessage>();
 
-        const closed = fromEventListener(ws, "close").pipe(
+        const closed = once(ws, "close").pipe(
             Effect.map(
                 (event) =>
                     new DisconnectedError(`${event.code}: ${event.reason}`),
@@ -53,8 +53,6 @@ export function createWebSocketPeer(options: {
         );
 
         const isSyncMessage = (msg: unknown): msg is SyncMessage => {
-            // boo side-effects
-
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((msg as any)?.type === "ping") {
                 const ping = msg as PingMsg;
@@ -69,21 +67,21 @@ export function createWebSocketPeer(options: {
             return true;
         };
 
-        yield* Queue.take(outgoing).pipe(
-            Effect.andThen((message) => ws.send(JSON.stringify(message))),
-            Effect.forever,
-            Effect.whenEffect(
-                fromEventListener(ws, "open").pipe(Effect.as(true)),
-            ),
-            Effect.forkDaemon, // :/
-        );
+        yield* Effect.gen(function* () {
+            yield* once(ws, "open");
+            yield* Queue.take(outgoing).pipe(
+                Effect.andThen((message) => ws.send(JSON.stringify(message))),
+                Effect.forever,
+                Effect.forkDaemon,
+            );
+        });
 
         type E = WebsocketEvents["message"];
         const messages = Stream.fromEventListener<E>(ws_, "message").pipe(
             Stream.timeoutFail(() => new PingTimeoutError(), "2.5 seconds"),
             Stream.tapError((_e) =>
                 Console.warn("Ping timeout").pipe(
-                    Effect.zipRight(Effect.try(() => ws.close())),
+                    Effect.andThen(Effect.try(() => ws.close())),
                     Effect.catchAll((e) =>
                         Console.error(
                             "Error while trying to close ws on ping timeout",
@@ -108,7 +106,7 @@ export function createWebSocketPeer(options: {
     });
 }
 
-const fromEventListener = <Event extends keyof WebsocketEvents>(
+const once = <Event extends keyof WebsocketEvents>(
     ws: AnyWebSocket,
     event: Event,
 ) =>
