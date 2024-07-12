@@ -44,11 +44,12 @@ export function createWebSocketPeer(options: {
         const outgoing = yield* Queue.unbounded<SyncMessage>();
 
         const closed = once(ws, "close").pipe(
-            Effect.map(
+            Effect.flatMap(
                 (event) =>
-                    new DisconnectedError(`${event.code}: ${event.reason}`),
+                    new DisconnectedError({
+                        message: `${event.code}: ${event.reason}`,
+                    }),
             ),
-            Effect.flip,
             Stream.fromEffect,
         );
 
