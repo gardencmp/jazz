@@ -163,8 +163,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/cojson-transport-ws
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       hash-slash:
         specifier: workspace:*
         version: link:../../packages/hash-slash
@@ -451,8 +451,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.5
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       hash-wasm:
         specifier: ^4.9.0
         version: 4.11.0
@@ -488,8 +488,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -513,8 +513,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -529,8 +529,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -566,8 +566,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson-transport-ws
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools
@@ -609,8 +609,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson-transport-ws
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools
@@ -657,13 +657,13 @@ importers:
     dependencies:
       '@effect/cli':
         specifier: ^0.36.21
-        version: 0.36.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1))(@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1))(@effect/printer@0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1))(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1)
+        version: 0.36.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2))(@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2))(@effect/printer@0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2))(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2)
       '@effect/platform-node':
         specifier: ^0.49.2
-        version: 0.49.2(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1))(effect@3.2.1)
+        version: 0.49.2(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2))(effect@3.5.2)
       '@effect/schema':
         specifier: ^0.66.16
-        version: 0.66.16(effect@3.2.1)(fast-check@3.17.2)
+        version: 0.66.16(effect@3.5.2)(fast-check@3.17.2)
       cojson:
         specifier: workspace:*
         version: link:../cojson
@@ -671,8 +671,8 @@ importers:
         specifier: workspace:*
         version: link:../cojson-transport-ws
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       fast-check:
         specifier: ^3.17.2
         version: 3.17.2
@@ -697,13 +697,13 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.66.16
-        version: 0.66.16(effect@3.2.1)(fast-check@3.17.2)
+        version: 0.66.16(effect@3.5.2)(fast-check@3.17.2)
       cojson:
         specifier: workspace:*
         version: link:../cojson
       effect:
-        specifier: ^3.1.5
-        version: 3.2.1
+        specifier: ^3.5.2
+        version: 3.5.2
       fast-check:
         specifier: ^3.17.2
         version: 3.17.2
@@ -2461,8 +2461,8 @@ packages:
     resolution: {integrity: sha512-G0wNgFMFRDnFfKaXG2R6HiyVHqhKwdQ3EgoxW3wPlns2wKqem7F+HgkWBcevN7Vz0nN4AXtskID7/6jsYDXcKw==}
     hasBin: true
 
-  effect@3.2.1:
-    resolution: {integrity: sha512-WnM7QyHekA+oWkJyD1g99BDqD3atAXKjarcDnUX9alIKLd8EFXdY333wpgcNJkSqtvXDsx8qYWOMbuivdwoN2w==}
+  effect@3.5.2:
+    resolution: {integrity: sha512-jZAZAgHHrnkqrRaaLBU/a6zEFm3+uOimr+ZJqvCqiHtw5k2AE6F0jiEPuM/MNJOe4r16JDo4SYa3IULIQuXvAw==}
 
   electron-to-chromium@1.4.615:
     resolution: {integrity: sha512-/bKPPcgZVUziECqDc+0HkT87+0zhaWSZHNXqF8FLd2lQcptpmUFwoCSWjCdOng9Gdq+afKArPdEg/0ZW461Eng==}
@@ -5015,29 +5015,29 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@effect/cli@0.36.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1))(@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1))(@effect/printer@0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1))(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1)':
+  '@effect/cli@0.36.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2))(@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2))(@effect/printer@0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2))(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2)':
     dependencies:
-      '@effect/platform': 0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1)
-      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1)
-      '@effect/printer-ansi': 0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1)
-      '@effect/schema': 0.66.16(effect@3.2.1)(fast-check@3.17.2)
-      effect: 3.2.1
+      '@effect/platform': 0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2)
+      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2)
+      '@effect/printer-ansi': 0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2)
+      '@effect/schema': 0.66.16(effect@3.5.2)(fast-check@3.17.2)
+      effect: 3.5.2
       ini: 4.1.2
       toml: 3.0.0
       yaml: 2.4.2
 
-  '@effect/platform-node-shared@0.4.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1))(effect@3.2.1)':
+  '@effect/platform-node-shared@0.4.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2))(effect@3.5.2)':
     dependencies:
-      '@effect/platform': 0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1)
+      '@effect/platform': 0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2)
       '@parcel/watcher': 2.4.1
-      effect: 3.2.1
+      effect: 3.5.2
       multipasta: 0.2.1
 
-  '@effect/platform-node@0.49.2(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1))(effect@3.2.1)':
+  '@effect/platform-node@0.49.2(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2))(effect@3.5.2)':
     dependencies:
-      '@effect/platform': 0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1)
-      '@effect/platform-node-shared': 0.4.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1))(effect@3.2.1)
-      effect: 3.2.1
+      '@effect/platform': 0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2)
+      '@effect/platform-node-shared': 0.4.21(@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2))(effect@3.5.2)
+      effect: 3.5.2
       mime: 3.0.0
       undici: 6.16.1
       ws: 8.17.0
@@ -5045,33 +5045,33 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2))(effect@3.2.1)':
+  '@effect/platform@0.53.2(@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2))(effect@3.5.2)':
     dependencies:
-      '@effect/schema': 0.66.16(effect@3.2.1)(fast-check@3.17.2)
-      effect: 3.2.1
+      '@effect/schema': 0.66.16(effect@3.5.2)(fast-check@3.17.2)
+      effect: 3.5.2
       find-my-way-ts: 0.1.2
       multipasta: 0.2.1
       path-browserify: 1.0.1
 
-  '@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1)':
+  '@effect/printer-ansi@0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2)':
     dependencies:
-      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1)
-      '@effect/typeclass': 0.24.12(effect@3.2.1)
-      effect: 3.2.1
+      '@effect/printer': 0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2)
+      '@effect/typeclass': 0.24.12(effect@3.5.2)
+      effect: 3.5.2
 
-  '@effect/printer@0.33.12(@effect/typeclass@0.24.12(effect@3.2.1))(effect@3.2.1)':
+  '@effect/printer@0.33.12(@effect/typeclass@0.24.12(effect@3.5.2))(effect@3.5.2)':
     dependencies:
-      '@effect/typeclass': 0.24.12(effect@3.2.1)
-      effect: 3.2.1
+      '@effect/typeclass': 0.24.12(effect@3.5.2)
+      effect: 3.5.2
 
-  '@effect/schema@0.66.16(effect@3.2.1)(fast-check@3.17.2)':
+  '@effect/schema@0.66.16(effect@3.5.2)(fast-check@3.17.2)':
     dependencies:
-      effect: 3.2.1
+      effect: 3.5.2
       fast-check: 3.17.2
 
-  '@effect/typeclass@0.24.12(effect@3.2.1)':
+  '@effect/typeclass@0.24.12(effect@3.5.2)':
     dependencies:
-      effect: 3.2.1
+      effect: 3.5.2
 
   '@esbuild/aix-ppc64@0.19.10':
     optional: true
@@ -6684,7 +6684,7 @@ snapshots:
       unzipper: 0.10.14
       which: 4.0.0
 
-  effect@3.2.1: {}
+  effect@3.5.2: {}
 
   electron-to-chromium@1.4.615: {}
 
