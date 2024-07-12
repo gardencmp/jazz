@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.18
+
+### Patch Changes
+
+-   Update to Effect 3.5.2
+
 ## 0.7.17
 
 ### Patch Changes

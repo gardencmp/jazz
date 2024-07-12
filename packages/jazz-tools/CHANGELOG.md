@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.18
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.18
+
 ## 0.7.17
 
 ### Patch Changes
