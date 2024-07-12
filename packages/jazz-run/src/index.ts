@@ -3,7 +3,7 @@ import { Command, Options } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Console, Effect } from "effect";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { WebSocket } from "ws"
+import { WebSocket } from "ws";
 import {
     Account,
     WasmCrypto,

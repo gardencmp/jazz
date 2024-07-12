@@ -157,11 +157,12 @@ describe("CoList resolution", async () => {
     test("Loading and availability", async () => {
         const { me, list } = await initNodeAndList();
 
-        const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
-        ));
+        const [initialAsPeer, secondPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
+        );
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
@@ -216,11 +217,12 @@ describe("CoList resolution", async () => {
     test("Subscription & auto-resolution", async () => {
         const { me, list } = await initNodeAndList();
 
-        const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers(
-            "initial",
-            "second",
-            { peer1role: "server", peer2role: "client" },
-        ));
+        const [initialAsPeer, secondPeer] = await Effect.runPromise(
+            connectedPeers("initial", "second", {
+                peer1role: "server",
+                peer2role: "client",
+            }),
+        );
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }

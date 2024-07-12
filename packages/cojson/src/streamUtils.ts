@@ -47,18 +47,24 @@ export function newQueuePair(
         const queue = yield* Queue.unbounded<SyncMessage>();
 
         if (options.traceAs) {
-            return [Stream.fromQueue(queue).pipe(Stream.tap((msg) => Console.debug(
-                options.traceAs,
-                JSON.stringify(
-                    msg,
-                    (k, v) =>
-                        k === "changes" ||
-                        k === "encryptedChanges"
-                            ? v.slice(0, 20) + "..."
-                            : v,
-                    2,
+            return [
+                Stream.fromQueue(queue).pipe(
+                    Stream.tap((msg) =>
+                        Console.debug(
+                            options.traceAs,
+                            JSON.stringify(
+                                msg,
+                                (k, v) =>
+                                    k === "changes" || k === "encryptedChanges"
+                                        ? v.slice(0, 20) + "..."
+                                        : v,
+                                2,
+                            ),
+                        ),
+                    ),
                 ),
-            ))), queue];
+                queue,
+            ];
         } else {
             return [Stream.fromQueue(queue), queue];
         }

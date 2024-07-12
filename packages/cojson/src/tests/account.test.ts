@@ -53,13 +53,15 @@ test("Can create account with one node, and then load it on another", async () =
     map.set("foo", "bar", "private");
     expect(map.get("foo")).toEqual("bar");
 
-    const [node1asPeer, node2asPeer] = await Effect.runPromise(connectedPeers("node1", "node2", {
-        trace: true,
-        peer1role: "server",
-        peer2role: "client",
-    }));
+    const [node1asPeer, node2asPeer] = await Effect.runPromise(
+        connectedPeers("node1", "node2", {
+            trace: true,
+            peer1role: "server",
+            peer2role: "client",
+        }),
+    );
 
-    console.log("After connected peers")
+    console.log("After connected peers");
 
     node.syncManager.addPeer(node2asPeer);
 

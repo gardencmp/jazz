@@ -104,7 +104,10 @@ const DemoAuthBasicUI = ({
     signUp: (username: string) => void;
 }) => {
     const [username, setUsername] = useState<string>("");
-    const darkMode = typeof window !== 'undefined' ? window.matchMedia("(prefers-color-scheme: dark)").matches : false;
+    const darkMode =
+        typeof window !== "undefined"
+            ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            : false;
 
     return (
         <div
