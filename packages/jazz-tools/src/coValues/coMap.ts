@@ -611,10 +611,6 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         }
     },
     has(target, key) {
-        if (key in target) {
-            return true;
-        }
-
         const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
             target._schema[ItemsSym]) as Schema;
 
