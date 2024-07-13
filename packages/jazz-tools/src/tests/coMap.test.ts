@@ -106,6 +106,21 @@ describe("Simple CoMap operations", async () => {
         });
     });
 
+    describe("property existence", () => {
+        class TestMap extends CoMap.Record(co.string) {}
+        test("CoMap", () => {
+            const map = TestMap.create(
+                { name: "test" },
+                {
+                    owner: me,
+                },
+            );
+
+            expect("name" in map).toBe(true);
+            expect("something" in map).toBe(false);
+        });
+    });
+
     class RecursiveMap extends CoMap {
         name = co.string;
         next?: co<RecursiveMap | null> = co.ref(RecursiveMap);

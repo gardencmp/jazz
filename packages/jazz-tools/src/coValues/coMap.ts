@@ -610,6 +610,22 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             }
         }
     },
+    has(target, key) {
+        if (key in target) {
+            return true;
+        }
+
+        if (typeof key === "string") {
+            const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
+                target._schema[ItemsSym]) as Schema;
+
+            if (descriptor) {
+                return target._raw.get(key) !== undefined;
+            }
+        }
+
+        return false;
+    },
     deleteProperty(target, key) {
         const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
             target._schema[ItemsSym]) as Schema;
