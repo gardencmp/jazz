@@ -615,16 +615,14 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             return true;
         }
 
-        if (typeof key === "string") {
-            const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
-                target._schema[ItemsSym]) as Schema;
+        const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
+            target._schema[ItemsSym]) as Schema;
 
-            if (descriptor) {
-                return target._raw.get(key) !== undefined;
-            }
+        if (typeof key === "string" && descriptor) {
+            return target._raw.get(key) !== undefined;
+        } else {
+            return Reflect.has(target, key);
         }
-
-        return false;
     },
     deleteProperty(target, key) {
         const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
