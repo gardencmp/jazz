@@ -1,5 +1,12 @@
 # jazz-browser
 
+## 0.7.19
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.19
+
 ## 0.7.18
 
 ### Patch Changes

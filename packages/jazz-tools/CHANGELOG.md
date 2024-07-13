@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.19
+
+### Patch Changes
+
+-   Add support for "in" operator in CoMaps
+
 ## 0.7.18
 
 ### Patch Changes
