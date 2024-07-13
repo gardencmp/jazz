@@ -41,6 +41,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
     reconnectionTimeout?: number;
     storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
     crypto?: CryptoProvider;
+    onAuthStateChange?: (state: "loggedOut" | "loggedIn") => void;
 }): Promise<BrowserContext<Acc>> {
     const crypto = customCrypto || (await WasmCrypto.create());
     let sessionDone: () => void;
