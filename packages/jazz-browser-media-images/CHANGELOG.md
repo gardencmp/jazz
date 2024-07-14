@@ -1,5 +1,13 @@
 # jazz-browser-media-images
 
+## 0.7.20
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.20
+    -   jazz-browser@0.7.20
+
 ## 0.7.19
 
 ### Patch Changes

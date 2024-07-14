@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.20
+
+### Patch Changes
+
+-   Fix bug in CoMap 'has' trap
+
 ## 0.7.19
 
 ### Patch Changes
