@@ -224,11 +224,13 @@ export class Account extends CoValueBase implements CoValue {
         },
     ) {
         // TODO: is there a cleaner way to do this?
-        const connectedPeers = await Effect.runPromise(cojsonInternals.connectedPeers(
-            "creatingAccount",
-            "createdAccount",
-            { peer1role: "server", peer2role: "client" },
-        ));
+        const connectedPeers = await Effect.runPromise(
+            cojsonInternals.connectedPeers(
+                "creatingAccount",
+                "createdAccount",
+                { peer1role: "server", peer2role: "client" },
+            ),
+        );
 
         as._raw.core.node.syncManager.addPeer(connectedPeers[1]);
 

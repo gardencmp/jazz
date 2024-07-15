@@ -39,10 +39,12 @@ describe("Deep loading with depth arg", async () => {
         crypto: Crypto,
     });
 
-    const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers("initial", "second", {
-        peer1role: "server",
-        peer2role: "client",
-    }));
+    const [initialAsPeer, secondPeer] = await Effect.runPromise(
+        connectedPeers("initial", "second", {
+            peer1role: "server",
+            peer2role: "client",
+        }),
+    );
     if (!isControlledAccount(me)) {
         throw "me is not a controlled account";
     }
@@ -252,10 +254,12 @@ test("Deep loading a record-like coMap", async () => {
         crypto: Crypto,
     });
 
-    const [initialAsPeer, secondPeer] = await Effect.runPromise(connectedPeers("initial", "second", {
-        peer1role: "server",
-        peer2role: "client",
-    }));
+    const [initialAsPeer, secondPeer] = await Effect.runPromise(
+        connectedPeers("initial", "second", {
+            peer1role: "server",
+            peer2role: "client",
+        }),
+    );
     if (!isControlledAccount(me)) {
         throw "me is not a controlled account";
     }

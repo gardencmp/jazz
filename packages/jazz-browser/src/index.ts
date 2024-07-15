@@ -10,10 +10,7 @@ import {
     WasmCrypto,
     CryptoProvider,
 } from "jazz-tools";
-import {
-    AccountID,
-    LSMStorage,
-} from "cojson";
+import { AccountID, LSMStorage } from "cojson";
 import { AuthProvider } from "./auth/auth.js";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";

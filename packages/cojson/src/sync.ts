@@ -3,7 +3,7 @@ import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
-import { Effect, Queue, Stream } from "effect";
+import { Data, Effect, Queue, Stream } from "effect";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -56,12 +56,9 @@ export type DoneMessage = {
 
 export type PeerID = string;
 
-export class DisconnectedError extends Error {
-    readonly _tag = "DisconnectedError";
-    constructor(public message: string) {
-        super(message);
-    }
-}
+export class DisconnectedError extends Data.TaggedError("DisconnectedError")<{
+    message: string;
+}> {}
 
 export class PingTimeoutError extends Error {
     readonly _tag = "PingTimeoutError";
