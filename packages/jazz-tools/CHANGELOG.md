@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.21
+
+### Patch Changes
+
+-   Fix another bug in CoMap 'has' proxy trap
+
 ## 0.7.20
 
 ### Patch Changes

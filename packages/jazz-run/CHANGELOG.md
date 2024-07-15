@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.21
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.21
+
 ## 0.7.20
 
 ### Patch Changes

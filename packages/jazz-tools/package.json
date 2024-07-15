@@ -5,7 +5,7 @@
     "types": "./src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.20",
+    "version": "0.7.21",
     "dependencies": {
         "@effect/schema": "^0.66.16",
         "cojson": "workspace:*",
