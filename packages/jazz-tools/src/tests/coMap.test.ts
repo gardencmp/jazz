@@ -25,7 +25,7 @@ describe("Simple CoMap operations", async () => {
         _height = co.number;
         birthday = co.encoded(Encoders.Date);
         name? = co.string;
-        nullable = co.encoded(Schema.NullOr(Schema.String));
+        nullable = co.optional.encoded(Schema.NullishOr(Schema.String));
 
         get roughColor() {
             return this.color + "ish";
@@ -94,6 +94,8 @@ describe("Simple CoMap operations", async () => {
 
             map.nullable = "not null";
             map.nullable = null;
+            delete map.nullable;
+            map.nullable = undefined;
 
             map.name = "Secret name";
             expect(map.name).toEqual("Secret name");
@@ -442,7 +444,7 @@ describe("CoMap resolution", async () => {
 
     class TestMapWithOptionalRef extends CoMap {
         color = co.string;
-        nested = co.ref(NestedMap, { optional: true });
+        nested = co.optional.ref(NestedMap);
     }
 
     test("Construction with optional", async () => {
