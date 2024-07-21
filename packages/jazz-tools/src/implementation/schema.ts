@@ -17,6 +17,36 @@ export type IfCo<C, R> = C extends infer _A | infer B
     : never;
 export type UnCo<T> = T extends co<infer A> ? A : T;
 
+const optional = {
+    ref: optionalRef,
+    json<T extends JsonValue>(): co<T | undefined> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return { [SchemaInit]: "json" satisfies Schema } as any;
+    },
+    encoded<T>(arg: OptionalEncoder<T>): co<T> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return { [SchemaInit]: { encoded: arg } satisfies Schema } as any;
+    },
+    string: {
+        [SchemaInit]: "json" satisfies Schema,
+    } as unknown as co<string | undefined>,
+    number: {
+        [SchemaInit]: "json" satisfies Schema,
+    } as unknown as co<number | undefined>,
+    boolean: {
+        [SchemaInit]: "json" satisfies Schema,
+    } as unknown as co<boolean | undefined>,
+    null: {
+        [SchemaInit]: "json" satisfies Schema,
+    } as unknown as co<null | undefined>,
+    literal<T extends (string | number | boolean)[]>(
+        ..._lit: T
+    ): co<T[number] | undefined> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return { [SchemaInit]: "json" satisfies Schema } as any;
+    },
+};
+
 /** @category Schema definition */
 export const co = {
     string: {
@@ -48,7 +78,14 @@ export const co = {
     ref,
     items: ItemsSym as ItemsSym,
     members: MembersSym as MembersSym,
+    optional,
 };
+
+function optionalRef<C extends CoValueClass>(
+    arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
+): co<InstanceType<C> | null | undefined> {
+    return ref(arg, { optional: true });
+}
 
 function ref<C extends CoValueClass>(
     arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
@@ -131,6 +168,10 @@ export type EffectSchemaWithInputAndOutput<A, I = A> = EffectSchema<
 };
 
 export type Encoder<V> = EffectSchemaWithInputAndOutput<V, JsonValue>;
+export type OptionalEncoder<V> = EffectSchemaWithInputAndOutput<
+    V,
+    JsonValue | undefined
+>;
 
 import { Date } from "@effect/schema/Schema";
 import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
