@@ -112,7 +112,7 @@ export default function RootLayout({
                             <div className="col-span-full md:col-span-1 sm:row-start-4 md:row-start-auto lg:col-span-2 md:row-span-2 md:flex-1 flex flex-row md:flex-col max-sm:mt-4 justify-between max-sm:items-start gap-2 text-sm min-w-[10rem]">
                                 <GcmpLogo monochrome className="w-32" />
                                 <p className="max-sm:text-right">
-                                    © 2023
+                                    © {new Date().getFullYear()}
                                     <br />
                                     Garden Computing, Inc.
                                 </p>
