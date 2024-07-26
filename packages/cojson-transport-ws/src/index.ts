@@ -39,7 +39,7 @@ export function createWebSocketPeer(options: {
 }): Effect.Effect<Peer> {
     return Effect.gen(function* () {
         const ws = options.websocket;
-        const ws_ = ws as unknown as EventTarget;
+        const ws_ = ws as unknown as Stream.EventListener<WebsocketEvents["message"]>;
 
         const outgoing = yield* Queue.unbounded<SyncMessage>();
 
@@ -68,18 +68,17 @@ export function createWebSocketPeer(options: {
             return true;
         };
 
-        yield* Effect.gen(function* () {
+        yield* Effect.forkDaemon(Effect.gen(function* () {
             yield* once(ws, "open");
             yield* Queue.take(outgoing).pipe(
                 Effect.andThen((message) => ws.send(JSON.stringify(message))),
                 Effect.forever,
-                Effect.forkDaemon,
             );
-        });
+        }));
 
         type E = WebsocketEvents["message"];
         const messages = Stream.fromEventListener<E>(ws_, "message").pipe(
-            Stream.timeoutFail(() => new PingTimeoutError(), "2.5 seconds"),
+            Stream.timeoutFail(() => new PingTimeoutError(), "10 seconds"),
             Stream.tapError((_e) =>
                 Console.warn("Ping timeout").pipe(
                     Effect.andThen(Effect.try(() => ws.close())),
