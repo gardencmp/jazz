@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.22
+
+### Patch Changes
+
+-   Increase disconnect timeout for now
+
 ## 0.7.18
 
 ### Patch Changes
