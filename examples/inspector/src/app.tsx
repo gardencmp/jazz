@@ -15,8 +15,7 @@ import { AccountInfo, CoJsonTree, Tag } from "./cojson-tree";
 import { useEffect, useState } from "react";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { Effect } from "effect";
-import ThreeDViewer from "./3d-viewer";
-import ThreeCoJsonTree from "./3d-cojson-viewer";
+import ThreeCoJsonTree from "./viewer/index";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
 
