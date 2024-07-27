@@ -76,3 +76,17 @@
     padding: 0;
   }
 }
+
+.animate-in {
+  animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+  from {
+    transform: translateZ(400px) translateY(30px) scale(1.05);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateZ(0) scale(1);
+    opacity: 1;
+  }
+}

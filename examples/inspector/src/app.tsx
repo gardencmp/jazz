@@ -15,19 +15,23 @@ import { AccountInfo, CoJsonTree, Tag } from "./cojson-tree";
 import { useEffect, useState } from "react";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { Effect } from "effect";
+import ThreeDViewer from "./3d-viewer";
+import ThreeCoJsonTree from "./3d-cojson-viewer";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
 
 function App() {
+    // return <ThreeDViewer />;
+
     const [accountID, setAccountID] = useState<CoID<RawAccount>>(
-        localStorage["inspectorAccountID"]
+        localStorage["inspectorAccountID"],
     );
     const [accountSecret, setAccountSecret] = useState<AgentSecret>(
-        localStorage["inspectorAccountSecret"]
+        localStorage["inspectorAccountSecret"],
     );
 
     const [coValueId, setCoValueId] = useState<CoID<RawCoValue>>(
-        window.location.hash.slice(2) as CoID<RawCoValue>
+        window.location.hash.slice(2) as CoID<RawCoValue>,
     );
 
     useEffect(() => {
@@ -46,7 +50,7 @@ function App() {
                     id: "mesh",
                     websocket: new WebSocket("wss://mesh.jazz.tools"),
                     role: "server",
-                })
+                }),
             );
             const node = await LocalNode.withLoadedAccount({
                 accountID: accountID,
@@ -97,9 +101,11 @@ function App() {
                     className="border p-2 rounded min-w-[20rem]"
                     placeholder="CoValue ID"
                     value={coValueId}
-                    onChange={(e) =>
-                        setCoValueId(e.target.value as CoID<RawCoValue>)
-                    }
+                    onChange={(e) => {
+                        // setCoValueId(e.target.value as CoID<RawCoValue>);
+                        // change hash
+                        window.location.hash = "/" + e.target.value;
+                    }}
                 />
             </div>
             {coValueId && localNode ? (
@@ -165,6 +171,8 @@ function Inspect({
     } else if (isGroup) {
         title = "Group";
     }
+
+    return <ThreeCoJsonTree coValueId={coValueId} node={node} />;
 
     return (
         <div className="mb-auto">
@@ -234,7 +242,7 @@ function Sessions({ coValue, node }: { coValue: RawCoValue; node: LocalNode }) {
                                 const correspondingValidTx = validTx.find(
                                     (validTx) =>
                                         validTx.txID.sessionID === sessionID &&
-                                        validTx.txID.txIndex == txIdx
+                                        validTx.txID.txIndex == txIdx,
                                 );
                                 return (
                                     <div
@@ -242,12 +250,12 @@ function Sessions({ coValue, node }: { coValue: RawCoValue; node: LocalNode }) {
                                         className={clsx(
                                             "text-xs flex-1 p-2 border rounded min-w-36 max-w-40 overflow-scroll bg-white",
                                             !correspondingValidTx &&
-                                                "bg-red-50 border-red-100"
+                                                "bg-red-50 border-red-100",
                                         )}
                                     >
                                         <div>
                                             {new Date(
-                                                tx.madeAt
+                                                tx.madeAt,
                                             ).toLocaleString()}
                                         </div>
                                         <div>{tx.privacy}</div>
@@ -256,7 +264,7 @@ function Sessions({ coValue, node }: { coValue: RawCoValue; node: LocalNode }) {
                                                 ? JSON.stringify(
                                                       correspondingValidTx.changes,
                                                       undefined,
-                                                      2
+                                                      2,
                                                   )
                                                 : "invalid/undecryptable"}
                                         </pre>
@@ -268,7 +276,7 @@ function Sessions({ coValue, node }: { coValue: RawCoValue; node: LocalNode }) {
                             {session.lastHash} / {session.lastSignature}{" "}
                         </div>
                     </div>
-                )
+                ),
             )}
         </div>
     );
@@ -283,7 +291,7 @@ function SessionInfo({
     transactionCount: number;
     node: LocalNode;
 }) {
-    let Prefix = sessionID.startsWith("co_") ? (
+    const Prefix = sessionID.startsWith("co_") ? (
         <AccountInfo
             accountID={sessionID.split("_session_")[0] as CoID<RawAccount>}
             node={node}
