@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CoID, LocalNode, RawCoValue } from "cojson";
+import { CoID, LocalNode, RawBinaryCoStream, RawCoValue } from "cojson";
 import clsx from "clsx";
+
 import { LinkIcon } from "./link-icon";
 
 type CoJsonType = "comap" | "costream" | "colist";
+type ExtendedCoJsonType = "image" | "record";
 
 // Core functions
 
 async function resolveCoValue(coValueId: CoID<RawCoValue>, node: LocalNode) {
   const value = await node.load(coValueId);
+
   if (value === "unavailable") {
     return { data: "unavailable", type: null };
   }
-  console.log(value);
   return {
     data: value.toJSON(),
     type: value.type as CoJsonType,
@@ -57,6 +59,18 @@ function createPageData(
   };
 }
 
+type ResolvedImageDefinition = {
+  originalSize: [number, number];
+  placeholderDataURL?: string;
+  [res: `${number}x${number}`]: RawBinaryCoStream["id"];
+};
+
+const isBrowserImage = (
+  coValue: object,
+): coValue is ResolvedImageDefinition => {
+  return "originalSize" in coValue && "placeholderDataURL" in coValue;
+};
+
 function useResolvedCoValue(
   coValueId: CoID<RawCoValue>,
   node: LocalNode,
@@ -77,9 +91,36 @@ function useResolvedCoValue(
     [resolvedData, type, name, coValueId],
   );
 
+  // Custom Type Detections
+  const isCoMapRecord = useMemo(() => {
+    if (!pageData || !pageData.children) return false;
+
+    const childrenToCheck = pageData.children.slice(0, 10);
+    if (
+      childrenToCheck.length >= 2 &&
+      haveSameKeys(childrenToCheck.map((child) => child.value))
+    ) {
+      return true;
+    }
+
+    return false;
+  }, [pageData]);
+
+  const isBrowserImageResult = useMemo(() => {
+    if (!resolvedData || type !== "comap") return false;
+
+    return isBrowserImage(resolvedData);
+  }, [resolvedData, type]);
+
+  const extendedType: ExtendedCoJsonType | undefined = useMemo(() => {
+    if (isCoMapRecord) return "record";
+    if (isBrowserImageResult) return "image";
+  }, [isCoMapRecord, isBrowserImageResult]);
+
   return {
     data: resolvedData,
     type,
+    extendedType,
     pageData,
   };
 }
@@ -125,30 +166,17 @@ function Page({
   const {
     data: resolvedData,
     type,
+    extendedType,
     pageData,
   } = useResolvedCoValue(coValueId, node, name);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
-  const isCoMapRecord = useMemo(() => {
-    if (!pageData || !pageData.children) return false;
-
-    const childrenToCheck = pageData.children.slice(0, 10);
-    if (
-      childrenToCheck.length >= 2 &&
-      haveSameKeys(childrenToCheck.map((child) => child.value))
-    ) {
-      return true;
-    }
-
-    return false;
-  }, [pageData]);
-
   // Automatically switch to table view if the page is a CoMap record
   useEffect(() => {
-    if (type === "colist" || isCoMapRecord) {
+    if (type === "colist" || extendedType === "record") {
       setViewMode("table");
     }
-  }, [type, isCoMapRecord]);
+  }, [type, extendedType]);
 
   if (resolvedData === "unavailable") {
     return <div style={style}>Data unavailable</div>;
@@ -187,8 +215,11 @@ function Page({
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-700 font-medium py-0.5 px-1 -ml-0.5 rounded bg-gray-700/5 inline-block font-mono">
               {pageData.coType}
-              {isCoMapRecord ? (
+              {extendedType === "record" ? (
                 <span className="font-medium"> Record</span>
+              ) : null}
+              {extendedType === "image" ? (
+                <span className="font-medium"> Image</span>
               ) : null}
             </span>
             <span className="text-xs text-gray-700 font-medium py-0.5 px-1 -ml-0.5 rounded bg-gray-700/5 inline-block font-mono">
@@ -326,9 +357,60 @@ function GridView({
   onChildClick: (child: JSONNode) => void;
   node: LocalNode;
 }) {
+  // splitData into coIds and nonCoIds
+  const [coIds, nonCoIds] = useMemo(() => {
+    return data.reduce(
+      ([coIds, nonCoIds], child) => {
+        if (child.coValueId) {
+          coIds.push(child);
+        } else {
+          nonCoIds.push(child);
+        }
+        return [coIds, nonCoIds];
+      },
+      [[], []] as [JSONNode[], JSONNode[]],
+    );
+  }, [data]);
+
+  const cellClassName = "truncate px-2 py-6 align-top";
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-2">
-      {data.map((child, childIndex) => (
+    <>
+      <table className="w-full border-collapse text-sm -mx-2">
+        <tbody className="divide-y divide-gray-200">
+          {data.map((child, childIndex) => (
+            <tr key={childIndex} className="align-top py-6">
+              <td
+                className={cellClassName}
+                style={{ maxWidth: "200px", width: "1%" }}
+              >
+                <span className={clsx(child.coValueId && "font-medium")}>
+                  {child.name}
+                </span>
+              </td>
+              <td
+                className={clsx(cellClassName, child.coValueId && "!py-2")}
+                onClick={() => onChildClick(child)}
+              >
+                {child.coValueId ? (
+                  <div className="border rounded-md p-4 shadow-sm cursor-pointer inline-block">
+                    <CoMapPreview coId={child.coValueId} node={node} />
+                  </div>
+                ) : child.type === "value" ? (
+                  <RenderCoValueJSON json={child.value} node={node} />
+                ) : child.type === "array" ? (
+                  <ArrayPreview array={child.value} node={node} />
+                ) : (
+                  child.type
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-2">
+        {/* {data.map((child, childIndex) => (
         <div
           key={childIndex}
           className={clsx(
@@ -352,8 +434,35 @@ function GridView({
             )}
           </p>
         </div>
-      ))}
-    </div>
+      ))} */}
+
+        {/* {coIds.map((child, childIndex) => (
+          <div
+            key={childIndex}
+            className={clsx(
+              "bg-gray-100 p-4 rounded-lg transition-colors overflow-hidden truncate",
+              child.coValueId
+                ? "bg-white border hover:bg-gray-100/5 cursor-pointer shadow-sm"
+                : "bg-gray-100",
+            )}
+            onClick={() => onChildClick(child)}
+          >
+            <h3 className="font-semibold">{child.name}</h3>
+            <p>
+              {child.coValueId ? (
+                <CoMapPreview coId={child.coValueId} node={node} />
+              ) : child.type === "value" ? (
+                <RenderCoValueJSON json={child.value} node={node} />
+              ) : child.type === "array" ? (
+                <ArrayPreview array={child.value} node={node} />
+              ) : (
+                child.type
+              )}
+            </p>
+          </div>
+        ))} */}
+      </div>
+    </>
   );
 }
 
@@ -487,9 +596,18 @@ const CoMapPreview = ({
   node: LocalNode;
   limit?: number;
 }) => {
-  const { data } = useResolvedCoValue(coId, node);
+  const { data, extendedType } = useResolvedCoValue(coId, node);
 
   if (!data) return <div>Loading...</div>;
+
+  if (extendedType === "image" && isBrowserImage(data)) {
+    return (
+      <div>
+        Image ({data.originalSize[0]}x{data.originalSize[1]})
+        <img src={data.placeholderDataURL} className="size-8" />
+      </div>
+    );
+  }
 
   return (
     <div className="text-sm">
