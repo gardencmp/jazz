@@ -98,7 +98,7 @@ export function GridView({
                                 <span>{key}</span>
                             )}
                         </h3>
-                        <div className="mt-2">
+                        <div className="mt-2 text-sm">
                             {isCoId(child) ? (
                                 <CoMapPreview
                                     coId={child as CoID<RawCoValue>}

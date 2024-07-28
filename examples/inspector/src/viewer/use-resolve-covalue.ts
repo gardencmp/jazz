@@ -2,16 +2,42 @@ import { CoID, LocalNode, RawBinaryCoStream, RawCoValue } from "cojson";
 import { useEffect, useState } from "react";
 
 export type CoJsonType = "comap" | "costream" | "colist";
-export type ExtendedCoJsonType = "image" | "record";
+export type ExtendedCoJsonType = "image" | "record" | "account" | "group";
 
 type JSON = string | number | boolean | null | JSON[] | { [key: string]: JSON };
 type JSONObject = { [key: string]: JSON };
+
+type ResolvedImageDefinition = {
+    originalSize: [number, number];
+    placeholderDataURL?: string;
+    [res: `${number}x${number}`]: RawBinaryCoStream["id"];
+};
 
 // Type guard for browser image
 export const isBrowserImage = (
     coValue: JSONObject,
 ): coValue is ResolvedImageDefinition => {
     return "originalSize" in coValue && "placeholderDataURL" in coValue;
+};
+
+export type ResolvedGroup = {
+    readKey: string;
+    [key: string]: JSON;
+};
+
+export const isGroup = (coValue: JSONObject): coValue is ResolvedGroup => {
+    return "readKey" in coValue;
+};
+
+export type ResolvedAccount = {
+    profile: {
+        name: string;
+    };
+    [key: string]: JSON;
+};
+
+export const isAccount = (coValue: JSONObject): coValue is ResolvedAccount => {
+    return isGroup(coValue) && "profile" in coValue;
 };
 
 export async function resolveCoValue(
@@ -51,12 +77,19 @@ export async function resolveCoValue(
     if (type === "comap") {
         if (isBrowserImage(snapshot)) {
             extendedType = "image";
+        } else if (isAccount(snapshot)) {
+            extendedType = "account";
+        } else if (isGroup(snapshot)) {
+            extendedType = "group";
         } else {
+            // This check is a bit of a hack
+            // There might be a better way to do this
             const children = Object.values(snapshot).slice(0, 10);
             if (
                 children.every(
                     (c) => typeof c === "string" && c.startsWith("co_"),
-                )
+                ) &&
+                children.length > 3
             ) {
                 extendedType = "record";
             }
@@ -70,12 +103,6 @@ export async function resolveCoValue(
         extendedType,
     };
 }
-
-type ResolvedImageDefinition = {
-    originalSize: [number, number];
-    placeholderDataURL?: string;
-    [res: `${number}x${number}`]: RawBinaryCoStream["id"];
-};
 
 export function useResolvedCoValue(
     coValueId: CoID<RawCoValue>,
@@ -107,6 +134,7 @@ export function useResolvedCoValues(
     >([]);
 
     useEffect(() => {
+        console.log("RETECHING", coValueIds);
         const fetchResults = async () => {
             if (coValueIds.length === 0) return;
             const resolvedValues = await Promise.all(
@@ -118,7 +146,7 @@ export function useResolvedCoValues(
         };
 
         fetchResults();
-    }, [...coValueIds]);
+    }, [coValueIds]);
 
     return results;
 }

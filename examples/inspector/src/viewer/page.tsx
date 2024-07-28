@@ -1,11 +1,17 @@
 import clsx from "clsx";
-import { CoID, LocalNode, RawCoValue } from "cojson";
+import { CoID, LocalNode, RawCoStream, RawCoValue } from "cojson";
 import { useEffect, useState } from "react";
 import { useResolvedCoValue } from "./use-resolve-covalue";
 import { GridView } from "./grid-view";
 import { PageInfo } from "./types";
 import { TableView } from "./table-viewer";
 import { TypeIcon } from "./type-icon";
+import { CoStreamView } from "./co-stream-view";
+import {
+    AccountOrGroupPreview,
+    CoMapPreview,
+    ValueRenderer,
+} from "./value-renderer";
 
 type PageProps = {
     coId: CoID<RawCoValue>;
@@ -108,7 +114,14 @@ export function Page({
         )} */}
             </div>
             <div className="overflow-auto max-h-[calc(100%-4rem)]">
-                {viewMode === "grid" ? (
+                {type === "costream" ? (
+                    <CoStreamView
+                        data={snapshot}
+                        onNavigate={onNavigate}
+                        node={node}
+                        value={value as RawCoStream}
+                    />
+                ) : viewMode === "grid" ? (
                     <GridView
                         data={snapshot}
                         onNavigate={onNavigate}
@@ -120,6 +133,22 @@ export function Page({
                         node={node}
                         onNavigate={onNavigate}
                     />
+                )}
+                {/* --- */}
+                {extendedType !== "account" && extendedType !== "group" && (
+                    <div className="text-xs text-gray-500 mt-4">
+                        Owned by{" "}
+                        <AccountOrGroupPreview
+                            coId={value.group.id}
+                            node={node}
+                            showId
+                            onClick={() => {
+                                onNavigate([
+                                    { coId: value.group.id, name: "owner" },
+                                ]);
+                            }}
+                        />
+                    </div>
                 )}
             </div>
         </div>

@@ -3,11 +3,13 @@ import { CoID, JsonValue, LocalNode, RawCoValue } from "cojson";
 import { LinkIcon } from "../link-icon";
 import {
     CoJsonType,
+    ResolvedAccount,
     isBrowserImage,
+    resolveCoValue,
     useResolvedCoValue,
 } from "./use-resolve-covalue";
 import { TypeIcon } from "./type-icon";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 // Is there a chance we can pass the actual CoValue here?
 export function ValueRenderer({
@@ -25,10 +27,6 @@ export function ValueRenderer({
 
     if (json === null) {
         return <span className="text-gray-400">null</span>;
-    }
-
-    if (Array.isArray(json)) {
-        return <span>Array({json.length})</span>;
     }
 
     if (typeof json === "string" && json.startsWith("co_")) {
@@ -51,8 +49,10 @@ export function ValueRenderer({
 
     if (typeof json === "string") {
         return (
-            <span className="p-1 px-1.5 rounded bg-green-700/5  text-green-900 font-mono">
+            <span className="text-green-900 font-mono">
+                {/* <span className="select-none opacity-70">{'"'}</span> */}
                 {json}
+                {/* <span className="select-none opacity-70">{'"'}</span> */}
             </span>
         );
     }
@@ -62,23 +62,59 @@ export function ValueRenderer({
     }
 
     if (typeof json === "boolean") {
-        return <span className="text-orange-500">{json.toString()}</span>;
+        return (
+            <span
+                className={clsx(
+                    json
+                        ? "text-green-700 bg-green-700/5"
+                        : "text-amber-700 bg-amber-500/5",
+                    "font-mono",
+                    "inline-block px-1 py-0.5 rounded",
+                )}
+            >
+                {json.toString()}
+            </span>
+        );
     }
 
     if (Array.isArray(json)) {
-        return <span className="cursor-pointer">Array({json.length})</span>;
+        return (
+            <span title={JSON.stringify(json)}>
+                Array <span className="text-gray-500">({json.length})</span>
+            </span>
+        );
     }
 
     if (typeof json === "object") {
         return (
-            <span className="cursor-pointer">
-                Object ({Object.keys(json).length})
+            <span
+                title={JSON.stringify(json, null, 2)}
+                className="inline-block max-w-64 truncate"
+            >
+                {compact ? (
+                    <span>
+                        Object{" "}
+                        <span className="text-gray-500">
+                            ({Object.keys(json).length})
+                        </span>
+                    </span>
+                ) : (
+                    JSON.stringify(json, null, 2)
+                )}
             </span>
         );
     }
 
     return <span>{String(json)}</span>;
 }
+
+// const ImageRenderer = ({}) => {
+//     return (
+//         <ProgressiveImg image={image}>
+//             {({ src }) => <img src={src} className={clsx("w-full")} />}
+//         </ProgressiveImg>
+//     );
+// };
 
 export const CoMapPreview = ({
     coId,
@@ -89,9 +125,22 @@ export const CoMapPreview = ({
     node: LocalNode;
     limit?: number;
 }) => {
-    const { snapshot, type, extendedType } = useResolvedCoValue(coId, node);
+    const { value, snapshot, type, extendedType } = useResolvedCoValue(
+        coId,
+        node,
+    );
 
-    if (!snapshot) return <div>Loading...</div>;
+    if (!snapshot) {
+        return (
+            <div className="rounded bg-gray-100 animate-pulse whitespace-pre w-24">
+                {" "}
+            </div>
+        );
+    }
+
+    if (snapshot === "unavailable" && !value) {
+        return <div className="text-gray-500">Unavailable</div>;
+    }
 
     if (extendedType === "image" && isBrowserImage(snapshot)) {
         return (
@@ -103,18 +152,30 @@ export const CoMapPreview = ({
                 <span className="text-gray-500 text-sm">
                     {snapshot.originalSize[0]} x {snapshot.originalSize[1]}
                 </span>
+
+                {/* <CoMapPreview coId={value[]} node={node} /> */}
+                {/* <ProgressiveImg image={value}>
+                    {({ src }) => <img src={src} className={clsx("w-full")} />}
+                </ProgressiveImg> */}
             </div>
         );
     }
 
     if (extendedType === "record") {
-        return <div>Record ({Object.keys(snapshot).length})</div>;
+        return (
+            <div>
+                Record{" "}
+                <span className="text-gray-500">
+                    ({Object.keys(snapshot).length})
+                </span>
+            </div>
+        );
     }
 
     if (type === "colist") {
         return (
-            <div className="flex flex-col gap-2">
-                {Object.keys(snapshot).length} items
+            <div>
+                List <span className="text-gray-500">({snapshot.length})</span>
             </div>
         );
     }
@@ -141,3 +202,48 @@ export const CoMapPreview = ({
         </div>
     );
 };
+
+export function AccountOrGroupPreview({
+    coId,
+    node,
+    showId = false,
+    onClick,
+}: {
+    coId: CoID<RawCoValue>;
+    node: LocalNode;
+    showId?: boolean;
+    onClick?: (name?: string) => void;
+}) {
+    const { snapshot, extendedType } = useResolvedCoValue(coId, node);
+    const [name, setName] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (extendedType === "account") {
+            resolveCoValue(snapshot.profile, node).then(({ snapshot }) => {
+                if ("name" in snapshot && typeof snapshot.name === "string") {
+                    setName(snapshot.name);
+                }
+            });
+        }
+    }, [snapshot, node, extendedType]);
+
+    if (!snapshot) return <span>Loading...</span>;
+    if (extendedType !== "account" && extendedType !== "group") {
+        return <span>CoID is not an account or group</span>;
+    }
+
+    const displayName =
+        extendedType === "account" ? name || "Account" : "Group";
+    const displayText = showId ? `${displayName} (${coId})` : displayName;
+
+    const props = onClick
+        ? {
+              onClick: () => onClick(displayName),
+              className: "text-blue-500 cursor-pointer hover:underline",
+          }
+        : {
+              className: "text-gray-500",
+          };
+
+    return <span {...props}>{displayText}</span>;
+}

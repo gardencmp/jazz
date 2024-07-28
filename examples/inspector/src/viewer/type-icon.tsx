@@ -12,24 +12,20 @@ export const TypeIcon = ({
     type: CoJsonType;
     extendedType?: ExtendedCoJsonType;
 }) => {
-    if (extendedType === "record") {
-        return <span className="font-mono">{"{} Record"}</span>;
-    }
+    const iconMap: Record<ExtendedCoJsonType | CoJsonType, string> = {
+        record: "{} Record",
+        image: "🖼️ Image",
+        comap: "{} CoMap",
+        costream: "≋ CoStream",
+        colist: "☰ CoList",
+        account: "👤 Account",
+        group: "👥 Group",
+    };
 
-    if (extendedType === "image") {
-        return <span className="font-mono">🖼️ Image</span>;
-    }
+    const iconKey = extendedType || type;
+    const icon = iconMap[iconKey as keyof typeof iconMap];
 
-    if (type === "comap") {
-        return <span className="font-mono">{"{} CoMap"}</span>;
-    }
-    if (type === "costream") {
-        return <span className="font-mono">≋ CoStream</span>;
-    }
-    if (type === "colist") {
-        return <span className="font-mono">☰ CoList</span>;
-    }
-    return "no match";
+    return icon ? <span className="font-mono">{icon}</span> : null;
 };
 
 export const ResolveIcon = ({
@@ -39,9 +35,13 @@ export const ResolveIcon = ({
     coId: CoID<RawCoValue>;
     node: LocalNode;
 }) => {
-    const { type, extendedType } = useResolvedCoValue(coId, node);
+    const { type, extendedType, snapshot } = useResolvedCoValue(coId, node);
 
-    if (!type) return null;
+    if (snapshot === "unavailable" && !type) {
+        return <div className="text-gray-600 font-medium">Unavailable</div>;
+    }
+
+    if (!type) return <div className="whitespace-pre w-14 font-mono"> </div>;
 
     return <TypeIcon type={type} extendedType={extendedType} />;
 };

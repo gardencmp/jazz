@@ -16,10 +16,10 @@ import { useEffect, useState } from "react";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { Effect } from "effect";
 import ThreeCoJsonTree from "./viewer/index";
-import CoJsonViewer from "./viewer/index";
+import CoJsonViewer from "./viewer/new-app";
 import { usePagePath } from "./viewer/use-page-path";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")!).render(<CoJsonViewer />);
 
 function App() {
     const { path, setPage } = usePagePath();
