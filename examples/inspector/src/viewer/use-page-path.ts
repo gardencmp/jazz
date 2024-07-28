@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageInfo } from "./types";
 import { CoID, RawCoValue } from "cojson";
 
@@ -15,9 +15,15 @@ export function usePagePath(defaultPath?: PageInfo[]) {
         return defaultPath || [];
     });
 
+    const updatePath = useCallback((newPath: PageInfo[]) => {
+        setPath(newPath);
+        const hash = encodePathToHash(newPath);
+        window.location.hash = `#/${hash}`;
+    }, []);
+
     useEffect(() => {
         const handleHashChange = () => {
-            const hash = window.location.hash.slice(2); // Remove '#/'
+            const hash = window.location.hash.slice(2);
             if (hash) {
                 try {
                     const newPath = decodePathFromHash(hash);
@@ -35,38 +41,40 @@ export function usePagePath(defaultPath?: PageInfo[]) {
     }, [defaultPath]);
 
     useEffect(() => {
-        const hash = encodePathToHash(path);
-        window.history.replaceState(null, "", `#/${hash}`);
-    }, [path]);
-
-    useEffect(() => {
         if (
             defaultPath &&
             JSON.stringify(path) !== JSON.stringify(defaultPath)
         ) {
-            setPath(defaultPath);
+            updatePath(defaultPath);
         }
-    }, [defaultPath]);
+    }, [defaultPath, path, updatePath]);
 
-    const addPages = (newPages: PageInfo[]) => {
-        setPath((prevPath) => [...prevPath, ...newPages]);
-    };
+    const addPages = useCallback(
+        (newPages: PageInfo[]) => {
+            updatePath([...path, ...newPages]);
+        },
+        [path, updatePath],
+    );
 
-    const goToIndex = (index: number) => {
-        setPath((prevPath) => prevPath.slice(0, index + 1));
-    };
+    const goToIndex = useCallback(
+        (index: number) => {
+            updatePath(path.slice(0, index + 1));
+        },
+        [path, updatePath],
+    );
 
-    const setPage = (coId: CoID<RawCoValue>) => {
-        setPath([{ coId, name: "Root" }]);
-    };
+    const setPage = useCallback(
+        (coId: CoID<RawCoValue>) => {
+            updatePath([{ coId, name: "Root" }]);
+        },
+        [updatePath],
+    );
 
-    const goBack = () => {
-        setPath((prevPath) =>
-            prevPath.length > 1
-                ? prevPath.slice(0, prevPath.length - 1)
-                : prevPath,
-        );
-    };
+    const goBack = useCallback(() => {
+        if (path.length > 1) {
+            updatePath(path.slice(0, path.length - 1));
+        }
+    }, [path, updatePath]);
 
     return {
         path,
