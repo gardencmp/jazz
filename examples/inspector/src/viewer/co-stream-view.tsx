@@ -152,6 +152,23 @@ const BinaryDownloadButton = ({
     );
 };
 
+const LabelContentPair = ({
+    label,
+    content,
+}: {
+    label: string;
+    content: React.ReactNode;
+}) => {
+    return (
+        <div className="flex flex-col gap-1.5 ">
+            <span className="uppercase text-xs font-medium text-gray-600 tracking-wide">
+                {label}
+            </span>
+            <span>{content}</span>
+        </div>
+    );
+};
+
 function RenderCoBinaryStream({
     value,
     items,
@@ -196,49 +213,49 @@ function RenderCoBinaryStream({
 
     const { blob, mimeType } = file;
 
-    console.log(items);
-
     const sizeInKB = file.totalSize / 1024;
 
     return (
-        <div
-            className={clsx(
-                "p-3 rounded-lg transition-colors overflow-hidden",
-                "bg-white border hover:bg-gray-100/5 cursor-pointer shadow-sm space-y-2",
-            )}
-        >
-            <h3 className="truncate mb-2">
-                <span className="font-medium flex justify-between">
-                    Blob: {mimeType || "No mime type"} {sizeInKB.toFixed(2)} KB
-                </span>
-            </h3>
-
-            {mimeType === "image/png" || mimeType === "image/jpeg" ? (
-                <>
-                    <RenderBlobImage blob={blob} />
-                    <BinaryDownloadButton
-                        mimeType={mimeType}
-                        label="Download Image"
-                        fileName={
-                            value.id.toString() +
-                            "." +
-                            (mimeType.replace("image/", "") || "")
-                        }
-                        pdfBlob={blob}
-                    />
-                </>
-            ) : (
-                <BinaryDownloadButton
-                    fileName={value.id.toString()}
-                    pdfBlob={blob}
-                    mimeType={mimeType}
-                    label={
-                        mimeType === "application/pdf"
-                            ? "Download PDF"
-                            : "Download File"
+        <div className="space-y-8 mt-4">
+            <div className="grid grid-cols-3 gap-2 max-w-3xl">
+                <LabelContentPair
+                    label="Mime Type"
+                    content={
+                        <span className="font-mono bg-gray-100 rounded px-2 py-1 text-sm">
+                            {mimeType || "No mime type"}
+                        </span>
                     }
                 />
-            )}
+                <LabelContentPair
+                    label="Size"
+                    content={<span>{sizeInKB.toFixed(2)} KB</span>}
+                />
+                <LabelContentPair
+                    label="Download"
+                    content={
+                        <BinaryDownloadButton
+                            fileName={value.id.toString()}
+                            pdfBlob={blob}
+                            mimeType={mimeType}
+                            label={
+                                mimeType === "application/pdf"
+                                    ? "Download PDF"
+                                    : "Download File"
+                            }
+                        />
+                    }
+                />
+            </div>
+            {mimeType === "image/png" || mimeType === "image/jpeg" ? (
+                <LabelContentPair
+                    label="Preview"
+                    content={
+                        <div className="bg-gray-50 p-3 rounded-sm">
+                            <RenderBlobImage blob={blob} />
+                        </div>
+                    }
+                />
+            ) : null}
         </div>
     );
 }
@@ -262,11 +279,7 @@ function RenderCoStream({
                     className="bg-gray-100 p-3 rounded-lg transition-colors overflow-hidden bg-white border hover:bg-gray-100/5 cursor-pointer shadow-sm"
                     key={id}
                 >
-                    <AccountOrGroupPreview
-                        coId={id}
-                        node={node}
-                        onClick={() => {}}
-                    />
+                    <AccountOrGroupPreview coId={id} node={node} />
                     {value.items[streamPerUser[idx]]?.map(
                         (item: CoStreamItem<JsonValue>) => (
                             <div>

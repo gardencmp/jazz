@@ -146,7 +146,7 @@ export function useResolvedCoValues(
         };
 
         fetchResults();
-    }, [coValueIds]);
+    }, [coValueIds, node]);
 
     return results;
 }
