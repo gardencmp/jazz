@@ -16,11 +16,13 @@ import { useEffect, useState } from "react";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { Effect } from "effect";
 import ThreeCoJsonTree from "./viewer/index";
+import CoJsonViewer from "./viewer/index";
+import { usePagePath } from "./viewer/use-page-path";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
 
 function App() {
-    // return <ThreeDViewer />;
+    const { path, setPage } = usePagePath();
 
     const [accountID, setAccountID] = useState<CoID<RawAccount>>(
         localStorage["inspectorAccountID"],
@@ -30,14 +32,8 @@ function App() {
     );
 
     const [coValueId, setCoValueId] = useState<CoID<RawCoValue>>(
-        window.location.hash.slice(2) as CoID<RawCoValue>,
+        path?.[0]?.coId as CoID<RawCoValue>,
     );
-
-    useEffect(() => {
-        window.addEventListener("hashchange", () => {
-            setCoValueId(window.location.hash.slice(2) as CoID<RawCoValue>);
-        });
-    });
 
     const [localNode, setLocalNode] = useState<LocalNode>();
 
@@ -101,14 +97,13 @@ function App() {
                     placeholder="CoValue ID"
                     value={coValueId}
                     onChange={(e) => {
-                        // setCoValueId(e.target.value as CoID<RawCoValue>);
-                        // change hash
-                        window.location.hash = "/" + e.target.value;
+                        setCoValueId(e.target.value as CoID<RawCoValue>);
+                        setPage(e.target.value as CoID<RawCoValue>);
                     }}
                 />
             </div>
-            {coValueId && localNode ? (
-                <Inspect coValueId={coValueId} node={localNode} />
+            {path && localNode ? (
+                <CoJsonViewer defaultPath={path} node={localNode} />
             ) : null}
         </div>
     );

@@ -1,48 +1,30 @@
 import { CoID, LocalNode, RawCoValue } from "cojson";
-import { useState } from "react";
-import { PageInfo } from "./types";
 import { Page } from "./page";
 import { Breadcrumbs } from "./breadcrumbs";
+import { usePagePath } from "./use-page-path";
+import { PageInfo } from "./types";
 
 export default function CoJsonViewer({
-    coValueId,
+    defaultPath,
     node,
 }: {
-    coValueId: CoID<RawCoValue>;
+    defaultPath?: PageInfo[];
     node: LocalNode;
 }) {
-    const [path, setPath] = useState<PageInfo[]>([
-        { coId: coValueId, name: "Root" },
-    ]);
-
-    const handleNavigate = (newPages: PageInfo[]) => {
-        setPath([...path, ...newPages]);
-    };
-
-    const handleBreadcrumbClick = (index: number) => {
-        setPath(path.slice(0, index + 1));
-    };
-
-    const handlePageClick = () => {
-        if (path.length === 1) return;
-        setPath(path.slice(0, path.length - 1));
-    };
+    const { path, addPages, goToIndex, goBack } = usePagePath(defaultPath);
 
     return (
         <div className="w-full h-screen bg-gray-100 p-4 overflow-hidden">
-            <Breadcrumbs
-                path={path}
-                onBreadcrumbClick={handleBreadcrumbClick}
-            />
+            <Breadcrumbs path={path} onBreadcrumbClick={goToIndex} />
             <div className="relative mt-4 h-[calc(100vh-6rem)]">
                 {path.map((page, index) => (
                     <Page
                         key={`${page.coId}-${index}`}
                         coId={page.coId}
                         node={node}
-                        name={page.name}
-                        onHeaderClick={handlePageClick}
-                        onNavigate={handleNavigate}
+                        name={page.name || page.coId}
+                        onHeaderClick={goBack}
+                        onNavigate={addPages}
                         isTopLevel={index === path.length - 1}
                         style={{
                             transform: `translateZ(${(index - path.length + 1) * 200}px) scale(${

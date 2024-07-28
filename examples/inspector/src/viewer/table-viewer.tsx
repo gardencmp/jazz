@@ -36,9 +36,7 @@ export function TableView({
     }, [visibleRows, resolvedRows]);
 
     if (!coIdArray.length) {
-        return (
-            <div>This view is only available for CoLists and CoMap Records</div>
-        );
+        return <div>No data to display</div>;
     }
 
     if (resolvedRows.length === 0) {

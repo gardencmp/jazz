@@ -11,25 +11,28 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     onBreadcrumbClick,
 }) => {
     return (
-        <div className="mb-4 z-20 relative bg-indigo-400/10 backdrop-blur-sm rounded-lg inline-flex px-3 py-2 whitespace-pre transition-all items-center">
+        <div className="mb-4 z-20 relative bg-indigo-400/10 backdrop-blur-sm rounded-lg inline-flex px-3 py-2 whitespace-pre transition-all items-center space-x-1 min-h-10">
             <img
                 src="jazz-logo.png"
-                className="h-5 mr-2"
+                className="size-5 mr-1"
                 onClick={() => onBreadcrumbClick(0)}
             />
-            {path.map((page, index) => (
-                <span key={index}>
-                    <button
-                        onClick={() => onBreadcrumbClick(index)}
-                        className="text-indigo-700 hover:underline"
-                    >
-                        {page.name}
-                    </button>
-                    <span className="text-indigo-500/30">
-                        {index < path.length - 1 && " / "}
+            {path.map((page, index) => {
+                // Skip the first page, as the logo acts as a breadcrumb
+                if (index === 0) return null;
+
+                return (
+                    <span key={index}>
+                        <span className="text-indigo-500/30">{" / "}</span>
+                        <button
+                            onClick={() => onBreadcrumbClick(index)}
+                            className="text-indigo-700 hover:underline"
+                        >
+                            {page.name}
+                        </button>
                     </span>
-                </span>
-            ))}
+                );
+            })}
         </div>
     );
 };

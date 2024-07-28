@@ -1,10 +1,4 @@
-import {
-    CoID,
-    JsonValue,
-    LocalNode,
-    RawBinaryCoStream,
-    RawCoValue,
-} from "cojson";
+import { CoID, LocalNode, RawBinaryCoStream, RawCoValue } from "cojson";
 import { useEffect, useState } from "react";
 
 export type CoJsonType = "comap" | "costream" | "colist";
@@ -19,13 +13,6 @@ export const isBrowserImage = (
 ): coValue is ResolvedImageDefinition => {
     return "originalSize" in coValue && "placeholderDataURL" in coValue;
 };
-
-// Helper function to check if objects have the same keys
-function haveSameKeys(objects: JSONObject[]): boolean {
-    if (objects.length < 2) return true;
-    const keys = objects.map((obj) => Object.keys(obj).sort().join(","));
-    return keys.every((k) => k === keys[0]);
-}
 
 export async function resolveCoValue(
     coValueId: CoID<RawCoValue>,
@@ -65,9 +52,12 @@ export async function resolveCoValue(
         if (isBrowserImage(snapshot)) {
             extendedType = "image";
         } else {
-            // Check for record type (assuming we have access to children here)
             const children = Object.values(snapshot).slice(0, 10);
-            if (children.length >= 2 && haveSameKeys(children)) {
+            if (
+                children.every(
+                    (c) => typeof c === "string" && c.startsWith("co_"),
+                )
+            ) {
                 extendedType = "record";
             }
         }

@@ -87,7 +87,7 @@ export function GridView({
                                 <span className="font-medium flex justify-between">
                                     {key}
 
-                                    <div className="p-1 text-sm bg-gray-100 rounded-md">
+                                    <div className="px-2 py-1 text-xs bg-gray-100 rounded-md">
                                         <ResolveIcon
                                             coId={child as CoID<RawCoValue>}
                                             node={node}
