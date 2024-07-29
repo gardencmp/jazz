@@ -1,5 +1,15 @@
 # jazz-react
 
+## 0.7.23
+
+### Patch Changes
+
+-   Mostly complete OPFS implementation (single-tab only)
+-   Updated dependencies
+    -   cojson@0.7.23
+    -   jazz-tools@0.7.23
+    -   jazz-browser@0.7.23
+
 ## 0.7.22
 
 ### Patch Changes

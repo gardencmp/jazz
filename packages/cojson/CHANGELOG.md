@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.23
+
+### Patch Changes
+
+-   Mostly complete OPFS implementation (single-tab only)
+
 ## 0.7.18
 
 ### Patch Changes
