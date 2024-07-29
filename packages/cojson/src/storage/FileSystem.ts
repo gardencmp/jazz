@@ -3,7 +3,7 @@ import { CoValueChunk } from "./index.js";
 import { RawCoID } from "../ids.js";
 import { CryptoProvider, StreamingHash } from "../crypto/crypto.js";
 
-export type BlockFilename = `${string}-L${number}-H${number}.jsonl`;
+export type BlockFilename = `L${number}-${string}-${string}-H${number}.jsonl`;
 
 export type BlockHeader = { id: RawCoID; start: number; length: number }[];
 
@@ -78,8 +78,9 @@ export function readHeader<RH, FS extends FileSystem<unknown, RH>>(
 export function writeBlock<WH, RH, FS extends FileSystem<WH, RH>>(
     chunks: Map<RawCoID, CoValueChunk>,
     level: number,
+    blockNumber: number,
     fs: FS,
-): Effect.Effect<void, FSErr> {
+): Effect.Effect<BlockFilename, FSErr> {
     if (chunks.size === 0) {
         return Effect.die(new Error("No chunks to write"));
     }
@@ -125,11 +126,16 @@ export function writeBlock<WH, RH, FS extends FileSystem<WH, RH>>(
         //     ),
         // );
 
-        const filename: BlockFilename = `${hash.digest()}-L${level}-H${
-            headerBytes.length
-        }.jsonl`;
+        const filename: BlockFilename = `L${level}-${(
+            blockNumber + ""
+        ).padStart(3, "0")}-${hash
+            .digest()
+            .replace("hash_", "")
+            .slice(0, 15)}-H${headerBytes.length}.jsonl`;
         // console.log("renaming to" + filename);
         yield* $(fs.closeAndRename(file, filename));
+
+        return filename;
 
         // console.log("Wrote block", filename, blockHeader);
         // console.log("IDs in block", blockHeader.map(e => e.id));
@@ -148,6 +154,7 @@ export function writeToWal<WH, RH, FS extends FileSystem<WH, RH>>(
             ...chunk,
         };
         const bytes = textEncoder.encode(JSON.stringify(walEntry) + "\n");
+        console.log("writing to WAL", handle, id, bytes.length);
         yield* $(fs.append(handle, bytes));
     });
 }

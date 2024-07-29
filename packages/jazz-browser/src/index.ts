@@ -36,7 +36,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
     auth: AuthProvider<Acc>;
     peer: `wss://${string}` | `ws://${string}`;
     reconnectionTimeout?: number;
-    storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
+    storage?: "indexedDB" | "singleTabOPFS";
     crypto?: CryptoProvider;
 }): Promise<BrowserContext<Acc>> {
     const crypto = customCrypto || (await WasmCrypto.create());
