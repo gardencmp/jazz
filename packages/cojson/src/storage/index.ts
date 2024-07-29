@@ -1,18 +1,20 @@
 import {
-    ReadableStream,
-    WritableStream,
-    ReadableStreamDefaultReader,
-    WritableStreamDefaultWriter,
-} from "isomorphic-streams";
-import { Effect, Either, SynchronizedRef } from "effect";
+    Effect,
+    Either,
+    Queue,
+    Stream,
+    SynchronizedRef,
+    Deferred,
+} from "effect";
 import { RawCoID } from "../ids.js";
 import { CoValueHeader, Transaction } from "../coValueCore.js";
 import { Signature } from "../crypto/crypto.js";
 import {
     CoValueKnownState,
+    IncomingSyncStream,
     NewContentMessage,
+    OutgoingSyncQueue,
     Peer,
-    SyncMessage,
 } from "../sync.js";
 import { CoID, RawCoValue } from "../index.js";
 import { connectedPeers } from "../streamUtils.js";
@@ -35,6 +37,8 @@ import {
 } from "./FileSystem.js";
 export type { FSErr, BlockFilename, WalFilename } from "./FileSystem.js";
 
+const MAX_N_LEVELS = 3;
+
 export type CoValueChunk = {
     header?: CoValueHeader;
     sessionEntries: {
@@ -47,9 +51,6 @@ export type CoValueChunk = {
 };
 
 export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
-    fromLocalNode!: ReadableStreamDefaultReader<SyncMessage>;
-    toLocalNode: WritableStreamDefaultWriter<SyncMessage>;
-    fs: FS;
     currentWal: SynchronizedRef.SynchronizedRef<WH | undefined>;
     coValues: SynchronizedRef.SynchronizedRef<{
         [id: RawCoID]: CoValueChunk | undefined;
@@ -59,46 +60,34 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         BlockFilename,
         { [id: RawCoID]: { start: number; length: number } }
     >();
+    blockFileHandles = new Map<
+        BlockFilename,
+        Deferred.Deferred<{ handle: RH; size: number }, FSErr>
+    >();
 
     constructor(
-        fs: FS,
-        fromLocalNode: ReadableStream<SyncMessage>,
-        toLocalNode: WritableStream<SyncMessage>,
+        public fs: FS,
+        public fromLocalNode: IncomingSyncStream,
+        public toLocalNode: OutgoingSyncQueue,
     ) {
-        this.fs = fs;
-        this.fromLocalNode = fromLocalNode.getReader();
-        this.toLocalNode = toLocalNode.getWriter();
         this.coValues = SynchronizedRef.unsafeMake({});
         this.currentWal = SynchronizedRef.unsafeMake<WH | undefined>(undefined);
 
-        void Effect.runPromise(
-            Effect.gen(this, function* () {
-                let done = false;
-                while (!done) {
-                    const result = yield* Effect.promise(() =>
-                        this.fromLocalNode.read(),
-                    );
-                    done = result.done;
-
-                    if (result.value) {
-                        if (result.value.action === "done") {
-                            continue;
-                        }
-
-                        if (result.value.action === "content") {
-                            yield* this.handleNewContent(result.value);
-                        } else {
-                            yield* this.sendNewContent(
-                                result.value.id,
-                                result.value,
-                                undefined,
-                            );
-                        }
+        void this.fromLocalNode.pipe(
+            Stream.runForEach((msg) =>
+                Effect.gen(this, function* () {
+                    if (msg.action === "done") {
+                        return;
                     }
-                }
 
-                return;
-            }),
+                    if (msg.action === "content") {
+                        yield* this.handleNewContent(msg);
+                    } else {
+                        yield* this.sendNewContent(msg.id, msg, undefined);
+                    }
+                }),
+            ),
+            Effect.runPromise,
         );
 
         setTimeout(() => this.compact(), 20000);
@@ -132,15 +121,13 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
             }
 
             if (!coValue) {
-                yield* Effect.promise(() =>
-                    this.toLocalNode.write({
-                        id: id,
-                        action: "known",
-                        header: false,
-                        sessions: {},
-                        asDependencyOf,
-                    }),
-                );
+                yield* Queue.offer(this.toLocalNode, {
+                    id: id,
+                    action: "known",
+                    header: false,
+                    sessions: {},
+                    asDependencyOf,
+                });
 
                 return coValues;
             }
@@ -195,17 +182,15 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
             const ourKnown: CoValueKnownState = chunkToKnownState(id, coValue);
 
-            yield* Effect.promise(() =>
-                this.toLocalNode.write({
-                    action: "known",
-                    ...ourKnown,
-                    asDependencyOf,
-                }),
-            );
+            yield* Queue.offer(this.toLocalNode, {
+                action: "known",
+                ...ourKnown,
+                asDependencyOf,
+            });
 
             for (const message of newContentMessages) {
                 if (Object.keys(message.new).length === 0) continue;
-                yield* Effect.promise(() => this.toLocalNode.write(message));
+                yield* Queue.offer(this.toLocalNode, message);
             }
 
             return { ...coValues, [id]: coValue };
@@ -220,7 +205,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 let newWal = wal;
                 if (!newWal) {
                     newWal = yield* this.fs.createFile(
-                        `wal-${new Date().toISOString()}-${Math.random()
+                        `wal-${Date.now()}-${Math.random()
                             .toString(36)
                             .slice(2)}.jsonl`,
                     );
@@ -260,7 +245,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                 if (!coValue) {
                     if (newContent.header) {
-                        console.log("Creating in WAL", newContent.id);
+                        // console.log("Creating in WAL", newContent.id);
                         yield* this.withWAL((wal) =>
                             writeToWal(
                                 wal,
@@ -286,7 +271,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         //         })
                         //     )
                         // );
-                        console.warn(
+                        yield* Effect.logWarning(
                             "Incontiguous incoming update for " + newContent.id,
                         );
                         return coValues;
@@ -296,6 +281,23 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     if (Either.isRight(merged)) {
                         yield* Effect.logWarning(
                             "Non-contigous new content for " + newContent.id,
+                            Object.entries(coValue.sessionEntries).map(
+                                ([session, entries]) =>
+                                    entries.map((entry) => ({
+                                        session: session,
+                                        after: entry.after,
+                                        length: entry.transactions.length,
+                                    })),
+                            ),
+                            Object.entries(
+                                newContentAsChunk.sessionEntries,
+                            ).map(([session, entries]) =>
+                                entries.map((entry) => ({
+                                    session: session,
+                                    after: entry.after,
+                                    length: entry.transactions.length,
+                                })),
+                            ),
                         );
 
                         // yield* Effect.promise(() =>
@@ -308,7 +310,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                         return coValues;
                     } else {
-                        console.log("Appending to WAL", newContent.id);
+                        // console.log("Appending to WAL", newContent.id);
                         yield* this.withWAL((wal) =>
                             writeToWal(
                                 wal,
@@ -325,24 +327,65 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         );
     }
 
-    loadCoValue<WH, RH, FS extends FileSystem<WH, RH>>(
+    getBlockHandle(
+        blockFile: BlockFilename,
+        fs: FS,
+    ): Effect.Effect<{ handle: RH; size: number }, FSErr> {
+        return Effect.gen(this, function* () {
+            let handleAndSize = this.blockFileHandles.get(blockFile);
+            if (!handleAndSize) {
+                handleAndSize = yield* Deferred.make<
+                    { handle: RH; size: number },
+                    FSErr
+                >();
+                this.blockFileHandles.set(blockFile, handleAndSize);
+                yield* Deferred.complete(
+                    handleAndSize,
+                    fs.openToRead(blockFile),
+                );
+            }
+
+            return yield* Deferred.await(handleAndSize);
+        });
+    }
+
+    loadCoValue(
         id: RawCoID,
         fs: FS,
     ): Effect.Effect<CoValueChunk | undefined, FSErr> {
-        // return _loadChunkFromWal(id, fs);
         return Effect.gen(this, function* () {
             const files = this.fileCache || (yield* fs.listFiles());
             this.fileCache = files;
-            const blockFiles = files.filter((name) =>
-                name.startsWith("hash_"),
-            ) as BlockFilename[];
+            const blockFiles = (
+                files.filter((name) => name.startsWith("L")) as BlockFilename[]
+            ).sort();
+
+            let result;
 
             for (const blockFile of blockFiles) {
                 let cachedHeader:
                     | { [id: RawCoID]: { start: number; length: number } }
                     | undefined = this.headerCache.get(blockFile);
 
-                const { handle, size } = yield* fs.openToRead(blockFile);
+                let handleAndSize = this.blockFileHandles.get(blockFile);
+                if (!handleAndSize) {
+                    handleAndSize = yield* Deferred.make<
+                        { handle: RH; size: number },
+                        FSErr
+                    >();
+                    this.blockFileHandles.set(blockFile, handleAndSize);
+                    yield* Deferred.complete(
+                        handleAndSize,
+                        fs.openToRead(blockFile),
+                    );
+                }
+
+                const { handle, size } = yield* this.getBlockHandle(
+                    blockFile,
+                    fs,
+                );
+
+                // console.log("Attempting to load", id, blockFile);
 
                 if (!cachedHeader) {
                     cachedHeader = {};
@@ -363,17 +406,31 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 }
                 const headerEntry = cachedHeader[id];
 
-                let result;
+                // console.log("Header entry", id, headerEntry);
+
                 if (headerEntry) {
-                    result = yield* readChunk(handle, headerEntry, fs);
+                    const nextChunk = yield* readChunk(handle, headerEntry, fs);
+                    if (result) {
+                        const merged = mergeChunks(result, nextChunk);
+
+                        if (Either.isRight(merged)) {
+                            yield* Effect.logWarning(
+                                "Non-contigous chunks while loading " + id,
+                                result,
+                                nextChunk,
+                            );
+                        } else {
+                            result = merged.left;
+                        }
+                    } else {
+                        result = nextChunk;
+                    }
                 }
 
-                yield* fs.close(handle);
-
-                return result;
+                // yield* fs.close(handle);
             }
 
-            return undefined;
+            return result;
         });
     }
 
@@ -389,7 +446,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                 const coValues = new Map<RawCoID, CoValueChunk>();
 
-                console.log("Compacting WAL files", walFiles);
+                yield* Effect.log("Compacting WAL files", walFiles);
                 if (walFiles.length === 0) return;
 
                 yield* SynchronizedRef.updateEffect(this.currentWal, (wal) =>
@@ -402,7 +459,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                 );
 
                 for (const fileName of walFiles) {
-                    const { handle, size } =
+                    const { handle, size }: { handle: RH; size: number } =
                         yield* this.fs.openToRead(fileName);
                     if (size === 0) {
                         yield* this.fs.close(handle);
@@ -422,7 +479,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         if (existingChunk) {
                             const merged = mergeChunks(existingChunk, chunk);
                             if (Either.isRight(merged)) {
-                                console.warn(
+                                yield* Effect.logWarning(
                                     "Non-contigous chunks in " +
                                         chunk.id +
                                         ", " +
@@ -441,18 +498,157 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                     yield* this.fs.close(handle);
                 }
 
-                yield* writeBlock(coValues, 0, this.fs);
+                const highestBlockNumber = fileNames.reduce((acc, name) => {
+                    if (name.startsWith("L" + MAX_N_LEVELS)) {
+                        const num = parseInt(name.split("-")[1]!);
+                        if (num > acc) {
+                            return num;
+                        }
+                    }
+                    return acc;
+                }, 0);
+
+                console.log(
+                    [...coValues.keys()],
+                    fileNames,
+                    highestBlockNumber,
+                );
+
+                yield* writeBlock(
+                    coValues,
+                    MAX_N_LEVELS,
+                    highestBlockNumber + 1,
+                    this.fs,
+                );
+
                 for (const walFile of walFiles) {
                     yield* this.fs.removeFile(walFile);
                 }
                 this.fileCache = undefined;
+
+                const fileNames2 = yield* this.fs.listFiles();
+
+                const blockFiles = (
+                    fileNames2.filter((name) =>
+                        name.startsWith("L"),
+                    ) as BlockFilename[]
+                ).sort();
+
+                const blockFilesByLevelInOrder: {
+                    [level: number]: BlockFilename[];
+                } = {};
+
+                for (const blockFile of blockFiles) {
+                    const level = parseInt(blockFile.split("-")[0]!.slice(1));
+                    if (!blockFilesByLevelInOrder[level]) {
+                        blockFilesByLevelInOrder[level] = [];
+                    }
+                    blockFilesByLevelInOrder[level]!.push(blockFile);
+                }
+
+                console.log(blockFilesByLevelInOrder);
+
+                for (let level = MAX_N_LEVELS; level > 0; level--) {
+                    const nBlocksDesired = Math.pow(2, level);
+                    const blocksInLevel = blockFilesByLevelInOrder[level];
+
+                    if (
+                        blocksInLevel &&
+                        blocksInLevel.length > nBlocksDesired
+                    ) {
+                        yield* Effect.log("Compacting blocks in level", level, blocksInLevel);
+
+                        const coValues = new Map<RawCoID, CoValueChunk>();
+
+                        for (const blockFile of blocksInLevel) {
+                            const {
+                                handle,
+                                size,
+                            }: { handle: RH; size: number } =
+                                yield* this.getBlockHandle(blockFile, this.fs);
+
+                            if (size === 0) {
+                                continue;
+                            }
+                            const header = yield* readHeader(
+                                blockFile,
+                                handle,
+                                size,
+                                this.fs,
+                            );
+                            for (const entry of header) {
+                                const chunk = yield* readChunk(
+                                    handle,
+                                    entry,
+                                    this.fs,
+                                );
+
+                                const existingChunk = coValues.get(entry.id);
+
+                                if (existingChunk) {
+                                    const merged = mergeChunks(
+                                        existingChunk,
+                                        chunk,
+                                    );
+                                    if (Either.isRight(merged)) {
+                                        yield* Effect.logWarning(
+                                            "Non-contigous chunks in " +
+                                                entry.id +
+                                                ", " +
+                                                blockFile,
+                                            existingChunk,
+                                            chunk,
+                                        );
+                                    } else {
+                                        coValues.set(entry.id, merged.left);
+                                    }
+                                } else {
+                                    coValues.set(entry.id, chunk);
+                                }
+                            }
+                        }
+
+                        let levelBelow = blockFilesByLevelInOrder[level - 1];
+                        if (!levelBelow) {
+                            levelBelow = [];
+                            blockFilesByLevelInOrder[level - 1] = levelBelow;
+                        }
+
+                        const highestBlockNumberInLevelBelow =
+                            levelBelow.reduce((acc, name) => {
+                                const num = parseInt(name.split("-")[1]!);
+                                if (num > acc) {
+                                    return num;
+                                }
+                                return acc;
+                            }, 0);
+
+                        const newBlockName = yield* writeBlock(
+                            coValues,
+                            level - 1,
+                            highestBlockNumberInLevelBelow + 1,
+                            this.fs,
+                        );
+                        levelBelow.push(newBlockName);
+
+                        // delete blocks that went into this one
+                        for (const blockFile of blocksInLevel) {
+                            const handle = yield* this.getBlockHandle(
+                                blockFile,
+                                this.fs,
+                            );
+                            yield* this.fs.close(handle.handle);
+                            yield* this.fs.removeFile(blockFile);
+                        }
+                    }
+                }
             }),
         );
 
         setTimeout(() => this.compact(), 5000);
     }
 
-    static asPeer<WH, RH, FS extends FileSystem<WH, RH>>({
+    static async asPeer<WH, RH, FS extends FileSystem<WH, RH>>({
         fs,
         trace,
         localNodeName = "local",
@@ -460,15 +656,13 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         fs: FS;
         trace?: boolean;
         localNodeName?: string;
-    }): Peer {
-        const [localNodeAsPeer, storageAsPeer] = connectedPeers(
-            localNodeName,
-            "storage",
-            {
+    }): Promise<Peer> {
+        const [localNodeAsPeer, storageAsPeer] = await Effect.runPromise(
+            connectedPeers(localNodeName, "storage", {
                 peer1role: "client",
                 peer2role: "server",
                 trace,
-            },
+            }),
         );
 
         new LSMStorage(fs, localNodeAsPeer.incoming, localNodeAsPeer.outgoing);

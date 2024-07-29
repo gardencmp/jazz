@@ -300,7 +300,8 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         return deleted;
     }
 
-    toJSON() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toJSON(_key?: string, seenAbove?: ID<CoValue>[]): any[] {
         const itemDescriptor = this._schema[ItemsSym] as Schema;
         if (itemDescriptor === "json") {
             return this._raw.asArray();
@@ -309,7 +310,14 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
                 .asArray()
                 .map((e) => encodeSync(itemDescriptor.encoded)(e));
         } else if (isRefEncoded(itemDescriptor)) {
-            return this.map((item) => (item as unknown as CoValue)?.toJSON());
+            return this.map((item, idx) =>
+                seenAbove?.includes((item as CoValue)?.id)
+                    ? { _circular: (item as CoValue).id }
+                    : (item as unknown as CoValue)?.toJSON(idx + "", [
+                          ...(seenAbove || []),
+                          this.id,
+                      ]),
+            );
         } else {
             return [];
         }

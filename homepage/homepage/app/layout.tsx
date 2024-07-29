@@ -9,8 +9,10 @@ import localFont from "next/font/local";
 import { GcmpLogo, JazzLogo } from "@/components/logos";
 import { SiGithub, SiDiscord, SiTwitter } from "@icons-pack/react-simple-icons";
 import { Nav, NavLink, Newsletter, NewsletterButton } from "@/components/nav";
-import { MailIcon } from "lucide-react";
 import { DocNav } from "@/components/docs/nav";
+
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -48,6 +50,8 @@ export default function RootLayout({
                     "flex flex-col items-center bg-stone-50 dark:bg-stone-950 overflow-x-hidden",
                 ].join(" ")}
             >
+                <SpeedInsights />
+                <Analytics />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
@@ -108,7 +112,7 @@ export default function RootLayout({
                             <div className="col-span-full md:col-span-1 sm:row-start-4 md:row-start-auto lg:col-span-2 md:row-span-2 md:flex-1 flex flex-row md:flex-col max-sm:mt-4 justify-between max-sm:items-start gap-2 text-sm min-w-[10rem]">
                                 <GcmpLogo monochrome className="w-32" />
                                 <p className="max-sm:text-right">
-                                    © 2023
+                                    © {new Date().getFullYear()}
                                     <br />
                                     Garden Computing, Inc.
                                 </p>
@@ -192,12 +196,6 @@ export default function RootLayout({
                         </div>
                     </footer>
                 </ThemeProvider>
-                <script
-                    defer
-                    data-api="/api/event"
-                    data-domain="jazz.tools"
-                    src="/js/script.js"
-                ></script>
             </body>
         </html>
     );

@@ -6,10 +6,9 @@
     "packages/*",
     "examples/*"
   ],
+  "packageManager": "pnpm@9.1.4",
   "devDependencies": {
     "@changesets/cli": "^2.27.3",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.1",
     "turbo": "^1.11.2",
@@ -24,8 +23,7 @@
     "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
-    "release": "pnpm changeset publish && git push --follow-tags",
-    "prepare": "husky"
+    "release": "pnpm changeset publish && git push --follow-tags"
   },
   "lint-staged": {},
   "version": "0.0.0"

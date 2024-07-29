@@ -23,7 +23,7 @@ export function createJazzReactContext<Acc extends Account>({
 }: {
     auth: ReactAuthHook<Acc>;
     peer: `wss://${string}` | `ws://${string}`;
-    storage?: "indexedDB" | "experimentalOPFSdoNotUseOrYouWillBeFired";
+    storage?: "indexedDB" | "singleTabOPFS";
 }): JazzReactContext<Acc> {
     const JazzContext = React.createContext<
         | {

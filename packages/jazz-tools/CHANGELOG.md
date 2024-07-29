@@ -1,5 +1,79 @@
 # jazz-autosub
 
+## 0.7.23
+
+### Patch Changes
+
+-   Mostly complete OPFS implementation (single-tab only)
+-   Updated dependencies
+    -   cojson@0.7.23
+
+## 0.7.21
+
+### Patch Changes
+
+-   Fix another bug in CoMap 'has' proxy trap
+
+## 0.7.20
+
+### Patch Changes
+
+-   Fix bug in CoMap 'has' trap
+
+## 0.7.19
+
+### Patch Changes
+
+-   Add support for "in" operator in CoMaps
+
+## 0.7.18
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.18
+
+## 0.7.17
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.17
+
+## 0.7.16
+
+### Patch Changes
+
+-   Fix: allow null in encoded fields
+
+## 0.7.14
+
+### Patch Changes
+
+-   Use Effect Queues and Streams instead of custom queue implementation
+-   Updated dependencies
+    -   cojson@0.7.14
+
+## 0.7.13
+
+### Patch Changes
+
+-   Fix CoList.toJSON()
+
+## 0.7.12
+
+### Patch Changes
+
+-   Fix: toJSON infinitely recurses on circular CoValue structures
+
+## 0.7.11
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.11
+    -   cojson-transport-nodejs-ws@0.7.11
+
 ## 0.7.10
 
 ### Patch Changes

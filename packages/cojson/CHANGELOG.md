@@ -1,5 +1,35 @@
 # cojson
 
+## 0.7.23
+
+### Patch Changes
+
+-   Mostly complete OPFS implementation (single-tab only)
+
+## 0.7.18
+
+### Patch Changes
+
+-   Update to Effect 3.5.2
+
+## 0.7.17
+
+### Patch Changes
+
+-   Fix bugs in new storage interface
+
+## 0.7.14
+
+### Patch Changes
+
+-   Use Effect Queues and Streams instead of custom queue implementation
+
+## 0.7.11
+
+### Patch Changes
+
+-   Fix webpack import of node:crypto module
+
 ## 0.7.10
 
 ### Patch Changes

@@ -9,7 +9,10 @@ export function useProgressiveImg({
     image: ImageDefinition | null | undefined;
     maxWidth?: number;
 }) {
-    const [src, setSrc] = useState<string | undefined>(undefined);
+    const [current, setCurrent] = useState<
+        | { src?: string; res?: `${number}x${number}` | "placeholder" }
+        | undefined
+    >(undefined);
 
     useEffect(() => {
         let lastHighestRes: string | undefined;
@@ -22,21 +25,28 @@ export function useProgressiveImg({
                     const blob = highestRes.stream.toBlob();
                     if (blob) {
                         const blobURI = URL.createObjectURL(blob);
-                        setSrc(blobURI);
+                        setCurrent({ src: blobURI, res: highestRes.res });
                         return () => {
                             setTimeout(() => URL.revokeObjectURL(blobURI), 200);
                         };
                     }
                 }
             } else {
-                setSrc(update?.placeholderDataURL);
+                setCurrent({
+                    src: update?.placeholderDataURL,
+                    res: "placeholder",
+                });
             }
         });
 
         return unsub;
     }, [image?.id, maxWidth]);
 
-    return { src, originalSize: image?.originalSize };
+    return {
+        src: current?.src,
+        res: current?.res,
+        originalSize: image?.originalSize,
+    };
 }
 
 /** @category Media */
@@ -47,6 +57,7 @@ export function ProgressiveImg({
 }: {
     children: (result: {
         src: string | undefined;
+        res: `${number}x${number}` | "placeholder" | undefined;
         originalSize: readonly [number, number] | undefined;
     }) => React.ReactNode;
     image: ImageDefinition | null | undefined;

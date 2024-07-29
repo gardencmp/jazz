@@ -42,7 +42,13 @@ import type {
     BinaryCoStreamMeta,
 } from "./coValues/coStream.js";
 import type { JsonValue } from "./jsonValue.js";
-import type { SyncMessage, Peer } from "./sync.js";
+import type {
+    SyncMessage,
+    Peer,
+    IncomingSyncStream,
+    OutgoingSyncQueue,
+} from "./sync.js";
+import { DisconnectedError, PingTimeoutError } from "./sync.js";
 import type { AgentSecret } from "./crypto/crypto.js";
 import type {
     AccountID,
@@ -120,9 +126,19 @@ export {
     isRawCoID,
     stringifyOpID,
     LSMStorage,
+    DisconnectedError,
+    PingTimeoutError,
 };
 
-export type { Value, FileSystem, FSErr, BlockFilename, WalFilename };
+export type {
+    Value,
+    FileSystem,
+    FSErr,
+    BlockFilename,
+    WalFilename,
+    IncomingSyncStream,
+    OutgoingSyncQueue,
+};
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CojsonInternalTypes {

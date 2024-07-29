@@ -254,7 +254,8 @@ export class CoMap extends CoValueBase implements CoValue {
         return instance;
     }
 
-    toJSON() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toJSON(_key?: string, seenAbove?: ID<CoValue>[]): any[] {
         const jsonedFields = this._raw.keys().map((key) => {
             const tKey = key as CoKeys<this>;
             const descriptor = (this._schema[tKey] ||
@@ -264,7 +265,15 @@ export class CoMap extends CoValueBase implements CoValue {
                 return [key, this._raw.get(key)];
             } else if (isRefEncoded(descriptor)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const jsonedRef = (this as any)[tKey]?.toJSON();
+                if (seenAbove?.includes((this as any)[tKey]?.id)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return [key, { _circular: (this as any)[tKey]?.id }];
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const jsonedRef = (this as any)[tKey]?.toJSON(tKey, [
+                    ...(seenAbove || []),
+                    this.id,
+                ]);
                 return [key, jsonedRef];
             } else {
                 return [key, undefined];
@@ -530,6 +539,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         if (
             (typeof key === "string" || ItemsSym) &&
             typeof value === "object" &&
+            value !== null &&
             SchemaInit in value
         ) {
             (target.constructor as typeof CoMap)._schema ||= {};
@@ -598,6 +608,16 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                     writable: true,
                 };
             }
+        }
+    },
+    has(target, key) {
+        const descriptor = (target._schema?.[key as keyof CoMap["_schema"]] ||
+            target._schema?.[ItemsSym]) as Schema;
+
+        if (target._raw && typeof key === "string" && descriptor) {
+            return target._raw.get(key) !== undefined;
+        } else {
+            return Reflect.has(target, key);
         }
     },
     deleteProperty(target, key) {

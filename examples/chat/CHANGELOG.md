@@ -1,5 +1,111 @@
 # jazz-example-chat
 
+## 0.0.70
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.23
+  - jazz-react@0.7.23
+  - jazz-tools@0.7.23
+
+## 0.0.69
+
+### Patch Changes
+
+- jazz-react@0.7.22
+
+## 0.0.68
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.21
+  - jazz-react@0.7.21
+
+## 0.0.67
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.20
+  - jazz-react@0.7.20
+
+## 0.0.66
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.19
+  - jazz-react@0.7.19
+
+## 0.0.65
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.18
+  - jazz-react@0.7.18
+  - jazz-tools@0.7.18
+
+## 0.0.64
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.17
+  - jazz-react@0.7.17
+  - jazz-tools@0.7.17
+
+## 0.0.63
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.16
+  - jazz-react@0.7.16
+
+## 0.0.62
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-react@0.7.15
+
+## 0.0.61
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.14
+  - jazz-tools@0.7.14
+  - jazz-react@0.7.14
+
+## 0.0.60
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.13
+  - jazz-react@0.7.13
+
+## 0.0.59
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.12
+  - jazz-react@0.7.12
+
+## 0.0.58
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.11
+  - jazz-react@0.7.11
+  - jazz-tools@0.7.11
+
 ## 0.0.57
 
 ### Patch Changes

@@ -1,14 +1,14 @@
 {
   "name": "cojson-storage-indexeddb",
-  "version": "0.7.10",
+  "version": "0.7.23",
   "main": "dist/index.js",
   "type": "module",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
     "cojson": "workspace:*",
-    "typescript": "^5.1.6",
-    "isomorphic-streams": "https://github.com/sgwilym/isomorphic-streams.git#aa9394781bfc92f8d7c981be7daf8af4b4cd4fae"
+    "effect": "^3.5.2",
+    "typescript": "^5.1.6"
   },
   "devDependencies": {
     "@vitest/browser": "^0.34.1",
