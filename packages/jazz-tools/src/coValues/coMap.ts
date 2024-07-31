@@ -11,8 +11,6 @@ import type {
     RefIfCoValue,
     DepthsIn,
     DeeplyLoaded,
-    UnavailableError,
-    AccountCtx,
     CoValueClass,
 } from "../internal.js";
 import {
@@ -26,13 +24,10 @@ import {
     ItemsSym,
     isRefEncoded,
     loadCoValue,
-    loadCoValueEf,
     subscribeToCoValue,
-    subscribeToCoValueEf,
     ensureCoValueLoaded,
     subscribeToExistingCoValue,
 } from "../internal.js";
-import { Effect, Stream } from "effect";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -392,21 +387,6 @@ export class CoMap extends CoValueBase implements CoValue {
     }
 
     /**
-     * Effectful version of `CoMap.load()`.
-     *
-     * Needs to be run inside an `AccountCtx` context.
-     *
-     * @category Subscription & Loading
-     */
-    static loadEf<M extends CoMap, Depth>(
-        this: CoValueClass<M>,
-        id: ID<M>,
-        depth: Depth & DepthsIn<M>,
-    ): Effect.Effect<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
-        return loadCoValueEf<M, Depth>(this, id, depth);
-    }
-
-    /**
      * Load and subscribe to a `CoMap` with a given ID, as a given account.
      *
      * Automatically also subscribes to updates to all referenced/nested CoValues as soon as they are accessed in the listener.
@@ -442,21 +422,6 @@ export class CoMap extends CoValueBase implements CoValue {
         listener: (value: DeeplyLoaded<M, Depth>) => void,
     ): () => void {
         return subscribeToCoValue<M, Depth>(this, id, as, depth, listener);
-    }
-
-    /**
-     * Effectful version of `CoMap.subscribe()` that returns a stream of updates.
-     *
-     * Needs to be run inside an `AccountCtx` context.
-     *
-     * @category Subscription & Loading
-     */
-    static subscribeEf<M extends CoMap, Depth>(
-        this: CoValueClass<M>,
-        id: ID<M>,
-        depth: Depth & DepthsIn<M>,
-    ): Stream.Stream<DeeplyLoaded<M, Depth>, UnavailableError, AccountCtx> {
-        return subscribeToCoValueEf<M, Depth>(this, id, depth);
     }
 
     /**

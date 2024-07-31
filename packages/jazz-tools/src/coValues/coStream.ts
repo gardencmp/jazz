@@ -17,11 +17,9 @@ import type {
     ID,
     IfCo,
     UnCo,
-    AccountCtx,
     CoValueClass,
     DeeplyLoaded,
     DepthsIn,
-    UnavailableError,
 } from "../internal.js";
 import {
     ItemsSym,
@@ -33,14 +31,11 @@ import {
     SchemaInit,
     isRefEncoded,
     loadCoValue,
-    loadCoValueEf,
     subscribeToCoValue,
-    subscribeToCoValueEf,
     ensureCoValueLoaded,
     subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
-import { Effect, Stream } from "effect";
 
 export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
     all: IterableIterator<SingleCoStreamEntry<Item>>;
@@ -203,15 +198,6 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     }
 
     /** @category Subscription & Loading */
-    static loadEf<S extends CoStream, Depth>(
-        this: CoValueClass<S>,
-        id: ID<S>,
-        depth: Depth & DepthsIn<S>,
-    ): Effect.Effect<DeeplyLoaded<S, Depth>, UnavailableError, AccountCtx> {
-        return loadCoValueEf<S, Depth>(this, id, depth);
-    }
-
-    /** @category Subscription & Loading */
     static subscribe<S extends CoStream, Depth>(
         this: CoValueClass<S>,
         id: ID<S>,
@@ -220,15 +206,6 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
         listener: (value: DeeplyLoaded<S, Depth>) => void,
     ): () => void {
         return subscribeToCoValue<S, Depth>(this, id, as, depth, listener);
-    }
-
-    /** @category Subscription & Loading */
-    static subscribeEf<S extends CoStream, Depth>(
-        this: CoValueClass<S>,
-        id: ID<S>,
-        depth: Depth & DepthsIn<S>,
-    ): Stream.Stream<DeeplyLoaded<S, Depth>, UnavailableError, AccountCtx> {
-        return subscribeToCoValueEf<S, Depth>(this, id, depth);
     }
 
     /** @category Subscription & Loading */
@@ -639,15 +616,6 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
     }
 
     /** @category Subscription & Loading */
-    static loadEf<B extends BinaryCoStream, Depth>(
-        this: CoValueClass<B>,
-        id: ID<B>,
-        depth: Depth & DepthsIn<B>,
-    ): Effect.Effect<DeeplyLoaded<B, Depth>, UnavailableError, AccountCtx> {
-        return loadCoValueEf<B, Depth>(this, id, depth);
-    }
-
-    /** @category Subscription & Loading */
     static subscribe<B extends BinaryCoStream, Depth>(
         this: CoValueClass<B>,
         id: ID<B>,
@@ -656,15 +624,6 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
         listener: (value: DeeplyLoaded<B, Depth>) => void,
     ): () => void {
         return subscribeToCoValue<B, Depth>(this, id, as, depth, listener);
-    }
-
-    /** @category Subscription & Loading */
-    static subscribeEf<B extends BinaryCoStream, Depth>(
-        this: CoValueClass<B>,
-        id: ID<B>,
-        depth: Depth & DepthsIn<B>,
-    ): Stream.Stream<DeeplyLoaded<B, Depth>, UnavailableError, AccountCtx> {
-        return subscribeToCoValueEf<B, Depth>(this, id, depth);
     }
 
     /** @category Subscription & Loading */
