@@ -1,5 +1,5 @@
 import { expect, describe, test } from "vitest";
-import { Account, CoRichText, Ranges, WasmCrypto } from "../index.js";
+import { Account, CoRichText, Marks, WasmCrypto } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -39,19 +39,19 @@ describe("Simple CoRichText operations", async () => {
                 owner: me,
             });
 
-            text.insertRange(6, 9, Ranges.Bold, { tag: "bold" });
+            text.insertMark(6, 9, Marks.Strong, { tag: "strong" });
 
             console.log(text.text?._raw.entries());
             console.log(text.text?._raw.mapping);
 
-            expect(text.resolveRanges()).toEqual([
+            expect(text.resolveMarks()).toEqual([
                 {
                     startAfter: 6,
                     startBefore: 7,
                     endAfter: 9,
                     endBefore: 10,
                     tag: "bold",
-                    from: text.ranges![0],
+                    from: text.marks![0],
                 },
             ]);
         });
