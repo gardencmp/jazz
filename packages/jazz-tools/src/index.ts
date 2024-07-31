@@ -19,7 +19,7 @@ export { Encoders, co } from "./internal.js";
 export { CoMap } from "./internal.js";
 export { CoList } from "./internal.js";
 export { CoPlainText, TextPos } from "./internal.js";
-export { CoRichText, Range, Ranges } from "./internal.js";
+export { CoRichText, Mark, Marks, TreeNode, TreeLeaf } from "./internal.js";
 export { CoStream, BinaryCoStream } from "./internal.js";
 export { Group, Profile } from "./internal.js";
 export { Account, type Me } from "./internal.js";
