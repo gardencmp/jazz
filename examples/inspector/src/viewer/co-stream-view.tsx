@@ -322,7 +322,7 @@ export function CoStreamView({
     value: RawCoStream;
 }) {
     // if (!value) return <div>No value</div>;
-    console.log(value);
+
     const streamType = detectCoStreamType(value);
 
     if (streamType.type === "binary") {
