@@ -23,7 +23,7 @@ const optional = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
-    encoded<T>(arg: OptionalEncoder<T>): co<T> {
+    encoded<T>(arg: OptionalEncoder<T>): co<T | undefined> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: { encoded: arg } satisfies Schema } as any;
     },
