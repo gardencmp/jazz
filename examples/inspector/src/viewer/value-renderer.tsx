@@ -164,7 +164,10 @@ export const CoMapPreview = ({
     if (type === "colist") {
         return (
             <div>
-                List <span className="text-gray-500">({snapshot.length})</span>
+                List{" "}
+                <span className="text-gray-500">
+                    ({(snapshot as unknown as []).length})
+                </span>
             </div>
         );
     }
@@ -208,8 +211,15 @@ export function AccountOrGroupPreview({
 
     useEffect(() => {
         if (extendedType === "account") {
-            resolveCoValue(snapshot.profile, node).then(({ snapshot }) => {
-                if ("name" in snapshot && typeof snapshot.name === "string") {
+            resolveCoValue(
+                (snapshot as unknown as { profile: CoID<RawCoValue> }).profile,
+                node,
+            ).then(({ snapshot }) => {
+                if (
+                    typeof snapshot === "object" &&
+                    "name" in snapshot &&
+                    typeof snapshot.name === "string"
+                ) {
                     setName(snapshot.name);
                 }
             });

@@ -1,9 +1,14 @@
-import { LocalNode, RawBinaryCoStream, RawCoStream } from "cojson";
+import {
+    CoID,
+    LocalNode,
+    RawBinaryCoStream,
+    RawCoStream,
+    RawCoValue,
+} from "cojson";
 import { JsonObject, JsonValue } from "cojson/src/jsonValue";
 import { PageInfo } from "./types";
 import { base64URLtoBytes } from "cojson/src/base64url";
 import { useEffect, useState } from "react";
-import clsx from "clsx";
 import { ArrowDownToLine } from "lucide-react";
 import {
     BinaryStreamItem,
@@ -13,8 +18,13 @@ import {
 import { AccountOrGroupPreview } from "./value-renderer";
 
 // typeguard for BinaryStreamStart
-function isBinaryStreamStart(item: any): item is BinaryStreamStart {
-    return typeof item === "object" && "type" in item && item.type === "start";
+function isBinaryStreamStart(item: unknown): item is BinaryStreamStart {
+    return (
+        typeof item === "object" &&
+        item !== null &&
+        "type" in item &&
+        item.type === "start"
+    );
 }
 
 function detectCoStreamType(value: RawCoStream | RawBinaryCoStream) {
@@ -176,12 +186,16 @@ function RenderCoBinaryStream({
     items: BinaryStreamItem[];
     value: RawBinaryCoStream;
 }) {
-    const [file, setFile] = useState<{
-        blob: Blob;
-        mimeType: string;
-        unfinishedChunks: boolean;
-        totalSize: number;
-    } | null>(null);
+    const [file, setFile] = useState<
+        | {
+              blob: Blob;
+              mimeType: string;
+              unfinishedChunks: boolean;
+              totalSize: number | undefined;
+          }
+        | undefined
+        | null
+    >(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -213,7 +227,7 @@ function RenderCoBinaryStream({
 
     const { blob, mimeType } = file;
 
-    const sizeInKB = file.totalSize / 1024;
+    const sizeInKB = (file.totalSize || 0) / 1024;
 
     return (
         <div className="space-y-8 mt-4">
@@ -279,7 +293,11 @@ function RenderCoStream({
                     className="bg-gray-100 p-3 rounded-lg transition-colors overflow-hidden bg-white border hover:bg-gray-100/5 cursor-pointer shadow-sm"
                     key={id}
                 >
-                    <AccountOrGroupPreview coId={id} node={node} />
+                    <AccountOrGroupPreview
+                        coId={id as CoID<RawCoValue>}
+                        node={node}
+                    />
+                    {/* @ts-expect-error - TODO: fix types */}
                     {value.items[streamPerUser[idx]]?.map(
                         (item: CoStreamItem<JsonValue>) => (
                             <div>
@@ -308,7 +326,16 @@ export function CoStreamView({
     const streamType = detectCoStreamType(value);
 
     if (streamType.type === "binary") {
-        return <RenderCoBinaryStream value={value} items={streamType.items} />;
+        if (streamType.items === undefined) {
+            return <div>No binary stream</div>;
+        }
+
+        return (
+            <RenderCoBinaryStream
+                value={value as RawBinaryCoStream}
+                items={streamType.items}
+            />
+        );
     }
 
     if (streamType.type === "coStream") {

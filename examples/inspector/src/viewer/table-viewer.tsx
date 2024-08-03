@@ -1,11 +1,10 @@
 import { CoID, LocalNode, RawCoValue } from "cojson";
 import { JsonObject } from "cojson/src/jsonValue";
 import { PageInfo } from "./types";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ValueRenderer } from "./value-renderer";
 import { LinkIcon } from "../link-icon";
-import { resolveCoValue, useResolvedCoValues } from "./use-resolve-covalue";
-import { has } from "effect/Record";
+import { useResolvedCoValues } from "./use-resolve-covalue";
 
 export function TableView({
     data,
@@ -93,7 +92,11 @@ export function TableView({
                                         className="px-4 py-4 whitespace-nowrap text-sm text-gray-500"
                                     >
                                         <ValueRenderer
-                                            json={item.snapshot[key]}
+                                            json={
+                                                (item.snapshot as JsonObject)[
+                                                    key
+                                                ]
+                                            }
                                             onCoIDClick={(coId) => {
                                                 async function handleClick() {
                                                     onNavigate([
