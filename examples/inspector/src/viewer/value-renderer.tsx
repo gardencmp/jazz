@@ -2,13 +2,10 @@ import clsx from "clsx";
 import { CoID, JsonValue, LocalNode, RawCoValue } from "cojson";
 import { LinkIcon } from "../link-icon";
 import {
-    CoJsonType,
-    ResolvedAccount,
     isBrowserImage,
     resolveCoValue,
     useResolvedCoValue,
 } from "./use-resolve-covalue";
-import { TypeIcon } from "./type-icon";
 import React, { useEffect, useState } from "react";
 
 // Is there a chance we can pass the actual CoValue here?
@@ -107,14 +104,6 @@ export function ValueRenderer({
 
     return <span>{String(json)}</span>;
 }
-
-// const ImageRenderer = ({}) => {
-//     return (
-//         <ProgressiveImg image={image}>
-//             {({ src }) => <img src={src} className={clsx("w-full")} />}
-//         </ProgressiveImg>
-//     );
-// };
 
 export const CoMapPreview = ({
     coId,

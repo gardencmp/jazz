@@ -7,11 +7,7 @@ import { PageInfo } from "./types";
 import { TableView } from "./table-viewer";
 import { TypeIcon } from "./type-icon";
 import { CoStreamView } from "./co-stream-view";
-import {
-    AccountOrGroupPreview,
-    CoMapPreview,
-    ValueRenderer,
-} from "./value-renderer";
+import { AccountOrGroupPreview } from "./value-renderer";
 
 type PageProps = {
     coId: CoID<RawCoValue>;
@@ -55,10 +51,6 @@ export function Page({
         return <div style={style}></div>;
     }
 
-    const toggleViewMode = () => {
-        setViewMode(viewMode === "grid" ? "table" : "grid");
-    };
-
     return (
         <div
             style={style}
@@ -85,7 +77,13 @@ export function Page({
                             "name" in snapshot ? (
                                 <span className="text-gray-600 font-medium">
                                     {" "}
-                                    {snapshot.name}
+                                    {
+                                        (
+                                            snapshot as {
+                                                name: string;
+                                            }
+                                        ).name
+                                    }
                                 </span>
                             ) : null}
                         </span>

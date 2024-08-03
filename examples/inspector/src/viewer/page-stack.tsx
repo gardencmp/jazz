@@ -10,7 +10,7 @@ interface PageInfo {
 // Props for the PageStack component
 interface PageStackProps {
     path: PageInfo[];
-    node?: LocalNode;
+    node?: LocalNode | null;
     goBack: () => void;
     addPages: (pages: PageInfo[]) => void;
     children?: React.ReactNode;
@@ -21,7 +21,6 @@ export function PageStack({
     node,
     goBack,
     addPages,
-
     children,
 }: PageStackProps) {
     return (

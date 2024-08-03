@@ -23,7 +23,7 @@ interface Account {
     secret: AgentSecret;
 }
 
-export default function CoJsonViewer() {
+export default function CoJsonViewerApp() {
     const [accounts, setAccounts] = useState<Account[]>(() => {
         const storedAccounts = localStorage.getItem("inspectorAccounts");
         return storedAccounts ? JSON.parse(storedAccounts) : [];
@@ -83,7 +83,7 @@ export default function CoJsonViewer() {
             });
             setLocalNode(node);
         });
-    }, [currentAccount]);
+    }, [currentAccount, goToIndex]);
 
     const addAccount = (id: AccountID, secret: AgentSecret) => {
         const newAccount = { id, secret };
@@ -136,7 +136,7 @@ export default function CoJsonViewer() {
                         onSubmit={handleCoValueIdSubmit}
                         aria-hidden={path.length !== 0}
                         className={clsx(
-                            "flex flex-col justify-center items-center gap-2 h-full w-full mb-20",
+                            "flex flex-col justify-center items-center gap-2 h-full w-full mb-20 ",
                             "transition-all duration-150",
                             path.length > 0
                                 ? "opacity-0 -translate-y-2 scale-95"
@@ -144,8 +144,8 @@ export default function CoJsonViewer() {
                         )}
                     >
                         <fieldset className="flex flex-col gap-2 text-sm">
-                            <h2 className="text-2xl font-medium text-gray-950">
-                                Inspect a CoValue
+                            <h2 className="text-3xl font-medium text-gray-950 text-center mb-4">
+                                Jazz CoValue Inspector
                             </h2>
                             <input
                                 className="border p-4 rounded-lg min-w-[21rem] font-mono"
