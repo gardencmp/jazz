@@ -26,6 +26,7 @@ describe("Simple CoMap operations", async () => {
         birthday = co.encoded(Encoders.Date);
         name? = co.string;
         nullable = co.optional.encoded(Schema.NullishOr(Schema.String));
+        optionalDate = co.optional.encoded(Encoders.Date);
 
         get roughColor() {
             return this.color + "ish";
