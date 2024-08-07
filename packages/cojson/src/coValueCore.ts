@@ -26,6 +26,13 @@ import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 
+/**
+    In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
+    since they are the smallest unit of progress that can be synced within a CoValue.
+    This is particularly important for storing binary data in CoValues, since they are likely to be at least on the order of megabytes.
+    This also means that we want to keep signatures roughly after each MAX_RECOMMENDED_TX size chunk,
+    to be able to verify partially loaded CoValues or CoValues that are still being created (like a video live stream).
+**/
 export const MAX_RECOMMENDED_TX_SIZE = 100 * 1024;
 
 export type CoValueHeader = {
@@ -383,7 +390,7 @@ export class CoValueCore {
                 0,
             );
 
-        if (sizeOfTxsSinceLastInbetweenSignature > 100 * 1024) {
+        if (sizeOfTxsSinceLastInbetweenSignature > MAX_RECOMMENDED_TX_SIZE) {
             // console.log(
             //     "Saving inbetween signature for tx ",
             //     sessionID,
