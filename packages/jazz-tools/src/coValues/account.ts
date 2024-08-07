@@ -11,7 +11,7 @@ import type {
     RawControlledAccount,
     SessionID,
 } from "cojson";
-import { Context, Effect, Stream } from "effect";
+import { Context, Effect } from "effect";
 import {
     CoMap,
     CoValue,
@@ -22,7 +22,6 @@ import {
     RefIfCoValue,
     DeeplyLoaded,
     DepthsIn,
-    UnavailableError,
 } from "../internal.js";
 import {
     Group,
@@ -34,9 +33,7 @@ import {
     inspect,
     subscriptionsScopes,
     loadCoValue,
-    loadCoValueEf,
     subscribeToCoValue,
-    subscribeToCoValueEf,
     ensureCoValueLoaded,
     subscribeToExistingCoValue,
 } from "../internal.js";
@@ -287,15 +284,6 @@ export class Account extends CoValueBase implements CoValue {
     }
 
     /** @category Subscription & Loading */
-    static loadEf<A extends Account, Depth>(
-        this: CoValueClass<A>,
-        id: ID<A>,
-        depth: Depth & DepthsIn<A>,
-    ): Effect.Effect<DeeplyLoaded<A, Depth>, UnavailableError, AccountCtx> {
-        return loadCoValueEf<A, Depth>(this, id, depth);
-    }
-
-    /** @category Subscription & Loading */
     static subscribe<A extends Account, Depth>(
         this: CoValueClass<A>,
         id: ID<A>,
@@ -304,15 +292,6 @@ export class Account extends CoValueBase implements CoValue {
         listener: (value: DeeplyLoaded<A, Depth>) => void,
     ): () => void {
         return subscribeToCoValue<A, Depth>(this, id, as, depth, listener);
-    }
-
-    /** @category Subscription & Loading */
-    static subscribeEf<A extends Account, Depth>(
-        this: CoValueClass<A>,
-        id: ID<A>,
-        depth: Depth & DepthsIn<A>,
-    ): Stream.Stream<DeeplyLoaded<A, Depth>, UnavailableError, AccountCtx> {
-        return subscribeToCoValueEf<A, Depth>(this, id, depth);
     }
 
     /** @category Subscription & Loading */

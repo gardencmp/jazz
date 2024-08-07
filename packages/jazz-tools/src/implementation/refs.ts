@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { CoID, RawCoValue } from "cojson";
 import type {
     Account,
@@ -6,7 +5,6 @@ import type {
     ID,
     RefEncoded,
     UnCo,
-    UnavailableError,
 } from "../internal.js";
 import {
     instantiateRefEncoded,
@@ -45,22 +43,6 @@ export class Ref<out V extends CoValue> {
         } else {
             return null;
         }
-    }
-
-    loadEf() {
-        return Effect.async<V, UnavailableError>((fulfill) => {
-            this.loadHelper()
-                .then((value) => {
-                    if (value === "unavailable") {
-                        fulfill(Effect.fail<UnavailableError>("unavailable"));
-                    } else {
-                        fulfill(Effect.succeed(value));
-                    }
-                })
-                .catch((e) => {
-                    fulfill(Effect.die(e));
-                });
-        });
     }
 
     private async loadHelper(options?: {

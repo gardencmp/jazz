@@ -10,8 +10,6 @@ import type {
     CoValueClass,
     DepthsIn,
     DeeplyLoaded,
-    UnavailableError,
-    AccountCtx,
     CoValueFromRaw,
 } from "../internal.js";
 import {
@@ -25,14 +23,11 @@ import {
     inspect,
     isRefEncoded,
     loadCoValue,
-    loadCoValueEf,
     makeRefs,
     subscribeToCoValue,
-    subscribeToCoValueEf,
     subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
-import { Effect, Stream } from "effect";
 
 /**
  * CoLists are collaborative versions of plain arrays.
@@ -377,21 +372,6 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     }
 
     /**
-     * Effectful version of `CoList.load()`.
-     *
-     * Needs to be run inside an `AccountCtx` context.
-     *
-     * @category Subscription & Loading
-     */
-    static loadEf<L extends CoList, Depth>(
-        this: CoValueClass<L>,
-        id: ID<L>,
-        depth: Depth & DepthsIn<L>,
-    ): Effect.Effect<DeeplyLoaded<L, Depth>, UnavailableError, AccountCtx> {
-        return loadCoValueEf<L, Depth>(this, id, depth);
-    }
-
-    /**
      * Load and subscribe to a `CoList` with a given ID, as a given account.
      *
      * Automatically also subscribes to updates to all referenced/nested CoValues as soon as they are accessed in the listener.
@@ -427,21 +407,6 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         listener: (value: DeeplyLoaded<L, Depth>) => void,
     ): () => void {
         return subscribeToCoValue<L, Depth>(this, id, as, depth, listener);
-    }
-
-    /**
-     * Effectful version of `CoList.subscribe()` that returns a stream of updates.
-     *
-     * Needs to be run inside an `AccountCtx` context.
-     *
-     * @category Subscription & Loading
-     */
-    static subscribeEf<L extends CoList, Depth>(
-        this: CoValueClass<L>,
-        id: ID<L>,
-        depth: Depth & DepthsIn<L>,
-    ): Stream.Stream<DeeplyLoaded<L, Depth>, UnavailableError, AccountCtx> {
-        return subscribeToCoValueEf<L, Depth>(this, id, depth);
     }
 
     /**
