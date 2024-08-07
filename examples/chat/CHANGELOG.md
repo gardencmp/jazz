@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.71
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.24
+  - jazz-react@0.7.24
+
 ## 0.0.70
 
 ### Patch Changes

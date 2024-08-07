@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.24
+
+### Patch Changes
+
+-   Remove effectful API for loading/subscribing
+
 ## 0.7.23
 
 ### Patch Changes
