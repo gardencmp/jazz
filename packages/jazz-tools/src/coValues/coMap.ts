@@ -1,6 +1,5 @@
 import type { JsonValue, RawCoMap } from "cojson";
 import type { Simplify } from "effect/Types";
-import { encodeSync, decodeSync } from "@effect/schema/Schema";
 import type {
     CoValue,
     Schema,
@@ -147,7 +146,7 @@ export class CoMap extends CoValueBase implements CoValue {
                         descriptor === "json"
                             ? rawEdit.value
                             : "encoded" in descriptor
-                              ? decodeSync(descriptor.encoded)(rawEdit.value)
+                              ? descriptor.encoded.encode(rawEdit.value)
                               : new Ref(
                                     rawEdit.value as ID<CoValue>,
                                     target._loadedAs,
@@ -317,7 +316,7 @@ export class CoMap extends CoValueBase implements CoValue {
                         rawInit[key] = (initValue as unknown as CoValue).id;
                     }
                 } else if ("encoded" in descriptor) {
-                    rawInit[key] = encodeSync(descriptor.encoded)(
+                    rawInit[key] = descriptor.encoded.encode(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         initValue as any,
                     );
@@ -461,19 +460,19 @@ export class CoMap extends CoValueBase implements CoValue {
                 const tKey = key as keyof typeof newValues & keyof this;
                 const descriptor = (this._schema[tKey as string] ||
                     this._schema[ItemsSym]) as Schema;
-                
+
                 if (tKey in this._schema) {
                     const newValue = newValues[tKey];
                     const currentValue = this[tKey];
-                    
+
                     if (descriptor === "json" || "encoded" in descriptor) {
                         if (currentValue !== newValue) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this as any)[tKey] = newValue;
                         }
-                    } 
-                    else if (isRefEncoded(descriptor)) {
-                        const currentId = (currentValue as CoValue | undefined)?.id;
+                    } else if (isRefEncoded(descriptor)) {
+                        const currentId = (currentValue as CoValue | undefined)
+                            ?.id;
                         const newId = (newValue as CoValue | undefined)?.id;
                         if (currentId !== newId) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -516,7 +515,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
                 } else if ("encoded" in descriptor) {
                     return raw === undefined
                         ? undefined
-                        : decodeSync(descriptor.encoded)(raw);
+                        : descriptor.encoded.decode(raw);
                 } else if (isRefEncoded(descriptor)) {
                     return raw === undefined
                         ? undefined
@@ -550,7 +549,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             if (descriptor === "json") {
                 target._raw.set(key, value);
             } else if ("encoded" in descriptor) {
-                target._raw.set(key, encodeSync(descriptor.encoded)(value));
+                target._raw.set(key, descriptor.encoded.encode(value));
             } else if (isRefEncoded(descriptor)) {
                 target._raw.set(key, value.id);
                 subscriptionsScopes
