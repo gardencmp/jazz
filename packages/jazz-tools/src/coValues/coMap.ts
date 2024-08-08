@@ -454,6 +454,37 @@ export class CoMap extends CoValueBase implements CoValue {
     ): () => void {
         return subscribeToExistingCoValue(this, depth, listener);
     }
+
+    applyDiff(newValues: Partial<CoMapInit<this>>) {
+        for (const key in newValues) {
+            if (Object.prototype.hasOwnProperty.call(newValues, key)) {
+                const tKey = key as keyof typeof newValues & keyof this;
+                const descriptor = (this._schema[tKey as string] ||
+                    this._schema[ItemsSym]) as Schema;
+                
+                if (tKey in this._schema) {
+                    const newValue = newValues[tKey];
+                    const currentValue = this[tKey];
+                    
+                    if (descriptor === "json" || "encoded" in descriptor) {
+                        if (currentValue !== newValue) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (this as any)[tKey] = newValue;
+                        }
+                    } 
+                    else if (isRefEncoded(descriptor)) {
+                        const currentId = (currentValue as CoValue | undefined)?.id;
+                        const newId = (newValue as CoValue | undefined)?.id;
+                        if (currentId !== newId) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (this as any)[tKey] = newValue;
+                        }
+                    }
+                }
+            }
+        }
+        return this;
+    }
 }
 
 export type CoKeys<Map extends object> = Exclude<
