@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.25
+
+### Patch Changes
+
+-   Implement applyDiff on CoMap to only update changed fields
+
 ## 0.7.24
 
 ### Patch Changes
