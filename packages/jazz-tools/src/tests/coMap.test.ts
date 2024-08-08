@@ -577,3 +577,163 @@ describe("CoMap resolution", async () => {
         ]);
     });
 });
+
+describe("CoMap applyDiff", async () => {
+    const me = await Account.create({
+        creationProps: { name: "Tester McTesterson" },
+        crypto: Crypto,
+    });
+
+    class TestMap extends CoMap {
+        name = co.string;
+        age = co.number;
+        isActive = co.boolean;
+        birthday = co.encoded(Encoders.Date);
+        nested = co.ref(NestedMap);
+        optionalField = co.optional.string;
+    }
+
+    class NestedMap extends CoMap {
+        value = co.string;
+    }
+
+    test("Basic applyDiff", () => {
+        const map = TestMap.create(
+            {
+                name: "Alice",
+                age: 30,
+                isActive: true,
+                birthday: new Date("1990-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            name: "Bob",
+            age: 35,
+            isActive: false,
+        };
+
+        map.applyDiff(newValues);
+
+        expect(map.name).toEqual("Bob");
+        expect(map.age).toEqual(35);
+        expect(map.isActive).toEqual(false);
+        expect(map.birthday).toEqual(new Date("1990-01-01"));
+        expect(map.nested?.value).toEqual("original");
+    });
+
+    test("applyDiff with nested changes", () => {
+        const map = TestMap.create(
+            {
+                name: "Charlie",
+                age: 25,
+                isActive: true,
+                birthday: new Date("1995-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            name: "David",
+            nested: NestedMap.create({ value: "updated" }, { owner: me }),
+        };
+
+        map.applyDiff(newValues);
+
+        expect(map.name).toEqual("David");
+        expect(map.age).toEqual(25);
+        expect(map.nested?.value).toEqual("updated");
+    });
+
+    test("applyDiff with encoded fields", () => {
+        const map = TestMap.create(
+            {
+                name: "Eve",
+                age: 28,
+                isActive: true,
+                birthday: new Date("1993-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            birthday: new Date("1993-06-15"),
+        };
+
+        map.applyDiff(newValues);
+
+        expect(map.birthday).toEqual(new Date("1993-06-15"));
+    });
+
+    test("applyDiff with optional fields", () => {
+        const map = TestMap.create(
+            {
+                name: "Frank",
+                age: 40,
+                isActive: true,
+                birthday: new Date("1980-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            optionalField: "New optional value",
+        };
+
+        map.applyDiff(newValues);
+
+        expect(map.optionalField).toEqual("New optional value");
+
+        map.applyDiff({ optionalField: undefined });
+
+        expect(map.optionalField).toBeUndefined();
+    });
+
+    test("applyDiff with no changes", () => {
+        const map = TestMap.create(
+            {
+                name: "Grace",
+                age: 35,
+                isActive: true,
+                birthday: new Date("1985-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const originalJSON = map.toJSON();
+
+        map.applyDiff({});
+
+        expect(map.toJSON()).toEqual(originalJSON);
+    });
+
+    test("applyDiff with invalid field", () => {
+        const map = TestMap.create(
+            {
+                name: "Henry",
+                age: 45,
+                isActive: false,
+                birthday: new Date("1975-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            name: "Ian",
+            invalidField: "This should be ignored",
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        map.applyDiff(newValues as any);
+
+        expect(map.name).toEqual("Ian");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((map as any).invalidField).toBeUndefined();
+    });
+});
