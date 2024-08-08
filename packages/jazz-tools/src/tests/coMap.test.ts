@@ -10,7 +10,6 @@ import {
     WasmCrypto,
     isControlledAccount,
 } from "../index.js";
-import { Schema } from "@effect/schema";
 
 const Crypto = await WasmCrypto.create();
 
@@ -25,7 +24,10 @@ describe("Simple CoMap operations", async () => {
         _height = co.number;
         birthday = co.encoded(Encoders.Date);
         name? = co.string;
-        nullable = co.optional.encoded(Schema.NullishOr(Schema.String));
+        nullable = co.optional.encoded<string | undefined>({
+            encode: (value: string | undefined) => value || null,
+            decode: (value: unknown) => (value as string) || undefined,
+        });
         optionalDate = co.optional.encoded(Encoders.Date);
 
         get roughColor() {
@@ -42,7 +44,7 @@ describe("Simple CoMap operations", async () => {
             color: "red",
             _height: 10,
             birthday: birthday,
-            nullable: null,
+            nullable: undefined,
         },
         { owner: me },
     );
@@ -94,7 +96,7 @@ describe("Simple CoMap operations", async () => {
             expect(map._raw.get("_height")).toEqual(20);
 
             map.nullable = "not null";
-            map.nullable = null;
+            map.nullable = undefined;
             delete map.nullable;
             map.nullable = undefined;
 

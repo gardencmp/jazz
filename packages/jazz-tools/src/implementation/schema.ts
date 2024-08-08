@@ -5,7 +5,6 @@ import {
     isCoValueClass,
     CoValueFromRaw,
 } from "../internal.js";
-import type { Schema as EffectSchema, TypeId } from "@effect/schema/Schema";
 
 export type CoMarker = { readonly __co: unique symbol };
 /** @category Schema definition */
@@ -113,7 +112,7 @@ function ref<
 }
 
 export type JsonEncoded = "json";
-export type EncodedAs<V> = { encoded: Encoder<V> };
+export type EncodedAs<V> = { encoded: Encoder<V> | OptionalEncoder<V> };
 export type RefEncoded<V extends CoValue> = {
     ref: CoValueClass<V> | ((raw: RawCoValue) => CoValueClass<V>);
     optional: boolean;
@@ -152,31 +151,23 @@ export type SchemaFor<Field> = NonNullable<Field> extends CoValue
       ? JsonEncoded
       : EncodedAs<NonNullable<Field>>;
 
-export type EffectSchemaWithInputAndOutput<A, I = A> = EffectSchema<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any,
-    never
-> & {
-    [TypeId]: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _A: (_: any) => A;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _I: (_: any) => I;
-    };
+export type Encoder<V> = {
+    encode: (value: V) => JsonValue;
+    decode: (value: JsonValue) => V;
 };
+export type OptionalEncoder<V> =
+    | Encoder<V>
+    | {
+          encode: (value: V | undefined) => JsonValue;
+          decode: (value: JsonValue) => V | undefined;
+      };
 
-export type Encoder<V> = EffectSchemaWithInputAndOutput<V, JsonValue>;
-export type OptionalEncoder<V> = EffectSchemaWithInputAndOutput<
-    V,
-    JsonValue | undefined
->;
-
-import { Date } from "@effect/schema/Schema";
 import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
 
 /** @category Schema definition */
 export const Encoders = {
-    Date,
+    Date: {
+        encode: (value: Date) => value.toISOString(),
+        decode: (value: JsonValue) => new Date(value as string),
+    },
 };

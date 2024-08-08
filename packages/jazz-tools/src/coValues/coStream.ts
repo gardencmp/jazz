@@ -35,7 +35,6 @@ import {
     ensureCoValueLoaded,
     subscribeToExistingCoValue,
 } from "../internal.js";
-import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
 export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
     all: IterableIterator<SingleCoStreamEntry<Item>>;
@@ -141,7 +140,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
         if (itemDescriptor === "json") {
             this._raw.push(item as JsonValue);
         } else if ("encoded" in itemDescriptor) {
-            this._raw.push(encodeSync(itemDescriptor.encoded)(item));
+            this._raw.push(itemDescriptor.encoded.encode(item));
         } else if (isRefEncoded(itemDescriptor)) {
             this._raw.push((item as unknown as CoValue).id);
         }
@@ -153,7 +152,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
             itemDescriptor === "json"
                 ? (v: unknown) => v
                 : "encoded" in itemDescriptor
-                  ? encodeSync(itemDescriptor.encoded)
+                  ? itemDescriptor.encoded.encode
                   : (v: unknown) => v && (v as CoValue).id;
 
         return {
@@ -247,7 +246,7 @@ function entryFromRawEntry<Item>(
                     ? (CoValue & Item) | null
                     : Item;
             } else if ("encoded" in itemField) {
-                return decodeSync(itemField.encoded)(rawEntry.value);
+                return itemField.encoded.decode(rawEntry.value);
             } else if (isRefEncoded(itemField)) {
                 return this.ref?.accessFrom(
                     accessFrom,

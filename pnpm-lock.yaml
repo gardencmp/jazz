@@ -689,9 +689,6 @@ importers:
 
   packages/jazz-tools:
     dependencies:
-      '@effect/schema':
-        specifier: ^0.66.16
-        version: 0.66.16(effect@3.5.2)(fast-check@3.17.2)
       cojson:
         specifier: workspace:*
         version: link:../cojson
