@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactContext, PasskeyAuth } from "jazz-react";
+import { createJazzReactContext, DemoAuth, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -31,9 +31,8 @@ import { TodoAccount, TodoProject } from "./1_schema.ts";
 
 const appName = "Jazz Todo List Example";
 
-const auth = PasskeyAuth<TodoAccount>({
+const auth = DemoAuth<TodoAccount>({
     appName,
-    Component: PrettyAuthUI,
     accountSchema: TodoAccount,
 });
 const Jazz = createJazzReactContext<TodoAccount>({

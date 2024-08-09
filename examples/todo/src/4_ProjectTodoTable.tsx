@@ -19,6 +19,7 @@ import uniqolor from "uniqolor";
 import { useParams } from "react-router";
 import { ID } from "jazz-tools";
 import { useCoState } from "./2_main";
+import { useForm } from "react-hook-form";
 
 /** Walkthrough: Reactively rendering a todo project as a table,
  *               adding and editing tasks
@@ -76,68 +77,50 @@ export function ProjectTodoTable() {
                 </h1>
                 <InviteButton value={project} valueHint="project" />
             </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[40px]">Done</TableHead>
-                        <TableHead>Task</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {project?.tasks?.map(
-                        (task) => task && <TaskRow key={task.id} task={task} />,
-                    )}
-                    <NewTaskInputRow
-                        createTask={createTask}
-                        disabled={!project}
-                    />
-                </TableBody>
-            </Table>
+
+            {project?.tasks?.map(
+                (task) => task && <TaskRow key={task.id} task={task} />,
+            )}
+            <NewTaskInputRow createTask={createTask} disabled={!project} />
         </div>
     );
 }
 
 export function TaskRow({ task }: { task: Task | undefined }) {
+    const { register, handleSubmit, formState } = useForm({
+        values: task && { text: task.text, done: task.done },
+    });
+
     return (
-        <TableRow>
-            <TableCell>
-                <Checkbox
-                    className="mt-1"
-                    checked={task?.done}
-                    onCheckedChange={(checked) => {
-                        // Tick or untick the task
-                        // Task is also immutable, but this will update all queries
-                        // that include this task as a reference
-                        if (task) task.done = !!checked;
-                    }}
-                />
-            </TableCell>
-            <TableCell>
-                <div className="flex flex-row justify-between items-center gap-2">
-                    {task?.text ? (
-                        <span className={task?.done ? "line-through" : ""}>
-                            {task.text}
-                        </span>
-                    ) : (
-                        <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
-                    )}
-                    {
-                        // Here we see for the first time how we can access edit history
-                        // for a CoValue, and use it to display who created the task.
-                        task?._edits.text?.by?.profile?.name ? (
-                            <span
-                                className="rounded-full py-0.5 px-2 text-xs"
-                                style={uniqueColoring(task._edits.text.by.id)}
-                            >
-                                {task._edits.text.by.profile.name}
-                            </span>
-                        ) : (
-                            <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
-                        )
-                    }
-                </div>
-            </TableCell>
-        </TableRow>
+        <form
+            onSubmit={handleSubmit((newValues) => task?.applyDiff(newValues))}
+            className="flex gap-2 items-center"
+        >
+            <Checkbox className="mt-1" {...register("done")} />
+            {task?.text ? (
+                // <span className={task?.done ? "line-through" : ""}>
+                //     {task.text}
+                // </span>
+                <input type="text" {...register("text")} />
+            ) : (
+                <Skeleton className="mt-1 w-[200px] h-[1em] rounded-full" />
+            )}
+            {formState.isDirty && <input type="submit" value="Save" />}
+            {
+                // Here we see for the first time how we can access edit history
+                // for a CoValue, and use it to display who created the task.
+                task?._edits.text?.by?.profile?.name ? (
+                    <span
+                        className="rounded-full py-0.5 px-2 text-xs"
+                        style={uniqueColoring(task._edits.text.by.id)}
+                    >
+                        {task._edits.text.by.profile.name}
+                    </span>
+                ) : (
+                    <Skeleton className="mt-1 w-[50px] h-[1em] rounded-full" />
+                )
+            }
+        </form>
     );
 }
 
