@@ -3,7 +3,7 @@ import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
-import { Data, Effect, Queue, Stream } from "effect";
+import { Channel } from "queueable";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -56,19 +56,14 @@ export type DoneMessage = {
 
 export type PeerID = string;
 
-export class DisconnectedError extends Data.TaggedError("DisconnectedError")<{
-    message: string;
-}> {}
+export type DisconnectedError = "Disconnected";
 
-export class PingTimeoutError extends Error {
-    readonly _tag = "PingTimeoutError";
-}
+export type PingTimeoutError = "PingTimeout";
 
-export type IncomingSyncStream = Stream.Stream<
-    SyncMessage,
-    DisconnectedError | PingTimeoutError
+export type IncomingSyncStream = AsyncIterator<
+    SyncMessage | DisconnectedError | PingTimeoutError
 >;
-export type OutgoingSyncQueue = Queue.Enqueue<SyncMessage>;
+export type OutgoingSyncQueue = Channel<SyncMessage>;
 
 export interface Peer {
     id: PeerID;
@@ -144,15 +139,11 @@ export class SyncManager {
 
         for (const peer of eligiblePeers) {
             // console.log("loading", id, "from", peer.id);
-            Effect.runPromise(
-                Queue.offer(peer.outgoing, {
-                    action: "load",
-                    id: id,
-                    header: false,
-                    sessions: {},
-                }),
-            ).catch((e) => {
-                console.error("Error writing to peer", e);
+            await peer.outgoing.push({
+                action: "load",
+                id: id,
+                header: false,
+                sessions: {},
             });
 
             const coValueEntry = this.local.coValues[id];
