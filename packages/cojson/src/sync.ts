@@ -3,7 +3,7 @@ import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
-import { Data, Effect, Queue, Stream } from "effect";
+import { Channel } from "queueable";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -56,19 +56,14 @@ export type DoneMessage = {
 
 export type PeerID = string;
 
-export class DisconnectedError extends Data.TaggedError("DisconnectedError")<{
-    message: string;
-}> {}
+export type DisconnectedError = "Disconnected";
 
-export class PingTimeoutError extends Error {
-    readonly _tag = "PingTimeoutError";
-}
+export type PingTimeoutError = "PingTimeout";
 
-export type IncomingSyncStream = Stream.Stream<
-    SyncMessage,
-    DisconnectedError | PingTimeoutError
+export type IncomingSyncStream = AsyncIterable<
+    SyncMessage | DisconnectedError | PingTimeoutError
 >;
-export type OutgoingSyncQueue = Queue.Enqueue<SyncMessage>;
+export type OutgoingSyncQueue = Channel<SyncMessage>;
 
 export interface Peer {
     id: PeerID;
@@ -144,15 +139,11 @@ export class SyncManager {
 
         for (const peer of eligiblePeers) {
             // console.log("loading", id, "from", peer.id);
-            Effect.runPromise(
-                Queue.offer(peer.outgoing, {
-                    action: "load",
-                    id: id,
-                    header: false,
-                    sessions: {},
-                }),
-            ).catch((e) => {
-                console.error("Error writing to peer", e);
+            await peer.outgoing.push({
+                action: "load",
+                id: id,
+                header: false,
+                sessions: {},
             });
 
             const coValueEntry = this.local.coValues[id];
@@ -229,11 +220,13 @@ export class SyncManager {
         }
 
         if (entry.state === "loading") {
-            await this.trySendToPeer(peer, {
+            this.trySendToPeer(peer, {
                 action: "load",
                 id,
                 header: false,
                 sessions: {},
+            }).catch((e) => {
+                console.error("Error sending load", e);
             });
             return;
         }
@@ -246,9 +239,11 @@ export class SyncManager {
 
         if (!peer.toldKnownState.has(id)) {
             peer.toldKnownState.add(id);
-            await this.trySendToPeer(peer, {
+            this.trySendToPeer(peer, {
                 action: "load",
                 ...coValue.knownState(),
+            }).catch((e) => {
+                console.error("Error sending load", e);
             });
         }
     }
@@ -273,10 +268,12 @@ export class SyncManager {
         );
 
         if (!peer.toldKnownState.has(id)) {
-            await this.trySendToPeer(peer, {
+            this.trySendToPeer(peer, {
                 action: "known",
                 asDependencyOf,
                 ...coValue.knownState(),
+            }).catch((e) => {
+                console.error("Error sending known state", e);
             });
 
             peer.toldKnownState.add(id);
@@ -311,7 +308,9 @@ export class SyncManager {
                     //     } header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
-                    await this.trySendToPeer(peer, piece);
+                    this.trySendToPeer(peer, piece).catch((e) => {
+                        console.error("Error sending content piece", e);
+                    });
                     if (performance.now() - lastYield > 10) {
                         await new Promise<void>((resolve) => {
                             setTimeout(resolve, 0);
@@ -365,55 +364,42 @@ export class SyncManager {
             void initialSync();
         }
 
-        void Effect.runPromise(
-            peerState.incoming.pipe(
-                Stream.ensuring(
-                    Effect.sync(() => {
-                        console.log("Peer disconnected:", peer.id);
-                        delete this.peers[peer.id];
-                    }),
-                ),
-                Stream.runForEach((msg) =>
-                    Effect.tryPromise({
-                        try: () => this.handleSyncMessage(msg, peerState),
-                        catch: (e) =>
-                            new Error(
-                                `Error reading from peer ${
-                                    peer.id
-                                }, handling msg\n\n${JSON.stringify(
-                                    msg,
-                                    (k, v) =>
-                                        k === "changes" ||
-                                        k === "encryptedChanges"
-                                            ? v.slice(0, 20) + "..."
-                                            : v,
-                                )}`,
-                                { cause: e },
-                            ),
-                    }).pipe(
-                        Effect.timeoutFail({
-                            duration: 10000,
-                            onTimeout: () =>
-                                new Error("Took >10s to process message"),
-                        }),
-                    ),
-                ),
-                Effect.catchAll((e) =>
-                    Effect.logError(
-                        "Error in peer",
-                        peer.id,
-                        e.message,
-                        typeof e.cause === "object" &&
-                            e.cause instanceof Error &&
-                            e.cause.message,
-                    ),
-                ),
-            ),
-        );
+        const processMessages = async() => {
+            for await (const msg of peerState.incoming) {
+                if (msg === "Disconnected") {
+                    return;
+                }
+                if (msg === "PingTimeout") {
+                    console.error("Ping timeout from peer", peer.id);
+                    return;
+                }
+                try {
+                    await this.handleSyncMessage(msg, peerState);
+                } catch (e) {
+                    throw new Error(
+                        `Error reading from peer ${
+                            peer.id
+                        }, handling msg\n\n${JSON.stringify(
+                            msg,
+                            (k, v) =>
+                                k === "changes" ||
+                                k === "encryptedChanges"
+                                    ? v.slice(0, 20) + "..."
+                                    : v,
+                        )}`,
+                        { cause: e },
+                    )
+                }
+            }
+        }
+
+        processMessages().catch((e) => {
+            console.error("Error processing messages from peer", peer.id, e);
+        });
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
-        return Effect.runPromise(Queue.offer(peer.outgoing, msg));
+        return peer.outgoing.push(msg);
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
@@ -439,7 +425,7 @@ export class SyncManager {
                         header: false,
                         sessions: {},
                     }).catch((e) => {
-                        console.error("Error sending known state back", e);
+                        console.error("Error sending known state", e);
                     });
                 }
                 return;
@@ -470,11 +456,13 @@ export class SyncManager {
                 peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
                 peer.toldKnownState.add(msg.id);
 
-                await this.trySendToPeer(peer, {
+                this.trySendToPeer(peer, {
                     action: "known",
                     id: msg.id,
                     header: false,
                     sessions: {},
+                }).catch((e) => {
+                    console.error("Error sending known state back", e);
                 });
 
                 return;
@@ -684,11 +672,13 @@ export class SyncManager {
         await this.syncCoValue(coValue);
 
         if (invalidStateAssumed) {
-            await this.trySendToPeer(peer, {
+            this.trySendToPeer(peer, {
                 action: "known",
                 isCorrection: true,
                 ...coValue.knownState(),
-            });
+            }).catch((e) => {
+                console.error("Error sending known state correction", e);
+            });;
         }
     }
 

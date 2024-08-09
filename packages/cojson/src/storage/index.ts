@@ -1,11 +1,4 @@
-import {
-    Effect,
-    Either,
-    Queue,
-    Stream,
-    SynchronizedRef,
-    Deferred,
-} from "effect";
+import { Effect, Either, Stream, SynchronizedRef, Deferred } from "effect";
 import { RawCoID } from "../ids.js";
 import { CoValueHeader, Transaction } from "../coValueCore.js";
 import { Signature } from "../crypto/crypto.js";
@@ -73,9 +66,17 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         this.coValues = SynchronizedRef.unsafeMake({});
         this.currentWal = SynchronizedRef.unsafeMake<WH | undefined>(undefined);
 
-        void this.fromLocalNode.pipe(
+        void Stream.fromAsyncIterable(
+            this.fromLocalNode,
+            (e) => new Error(String(e)),
+        ).pipe(
             Stream.runForEach((msg) =>
                 Effect.gen(this, function* () {
+                    if (msg === "Disconnected" || msg === "PingTimeout") {
+                        return Effect.fail(
+                            new Error("Unexpected disconnect inside storage"),
+                        );
+                    }
                     if (msg.action === "done") {
                         return;
                     }
@@ -121,13 +122,15 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
             }
 
             if (!coValue) {
-                yield* Queue.offer(this.toLocalNode, {
-                    id: id,
-                    action: "known",
-                    header: false,
-                    sessions: {},
-                    asDependencyOf,
-                });
+                yield* Effect.tryPromise(() =>
+                    this.toLocalNode.push({
+                        id: id,
+                        action: "known",
+                        header: false,
+                        sessions: {},
+                        asDependencyOf,
+                    }),
+                ).pipe(Effect.orDie);
 
                 return coValues;
             }
@@ -182,15 +185,19 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
             const ourKnown: CoValueKnownState = chunkToKnownState(id, coValue);
 
-            yield* Queue.offer(this.toLocalNode, {
-                action: "known",
-                ...ourKnown,
-                asDependencyOf,
-            });
+            yield* Effect.tryPromise(() =>
+                this.toLocalNode.push({
+                    action: "known",
+                    ...ourKnown,
+                    asDependencyOf,
+                }),
+            ).pipe(Effect.orDie);
 
             for (const message of newContentMessages) {
                 if (Object.keys(message.new).length === 0) continue;
-                yield* Queue.offer(this.toLocalNode, message);
+                yield* Effect.tryPromise(() =>
+                    this.toLocalNode.push(message),
+                ).pipe(Effect.orDie);
             }
 
             return { ...coValues, [id]: coValue };
@@ -556,7 +563,11 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
                         blocksInLevel &&
                         blocksInLevel.length > nBlocksDesired
                     ) {
-                        yield* Effect.log("Compacting blocks in level", level, blocksInLevel);
+                        yield* Effect.log(
+                            "Compacting blocks in level",
+                            level,
+                            blocksInLevel,
+                        );
 
                         const coValues = new Map<RawCoID, CoValueChunk>();
 
@@ -648,7 +659,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         setTimeout(() => this.compact(), 5000);
     }
 
-    static async asPeer<WH, RH, FS extends FileSystem<WH, RH>>({
+    static asPeer<WH, RH, FS extends FileSystem<WH, RH>>({
         fs,
         trace,
         localNodeName = "local",
@@ -656,13 +667,15 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         fs: FS;
         trace?: boolean;
         localNodeName?: string;
-    }): Promise<Peer> {
-        const [localNodeAsPeer, storageAsPeer] = await Effect.runPromise(
-            connectedPeers(localNodeName, "storage", {
+    }): Peer {
+        const [localNodeAsPeer, storageAsPeer] = connectedPeers(
+            localNodeName,
+            "storage",
+            {
                 peer1role: "client",
                 peer2role: "server",
                 trace,
-            }),
+            },
         );
 
         new LSMStorage(fs, localNodeAsPeer.incoming, localNodeAsPeer.outgoing);

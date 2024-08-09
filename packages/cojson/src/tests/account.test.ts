@@ -3,7 +3,6 @@ import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
-import { Effect } from "effect";
 
 const Crypto = await WasmCrypto.create();
 
@@ -53,13 +52,11 @@ test("Can create account with one node, and then load it on another", async () =
     map.set("foo", "bar", "private");
     expect(map.get("foo")).toEqual("bar");
 
-    const [node1asPeer, node2asPeer] = await Effect.runPromise(
-        connectedPeers("node1", "node2", {
-            trace: true,
-            peer1role: "server",
-            peer2role: "client",
-        }),
-    );
+    const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {
+        trace: true,
+        peer1role: "server",
+        peer2role: "client",
+    })
 
     console.log("After connected peers");
 
