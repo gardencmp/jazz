@@ -490,6 +490,7 @@ export class CoMap extends CoValueBase implements CoValue {
 
     async asPlainData<M extends CoMap, Depth>(this: M, depth?: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined> {
         const plainObject = {} as RecursiveCoMapInit<M>;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         let loadedValue: CoMap | undefined = this;
         if (depth) {
             loadedValue = await this.ensureLoaded<M, Depth>(depth);
@@ -501,10 +502,13 @@ export class CoMap extends CoValueBase implements CoValue {
             const value = this[key as keyof M];
 
             if (value instanceof CoMap) {
+                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 (plainObject as any)[key] = await value.asPlainData();
             } if (value instanceof CoList) {
+                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 (plainObject as any)[key] = await value.asPlainData();
             } else {
+                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 (plainObject as any)[key] = value;
             }
 

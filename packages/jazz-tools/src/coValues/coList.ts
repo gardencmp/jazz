@@ -11,7 +11,6 @@ import type {
     DepthsIn,
     DeeplyLoaded,
     CoValueFromRaw,
-    CoMapInit,
 } from "../internal.js";
 import {
     Account,
@@ -454,6 +453,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         this: L,
         depth?: Depth & DepthsIn<L>
     ): Promise<RecursiveCoMapInit<L> | undefined> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         let loadedValue: CoList | undefined = this;
         if (depth) {
             loadedValue = await this.ensureLoaded<L, Depth>(depth);
