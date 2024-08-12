@@ -11,9 +11,11 @@ import type {
     DepthsIn,
     DeeplyLoaded,
     CoValueFromRaw,
+    CoMapInit,
 } from "../internal.js";
 import {
     Account,
+    CoMap,
     Group,
     ItemsSym,
     Ref,
@@ -28,6 +30,7 @@ import {
     subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
+import { RecursiveCoMapInit } from "./types.js";
 
 /**
  * CoLists are collaborative versions of plain arrays.
@@ -445,6 +448,40 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         cl: Cl,
     ): InstanceType<Cl> {
         return cl.fromRaw(this._raw) as InstanceType<Cl>;
+    }
+
+    async asPlainData<L extends CoList, Depth>(
+        this: L,
+        depth?: Depth & DepthsIn<L>
+    ): Promise<RecursiveCoMapInit<L> | undefined> {
+        let loadedValue: CoList | undefined = this;
+        if (depth) {
+            loadedValue = await this.ensureLoaded<L, Depth>(depth);
+        }
+
+        if (!loadedValue) return undefined;
+
+        const plainArray: Array<RecursiveCoMapInit<UnCo<L[number]>>> = [];
+
+        for (let i = 0; i < loadedValue.length; i++) {
+            const value = loadedValue[i];
+
+            if (value instanceof CoList) {
+                const nestedPlainArray = await value.asPlainData();
+                if (nestedPlainArray !== undefined) {
+                    plainArray[i] = nestedPlainArray as RecursiveCoMapInit<UnCo<L[number]>>;
+                }
+            } else if (value instanceof CoMap) {
+                const nestedPlainObject = await value.asPlainData();
+                if (nestedPlainObject !== undefined) {
+                    plainArray[i] = nestedPlainObject as RecursiveCoMapInit<UnCo<L[number]>>;
+                }
+            } else {
+                plainArray[i] = value as RecursiveCoMapInit<UnCo<L[number]>>;
+            }
+        }
+
+        return plainArray as RecursiveCoMapInit<L>;
     }
 }
 

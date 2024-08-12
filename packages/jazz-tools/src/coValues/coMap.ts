@@ -27,7 +27,9 @@ import {
     subscribeToCoValue,
     ensureCoValueLoaded,
     subscribeToExistingCoValue,
+    CoList,
 } from "../internal.js";
+import { RecursiveCoMapInit } from "./types.js";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -485,6 +487,30 @@ export class CoMap extends CoValueBase implements CoValue {
         }
         return this;
     }
+
+    async asPlainData<M extends CoMap, Depth>(this: M, depth?: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined> {
+        const plainObject = {} as RecursiveCoMapInit<M>;
+        let loadedValue: CoMap | undefined = this;
+        if (depth) {
+            loadedValue = await this.ensureLoaded<M, Depth>(depth);
+        }
+
+        if (!loadedValue) return undefined
+
+        for (const key of Object.keys(loadedValue)) {
+            const value = this[key as keyof M];
+
+            if (value instanceof CoMap) {
+                (plainObject as any)[key] = await value.asPlainData();
+            } if (value instanceof CoList) {
+                (plainObject as any)[key] = await value.asPlainData();
+            } else {
+                (plainObject as any)[key] = value;
+            }
+
+        }
+        return plainObject
+    }
 }
 
 export type CoKeys<Map extends object> = Exclude<
@@ -617,6 +643,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         }
     },
     deleteProperty(target, key) {
+        console.log('delete', key)
         const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
             target._schema[ItemsSym]) as Schema;
         if (typeof key === "string" && descriptor) {

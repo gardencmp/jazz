@@ -5,6 +5,8 @@ import { Effect, Queue } from "effect";
 import {
     Account,
     CoList,
+    CoMap,
+    Encoders,
     WasmCrypto,
     co,
     isControlledAccount,
@@ -294,5 +296,83 @@ describe("CoList resolution", async () => {
                 expect(update6?.[0]?.[0]?.[0]).toBe("w");
             }),
         );
+    });
+});
+
+describe("CoList asPlainData", async () => {
+    const me = await Account.create({
+        creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
+    });
+
+    class SimpleList extends CoList.Of(co.string) {}
+    
+    class NestedList extends CoList.Of(co.ref(SimpleList)) {}
+    
+    class ComplexItem extends CoMap {
+        name = co.string;
+        value = co.number;
+        date = co.encoded(Encoders.Date);
+    }
+    
+    class ComplexList extends CoList.Of(co.ref(ComplexItem)) {}
+
+    test("Simple CoList asPlainData", async () => {
+        const list = SimpleList.create(["apple", "banana", "cherry"], { owner: me });
+        const plainData = await list.asPlainData();
+        expect(plainData).toEqual(["apple", "banana", "cherry"]);
+    });
+
+    test("Nested CoList asPlainData", async () => {
+        const innerList1 = SimpleList.create(["red", "green"], { owner: me });
+        const innerList2 = SimpleList.create(["blue", "yellow"], { owner: me });
+        const nestedList = NestedList.create([innerList1, innerList2], { owner: me });
+
+        const plainData = await nestedList.asPlainData();
+        expect(plainData).toEqual([["red", "green"], ["blue", "yellow"]]);
+    });
+
+    test("Complex CoList asPlainData", async () => {
+        const date1 = new Date("2023-01-01");
+        const date2 = new Date("2023-02-01");
+        const item1 = ComplexItem.create({ name: "Item 1", value: 10, date: date1 }, { owner: me });
+        const item2 = ComplexItem.create({ name: "Item 2", value: 20, date: date2 }, { owner: me });
+        const complexList = ComplexList.create([item1, item2], { owner: me });
+
+        const plainData = await complexList.asPlainData();
+        expect(plainData).toEqual([
+            { name: "Item 1", value: 10, date: date1 },
+            { name: "Item 2", value: 20, date: date2 }
+        ]);
+    });
+
+    test("CoList asPlainData with depth parameter", async () => {
+        const innerList1 = SimpleList.create(["red", "green"], { owner: me });
+        const innerList2 = SimpleList.create(["blue", "yellow"], { owner: me });
+        const nestedList = NestedList.create([innerList1, innerList2], { owner: me });
+
+        // Test with depth 0 (shallow)
+        const shallowData = await nestedList.asPlainData();
+        expect(shallowData?.length).toBe(2);
+        expect(shallowData?.[0]).toEqual(["red", "green"]);
+        expect(shallowData?.[1]).toEqual(["blue", "yellow"]);
+
+        // Test with depth 1 (fully loaded)
+        const deepData = await nestedList.asPlainData([]);
+        expect(deepData).toEqual([["red", "green"], ["blue", "yellow"]]);
+    });
+
+    test("Empty CoList asPlainData", async () => {
+        const emptyList = SimpleList.create([], { owner: me });
+        const plainData = await emptyList.asPlainData();
+        expect(plainData).toEqual([]);
+    });
+
+    test("Large CoList asPlainData", async () => {
+        const largeArray = Array.from({ length: 1000 }, (_, i) => `item${i}`);
+        const largeList = SimpleList.create(largeArray, { owner: me });
+        const plainData = await largeList.asPlainData();
+        expect(plainData).toEqual(largeArray);
+        expect(plainData?.length).toBe(1000);
     });
 });

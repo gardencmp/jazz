@@ -9,6 +9,7 @@ import {
     co,
     WasmCrypto,
     isControlledAccount,
+    CoList,
 } from "../index.js";
 import { Schema } from "@effect/schema";
 
@@ -735,5 +736,245 @@ describe("CoMap applyDiff", async () => {
         expect(map.name).toEqual("Ian");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map as any).invalidField).toBeUndefined();
+    });
+});
+
+describe("CoMap asPlainData", async () => {
+    const me = await Account.create({
+        creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
+    });
+
+    class SimpleMap extends CoMap {
+        name = co.string;
+        age = co.number;
+        isActive = co.boolean;
+    }
+
+    class NestedMap extends CoMap {
+        info = co.ref(SimpleMap);
+        data = co.string;
+    }
+
+    class ComplexMap extends CoMap {
+        name = co.string;
+        birthday = co.encoded(Encoders.Date);
+        scores = co.json<number[]>();
+        nested = co.ref(NestedMap);
+        optionalField = co.optional.string;
+    }
+
+    class MapWithList extends CoMap {
+        name = co.string;
+        items = co.ref(SimpleList);
+    }
+
+    class SimpleList extends CoList.Of(co.string) {}
+
+    test("Simple CoMap asPlainData", async () => {
+        const map = SimpleMap.create(
+            {
+                name: "Alice",
+                age: 30,
+                isActive: true,
+            },
+            { owner: me }
+        );
+
+        const plainData = await map.asPlainData();
+        expect(plainData).toEqual({
+            name: "Alice",
+            age: 30,
+            isActive: true,
+        });
+    });
+
+    test("Nested CoMap asPlainData", async () => {
+        const innerMap = SimpleMap.create(
+            {
+                name: "Bob",
+                age: 25,
+                isActive: false,
+            },
+            { owner: me }
+        );
+        const nestedMap = NestedMap.create(
+            {
+                info: innerMap,
+                data: "Some data",
+            },
+            { owner: me }
+        );
+
+        const plainData = await nestedMap.asPlainData();
+        expect(plainData).toEqual({
+            info: {
+                name: "Bob",
+                age: 25,
+                isActive: false,
+            },
+            data: "Some data",
+        });
+    });
+
+    test("Complex CoMap asPlainData", async () => {
+        const birthday = new Date("1990-01-01");
+        const nestedMap = NestedMap.create(
+            {
+                info: SimpleMap.create(
+                    {
+                        name: "Charlie",
+                        age: 35,
+                        isActive: true,
+                    },
+                    { owner: me }
+                ),
+                data: "Nested data",
+            },
+            { owner: me }
+        );
+        const complexMap = ComplexMap.create(
+            {
+                name: "David",
+                birthday: birthday,
+                scores: [85, 90, 95],
+                nested: nestedMap,
+                optionalField: "Optional value",
+            },
+            { owner: me }
+        );
+
+        const plainData = await complexMap.asPlainData();
+        expect(plainData).toEqual({
+            name: "David",
+            birthday: birthday,
+            scores: [85, 90, 95],
+            nested: {
+                info: {
+                    name: "Charlie",
+                    age: 35,
+                    isActive: true,
+                },
+                data: "Nested data",
+            },
+            optionalField: "Optional value",
+        });
+    });
+
+    test("CoMap with CoList asPlainData", async () => {
+        const itemsList = SimpleList.create(["item1", "item2", "item3"], { owner: me });
+        const mapWithList = MapWithList.create(
+            {
+                name: "List Container",
+                items: itemsList,
+            },
+            { owner: me }
+        );
+
+        const plainData = await mapWithList.asPlainData();
+
+        const expected = {
+            name: "List Container",
+            items: ["item1", "item2", "item3"],
+        };
+        
+        // Check each property individually
+        expect(plainData?.name).toBe(expected.name);
+        expect(Array.isArray(plainData?.items)).toBe(true);
+        expect(JSON.stringify(plainData?.items)).toBe(JSON.stringify(expected.items));
+        
+        // Check if there are any extra properties
+        expect(Object.keys(plainData!).sort()).toEqual(Object.keys(expected).sort());
+        
+        // If all above checks pass, this should now pass
+        expect(JSON.stringify(plainData)).toBe(JSON.stringify(expected));
+    });
+
+    test("CoMap asPlainData with depth parameter", async () => {
+        const innerMap = SimpleMap.create(
+            {
+                name: "Eve",
+                age: 28,
+                isActive: true,
+            },
+            { owner: me }
+        );
+        const nestedMap = NestedMap.create(
+            {
+                info: innerMap,
+                data: "Depth test data",
+            },
+            { owner: me }
+        );
+
+        // Test with depth 0 (shallow)
+        const shallowData = await nestedMap.asPlainData();
+        expect(shallowData?.info).toEqual({
+            name: "Eve",
+            age: 28,
+            isActive: true,
+        });
+        expect(shallowData?.data).toBe("Depth test data");
+
+        // Test with depth 1 (fully loaded)
+        const deepData = await nestedMap.asPlainData({ info: {} });
+        expect(deepData).toEqual({
+            info: {
+                name: "Eve",
+                age: 28,
+                isActive: true,
+            },
+            data: "Depth test data",
+        });
+    });
+
+    test("Empty CoMap asPlainData", async () => {
+        // @ts-expect-error wrong data
+        const emptyMap = SimpleMap.create({}, { owner: me });
+        const plainData = await emptyMap.asPlainData();
+        expect(plainData).toEqual({});
+    });
+
+    test("CoMap with optional fields asPlainData", async () => {
+        const mapWithOptional = ComplexMap.create(
+            {
+                name: "Frank",
+                birthday: new Date("1995-05-05"),
+                scores: [70, 75, 80],
+                nested: NestedMap.create(
+                    {
+                        info: SimpleMap.create(
+                            {
+                                name: "Nested Frank",
+                                age: 20,
+                                isActive: false,
+                            },
+                            { owner: me }
+                        ),
+                        data: "Nested optional test",
+                    },
+                    { owner: me }
+                ),
+                // optionalField is not set
+            },
+            { owner: me }
+        );
+
+        const plainData = await mapWithOptional.asPlainData();
+        expect(plainData).toEqual({
+            name: "Frank",
+            birthday: new Date("1995-05-05"),
+            scores: [70, 75, 80],
+            nested: {
+                info: {
+                    name: "Nested Frank",
+                    age: 20,
+                    isActive: false,
+                },
+                data: "Nested optional test",
+            },
+            // optionalField should not be present
+        });
+        expect(plainData).not.toHaveProperty("optionalField");
     });
 });
