@@ -449,15 +449,36 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         return cl.fromRaw(this._raw) as InstanceType<Cl>;
     }
 
-    async asPlainData<L extends CoList, Depth>(
-        this: L,
-        depth?: Depth & DepthsIn<L>
-    ): Promise<RecursiveCoMapInit<L> | undefined> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let loadedValue: CoList | undefined = this;
-        if (depth) {
-            loadedValue = await this.ensureLoaded<L, Depth>(depth);
+    asPlainData<L extends CoList>(this: L): RecursiveCoMapInit<L>;
+    asPlainData<L extends CoList, Depth>(this: L, depth: Depth & DepthsIn<L>): Promise<RecursiveCoMapInit<L> | undefined>;
+    asPlainData<L extends CoList, Depth>(this: L, depth?: Depth & DepthsIn<L>): RecursiveCoMapInit<L> | Promise<RecursiveCoMapInit<L> | undefined> {
+        if (depth === undefined) {
+            return this.asPlainDataSync();
+        } else {
+            return this.asPlainDataAsync(depth);
         }
+    }
+
+    private asPlainDataSync<L extends CoList>(this: L): RecursiveCoMapInit<L> {
+        const plainArray: Array<RecursiveCoMapInit<UnCo<L[number]>>> = [];
+
+        for (let i = 0; i < this.length; i++) {
+            const value = this[i];
+
+            if (value instanceof CoList) {
+                plainArray[i] = value.asPlainData() as RecursiveCoMapInit<UnCo<L[number]>>;
+            } else if (value instanceof CoMap) {
+                plainArray[i] = value.asPlainData() as RecursiveCoMapInit<UnCo<L[number]>>;
+            } else {
+                plainArray[i] = value as RecursiveCoMapInit<UnCo<L[number]>>;
+            }
+        }
+
+        return plainArray as RecursiveCoMapInit<L>;
+    }
+
+    private async asPlainDataAsync<L extends CoList, Depth>(this: L, depth: Depth & DepthsIn<L>): Promise<RecursiveCoMapInit<L> | undefined> {
+        let loadedValue: CoList | undefined = await this.ensureLoaded<L, Depth>(depth);
 
         if (!loadedValue) return undefined;
 
@@ -467,12 +488,12 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
             const value = loadedValue[i];
 
             if (value instanceof CoList) {
-                const nestedPlainArray = await value.asPlainData();
+                const nestedPlainArray = value.asPlainData();
                 if (nestedPlainArray !== undefined) {
                     plainArray[i] = nestedPlainArray as RecursiveCoMapInit<UnCo<L[number]>>;
                 }
             } else if (value instanceof CoMap) {
-                const nestedPlainObject = await value.asPlainData();
+                const nestedPlainObject = value.asPlainData();
                 if (nestedPlainObject !== undefined) {
                     plainArray[i] = nestedPlainObject as RecursiveCoMapInit<UnCo<L[number]>>;
                 }

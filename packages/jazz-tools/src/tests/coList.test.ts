@@ -317,29 +317,28 @@ describe("CoList asPlainData", async () => {
     
     class ComplexList extends CoList.Of(co.ref(ComplexItem)) {}
 
-    test("Simple CoList asPlainData", async () => {
+    test("Simple CoList asPlainData", () => {
         const list = SimpleList.create(["apple", "banana", "cherry"], { owner: me });
-        const plainData = await list.asPlainData();
+        const plainData = list.asPlainData();
         expect(plainData).toEqual(["apple", "banana", "cherry"]);
     });
 
-    test("Nested CoList asPlainData", async () => {
+    test("Nested CoList asPlainData", () => {
         const innerList1 = SimpleList.create(["red", "green"], { owner: me });
         const innerList2 = SimpleList.create(["blue", "yellow"], { owner: me });
         const nestedList = NestedList.create([innerList1, innerList2], { owner: me });
 
-        const plainData = await nestedList.asPlainData();
+        const plainData = nestedList.asPlainData();
         expect(plainData).toEqual([["red", "green"], ["blue", "yellow"]]);
     });
 
-    test("Complex CoList asPlainData", async () => {
+    test("Complex CoList asPlainData", () => {
         const date1 = new Date("2023-01-01");
         const date2 = new Date("2023-02-01");
         const item1 = ComplexItem.create({ name: "Item 1", value: 10, date: date1 }, { owner: me });
         const item2 = ComplexItem.create({ name: "Item 2", value: 20, date: date2 }, { owner: me });
         const complexList = ComplexList.create([item1, item2], { owner: me });
-
-        const plainData = await complexList.asPlainData();
+        const plainData = complexList.asPlainData();
         expect(plainData).toEqual([
             { name: "Item 1", value: 10, date: date1 },
             { name: "Item 2", value: 20, date: date2 }
@@ -352,7 +351,7 @@ describe("CoList asPlainData", async () => {
         const nestedList = NestedList.create([innerList1, innerList2], { owner: me });
 
         // Test with depth 0 (shallow)
-        const shallowData = await nestedList.asPlainData();
+        const shallowData = nestedList.asPlainData();
         expect(shallowData?.length).toBe(2);
         expect(shallowData?.[0]).toEqual(["red", "green"]);
         expect(shallowData?.[1]).toEqual(["blue", "yellow"]);
@@ -362,16 +361,16 @@ describe("CoList asPlainData", async () => {
         expect(deepData).toEqual([["red", "green"], ["blue", "yellow"]]);
     });
 
-    test("Empty CoList asPlainData", async () => {
+    test("Empty CoList asPlainData", () => {
         const emptyList = SimpleList.create([], { owner: me });
-        const plainData = await emptyList.asPlainData();
+        const plainData = emptyList.asPlainData();
         expect(plainData).toEqual([]);
     });
 
-    test("Large CoList asPlainData", async () => {
+    test("Large CoList asPlainData", () => {
         const largeArray = Array.from({ length: 1000 }, (_, i) => `item${i}`);
         const largeList = SimpleList.create(largeArray, { owner: me });
-        const plainData = await largeList.asPlainData();
+        const plainData = largeList.asPlainData();
         expect(plainData).toEqual(largeArray);
         expect(plainData?.length).toBe(1000);
     });

@@ -789,7 +789,7 @@ describe("CoMap asPlainData", async () => {
         });
     });
 
-    test("Nested CoMap asPlainData", async () => {
+    test("Nested CoMap asPlainData", () => {
         const innerMap = SimpleMap.create(
             {
                 name: "Bob",
@@ -806,7 +806,7 @@ describe("CoMap asPlainData", async () => {
             { owner: me }
         );
 
-        const plainData = await nestedMap.asPlainData();
+        const plainData = nestedMap.asPlainData();
         expect(plainData).toEqual({
             info: {
                 name: "Bob",
@@ -817,7 +817,7 @@ describe("CoMap asPlainData", async () => {
         });
     });
 
-    test("Complex CoMap asPlainData", async () => {
+    test("Complex CoMap asPlainData", () => {
         const birthday = new Date("1990-01-01");
         const nestedMap = NestedMap.create(
             {
@@ -844,7 +844,7 @@ describe("CoMap asPlainData", async () => {
             { owner: me }
         );
 
-        const plainData = await complexMap.asPlainData();
+        const plainData = complexMap.asPlainData();
         expect(plainData).toEqual({
             name: "David",
             birthday: birthday,
@@ -861,7 +861,7 @@ describe("CoMap asPlainData", async () => {
         });
     });
 
-    test("CoMap with CoList asPlainData", async () => {
+    test("CoMap with CoList asPlainData", () => {
         const itemsList = SimpleList.create(["item1", "item2", "item3"], { owner: me });
         const mapWithList = MapWithList.create(
             {
@@ -871,7 +871,7 @@ describe("CoMap asPlainData", async () => {
             { owner: me }
         );
 
-        const plainData = await mapWithList.asPlainData();
+        const plainData = mapWithList.asPlainData();
 
         const expected = {
             name: "List Container",
@@ -908,7 +908,7 @@ describe("CoMap asPlainData", async () => {
         );
 
         // Test with depth 0 (shallow)
-        const shallowData = await nestedMap.asPlainData();
+        const shallowData = nestedMap.asPlainData();
         expect(shallowData?.info).toEqual({
             name: "Eve",
             age: 28,
@@ -928,14 +928,14 @@ describe("CoMap asPlainData", async () => {
         });
     });
 
-    test("Empty CoMap asPlainData", async () => {
+    test("Empty CoMap asPlainData", () => {
         // @ts-expect-error wrong data
         const emptyMap = SimpleMap.create({}, { owner: me });
-        const plainData = await emptyMap.asPlainData();
+        const plainData = emptyMap.asPlainData();
         expect(plainData).toEqual({});
     });
 
-    test("CoMap with optional fields asPlainData", async () => {
+    test("CoMap with optional fields asPlainData", () => {
         const mapWithOptional = ComplexMap.create(
             {
                 name: "Frank",
@@ -960,7 +960,7 @@ describe("CoMap asPlainData", async () => {
             { owner: me }
         );
 
-        const plainData = await mapWithOptional.asPlainData();
+        const plainData =  mapWithOptional.asPlainData();
         expect(plainData).toEqual({
             name: "Frank",
             birthday: new Date("1995-05-05"),

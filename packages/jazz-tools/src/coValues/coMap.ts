@@ -488,32 +488,55 @@ export class CoMap extends CoValueBase implements CoValue {
         return this;
     }
 
-    async asPlainData<M extends CoMap, Depth>(this: M, depth?: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined> {
-        const plainObject = {} as RecursiveCoMapInit<M>;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        let loadedValue: CoMap | undefined = this;
-        if (depth) {
-            loadedValue = await this.ensureLoaded<M, Depth>(depth);
+    asPlainData<M extends CoMap>(this: M): RecursiveCoMapInit<M>;
+    asPlainData<M extends CoMap, Depth>(this: M, depth: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined>;
+    asPlainData<M extends CoMap, Depth>(this: M, depth?: Depth & DepthsIn<M>): RecursiveCoMapInit<M> | Promise<RecursiveCoMapInit<M> | undefined> {
+        if (depth === undefined) {
+            return this.asPlainDataSync();
+        } else {
+            return this.asPlainDataAsync(depth);
         }
+    }
 
-        if (!loadedValue) return undefined
+    private async asPlainDataAsync<M extends CoMap, Depth>(this: M, depth: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined> {
+        const plainObject = {} as RecursiveCoMapInit<M>;
+        let loadedValue: CoMap | undefined = this;
+        
+        loadedValue = await this.ensureLoaded<M, Depth>(depth);
+
+        if (!loadedValue) return undefined;
 
         for (const key of Object.keys(loadedValue)) {
             const value = this[key as keyof M];
 
             if (value instanceof CoMap) {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 (plainObject as any)[key] = await value.asPlainData();
-            } if (value instanceof CoList) {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+            } else if (value instanceof CoList) {
                 (plainObject as any)[key] = await value.asPlainData();
             } else {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 (plainObject as any)[key] = value;
             }
-
         }
-        return plainObject
+
+        return plainObject;
+    }
+    
+    private asPlainDataSync<M extends CoMap>(this: M): RecursiveCoMapInit<M> {
+        const plainObject = {} as RecursiveCoMapInit<M>;
+
+        for (const key of Object.keys(this)) {
+            const value = this[key as keyof M];
+
+            if (value instanceof CoMap) {
+                (plainObject as any)[key] = value.asPlainData();
+            } else if (value instanceof CoList) {
+                (plainObject as any)[key] = value.asPlainData();
+            } else {
+                (plainObject as any)[key] = value;
+            }
+        }
+
+        return plainObject;
     }
 }
 
