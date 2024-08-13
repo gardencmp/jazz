@@ -478,7 +478,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     }
 
     private async asPlainDataAsync<L extends CoList, Depth>(this: L, depth: Depth & DepthsIn<L>): Promise<RecursiveCoMapInit<L> | undefined> {
-        let loadedValue: CoList | undefined = await this.ensureLoaded<L, Depth>(depth);
+        const loadedValue: CoList | undefined = await this.ensureLoaded<L, Depth>(depth);
 
         if (!loadedValue) return undefined;
 
