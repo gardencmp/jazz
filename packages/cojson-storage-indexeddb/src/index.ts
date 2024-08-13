@@ -10,7 +10,6 @@ import {
     OutgoingSyncQueue,
 } from "cojson";
 import { SyncPromise } from "./syncPromises.js";
-import { Effect, Queue, Stream } from "effect";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;
@@ -53,11 +52,15 @@ export class IDBStorage {
         this.db = db;
         this.toLocalNode = toLocalNode;
 
-        void fromLocalNode.pipe(
-            Stream.runForEach((msg) =>
-                Effect.tryPromise({
-                    try: () => this.handleSyncMessage(msg),
-                    catch: (e) =>
+        const processMessages = async () => {
+            for await (const msg of fromLocalNode) {
+                try {
+                    if (msg === "Disconnected" || msg === "PingTimeout") {
+                        throw new Error("Unexpected Disconnected message");
+                    }
+                    await this.handleSyncMessage(msg);
+                } catch (e) {
+                    console.error(
                         new Error(
                             `Error reading from localNode, handling msg\n\n${JSON.stringify(
                                 msg,
@@ -68,9 +71,13 @@ export class IDBStorage {
                             )}`,
                             { cause: e },
                         ),
-                }),
-            ),
-            Effect.runPromise,
+                    );
+                }
+            }
+        };
+
+        processMessages().catch((e) =>
+            console.error("Error in processMessages", e),
         );
     }
 
@@ -82,25 +89,18 @@ export class IDBStorage {
             localNodeName: "local",
         },
     ): Promise<Peer> {
-        return Effect.runPromise(
-            Effect.gen(function* () {
-                const [localNodeAsPeer, storageAsPeer] =
-                    yield* cojsonInternals.connectedPeers(
-                        localNodeName,
-                        "storage",
-                        { peer1role: "client", peer2role: "server", trace },
-                    );
-
-                yield* Effect.promise(() =>
-                    IDBStorage.open(
-                        localNodeAsPeer.incoming,
-                        localNodeAsPeer.outgoing,
-                    ),
-                );
-
-                return { ...storageAsPeer, priority: 100 };
-            }),
+        const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
+            localNodeName,
+            "storage",
+            { peer1role: "client", peer2role: "server", trace },
         );
+
+        await IDBStorage.open(
+            localNodeAsPeer.incoming,
+            localNodeAsPeer.outgoing,
+        );
+
+        return { ...storageAsPeer, priority: 100 };
     }
 
     static async open(
@@ -392,35 +392,40 @@ export class IDBStorage {
                             ),
                         ).then(() => {
                             // we're done with IndexedDB stuff here so can use native Promises again
-                            setTimeout(() =>
-                                Effect.runPromise(
-                                    Effect.gen(this, function* () {
-                                        yield* Queue.offer(this.toLocalNode, {
-                                            action: "known",
-                                            ...ourKnown,
-                                            asDependencyOf,
-                                        });
+                            setTimeout(() => {
+                                this.toLocalNode
+                                    .push({
+                                        action: "known",
+                                        ...ourKnown,
+                                        asDependencyOf,
+                                    })
+                                    .catch((e) =>
+                                        console.error(
+                                            "Error sending known state",
+                                            e,
+                                        ),
+                                    );
 
-                                        const nonEmptyNewContentPieces =
-                                            newContentPieces.filter(
-                                                (piece) =>
-                                                    piece.header ||
-                                                    Object.keys(piece.new)
-                                                        .length > 0,
-                                            );
+                                const nonEmptyNewContentPieces =
+                                    newContentPieces.filter(
+                                        (piece) =>
+                                            piece.header ||
+                                            Object.keys(piece.new).length > 0,
+                                    );
 
-                                        // console.log(theirKnown.id, nonEmptyNewContentPieces);
+                                // console.log(theirKnown.id, nonEmptyNewContentPieces);
 
-                                        for (const piece of nonEmptyNewContentPieces) {
-                                            yield* Queue.offer(
-                                                this.toLocalNode,
-                                                piece,
-                                            );
-                                            yield* Effect.yieldNow();
-                                        }
-                                    }),
-                                ),
-                            );
+                                for (const piece of nonEmptyNewContentPieces) {
+                                    this.toLocalNode
+                                        .push(piece)
+                                        .catch((e) =>
+                                            console.error(
+                                                "Error sending new content piece",
+                                                e,
+                                            ),
+                                        );
+                                }
+                            });
 
                             return Promise.resolve();
                         });
@@ -445,16 +450,18 @@ export class IDBStorage {
                     const header = msg.header;
                     if (!header) {
                         console.error("Expected to be sent header first");
-                        void Effect.runPromise(
-                            Queue.offer(this.toLocalNode, {
+                        this.toLocalNode
+                            .push({
                                 action: "known",
                                 id: msg.id,
                                 header: false,
                                 sessions: {},
                                 isCorrection: true,
-                            }),
-                        );
-                        throw new Error("Expected to be sent header first");
+                            })
+                            .catch((e) =>
+                                console.error("Error sending known state", e),
+                            );
+                        return SyncPromise.resolve();
                     }
 
                     return this.makeRequest<IDBValidKey>(({ coValues }) =>
@@ -515,13 +522,18 @@ export class IDBStorage {
                         ),
                     ).then(() => {
                         if (invalidAssumptions) {
-                            void Effect.runPromise(
-                                Queue.offer(this.toLocalNode, {
+                            this.toLocalNode
+                                .push({
                                     action: "known",
                                     ...ourKnown,
                                     isCorrection: invalidAssumptions,
-                                }),
-                            );
+                                })
+                                .catch((e) =>
+                                    console.error(
+                                        "Error sending known state",
+                                        e,
+                                    ),
+                                );
                         }
                     });
                 });

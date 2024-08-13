@@ -7,8 +7,8 @@
   "license": "MIT",
   "dependencies": {
     "cojson": "workspace:*",
-    "effect": "^3.5.2",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "queueable": "^5.3.2"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",

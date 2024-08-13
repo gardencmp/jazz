@@ -123,8 +123,6 @@ export {
     SyncMessage,
     isRawCoID,
     LSMStorage,
-    DisconnectedError,
-    PingTimeoutError,
 };
 
 export type {
@@ -135,6 +133,8 @@ export type {
     WalFilename,
     IncomingSyncStream,
     OutgoingSyncQueue,
+    DisconnectedError,
+    PingTimeoutError,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

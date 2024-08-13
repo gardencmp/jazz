@@ -11,7 +11,6 @@ import {
 } from "cojson";
 
 import Database, { Database as DatabaseT } from "better-sqlite3";
-import { Effect, Queue, Stream } from "effect";
 
 type CoValueRow = {
     id: CojsonInternalTypes.RawCoID;
@@ -54,11 +53,15 @@ export class SQLiteStorage {
         this.db = db;
         this.toLocalNode = toLocalNode;
 
-        void fromLocalNode.pipe(
-            Stream.runForEach((msg) =>
-                Effect.tryPromise({
-                    try: () => this.handleSyncMessage(msg),
-                    catch: (e) =>
+        const processMessages = async () => {
+            for await (const msg of fromLocalNode) {
+                try {
+                    if (msg === "Disconnected" || msg === "PingTimeout") {
+                        throw new Error("Unexpected Disconnected message");
+                    }
+                    await this.handleSyncMessage(msg);
+                } catch (e) {
+                    console.error(
                         new Error(
                             `Error reading from localNode, handling msg\n\n${JSON.stringify(
                                 msg,
@@ -69,9 +72,13 @@ export class SQLiteStorage {
                             )}`,
                             { cause: e },
                         ),
-                }),
-            ),
-            Effect.runPromise,
+                    );
+                }
+            }
+        };
+
+        processMessages().catch((e) =>
+            console.error("Error in processMessages", e),
         );
     }
 
@@ -84,26 +91,19 @@ export class SQLiteStorage {
         trace?: boolean;
         localNodeName?: string;
     }): Promise<Peer> {
-        return Effect.runPromise(
-            Effect.gen(function* () {
-                const [localNodeAsPeer, storageAsPeer] =
-                    yield* cojsonInternals.connectedPeers(
-                        localNodeName,
-                        "storage",
-                        { peer1role: "client", peer2role: "server", trace },
-                    );
-
-                yield* Effect.promise(() =>
-                    SQLiteStorage.open(
-                        filename,
-                        localNodeAsPeer.incoming,
-                        localNodeAsPeer.outgoing,
-                    ),
-                );
-
-                return { ...storageAsPeer, priority: 100 };
-            }),
+        const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
+            localNodeName,
+            "storage",
+            { peer1role: "client", peer2role: "server", trace },
         );
+
+        await SQLiteStorage.open(
+            filename,
+            localNodeAsPeer.incoming,
+            localNodeAsPeer.outgoing,
+        );
+
+        return { ...storageAsPeer, priority: 100 };
     }
 
     static async open(
@@ -441,13 +441,13 @@ export class SQLiteStorage {
             );
         }
 
-        await Effect.runPromise(
-            Queue.offer(this.toLocalNode, {
+        this.toLocalNode
+            .push({
                 action: "known",
                 ...ourKnown,
                 asDependencyOf,
-            }),
-        );
+            })
+            .catch((e) => console.error("Error while pushing known", e));
 
         const nonEmptyNewContentPieces = newContentPieces.filter(
             (piece) => piece.header || Object.keys(piece.new).length > 0,
@@ -456,7 +456,11 @@ export class SQLiteStorage {
         // console.log(theirKnown.id, nonEmptyNewContentPieces);
 
         for (const piece of nonEmptyNewContentPieces) {
-            await Effect.runPromise(Queue.offer(this.toLocalNode, piece));
+            this.toLocalNode
+                .push(piece)
+                .catch((e) =>
+                    console.error("Error while pushing content piece", e),
+                );
             await new Promise((resolve) => setTimeout(resolve, 0));
         }
     }
@@ -478,15 +482,17 @@ export class SQLiteStorage {
             const header = msg.header;
             if (!header) {
                 console.error("Expected to be sent header first");
-                await Effect.runPromise(
-                    Queue.offer(this.toLocalNode, {
+                this.toLocalNode
+                    .push({
                         action: "known",
                         id: msg.id,
                         header: false,
                         sessions: {},
                         isCorrection: true,
-                    }),
-                );
+                    })
+                    .catch((e) =>
+                        console.error("Error while pushing known", e),
+                    );
                 return;
             }
 
@@ -618,13 +624,13 @@ export class SQLiteStorage {
         })();
 
         if (invalidAssumptions) {
-            await Effect.runPromise(
-                Queue.offer(this.toLocalNode, {
+            this.toLocalNode
+                .push({
                     action: "known",
                     ...ourKnown,
                     isCorrection: invalidAssumptions,
-                }),
-            );
+                })
+                .catch((e) => console.error("Error while pushing known", e));
         }
     }
 

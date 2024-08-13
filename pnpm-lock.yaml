@@ -156,9 +156,6 @@ importers:
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../../packages/cojson-transport-ws
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       hash-slash:
         specifier: workspace:*
         version: link:../../packages/hash-slash
@@ -484,9 +481,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -509,9 +503,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -525,9 +516,9 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
+      queueable:
+        specifier: ^5.3.2
+        version: 5.3.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
