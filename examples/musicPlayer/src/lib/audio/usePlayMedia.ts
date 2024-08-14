@@ -2,23 +2,23 @@ import { useRef } from "react";
 import { useAudioManager } from "./AudioManager";
 
 export function usePlayMedia() {
-	const audioManager = useAudioManager();
+    const audioManager = useAudioManager();
 
-	const previousMediaLoad = useRef<Promise<unknown>>();
+    const previousMediaLoad = useRef<Promise<unknown>>();
 
-	async function playMedia(file: Blob) {
-		// Wait for the previous load to finish
-		// to avoid to incur into concurrency issues
-		await previousMediaLoad.current;
+    async function playMedia(file: Blob) {
+        // Wait for the previous load to finish
+        // to avoid to incur into concurrency issues
+        await previousMediaLoad.current;
 
-		const promise = audioManager.loadAudio(file);
+        const promise = audioManager.loadAudio(file);
 
-		previousMediaLoad.current = promise;
+        previousMediaLoad.current = promise;
 
-		await promise;
+        await promise;
 
-		audioManager.play();
-	}
+        audioManager.play();
+    }
 
-	return playMedia;
+    return playMedia;
 }
