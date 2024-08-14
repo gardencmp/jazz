@@ -18,7 +18,7 @@ import {
 } from "./crypto/crypto.js";
 import { WasmCrypto } from "./crypto/WasmCrypto.js";
 import { PureJSCrypto } from "./crypto/PureJSCrypto.js";
-import { connectedPeers } from "./streamUtils.js";
+import { connectedPeers, Channel } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes, isRawCoID } from "./ids.js";
@@ -84,6 +84,7 @@ export const cojsonInternals = {
     accountHeaderForInitialAgentSecret,
     idforHeader,
     StreamingHash,
+    Channel
 };
 
 export {

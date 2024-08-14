@@ -1,5 +1,4 @@
-import { DisconnectedError, Peer, PingTimeoutError, SyncMessage } from "cojson";
-import { Channel } from "queueable";
+import { DisconnectedError, Peer, PingTimeoutError, SyncMessage, cojsonInternals } from "cojson";
 
 interface WebsocketEvents {
     close: { code: number; reason: string };
@@ -42,7 +41,7 @@ export function createWebSocketPeer({
     websocket: AnyWebSocket;
     role: Peer["role"];
 }): Peer {
-    const incoming = new Channel<
+    const incoming = new cojsonInternals.Channel<
         SyncMessage | DisconnectedError | PingTimeoutError
     >();
 

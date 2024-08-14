@@ -8,7 +8,6 @@
     "version": "0.7.25",
     "dependencies": {
         "cojson": "workspace:*",
-        "effect": "^3.5.2",
         "fast-check": "^3.17.2"
     },
     "scripts": {
