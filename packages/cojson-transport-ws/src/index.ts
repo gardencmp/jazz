@@ -22,6 +22,7 @@ interface AnyWebSocket {
     ): void;
     close(): void;
     send(data: string): void;
+    readyState: number;
 }
 
 const g: typeof globalThis & {
@@ -82,14 +83,23 @@ export function createWebSocketPeer({
         }, 10_000);
     });
 
+    const websocketOpen = new Promise<void>((resolve) => {
+        websocket.addEventListener("open", resolve, { once: true });
+    });
+
     return {
         id,
         incoming,
         outgoing: {
-            push(msg) {
+            async push(msg) {
+                await websocketOpen;
                 websocket.send(JSON.stringify(msg));
-                return Promise.resolve();
             },
+            close() {
+                if (websocket.readyState === 1) {
+                    websocket.close();
+                }
+            }
         },
         role,
     };

@@ -3,6 +3,7 @@ import { createJazzReactContext, DemoAuth } from "jazz-react";
 import { createRoot } from "react-dom/client";
 import { useIframeHashRouter } from "hash-slash";
 import { ChatScreen } from "./chatScreen.tsx";
+import { StrictMode } from "react";
 
 export class Message extends CoMap {
   text = co.string;
@@ -39,4 +40,4 @@ function App() {
 }
 
 createRoot(document.getElementById("root")!)
-  .render(<Jazz.Provider><App/></Jazz.Provider>);
+  .render(<StrictMode><Jazz.Provider><App/></Jazz.Provider></StrictMode>);

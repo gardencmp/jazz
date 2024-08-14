@@ -62,7 +62,10 @@ export type PingTimeoutError = "PingTimeout";
 export type IncomingSyncStream = AsyncIterable<
     SyncMessage | DisconnectedError | PingTimeoutError
 >;
-export type OutgoingSyncQueue = { push: (msg: SyncMessage) => Promise<unknown> };
+export type OutgoingSyncQueue = {
+    push: (msg: SyncMessage) => Promise<unknown>;
+    close: () => void;
+};
 
 export interface Peer {
     id: PeerID;
@@ -739,6 +742,12 @@ export class SyncManager {
                     peer,
                 );
             }
+        }
+    }
+
+    gracefulShutdown() {
+        for (const peer of Object.values(this.peers)) {
+            peer.outgoing.close();
         }
     }
 }

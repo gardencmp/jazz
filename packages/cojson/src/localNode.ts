@@ -670,6 +670,10 @@ export class LocalNode {
 
         return newNode;
     }
+
+    gracefulShutdown() {
+        this.syncManager.gracefulShutdown();
+    }
 }
 
 /** @internal */

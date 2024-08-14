@@ -247,7 +247,7 @@ describe("CoList resolution", async () => {
                 "subscribedList?.[0]?.[0]?.[0]",
                 subscribedList?.[0]?.[0]?.[0],
             );
-            queue.push(subscribedList);
+            void queue.push(subscribedList);
         });
 
         const update1 = (await queue.next()).value;

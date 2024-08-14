@@ -9,7 +9,6 @@
     "dependencies": {
         "cojson": "workspace:*",
         "cojson-transport-ws": "workspace:*",
-        "effect": "^3.5.2",
         "jazz-tools": "workspace:*",
         "ws": "^8.14.2"
     },

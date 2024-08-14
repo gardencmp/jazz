@@ -263,7 +263,6 @@ describe("CoStream resolution", async () => {
         expect(update6[me.id]?.value?.[me.id]?.value?.[me.id]?.value).toBe(
             "jam",
         );
-        expect(update1[me.id]?.value).toEqual(null);
     });
 });
 

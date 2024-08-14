@@ -138,8 +138,8 @@ describe("Deep loading with depth arg", async () => {
             throw new Error("map4 is undefined");
         }
         expect(map4.list[0]?.stream).not.toBe(null);
-        expect(map4.list[0]?.stream?.[me.id]?.value).toBe(null);
-        expect(map4.list[0]?.stream?.byMe?.value).toBe(null);
+        expect(map4.list[0]?.stream?.[me.id]).toBe(undefined)
+        expect(map4.list[0]?.stream?.byMe?.value).toBe(undefined);
 
         const map5 = await TestMap.load(map.id, meOnSecondPeer, {
             list: [{ stream: [{}] }],

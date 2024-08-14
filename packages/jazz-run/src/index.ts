@@ -25,7 +25,7 @@ const accountCreate = Command.make(
         return Effect.gen(function* () {
             const crypto = yield* Effect.promise(() => WasmCrypto.create());
 
-            const peer = yield* createWebSocketPeer({
+            const peer = createWebSocketPeer({
                 id: "upstream",
                 websocket: new WebSocket(peerAddr),
                 role: "server",
@@ -53,7 +53,7 @@ const accountCreate = Command.make(
                 ),
             );
 
-            const peer2 = yield* createWebSocketPeer({
+            const peer2 = createWebSocketPeer({
                 id: "upstream2",
                 websocket: new WebSocket(peerAddr),
                 role: "server",

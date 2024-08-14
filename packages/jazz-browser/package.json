@@ -10,7 +10,6 @@
     "cojson": "workspace:*",
     "cojson-storage-indexeddb": "workspace:*",
     "cojson-transport-ws": "workspace:*",
-    "effect": "^3.5.2",
     "jazz-tools": "workspace:*",
     "typescript": "^5.1.6"
   },
