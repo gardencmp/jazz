@@ -2,96 +2,80 @@ import { usePlayMedia } from "@/lib/audio/usePlayMedia";
 import { usePlayState } from "@/lib/audio/usePlayState";
 import { useAccount, useCoState } from "@/lib/jazz";
 import { MusicTrack, Playlist } from "@/1_schema";
-import { BinaryCoStream } from "jazz-tools";
-import { useEffect } from "react";
+import { useRef, useState } from "react";
+import { getNextTrack, getPrevTrack, loadMusicFileAsBlob } from "./5_getters";
+import { ID } from "jazz-tools";
 
 export function useMediaPlayer() {
     const { me } = useAccount();
 
-    const activeTrack = useCoState(MusicTrack, me?.root?.activeTrack?.id, {
-        file: [],
-    });
-    const tracks = useCoState(Playlist, me?.root?.activePlaylist?.id, {
-        tracks: [{}],
-    })?.tracks;
-
-    function getNextTrack() {
-        if (!activeTrack) return;
-        if (!tracks) return;
-
-        const currentIndex = tracks.findIndex(
-            (item) => item?.id === activeTrack.id,
-        );
-        const nextIndex = (currentIndex + 1) % tracks.length;
-
-        return tracks[nextIndex];
-    }
-
-    function getPrevTrack() {
-        if (!activeTrack) return;
-        if (!tracks) return;
-
-        const currentIndex = tracks.findIndex(
-            (item) => item?.id === activeTrack.id,
-        );
-
-        const previousIndex =
-            (currentIndex - 1 + tracks.length) % tracks.length;
-        return tracks[previousIndex];
-    }
-
     const playState = usePlayState();
     const playMedia = usePlayMedia();
 
-    useEffect(() => {
-        if (!activeTrack) return;
-        if (playState.value !== "play") return;
+    const [loading, setLoading] = useState<ID<MusicTrack> | null>(null);
 
-        // TODO: Handle out of order requests
-        async function play() {
-            if (!activeTrack || !activeTrack.file) return;
+    const activeTrack = useCoState(MusicTrack, me?.root?._refs.activeTrack.id);
 
-            const file = await BinaryCoStream.loadAsBlob(
-                activeTrack.file.id,
-                me,
-            );
+    // Reference used to avoid out-of-order track loads
+    const lastLoadedTrackId = useRef<ID<MusicTrack> | null>(null);
 
-            if (file) {
-                await playMedia(file);
-            }
+    async function loadTrack(track: MusicTrack) {
+        if (!me.root) return;
+
+        lastLoadedTrackId.current = track.id;
+
+        setLoading(track.id);
+
+        const file = await loadMusicFileAsBlob(track, me);
+
+        // Check if another track has been loaded during
+        // the file download
+        if (lastLoadedTrackId.current !== track.id) {
+            return;
         }
-
-        play();
-        // This effect load the song blob into the music player
-        // Needs to be triggered only when the active track or the play state changes
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTrack?.id, playState.value]);
-
-    function playNextTrack() {
-        if (!me?.root) return;
-
-        const next = getNextTrack();
-
-        if (next) {
-            me.root.activeTrack = next;
-        }
-    }
-
-    function playPrevTrack() {
-        if (!me?.root) return;
-
-        const prev = getPrevTrack();
-
-        if (prev) {
-            me.root.activeTrack = prev;
-        }
-    }
-
-    function setActiveTrack(track: MusicTrack, playlist?: Playlist) {
-        if (!me?.root) return;
 
         me.root.activeTrack = track;
+
+        await playMedia(file);
+
+        setLoading(null);
+    }
+
+    async function playNextTrack() {
+        if (!me?.root) return;
+
+        const track = await getNextTrack(me);
+
+        if (track) {
+            me.root.activeTrack = track;
+            await loadTrack(track);
+        }
+    }
+
+    async function playPrevTrack() {
+        if (!me?.root) return;
+
+        const track = await getPrevTrack(me);
+
+        if (track) {
+            await loadTrack(track);
+        }
+    }
+
+    async function setActiveTrack(track: MusicTrack, playlist?: Playlist) {
+        if (!me?.root) return;
+
+        if (
+            activeTrack?.id === track.id &&
+            lastLoadedTrackId.current !== null
+        ) {
+            playState.toggle();
+            return;
+        }
+
         me.root.activePlaylist = playlist ?? me.root.rootPlaylist;
+
+        await loadTrack(track);
 
         if (playState.value === "pause") {
             playState.toggle();
@@ -99,10 +83,10 @@ export function useMediaPlayer() {
     }
 
     return {
-        tracks,
         activeTrack,
         setActiveTrack,
         playNextTrack,
         playPrevTrack,
+        loading,
     };
 }

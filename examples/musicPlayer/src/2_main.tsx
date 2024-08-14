@@ -7,6 +7,7 @@ import { useMediaEndListener } from "./lib/audio/useMediaEndListener";
 import { usePlayState } from "./lib/audio/usePlayState";
 import { Jazz, useAccount } from "./lib/jazz";
 import { FileUploadButton } from "./basicComponents/FileUploadButton";
+import { MusicTrackRow } from "./components/MusicTrackRow";
 
 function App() {
     const mediaPlayer = useMediaPlayer();
@@ -17,6 +18,8 @@ function App() {
             },
         },
     });
+
+    const tracks = me?.root.rootPlaylist.tracks;
 
     const playState = usePlayState();
 
@@ -30,35 +33,30 @@ function App() {
         await uploadMusicTracks(me, files);
     }
 
+    const isPlaying = playState.value === "play";
+
     return (
         <>
             <FileUploadButton onFileLoad={handleFileLoad}>
                 Add file
             </FileUploadButton>
-            <ul>
-                {mediaPlayer.tracks?.map(
+            <ul className="flex flex-col px-1 py-6 gap-6">
+                {tracks?.map(
                     (track) =>
                         track && (
-                            <li key={track.id}>
-                                {track.title}{" "}
-                                {mediaPlayer.activeTrack?.id !== track.id ? (
-                                    <button
-                                        onClick={() => {
-                                            mediaPlayer.setActiveTrack(track);
-                                        }}
-                                    >
-                                        Play
-                                    </button>
-                                ) : null}
-                            </li>
+                            <MusicTrackRow
+                                track={track}
+                                key={track.id}
+                                isLoading={mediaPlayer.loading === track.id}
+                                isPlaying={isPlaying}
+                                isActive={
+                                    mediaPlayer.activeTrack?.id === track.id
+                                }
+                                onClick={mediaPlayer.setActiveTrack}
+                            />
                         ),
                 )}
             </ul>
-            {mediaPlayer.activeTrack && (
-                <button onClick={playState.toggle}>
-                    {playState.value === "play" ? "Pause" : "Play"}
-                </button>
-            )}
         </>
     );
 }

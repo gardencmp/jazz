@@ -1,6 +1,6 @@
 import { getAudioFileData } from "@/lib/audio/getAudioFileData";
 import { BinaryCoStream } from "jazz-tools";
-import { MusicaAccount, MusicTrack } from "./1_schema";
+import { MusicaAccount, MusicTrack, MusicTrackWaveform } from "./1_schema";
 
 export async function uploadMusicTracks(
     account: MusicaAccount,
@@ -24,7 +24,10 @@ export async function uploadMusicTracks(
             {
                 file: binaryCoStream,
                 duration: data.duration,
-                waveform: data.waveform,
+                waveform: MusicTrackWaveform.create(
+                    { data: data.waveform },
+                    ownership,
+                ),
                 title: file.name,
             },
             ownership,
