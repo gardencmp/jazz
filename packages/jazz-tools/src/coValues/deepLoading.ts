@@ -89,8 +89,8 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
     }
 }
 
-type UnCoNotNull<T> = UnCo<Exclude<T, null>>;
-type Clean<T> = UnCo<NonNullable<T>>;
+export type UnCoNotNull<T> = UnCo<Exclude<T, null>>;
+export type Clean<T> = UnCo<NonNullable<T>>;
 
 export type DepthsIn<
     V,

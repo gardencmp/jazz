@@ -29,7 +29,7 @@ import {
     subscribeToExistingCoValue,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
-import { RecursiveCoMapInit } from "./types.js";
+import { DeepPlainData } from "./types.js";
 import { plainDataStrategy } from "./plainData.js";
 
 /**
@@ -450,17 +450,17 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         return cl.fromRaw(this._raw) as InstanceType<Cl>;
     }
 
-    asPlainData<L extends CoList>(this: L): RecursiveCoMapInit<L>;
+    asPlainData<L extends CoList>(this: L): DeepPlainData<L>;
     asPlainData<L extends CoList, Depth>(
         this: L,
         depth: Depth & DepthsIn<L>,
-    ): Promise<RecursiveCoMapInit<L> | undefined>;
+    ): Promise<DeepPlainData<L> | undefined>;
     asPlainData<L extends CoList, Depth>(
         this: L,
         depthOrSeen?:
             | (Depth & DepthsIn<L>)
-            | WeakMap<CoMap | CoList, RecursiveCoMapInit<L>>,
-    ): RecursiveCoMapInit<L> | Promise<RecursiveCoMapInit<L> | undefined> {
+            | WeakMap<CoMap | CoList, DeepPlainData<L>>,
+    ): DeepPlainData<L> | Promise<DeepPlainData<L> | undefined> {
         if (depthOrSeen instanceof WeakMap) {
             return this.asPlainDataSync(depthOrSeen);
         } else if (depthOrSeen === undefined) {
@@ -472,12 +472,12 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
 
     private asPlainDataSync<L extends CoList>(
         this: L,
-        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<UnCo<L[number]>>[]>,
-    ): RecursiveCoMapInit<L> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<UnCo<L[number]>>[]>,
+    ): DeepPlainData<L> {
         if (seen.has(this)) {
-            return seen.get(this) as RecursiveCoMapInit<L>;
+            return seen.get(this) as DeepPlainData<L>;
         }
-        const plainArray: Array<RecursiveCoMapInit<UnCo<L[number]>>> = [];
+        const plainArray: Array<DeepPlainData<UnCo<L[number]>>> = [];
 
         seen.set(this, plainArray);
 
@@ -486,22 +486,22 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
             plainArray[i] = plainDataStrategy.toPlainData(
                 value,
                 seen,
-            ) as RecursiveCoMapInit<UnCo<L[number]>>;
+            ) as DeepPlainData<UnCo<L[number]>>;
         }
 
-        return plainArray as RecursiveCoMapInit<L>;
+        return plainArray as DeepPlainData<L>;
     }
 
     async asPlainDataAsync<L extends CoList, Depth>(
         this: L,
         depth: Depth & DepthsIn<L>,
-        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<UnCo<L[number]>>[]>,
-    ): Promise<RecursiveCoMapInit<L> | undefined> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<UnCo<L[number]>>[]>,
+    ): Promise<DeepPlainData<L> | undefined> {
         if (seen.has(this)) {
-            return seen.get(this) as RecursiveCoMapInit<L>;
+            return seen.get(this) as DeepPlainData<L>;
         }
 
-        const plainArray: Array<RecursiveCoMapInit<UnCo<L[number]>>> = [];
+        const plainArray: Array<DeepPlainData<UnCo<L[number]>>> = [];
         seen.set(this, plainArray);
 
         const loadedValue: CoList | undefined = await this.ensureLoaded<
@@ -515,10 +515,10 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
             plainArray[i] = plainDataStrategy.toPlainData(
                 value,
                 seen,
-            ) as RecursiveCoMapInit<UnCo<L[number]>>;
+            ) as DeepPlainData<UnCo<L[number]>>;
         }
 
-        return plainArray as RecursiveCoMapInit<L>;
+        return plainArray as DeepPlainData<L>;
     }
 }
 

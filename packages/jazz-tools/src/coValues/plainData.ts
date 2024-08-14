@@ -1,32 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { UnCo } from "../internal.js";
 import { CoList } from "./coList.js";
-import { CoMap, CoMapInit } from "./coMap.js";
-
-type RecursiveCoMapInit<T> = T extends CoMap
-    ? { [K in keyof CoMapInit<T>]: RecursiveCoMapInit<CoMapInit<T>[K]> }
-    : T extends CoList
-      ? Array<RecursiveCoMapInit<UnCo<T[number]>>>
-      : T;
+import { CoMap } from "./coMap.js";
+import { DeepPlainData } from "./types.js";
 
 interface PlainDataStrategy {
-    toPlainData<T>(
+    toPlainData<T, Depth>(
         value: T,
-        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<any>>,
-    ): RecursiveCoMapInit<T>;
+        seen: WeakMap<CoMap | CoList, DeepPlainData<any, Depth>>,
+    ): DeepPlainData<T, Depth>;
 }
 
 export const plainDataStrategy: PlainDataStrategy = {
-    toPlainData<T>(
+    toPlainData<T, Depth>(
         value: T,
-        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<any>>,
-    ): RecursiveCoMapInit<T> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<any, Depth>>,
+    ): DeepPlainData<T, Depth> {
         if (value instanceof CoMap || value instanceof CoList) {
             if (seen.has(value)) {
-                return seen.get(value) as RecursiveCoMapInit<T>;
+                return seen.get(value) as DeepPlainData<T, Depth>;
             }
-            return (value as CoMap).asPlainData(seen) as RecursiveCoMapInit<T>;
+            return (value as CoMap).asPlainData(seen) as DeepPlainData<
+                T,
+                Depth
+            >;
         }
-        return value as RecursiveCoMapInit<T>;
+        return value as DeepPlainData<T, Depth>;
     },
 };

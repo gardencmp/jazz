@@ -30,7 +30,7 @@ import {
     subscribeToExistingCoValue,
     CoList,
 } from "../internal.js";
-import { RecursiveCoMapInit } from "./types.js";
+import { DeepPlainData } from "./types.js";
 import { plainDataStrategy } from "./plainData.js";
 
 type CoMapEdit<V> = {
@@ -490,17 +490,17 @@ export class CoMap extends CoValueBase implements CoValue {
         return this;
     }
 
-    asPlainData<M extends CoMap>(this: M): RecursiveCoMapInit<M>;
+    asPlainData<M extends CoMap, Depth>(this: M): DeepPlainData<M, Depth>;
     asPlainData<M extends CoMap, Depth>(
         this: M,
         depth: Depth & DepthsIn<M>,
-    ): Promise<RecursiveCoMapInit<M> | undefined>;
+    ): Promise<DeepPlainData<M, Depth> | undefined>;
     asPlainData<M extends CoMap, Depth>(
         this: M,
         depthOrSeen?:
             | (Depth & DepthsIn<M>)
-            | WeakMap<CoMap | CoList, RecursiveCoMapInit<M>>,
-    ): RecursiveCoMapInit<M> | Promise<RecursiveCoMapInit<M> | undefined> {
+            | WeakMap<CoMap | CoList, DeepPlainData<M, Depth>>,
+    ): DeepPlainData<M, Depth> | Promise<DeepPlainData<M, Depth> | undefined> {
         if (depthOrSeen instanceof WeakMap) {
             return this.asPlainDataSync(depthOrSeen);
         } else if (depthOrSeen === undefined) {
@@ -510,15 +510,15 @@ export class CoMap extends CoValueBase implements CoValue {
         }
     }
 
-    private asPlainDataSync<M extends CoMap>(
+    private asPlainDataSync<M extends CoMap, Depth>(
         this: M,
-        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<M>>,
-    ): RecursiveCoMapInit<M> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<M, Depth>>,
+    ): DeepPlainData<M, Depth> {
         if (seen.has(this)) {
-            return seen.get(this) as RecursiveCoMapInit<M>;
+            return seen.get(this) as DeepPlainData<M, Depth>;
         }
 
-        const plainObject = {} as RecursiveCoMapInit<M>;
+        const plainObject = {} as DeepPlainData<M, Depth>;
         seen.set(this, plainObject);
 
         for (const key of Object.keys(this)) {
@@ -535,12 +535,12 @@ export class CoMap extends CoValueBase implements CoValue {
     async asPlainDataAsync<M extends CoMap, Depth>(
         this: M,
         depth: Depth & DepthsIn<M>,
-        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<M>>,
-    ): Promise<RecursiveCoMapInit<M> | undefined> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<M, Depth>>,
+    ): Promise<DeepPlainData<M, Depth> | undefined> {
         if (seen.has(this)) {
-            return seen.get(this) as RecursiveCoMapInit<M>;
+            return seen.get(this) as DeepPlainData<M, Depth>;
         }
-        const plainObject = {} as RecursiveCoMapInit<M>;
+        const plainObject = {} as DeepPlainData<M, Depth>;
         seen.set(this, plainObject);
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
