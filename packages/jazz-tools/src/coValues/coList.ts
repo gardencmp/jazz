@@ -26,6 +26,7 @@ import {
     makeRefs,
     subscribeToCoValue,
     subscribeToExistingCoValue,
+    subscriptionsScopes,
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
@@ -444,7 +445,12 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     castAs<Cl extends CoValueClass & CoValueFromRaw<CoValue>>(
         cl: Cl,
     ): InstanceType<Cl> {
-        return cl.fromRaw(this._raw) as InstanceType<Cl>;
+        const casted = cl.fromRaw(this._raw) as InstanceType<Cl>;
+        const subscriptionScope = subscriptionsScopes.get(this);
+        if (subscriptionScope) {
+            subscriptionsScopes.set(casted, subscriptionScope);
+        }
+        return casted;
     }
 }
 

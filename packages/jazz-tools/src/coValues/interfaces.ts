@@ -122,7 +122,12 @@ export class CoValueBase implements CoValue {
     castAs<Cl extends CoValueClass & CoValueFromRaw<CoValue>>(
         cl: Cl,
     ): InstanceType<Cl> {
-        return cl.fromRaw(this._raw) as InstanceType<Cl>;
+        const casted = cl.fromRaw(this._raw) as InstanceType<Cl>;
+        const subscriptionScope = subscriptionsScopes.get(this);
+        if (subscriptionScope) {
+            subscriptionsScopes.set(casted, subscriptionScope);
+        }
+        return casted;
     }
 }
 
