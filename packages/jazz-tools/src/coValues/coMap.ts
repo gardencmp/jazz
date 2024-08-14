@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { JsonValue, RawCoMap } from "cojson";
 import type { Simplify } from "effect/Types";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
@@ -30,6 +31,7 @@ import {
     CoList,
 } from "../internal.js";
 import { RecursiveCoMapInit } from "./types.js";
+import { plainDataStrategy } from "./plainData.js";
 
 type CoMapEdit<V> = {
     value?: V;
@@ -463,19 +465,19 @@ export class CoMap extends CoValueBase implements CoValue {
                 const tKey = key as keyof typeof newValues & keyof this;
                 const descriptor = (this._schema[tKey as string] ||
                     this._schema[ItemsSym]) as Schema;
-                
+
                 if (tKey in this._schema) {
                     const newValue = newValues[tKey];
                     const currentValue = this[tKey];
-                    
+
                     if (descriptor === "json" || "encoded" in descriptor) {
                         if (currentValue !== newValue) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this as any)[tKey] = newValue;
                         }
-                    } 
-                    else if (isRefEncoded(descriptor)) {
-                        const currentId = (currentValue as CoValue | undefined)?.id;
+                    } else if (isRefEncoded(descriptor)) {
+                        const currentId = (currentValue as CoValue | undefined)
+                            ?.id;
                         const newId = (newValue as CoValue | undefined)?.id;
                         if (currentId !== newId) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -489,58 +491,71 @@ export class CoMap extends CoValueBase implements CoValue {
     }
 
     asPlainData<M extends CoMap>(this: M): RecursiveCoMapInit<M>;
-    asPlainData<M extends CoMap, Depth>(this: M, depth: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined>;
-    asPlainData<M extends CoMap, Depth>(this: M, depth?: Depth & DepthsIn<M>): RecursiveCoMapInit<M> | Promise<RecursiveCoMapInit<M> | undefined> {
-        if (depth === undefined) {
-            return this.asPlainDataSync();
+    asPlainData<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+    ): Promise<RecursiveCoMapInit<M> | undefined>;
+    asPlainData<M extends CoMap, Depth>(
+        this: M,
+        depthOrSeen?:
+            | (Depth & DepthsIn<M>)
+            | WeakMap<CoMap | CoList, RecursiveCoMapInit<M>>,
+    ): RecursiveCoMapInit<M> | Promise<RecursiveCoMapInit<M> | undefined> {
+        if (depthOrSeen instanceof WeakMap) {
+            return this.asPlainDataSync(depthOrSeen);
+        } else if (depthOrSeen === undefined) {
+            return this.asPlainDataSync(new WeakMap());
         } else {
-            return this.asPlainDataAsync(depth);
+            return this.asPlainDataAsync(depthOrSeen, new WeakMap());
         }
     }
 
-    private async asPlainDataAsync<M extends CoMap, Depth>(this: M, depth: Depth & DepthsIn<M>): Promise<RecursiveCoMapInit<M> | undefined> {
+    private asPlainDataSync<M extends CoMap>(
+        this: M,
+        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<M>>,
+    ): RecursiveCoMapInit<M> {
+        if (seen.has(this)) {
+            return seen.get(this) as RecursiveCoMapInit<M>;
+        }
+
         const plainObject = {} as RecursiveCoMapInit<M>;
+        seen.set(this, plainObject);
+
+        for (const key of Object.keys(this)) {
+            const value = this[key as keyof M];
+            (plainObject as any)[key] = plainDataStrategy.toPlainData(
+                value as CoMap,
+                seen,
+            );
+        }
+
+        return plainObject;
+    }
+
+    async asPlainDataAsync<M extends CoMap, Depth>(
+        this: M,
+        depth: Depth & DepthsIn<M>,
+        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<M>>,
+    ): Promise<RecursiveCoMapInit<M> | undefined> {
+        if (seen.has(this)) {
+            return seen.get(this) as RecursiveCoMapInit<M>;
+        }
+        const plainObject = {} as RecursiveCoMapInit<M>;
+        seen.set(this, plainObject);
+
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let loadedValue: CoMap | undefined = this;
-        
+
         loadedValue = await this.ensureLoaded<M, Depth>(depth);
 
         if (!loadedValue) return undefined;
 
         for (const key of Object.keys(loadedValue)) {
             const value = this[key as keyof M];
-
-            if (value instanceof CoMap) {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                (plainObject as any)[key] = value.asPlainData();
-            } else if (value instanceof CoList) {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                (plainObject as any)[key] = value.asPlainData();
-            } else {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                (plainObject as any)[key] = value;
-            }
-        }
-
-        return plainObject;
-    }
-    
-    private asPlainDataSync<M extends CoMap>(this: M): RecursiveCoMapInit<M> {
-        const plainObject = {} as RecursiveCoMapInit<M>;
-
-        for (const key of Object.keys(this)) {
-            const value = this[key as keyof M];
-
-            if (value instanceof CoMap) {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                (plainObject as any)[key] = value.asPlainData();
-            } else if (value instanceof CoList) {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                (plainObject as any)[key] = value.asPlainData();
-            } else {
-                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                (plainObject as any)[key] = value;
-            }
+            (plainObject as any)[key] = plainDataStrategy.toPlainData(
+                value,
+                seen,
+            );
         }
 
         return plainObject;
@@ -677,7 +692,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
         }
     },
     deleteProperty(target, key) {
-        console.log('delete', key)
+        console.log("delete", key);
         const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
             target._schema[ItemsSym]) as Schema;
         if (typeof key === "string" && descriptor) {

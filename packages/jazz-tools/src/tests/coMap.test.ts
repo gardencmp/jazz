@@ -771,6 +771,14 @@ describe("CoMap asPlainData", async () => {
 
     class SimpleList extends CoList.Of(co.string) {}
 
+    class PersonMap extends CoMap {
+        name = co.string;
+        age = co.number;
+        friends = co.ref(FriendsList);
+    }
+
+    class FriendsList extends CoList.Of(co.ref(PersonMap)) {}
+
     test("Simple CoMap asPlainData", async () => {
         const map = SimpleMap.create(
             {
@@ -778,7 +786,7 @@ describe("CoMap asPlainData", async () => {
                 age: 30,
                 isActive: true,
             },
-            { owner: me }
+            { owner: me },
         );
 
         const plainData = await map.asPlainData();
@@ -796,14 +804,14 @@ describe("CoMap asPlainData", async () => {
                 age: 25,
                 isActive: false,
             },
-            { owner: me }
+            { owner: me },
         );
         const nestedMap = NestedMap.create(
             {
                 info: innerMap,
                 data: "Some data",
             },
-            { owner: me }
+            { owner: me },
         );
 
         const plainData = nestedMap.asPlainData();
@@ -827,11 +835,11 @@ describe("CoMap asPlainData", async () => {
                         age: 35,
                         isActive: true,
                     },
-                    { owner: me }
+                    { owner: me },
                 ),
                 data: "Nested data",
             },
-            { owner: me }
+            { owner: me },
         );
         const complexMap = ComplexMap.create(
             {
@@ -841,7 +849,7 @@ describe("CoMap asPlainData", async () => {
                 nested: nestedMap,
                 optionalField: "Optional value",
             },
-            { owner: me }
+            { owner: me },
         );
 
         const plainData = complexMap.asPlainData();
@@ -862,13 +870,15 @@ describe("CoMap asPlainData", async () => {
     });
 
     test("CoMap with CoList asPlainData", () => {
-        const itemsList = SimpleList.create(["item1", "item2", "item3"], { owner: me });
+        const itemsList = SimpleList.create(["item1", "item2", "item3"], {
+            owner: me,
+        });
         const mapWithList = MapWithList.create(
             {
                 name: "List Container",
                 items: itemsList,
             },
-            { owner: me }
+            { owner: me },
         );
 
         const plainData = mapWithList.asPlainData();
@@ -877,15 +887,19 @@ describe("CoMap asPlainData", async () => {
             name: "List Container",
             items: ["item1", "item2", "item3"],
         };
-        
+
         // Check each property individually
         expect(plainData?.name).toBe(expected.name);
         expect(Array.isArray(plainData?.items)).toBe(true);
-        expect(JSON.stringify(plainData?.items)).toBe(JSON.stringify(expected.items));
-        
+        expect(JSON.stringify(plainData?.items)).toBe(
+            JSON.stringify(expected.items),
+        );
+
         // Check if there are any extra properties
-        expect(Object.keys(plainData!).sort()).toEqual(Object.keys(expected).sort());
-        
+        expect(Object.keys(plainData!).sort()).toEqual(
+            Object.keys(expected).sort(),
+        );
+
         // If all above checks pass, this should now pass
         expect(JSON.stringify(plainData)).toBe(JSON.stringify(expected));
     });
@@ -897,14 +911,14 @@ describe("CoMap asPlainData", async () => {
                 age: 28,
                 isActive: true,
             },
-            { owner: me }
+            { owner: me },
         );
         const nestedMap = NestedMap.create(
             {
                 info: innerMap,
                 data: "Depth test data",
             },
-            { owner: me }
+            { owner: me },
         );
 
         // Test with depth 0 (shallow)
@@ -949,18 +963,18 @@ describe("CoMap asPlainData", async () => {
                                 age: 20,
                                 isActive: false,
                             },
-                            { owner: me }
+                            { owner: me },
                         ),
                         data: "Nested optional test",
                     },
-                    { owner: me }
+                    { owner: me },
                 ),
                 // optionalField is not set
             },
-            { owner: me }
+            { owner: me },
         );
 
-        const plainData =  mapWithOptional.asPlainData();
+        const plainData = mapWithOptional.asPlainData();
         expect(plainData).toEqual({
             name: "Frank",
             birthday: new Date("1995-05-05"),
@@ -976,5 +990,59 @@ describe("CoMap asPlainData", async () => {
             // optionalField should not be present
         });
         expect(plainData).not.toHaveProperty("optionalField");
+    });
+
+    test("CoMap asPlainData with circular reference", async () => {
+        const alice = PersonMap.create(
+            {
+                name: "Alice",
+                age: 30,
+                friends: FriendsList.create([], { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const bob = PersonMap.create(
+            {
+                name: "Bob",
+                age: 32,
+                friends: FriendsList.create([], { owner: me }),
+            },
+            { owner: me },
+        );
+
+        alice?.friends?.push(bob);
+        bob?.friends?.push(alice);
+
+        const plainData = alice.asPlainData();
+
+        // Check the overall structure
+        expect(plainData).toEqual({
+            name: "Alice",
+            age: 30,
+            friends: [
+                {
+                    name: "Bob",
+                    age: 32,
+                    friends: [
+                        {
+                            name: "Alice",
+                            age: 30,
+                            friends: expect.anything(), // This represents the circular reference
+                        },
+                    ],
+                },
+            ],
+        });
+
+        // Check that the circular reference is represented correctly
+        expect(plainData?.friends?.[0]?.friends?.[0]?.friends).toBe(
+            plainData.friends,
+        );
+
+        expect(
+            plainData?.friends?.[0]?.friends?.[0]?.friends?.[0]?.friends?.[0]
+                ?.friends,
+        ).toBe(plainData.friends);
     });
 });

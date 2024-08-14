@@ -30,6 +30,7 @@ import {
 } from "../internal.js";
 import { encodeSync, decodeSync } from "@effect/schema/Schema";
 import { RecursiveCoMapInit } from "./types.js";
+import { plainDataStrategy } from "./plainData.js";
 
 /**
  * CoLists are collaborative versions of plain arrays.
@@ -450,56 +451,71 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     }
 
     asPlainData<L extends CoList>(this: L): RecursiveCoMapInit<L>;
-    asPlainData<L extends CoList, Depth>(this: L, depth: Depth & DepthsIn<L>): Promise<RecursiveCoMapInit<L> | undefined>;
-    asPlainData<L extends CoList, Depth>(this: L, depth?: Depth & DepthsIn<L>): RecursiveCoMapInit<L> | Promise<RecursiveCoMapInit<L> | undefined> {
-        if (depth === undefined) {
-            return this.asPlainDataSync();
+    asPlainData<L extends CoList, Depth>(
+        this: L,
+        depth: Depth & DepthsIn<L>,
+    ): Promise<RecursiveCoMapInit<L> | undefined>;
+    asPlainData<L extends CoList, Depth>(
+        this: L,
+        depthOrSeen?:
+            | (Depth & DepthsIn<L>)
+            | WeakMap<CoMap | CoList, RecursiveCoMapInit<L>>,
+    ): RecursiveCoMapInit<L> | Promise<RecursiveCoMapInit<L> | undefined> {
+        if (depthOrSeen instanceof WeakMap) {
+            return this.asPlainDataSync(depthOrSeen);
+        } else if (depthOrSeen === undefined) {
+            return this.asPlainDataSync(new WeakMap());
         } else {
-            return this.asPlainDataAsync(depth);
+            return this.asPlainDataAsync(depthOrSeen, new WeakMap());
         }
     }
 
-    private asPlainDataSync<L extends CoList>(this: L): RecursiveCoMapInit<L> {
+    private asPlainDataSync<L extends CoList>(
+        this: L,
+        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<UnCo<L[number]>>[]>,
+    ): RecursiveCoMapInit<L> {
+        if (seen.has(this)) {
+            return seen.get(this) as RecursiveCoMapInit<L>;
+        }
         const plainArray: Array<RecursiveCoMapInit<UnCo<L[number]>>> = [];
+
+        seen.set(this, plainArray);
 
         for (let i = 0; i < this.length; i++) {
             const value = this[i];
-
-            if (value instanceof CoList) {
-                plainArray[i] = value.asPlainData() as RecursiveCoMapInit<UnCo<L[number]>>;
-            } else if (value instanceof CoMap) {
-                plainArray[i] = value.asPlainData() as RecursiveCoMapInit<UnCo<L[number]>>;
-            } else {
-                plainArray[i] = value as RecursiveCoMapInit<UnCo<L[number]>>;
-            }
+            plainArray[i] = plainDataStrategy.toPlainData(
+                value,
+                seen,
+            ) as RecursiveCoMapInit<UnCo<L[number]>>;
         }
 
         return plainArray as RecursiveCoMapInit<L>;
     }
 
-    private async asPlainDataAsync<L extends CoList, Depth>(this: L, depth: Depth & DepthsIn<L>): Promise<RecursiveCoMapInit<L> | undefined> {
-        const loadedValue: CoList | undefined = await this.ensureLoaded<L, Depth>(depth);
-
-        if (!loadedValue) return undefined;
+    async asPlainDataAsync<L extends CoList, Depth>(
+        this: L,
+        depth: Depth & DepthsIn<L>,
+        seen: WeakMap<CoMap | CoList, RecursiveCoMapInit<UnCo<L[number]>>[]>,
+    ): Promise<RecursiveCoMapInit<L> | undefined> {
+        if (seen.has(this)) {
+            return seen.get(this) as RecursiveCoMapInit<L>;
+        }
 
         const plainArray: Array<RecursiveCoMapInit<UnCo<L[number]>>> = [];
+        seen.set(this, plainArray);
+
+        const loadedValue: CoList | undefined = await this.ensureLoaded<
+            L,
+            Depth
+        >(depth);
+        if (!loadedValue) return undefined;
 
         for (let i = 0; i < loadedValue.length; i++) {
             const value = loadedValue[i];
-
-            if (value instanceof CoList) {
-                const nestedPlainArray = value.asPlainData();
-                if (nestedPlainArray !== undefined) {
-                    plainArray[i] = nestedPlainArray as RecursiveCoMapInit<UnCo<L[number]>>;
-                }
-            } else if (value instanceof CoMap) {
-                const nestedPlainObject = value.asPlainData();
-                if (nestedPlainObject !== undefined) {
-                    plainArray[i] = nestedPlainObject as RecursiveCoMapInit<UnCo<L[number]>>;
-                }
-            } else {
-                plainArray[i] = value as RecursiveCoMapInit<UnCo<L[number]>>;
-            }
+            plainArray[i] = plainDataStrategy.toPlainData(
+                value,
+                seen,
+            ) as RecursiveCoMapInit<UnCo<L[number]>>;
         }
 
         return plainArray as RecursiveCoMapInit<L>;
