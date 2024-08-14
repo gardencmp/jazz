@@ -12,6 +12,7 @@ interface NewItemModalProps {
   initialValues?: CoMapInit<PasswordItem>;
   onSave: (item: CoMapInit<PasswordItem>) => void;
   folders: Folder[];
+  selectedFolder: Folder | undefined;
 }
 
 const NewItemModal: React.FC<NewItemModalProps> = ({
@@ -20,6 +21,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
   initialValues,
   onSave,
   folders,
+  selectedFolder,
 }) => {
   const {
     register,
@@ -35,7 +37,7 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
       password: "",
       uri: "",
       deleted: false,
-      folder: undefined,
+      folder: selectedFolder,
     },
   });
 
@@ -167,7 +169,11 @@ const NewItemModal: React.FC<NewItemModalProps> = ({
               <option
                 key={folder.id}
                 value={folder.id}
-                selected={initialValues?.folder?.id === folder.id}
+                selected={
+                  initialValues
+                    ? initialValues?.folder?.id === folder.id
+                    : selectedFolder?.id === folder.id
+                }
               >
                 {folder.name}
               </option>

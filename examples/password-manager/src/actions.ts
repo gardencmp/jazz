@@ -54,8 +54,3 @@ export const shareFolder = (
   }
   return undefined;
 };
-
-export const getSharedUsers = (folder: Folder): string[] => {
-  const members = folder._owner.castAs(Group).members;
-  return members.filter((m) => !m.account?.isMe).map((m) => m.id);
-};

@@ -21,6 +21,12 @@ const VaultPage: React.FC = () => {
 
   useEffect(() => {
     if (!sharedFolderId || !sharedFolder || !me.root?.folders) return;
+    const existsIndex = me.root?.folders.findIndex(
+      (f) => f?.id === sharedFolder.id
+    );
+    if (existsIndex > -1) {
+      me.root?.folders?.splice(existsIndex, 1);
+    }
     me.root?.folders?.push(sharedFolder);
     navigate("/vault");
   }, [sharedFolder, me.root?.folders, sharedFolderId, navigate]);
@@ -90,6 +96,18 @@ const VaultPage: React.FC = () => {
     }
   };
 
+  const handleDeleteFolder = async () => {
+    try {
+      const selectedFolderIndex = me.root?.folders?.findIndex(
+        (folder) => folder?.id === selectedFolder?.id
+      );
+      if (selectedFolderIndex !== undefined && selectedFolderIndex > -1)
+        me.root?.folders?.splice(selectedFolderIndex, 1);
+    } catch (err) {
+      setError("Failed to create folder. Please try again.");
+    }
+  };
+
   const handleLogout = async () => {
     try {
       logOut();
@@ -119,7 +137,14 @@ const VaultPage: React.FC = () => {
           >
             Edit
           </Button>
-          <Button onClick={() => handleDeleteItem(item)} variant="danger">
+          <Button
+            onClick={() => handleDeleteItem(item)}
+            variant="danger"
+            disabled={
+              item._owner.castAs(Group).myRole() !== "admin" &&
+              item._owner.castAs(Group).myRole() !== "writer"
+            }
+          >
             Delete
           </Button>
         </div>
@@ -180,9 +205,16 @@ const VaultPage: React.FC = () => {
           <Button onClick={() => setIsNewItemModalOpen(true)}>New Item</Button>
           <Button
             onClick={() => setIsInviteModalOpen(true)}
-            disabled={!selectedFolder}
+            disabled={
+              !selectedFolder ||
+              (selectedFolder._owner.castAs(Group).myRole() !== "admin" &&
+                selectedFolder._owner.castAs(Group).myRole() !== "writer")
+            }
           >
             Share Folder
+          </Button>
+          <Button onClick={handleDeleteFolder} disabled={!selectedFolder}>
+            Delete Folder
           </Button>
         </div>
       </div>
@@ -198,6 +230,7 @@ const VaultPage: React.FC = () => {
           }}
           onSave={editingItem ? handleUpdateItem : handleSaveNewItem}
           folders={folders}
+          selectedFolder={selectedFolder}
           initialValues={
             editingItem && editingItem.folder ? { ...editingItem } : undefined
           }

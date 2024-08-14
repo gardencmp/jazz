@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { getSharedUsers, shareFolder } from "../actions";
+import { shareFolder } from "../actions";
 import { Folder } from "../schema";
+import { Group } from "jazz-tools";
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -19,13 +20,13 @@ const InviteModal: React.FC<InviteModalProps> = ({
     "reader" | "writer" | "admin"
   >("reader");
   const [inviteLink, setInviteLink] = useState("");
-  const [sharedUsers, setSharedUsers] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!selectedFolder) return;
-    const users = getSharedUsers(selectedFolder);
-    setSharedUsers(users);
-  }, [selectedFolder]);
+  const members = selectedFolder?._owner.castAs(Group).members;
+  const invitedMembers = members
+    ? members
+        .filter((m) => !m.account?.isMe && m.role !== "revoked")
+        .map((m) => m.account)
+    : [];
 
   const handleCreateInviteLink = () => {
     if (!selectedFolder || !selectedPermission) return;
@@ -77,11 +78,25 @@ const InviteModal: React.FC<InviteModalProps> = ({
         <div>
           <h3 className="text-lg font-medium mb-2">Existing Shared Users</h3>
           <div className="max-h-40 overflow-y-auto bg-gray-100 rounded-md p-2">
-            {sharedUsers.length > 0 ? (
+            {invitedMembers.length > 0 ? (
               <ul className="list-disc list-inside">
-                {sharedUsers.map((user, index) => (
-                  <li key={index} className="text-sm">
-                    {user}
+                {invitedMembers.map((user) => (
+                  <li
+                    key={user?.id}
+                    className="text-sm flex justify-between items-center"
+                  >
+                    <span>{user?.profile?.name}</span>
+                    <button
+                      onClick={() => {
+                        if (!user?._raw) return;
+                        selectedFolder?._owner
+                          .castAs(Group)
+                          ._raw.removeMember(user?._raw);
+                      }}
+                      className="ml-4 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
                   </li>
                 ))}
               </ul>
