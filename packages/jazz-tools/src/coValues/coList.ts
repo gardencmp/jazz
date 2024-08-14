@@ -450,17 +450,17 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         return cl.fromRaw(this._raw) as InstanceType<Cl>;
     }
 
-    asPlainData<L extends CoList>(this: L): DeepPlainData<L>;
+    asPlainData<L extends CoList>(this: L): DeepPlainData<L, never[]>;
     asPlainData<L extends CoList, Depth>(
         this: L,
         depth: Depth & DepthsIn<L>,
-    ): Promise<DeepPlainData<L> | undefined>;
+    ): Promise<DeepPlainData<L, Depth> | undefined>;
     asPlainData<L extends CoList, Depth>(
         this: L,
         depthOrSeen?:
             | (Depth & DepthsIn<L>)
-            | WeakMap<CoMap | CoList, DeepPlainData<L>>,
-    ): DeepPlainData<L> | Promise<DeepPlainData<L> | undefined> {
+            | WeakMap<CoMap | CoList, DeepPlainData<L, Depth>>,
+    ): DeepPlainData<L, Depth> | Promise<DeepPlainData<L, Depth> | undefined> {
         if (depthOrSeen instanceof WeakMap) {
             return this.asPlainDataSync(depthOrSeen);
         } else if (depthOrSeen === undefined) {
@@ -472,8 +472,8 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
 
     private asPlainDataSync<L extends CoList>(
         this: L,
-        seen: WeakMap<CoMap | CoList, DeepPlainData<UnCo<L[number]>>[]>,
-    ): DeepPlainData<L> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<UnCo<L[number]>, never[]>[]>,
+    ): DeepPlainData<L, never[]> {
         if (seen.has(this)) {
             return seen.get(this) as DeepPlainData<L>;
         }
@@ -486,22 +486,22 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
             plainArray[i] = plainDataStrategy.toPlainData(
                 value,
                 seen,
-            ) as DeepPlainData<UnCo<L[number]>>;
+            ) as DeepPlainData<UnCo<L[number]>, never[]>;
         }
 
-        return plainArray as DeepPlainData<L>;
+        return plainArray as DeepPlainData<L, never[]>;
     }
 
     async asPlainDataAsync<L extends CoList, Depth>(
         this: L,
         depth: Depth & DepthsIn<L>,
-        seen: WeakMap<CoMap | CoList, DeepPlainData<UnCo<L[number]>>[]>,
-    ): Promise<DeepPlainData<L> | undefined> {
+        seen: WeakMap<CoMap | CoList, DeepPlainData<UnCo<L[number]>, Depth>[]>,
+    ): Promise<DeepPlainData<L, Depth> | undefined> {
         if (seen.has(this)) {
-            return seen.get(this) as DeepPlainData<L>;
+            return seen.get(this) as DeepPlainData<L, Depth>;
         }
 
-        const plainArray: Array<DeepPlainData<UnCo<L[number]>>> = [];
+        const plainArray: Array<DeepPlainData<UnCo<L[number]>, Depth>> = [];
         seen.set(this, plainArray);
 
         const loadedValue: CoList | undefined = await this.ensureLoaded<
@@ -518,7 +518,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
             ) as DeepPlainData<UnCo<L[number]>>;
         }
 
-        return plainArray as DeepPlainData<L>;
+        return plainArray as DeepPlainData<L, Depth>;
     }
 }
 

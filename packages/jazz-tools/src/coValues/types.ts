@@ -6,41 +6,67 @@ import {
     CoValue,
     ID,
     ItemsSym,
+    UnCo,
     UnCoNotNull,
 } from "../internal.js";
 import { CoKeys } from "./coMap.js";
 
-export type DeepPlainData<
+export type ShallowPlainData<V> = [V] extends [Array<infer Item>]
+    ? UnCoNotNull<Item> extends CoValue
+        ? (null | ShallowPlainData<UnCoNotNull<Item>>)[]
+        : Item[]
+    : [V] extends [{ _type: "CoMap" | "Group" | "Account" }]
+      ? ItemsSym extends keyof V
+          ? {
+                [key: string]: UnCoNotNull<V[ItemsSym]> extends CoValue
+                    ? null | ShallowPlainData<UnCoNotNull<V[ItemsSym]>>
+                    : UnCo<V[ItemsSym]>;
+            }
+          : {
+                [Key in CoKeys<V>]: UnCoNotNull<V[Key]> extends CoValue
+                    ? null | ShallowPlainData<UnCoNotNull<V[Key]>>
+                    : UnCo<V[Key]>;
+            }
+      : never;
+
+export type Simplify<A> = {
+    [K in keyof A]: A[K];
+} extends infer B
+    ? B
+    : never;
+
+export type DeepPlainData<V, Depth> = Simplify<DeepPlainDataHelper<V, Depth>>;
+
+export type DeepPlainDataHelper<
     V,
     Depth,
     DepthLimit extends number = 5,
     CurrentDepth extends number[] = [],
 > = DepthLimit extends CurrentDepth["length"]
-    ? V
+    ? ShallowPlainData<V>
     : // Basically V extends CoList - but if we used that we'd introduce circularity into the definition of CoList itself
       [V] extends [Array<infer Item>]
       ? Depth extends never[] // []
-          ? V
+          ? ShallowPlainData<V>
           : UnCoNotNull<Item> extends CoValue
             ? Depth extends Array<infer ItemDepth> // [item-depth]
                 ? (UnCoNotNull<Item> &
-                      DeepPlainData<
+                      DeepPlainDataHelper<
                           UnCoNotNull<Item>,
                           ItemDepth,
                           DepthLimit,
                           [0, ...CurrentDepth]
-                      >)[] &
-                      V
+                      >)[]
                 : never
             : V
       : // Basically V extends CoMap | Group | Account - but if we used that we'd introduce circularity into the definition of CoMap itself
         [V] extends [{ _type: "CoMap" | "Group" | "Account" }]
         ? Depth extends never[]
-            ? V
+            ? ShallowPlainData<V>
             : Depth extends Array<infer ItemDepth>
               ? ItemsSym extends keyof V
-                  ? V & {
-                        [key: string]: DeepPlainData<
+                  ? {
+                        [key: string]: DeepPlainDataHelper<
                             Clean<V[ItemsSym]>,
                             ItemDepth,
                             DepthLimit,
@@ -49,12 +75,12 @@ export type DeepPlainData<
                     }
                   : never
               : keyof Depth extends never
-                ? V
+                ? ShallowPlainData<V>
                 : {
                       [Key in keyof Depth]-?: Key extends CoKeys<V>
                           ? Clean<V[Key]> extends CoValue
                               ?
-                                    | DeepPlainData<
+                                    | DeepPlainDataHelper<
                                           Clean<V[Key]>,
                                           Depth[Key],
                                           DepthLimit,
@@ -65,26 +91,5 @@ export type DeepPlainData<
                                           : never)
                               : never
                           : never;
-                  } & V
-        : [V] extends [
-                {
-                    _type: "CoStream";
-                    byMe: CoStreamEntry<infer Item> | undefined;
-                },
-            ]
-          ? Depth extends never[]
-              ? V
-              : V & {
-                    byMe?: { value: UnCoNotNull<Item> };
-                    inCurrentSession?: { value: UnCoNotNull<Item> };
-                    perSession: {
-                        [key: SessionID]: { value: UnCoNotNull<Item> };
-                    };
-                } & { [key: ID<Account>]: { value: UnCoNotNull<Item> } }
-          : [V] extends [
-                  {
-                      _type: "BinaryCoStream";
-                  },
-              ]
-            ? V
-            : never;
+                  } & ShallowPlainData<V>
+        : never;

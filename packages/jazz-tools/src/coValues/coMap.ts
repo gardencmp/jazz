@@ -490,7 +490,7 @@ export class CoMap extends CoValueBase implements CoValue {
         return this;
     }
 
-    asPlainData<M extends CoMap, Depth>(this: M): DeepPlainData<M, Depth>;
+    asPlainData<M extends CoMap>(this: M): DeepPlainData<M, never[]>;
     asPlainData<M extends CoMap, Depth>(
         this: M,
         depth: Depth & DepthsIn<M>,
