@@ -1,5 +1,5 @@
 import React from "react";
-import { createHashRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
 import VaultPage from "./pages/vault";
 import { useAcceptInvite } from "./main";
 import { Folder } from "./schema";
@@ -7,7 +7,15 @@ import { Folder } from "./schema";
 const App: React.FC = () => {
   const router = createHashRouter([
     {
+      path: "/",
+      element: <Navigate to={"/vault"} />,
+    },
+    {
       path: "/vault",
+      element: <VaultPage />,
+    },
+    {
+      path: "/vault/:sharedFolderId",
       element: <VaultPage />,
     },
     {
@@ -18,7 +26,9 @@ const App: React.FC = () => {
 
   useAcceptInvite({
     invitedObjectSchema: Folder,
-    onAccept: () => router.navigate("/vault"),
+    onAccept: async (sharedFolderId) => {
+      router.navigate(`/vault/${sharedFolderId}`);
+    },
   });
 
   return <RouterProvider router={router} />;

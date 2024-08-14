@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../components/button";
 import Table from "../components/table";
 import NewItemModal from "../components/new-item-modal";
@@ -9,10 +9,22 @@ import { saveItem, deleteItem, createFolder } from "../actions";
 import { Alert, AlertDescription } from "../components/alert";
 import { Folder, FolderList, PasswordItem } from "../schema";
 import { useAccount, useCoState } from "../main";
-import { CoMapInit } from "jazz-tools";
+import { CoMapInit, Group, ID } from "jazz-tools";
+import { useNavigate, useParams } from "react-router-dom";
 
 const VaultPage: React.FC = () => {
   const { me, logOut } = useAccount();
+  const sharedFolderId = useParams<{ sharedFolderId: ID<Folder> }>()
+    .sharedFolderId;
+  const sharedFolder = useCoState(Folder, sharedFolderId);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!sharedFolderId || !sharedFolder || !me.root?.folders) return;
+    me.root?.folders?.push(sharedFolder);
+    navigate("/vault");
+  }, [sharedFolder, me.root?.folders, sharedFolderId, navigate]);
+
   const items = me.root?.folders?.flatMap(
     (folder) =>
       folder?.items?.filter(
@@ -98,7 +110,15 @@ const VaultPage: React.FC = () => {
           <Button onClick={() => navigator.clipboard.writeText(item.password)}>
             Copy Password
           </Button>
-          <Button onClick={() => setEditingItem(item)}>Edit</Button>
+          <Button
+            onClick={() => setEditingItem(item)}
+            disabled={
+              item._owner.castAs(Group).myRole() !== "admin" &&
+              item._owner.castAs(Group).myRole() !== "writer"
+            }
+          >
+            Edit
+          </Button>
           <Button onClick={() => handleDeleteItem(item)} variant="danger">
             Delete
           </Button>
