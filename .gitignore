@@ -4,3 +4,4 @@ lerna-debug.log
 docsTmp
 .DS_Store
 .turbo
+.vscode

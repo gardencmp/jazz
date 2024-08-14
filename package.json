@@ -26,5 +26,10 @@
     "release": "pnpm changeset publish && git push --follow-tags"
   },
   "lint-staged": {},
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "pnpm": {
+    "patchedDependencies": {
+      "react-hook-form@7.52.2": "patches/react-hook-form@7.52.2.patch"
+    }
+  }
 }
