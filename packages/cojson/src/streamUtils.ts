@@ -1,5 +1,6 @@
 import { Peer, PeerID, SyncMessage } from "./sync.js";
 import { Channel } from "queueable";
+export { Channel } from "queueable";
 
 export function connectedPeers(
     peer1id: PeerID,

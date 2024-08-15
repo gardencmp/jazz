@@ -1,13 +1,12 @@
-import {
-    BlockFilename,
-    FSErr,
-    FileSystem,
-    WalFilename,
-    CryptoProvider,
-} from "cojson";
-import { Effect } from "effect";
+import { BlockFilename, FileSystem, WalFilename, CryptoProvider } from "cojson";
 
-export class OPFSFilesystem implements FileSystem<{id: number, filename: string}, {id: number, filename: string}> {
+export class OPFSFilesystem
+    implements
+        FileSystem<
+            { id: number; filename: string },
+            { id: number; filename: string }
+        >
+{
     opfsWorker: Worker;
     callbacks: Map<number, (event: MessageEvent) => void> = new Map();
     nextRequestId = 0;
@@ -28,8 +27,8 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
         };
     }
 
-    listFiles(): Effect.Effect<string[], FSErr, never> {
-        return Effect.async((cb) => {
+    listFiles(): Promise<string[]> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("listFiles" + requestId + "_listFiles");
             this.callbacks.set(requestId, (event) => {
@@ -39,7 +38,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "listFiles" + requestId + "_listFiles",
                     "listFilesEnd" + requestId + "_listFiles",
                 );
-                cb(Effect.succeed(event.data.fileNames));
+                resolve(event.data.fileNames);
             });
             this.opfsWorker.postMessage({ type: "listFiles", requestId });
         });
@@ -47,17 +46,15 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
 
     openToRead(
         filename: string,
-    ): Effect.Effect<{ handle: {id: number, filename: string}; size: number }, FSErr, never> {
-        return Effect.async((cb) => {
+    ): Promise<{ handle: { id: number; filename: string }; size: number }> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("openToRead" + "_" + filename);
             this.callbacks.set(requestId, (event) => {
-                cb(
-                    Effect.succeed({
-                        handle: {id: event.data.handle, filename},
-                        size: event.data.size,
-                    }),
-                );
+                resolve({
+                    handle: { id: event.data.handle, filename },
+                    size: event.data.size,
+                });
                 performance.mark("openToReadEnd" + "_" + filename);
                 performance.measure(
                     "openToRead" + "_" + filename,
@@ -73,8 +70,8 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
         });
     }
 
-    createFile(filename: string): Effect.Effect<{id: number, filename: string}, FSErr, never> {
-        return Effect.async((cb) => {
+    createFile(filename: string): Promise<{ id: number; filename: string }> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("createFile" + "_" + filename);
             this.callbacks.set(requestId, (event) => {
@@ -84,7 +81,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "createFile" + "_" + filename,
                     "createFileEnd" + "_" + filename,
                 );
-                cb(Effect.succeed({id: event.data.handle, filename}));
+                resolve({ id: event.data.handle, filename });
             });
             this.opfsWorker.postMessage({
                 type: "createFile",
@@ -94,10 +91,8 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
         });
     }
 
-    openToWrite(
-        filename: string,
-    ): Effect.Effect<{id: number, filename: string}, FSErr, never> {
-        return Effect.async((cb) => {
+    openToWrite(filename: string): Promise<{ id: number; filename: string }> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("openToWrite" + "_" + filename);
             this.callbacks.set(requestId, (event) => {
@@ -107,7 +102,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "openToWrite" + "_" + filename,
                     "openToWriteEnd" + "_" + filename,
                 );
-                cb(Effect.succeed({id: event.data.handle, filename}));
+                resolve({ id: event.data.handle, filename });
             });
             this.opfsWorker.postMessage({
                 type: "openToWrite",
@@ -118,10 +113,10 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
     }
 
     append(
-        handle: {id: number, filename: string},
+        handle: { id: number; filename: string },
         data: Uint8Array,
-    ): Effect.Effect<void, FSErr, never> {
-        return Effect.async((cb) => {
+    ): Promise<void> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("append" + "_" + handle.filename);
             this.callbacks.set(requestId, (_) => {
@@ -131,7 +126,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "append" + "_" + handle.filename,
                     "appendEnd" + "_" + handle.filename,
                 );
-                cb(Effect.succeed(undefined));
+                resolve(undefined);
             });
             this.opfsWorker.postMessage({
                 type: "append",
@@ -143,11 +138,11 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
     }
 
     read(
-        handle: {id: number, filename: string},
+        handle: { id: number; filename: string },
         offset: number,
         length: number,
-    ): Effect.Effect<Uint8Array, FSErr, never> {
-        return Effect.async((cb) => {
+    ): Promise<Uint8Array> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("read" + "_" + handle.filename);
             this.callbacks.set(requestId, (event) => {
@@ -157,7 +152,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "read" + "_" + handle.filename,
                     "readEnd" + "_" + handle.filename,
                 );
-                cb(Effect.succeed(event.data.data));
+                resolve(event.data.data);
             });
             this.opfsWorker.postMessage({
                 type: "read",
@@ -169,8 +164,8 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
         });
     }
 
-    close(handle: {id: number, filename: string}): Effect.Effect<void, FSErr, never> {
-        return Effect.async((cb) => {
+    close(handle: { id: number; filename: string }): Promise<void> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("close" + "_" + handle.filename);
             this.callbacks.set(requestId, (_) => {
@@ -180,7 +175,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "close" + "_" + handle.filename,
                     "closeEnd" + "_" + handle.filename,
                 );
-                cb(Effect.succeed(undefined));
+                resolve(undefined);
             });
             this.opfsWorker.postMessage({
                 type: "close",
@@ -191,22 +186,20 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
     }
 
     closeAndRename(
-        handle: {id: number, filename: string},
+        handle: { id: number; filename: string },
         filename: BlockFilename,
-    ): Effect.Effect<void, FSErr, never> {
-        return Effect.async((cb) => {
+    ): Promise<void> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("closeAndRename" + "_" + handle.filename);
             this.callbacks.set(requestId, () => {
-                performance.mark(
-                    "closeAndRenameEnd" + "_" + handle.filename,
-                );
+                performance.mark("closeAndRenameEnd" + "_" + handle.filename);
                 performance.measure(
                     "closeAndRename" + "_" + handle.filename,
                     "closeAndRename" + "_" + handle.filename,
                     "closeAndRenameEnd" + "_" + handle.filename,
                 );
-                cb(Effect.succeed(undefined));
+                resolve(undefined);
             });
             this.opfsWorker.postMessage({
                 type: "closeAndRename",
@@ -217,10 +210,8 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
         });
     }
 
-    removeFile(
-        filename: BlockFilename | WalFilename,
-    ): Effect.Effect<void, FSErr, never> {
-        return Effect.async((cb) => {
+    removeFile(filename: BlockFilename | WalFilename): Promise<void> {
+        return new Promise((resolve) => {
             const requestId = this.nextRequestId++;
             performance.mark("removeFile" + "_" + filename);
             this.callbacks.set(requestId, () => {
@@ -230,7 +221,7 @@ export class OPFSFilesystem implements FileSystem<{id: number, filename: string}
                     "removeFile" + "_" + filename,
                     "removeFileEnd" + "_" + filename,
                 );
-                cb(Effect.succeed(undefined));
+                resolve(undefined);
             });
             this.opfsWorker.postMessage({
                 type: "removeFile",

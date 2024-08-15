@@ -3,7 +3,6 @@ import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
-import { Channel } from "queueable";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -63,7 +62,10 @@ export type PingTimeoutError = "PingTimeout";
 export type IncomingSyncStream = AsyncIterable<
     SyncMessage | DisconnectedError | PingTimeoutError
 >;
-export type OutgoingSyncQueue = Channel<SyncMessage>;
+export type OutgoingSyncQueue = {
+    push: (msg: SyncMessage) => Promise<unknown>;
+    close: () => void;
+};
 
 export interface Peer {
     id: PeerID;
@@ -364,7 +366,7 @@ export class SyncManager {
             void initialSync();
         }
 
-        const processMessages = async() => {
+        const processMessages = async () => {
             for await (const msg of peerState.incoming) {
                 if (msg === "Disconnected") {
                     return;
@@ -379,19 +381,16 @@ export class SyncManager {
                     throw new Error(
                         `Error reading from peer ${
                             peer.id
-                        }, handling msg\n\n${JSON.stringify(
-                            msg,
-                            (k, v) =>
-                                k === "changes" ||
-                                k === "encryptedChanges"
-                                    ? v.slice(0, 20) + "..."
-                                    : v,
+                        }, handling msg\n\n${JSON.stringify(msg, (k, v) =>
+                            k === "changes" || k === "encryptedChanges"
+                                ? v.slice(0, 20) + "..."
+                                : v,
                         )}`,
                         { cause: e },
-                    )
+                    );
                 }
             }
-        }
+        };
 
         processMessages().catch((e) => {
             console.error("Error processing messages from peer", peer.id, e);
@@ -678,7 +677,7 @@ export class SyncManager {
                 ...coValue.knownState(),
             }).catch((e) => {
                 console.error("Error sending known state correction", e);
-            });;
+            });
         }
     }
 
@@ -743,6 +742,12 @@ export class SyncManager {
                     peer,
                 );
             }
+        }
+    }
+
+    gracefulShutdown() {
+        for (const peer of Object.values(this.peers)) {
+            peer.outgoing.close();
         }
     }
 }

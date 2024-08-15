@@ -11,7 +11,6 @@ import type {
     RawControlledAccount,
     SessionID,
 } from "cojson";
-import { Context, Effect } from "effect";
 import {
     CoMap,
     CoValue,
@@ -221,12 +220,10 @@ export class Account extends CoValueBase implements CoValue {
         },
     ) {
         // TODO: is there a cleaner way to do this?
-        const connectedPeers = await Effect.runPromise(
-            cojsonInternals.connectedPeers(
-                "creatingAccount",
-                "createdAccount",
-                { peer1role: "server", peer2role: "client" },
-            ),
+        const connectedPeers = cojsonInternals.connectedPeers(
+            "creatingAccount",
+            "createdAccount",
+            { peer1role: "server", peer2role: "client" },
         );
 
         as._raw.core.node.syncManager.addPeer(connectedPeers[1]);
@@ -377,9 +374,6 @@ export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
         }
     },
 };
-
-/** @category Identity & Permissions */
-export class AccountCtx extends Context.Tag("Account")<AccountCtx, Account>() {}
 
 /** @category Identity & Permissions */
 export function isControlledAccount(account: Account): account is Account & {

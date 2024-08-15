@@ -1,4 +1,3 @@
-import { Effect, Either, Stream, SynchronizedRef, Deferred } from "effect";
 import { RawCoID } from "../ids.js";
 import { CoValueHeader, Transaction } from "../coValueCore.js";
 import { Signature } from "../crypto/crypto.js";
@@ -18,7 +17,6 @@ import {
 } from "./chunksAndKnownStates.js";
 import {
     BlockFilename,
-    FSErr,
     FileSystem,
     WalEntry,
     WalFilename,
@@ -28,7 +26,7 @@ import {
     writeBlock,
     writeToWal,
 } from "./FileSystem.js";
-export type { FSErr, BlockFilename, WalFilename } from "./FileSystem.js";
+export type { BlockFilename, WalFilename } from "./FileSystem.js";
 
 const MAX_N_LEVELS = 3;
 
@@ -44,10 +42,10 @@ export type CoValueChunk = {
 };
 
 export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
-    currentWal: SynchronizedRef.SynchronizedRef<WH | undefined>;
-    coValues: SynchronizedRef.SynchronizedRef<{
+    currentWal: WH | undefined;
+    coValues: {
         [id: RawCoID]: CoValueChunk | undefined;
-    }>;
+    };
     fileCache: string[] | undefined;
     headerCache = new Map<
         BlockFilename,
@@ -55,7 +53,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
     >();
     blockFileHandles = new Map<
         BlockFilename,
-        Deferred.Deferred<{ handle: RH; size: number }, FSErr>
+        Promise<{ handle: RH; size: number }>
     >();
 
     constructor(
@@ -63,600 +61,489 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         public fromLocalNode: IncomingSyncStream,
         public toLocalNode: OutgoingSyncQueue,
     ) {
-        this.coValues = SynchronizedRef.unsafeMake({});
-        this.currentWal = SynchronizedRef.unsafeMake<WH | undefined>(undefined);
+        this.coValues = {};
+        this.currentWal = undefined;
 
-        void Stream.fromAsyncIterable(
-            this.fromLocalNode,
-            (e) => new Error(String(e)),
-        ).pipe(
-            Stream.runForEach((msg) =>
-                Effect.gen(this, function* () {
+        let nMsg = 0;
+
+        const processMessages = async () => {
+            for await (const msg of fromLocalNode) {
+                console.log("Storage msg start", nMsg);
+                try {
                     if (msg === "Disconnected" || msg === "PingTimeout") {
-                        return Effect.fail(
-                            new Error("Unexpected disconnect inside storage"),
-                        );
+                        throw new Error("Unexpected Disconnected message");
                     }
                     if (msg.action === "done") {
                         return;
                     }
 
                     if (msg.action === "content") {
-                        yield* this.handleNewContent(msg);
+                        await this.handleNewContent(msg);
                     } else {
-                        yield* this.sendNewContent(msg.id, msg, undefined);
+                        await this.sendNewContent(msg.id, msg, undefined);
                     }
+                } catch (e) {
+                    console.error(
+                        new Error(
+                            `Error reading from localNode, handling msg\n\n${JSON.stringify(
+                                msg,
+                                (k, v) =>
+                                    k === "changes" || k === "encryptedChanges"
+                                        ? v.slice(0, 20) + "..."
+                                        : v,
+                            )}`,
+                            { cause: e },
+                        ),
+                    );
+                }
+                console.log("Storage msg end", nMsg);
+                nMsg++;
+            }
+        };
+
+        processMessages().catch((e) =>
+            console.error("Error in processMessages in storage", e),
+        );
+
+        setTimeout(
+            () =>
+                this.compact().catch((e) => {
+                    console.error("Error while compacting", e);
                 }),
-            ),
-            Effect.runPromise,
-        );
-
-        setTimeout(() => this.compact(), 20000);
-    }
-
-    sendNewContent(
-        id: RawCoID,
-        known: CoValueKnownState | undefined,
-        asDependencyOf: RawCoID | undefined,
-    ): Effect.Effect<void, FSErr> {
-        return SynchronizedRef.updateEffect(this.coValues, (coValues) =>
-            this.sendNewContentInner(coValues, id, known, asDependencyOf),
+            20000,
         );
     }
 
-    private sendNewContentInner(
-        coValues: { [id: `co_z${string}`]: CoValueChunk | undefined },
+    async sendNewContent(
         id: RawCoID,
         known: CoValueKnownState | undefined,
         asDependencyOf: RawCoID | undefined,
-    ): Effect.Effect<
-        { [id: `co_z${string}`]: CoValueChunk | undefined },
-        FSErr,
-        never
-    > {
-        return Effect.gen(this, function* () {
-            let coValue = coValues[id];
+    ) {
+        let coValue = this.coValues[id];
 
-            if (!coValue) {
-                coValue = yield* this.loadCoValue(id, this.fs);
-            }
+        if (!coValue) {
+            coValue = await this.loadCoValue(id, this.fs);
+        }
 
-            if (!coValue) {
-                yield* Effect.tryPromise(() =>
-                    this.toLocalNode.push({
-                        id: id,
-                        action: "known",
-                        header: false,
-                        sessions: {},
-                        asDependencyOf,
-                    }),
-                ).pipe(Effect.orDie);
+        if (!coValue) {
+            this.toLocalNode
+                .push({
+                    id: id,
+                    action: "known",
+                    header: false,
+                    sessions: {},
+                    asDependencyOf,
+                })
+                .catch((e) => console.error("Error while pushing known", e));
 
-                return coValues;
-            }
+            return;
+        }
 
-            if (
-                !known?.header &&
-                coValue.header?.ruleset.type === "ownedByGroup"
-            ) {
-                coValues = yield* this.sendNewContentInner(
-                    coValues,
-                    coValue.header.ruleset.group,
-                    undefined,
-                    asDependencyOf || id,
-                );
-            } else if (
-                !known?.header &&
-                coValue.header?.ruleset.type === "group"
-            ) {
-                const dependedOnAccounts = new Set();
-                for (const session of Object.values(coValue.sessionEntries)) {
-                    for (const entry of session) {
-                        for (const tx of entry.transactions) {
-                            if (tx.privacy === "trusting") {
-                                const parsedChanges = JSON.parse(tx.changes);
-                                for (const change of parsedChanges) {
-                                    if (
-                                        change.op === "set" &&
-                                        change.key.startsWith("co_")
-                                    ) {
-                                        dependedOnAccounts.add(change.key);
-                                    }
+        if (!known?.header && coValue.header?.ruleset.type === "ownedByGroup") {
+            await this.sendNewContent(
+                coValue.header.ruleset.group,
+                undefined,
+                asDependencyOf || id,
+            );
+        } else if (!known?.header && coValue.header?.ruleset.type === "group") {
+            const dependedOnAccounts = new Set();
+            for (const session of Object.values(coValue.sessionEntries)) {
+                for (const entry of session) {
+                    for (const tx of entry.transactions) {
+                        if (tx.privacy === "trusting") {
+                            const parsedChanges = JSON.parse(tx.changes);
+                            for (const change of parsedChanges) {
+                                if (
+                                    change.op === "set" &&
+                                    change.key.startsWith("co_")
+                                ) {
+                                    dependedOnAccounts.add(change.key);
                                 }
                             }
                         }
                     }
                 }
-                for (const account of dependedOnAccounts) {
-                    coValues = yield* this.sendNewContentInner(
-                        coValues,
-                        account as CoID<RawCoValue>,
-                        undefined,
-                        asDependencyOf || id,
-                    );
-                }
             }
-
-            const newContentMessages = contentSinceChunk(
-                id,
-                coValue,
-                known,
-            ).map((message) => ({ ...message, asDependencyOf }));
-
-            const ourKnown: CoValueKnownState = chunkToKnownState(id, coValue);
-
-            yield* Effect.tryPromise(() =>
-                this.toLocalNode.push({
-                    action: "known",
-                    ...ourKnown,
-                    asDependencyOf,
-                }),
-            ).pipe(Effect.orDie);
-
-            for (const message of newContentMessages) {
-                if (Object.keys(message.new).length === 0) continue;
-                yield* Effect.tryPromise(() =>
-                    this.toLocalNode.push(message),
-                ).pipe(Effect.orDie);
+            for (const account of dependedOnAccounts) {
+                await this.sendNewContent(
+                    account as CoID<RawCoValue>,
+                    undefined,
+                    asDependencyOf || id,
+                );
             }
+        }
 
-            return { ...coValues, [id]: coValue };
-        });
-    }
-
-    withWAL(
-        handler: (wal: WH) => Effect.Effect<void, FSErr>,
-    ): Effect.Effect<void, FSErr> {
-        return SynchronizedRef.updateEffect(this.currentWal, (wal) =>
-            Effect.gen(this, function* () {
-                let newWal = wal;
-                if (!newWal) {
-                    newWal = yield* this.fs.createFile(
-                        `wal-${Date.now()}-${Math.random()
-                            .toString(36)
-                            .slice(2)}.jsonl`,
-                    );
-                }
-                yield* handler(newWal);
-                return newWal;
-            }),
+        const newContentMessages = contentSinceChunk(id, coValue, known).map(
+            (message) => ({ ...message, asDependencyOf }),
         );
+
+        const ourKnown: CoValueKnownState = chunkToKnownState(id, coValue);
+
+        this.toLocalNode
+            .push({
+                action: "known",
+                ...ourKnown,
+                asDependencyOf,
+            })
+            .catch((e) => console.error("Error while pushing known", e));
+
+        for (const message of newContentMessages) {
+            if (Object.keys(message.new).length === 0) continue;
+            this.toLocalNode
+                .push(message)
+                .catch((e) =>
+                    console.error("Error while pushing new content", e),
+                );
+        }
+
+        this.coValues[id] = coValue;
     }
 
-    handleNewContent(
-        newContent: NewContentMessage,
-    ): Effect.Effect<void, FSErr> {
-        return SynchronizedRef.updateEffect(this.coValues, (coValues) =>
-            Effect.gen(this, function* () {
-                const coValue = coValues[newContent.id];
+    async withWAL(handler: (wal: WH) => Promise<void>) {
+        if (!this.currentWal) {
+            this.currentWal = await this.fs.createFile(
+                `wal-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .slice(2)}.jsonl`,
+            );
+        }
+        await handler(this.currentWal);
+    }
 
-                const newContentAsChunk: CoValueChunk = {
-                    header: newContent.header,
-                    sessionEntries: Object.fromEntries(
-                        Object.entries(newContent.new).map(
-                            ([sessionID, newInSession]) => [
-                                sessionID,
-                                [
-                                    {
-                                        after: newInSession.after,
-                                        lastSignature:
-                                            newInSession.lastSignature,
-                                        transactions:
-                                            newInSession.newTransactions,
-                                    },
-                                ],
-                            ],
-                        ),
+    async handleNewContent(newContent: NewContentMessage) {
+        const coValue = this.coValues[newContent.id];
+
+        const newContentAsChunk: CoValueChunk = {
+            header: newContent.header,
+            sessionEntries: Object.fromEntries(
+                Object.entries(newContent.new).map(
+                    ([sessionID, newInSession]) => [
+                        sessionID,
+                        [
+                            {
+                                after: newInSession.after,
+                                lastSignature: newInSession.lastSignature,
+                                transactions: newInSession.newTransactions,
+                            },
+                        ],
+                    ],
+                ),
+            ),
+        };
+
+        if (!coValue) {
+            if (newContent.header) {
+                // console.log("Creating in WAL", newContent.id);
+                await this.withWAL((wal) =>
+                    writeToWal(wal, this.fs, newContent.id, newContentAsChunk),
+                );
+
+                this.coValues[newContent.id] = newContentAsChunk;
+            } else {
+                console.warn(
+                    "Incontiguous incoming update for " + newContent.id,
+                );
+                return;
+            }
+        } else {
+            const merged = mergeChunks(coValue, newContentAsChunk);
+            if (merged === "nonContigous") {
+                console.warn(
+                    "Non-contigous new content for " + newContent.id,
+                    Object.entries(coValue.sessionEntries).map(
+                        ([session, entries]) =>
+                            entries.map((entry) => ({
+                                session: session,
+                                after: entry.after,
+                                length: entry.transactions.length,
+                            })),
                     ),
-                };
+                    Object.entries(newContentAsChunk.sessionEntries).map(
+                        ([session, entries]) =>
+                            entries.map((entry) => ({
+                                session: session,
+                                after: entry.after,
+                                length: entry.transactions.length,
+                            })),
+                    ),
+                );
+            } else {
+                // console.log("Appending to WAL", newContent.id);
+                await this.withWAL((wal) =>
+                    writeToWal(wal, this.fs, newContent.id, newContentAsChunk),
+                );
 
-                if (!coValue) {
-                    if (newContent.header) {
-                        // console.log("Creating in WAL", newContent.id);
-                        yield* this.withWAL((wal) =>
-                            writeToWal(
-                                wal,
-                                this.fs,
-                                newContent.id,
-                                newContentAsChunk,
-                            ),
-                        );
-
-                        return {
-                            ...coValues,
-                            [newContent.id]: newContentAsChunk,
-                        };
-                    } else {
-                        // yield*
-                        //     Effect.promise(() =>
-                        //         this.toLocalNode.write({
-                        //             action: "known",
-                        //             id: newContent.id,
-                        //             header: false,
-                        //             sessions: {},
-                        //             isCorrection: true,
-                        //         })
-                        //     )
-                        // );
-                        yield* Effect.logWarning(
-                            "Incontiguous incoming update for " + newContent.id,
-                        );
-                        return coValues;
-                    }
-                } else {
-                    const merged = mergeChunks(coValue, newContentAsChunk);
-                    if (Either.isRight(merged)) {
-                        yield* Effect.logWarning(
-                            "Non-contigous new content for " + newContent.id,
-                            Object.entries(coValue.sessionEntries).map(
-                                ([session, entries]) =>
-                                    entries.map((entry) => ({
-                                        session: session,
-                                        after: entry.after,
-                                        length: entry.transactions.length,
-                                    })),
-                            ),
-                            Object.entries(
-                                newContentAsChunk.sessionEntries,
-                            ).map(([session, entries]) =>
-                                entries.map((entry) => ({
-                                    session: session,
-                                    after: entry.after,
-                                    length: entry.transactions.length,
-                                })),
-                            ),
-                        );
-
-                        // yield* Effect.promise(() =>
-                        //     this.toLocalNode.write({
-                        //         action: "known",
-                        //         ...chunkToKnownState(newContent.id, coValue),
-                        //         isCorrection: true,
-                        //     })
-                        // );
-
-                        return coValues;
-                    } else {
-                        // console.log("Appending to WAL", newContent.id);
-                        yield* this.withWAL((wal) =>
-                            writeToWal(
-                                wal,
-                                this.fs,
-                                newContent.id,
-                                newContentAsChunk,
-                            ),
-                        );
-
-                        return { ...coValues, [newContent.id]: merged.left };
-                    }
-                }
-            }),
-        );
+                this.coValues[newContent.id] = merged;
+            }
+        }
     }
 
-    getBlockHandle(
+    async getBlockHandle(
         blockFile: BlockFilename,
         fs: FS,
-    ): Effect.Effect<{ handle: RH; size: number }, FSErr> {
-        return Effect.gen(this, function* () {
-            let handleAndSize = this.blockFileHandles.get(blockFile);
-            if (!handleAndSize) {
-                handleAndSize = yield* Deferred.make<
-                    { handle: RH; size: number },
-                    FSErr
-                >();
-                this.blockFileHandles.set(blockFile, handleAndSize);
-                yield* Deferred.complete(
-                    handleAndSize,
-                    fs.openToRead(blockFile),
-                );
-            }
+    ): Promise<{ handle: RH; size: number }> {
+        if (!this.blockFileHandles.has(blockFile)) {
+            this.blockFileHandles.set(blockFile, fs.openToRead(blockFile));
+        }
 
-            return yield* Deferred.await(handleAndSize);
-        });
+        return this.blockFileHandles.get(blockFile)!;
     }
 
-    loadCoValue(
-        id: RawCoID,
-        fs: FS,
-    ): Effect.Effect<CoValueChunk | undefined, FSErr> {
-        return Effect.gen(this, function* () {
-            const files = this.fileCache || (yield* fs.listFiles());
-            this.fileCache = files;
-            const blockFiles = (
-                files.filter((name) => name.startsWith("L")) as BlockFilename[]
-            ).sort();
+    async loadCoValue(id: RawCoID, fs: FS): Promise<CoValueChunk | undefined> {
+        const files = this.fileCache || (await fs.listFiles());
+        this.fileCache = files;
+        const blockFiles = (
+            files.filter((name) => name.startsWith("L")) as BlockFilename[]
+        ).sort();
 
-            let result;
+        let result;
 
-            for (const blockFile of blockFiles) {
-                let cachedHeader:
-                    | { [id: RawCoID]: { start: number; length: number } }
-                    | undefined = this.headerCache.get(blockFile);
+        for (const blockFile of blockFiles) {
+            let cachedHeader:
+                | { [id: RawCoID]: { start: number; length: number } }
+                | undefined = this.headerCache.get(blockFile);
 
-                let handleAndSize = this.blockFileHandles.get(blockFile);
-                if (!handleAndSize) {
-                    handleAndSize = yield* Deferred.make<
-                        { handle: RH; size: number },
-                        FSErr
-                    >();
-                    this.blockFileHandles.set(blockFile, handleAndSize);
-                    yield* Deferred.complete(
-                        handleAndSize,
-                        fs.openToRead(blockFile),
-                    );
+            const { handle, size } = await this.getBlockHandle(blockFile, fs);
+
+            // console.log("Attempting to load", id, blockFile);
+
+            if (!cachedHeader) {
+                cachedHeader = {};
+                const header = await readHeader(blockFile, handle, size, fs);
+                for (const entry of header) {
+                    cachedHeader[entry.id] = {
+                        start: entry.start,
+                        length: entry.length,
+                    };
                 }
 
-                const { handle, size } = yield* this.getBlockHandle(
-                    blockFile,
-                    fs,
-                );
+                this.headerCache.set(blockFile, cachedHeader);
+            }
+            const headerEntry = cachedHeader[id];
 
-                // console.log("Attempting to load", id, blockFile);
+            // console.log("Header entry", id, headerEntry);
 
-                if (!cachedHeader) {
-                    cachedHeader = {};
-                    const header = yield* readHeader(
-                        blockFile,
-                        handle,
-                        size,
-                        fs,
-                    );
-                    for (const entry of header) {
-                        cachedHeader[entry.id] = {
-                            start: entry.start,
-                            length: entry.length,
-                        };
-                    }
+            if (headerEntry) {
+                const nextChunk = await readChunk(handle, headerEntry, fs);
+                if (result) {
+                    const merged = mergeChunks(result, nextChunk);
 
-                    this.headerCache.set(blockFile, cachedHeader);
-                }
-                const headerEntry = cachedHeader[id];
-
-                // console.log("Header entry", id, headerEntry);
-
-                if (headerEntry) {
-                    const nextChunk = yield* readChunk(handle, headerEntry, fs);
-                    if (result) {
-                        const merged = mergeChunks(result, nextChunk);
-
-                        if (Either.isRight(merged)) {
-                            yield* Effect.logWarning(
-                                "Non-contigous chunks while loading " + id,
-                                result,
-                                nextChunk,
-                            );
-                        } else {
-                            result = merged.left;
-                        }
+                    if (merged === "nonContigous") {
+                        console.warn(
+                            "Non-contigous chunks while loading " + id,
+                            result,
+                            nextChunk,
+                        );
                     } else {
-                        result = nextChunk;
+                        result = merged;
                     }
+                } else {
+                    result = nextChunk;
                 }
-
-                // yield* fs.close(handle);
             }
 
-            return result;
-        });
+            // await fs.close(handle);
+        }
+
+        return result;
     }
 
     async compact() {
-        await Effect.runPromise(
-            Effect.gen(this, function* () {
-                const fileNames = yield* this.fs.listFiles();
+        const fileNames = await this.fs.listFiles();
 
-                const walFiles = fileNames.filter((name) =>
-                    name.startsWith("wal-"),
-                ) as WalFilename[];
-                walFiles.sort();
+        const walFiles = fileNames.filter((name) =>
+            name.startsWith("wal-"),
+        ) as WalFilename[];
+        walFiles.sort();
+
+        const coValues = new Map<RawCoID, CoValueChunk>();
+
+        console.log("Compacting WAL files", walFiles);
+        if (walFiles.length === 0) return;
+
+        const oldWal = this.currentWal;
+        this.currentWal = undefined;
+
+        if (oldWal) {
+            await this.fs.close(oldWal);
+        }
+
+        for (const fileName of walFiles) {
+            const { handle, size }: { handle: RH; size: number } =
+                await this.fs.openToRead(fileName);
+            if (size === 0) {
+                await this.fs.close(handle);
+                continue;
+            }
+            const bytes = await this.fs.read(handle, 0, size);
+
+            const decoded = textDecoder.decode(bytes);
+            const lines = decoded.split("\n");
+
+            for (const line of lines) {
+                if (line.length === 0) continue;
+                const chunk = JSON.parse(line) as WalEntry;
+
+                const existingChunk = coValues.get(chunk.id);
+
+                if (existingChunk) {
+                    const merged = mergeChunks(existingChunk, chunk);
+                    if (merged === "nonContigous") {
+                        console.log(
+                            "Non-contigous chunks in " +
+                                chunk.id +
+                                ", " +
+                                fileName,
+                            existingChunk,
+                            chunk,
+                        );
+                    } else {
+                        coValues.set(chunk.id, merged);
+                    }
+                } else {
+                    coValues.set(chunk.id, chunk);
+                }
+            }
+
+            await this.fs.close(handle);
+        }
+
+        const highestBlockNumber = fileNames.reduce((acc, name) => {
+            if (name.startsWith("L" + MAX_N_LEVELS)) {
+                const num = parseInt(name.split("-")[1]!);
+                if (num > acc) {
+                    return num;
+                }
+            }
+            return acc;
+        }, 0);
+
+        console.log([...coValues.keys()], fileNames, highestBlockNumber);
+
+        await writeBlock(
+            coValues,
+            MAX_N_LEVELS,
+            highestBlockNumber + 1,
+            this.fs,
+        );
+
+        for (const walFile of walFiles) {
+            await this.fs.removeFile(walFile);
+        }
+        this.fileCache = undefined;
+
+        const fileNames2 = await this.fs.listFiles();
+
+        const blockFiles = (
+            fileNames2.filter((name) => name.startsWith("L")) as BlockFilename[]
+        ).sort();
+
+        const blockFilesByLevelInOrder: {
+            [level: number]: BlockFilename[];
+        } = {};
+
+        for (const blockFile of blockFiles) {
+            const level = parseInt(blockFile.split("-")[0]!.slice(1));
+            if (!blockFilesByLevelInOrder[level]) {
+                blockFilesByLevelInOrder[level] = [];
+            }
+            blockFilesByLevelInOrder[level]!.push(blockFile);
+        }
+
+        console.log(blockFilesByLevelInOrder);
+
+        for (let level = MAX_N_LEVELS; level > 0; level--) {
+            const nBlocksDesired = Math.pow(2, level);
+            const blocksInLevel = blockFilesByLevelInOrder[level];
+
+            if (blocksInLevel && blocksInLevel.length > nBlocksDesired) {
+                console.log("Compacting blocks in level", level, blocksInLevel);
 
                 const coValues = new Map<RawCoID, CoValueChunk>();
 
-                yield* Effect.log("Compacting WAL files", walFiles);
-                if (walFiles.length === 0) return;
-
-                yield* SynchronizedRef.updateEffect(this.currentWal, (wal) =>
-                    Effect.gen(this, function* () {
-                        if (wal) {
-                            yield* this.fs.close(wal);
-                        }
-                        return undefined;
-                    }),
-                );
-
-                for (const fileName of walFiles) {
+                for (const blockFile of blocksInLevel) {
                     const { handle, size }: { handle: RH; size: number } =
-                        yield* this.fs.openToRead(fileName);
+                        await this.getBlockHandle(blockFile, this.fs);
+
                     if (size === 0) {
-                        yield* this.fs.close(handle);
                         continue;
                     }
-                    const bytes = yield* this.fs.read(handle, 0, size);
+                    const header = await readHeader(
+                        blockFile,
+                        handle,
+                        size,
+                        this.fs,
+                    );
+                    for (const entry of header) {
+                        const chunk = await readChunk(handle, entry, this.fs);
 
-                    const decoded = textDecoder.decode(bytes);
-                    const lines = decoded.split("\n");
-
-                    for (const line of lines) {
-                        if (line.length === 0) continue;
-                        const chunk = JSON.parse(line) as WalEntry;
-
-                        const existingChunk = coValues.get(chunk.id);
+                        const existingChunk = coValues.get(entry.id);
 
                         if (existingChunk) {
                             const merged = mergeChunks(existingChunk, chunk);
-                            if (Either.isRight(merged)) {
-                                yield* Effect.logWarning(
+                            if (merged === "nonContigous") {
+                                console.log(
                                     "Non-contigous chunks in " +
-                                        chunk.id +
+                                        entry.id +
                                         ", " +
-                                        fileName,
+                                        blockFile,
                                     existingChunk,
                                     chunk,
                                 );
                             } else {
-                                coValues.set(chunk.id, merged.left);
+                                coValues.set(entry.id, merged);
                             }
                         } else {
-                            coValues.set(chunk.id, chunk);
+                            coValues.set(entry.id, chunk);
                         }
                     }
-
-                    yield* this.fs.close(handle);
                 }
 
-                const highestBlockNumber = fileNames.reduce((acc, name) => {
-                    if (name.startsWith("L" + MAX_N_LEVELS)) {
+                let levelBelow = blockFilesByLevelInOrder[level - 1];
+                if (!levelBelow) {
+                    levelBelow = [];
+                    blockFilesByLevelInOrder[level - 1] = levelBelow;
+                }
+
+                const highestBlockNumberInLevelBelow = levelBelow.reduce(
+                    (acc, name) => {
                         const num = parseInt(name.split("-")[1]!);
                         if (num > acc) {
                             return num;
                         }
-                    }
-                    return acc;
-                }, 0);
-
-                console.log(
-                    [...coValues.keys()],
-                    fileNames,
-                    highestBlockNumber,
+                        return acc;
+                    },
+                    0,
                 );
 
-                yield* writeBlock(
+                const newBlockName = await writeBlock(
                     coValues,
-                    MAX_N_LEVELS,
-                    highestBlockNumber + 1,
+                    level - 1,
+                    highestBlockNumberInLevelBelow + 1,
                     this.fs,
                 );
+                levelBelow.push(newBlockName);
 
-                for (const walFile of walFiles) {
-                    yield* this.fs.removeFile(walFile);
+                // delete blocks that went into this one
+                for (const blockFile of blocksInLevel) {
+                    const handle = await this.getBlockHandle(
+                        blockFile,
+                        this.fs,
+                    );
+                    await this.fs.close(handle.handle);
+                    await this.fs.removeFile(blockFile);
+                    this.blockFileHandles.delete(blockFile);
                 }
-                this.fileCache = undefined;
+            }
+        }
 
-                const fileNames2 = yield* this.fs.listFiles();
-
-                const blockFiles = (
-                    fileNames2.filter((name) =>
-                        name.startsWith("L"),
-                    ) as BlockFilename[]
-                ).sort();
-
-                const blockFilesByLevelInOrder: {
-                    [level: number]: BlockFilename[];
-                } = {};
-
-                for (const blockFile of blockFiles) {
-                    const level = parseInt(blockFile.split("-")[0]!.slice(1));
-                    if (!blockFilesByLevelInOrder[level]) {
-                        blockFilesByLevelInOrder[level] = [];
-                    }
-                    blockFilesByLevelInOrder[level]!.push(blockFile);
-                }
-
-                console.log(blockFilesByLevelInOrder);
-
-                for (let level = MAX_N_LEVELS; level > 0; level--) {
-                    const nBlocksDesired = Math.pow(2, level);
-                    const blocksInLevel = blockFilesByLevelInOrder[level];
-
-                    if (
-                        blocksInLevel &&
-                        blocksInLevel.length > nBlocksDesired
-                    ) {
-                        yield* Effect.log(
-                            "Compacting blocks in level",
-                            level,
-                            blocksInLevel,
-                        );
-
-                        const coValues = new Map<RawCoID, CoValueChunk>();
-
-                        for (const blockFile of blocksInLevel) {
-                            const {
-                                handle,
-                                size,
-                            }: { handle: RH; size: number } =
-                                yield* this.getBlockHandle(blockFile, this.fs);
-
-                            if (size === 0) {
-                                continue;
-                            }
-                            const header = yield* readHeader(
-                                blockFile,
-                                handle,
-                                size,
-                                this.fs,
-                            );
-                            for (const entry of header) {
-                                const chunk = yield* readChunk(
-                                    handle,
-                                    entry,
-                                    this.fs,
-                                );
-
-                                const existingChunk = coValues.get(entry.id);
-
-                                if (existingChunk) {
-                                    const merged = mergeChunks(
-                                        existingChunk,
-                                        chunk,
-                                    );
-                                    if (Either.isRight(merged)) {
-                                        yield* Effect.logWarning(
-                                            "Non-contigous chunks in " +
-                                                entry.id +
-                                                ", " +
-                                                blockFile,
-                                            existingChunk,
-                                            chunk,
-                                        );
-                                    } else {
-                                        coValues.set(entry.id, merged.left);
-                                    }
-                                } else {
-                                    coValues.set(entry.id, chunk);
-                                }
-                            }
-                        }
-
-                        let levelBelow = blockFilesByLevelInOrder[level - 1];
-                        if (!levelBelow) {
-                            levelBelow = [];
-                            blockFilesByLevelInOrder[level - 1] = levelBelow;
-                        }
-
-                        const highestBlockNumberInLevelBelow =
-                            levelBelow.reduce((acc, name) => {
-                                const num = parseInt(name.split("-")[1]!);
-                                if (num > acc) {
-                                    return num;
-                                }
-                                return acc;
-                            }, 0);
-
-                        const newBlockName = yield* writeBlock(
-                            coValues,
-                            level - 1,
-                            highestBlockNumberInLevelBelow + 1,
-                            this.fs,
-                        );
-                        levelBelow.push(newBlockName);
-
-                        // delete blocks that went into this one
-                        for (const blockFile of blocksInLevel) {
-                            const handle = yield* this.getBlockHandle(
-                                blockFile,
-                                this.fs,
-                            );
-                            yield* this.fs.close(handle.handle);
-                            yield* this.fs.removeFile(blockFile);
-                        }
-                    }
-                }
-            }),
+        setTimeout(
+            () =>
+                this.compact().catch((e) => {
+                    console.error("Error while compacting", e);
+                }),
+            5000,
         );
-
-        setTimeout(() => this.compact(), 5000);
     }
 
     static asPeer<WH, RH, FS extends FileSystem<WH, RH>>({

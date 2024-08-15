@@ -156,9 +156,6 @@ importers:
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../../packages/cojson-transport-ws
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       hash-slash:
         specifier: workspace:*
         version: link:../../packages/hash-slash
@@ -444,9 +441,6 @@ importers:
       '@scure/base':
         specifier: ^1.1.1
         version: 1.1.5
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       hash-wasm:
         specifier: ^4.9.0
         version: 4.11.0
@@ -484,9 +478,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -509,9 +500,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -525,9 +513,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       typescript:
         specifier: ^5.1.6
         version: 5.3.3
@@ -562,9 +547,6 @@ importers:
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../cojson-transport-ws
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools
@@ -605,9 +587,6 @@ importers:
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../cojson-transport-ws
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools
@@ -695,9 +674,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       fast-check:
         specifier: ^3.17.2
         version: 3.17.2

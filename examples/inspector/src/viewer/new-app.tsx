@@ -10,7 +10,6 @@ import {
     WasmCrypto,
 } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { Effect } from "effect";
 import { Trash2 } from "lucide-react";
 import { Breadcrumbs } from "./breadcrumbs";
 import { usePagePath } from "./use-page-path";
@@ -62,13 +61,11 @@ export default function CoJsonViewerApp() {
         }
 
         WasmCrypto.create().then(async (crypto) => {
-            const wsPeer = await Effect.runPromise(
-                createWebSocketPeer({
-                    id: "mesh",
-                    websocket: new WebSocket("wss://mesh.jazz.tools"),
-                    role: "server",
-                }),
-            );
+            const wsPeer = createWebSocketPeer({
+                id: "mesh",
+                websocket: new WebSocket("wss://mesh.jazz.tools"),
+                role: "server",
+            });
             const node = await LocalNode.withLoadedAccount({
                 accountID: currentAccount.id,
                 accountSecret: currentAccount.secret,
