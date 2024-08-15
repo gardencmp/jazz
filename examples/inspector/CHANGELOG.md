@@ -1,5 +1,12 @@
 # jazz-example-chat
 
+## 0.0.53
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson-transport-ws@0.7.27
+
 ## 0.0.52
 
 ### Patch Changes

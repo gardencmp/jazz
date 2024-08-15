@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.27
+
+### Patch Changes
+
+-   Option to not expect pings
+
 ## 0.7.26
 
 ### Patch Changes

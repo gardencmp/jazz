@@ -1,5 +1,11 @@
 # jazz-browser-media-images
 
+## 0.7.27
+
+### Patch Changes
+
+-   jazz-browser@0.7.27
+
 ## 0.7.26
 
 ### Patch Changes
