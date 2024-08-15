@@ -1,0 +1,311 @@
+---
+title: "Build an issue tracker"
+publishedAt: "2024-08-14"
+summary: "Build an issue tracker with distributed state in 5 minutes."
+link: https://github.com/gardencmp/jazz/blob/main/examples/todo/README.md
+---
+
+## Overview
+
+Our issues app will be quite simple, but it will have team collaboration. <span className="text-nowrap">Let's call it... &ldquo;Circular.&rdquo;</span>
+
+We'll build everything step-by-step, in typical, immediately usable stages. We'll explore many important things Jazz does &mdash; follow along or just pick things out.
+
+## Project Setup
+
+Create a project called "circular" from a generic Vite starter template:
+
+<File name="terminal">
+
+```bash
+npx degit gardencmp/vite-ts-react-tailwind circular
+cd circular
+npm install
+npm run dev
+```
+
+</File>
+
+You should now have an empty app running, typically at [localhost:5173](http://localhost:5173). If you make changes to the code, the app will automatically refresh.
+
+In a new terminal window, install `jazz-tools` and `jazz-react`:
+
+<File name="terminal">
+
+```bash
+ cd circular
+ npm install jazz-tools jazz-react
+```
+
+</File>
+
+Modify `src/main.tsx` to set up a Jazz context:
+
+<File name="src/main.tsx" highlightLines={[5,7,8,9,10,11]}>
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { createJazzReactContext, DemoAuth } from "jazz-react";
+
+const Jazz = createJazzReactContext({
+auth: DemoAuth({ appName: "Circular" }),
+peer: "wss://mesh.jazz.tools/?key=you@example.com", // <- put your email here to get a proper API key later
+});
+export const { useAccount, useCoState } = Jazz;
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+
+  <Jazz.Provider>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </Jazz.Provider>
+);
+```
+</File>
+
+This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
+
+## Auth
+
+TODO: explain Auth
+
+## Intro to CoValues
+
+Let's learn about the **central idea** behind Jazz: **Collaborative Values.**
+
+What if we could **treat distributed state like local state?** That's what CoValues do.
+
+We can
+
+- **create** CoValues, anywhere
+- **load** CoValues by `ID`, from anywhere else
+- **edit** CoValues, from anywhere, by mutating them like local state
+- **subscribe to edits** in CoValues, whether they're local or remote
+
+### Reading from CoValues
+
+CoValues are designed to be read like simple local JSON state. Let's see how we can read from an Issue by building a component to render one.
+
+Create a new file `src/components/Issue.tsx` and add the following:
+
+<File name="src/components/Issue.tsx">
+```tsx
+import { Issue } from "../schema";
+
+export function IssueComponent({ issue }: { issue: Issue }) {
+  return (
+    <div className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t">
+      <h2>{issue.title}</h2>
+      <p className="col-span-3">{issue.description}</p>
+      <p>Estimate: {issue.estimate}</p>
+      <p>Status: {issue.status}</p>
+    </div>
+  );
+}
+```
+</File>
+
+Simple enough!
+
+### Creating CoValues
+
+To actually see an Issue, we have to create one. This is where things start to get interesting...
+
+Let's modify `src/App.tsx` to prepare for creating an Issue and then rendering it:
+
+<File name="src/App.tsx">
+```tsx
+import { useState } from "react";
+import { Issue } from "./schema";
+import { IssueComponent } from "./components/Issue.tsx";
+// old
+function App() {
+  // old
+  const [issue, setIssue] = useState<Issue>();
+  // old
+  if (issue) {
+    return <IssueComponent issue={issue} />;
+  } else {
+    return <button>Create Issue</button>;
+  }
+} // old
+// old
+export default App; // old
+```
+</File>
+
+Now, finally, let's implement creating an issue:
+
+<File name="src/App.tsx">
+```tsx
+import { useState } from "react"; // old
+import { Issue } from "./schema"; // old
+import { IssueComponent } from "./components/Issue.tsx"; // old
+import { useAccount } from "./main";
+// old
+function App() {
+  // old
+  const { me } = useAccount();
+  const [issue, setIssue] = useState<Issue>(); // old
+  // old
+  const createIssue = () => {
+    const newIssue = Issue.create(
+      {
+        title: "Buy terrarium",
+        description: "Make sure it's big enough for 10 snails.",
+        estimate: 5,
+        status: "backlog",
+      },
+      { owner: me },
+    );
+    setIssue(newIssue);
+  };
+  // old
+  if (issue) {
+    // old
+    return <IssueComponent issue={issue} />; // old
+  } else {
+    // old
+    return <button onClick={createIssue}>Create Issue</button>;
+  } // old
+} // old
+// old
+export default App; // old
+```
+</File>
+
+<Alert>
+  Now you should be able to create a new issue by clicking the button and then
+  see it rendered!
+</Alert>
+
+<GuideInitRender />
+
+We'll already notice one interesting thing here:
+
+- We have to create every CoValue with an `owner`!
+- this will determine access rights on the CoValue, which we'll learn about in "Groups & Permissions"
+- here we set `owner` to the current user `me`, which we get from the Jazz context / `useAccount`
+
+**Behind the scenes, Jazz not only creates the Issue in memory but also automatically syncs an encrypted version to the cloud and persists it locally. The Issue also has a globally unique ID.**
+
+We'll make use of both of these facts in a bit, but for now let's start with local editing and subscribing.
+
+### Editing CoValues and subscribing to edits
+
+Since we're the owner of the CoValue, we should be able to edit it, right?
+
+And since this is a React app, it would be nice to subscribe to edits of the CoValue and reactively re-render the UI, like we can with local state.
+
+This is exactly what the `useCoState` hook is for!
+
+- Note that `useCoState` doesn't take a CoValue directly, but rather a CoValue's schema, plus its `ID`.
+- So we'll slightly adapt our `useState` to only keep track of an issue ID...
+- ...and then use `useCoState` to get the actual issue
+
+Let's modify `src/App.tsx`:
+
+<File name="src/App.tsx">
+```tsx
+import { useState } from "react"; // old
+import { Issue } from "./schema"; // old
+import { IssueComponent } from "./components/Issue.tsx"; // old
+import { useAccount, useCoState } from "./main";
+import { ID } from "jazz-tools";
+// old
+function App() {
+  // old
+  const { me } = useAccount(); // old
+  const [issueID, setIssueID] = useState<ID<Issue>>();
+  // old
+  const issue = useCoState(Issue, issueID);
+  // old
+  const createIssue = () => {
+    // old
+    const newIssue = Issue.create(
+      // old
+      {
+        // old
+        title: "Buy terrarium", // old
+        description: "Make sure it's big enough for 10 snails.", // old
+        estimate: 5, // old
+        status: "backlog", // old
+      }, // old
+      { owner: me }, // old
+    ); // old
+    setIssueID(newIssue.id);
+  }; // old
+  // old
+  if (issue) {
+    // old
+    return <IssueComponent issue={issue} />; // old
+  } else {
+    // old
+    return <button onClick={createIssue}>Create Issue</button>; // old
+  } // old
+} // old
+// old
+export default App; // old
+```
+</File>
+
+And now for the exciting part! Let's make `src/components/Issue.tsx` an editing component.
+
+<File name="src/components/Issue.tsx">
+```tsx
+import { Issue } from "../schema"; // old
+// old
+export function IssueComponent({ issue }: { issue: Issue }) {
+  // old
+  return (
+    // old
+    <div className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t">
+      {" "}
+      // old
+      <input
+        type="text"
+        value={issue.title}
+        onChange={(event) => {
+          issue.title = event.target.value;
+        }}
+      />
+      <textarea
+        className="col-span-3"
+        value={issue.description}
+        onChange={(event) => {
+          issue.description = event.target.value;
+        }}
+      />
+      <label className="flex">
+        Estimate:
+        <input
+          type="number"
+          className="text-right min-w-0"
+          value={issue.estimate}
+          onChange={(event) => {
+            issue.estimate = Number(event.target.value);
+          }}
+        />
+      </label>
+      <select
+        value={issue.status}
+        onChange={(event) => {
+          issue.status = event.target.value as
+            | "backlog"
+            | "in progress"
+            | "done";
+        }}
+      >
+        <option value="backlog">Backlog</option>
+        <option value="in progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+    </div> // old
+  ); // old
+} // old
+```
+</File>
+import { highlight } from "sugar-high"

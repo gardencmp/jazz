@@ -1,0 +1,102 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "./colors.css";
+@import "./code-theme.css";
+@import "./prose-theme.css";
+
+@layer base {
+  :root {
+    --radius: 8px;
+    --height-nav: 80px;
+    --height-tab: 54px;
+    --height-button: 44px;
+    --height-button-sm: 32px;
+    --space-inset: 24px;
+    --space-inset-2x: calc(var(--space-inset) * 2);
+    --space-under-nav: calc(var(--height-nav) + (var(--space-inset-2x)));
+    --space-under-nav-nudge: calc(
+      var(--height-nav) + (var(--space-inset-2x) * 1.2)
+    );
+
+    --container-text-px: 660px;
+    --container-text: calc(var(--container-text-px) - (var(--space-inset) * 2));
+    --container-hero-px: 1000px;
+    --container-hero: calc(var(--container-hero-px) - (var(--space-inset) * 2));
+  }
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply bg-canvas;
+    @apply scroll-smooth;
+  }
+  ::selection {
+    @apply bg-accent text-canvas;
+  }
+  body {
+    @apply relative min-h-screen;
+    @apply antialiased;
+
+    @apply font-sans;
+    @apply text-base;
+    @apply font-normal tracking-[0];
+    @apply bg-canvas text-fill;
+
+    /* 1. Apple kerning, from http://design.byform.co/ */
+    /* font-feature-settings: "kern" 1,'ss01' 1,'ss02' 1,'ss03' 1,'ss04' 1; */
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1;
+    /* transition everywhere */
+    transition: color 50ms ease 0s;
+  }
+  .overlay-close {
+    background-color: "black";
+  }
+}
+
+/* These utilities can be applied in the base & component layers */
+@layer utilities {
+  .link {
+    @apply relative;
+    @apply underline underline-offset-[0.25em];
+    @apply decoration-solid decoration-[0.025em];
+    @apply hover:text-accent;
+    @apply hover:decoration-accent hover:decoration-[0.05em];
+  }
+  .hr-vertical {
+    /* must add a height when used within a flex parent */
+    @apply w-px border-l;
+  }
+  .styled-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #eaeaea transparent;
+    scrollbar-gutter: stable;
+  }
+
+  /* TYPOGRAPHY */
+  .Text-title {
+    @apply font-display text-title font-bold;
+    @apply tracking-title;
+    @apply text-fill-contrast;
+  }
+  .Text-subtitle {
+    @apply font-display text-subtitle font-bold;
+    @apply tracking-title;
+    @apply text-fill-contrast;
+  }
+  .Text-heading {
+    @apply font-display text-heading font-bold;
+    @apply tracking-heading;
+    @apply text-fill-contrast;
+  }
+  .Text-subheading {
+    @apply font-display text-large font-bold;
+    @apply tracking-heading;
+    @apply text-fill-contrast;
+  }
+}
+
+@layer components {
+}

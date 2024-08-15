@@ -1,0 +1,72 @@
+@import "@radix-ui/colors/gray.css";
+@import "@radix-ui/colors/gray-dark.css";
+@import "@radix-ui/colors/white-alpha.css";
+@import "@radix-ui/colors/black-alpha.css";
+@import "@radix-ui/colors/indigo.css";
+@import "@radix-ui/colors/indigo-dark.css";
+@import "@radix-ui/colors/amber.css";
+@import "@radix-ui/colors/amber-dark.css";
+
+/* 
+  Our app is monochrome, so we only need the color-gray scale, no color-accent scale. See: https://www.radix-ui.com/themes/docs/theme/color 
+
+  Our color scale consists of steps with specific use cases. To know how this works, see: https://www.radix-ui.com/colors/docs/palette-composition/understanding-the-scale
+ */
+
+@layer base {
+  :root {
+    /* GRAY */
+    /* backgrounds */
+    /* --color-gray-base: var(--gray-1); */
+    --color-gray-base: #fdfdfd;
+    --color-gray-bg-subtle: var(--gray-2);
+    /* --color-gray-bg: var(--gray-3); */
+    --color-gray-bg: #fafafa; /* Apple */
+    --color-gray-bg-hover: var(--gray-3);
+    --color-gray-bg-active: var(--gray-4);
+
+    /* borders, lines & focus rings */
+    --color-gray-border: var(--gray-6);
+    --color-gray-border-hover: var(--gray-6);
+    --color-gray-line: var(--gray-7);
+
+    /* solids */
+    --color-gray-solid-light: var(--gray-8);
+    --color-gray-solid: var(--gray-9);
+    --color-gray-solid-hover: var(--gray-10);
+
+    /* text fills (avoids namespace clash with Tailwind text-*) */
+    --color-gray-fill: var(--gray-11);
+    --color-gray-fill-contrast: var(--gray-12);
+
+    /* ACCENT */
+    --color-accent-bg: var(--indigo-3);
+    --color-accent-solid: var(--indigo-9);
+    --color-accent-solid-hover: var(--indigo-10);
+    --color-accent-fill: var(--indigo-11);
+    --color-accent-fill-contrast: var(--indigo-12);
+
+    /* NOTICE */
+    --color-notice-bg: var(--amber-3);
+    --color-notice-solid: var(--amber-9);
+  }
+}
+
+/* 
+  Slightly different dark base.
+  Because `.dark` only exists when next-themes renders it, 
+  we don't wrap it in `base` b/c we don't want Tailwind to omit it.
+ */
+.dark {
+  --color-gray-base: #151515 !important;
+  /* --color-gray-bg-subtle: var(--sky-2); */
+  /* --color-gray-bg: var(--sky-3); */
+  /* --color-gray-bg-hover: var(--sky-4); */
+  /* only used on home page! */
+  /* --color-gray-bg-active: #0d141f; */
+  --color-gray-bg-active: var(--sky-1);
+  /* I don't really want to do this, solid is otherwise not legible… */
+  --color-gray-solid: var(--gray-10);
+  /* …and I hate burning my eyes in dark mode */
+  --color-gray-fill-contrast: var(--gray-11);
+}
