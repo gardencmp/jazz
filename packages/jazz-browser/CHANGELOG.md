@@ -1,5 +1,16 @@
 # jazz-browser
 
+## 0.7.26
+
+### Patch Changes
+
+-   Remove Effect from jazz/cojson internals
+-   Updated dependencies
+    -   cojson@0.7.26
+    -   cojson-storage-indexeddb@0.7.26
+    -   cojson-transport-ws@0.7.26
+    -   jazz-tools@0.7.26
+
 ## 0.7.25
 
 ### Patch Changes

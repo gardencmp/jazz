@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.26
+
+### Patch Changes
+
+-   Remove Effect from jazz/cojson internals
+
 ## 0.7.23
 
 ### Patch Changes

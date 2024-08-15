@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.7.25",
+  "version": "0.7.26",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",

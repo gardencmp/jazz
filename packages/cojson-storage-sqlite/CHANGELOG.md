@@ -1,5 +1,13 @@
 # cojson-storage-sqlite
 
+## 0.7.26
+
+### Patch Changes
+
+-   Remove Effect from jazz/cojson internals
+-   Updated dependencies
+    -   cojson@0.7.26
+
 ## 0.7.23
 
 ### Patch Changes
