@@ -59,12 +59,7 @@ import type * as Media from "./media.js";
 
 type Value = JsonValue | AnyRawCoValue;
 
-import {
-    LSMStorage,
-    FSErr,
-    BlockFilename,
-    WalFilename,
-} from "./storage/index.js";
+import { LSMStorage, BlockFilename, WalFilename } from "./storage/index.js";
 import { FileSystem } from "./storage/FileSystem.js";
 
 /** @hidden */
@@ -84,7 +79,7 @@ export const cojsonInternals = {
     accountHeaderForInitialAgentSecret,
     idforHeader,
     StreamingHash,
-    Channel
+    Channel,
 };
 
 export {
@@ -129,7 +124,6 @@ export {
 export type {
     Value,
     FileSystem,
-    FSErr,
     BlockFilename,
     WalFilename,
     IncomingSyncStream,

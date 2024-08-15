@@ -78,7 +78,7 @@ export class SQLiteStorage {
         };
 
         processMessages().catch((e) =>
-            console.error("Error in processMessages", e),
+            console.error("Error in processMessages in sqlite", e),
         );
     }
 

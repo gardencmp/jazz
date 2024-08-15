@@ -441,9 +441,6 @@ importers:
       '@scure/base':
         specifier: ^1.1.1
         version: 1.1.5
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       hash-wasm:
         specifier: ^4.9.0
         version: 4.11.0
@@ -550,9 +547,6 @@ importers:
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../cojson-transport-ws
-      effect:
-        specifier: ^3.5.2
-        version: 3.5.2
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools

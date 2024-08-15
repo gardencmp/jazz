@@ -77,7 +77,7 @@ export class IDBStorage {
         };
 
         processMessages().catch((e) =>
-            console.error("Error in processMessages", e),
+            console.error("Error in processMessages in IndexedDB", e),
         );
     }
 
