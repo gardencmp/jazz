@@ -1,4 +1,10 @@
-import { DisconnectedError, Peer, PingTimeoutError, SyncMessage, cojsonInternals } from "cojson";
+import {
+    DisconnectedError,
+    Peer,
+    PingTimeoutError,
+    SyncMessage,
+    cojsonInternals,
+} from "cojson";
 
 interface WebsocketEvents {
     close: { code: number; reason: string };
@@ -37,10 +43,12 @@ export function createWebSocketPeer({
     id,
     websocket,
     role,
+    expectPings = true,
 }: {
     id: string;
     websocket: AnyWebSocket;
     role: Peer["role"];
+    expectPings?: boolean;
 }): Peer {
     const incoming = new cojsonInternals.Channel<
         SyncMessage | DisconnectedError | PingTimeoutError
@@ -74,13 +82,15 @@ export function createWebSocketPeer({
                     console.error("Error while pushing incoming msg", e),
                 );
         }
-        pingTimeout = setTimeout(() => {
-            incoming
-                .push("PingTimeout")
-                .catch((e) =>
-                    console.error("Error while pushing ping timeout", e),
-                );
-        }, 10_000);
+        if (expectPings) {
+            pingTimeout = setTimeout(() => {
+                incoming
+                    .push("PingTimeout")
+                    .catch((e) =>
+                        console.error("Error while pushing ping timeout", e),
+                    );
+            }, 10_000);
+        }
     });
 
     const websocketOpen = new Promise<void>((resolve) => {
@@ -93,13 +103,15 @@ export function createWebSocketPeer({
         outgoing: {
             async push(msg) {
                 await websocketOpen;
-                websocket.send(JSON.stringify(msg));
+                if (websocket.readyState === 1) {
+                    websocket.send(JSON.stringify(msg));
+                }
             },
             close() {
                 if (websocket.readyState === 1) {
                     websocket.close();
                 }
-            }
+            },
         },
         role,
     };
