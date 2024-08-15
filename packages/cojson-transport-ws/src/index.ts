@@ -112,7 +112,12 @@ export function createWebSocketPeer({
                 }
             },
             close() {
-                if (websocket.readyState === 1) {
+                console.log("Trying to close", id, websocket.readyState)
+                if (websocket.readyState === 0) {
+                    websocket.addEventListener("open", function handleClose() {
+                        websocket.close();
+                    }, { once: true });
+                } else if (websocket.readyState == 1) {
                     websocket.close();
                 }
             },
