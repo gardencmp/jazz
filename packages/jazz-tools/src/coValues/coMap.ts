@@ -457,7 +457,7 @@ export class CoMap extends CoValueBase implements CoValue {
         return subscribeToExistingCoValue(this, depth, listener);
     }
 
-    applyDiff(newValues: Partial<CoMapInit<this>>) {
+    applyDiff<N extends Partial<CoMapInit<this>>>(newValues: N) {
         for (const key in newValues) {
             if (Object.prototype.hasOwnProperty.call(newValues, key)) {
                 const tKey = key as keyof typeof newValues & keyof this;
@@ -466,7 +466,7 @@ export class CoMap extends CoValueBase implements CoValue {
 
                 if (tKey in this._schema) {
                     const newValue = newValues[tKey];
-                    const currentValue = this[tKey];
+                    const currentValue = (this as unknown as N)[tKey];
 
                     if (descriptor === "json" || "encoded" in descriptor) {
                         if (currentValue !== newValue) {
