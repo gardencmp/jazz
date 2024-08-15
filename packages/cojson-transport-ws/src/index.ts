@@ -94,7 +94,11 @@ export function createWebSocketPeer({
     });
 
     const websocketOpen = new Promise<void>((resolve) => {
-        websocket.addEventListener("open", resolve, { once: true });
+        if (websocket.readyState === 1) {
+            resolve();
+        } else {
+            websocket.addEventListener("open", resolve, { once: true });
+        }
     });
 
     return {
