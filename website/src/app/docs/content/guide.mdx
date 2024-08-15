@@ -42,6 +42,7 @@ In a new terminal window, install `jazz-tools` and `jazz-react`:
 Modify `src/main.tsx` to set up a Jazz context:
 
 <File name="src/main.tsx" highlightLines={[5,7,8,9,10,11]}>
+
 ```tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -50,20 +51,20 @@ import "./index.css";
 import { createJazzReactContext, DemoAuth } from "jazz-react";
 
 const Jazz = createJazzReactContext({
-auth: DemoAuth({ appName: "Circular" }),
-peer: "wss://mesh.jazz.tools/?key=you@example.com", // <- put your email here to get a proper API key later
+  auth: DemoAuth({ appName: "Circular" }),
+  peer: "wss://mesh.jazz.tools/?key=you@example.com", // <- put your email here to get a proper API key later
 });
 export const { useAccount, useCoState } = Jazz;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-
   <Jazz.Provider>
     <React.StrictMode>
       <App />
     </React.StrictMode>
-  </Jazz.Provider>
+  </Jazz.Provider>,
 );
 ```
+
 </File>
 
 This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
@@ -92,6 +93,7 @@ CoValues are designed to be read like simple local JSON state. Let's see how we 
 Create a new file `src/components/Issue.tsx` and add the following:
 
 <File name="src/components/Issue.tsx">
+
 ```tsx
 import { Issue } from "../schema";
 
@@ -106,6 +108,7 @@ export function IssueComponent({ issue }: { issue: Issue }) {
   );
 }
 ```
+
 </File>
 
 Simple enough!
@@ -117,6 +120,7 @@ To actually see an Issue, we have to create one. This is where things start to g
 Let's modify `src/App.tsx` to prepare for creating an Issue and then rendering it:
 
 <File name="src/App.tsx">
+
 ```tsx
 import { useState } from "react";
 import { Issue } from "./schema";
@@ -135,6 +139,7 @@ function App() {
 // old
 export default App; // old
 ```
+
 </File>
 
 Now, finally, let's implement creating an issue:

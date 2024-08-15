@@ -30,6 +30,10 @@
   --sh-keyword: #f47067;
   --sh-comment: #a19595;
 
+  /* custom for File component */
+  --code-line-highlight: rgb(51 19 247 / 50%);
+  --code-line-marker: rgb(51 19 247);
+
   /* 
   --sh-string: #007f7a;
   --sh-keyword: #e02518;
@@ -58,7 +62,15 @@
 .prose pre code .sh__line::before {
   counter-increment: sh-line-number 1;
   content: counter(sh-line-number);
-  margin-right: 24px;
+  margin-right: 20px;
   text-align: right;
   color: #888;
 }
+
+/* FAILING TESTS */
+/* .File .sh__line:nth-child(var(--highlight-lines)) {
+  background-color: rgb(243 244 246);
+}
+.File .sh__line:nth-child(1) {
+  @apply bg-white-a2;
+} */

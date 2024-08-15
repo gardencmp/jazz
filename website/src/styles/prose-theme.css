@@ -31,7 +31,7 @@
   @apply relative overflow-x-auto;
   /* bg-accent-fill-contrast */
   @apply bg-fill-contrast rounded-lg border;
-  @apply pt-3 pb-w4 px-w4;
+  @apply pt-3 pb-4 pl-3 pr-4;
   @apply !my-w6;
 }
 .File pre {
@@ -39,14 +39,16 @@
   @apply !my-0 border-none;
 }
 .prose code {
+  @apply text-code font-medium;
   @apply bg-background-hover rounded-[3px];
-  @apply px-1.5 py-0.5 text-[0.8em];
+  @apply px-1.5 py-0.5;
 }
 .prose pre code {
-  @apply p-0 bg-transparent border-[initial] leading-[1.5];
+  @apply p-0 bg-transparent border-[initial] rounded-none;
 }
-.prose code span {
-  @apply font-medium;
+.prose pre code .sh__line {
+  @apply pt-[1px] pb-[3px] px-px rounded-[3px];
+  @apply border-l-[4px] border-transparent pl-[6px];
 }
 pre::-webkit-scrollbar {
   display: none;
@@ -54,17 +56,6 @@ pre::-webkit-scrollbar {
 pre {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
-}
-[class^="highlight-lines-"] .sh__line {
-  background-color: transparent;
-}
-
-[class^="highlight-lines-"] .sh__line:nth-child(1),
-[class^="highlight-lines-"] .sh__line:nth-child(2),
-[class^="highlight-lines-"] .sh__line:nth-child(3),
-[class^="highlight-lines-"] .sh__line:nth-child(4),
-[class^="highlight-lines-"] .sh__line:nth-child(5) {
-  background-color: rgb(243 244 246);
 }
 
 /* LINKS */

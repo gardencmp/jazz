@@ -96,6 +96,7 @@ const config: Config = {
         heading: [generateClampSize(500, 1200, 20, 24), { lineHeight: "1.25" }],
         subtitle: [generateClampSize(500, 1200, 22, 33), { lineHeight: "1.2" }],
         title: [generateClampSize(500, 1200, 27, 42), { lineHeight: "1.2" }],
+        code: ["0.85em", { lineHeight: "1.6" }],
       },
       letterSpacing: {
         tight: "0.02em",

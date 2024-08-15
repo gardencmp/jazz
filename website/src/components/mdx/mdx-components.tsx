@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image, { ImageProps } from "next/image";
 import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
 import { highlight } from "sugar-high";
-import React from "react";
+import React, { useId } from "react";
 import { Slogan, ClipboardCopy, Alert } from "./index";
 import * as HTMLExamples from "@/app/docs/content/guide-html";
 import clsx from "clsx";
@@ -90,12 +90,12 @@ function Pre({ children, ...props }: React.HTMLAttributes<HTMLElement>) {
     .join("");
 
   return (
-    <div className="overflow-hidden">
+    <>
       <div className="absolute top-2 right-2 z-10">
         <ClipboardCopy className="text-large">{textContent}</ClipboardCopy>
       </div>
       <pre {...props}>{children}</pre>
-    </div>
+    </>
   );
 }
 
@@ -105,22 +105,29 @@ interface FileProps extends React.HTMLAttributes<HTMLElement> {
   highlightLines?: number[];
 }
 
+/* 
+  Using this "changed lines" highlighting method: 
+  https://github.com/huozhi/sugar-high?tab=readme-ov-file#line-highlight 
+ */
 function File({ children, name, highlightLines = [], ...props }: FileProps) {
-  /* TODO: fix failing attempt at adding "changed lines" to the file. Attempting to use this method: https://github.com/huozhi/sugar-high?tab=readme-ov-file#line-highlight */
-  const highlightClasses = highlightLines
-    .map(
-      (line) => `[&_div_div_pre_code_.sh__line:nth-child(${line})]:bg-gray-100`,
-    )
-    .join(" ");
-
+  const uniqueId = useId();
   return (
     <div
-      className={clsx(
-        "File relative bg-fill-contrast rounded-lg border !my-w6",
-        highlightClasses,
-      )}
+      className="File relative bg-fill-contrast rounded-lg border !my-w6"
+      data-file-id={uniqueId}
       {...props}
     >
+      <style>
+        {highlightLines
+          .map(
+            (line) =>
+              `[data-file-id="${uniqueId}"] .sh__line:nth-child(${line}) {
+            background-color: var(--code-line-highlight);
+            border-color: var(--code-line-marker);
+          }`,
+          )
+          .join("\n")}
+      </style>
       <h4 className="h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono">
         {name}
       </h4>
