@@ -450,7 +450,7 @@ export class SyncManager {
                 peer.id,
             );
             const loaded = await entry.done;
-            console.log("Loaded", msg.id, loaded);
+            // console.log("Loaded", msg.id, loaded);
             if (loaded === "unavailable") {
                 peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
                 peer.toldKnownState.add(msg.id);
