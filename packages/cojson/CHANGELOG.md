@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.29
+
+### Patch Changes
+
+-   Remove noisy log
+
 ## 0.7.28
 
 ### Patch Changes
