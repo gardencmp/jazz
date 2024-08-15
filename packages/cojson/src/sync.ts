@@ -394,6 +394,9 @@ export class SyncManager {
 
         processMessages().catch((e) => {
             console.error("Error processing messages from peer", peer.id, e);
+        }).finally(() => {
+            peer.outgoing.close();
+            delete this.peers[peer.id];
         });
     }
 
