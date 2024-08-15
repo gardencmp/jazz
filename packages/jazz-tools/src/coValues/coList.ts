@@ -1,4 +1,4 @@
-import type { RawCoList } from "cojson";
+import type { JsonValue, RawCoList } from "cojson";
 import { RawAccount } from "cojson";
 import type {
     CoValue,
@@ -28,7 +28,6 @@ import {
     subscribeToExistingCoValue,
     subscriptionsScopes,
 } from "../internal.js";
-import { encodeSync, decodeSync } from "@effect/schema/Schema";
 
 /**
  * CoLists are collaborative versions of plain arrays.
@@ -304,7 +303,7 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
         } else if ("encoded" in itemDescriptor) {
             return this._raw
                 .asArray()
-                .map((e) => encodeSync(itemDescriptor.encoded)(e));
+                .map((e) => itemDescriptor.encoded.encode(e));
         } else if (isRefEncoded(itemDescriptor)) {
             return this.map((item, idx) =>
                 seenAbove?.includes((item as CoValue)?.id)
@@ -457,9 +456,9 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
 function toRawItems<Item>(items: Item[], itemDescriptor: Schema) {
     const rawItems =
         itemDescriptor === "json"
-            ? items
+            ? (items as JsonValue[])
             : "encoded" in itemDescriptor
-              ? items?.map((e) => encodeSync(itemDescriptor.encoded)(e))
+              ? items?.map((e) => itemDescriptor.encoded.encode(e))
               : isRefEncoded(itemDescriptor)
                 ? items?.map((v) => (v as unknown as CoValue).id)
                 : (() => {
@@ -478,7 +477,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             } else if ("encoded" in itemDescriptor) {
                 return rawValue === undefined
                     ? undefined
-                    : decodeSync(itemDescriptor.encoded)(rawValue);
+                    : itemDescriptor.encoded.decode(rawValue);
             } else if (isRefEncoded(itemDescriptor)) {
                 return rawValue === undefined
                     ? undefined
@@ -511,7 +510,7 @@ const CoListProxyHandler: ProxyHandler<CoList> = {
             if (itemDescriptor === "json") {
                 rawValue = value;
             } else if ("encoded" in itemDescriptor) {
-                rawValue = encodeSync(itemDescriptor.encoded)(value);
+                rawValue = itemDescriptor.encoded.encode(value);
             } else if (isRefEncoded(itemDescriptor)) {
                 rawValue = value.id;
             }

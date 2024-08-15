@@ -1,5 +1,4 @@
-import { DisconnectedError, Peer, PingTimeoutError, SyncMessage } from "cojson";
-import { Stream, Queue, Effect, Console } from "effect";
+import { DisconnectedError, Peer, PingTimeoutError, SyncMessage, cojsonInternals } from "cojson";
 
 interface WebsocketEvents {
     close: { code: number; reason: string };
@@ -15,6 +14,7 @@ interface AnyWebSocket {
     addEventListener<K extends keyof WebsocketEvents>(
         type: K,
         listener: (event: WebsocketEvents[K]) => void,
+        options?: { once: boolean },
     ): void;
     removeEventListener<K extends keyof WebsocketEvents>(
         type: K,
@@ -22,6 +22,7 @@ interface AnyWebSocket {
     ): void;
     close(): void;
     send(data: string): void;
+    readyState: number;
 }
 
 const g: typeof globalThis & {
@@ -32,88 +33,74 @@ const g: typeof globalThis & {
     }[];
 } = globalThis;
 
-export function createWebSocketPeer(options: {
+export function createWebSocketPeer({
+    id,
+    websocket,
+    role,
+}: {
     id: string;
     websocket: AnyWebSocket;
     role: Peer["role"];
-}): Effect.Effect<Peer> {
-    return Effect.gen(function* () {
-        const ws = options.websocket;
-        const ws_ = ws as unknown as Stream.EventListener<WebsocketEvents["message"]>;
+}): Peer {
+    const incoming = new cojsonInternals.Channel<
+        SyncMessage | DisconnectedError | PingTimeoutError
+    >();
 
-        const outgoing = yield* Queue.unbounded<SyncMessage>();
-
-        const closed = once(ws, "close").pipe(
-            Effect.flatMap(
-                (event) =>
-                    new DisconnectedError({
-                        message: `${event.code}: ${event.reason}`,
-                    }),
-            ),
-            Stream.fromEffect,
-        );
-
-        const isSyncMessage = (msg: unknown): msg is SyncMessage => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((msg as any)?.type === "ping") {
-                const ping = msg as PingMsg;
-                g.jazzPings ||= [];
-                g.jazzPings.push({
-                    received: Date.now(),
-                    sent: ping.time,
-                    dc: ping.dc,
-                });
-                return false;
-            }
-            return true;
-        };
-
-        yield* Effect.forkDaemon(Effect.gen(function* () {
-            yield* once(ws, "open");
-            yield* Queue.take(outgoing).pipe(
-                Effect.andThen((message) => ws.send(JSON.stringify(message))),
-                Effect.forever,
+    websocket.addEventListener("close", function handleClose() {
+        incoming
+            .push("Disconnected")
+            .catch((e) =>
+                console.error("Error while pushing disconnect msg", e),
             );
-        }));
-
-        type E = WebsocketEvents["message"];
-        const messages = Stream.fromEventListener<E>(ws_, "message").pipe(
-            Stream.timeoutFail(() => new PingTimeoutError(), "10 seconds"),
-            Stream.tapError((_e) =>
-                Console.warn("Ping timeout").pipe(
-                    Effect.andThen(Effect.try(() => ws.close())),
-                    Effect.catchAll((e) =>
-                        Console.error(
-                            "Error while trying to close ws on ping timeout",
-                            e,
-                        ),
-                    ),
-                ),
-            ),
-            Stream.mergeLeft(closed),
-            Stream.map((_) => JSON.parse(_.data as string)),
-            Stream.filter(isSyncMessage),
-            Stream.buffer({ capacity: "unbounded" }),
-            Stream.onDone(() => Queue.shutdown(outgoing)),
-        );
-
-        return {
-            id: options.id,
-            incoming: messages,
-            outgoing,
-            role: options.role,
-        };
     });
+
+    let pingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    websocket.addEventListener("message", function handleIncomingMsg(event) {
+        const msg = JSON.parse(event.data as string);
+        pingTimeout && clearTimeout(pingTimeout);
+        if (msg?.type === "ping") {
+            const ping = msg as PingMsg;
+            g.jazzPings ||= [];
+            g.jazzPings.push({
+                received: Date.now(),
+                sent: ping.time,
+                dc: ping.dc,
+            });
+        } else {
+            incoming
+                .push(msg)
+                .catch((e) =>
+                    console.error("Error while pushing incoming msg", e),
+                );
+        }
+        pingTimeout = setTimeout(() => {
+            incoming
+                .push("PingTimeout")
+                .catch((e) =>
+                    console.error("Error while pushing ping timeout", e),
+                );
+        }, 10_000);
+    });
+
+    const websocketOpen = new Promise<void>((resolve) => {
+        websocket.addEventListener("open", resolve, { once: true });
+    });
+
+    return {
+        id,
+        incoming,
+        outgoing: {
+            async push(msg) {
+                await websocketOpen;
+                websocket.send(JSON.stringify(msg));
+            },
+            close() {
+                if (websocket.readyState === 1) {
+                    websocket.close();
+                }
+            }
+        },
+        role,
+    };
 }
-
-const once = <Event extends keyof WebsocketEvents>(
-    ws: AnyWebSocket,
-    event: Event,
-) =>
-    Effect.async<WebsocketEvents[Event]>((register) => {
-        const cb = (msg: WebsocketEvents[Event]) => {
-            ws.removeEventListener(event, cb);
-            register(Effect.succeed(msg));
-        };
-        ws.addEventListener(event, cb);
-    });

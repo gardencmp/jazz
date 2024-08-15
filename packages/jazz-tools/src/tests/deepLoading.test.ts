@@ -14,7 +14,6 @@ import {
     ID,
 } from "../index.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
-import { Effect } from "effect";
 
 class TestMap extends CoMap {
     list = co.ref(TestList);
@@ -39,12 +38,11 @@ describe("Deep loading with depth arg", async () => {
         crypto: Crypto,
     });
 
-    const [initialAsPeer, secondPeer] = await Effect.runPromise(
-        connectedPeers("initial", "second", {
-            peer1role: "server",
-            peer2role: "client",
-        }),
-    );
+    const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
+        peer1role: "server",
+        peer2role: "client",
+    });
+
     if (!isControlledAccount(me)) {
         throw "me is not a controlled account";
     }
@@ -140,8 +138,8 @@ describe("Deep loading with depth arg", async () => {
             throw new Error("map4 is undefined");
         }
         expect(map4.list[0]?.stream).not.toBe(null);
-        expect(map4.list[0]?.stream?.[me.id]?.value).toBe(null);
-        expect(map4.list[0]?.stream?.byMe?.value).toBe(null);
+        expect(map4.list[0]?.stream?.[me.id]).toBe(undefined)
+        expect(map4.list[0]?.stream?.byMe?.value).toBe(undefined);
 
         const map5 = await TestMap.load(map.id, meOnSecondPeer, {
             list: [{ stream: [{}] }],
@@ -254,15 +252,15 @@ test("Deep loading a record-like coMap", async () => {
         crypto: Crypto,
     });
 
-    const [initialAsPeer, secondPeer] = await Effect.runPromise(
-        connectedPeers("initial", "second", {
-            peer1role: "server",
-            peer2role: "client",
-        }),
-    );
+    const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
+        peer1role: "server",
+        peer2role: "client",
+    });
+
     if (!isControlledAccount(me)) {
         throw "me is not a controlled account";
     }
+
     me._raw.core.node.syncManager.addPeer(secondPeer);
     const meOnSecondPeer = await Account.become({
         accountID: me.id,

@@ -1,7 +1,6 @@
 import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
-import { Effect, Queue } from "effect";
 import {
     Account,
     Encoders,
@@ -9,8 +8,8 @@ import {
     co,
     WasmCrypto,
     isControlledAccount,
+    cojsonInternals,
 } from "../index.js";
-import { Schema } from "@effect/schema";
 
 const Crypto = await WasmCrypto.create();
 
@@ -25,7 +24,10 @@ describe("Simple CoMap operations", async () => {
         _height = co.number;
         birthday = co.encoded(Encoders.Date);
         name? = co.string;
-        nullable = co.optional.encoded(Schema.NullishOr(Schema.String));
+        nullable = co.optional.encoded<string | undefined>({
+            encode: (value: string | undefined) => value || null,
+            decode: (value: unknown) => (value as string) || undefined,
+        });
         optionalDate = co.optional.encoded(Encoders.Date);
 
         get roughColor() {
@@ -42,7 +44,7 @@ describe("Simple CoMap operations", async () => {
             color: "red",
             _height: 10,
             birthday: birthday,
-            nullable: null,
+            nullable: undefined,
         },
         { owner: me },
     );
@@ -94,7 +96,7 @@ describe("Simple CoMap operations", async () => {
             expect(map._raw.get("_height")).toEqual(20);
 
             map.nullable = "not null";
-            map.nullable = null;
+            map.nullable = undefined;
             delete map.nullable;
             map.nullable = undefined;
 
@@ -282,12 +284,12 @@ describe("CoMap resolution", async () => {
 
     test("Loading and availability", async () => {
         const { me, map } = await initNodeAndMap();
-        const [initialAsPeer, secondPeer] = await Effect.runPromise(
+        const [initialAsPeer, secondPeer] =
             connectedPeers("initial", "second", {
                 peer1role: "server",
                 peer2role: "client",
-            }),
-        );
+            });
+
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
@@ -353,12 +355,12 @@ describe("CoMap resolution", async () => {
     test("Subscription & auto-resolution", async () => {
         const { me, map } = await initNodeAndMap();
 
-        const [initialAsPeer, secondAsPeer] = await Effect.runPromise(
+        const [initialAsPeer, secondAsPeer] =
             connectedPeers("initial", "second", {
                 peer1role: "server",
                 peer2role: "client",
-            }),
-        );
+            });
+
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
@@ -372,9 +374,8 @@ describe("CoMap resolution", async () => {
             crypto: Crypto,
         });
 
-        await Effect.runPromise(
-            Effect.gen(function* ($) {
-                const queue = yield* $(Queue.unbounded<TestMap>());
+
+                const queue = new cojsonInternals.Channel<TestMap>();
 
                 TestMap.subscribe(
                     map.id,
@@ -385,22 +386,20 @@ describe("CoMap resolution", async () => {
                             "subscribedMap.nested?.twiceNested?.taste",
                             subscribedMap.nested?.twiceNested?.taste,
                         );
-                        void Effect.runPromise(
-                            Queue.offer(queue, subscribedMap),
-                        );
+                        void queue.push(subscribedMap);
                     },
                 );
 
-                const update1 = yield* $(Queue.take(queue));
+                const update1 = (await queue.next()).value;
                 expect(update1.nested).toEqual(null);
 
-                const update2 = yield* $(Queue.take(queue));
+                const update2 = (await queue.next()).value;
                 expect(update2.nested?.name).toEqual("nested");
 
                 map.nested!.name = "nestedUpdated";
 
-                const _ = yield* $(Queue.take(queue));
-                const update3 = yield* $(Queue.take(queue));
+                const _ = (await queue.next()).value;
+                const update3 = (await queue.next()).value;
                 expect(update3.nested?.name).toEqual("nestedUpdated");
 
                 const oldTwiceNested = update3.nested!.twiceNested;
@@ -424,23 +423,21 @@ describe("CoMap resolution", async () => {
 
                 update3.nested = newNested;
 
-                yield* $(Queue.take(queue));
-                // const update4 = yield* $(Queue.take(queue));
-                const update4b = yield* $(Queue.take(queue));
+                (await queue.next()).value;
+                // const update4 = (await queue.next()).value;
+                const update4b = (await queue.next()).value;
 
                 expect(update4b.nested?.name).toEqual("newNested");
                 expect(update4b.nested?.twiceNested?.taste).toEqual("sweet");
 
                 // we get updates when the new nested value changes
                 newTwiceNested.taste = "salty";
-                const update5 = yield* $(Queue.take(queue));
+                const update5 = (await queue.next()).value;
                 expect(update5.nested?.twiceNested?.taste).toEqual("salty");
 
                 newTwiceNested.taste = "umami";
-                const update6 = yield* $(Queue.take(queue));
+                const update6 = (await queue.next()).value;
                 expect(update6.nested?.twiceNested?.taste).toEqual("umami");
-            }),
-        );
     });
 
     class TestMapWithOptionalRef extends CoMap {

@@ -1,4 +1,3 @@
-import { Either } from "effect";
 import { RawCoID, SessionID } from "../ids.js";
 import { MAX_RECOMMENDED_TX_SIZE } from "../index.js";
 import { CoValueKnownState, NewContentMessage } from "../sync.js";
@@ -80,7 +79,7 @@ export function chunkToKnownState(id: RawCoID, chunk: CoValueChunk) {
 export function mergeChunks(
     chunkA: CoValueChunk,
     chunkB: CoValueChunk,
-): Either.Either<"nonContigous", CoValueChunk> {
+): "nonContigous" | CoValueChunk {
     const header = chunkA.header || chunkB.header;
 
     const newSessions = { ...chunkA.sessionEntries };
@@ -133,9 +132,9 @@ export function mergeChunks(
             }
             newSessions[sessionID] = newEntries;
         } else {
-            return Either.right("nonContigous" as const);
+            return "nonContigous" as const;
         }
     }
 
-    return Either.left({ header, sessionEntries: newSessions });
+    return { header, sessionEntries: newSessions };
 }
