@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.32
+
+### Patch Changes
+
+-   Adapt type of applyDiff to make CoMaps fully subclassable again
+
 ## 0.7.31
 
 ### Patch Changes
