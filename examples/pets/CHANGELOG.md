@@ -1,5 +1,13 @@
 # jazz-example-pets
 
+## 0.0.96
+
+### Patch Changes
+
+-   jazz-react@0.7.31
+-   jazz-tools@0.7.31
+-   jazz-browser-media-images@0.7.31
+
 ## 0.0.95
 
 ### Patch Changes

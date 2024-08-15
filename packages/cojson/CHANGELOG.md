@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.31
+
+### Patch Changes
+
+-   Close both ends of the peer on gracefulShutdown
+
 ## 0.7.29
 
 ### Patch Changes
