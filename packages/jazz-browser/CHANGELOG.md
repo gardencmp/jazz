@@ -1,5 +1,12 @@
 # jazz-browser
 
+## 0.7.30
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.30
+
 ## 0.7.29
 
 ### Patch Changes

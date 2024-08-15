@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.30
+
+### Patch Changes
+
+-   Immediately resolve an already-open websocket
+
 ## 0.7.29
 
 ### Patch Changes
