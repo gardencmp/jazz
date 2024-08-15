@@ -18,7 +18,7 @@ import {
 } from "./crypto/crypto.js";
 import { WasmCrypto } from "./crypto/WasmCrypto.js";
 import { PureJSCrypto } from "./crypto/PureJSCrypto.js";
-import { connectedPeers } from "./streamUtils.js";
+import { connectedPeers, Channel } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
 import { rawCoIDtoBytes, rawCoIDfromBytes, isRawCoID } from "./ids.js";
@@ -59,12 +59,7 @@ import type * as Media from "./media.js";
 
 type Value = JsonValue | AnyRawCoValue;
 
-import {
-    LSMStorage,
-    FSErr,
-    BlockFilename,
-    WalFilename,
-} from "./storage/index.js";
+import { LSMStorage, BlockFilename, WalFilename } from "./storage/index.js";
 import { FileSystem } from "./storage/FileSystem.js";
 
 /** @hidden */
@@ -84,6 +79,7 @@ export const cojsonInternals = {
     accountHeaderForInitialAgentSecret,
     idforHeader,
     StreamingHash,
+    Channel,
 };
 
 export {
@@ -123,18 +119,17 @@ export {
     SyncMessage,
     isRawCoID,
     LSMStorage,
-    DisconnectedError,
-    PingTimeoutError,
 };
 
 export type {
     Value,
     FileSystem,
-    FSErr,
     BlockFilename,
     WalFilename,
     IncomingSyncStream,
     OutgoingSyncQueue,
+    DisconnectedError,
+    PingTimeoutError,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

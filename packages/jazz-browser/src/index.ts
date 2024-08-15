@@ -14,7 +14,6 @@ import { AccountID, LSMStorage } from "cojson";
 import { AuthProvider } from "./auth/auth.js";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
-import { Effect, Queue } from "effect";
 import { createWebSocketPeer } from "cojson-transport-ws";
 export * from "./auth/auth.js";
 
@@ -42,13 +41,11 @@ export async function createJazzBrowserContext<Acc extends Account>({
     const crypto = customCrypto || (await WasmCrypto.create());
     let sessionDone: () => void;
 
-    const firstWsPeer = await Effect.runPromise(
-        createWebSocketPeer({
-            websocket: new WebSocket(peerAddr),
-            id: peerAddr + "@" + new Date().toISOString(),
-            role: "server",
-        }),
-    );
+    const firstWsPeer = createWebSocketPeer({
+        websocket: new WebSocket(peerAddr),
+        id: peerAddr + "@" + new Date().toISOString(),
+        role: "server",
+    });
     let shouldTryToReconnect = true;
 
     let currentReconnectionTimeout = initialReconnectionTimeout;
@@ -112,13 +109,11 @@ export async function createJazzBrowserContext<Acc extends Account>({
                 });
 
                 me._raw.core.node.syncManager.addPeer(
-                    await Effect.runPromise(
-                        createWebSocketPeer({
-                            websocket: new WebSocket(peerAddr),
-                            id: peerAddr + "@" + new Date().toISOString(),
-                            role: "server",
-                        }),
-                    ),
+                    createWebSocketPeer({
+                        websocket: new WebSocket(peerAddr),
+                        id: peerAddr + "@" + new Date().toISOString(),
+                        role: "server",
+                    })
                 );
             }
         }
@@ -132,11 +127,7 @@ export async function createJazzBrowserContext<Acc extends Account>({
             shouldTryToReconnect = false;
             window.removeEventListener("online", onOnline);
             console.log("Cleaning up node");
-            for (const peer of Object.values(
-                me._raw.core.node.syncManager.peers,
-            )) {
-                void Effect.runPromise(Queue.shutdown(peer.outgoing));
-            }
+            me._raw.core.node.gracefulShutdown();
             sessionDone?.();
         },
     };

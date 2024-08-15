@@ -1,5 +1,4 @@
 import type { JsonValue, RawCoMap } from "cojson";
-import type { Simplify } from "effect/Types";
 import type {
     CoValue,
     Schema,
@@ -34,6 +33,10 @@ type CoMapEdit<V> = {
     by?: Account;
     madeAt: Date;
 };
+
+export type Simplify<A> = {
+    [K in keyof A]: A[K]
+} extends infer B ? B : never
 
 /**
  * CoMaps are collaborative versions of plain objects, mapping string-like keys to values.
