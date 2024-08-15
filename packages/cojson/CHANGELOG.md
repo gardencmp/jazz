@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.28
+
+### Patch Changes
+
+-   Fix ignoring server peers
+
 ## 0.7.26
 
 ### Patch Changes
