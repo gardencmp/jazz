@@ -750,7 +750,11 @@ export class SyncManager {
 
     gracefulShutdown() {
         for (const peer of Object.values(this.peers)) {
+            console.debug("Gracefully closing", peer.id);
             peer.outgoing.close();
+            peer.incoming = (async function* () {
+                yield "Disconnected" as const;
+            })();
         }
     }
 }
