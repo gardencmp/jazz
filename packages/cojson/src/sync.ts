@@ -411,7 +411,7 @@ export class SyncManager {
             // special case: we should be able to solve this much more neatly
             // with an explicit state machine in the future
             const eligiblePeers = this.peersInPriorityOrder().filter(
-                (other) => other.id !== peer.id && peer.role === "server",
+                (other) => other.id !== peer.id && other.role === "server",
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
