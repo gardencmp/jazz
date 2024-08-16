@@ -1,6 +1,12 @@
 import { getAudioFileData } from "@/lib/audio/getAudioFileData";
-import { BinaryCoStream } from "jazz-tools";
-import { MusicaAccount, MusicTrack, MusicTrackWaveform } from "./1_schema";
+import { BinaryCoStream, Group } from "jazz-tools";
+import {
+    ListOfTracks,
+    MusicaAccount,
+    MusicTrack,
+    MusicTrackWaveform,
+    Playlist,
+} from "./1_schema";
 
 export async function uploadMusicTracks(
     account: MusicaAccount,
@@ -34,4 +40,29 @@ export async function uploadMusicTracks(
         );
         rootPlaylistTracks.push(musicTrack);
     }
+}
+
+export async function createNewPlaylist(account: MusicaAccount) {
+    const playlistGroup = Group.create({ owner: account });
+
+    const ownership = { owner: playlistGroup };
+
+    const playlist = Playlist.create(
+        {
+            title: "New Playlist",
+            tracks: ListOfTracks.create([], ownership),
+        },
+        ownership,
+    );
+
+    account.root?.playlists?.push(playlist);
+
+    return playlist;
+}
+
+export async function addTrackToPlaylist(
+    playlist: Playlist,
+    track: MusicTrack,
+) {
+    playlist.tracks?.push(track);
 }

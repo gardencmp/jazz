@@ -6,4 +6,4 @@ export const Jazz = createJazzReactContext({
     peer: `wss://mesh.jazz.tools/?key=example@email.com`,
 });
 
-export const { useAccount, useCoState } = Jazz;
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
