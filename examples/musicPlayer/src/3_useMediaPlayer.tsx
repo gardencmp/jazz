@@ -14,7 +14,7 @@ export function useMediaPlayer() {
 
     const [loading, setLoading] = useState<ID<MusicTrack> | null>(null);
 
-    const activeTrack = useCoState(MusicTrack, me?.root?._refs.activeTrack.id);
+    const activeTrack = useCoState(MusicTrack, me?.root?._refs.activeTrack?.id);
 
     // Reference used to avoid out-of-order track loads
     const lastLoadedTrackId = useRef<ID<MusicTrack> | null>(null);
