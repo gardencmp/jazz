@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image, { ImageProps } from "next/image";
 import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
 import { highlight } from "sugar-high";
-import React, { useId } from "react";
+import React, { useId, ReactNode } from "react";
 import { Slogan, ClipboardCopy, Alert } from "./index";
 import * as HTMLExamples from "@/app/docs/content/guide-html";
 import clsx from "clsx";
@@ -63,15 +63,32 @@ function RoundedImage(props: ImageProps) {
 }
 
 interface CodeProps extends React.HTMLAttributes<HTMLElement> {
-  children: string;
+  children: ReactNode | string;
+  language?: string;
 }
 
-function Code({ children, ...props }: CodeProps) {
-  let codeHTML = highlight(children);
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
+export function Code({
+  children,
+  language = "typescript",
+  ...props
+}: CodeProps) {
+  const codeContent = typeof children === "string" ? children : "";
+  let codeHTML = highlight(codeContent);
+  return (
+    <code
+      className={`language-${language}`}
+      dangerouslySetInnerHTML={{ __html: codeHTML }}
+      {...props}
+    />
+  );
 }
 
-function Pre({ children, ...props }: React.HTMLAttributes<HTMLElement>) {
+interface PreProps extends React.HTMLAttributes<HTMLPreElement> {
+  children: ReactNode;
+  showCopyAction?: boolean;
+}
+
+export function Pre({ children, showCopyAction = true, ...props }: PreProps) {
   const textContent = React.Children.toArray(children)
     .filter(
       (child) =>
@@ -91,29 +108,44 @@ function Pre({ children, ...props }: React.HTMLAttributes<HTMLElement>) {
 
   return (
     <>
-      <div className="absolute top-2 right-2 z-10">
-        <ClipboardCopy className="text-large">{textContent}</ClipboardCopy>
-      </div>
+      {showCopyAction && (
+        <div className="absolute top-2 right-2 z-10">
+          <ClipboardCopy className="text-large">{textContent}</ClipboardCopy>
+        </div>
+      )}
       <pre {...props}>{children}</pre>
     </>
   );
 }
 
 interface FileProps extends React.HTMLAttributes<HTMLElement> {
-  children: string;
-  name: string;
+  children: ReactNode | string;
+  name?: string;
   highlightLines?: number[];
+  theme?: "light" | "dark";
+  className?: string;
 }
 
 /* 
   Using this "changed lines" highlighting method: 
   https://github.com/huozhi/sugar-high?tab=readme-ov-file#line-highlight 
  */
-function File({ children, name, highlightLines = [], ...props }: FileProps) {
+export function File({
+  children,
+  name,
+  highlightLines = [],
+  theme = "dark",
+  className,
+  ...props
+}: FileProps) {
   const uniqueId = useId();
   return (
     <div
-      className="File relative bg-fill-contrast rounded-lg border !my-w6"
+      className={clsx(
+        "File relative rounded-lg border !my-w6",
+        theme === "dark" ? "bg-fill-contrast" : "bg-background",
+        className,
+      )}
       data-file-id={uniqueId}
       {...props}
     >
@@ -128,9 +160,11 @@ function File({ children, name, highlightLines = [], ...props }: FileProps) {
           )
           .join("\n")}
       </style>
-      <h4 className="h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono">
-        {name}
-      </h4>
+      {name && (
+        <h4 className="h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono">
+          {name}
+        </h4>
+      )}
       {children}
     </div>
   );
@@ -184,11 +218,11 @@ let components = {
     React.AnchorHTMLAttributes<HTMLAnchorElement>
   >,
   code: Code as React.ComponentType<React.HTMLAttributes<HTMLElement>>,
-  pre: Pre,
+  pre: Pre as React.ComponentType<React.HTMLAttributes<HTMLPreElement>>,
   Table: Table as React.ComponentType<any>,
   Slogan,
   Alert,
-  File,
+  File: File as React.ComponentType<FileProps>,
 };
 
 interface CustomMDXProps extends MDXRemoteProps {

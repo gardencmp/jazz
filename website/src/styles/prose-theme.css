@@ -30,7 +30,7 @@
 .prose pre {
   @apply relative overflow-x-auto;
   /* bg-accent-fill-contrast */
-  @apply bg-fill-contrast rounded-lg border;
+  @apply rounded-lg border;
   @apply pt-3 pb-4 pl-3 pr-4;
   @apply !my-w6;
 }
@@ -42,6 +42,9 @@
   @apply text-code font-medium;
   @apply bg-background-hover rounded-[3px];
   @apply px-1.5 py-0.5;
+}
+.prose-sm code {
+  @apply text-[0.75em];
 }
 .prose pre code {
   @apply p-0 bg-transparent border-[initial] rounded-none;

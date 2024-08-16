@@ -17,8 +17,14 @@ export type MdxData = {
   content: string;
 };
 
-export interface MdxHeading {
+export type MdxHeading = {
   label: string;
   anchorLink: string;
   level: "h2" | "h3";
-}
+};
+
+export type MdxDocNav = {
+  slug: string;
+  title: string;
+  summary: string;
+};

@@ -1,4 +1,4 @@
-import { MainNav, DocsNav } from "@/components/nav";
+import { MainNav } from "@/components/nav";
 import { display, mono, sans } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
@@ -34,9 +34,10 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="en">
       <body className={cn(sans.variable, display.variable, mono.variable)}>
         <Providers>
-          <MainNav docsNav={<DocsNav />} />
-          {/* [&_*]:scroll-mt-[6rem] */}
-          <main className="min-h-screen pt-inset-2x">{children}</main>
+          <MainNav />
+          <main className="min-h-screen pt-[calc(2.5*var(--space-inset))]">
+            {children}
+          </main>
         </Providers>
         <SpeedInsights />
         <Analytics mode="production" />

@@ -30,7 +30,7 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)"],
+        sans: ["var(--font-display)"],
         display: ["var(--font-display)"],
         mono: ["var(--font-mono)"],
       },
@@ -56,6 +56,7 @@ const config: Config = {
 
         // ACCENTS
         "accent-background": "var(--color-accent-bg)",
+        "accent-background-active": "var(--color-accent-bg-active)",
         accent: "var(--color-accent-solid)",
         "accent-hover": "var(--color-accent-solid-hover)",
         "accent-fill": "var(--color-accent-fill)",
@@ -93,15 +94,16 @@ const config: Config = {
           generateClampSize(500, 1200, 18, 21),
           { lineHeight: "1.333" },
         ],
-        heading: [generateClampSize(500, 1200, 20, 24), { lineHeight: "1.25" }],
+        heading: [generateClampSize(500, 1200, 20, 27), { lineHeight: "1.25" }],
         subtitle: [generateClampSize(500, 1200, 22, 33), { lineHeight: "1.2" }],
         title: [generateClampSize(500, 1200, 27, 42), { lineHeight: "1.2" }],
+        super: [generateClampSize(500, 1200, 39, 60), { lineHeight: "0.96" }],
         code: ["0.85em", { lineHeight: "1.6" }],
       },
       letterSpacing: {
         tight: "0.02em",
         heading: "-0.02em",
-        title: "-0.04em",
+        title: "-0.03em",
       },
       spacing: {
         nav: "var(--height-nav)",
@@ -119,11 +121,14 @@ const config: Config = {
         text: "var(--container-text)",
         "hero-px": "var(--container-hero-px)",
         hero: "var(--container-hero)",
+        docs: "1040px",
 
         // lower value is 2/3 of upper value
+        w3: generateClampSize(500, 1200, 8, 12),
         w4: generateClampSize(500, 1200, 10.5, 16),
         w6: generateClampSize(500, 1200, 16, 24),
         w8: generateClampSize(500, 1200, 21, 32),
+        w10: generateClampSize(500, 1200, 27, 40),
         w12: generateClampSize(500, 1200, 32, 48),
         w16: generateClampSize(500, 1200, 43, 64),
         w20: generateClampSize(500, 1200, 54, 80),

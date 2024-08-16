@@ -76,6 +76,10 @@
   }
 
   /* TYPOGRAPHY */
+  .Text-super {
+    @apply font-display text-super font-bold;
+    @apply tracking-[-0.05em];
+  }
   .Text-title {
     @apply font-display text-title font-bold;
     @apply tracking-title;
@@ -95,6 +99,10 @@
     @apply font-display text-large font-bold;
     @apply tracking-heading;
     @apply text-fill-contrast;
+  }
+  .Text-meta {
+    @apply font-mono text-meta font-medium uppercase;
+    @apply tracking-[0.07em];
   }
 }
 

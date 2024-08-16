@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { MdxDocNav } from "@/lib/mdx-types";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
 
@@ -27,7 +27,6 @@ export function DocsNavAccordion({
   children: React.ReactNode;
   className?: string;
 }) {
-  const pathname = usePathname();
   return (
     <AccordionItem value={name} className="space-y-1">
       <AccordionTrigger
@@ -46,15 +45,7 @@ export function DocsNavAccordion({
 
 export const docsNavListStyle = "space-y-[2px] pl-3 py-1";
 
-export function DocsNavList({
-  docs,
-}: {
-  docs: {
-    slug: string;
-    title: any;
-    summary: any;
-  }[];
-}) {
+export function DocsNavList({ docs }: { docs: MdxDocNav[] }) {
   const pathname = usePathname();
   return (
     <ul className={docsNavListStyle}>

@@ -18,15 +18,15 @@
     /* GRAY */
     /* backgrounds */
     /* --color-gray-base: var(--gray-1); */
-    --color-gray-base: #fdfdfd;
+    --color-gray-base: #fefefe;
     --color-gray-bg-subtle: var(--gray-2);
     /* --color-gray-bg: var(--gray-3); */
-    --color-gray-bg: #fafafa; /* Apple */
+    --color-gray-bg: #f7f7f7; /* Apple */
     --color-gray-bg-hover: var(--gray-3);
     --color-gray-bg-active: var(--gray-4);
 
     /* borders, lines & focus rings */
-    --color-gray-border: var(--gray-6);
+    --color-gray-border: var(--gray-5);
     --color-gray-border-hover: var(--gray-6);
     --color-gray-line: var(--gray-7);
 
@@ -41,6 +41,7 @@
 
     /* ACCENT */
     --color-accent-bg: var(--indigo-3);
+    --color-accent-bg-active: var(--indigo-4);
     --color-accent-solid: var(--indigo-9);
     --color-accent-solid-hover: var(--indigo-10);
     --color-accent-fill: var(--indigo-11);

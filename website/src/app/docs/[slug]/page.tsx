@@ -1,8 +1,9 @@
 import config from "@/config";
-import { extractHeadings, getDocPosts } from "@/lib/mdx-utils";
+import { extractHeadings, getDocPosts, getDocsList } from "@/lib/mdx-utils";
 import { notFound } from "next/navigation";
 import { DocContent } from "../(components)/doc-content";
 import { DocMapScroller } from "../(components)/doc-scroller";
+import { DocsNav } from "../(components)/docs-nav";
 
 interface Props {
   params: {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function Doc({ params }: Props) {
+  const docsList = getDocsList();
   let post = getDocPosts().find((post) => post.slug === params.slug);
 
   if (!post) {
@@ -20,10 +22,10 @@ export default function Doc({ params }: Props) {
   const headings = extractHeadings(post.content);
 
   return (
-    <>
-      <DocContent post={post}>
-        <DocMapScroller headings={headings} />
-      </DocContent>
+    <div className="relative container max-w-fit md:flex">
+      <DocsNav guideDocs={docsList} />
+      <DocContent post={post} />
+      <DocMapScroller headings={headings} />
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -48,7 +50,7 @@ export default function Doc({ params }: Props) {
           }),
         }}
       />
-    </>
+    </div>
   );
 }
 
