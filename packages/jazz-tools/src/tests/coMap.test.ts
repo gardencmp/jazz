@@ -1,4 +1,4 @@
-import { expect, describe, test } from "vitest";
+import { expect, describe, test, expectTypeOf } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import {
@@ -284,11 +284,14 @@ describe("CoMap resolution", async () => {
 
     test("Loading and availability", async () => {
         const { me, map } = await initNodeAndMap();
-        const [initialAsPeer, secondPeer] =
-            connectedPeers("initial", "second", {
+        const [initialAsPeer, secondPeer] = connectedPeers(
+            "initial",
+            "second",
+            {
                 peer1role: "server",
                 peer2role: "client",
-            });
+            },
+        );
 
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
@@ -355,11 +358,14 @@ describe("CoMap resolution", async () => {
     test("Subscription & auto-resolution", async () => {
         const { me, map } = await initNodeAndMap();
 
-        const [initialAsPeer, secondAsPeer] =
-            connectedPeers("initial", "second", {
+        const [initialAsPeer, secondAsPeer] = connectedPeers(
+            "initial",
+            "second",
+            {
                 peer1role: "server",
                 peer2role: "client",
-            });
+            },
+        );
 
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
@@ -374,70 +380,64 @@ describe("CoMap resolution", async () => {
             crypto: Crypto,
         });
 
+        const queue = new cojsonInternals.Channel<TestMap>();
 
-                const queue = new cojsonInternals.Channel<TestMap>();
+        TestMap.subscribe(map.id, meOnSecondPeer, {}, (subscribedMap) => {
+            console.log(
+                "subscribedMap.nested?.twiceNested?.taste",
+                subscribedMap.nested?.twiceNested?.taste,
+            );
+            void queue.push(subscribedMap);
+        });
 
-                TestMap.subscribe(
-                    map.id,
-                    meOnSecondPeer,
-                    {},
-                    (subscribedMap) => {
-                        console.log(
-                            "subscribedMap.nested?.twiceNested?.taste",
-                            subscribedMap.nested?.twiceNested?.taste,
-                        );
-                        void queue.push(subscribedMap);
-                    },
-                );
+        const update1 = (await queue.next()).value;
+        expect(update1.nested).toEqual(null);
 
-                const update1 = (await queue.next()).value;
-                expect(update1.nested).toEqual(null);
+        const update2 = (await queue.next()).value;
+        expect(update2.nested?.name).toEqual("nested");
 
-                const update2 = (await queue.next()).value;
-                expect(update2.nested?.name).toEqual("nested");
+        map.nested!.name = "nestedUpdated";
 
-                map.nested!.name = "nestedUpdated";
+        const _ = (await queue.next()).value;
+        const update3 = (await queue.next()).value;
+        expect(update3.nested?.name).toEqual("nestedUpdated");
 
-                const _ = (await queue.next()).value;
-                const update3 = (await queue.next()).value;
-                expect(update3.nested?.name).toEqual("nestedUpdated");
+        const oldTwiceNested = update3.nested!.twiceNested;
+        expect(oldTwiceNested?.taste).toEqual("sour");
 
-                const oldTwiceNested = update3.nested!.twiceNested;
-                expect(oldTwiceNested?.taste).toEqual("sour");
+        // When assigning a new nested value, we get an update
+        const newTwiceNested = TwiceNestedMap.create(
+            {
+                taste: "sweet",
+            },
+            { owner: meOnSecondPeer },
+        );
 
-                // When assigning a new nested value, we get an update
-                const newTwiceNested = TwiceNestedMap.create(
-                    {
-                        taste: "sweet",
-                    },
-                    { owner: meOnSecondPeer },
-                );
+        const newNested = NestedMap.create(
+            {
+                name: "newNested",
+                twiceNested: newTwiceNested,
+            },
+            { owner: meOnSecondPeer },
+        );
 
-                const newNested = NestedMap.create(
-                    {
-                        name: "newNested",
-                        twiceNested: newTwiceNested,
-                    },
-                    { owner: meOnSecondPeer },
-                );
+        update3.nested = newNested;
 
-                update3.nested = newNested;
+        (await queue.next()).value;
+        // const update4 = (await queue.next()).value;
+        const update4b = (await queue.next()).value;
 
-                (await queue.next()).value;
-                // const update4 = (await queue.next()).value;
-                const update4b = (await queue.next()).value;
+        expect(update4b.nested?.name).toEqual("newNested");
+        expect(update4b.nested?.twiceNested?.taste).toEqual("sweet");
 
-                expect(update4b.nested?.name).toEqual("newNested");
-                expect(update4b.nested?.twiceNested?.taste).toEqual("sweet");
+        // we get updates when the new nested value changes
+        newTwiceNested.taste = "salty";
+        const update5 = (await queue.next()).value;
+        expect(update5.nested?.twiceNested?.taste).toEqual("salty");
 
-                // we get updates when the new nested value changes
-                newTwiceNested.taste = "salty";
-                const update5 = (await queue.next()).value;
-                expect(update5.nested?.twiceNested?.taste).toEqual("salty");
-
-                newTwiceNested.taste = "umami";
-                const update6 = (await queue.next()).value;
-                expect(update6.nested?.twiceNested?.taste).toEqual("umami");
+        newTwiceNested.taste = "umami";
+        const update6 = (await queue.next()).value;
+        expect(update6.nested?.twiceNested?.taste).toEqual("umami");
     });
 
     class TestMapWithOptionalRef extends CoMap {
@@ -732,5 +732,95 @@ describe("CoMap applyDiff", async () => {
         expect(map.name).toEqual("Ian");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map as any).invalidField).toBeUndefined();
+    });
+});
+
+describe("CoMap Typescript validation", async () => {
+    const me = await Account.create({
+        creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
+    });
+
+    test("Is not ok to pass null into a required ref", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.optional.ref(NestedMap);
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            {
+                optional: NestedMap.create({ value: "" }, { owner: me }),
+                // @ts-expect-error null can't be passed to a non-optional field
+                required: null,
+            },
+            { owner: me },
+        );
+    });
+
+    test("Is not ok if a required ref is omitted", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.ref(NestedMap, { optional: true });
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            // @ts-expect-error non-optional fields can't be omitted
+            {},
+            { owner: me },
+        );
+    });
+
+    test("Is ok to omit optional fields", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.ref(NestedMap, { optional: true });
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            {
+                required: NestedMap.create({ value: "" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            {
+                required: NestedMap.create({ value: "" }, { owner: me }),
+                optional: null,
+            },
+            { owner: me },
+        );
+    });
+
+    test("the required refs should be nullable", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.ref(NestedMap, { optional: true });
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        const map = TestMap.create(
+            {
+                required: NestedMap.create({ value: "" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        expectTypeOf(map.required).toBeNullable();
     });
 });
