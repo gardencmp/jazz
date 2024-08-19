@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.7.33-hotfixes.1
+
+### Patch Changes
+
+-   jazz-browser@0.7.33-hotfixes.1
+
 ## 0.7.33-hotfixes.0
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.33-hotfixes.1
+
+### Patch Changes
+
+-   Wait if WS buffer is full
+
 ## 0.7.33-hotfixes.0
 
 ### Patch Changes

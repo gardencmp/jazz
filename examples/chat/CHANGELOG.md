@@ -1,5 +1,11 @@
 # jazz-example-chat
 
+## 0.0.80-hotfixes.1
+
+### Patch Changes
+
+- jazz-react@0.7.33-hotfixes.1
+
 ## 0.0.80-hotfixes.0
 
 ### Patch Changes
