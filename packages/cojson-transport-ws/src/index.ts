@@ -114,6 +114,10 @@ export function createWebSocketPeer({
                         await new Promise((resolve) =>
                             setTimeout(resolve, 100),
                         );
+                        if (websocket.readyState !== 1) {
+                            console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
+                            return;
+                        }
                     }
                     websocket.send(JSON.stringify(msg));
                 }
