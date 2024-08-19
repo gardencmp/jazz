@@ -48,7 +48,7 @@ export const CardSecondary = ({
       <div className={clsx("mt-auto", isCode ? "space-y-0.5" : "space-y-1.5")}>
         <h2
           className={clsx(
-            "flex items-center !font-medium",
+            "flex items-center",
             isCode ? "Text-subheading " : "Text-heading",
           )}
         >

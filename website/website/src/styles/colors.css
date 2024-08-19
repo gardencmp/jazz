@@ -1,5 +1,5 @@
-@import "@radix-ui/colors/gray.css";
-@import "@radix-ui/colors/gray-dark.css";
+@import "@radix-ui/colors/sand.css";
+@import "@radix-ui/colors/sand-dark.css";
 @import "@radix-ui/colors/white-alpha.css";
 @import "@radix-ui/colors/black-alpha.css";
 @import "@radix-ui/colors/indigo.css";
@@ -17,34 +17,35 @@
   :root {
     /* GRAY */
     /* backgrounds */
-    /* --color-gray-base: var(--gray-1); */
+    /* --color-gray-base: var(--sand-1); */
     --color-gray-base: #fefefe;
-    --color-gray-bg-subtle: var(--gray-2);
-    /* --color-gray-bg: var(--gray-3); */
-    --color-gray-bg: #f7f7f7; /* Apple */
-    --color-gray-bg-hover: var(--gray-3);
-    --color-gray-bg-active: var(--gray-4);
+    --color-gray-bg-subtle: var(--sand-2);
+    --color-gray-bg: var(--sand-3);
+    /* --color-gray-bg: #f7f7f7; */ /* Apple */
+    --color-gray-bg-hover: var(--sand-3);
+    --color-gray-bg-active: var(--sand-4);
 
     /* borders, lines & focus rings */
-    --color-gray-border: var(--gray-5);
-    --color-gray-border-hover: var(--gray-6);
-    --color-gray-line: var(--gray-7);
+    --color-gray-border: var(--sand-5);
+    --color-gray-border-hover: var(--sand-6);
+    --color-gray-line: var(--sand-7);
 
     /* solids */
-    --color-gray-solid-light: var(--gray-8);
-    --color-gray-solid: var(--gray-9);
-    --color-gray-solid-hover: var(--gray-10);
+    --color-gray-solid-light: var(--sand-8);
+    --color-gray-solid: var(--sand-9);
+    --color-gray-solid-hover: var(--sand-10);
 
     /* text fills (avoids namespace clash with Tailwind text-*) */
-    --color-gray-fill: var(--gray-11);
-    --color-gray-fill-contrast: var(--gray-12);
+    --color-gray-fill: var(--sand-11);
+    --color-gray-fill-contrast: var(--sand-12);
 
     /* ACCENT */
     --color-accent-bg: var(--indigo-3);
     --color-accent-bg-active: var(--indigo-4);
     --color-accent-solid: var(--indigo-9);
     --color-accent-solid-hover: var(--indigo-10);
-    --color-accent-fill: var(--indigo-11);
+    /* --color-accent-fill: var(--indigo-11); */
+    --color-accent-fill: #3313f7;
     --color-accent-fill-contrast: var(--indigo-12);
 
     /* NOTICE */
@@ -67,7 +68,7 @@
   /* --color-gray-bg-active: #0d141f; */
   --color-gray-bg-active: var(--sky-1);
   /* I don't really want to do this, solid is otherwise not legible… */
-  --color-gray-solid: var(--gray-10);
+  --color-gray-solid: var(--sand-10);
   /* …and I hate burning my eyes in dark mode */
-  --color-gray-fill-contrast: var(--gray-11);
+  --color-gray-fill-contrast: var(--sand-11);
 }

@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
+import clsx from "clsx";
 
 export function NavLink({
   href,
@@ -24,10 +25,10 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={cn(
+      className={clsx(
         "NavLink",
         buttonVariants({ variant: "ghost", size: "sm" }),
-        "text-sm font-medium max-sm:w-full",
+        "text-small font-medium !justify-start max-sm:w-full",
         // before:absolute before:-inset-[0.25em];
         className,
         isActive

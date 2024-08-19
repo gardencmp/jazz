@@ -1,0 +1,92 @@
+---
+title: "Collaborative values"
+publishedAt: "2024-08-14"
+summary: "Build an issue tracker with distributed state in 15 minutes."
+---
+
+### Bread-and-butter datastructures
+
+<Grid className="lg:gap-y-8 grid-cols-2 lg:grid-cols-4">
+
+<GridCard>
+  #### `CoMap`
+
+- Collaborative key-value map
+- Possible values:
+- Immutable JSON & other
+  CoValues
+
+</GridCard>
+
+<GridCard>
+  #### `CoList`
+
+- Collaborative ordered list
+- Possible items:
+- Immutable JSON & other CoValues
+
+</GridCard>
+
+<GridCard>
+  #### `CoPlainText` & `CoRichText` ComingSoonBadge
+  <div className="text-sm">
+    - Collaborative plain-text & rich-text - Gracefully prevents most editing
+    conflicts - Rendered as markdown, HTML, JSX, etc.
+  </div>
+</GridCard>
+
+<GridCard>
+#### `CoStream`
+<div className="text-sm">
+- Collection of independent per-user items streams:
+    - Immutable JSON & other CoValues
+- Great for presence, reactions, polls, replies etc.
+</div>
+</GridCard>
+</Grid>
+
+### First-class files & binary data
+
+<Grid className="lg:gap-y-8 grid-cols-2 lg:grid-cols-4">
+
+<GridCard>
+  #### `BinaryCoStream`
+  <div className="text-sm">
+    - Represents a file or live binary stream - Can be referenced and synced
+    like any other CoValue - Can easily be converted from/to browser `Blob`s -{" "}
+    <code>{`<input type="file"/>`}</code> -> `BinaryCoStream` -> `Blob` ->
+    `BlobURL`
+  </div>
+</GridCard>
+
+<GridCard>
+  #### `ImageDefinition`
+  <div className="text-sm">
+    - Represents multiple resolutions of the same image - Can be progressively
+    loaded, including super fast blur preview & image size info
+  </div>
+</GridCard>
+
+</Grid>
+
+### Secure permissions, authorship & teams
+
+<Grid className="lg:gap-y-8 grid-cols-2 lg:grid-cols-4">
+
+<GridCard>
+#### `Group`
+<div className="text-sm">
+- A scope where specified accounts have roles (`reader`/`writer`/`admin`).
+- A `Group` owns `CoValues`, with access right determined by group roles.
+- Accounts can be added to groups directly or using shareable invite secrets.
+</div>
+</GridCard>
+<GridCard>
+#### `Account`
+<div className="text-sm">
+- Represents a single user and their signing/encryption keys.
+- Has a private account root and a public profile
+    - Can contain arbitrary app-specific data
+</div>
+</GridCard>
+</Grid>

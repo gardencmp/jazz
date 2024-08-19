@@ -19,9 +19,9 @@ export function MainNav() {
       >
         <div className="container max-w-docs flex items-center justify-between h-nav">
           <div className="flex items-center gap-1">
-            <NavLinkLogo prominent href="/" className="pr-w4">
-              {/* <JazzLogo className="h-[36px] text-accent-fill" /> */}
-              <JazzLogoTest className="text-accent-fill" height={23} />
+            <NavLinkLogo prominent href="/" className="pr-w3">
+              <JazzLogo className="h-[32px] text-accent-fill" />
+              {/* <JazzLogoTest className="text-accent-fill" height={23} /> */}
             </NavLinkLogo>
             {primaryItems.map((item, i) => (
               <NavLink key={i} href={item.href}>

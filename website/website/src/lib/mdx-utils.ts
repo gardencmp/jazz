@@ -3,7 +3,7 @@ import path from "path";
 import matter from "gray-matter";
 import { MdxHeading, ParsedContent, MdxData, Metadata } from "./mdx-types";
 
-function parseFrontmatter(fileContent: string): ParsedContent {
+export function parseFrontmatter(fileContent: string): ParsedContent {
   let frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
   let match = frontmatterRegex.exec(fileContent);
   let frontMatterBlock = match![1];

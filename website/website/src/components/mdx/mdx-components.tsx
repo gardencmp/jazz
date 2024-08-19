@@ -5,6 +5,7 @@ import { highlight } from "sugar-high";
 import React, { useId, ReactNode } from "react";
 import { Slogan, ClipboardCopy, Alert } from "./index";
 import * as HTMLExamples from "@/app/docs/content/guide-html";
+import { Grid, GridCard, Badge } from "./grid";
 import clsx from "clsx";
 
 interface TableProps {
@@ -209,10 +210,10 @@ function createHeading(level: 1 | 2 | 3 | 4 | 5 | 6) {
 let components = {
   h1: createHeading(1),
   h2: createHeading(2),
-  h3: createHeading(3),
-  h4: createHeading(4),
-  h5: createHeading(5),
-  h6: createHeading(6),
+  // h3: createHeading(3),
+  // h4: createHeading(4),
+  // h5: createHeading(5),
+  // h6: createHeading(6),
   Image: RoundedImage,
   a: CustomLink as React.ComponentType<
     React.AnchorHTMLAttributes<HTMLAnchorElement>
@@ -223,6 +224,9 @@ let components = {
   Slogan,
   Alert,
   File: File as React.ComponentType<FileProps>,
+  Grid,
+  GridCard,
+  Badge,
 };
 
 interface CustomMDXProps extends MDXRemoteProps {

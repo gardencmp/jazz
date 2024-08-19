@@ -30,8 +30,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-display)"],
-        display: ["var(--font-display)"],
+        sans: ["var(--font-sans)"],
+        display: ["var(--font-manrope)"],
         mono: ["var(--font-mono)"],
       },
       colors: {
@@ -83,11 +83,11 @@ const config: Config = {
           { lineHeight: `${bodyLineHeight}` },
         ],
         base: [
-          generateClampSize(500, 1200, 15, 16),
+          generateClampSize(500, 1200, 14, 16),
           { lineHeight: `${bodyLineHeight}` },
         ],
         large: [
-          generateClampSize(500, 1200, 16, 18),
+          generateClampSize(500, 1200, 15, 17),
           { lineHeight: `${bodyLineHeight}` },
         ],
         subheading: [

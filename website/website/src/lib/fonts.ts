@@ -1,11 +1,18 @@
 import localFont from "next/font/local";
 import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 
 /* SEE: https://nextjs.org/docs/basic-features/font-optimization */
 
 const sans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -79,8 +86,23 @@ const mono = localFont({
       weight: "400",
       style: "normal",
     },
+    {
+      path: "../../public/fonts/SohneMono-Kraftig.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/SohneMono-Halbfett.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/SohneMono-Dreiviertelfett.woff2",
+      weight: "700",
+      style: "normal",
+    },
   ],
   display: "swap",
 });
 
-export { sans, mono, display };
+export { sans, mono, display, manrope };

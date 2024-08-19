@@ -1,0 +1,16 @@
+---
+title: "Files & binary data"
+publishedAt: "2024-08-14"
+---
+
+#### `BinaryCoStream`
+
+- Represents a file or live binary stream
+- Can be referenced and synced like any other CoValue
+- Can easily be converted from/to browser `Blob`s - <code>{`<input type="file"/>`}</code> -> `BinaryCoStream` -> `Blob` ->
+  `BlobURL`
+
+#### `ImageDefinition`
+
+- Represents multiple resolutions of the same image
+- Can be progressively loaded, including super fast blur preview & image size info

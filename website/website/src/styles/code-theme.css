@@ -55,6 +55,10 @@
   }
 }
 
+.code-simple {
+  --sh-class: var(--color-gray-fill-contrast);
+}
+
 /* https://github.com/huozhi/sugar-high?tab=readme-ov-file#line-number */
 .prose pre code {
   counter-reset: sh-line-number;

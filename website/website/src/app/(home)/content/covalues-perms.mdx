@@ -1,0 +1,16 @@
+---
+title: "Permissions"
+publishedAt: "2024-08-14"
+---
+
+#### `Group`
+
+- A scope where specified accounts have roles (`reader`/`writer`/`admin`).
+- A `Group` owns `CoValues`, with access right determined by group roles.
+- Accounts can be added to groups directly or using shareable invite secrets.
+
+#### `Account`
+
+- Represents a single user and their signing/encryption keys.
+- Has a private account root and a public profile
+- Can contain arbitrary app-specific data

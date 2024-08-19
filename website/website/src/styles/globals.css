@@ -83,26 +83,26 @@
   .Text-title {
     @apply font-display text-title font-bold;
     @apply tracking-title;
-    @apply text-fill-contrast;
   }
   .Text-subtitle {
     @apply font-display text-subtitle font-bold;
     @apply tracking-title;
-    @apply text-fill-contrast;
   }
   .Text-heading {
     @apply font-display text-heading font-bold;
     @apply tracking-heading;
-    @apply text-fill-contrast;
   }
   .Text-subheading {
     @apply font-display text-large font-bold;
     @apply tracking-heading;
-    @apply text-fill-contrast;
+  }
+  .Text-large {
+    @apply font-sans text-large font-bold;
+    @apply tracking-normal;
   }
   .Text-meta {
     @apply font-mono text-meta font-medium uppercase;
-    @apply tracking-[0.07em];
+    @apply tracking-[0.09em];
   }
 }
 

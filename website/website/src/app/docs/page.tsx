@@ -66,7 +66,7 @@ export default function DocsIndexPage() {
           >
             <div className="grow px-w6 py-w8 flex flex-col gap-w8">
               <div className="shrink-0 space-y-1 text-fill-contrast">
-                <div className="Text-heading !font-medium flex items-center">
+                <div className="Text-heading flex items-center">
                   Developer quickstart
                   <HeadingLinkCaret />
                 </div>
