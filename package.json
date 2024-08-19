@@ -17,10 +17,10 @@
   },
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build && cd homepage/homepage && pnpm run build",
-    "lint": "turbo lint && cd homepage/homepage && pnpm run lint",
+    "build": "turbo build && cd website/website && pnpm run build",
+    "lint": "turbo lint && cd website/website && pnpm run lint",
     "test": "turbo test",
-    "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
+    "format": "pnpm run -r format && cd website/website && pnpm run format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "release": "pnpm changeset publish && git push --follow-tags"
