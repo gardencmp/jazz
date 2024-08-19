@@ -161,6 +161,7 @@ export class Account extends CoValueBase implements CoValue {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
 
+    /** @private */
     static async create<A extends Account>(
         this: CoValueClass<A> & typeof Account,
         options: {
@@ -172,34 +173,6 @@ export class Account extends CoValueBase implements CoValue {
     ): Promise<A> {
         const { node } = await LocalNode.withNewlyCreatedAccount({
             ...options,
-            migration: async (rawAccount, _node, creationProps) => {
-                const account = new this({
-                    fromRaw: rawAccount,
-                }) as A;
-
-                await account.migrate?.(creationProps);
-            },
-        });
-
-        return this.fromNode(node) as A;
-    }
-
-    static async become<A extends Account>(
-        this: CoValueClass<A> & typeof Account,
-        options: {
-            accountID: ID<Account>;
-            accountSecret: AgentSecret;
-            sessionID?: SessionID;
-            peersToLoadFrom: Peer[];
-            crypto: CryptoProvider;
-        },
-    ): Promise<A> {
-        const node = await LocalNode.withLoadedAccount({
-            accountID: options.accountID as unknown as CoID<RawAccount>,
-            accountSecret: options.accountSecret,
-            sessionID: options.sessionID,
-            peersToLoadFrom: options.peersToLoadFrom,
-            crypto: options.crypto,
             migration: async (rawAccount, _node, creationProps) => {
                 const account = new this({
                     fromRaw: rawAccount,
