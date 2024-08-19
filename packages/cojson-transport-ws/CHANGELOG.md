@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.33-hotfixes.2
+
+### Patch Changes
+
+-   Handle ws closing while buffering
+
 ## 0.7.33-hotfixes.1
 
 ### Patch Changes

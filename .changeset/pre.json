@@ -19,6 +19,7 @@
     "jazz-tools": "0.7.32"
   },
   "changesets": [
+    "angry-carpets-explain",
     "bright-files-help",
     "calm-experts-dance"
   ]
