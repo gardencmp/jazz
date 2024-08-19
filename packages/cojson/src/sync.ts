@@ -446,7 +446,7 @@ export class SyncManager {
         }
 
         if (entry.state === "loading") {
-            console.log(
+            console.debug(
                 "Waiting for loaded",
                 msg.id,
                 "after message from",
