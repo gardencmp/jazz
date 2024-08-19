@@ -1,0 +1,5 @@
+---
+"cojson": patch
+---
+
+Improve logging

@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.33-hotfixes.0
+
+### Patch Changes
+
+-   Improve logging
+
 ## 0.7.31
 
 ### Patch Changes

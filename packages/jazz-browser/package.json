@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser",
-  "version": "0.7.32",
+  "version": "0.7.33-hotfixes.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
