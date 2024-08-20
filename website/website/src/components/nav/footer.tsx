@@ -7,14 +7,15 @@ import { Newsletter } from "../newsletter";
 import clsx from "clsx";
 
 const colStyle = `flex flex-col gap-0.5`;
-const colHeadingStyle = `Text-meta pb-2`;
+const colHeadingStyle = `Text-meta pb-w4`;
+const linkStyle = "!px-0 !text-line hover:!text-canvas h-button-sm";
 
 export const Footer = () => (
-  <footer className="bg-background-subtle py-w24">
+  <footer className="bg-fill-bg text-line pt-w12 pb-w24">
     <div className="container max-w-docs grid grid-cols-12 gap-w6 text-small">
       <div className={clsx("col-span-7", colStyle)}>
         <GcmpLogo monochrome className="w-32" />
-        <p className="max-sm:text-right mt-auto text-meta">
+        <p className="max-sm:text-right mt-auto text-meta text-solid">
           © {new Date().getFullYear()} Garden Computing, Inc.
         </p>
       </div>
@@ -28,7 +29,8 @@ export const Footer = () => (
                 key={i}
                 href={item.href}
                 newTab={item.newTab}
-                className="!px-0"
+                useButtonVariant={false}
+                className={linkStyle}
               >
                 {item.title}
               </NavLink>
@@ -41,7 +43,8 @@ export const Footer = () => (
                 key={i}
                 href={item.href}
                 newTab={item.newTab}
-                className="!px-0"
+                useButtonVariant={false}
+                className={linkStyle}
               >
                 {item.title}
               </NavLink>
@@ -54,7 +57,8 @@ export const Footer = () => (
                 key={i}
                 href={item.href}
                 newTab={item.newTab}
-                className="!px-0"
+                useButtonVariant={false}
+                className={linkStyle}
               >
                 {item.title}
               </NavLink>

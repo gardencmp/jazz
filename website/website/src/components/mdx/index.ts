@@ -6,4 +6,5 @@ export * from "./slogan";
 export * from "./responsive-iframe";
 export * from "./clipboard-copy";
 export * from "./alert";
-export * from "./code";
+// export * from "./code";
+export * from "./grid";

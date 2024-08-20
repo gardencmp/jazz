@@ -98,7 +98,7 @@ export default async function MeshPage() {
           </APICard>
           <APICard>
             <CardMetaHeading icon={RiArchiveDrawerLine} iconSize="large">
-              Blob storage & media streaming
+              Storage
             </CardMetaHeading>
             <div className="prose code-simple">
               Store files and media streams as idiomatic CoValues without S3.

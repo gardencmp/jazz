@@ -27,12 +27,12 @@ export default function DocsIndexPage() {
   }
 
   return (
-    <div className="relative container max-w-docs space-y-w8">
+    <div className="relative container max-w-docs space-y-w8 pb-under-content">
       <header className="grid grid-cols-12 gap-2">
         <div className="col-span-12 flex items-center gap-1.5">
           {/* <PixelarticonsFileAlt className="text-[2em] text-accent-fill transform translate-y-[-1px]" /> */}
           {/* !text-accent-fill */}
-          <h1 className="Text-title !text-accent-fill !leading-none">
+          <h1 className="Text-title text-fill-contrast !leading-none">
             Jazz Docs
           </h1>
         </div>
@@ -59,8 +59,8 @@ export default function DocsIndexPage() {
               "col-span-full lg:col-span-8 lg:row-span-3",
               "group flex flex-col gap-inset",
               "bg-background rounded-lg overflow-hidden",
-              "transition-colors duration-200 hover:bg-background-hover",
-              "[&:hover_.File]:bg-background-hover [&_.File]:transition-colors [&_.File]:duration-200",
+              "transition-colors duration-200 hover:bg-background-active",
+              "[&:hover_.File]:bg-background-active [&_.File]:transition-colors [&_.File]:duration-200",
               // "hover:outline hover:outline-solid outline-transparent outline-[1px]",
             )}
           >
@@ -149,7 +149,7 @@ const Section = ({
 
 const GuideArt = () => (
   <div className="prose [&_.File]:!my-0">
-    <File theme="light" className="border-non">
+    <File theme="light" className="border-none">
       <Pre showCopyAction={false}>
         <Code language="tsx">{`import { createJazzReactContext, DemoAuth } from "jazz-react";
 const Jazz = createJazzReactContext({

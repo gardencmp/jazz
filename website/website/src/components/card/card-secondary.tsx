@@ -11,6 +11,7 @@ import {
   CubeIcon,
 } from "@radix-ui/react-icons";
 import { File, Pre, Code } from "@/components/mdx/mdx-components";
+// import { Theme } from "@/lib/types";
 
 type ItemProps = {
   heading: string;
@@ -40,16 +41,16 @@ export const CardSecondary = ({
         "flex flex-col gap-inset rounded-lg",
         "transition-colors duration-200",
         isCode
-          ? "bg-background hover:bg-background-hover"
+          ? "bg-background hover:bg-background-active"
           : "bg-accent-background hover:bg-accent-background-active",
         className,
       )}
     >
-      <div className={clsx("mt-auto", isCode ? "space-y-0.5" : "space-y-1.5")}>
+      <div className={clsx("mt-auto", isCode ? "space-y-1" : "space-y-2")}>
         <h2
           className={clsx(
             "flex items-center",
-            isCode ? "Text-subheading " : "Text-heading",
+            isCode ? "Text-subheading" : "Text-heading text-accent-fill",
           )}
         >
           {heading}

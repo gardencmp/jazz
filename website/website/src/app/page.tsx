@@ -1,51 +1,60 @@
-import { APICard, CardMetaHeading } from "@/components/card";
-import { CustomMDX } from "@/components/mdx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { parseFrontmatter } from "@/lib/mdx-utils";
 import clsx from "clsx";
 import fs from "fs/promises";
-import {
-  FileLock2Icon,
-  GaugeIcon,
-  HardDriveDownloadIcon,
-  KeyRoundIcon,
-  MonitorSmartphoneIcon,
-  PlaneIcon,
-  UploadCloudIcon,
-  UsersIcon,
-} from "lucide-react";
 import path from "path";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CovaluesSection } from "./(home)/components/covalues-section";
+import {
+  CovaluesSection,
+  HeroCards,
+  ToolkitSection,
+} from "./(home)/components";
+
+const contentPath = "src/app/(home)/content";
+
+const fileNames = [
+  "covalues-datastructures",
+  "covalues-files",
+  "covalues-perms",
+  "toolkit-autosub",
+  "toolkit-cursors",
+  "toolkit-auth",
+  "toolkit-dbsync",
+  "toolkit-upload",
+  "toolkit-video",
+];
 
 async function getHomeContent() {
-  const dataStructuresPath = path.join(
-    process.cwd(),
-    "src/app/(home)/content/covalues-datastructures.mdx",
-  );
-  const filesPath = path.join(
-    process.cwd(),
-    "src/app/(home)/content/covalues-files.mdx",
-  );
-  const permsPath = path.join(
-    process.cwd(),
-    "src/app/(home)/content/covalues-perms.mdx",
+  const filePaths = fileNames.map((name) =>
+    path.join(process.cwd(), `${contentPath}/${name}.mdx`),
   );
 
-  const [source1, source2, source3] = await Promise.all([
-    fs.readFile(dataStructuresPath, "utf8"),
-    fs.readFile(filesPath, "utf8"),
-    fs.readFile(permsPath, "utf8"),
-  ]);
+  const fileContents = await Promise.all(
+    filePaths.map((filePath) => fs.readFile(filePath, "utf8")),
+  );
 
-  const dataStructures = parseFrontmatter(source1);
-  const files = parseFrontmatter(source2);
-  const perms = parseFrontmatter(source3);
-
-  return { dataStructures, files, perms };
+  return Object.fromEntries(
+    fileNames.map((name, index) => [
+      name,
+      parseFrontmatter(fileContents[index]),
+    ]),
+  );
 }
 
 export default async function HomePage() {
-  const { dataStructures, files, perms } = await getHomeContent();
+  const content = await getHomeContent();
+  const covaluesContent = [
+    "covalues-datastructures",
+    "covalues-files",
+    "covalues-perms",
+  ].map((key) => content[key]);
+  const toolkitContent = [
+    "toolkit-auth",
+    "toolkit-autosub",
+    "toolkit-cursors",
+    "toolkit-dbsync",
+    "toolkit-upload",
+    "toolkit-video",
+  ].map((key) => content[key]);
 
   return (
     <div className="relative space-y-w24">
@@ -65,148 +74,67 @@ export default async function HomePage() {
               </span>
             </h1> */}
           </div>
-          <p
-            className={clsx("col-span-full lg:col-span-8 text-large text-fill")}
-          >
-            Jazz is an open-source toolkit that replaces APIs, databases and
-            message queues with a single new abstraction—“Collaborative
-            Values”—distributed state with secure permissions built-in. Features
-            that used to take months…
-            <span className="font-medium text-fill-contrast lg:table">
-              …now work out-of-the-box.
-            </span>
-          </p>
+          <div className="space-y-2 col-span-full lg:col-span-8">
+            <p className="text-large text-fill">
+              Jazz is an open-source toolkit that replaces APIs, databases and
+              message queues with a single new abstraction—“Collaborative
+              Values”—distributed state with secure permissions built-in.
+              {/* <span className="font-medium text-fill-contrast lg:table">
+                …now work out-of-the-box.
+              </span> */}
+            </p>
+            <p className="text-large text-fill">
+              Features that used to take months now work out-of-the-box.
+              <span className="font-medium text-fill-contrast lg:table">
+                Hard things are easy now.
+              </span>
+            </p>
+          </div>
         </header>
-        <div className="grid grid-cols-12 grid-rows-3 gap-1.5">
-          {features.map((item, index) =>
-            index === 4 ? (
-              <FeatureCard key={item.icon}>
-                <p className="text-base font-bold text-accent-fill text-center">
-                  Hard things are easy now.
-                </p>
-              </FeatureCard>
-            ) : (
-              <Feature
-                key={item.icon}
-                label={item.label}
-                icon={item.icon}
-                className="col-span-4"
-              />
-            ),
-          )}
-        </div>
+        <HeroCards />
       </section>
 
       <section className="">
-        <Tabs defaultValue="account" className="">
-          <TabsList className="container max-w-docs">
-            <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="password">Password</TabsTrigger>
+        <Tabs defaultValue="Toolkit">
+          <TabsList className="container max-w-docs space-x-[-2px] z-10">
+            <TabsTrigger value="Toolkit" className={tabStyle}>
+              What is Toolkit?
+            </TabsTrigger>
+            <TabsTrigger
+              value="CoValues"
+              className={clsx(
+                tabStyle,
+                "data-[state=active]:bg-background data-[state=active]:border-background",
+              )}
+            >
+              What are CoValues?
+            </TabsTrigger>
           </TabsList>
 
-          <div className="bg-background-subtle py-w12">
-            <div className="container max-w-docs space-y-w8">
-              <TabsContent value="account" className="space-y-w8">
-                <CovaluesSection
-                  title="Collaborative Values"
-                  dataStructures={dataStructures}
-                  files={files}
-                  perms={perms}
-                />
-              </TabsContent>
-              <TabsContent value="password" className="space-y-w8">
-                <CovaluesSection
-                  title="Tab 2 title"
-                  dataStructures={dataStructures}
-                  files={files}
-                  perms={perms}
-                />
-              </TabsContent>
+          <TabsContent value="Toolkit" className="space-y-w8">
+            <div className="bg-accent-background py-w12 -mt-px">
+              <div className="container max-w-docs space-y-w8">
+                <ToolkitSection contentItems={toolkitContent} />
+              </div>
             </div>
-          </div>
+          </TabsContent>
+          <TabsContent value="CoValues" className="space-y-w8">
+            <div className="bg-background py-w12 -mt-px">
+              <div className="container max-w-docs space-y-w8">
+                <CovaluesSection contentItems={covaluesContent} />
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </section>
     </div>
   );
 }
 
-const FeatureCard = ({ children }: { children: React.ReactNode }) => (
-  <div className="col-span-4 row-span-1 bg-background-hover flex items-center justify-center rounded-lg px-w8 py-w6">
-    <div className="flex flex-col gap-2.5 items-center justify-center">
-      {children}
-    </div>
-  </div>
-);
-
-const Feature = ({
-  label,
-  icon,
-  className,
-}: {
-  label: string;
-  icon: keyof typeof iconMap;
-  className?: string;
-}) => {
-  const IconComponent = iconMap[icon];
-  return (
-    <FeatureCard>
-      <IconComponent
-        strokeWidth={1}
-        strokeLinecap="butt"
-        // size={40}
-        className="size-[2em] text-solid-lite"
-      />
-      <p className="text-base font-bold text-fill-contrast">{label}</p>
-    </FeatureCard>
-  );
-};
-
-const iconMap = {
-  "monitor-smartphone": MonitorSmartphoneIcon,
-  send: PlaneIcon,
-  users: UsersIcon,
-  "file-lock2": FileLock2Icon,
-  "upload-cloud": UploadCloudIcon,
-  "hard-drive-download": HardDriveDownloadIcon,
-  gauge: GaugeIcon,
-  "key-round": KeyRoundIcon,
-};
-
-const features = [
-  {
-    icon: "monitor-smartphone" as const,
-    label: "Cross-device sync",
-  },
-  {
-    icon: "send" as const,
-    label: "Real-time multiplayer",
-  },
-  {
-    icon: "users" as const,
-    label: "Team/social features",
-  },
-  {
-    icon: "file-lock2" as const,
-    label: "Built-in permissions",
-  },
-  {
-    icon: "file-lock2" as const,
-    label: "CUSTOM",
-  },
-  {
-    icon: "upload-cloud" as const,
-    label: "Cloud sync & storage",
-  },
-  {
-    icon: "hard-drive-download" as const,
-    label: "On-device storage",
-  },
-  {
-    icon: "gauge" as const,
-    label: "Instant UI updates",
-  },
-  {
-    icon: "key-round" as const,
-    label: "E2EE & signatures",
-  },
-];
+const tabStyle = clsx([
+  "Text-subheading h-tab text-fill-contrast",
+  "px-w8 rounded-t-lg",
+  "border border-b-0",
+  "data-[state=active]:bg-accent-background data-[state=active]:border-accent-background",
+  "data-[state=inactive]:text-solid data-[state=inactive]:bg-canvas",
+]);

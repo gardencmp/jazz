@@ -43,9 +43,8 @@ export default function RootLayout({
       >
         <Providers>
           <MainNav />
-          <main className="min-h-screen pt-[calc(2.5*var(--space-inset))]">
-            {children}
-          </main>
+          {/* min-h-screen */}
+          <main className="pt-[calc(2.5*var(--space-inset))]">{children}</main>
           <Footer />
         </Providers>
         <SpeedInsights />

@@ -24,13 +24,13 @@
 }
 .prose h1:not(:first-child),
 .prose h2:not(:first-child) {
-  @apply mt-w12;
+  @apply !mt-w12;
 }
 .prose h3:not(:first-child) {
-  @apply mt-w8;
+  @apply !mt-w8;
 }
 .prose h4:not(:first-child) {
-  @apply mt-w6;
+  @apply !mt-w6;
 }
 .prose h3 ~ h4 {
   @apply !mt-w4;

@@ -53,8 +53,10 @@ const config: Config = {
         // text fills
         fill: "var(--color-gray-fill)",
         "fill-contrast": "var(--color-gray-fill-contrast)",
+        "fill-bg": "var(--color-gray-fill-bg)",
 
         // ACCENTS
+        "accent-background-subtle": "var(--color-accent-bg-subtle)",
         "accent-background": "var(--color-accent-bg)",
         "accent-background-active": "var(--color-accent-bg-active)",
         accent: "var(--color-accent-solid)",
@@ -62,6 +64,20 @@ const config: Config = {
         "accent-fill": "var(--color-accent-fill)",
         "accent-fill-contrast": "var(--color-accent-fill-contrast)",
 
+        // COVALUES
+        "cov-background": "var(--color-cov-bg)",
+        // "cov-background-active": "var(--color-cov-bg-active)",
+        cov: "var(--color-cov-solid)",
+        // "cov-hover": "var(--color-cov-solid-hover)",
+        "cov-fill": "var(--color-cov-fill)",
+        // "cov-fill-contrast": "var(--color-cov-fill-contrast)",
+
+        // "yellow-bg": "#fff1d6",
+        // "yellow-bg": "#faf6ed",
+        // "yellow-bg": "#fbf8f1",
+        "yellow-bg": "#fdfaf3",
+
+        // NOTICES
         "notice-background": "var(--color-notice-bg)",
         notice: "var(--color-notice-solid)",
 
@@ -114,6 +130,7 @@ const config: Config = {
         "inset-2x": "var(--space-inset-2x)",
         "under-nav": "var(--space-under-nav)",
         "under-nav-nudge": "var(--space-under-nav-nudge)",
+        "under-content": "calc(5*var(--space-inset))",
         em: "1em",
 
         // these can be used in w-* and max-w-*

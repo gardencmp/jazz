@@ -11,12 +11,14 @@ export function NavLink({
   children,
   onClick,
   newTab,
+  useButtonVariant = true,
 }: {
   href: string;
   className?: string;
   children: ReactNode;
   onClick?: () => void;
   newTab?: boolean;
+  useButtonVariant?: boolean;
 }) {
   const path = usePathname();
   // console.log(path);
@@ -27,7 +29,7 @@ export function NavLink({
       href={href}
       className={clsx(
         "NavLink",
-        buttonVariants({ variant: "ghost", size: "sm" }),
+        useButtonVariant && buttonVariants({ variant: "ghost", size: "sm" }),
         "text-small font-medium !justify-start max-sm:w-full",
         // before:absolute before:-inset-[0.25em];
         className,

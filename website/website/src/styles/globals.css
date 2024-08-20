@@ -37,11 +37,11 @@
   body {
     @apply relative min-h-screen;
     @apply antialiased;
-
     @apply font-sans;
     @apply text-base;
     @apply font-normal tracking-[0];
     @apply bg-canvas text-fill;
+    /* @apply bg-yellow-bg; */
 
     /* 1. Apple kerning, from http://design.byform.co/ */
     /* font-feature-settings: "kern" 1,'ss01' 1,'ss02' 1,'ss03' 1,'ss04' 1; */
@@ -104,7 +104,87 @@
     @apply font-mono text-meta font-medium uppercase;
     @apply tracking-[0.09em];
   }
+
+  /* https://rauno.me/craft/nextjs#grid-lines */
+  .gridLine {
+    --background: #ffffff;
+    --color: rgba(0, 0, 0, 0.3);
+    --height: 1px;
+    --width: 5px;
+    --fade-stop: 90%;
+    /* Bleed in or out from the container */
+    --offset: 48px;
+
+    position: absolute;
+    width: calc(100% + var(--offset));
+    height: var(--height);
+    left: calc(var(--offset) / 2 * -1);
+
+    background: linear-gradient(
+      to right,
+      var(--color),
+      var(--color) 50%,
+      transparent 0,
+      transparent
+    );
+    background-size: var(--width) var(--height);
+
+    /* Fade out the edges */
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(
+        to left,
+        var(--background) var(--fade-stop),
+        transparent
+      ),
+      linear-gradient(to right, var(--background) var(--fade-stop), transparent),
+      linear-gradient(black, black);
+  }
+  .gridLine-vertical {
+    --background: #ffffff;
+    --color: rgba(0, 0, 0, 0.3);
+    --height: 1px;
+    --width: 1px;
+    --gap: 5px;
+    --fade-stop: 90%;
+    /* Bleed in or out from the container */
+    --offset: 48px;
+
+    position: absolute;
+    height: calc(100% + var(--offset));
+    width: var(--width);
+    top: calc(var(--offset) / 2 * -1);
+
+    background: linear-gradient(
+      180deg,
+      var(--color),
+      var(--color) 50%,
+      transparent 0,
+      transparent
+    );
+    background-size: var(--width) var(--gap);
+
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(
+        to top,
+        var(--background) var(--fade-stop),
+        transparent
+      ),
+      linear-gradient(
+        to bottom,
+        var(--background) var(--fade-stop),
+        transparent
+      ),
+      linear-gradient(#000, #000);
+  }
 }
 
 @layer components {
+  .gridLine-after {
+    @apply relative;
+    @apply after:gridLine after:bottom-[-0.1px];
+  }
+  .gridLine-before {
+    @apply relative;
+    @apply before:gridLine before:top-[-0.1px];
+  }
 }

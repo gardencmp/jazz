@@ -38,15 +38,24 @@
     /* text fills (avoids namespace clash with Tailwind text-*) */
     --color-gray-fill: var(--sand-11);
     --color-gray-fill-contrast: var(--sand-12);
+    --color-gray-fill-bg: #313133;
 
     /* ACCENT */
-    --color-accent-bg: var(--indigo-3);
+    --color-accent-bg-subtle: var(--indigo-2);
+    /* --color-accent-bg: var(--indigo-3); */
+    --color-accent-bg: #edeff9;
     --color-accent-bg-active: var(--indigo-4);
     --color-accent-solid: var(--indigo-9);
     --color-accent-solid-hover: var(--indigo-10);
     /* --color-accent-fill: var(--indigo-11); */
     --color-accent-fill: #3313f7;
     --color-accent-fill-contrast: var(--indigo-12);
+
+    /* COVALUES */
+    --color-cov-bg: #ff9b8e;
+    --color-cov-bg: #f1e2dd;
+    --color-cov-solid: #ff9b8e;
+    --color-cov-fill: #863f25;
 
     /* NOTICE */
     --color-notice-bg: var(--amber-3);
