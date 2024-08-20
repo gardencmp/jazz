@@ -456,12 +456,12 @@ export class SyncManager {
         }
 
         if (entry.state === "loading") {
-            console.debug(
-                "Waiting for loaded",
-                msg.id,
-                "after message from",
-                peer.id,
-            );
+            // console.debug(
+            //     "Waiting for loaded",
+            //     msg.id,
+            //     "after message from",
+            //     peer.id,
+            // );
             const loaded = await entry.done;
             // console.log("Loaded", msg.id, loaded);
             if (loaded === "unavailable") {
