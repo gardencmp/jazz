@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, describe } from "vitest";
 import { expectStream } from "../coValue.js";
 import { RawBinaryCoStream } from "../coValues/coStream.js";
 import { MAX_RECOMMENDED_TX_SIZE, WasmCrypto } from "../index.js";
@@ -243,4 +243,61 @@ test("When adding large transactions (bigger than MAX_RECOMMENDED_TX_SIZE), we s
     expect(newContent[4]!.new[node.currentSessionID]!.lastSignature).toEqual(
         sessionEntry.lastSignature,
     );
+});
+
+describe("isBinaryStreamEnded", () => {
+    function setup() {
+        const node = new LocalNode(
+            ...randomAnonymousAccountAndSessionID(),
+            Crypto,
+        );
+
+        const coValue = node.createCoValue({
+            type: "costream",
+            ruleset: { type: "unsafeAllowAll" },
+            meta: { type: "binary" },
+            ...Crypto.createdNowUnique(),
+        });
+
+        const content = coValue.getCurrentContent();
+
+        if (
+            content.type !== "costream" ||
+            content.headerMeta?.type !== "binary" ||
+            !(content instanceof RawBinaryCoStream)
+        ) {
+            throw new Error("Expected binary stream");
+        }
+
+        return content;
+    }
+
+    test("returns true when the last item is end", () => {
+        const stream = setup();
+
+        stream.startBinaryStream(
+            { mimeType: "text/plain", fileName: "test.txt" },
+            "trusting",
+        );
+        stream.endBinaryStream("trusting");
+
+        expect(stream.isBinaryStreamEnded()).toBe(true);
+    });
+
+    test("returns false if the stream isn't ended", () => {
+        const stream = setup();
+
+        stream.startBinaryStream(
+            { mimeType: "text/plain", fileName: "test.txt" },
+            "trusting",
+        );
+
+        expect(stream.isBinaryStreamEnded()).toBe(false);
+    });
+
+    test("returns false if the stream isn't started", () => {
+        const stream = setup();
+
+        expect(stream.isBinaryStreamEnded()).toBe(false);
+    });
 });
