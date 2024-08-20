@@ -1,5 +1,44 @@
 # jazz-example-chat
 
+## 0.0.80
+
+### Patch Changes
+
+- Updated dependencies [b297c93]
+- Updated dependencies [3bf5127]
+- Updated dependencies [a8b74ff]
+- Updated dependencies [db53161]
+  - cojson@0.7.33
+  - jazz-react@0.7.33
+  - jazz-tools@0.7.33
+
+## 0.0.80-hotfixes.5
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.5
+  - jazz-react@0.7.33-hotfixes.5
+  - jazz-tools@0.7.33-hotfixes.5
+
+## 0.0.80-hotfixes.4
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.4
+  - jazz-react@0.7.33-hotfixes.4
+  - jazz-tools@0.7.33-hotfixes.4
+
+## 0.0.80-hotfixes.3
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.3
+  - jazz-react@0.7.33-hotfixes.3
+  - jazz-tools@0.7.33-hotfixes.3
+
 ## 0.0.80-hotfixes.2
 
 ### Patch Changes

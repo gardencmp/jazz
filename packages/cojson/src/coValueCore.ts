@@ -367,6 +367,9 @@ export class CoValueCore {
         newStreamingHash: StreamingHash,
         notifyMode: "immediate" | "deferred",
     ) {
+        if (this.node.crashed) {
+            throw new Error("Trying to add transactions after node is crashed");
+        }
         const transactions =
             this.sessionLogs.get(sessionID)?.transactions ?? [];
         transactions.push(...newTransactions);

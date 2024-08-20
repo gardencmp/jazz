@@ -72,8 +72,8 @@ export interface Peer {
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
-    delayOnError?: number;
     priority?: number;
+    crashOnClose: boolean;
 }
 
 export interface PeerState {
@@ -83,8 +83,8 @@ export interface PeerState {
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
-    delayOnError?: number;
     priority?: number;
+    crashOnClose: boolean;
 }
 
 export function combinedKnownStates(
@@ -343,8 +343,8 @@ export class SyncManager {
             outgoing: peer.outgoing,
             toldKnownState: new Set(),
             role: peer.role,
-            delayOnError: peer.delayOnError,
             priority: peer.priority,
+            crashOnClose: peer.crashOnClose,
         };
         this.peers[peer.id] = peerState;
 
@@ -392,8 +392,18 @@ export class SyncManager {
             }
         };
 
-        processMessages().catch((e) => {
+        processMessages().then(() => {
+            if (peer.crashOnClose) {
+                console.error("Unexepcted close from peer", peer.id);
+                this.local.crashed = new Error("Unexpected close from peer");
+                throw new Error("Unexpected close from peer");
+            }
+        }).catch((e) => {
             console.error("Error processing messages from peer", peer.id, e);
+            if (peer.crashOnClose) {
+                this.local.crashed = e;
+                throw new Error(e);
+            }
         }).finally(() => {
             peer.outgoing.close();
             delete this.peers[peer.id];
@@ -446,12 +456,12 @@ export class SyncManager {
         }
 
         if (entry.state === "loading") {
-            console.debug(
-                "Waiting for loaded",
-                msg.id,
-                "after message from",
-                peer.id,
-            );
+            // console.debug(
+            //     "Waiting for loaded",
+            //     msg.id,
+            //     "after message from",
+            //     peer.id,
+            // );
             const loaded = await entry.done;
             // console.log("Loaded", msg.id, loaded);
             if (loaded === "unavailable") {
