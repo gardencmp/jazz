@@ -5,7 +5,7 @@
     "types": "./src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.33-hotfixes.3",
+    "version": "0.7.33-hotfixes.4",
     "dependencies": {
         "cojson": "workspace:*",
         "fast-check": "^3.17.2"

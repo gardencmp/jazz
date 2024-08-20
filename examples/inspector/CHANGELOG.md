@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.58-hotfixes.4
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.4
+  - cojson-transport-ws@0.7.33-hotfixes.4
+
 ## 0.0.58-hotfixes.3
 
 ### Patch Changes

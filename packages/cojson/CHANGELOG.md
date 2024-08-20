@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.33-hotfixes.4
+
+### Patch Changes
+
+-   Throw properly on peer that should crash on close
+
 ## 0.7.33-hotfixes.3
 
 ### Patch Changes

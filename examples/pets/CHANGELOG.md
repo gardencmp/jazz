@@ -1,5 +1,13 @@
 # jazz-example-pets
 
+## 0.0.98-hotfixes.4
+
+### Patch Changes
+
+-   jazz-react@0.7.33-hotfixes.4
+-   jazz-tools@0.7.33-hotfixes.4
+-   jazz-browser-media-images@0.7.33-hotfixes.4
+
 ## 0.0.98-hotfixes.3
 
 ### Patch Changes
