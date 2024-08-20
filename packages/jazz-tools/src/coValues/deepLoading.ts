@@ -1,6 +1,7 @@
 import { SessionID } from "cojson";
 import {
     Account,
+    BinaryCoStream,
     CoList,
     CoStream,
     CoStreamEntry,
@@ -11,6 +12,10 @@ import {
 } from "../internal.js";
 import { CoKeys, CoMap } from "./coMap.js";
 import { CoValue, ID } from "./interfaces.js";
+
+function isBinaryCoStream(value: CoValue): value is BinaryCoStream {
+    return value._type === "BinaryCoStream";
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fulfillsDepth(depth: any, value: CoValue): boolean {
@@ -81,8 +86,8 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
                           ).optional,
             );
         }
-    } else if (value._type === "BinaryCoStream") {
-        return true;
+    } else if (isBinaryCoStream(value)) {
+        return value.isBinaryStreamEnded();
     } else {
         console.error(value);
         throw new Error("Unexpected value type: " + value._type);

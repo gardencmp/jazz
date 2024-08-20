@@ -509,6 +509,10 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
         return this._raw.getBinaryChunks(options?.allowUnfinished);
     }
 
+    isBinaryStreamEnded(): boolean {
+        return this._raw.isBinaryStreamEnded();
+    }
+
     start(options: BinaryStreamInfo): void {
         this._raw.startBinaryStream(options);
     }
