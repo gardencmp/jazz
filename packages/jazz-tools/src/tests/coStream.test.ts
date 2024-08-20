@@ -437,3 +437,56 @@ describe("BinaryCoStream loading & Subscription", async () => {
         });
     });
 });
+
+describe("BinaryCoStream.loadAsBlob", async () => {
+    async function setup() {
+        const me = await Account.create({
+            creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
+        });
+
+        const stream = BinaryCoStream.create({ owner: me });
+
+        stream.start({ mimeType: "text/plain" });
+
+        return { stream, me };
+    }
+
+    test("resolves only when the stream is ended", async () => {
+        const { stream, me } = await setup();
+        stream.push(new Uint8Array([1]));
+
+        const promise = BinaryCoStream.loadAsBlob(stream.id, me);
+
+        await stream.ensureLoaded([]);
+
+        stream.push(new Uint8Array([2]));
+        stream.end();
+
+        const blob = await promise;
+
+        // The promise resolves only when the stream is ended
+        // so we get a blob with all the chunks
+        expect(blob?.size).toBe(2);
+    });
+
+    test("resolves with an unfinshed blob if allowUnfinished: true", async () => {
+        const { stream, me } = await setup();
+        stream.push(new Uint8Array([1]));
+
+        const promise = BinaryCoStream.loadAsBlob(stream.id, me, {
+            allowUnfinished: true,
+        });
+
+        await stream.ensureLoaded([]);
+
+        stream.push(new Uint8Array([2]));
+        stream.end();
+
+        const blob = await promise;
+
+        // The promise resolves before the stream is ended
+        // so we get a blob only with the first chunk
+        expect(blob?.size).toBe(1);
+    });
+});
