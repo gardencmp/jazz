@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.34-neverthrow.0
+
+### Patch Changes
+
+-   Start introducing neverthrow, make tryAddNewTransactionsAsync and handleNewContent less throwy
+
 ## 0.7.33
 
 ### Patch Changes

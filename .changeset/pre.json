@@ -18,5 +18,7 @@
     "jazz-run": "0.7.33",
     "jazz-tools": "0.7.33"
   },
-  "changesets": []
+  "changesets": [
+    "early-files-lick"
+  ]
 }
