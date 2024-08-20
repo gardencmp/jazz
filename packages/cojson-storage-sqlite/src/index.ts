@@ -55,9 +55,6 @@ export class SQLiteStorage {
 
         const processMessages = async () => {
             for await (const msg of fromLocalNode) {
-                if (Math.random() < 1/1000) {
-                    void toLocalNode.push("Simulated error" as unknown as SyncMessage)
-                }
                 try {
                     if (msg === "Disconnected" || msg === "PingTimeout") {
                         throw new Error("Unexpected Disconnected message");
