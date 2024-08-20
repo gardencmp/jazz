@@ -3,10 +3,10 @@ module.exports = {
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:require-extensions/recommended",
-        "prettier"
+        "prettier",
     ],
     parser: "@typescript-eslint/parser",
-    plugins: ["@typescript-eslint", "require-extensions"],
+    plugins: ["@typescript-eslint", "require-extensions", "neverthrow"],
     parserOptions: {
         project: "./tsconfig.json",
         tsconfigRootDir: __dirname,
@@ -20,5 +20,6 @@ module.exports = {
             { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
         ],
         "@typescript-eslint/no-floating-promises": "error",
+        "neverthrow/must-use-result": "error",
     },
-}
+};

@@ -13,6 +13,7 @@ import { RawCoMap } from "./coMap.js";
 import { RawGroup, InviteSecret } from "./group.js";
 import { LocalNode } from "../index.js";
 import { JsonObject } from "../jsonValue.js";
+import { err, ok, Result } from "neverthrow";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret,
@@ -30,28 +31,34 @@ export function accountHeaderForInitialAgentSecret(
     };
 }
 
+export type InvalidAccountAgentIDError = {
+    type: "InvalidAccountAgentID";
+    reason: string;
+};
+
 export class RawAccount<
     Meta extends AccountMeta = AccountMeta,
 > extends RawGroup<Meta> {
     _cachedCurrentAgentID: AgentID | undefined;
 
-    currentAgentID(): AgentID {
+    currentAgentID(): Result<AgentID, InvalidAccountAgentIDError> {
         if (this._cachedCurrentAgentID) {
-            return this._cachedCurrentAgentID;
+            return ok(this._cachedCurrentAgentID);
         }
         const agents = this.keys().filter((k): k is AgentID =>
             k.startsWith("sealer_"),
         );
 
         if (agents.length !== 1) {
-            throw new Error(
-                "Expected exactly one agent in account, got " + agents.length,
-            );
+            return err({
+                type: "InvalidAccountAgentID",
+                reason: "Account has " + agents.length + " agents",
+            });
         }
 
         this._cachedCurrentAgentID = agents[0];
 
-        return agents[0]!;
+        return ok(agents[0]!);
     }
 }
 
@@ -59,10 +66,10 @@ export interface ControlledAccountOrAgent {
     id: AccountID | AgentID;
     agentSecret: AgentSecret;
 
-    currentAgentID: () => AgentID;
-    currentSignerID: () => SignerID;
+    currentAgentID: () => Result<AgentID, InvalidAccountAgentIDError>;
+    currentSignerID: () => Result<SignerID, InvalidAccountAgentIDError>;
     currentSignerSecret: () => SignerSecret;
-    currentSealerID: () => SealerID;
+    currentSealerID: () => Result<SealerID, InvalidAccountAgentIDError>;
     currentSealerSecret: () => SealerSecret;
 }
 
@@ -96,25 +103,29 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
         return this.core.node.acceptInvite(groupOrOwnedValueID, inviteSecret);
     }
 
-    currentAgentID(): AgentID {
+    currentAgentID(): Result<AgentID, InvalidAccountAgentIDError> {
         if (this._cachedCurrentAgentID) {
-            return this._cachedCurrentAgentID;
+            return ok(this._cachedCurrentAgentID);
         }
         const agentID = this.crypto.getAgentID(this.agentSecret);
         this._cachedCurrentAgentID = agentID;
-        return agentID;
+        return ok(agentID);
     }
 
-    currentSignerID(): SignerID {
-        return this.crypto.getAgentSignerID(this.currentAgentID());
+    currentSignerID() {
+        return this.currentAgentID().map((id) =>
+            this.crypto.getAgentSignerID(id),
+        );
     }
 
     currentSignerSecret(): SignerSecret {
         return this.crypto.getAgentSignerSecret(this.agentSecret);
     }
 
-    currentSealerID(): SealerID {
-        return this.crypto.getAgentSealerID(this.currentAgentID());
+    currentSealerID() {
+        return this.currentAgentID().map((id) =>
+            this.crypto.getAgentSealerID(id),
+        );
     }
 
     currentSealerSecret(): SealerSecret {
@@ -133,20 +144,24 @@ export class ControlledAgent implements ControlledAccountOrAgent {
         return this.crypto.getAgentID(this.agentSecret);
     }
 
-    currentAgentID(): AgentID {
-        return this.crypto.getAgentID(this.agentSecret);
+    currentAgentID() {
+        return ok(this.crypto.getAgentID(this.agentSecret));
     }
 
-    currentSignerID(): SignerID {
-        return this.crypto.getAgentSignerID(this.currentAgentID());
+    currentSignerID() {
+        return this.currentAgentID().map((id) =>
+            this.crypto.getAgentSignerID(id),
+        );
     }
 
     currentSignerSecret(): SignerSecret {
         return this.crypto.getAgentSignerSecret(this.agentSecret);
     }
 
-    currentSealerID(): SealerID {
-        return this.crypto.getAgentSealerID(this.currentAgentID());
+    currentSealerID() {
+        return this.currentAgentID().map((id) =>
+            this.crypto.getAgentSealerID(id),
+        );
     }
 
     currentSealerSecret(): SealerSecret {

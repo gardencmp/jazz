@@ -22,9 +22,11 @@ import {
     AccountID,
     RawProfile,
     RawAccountMigration,
+    InvalidAccountAgentIDError,
 } from "./coValues/account.js";
 import { Profile, RawCoValue } from "./index.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
+import { err, ok, okAsync, Result, ResultAsync } from "neverthrow";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -243,7 +245,9 @@ export class LocalNode {
     /** @internal */
     createCoValue(header: CoValueHeader): CoValueCore {
         if (this.crashed) {
-            throw new Error("Trying to create CoValue after node has crashed", { cause: this.crashed });
+            throw new Error("Trying to create CoValue after node has crashed", {
+                cause: this.crashed,
+            });
         }
 
         const coValue = new CoValueCore(header, this);
@@ -264,7 +268,9 @@ export class LocalNode {
         } = {},
     ): Promise<CoValueCore | "unavailable"> {
         if (this.crashed) {
-            throw new Error("Trying to load CoValue after node has crashed", { cause: this.crashed });
+            throw new Error("Trying to load CoValue after node has crashed", {
+                cause: this.crashed,
+            });
         }
 
         let entry = this.coValues[id];
@@ -529,9 +535,9 @@ export class LocalNode {
     resolveAccountAgent(
         id: AccountID | AgentID,
         expectation?: string,
-    ): AgentID {
+    ): Result<AgentID, ResolveAccountAgentError> {
         if (isAgentID(id)) {
-            return id;
+            return ok(id);
         }
 
         const coValue = this.expectCoValueLoaded(id, expectation);
@@ -543,49 +549,58 @@ export class LocalNode {
             !("type" in coValue.header.meta) ||
             coValue.header.meta.type !== "account"
         ) {
-            throw new Error(
-                `${
-                    expectation ? expectation + ": " : ""
-                }CoValue ${id} is not an account`,
-            );
+            return err({
+                type: "UnexpectedlyNotAccount",
+                expectation,
+                id,
+            } satisfies UnexpectedlyNotAccountError);
         }
 
         return (coValue.getCurrentContent() as RawAccount).currentAgentID();
     }
 
-    async resolveAccountAgentAsync(
+    resolveAccountAgentAsync(
         id: AccountID | AgentID,
         expectation?: string,
-    ): Promise<AgentID> {
+    ): ResultAsync<AgentID, ResolveAccountAgentError> {
         if (isAgentID(id)) {
-            return id;
+            return okAsync(id);
         }
 
-        const coValue = await this.loadCoValueCore(id);
+        return ResultAsync.fromPromise(
+            this.loadCoValueCore(id),
+            (e) =>
+                ({
+                    type: "ErrorLoadingCoValueCore",
+                    expectation,
+                    id,
+                    error: e,
+                }) satisfies LoadCoValueCoreError,
+        ).andThen((coValue) => {
+            if (coValue === "unavailable") {
+                return err({
+                    type: "AccountUnavailableFromAllPeers" as const,
+                    expectation,
+                    id,
+                } satisfies AccountUnavailableFromAllPeersError);
+            }
 
-        if (coValue === "unavailable") {
-            throw new Error(
-                `${
-                    expectation ? expectation + ": " : ""
-                }Account ${id} is unavailable from all peers`,
-            );
-        }
+            if (
+                coValue.header.type !== "comap" ||
+                coValue.header.ruleset.type !== "group" ||
+                !coValue.header.meta ||
+                !("type" in coValue.header.meta) ||
+                coValue.header.meta.type !== "account"
+            ) {
+                return err({
+                    type: "UnexpectedlyNotAccount" as const,
+                    expectation,
+                    id,
+                } satisfies UnexpectedlyNotAccountError);
+            }
 
-        if (
-            coValue.header.type !== "comap" ||
-            coValue.header.ruleset.type !== "group" ||
-            !coValue.header.meta ||
-            !("type" in coValue.header.meta) ||
-            coValue.header.meta.type !== "account"
-        ) {
-            throw new Error(
-                `${
-                    expectation ? expectation + ": " : ""
-                }CoValue ${id} is not an account`,
-            );
-        }
-
-        return (coValue.getCurrentContent() as RawAccount).currentAgentID();
+            return (coValue.getCurrentContent() as RawAccount).currentAgentID();
+        });
     }
 
     /**
@@ -610,7 +625,9 @@ export class LocalNode {
             this.crypto.seal({
                 message: readKey.secret,
                 from: this.account.currentSealerSecret(),
-                to: this.account.currentSealerID(),
+                to: this.account
+                    .currentSealerID()
+                    ._unsafeUnwrap({ withStackTrace: true }),
                 nOnceMaterial: {
                     in: groupCoValue.id,
                     tx: groupCoValue.nextTransactionID(),
@@ -709,6 +726,31 @@ type CoValueState =
           coValue: CoValueCore;
           onProgress?: (progress: number) => void;
       };
+
+export type LoadCoValueCoreError = {
+    type: "ErrorLoadingCoValueCore";
+    error: unknown;
+    expectation?: string;
+    id: AccountID;
+};
+
+export type AccountUnavailableFromAllPeersError = {
+    type: "AccountUnavailableFromAllPeers";
+    expectation?: string;
+    id: AccountID;
+};
+
+export type UnexpectedlyNotAccountError = {
+    type: "UnexpectedlyNotAccount";
+    expectation?: string;
+    id: AccountID;
+};
+
+export type ResolveAccountAgentError =
+    | InvalidAccountAgentIDError
+    | LoadCoValueCoreError
+    | AccountUnavailableFromAllPeersError
+    | UnexpectedlyNotAccountError;
 
 /** @internal */
 export function newLoadingState(
