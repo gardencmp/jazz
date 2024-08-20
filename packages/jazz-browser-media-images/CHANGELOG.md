@@ -1,5 +1,12 @@
 # jazz-browser-media-images
 
+## 0.7.33-hotfixes.3
+
+### Patch Changes
+
+-   jazz-browser@0.7.33-hotfixes.3
+-   jazz-tools@0.7.33-hotfixes.3
+
 ## 0.7.33-hotfixes.2
 
 ### Patch Changes

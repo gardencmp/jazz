@@ -1,5 +1,13 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.33-hotfixes.3
+
+### Patch Changes
+
+-   Allow crashing whole node on peer errors
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.3
+
 ## 0.7.33-hotfixes.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.7.33-hotfixes.2",
+  "version": "0.7.33-hotfixes.3",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",

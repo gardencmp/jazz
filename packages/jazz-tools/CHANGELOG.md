@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.33-hotfixes.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.3
+
 ## 0.7.33-hotfixes.0
 
 ### Patch Changes
