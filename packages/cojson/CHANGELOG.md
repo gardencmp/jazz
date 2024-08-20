@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.33-hotfixes.5
+
+### Patch Changes
+
+-   Make simulated errors even more likely
+
 ## 0.7.33-hotfixes.4
 
 ### Patch Changes

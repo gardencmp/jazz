@@ -1,6 +1,6 @@
 {
   "name": "jazz-react",
-  "version": "0.7.33-hotfixes.4",
+  "version": "0.7.33-hotfixes.5",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
