@@ -96,15 +96,20 @@ export class RawCoStreamView<
     }
 
     getSingleStream(): Item[] | undefined {
-        if (Object.keys(this.items).length === 0) {
+        const streams = Object.values(this.items);
+        const firstStream = streams[0];
+
+        if (!firstStream) {
             return undefined;
-        } else if (Object.keys(this.items).length !== 1) {
+        }
+
+        if (streams.length > 1) {
             throw new Error(
                 "CoStream.getSingleStream() can only be called when there is exactly one stream",
             );
         }
 
-        return Object.values(this.items)[0]?.map((item) => item.value);
+        return firstStream.map((item) => item.value);
     }
 
     sessions(): SessionID[] {
@@ -264,14 +269,26 @@ export class RawBinaryCoStreamView<
     extends RawCoStreamView<BinaryStreamItem, Meta>
     implements RawCoValue
 {
+    isBinaryStreamEnded() {
+        const items = this.getSingleStream();
+
+        if (!items || items.length === 0) {
+            return false;
+        }
+
+        const lastItem = items[items.length - 1];
+
+        return lastItem?.type === "end";
+    }
+
     getBinaryChunks(
         allowUnfinished?: boolean,
     ):
         | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
         | undefined {
-        // const before = performance.now();
         const items = this.getSingleStream();
 
+        // No active streams
         if (!items) return;
 
         const start = items[0];
@@ -288,9 +305,6 @@ export class RawBinaryCoStreamView<
         const chunks: Uint8Array[] = [];
 
         let finished = false;
-        // let totalLength = 0;
-
-        let lastProgressUpdate = Date.now();
 
         for (const item of items.slice(1)) {
             if (item.type === "end") {
@@ -306,19 +320,8 @@ export class RawBinaryCoStreamView<
             const chunk = base64URLtoBytes(
                 item.chunk.slice(binary_U_prefixLength),
             );
-            // totalLength += chunk.length;
             chunks.push(chunk);
-
-            if (Date.now() - lastProgressUpdate > 100) {
-                lastProgressUpdate = Date.now();
-            }
         }
-
-        // const after = performance.now();
-        // console.log(
-        //     "getBinaryChunks bandwidth in MB/s",
-        //     (1000 * totalLength) / (after - before) / (1024 * 1024)
-        // );
 
         return {
             mimeType: start.mimeType,

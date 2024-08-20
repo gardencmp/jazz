@@ -509,6 +509,10 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
         return this._raw.getBinaryChunks(options?.allowUnfinished);
     }
 
+    isBinaryStreamEnded(): boolean {
+        return this._raw.isBinaryStreamEnded();
+    }
+
     start(options: BinaryStreamInfo): void {
         this._raw.startBinaryStream(options);
     }
@@ -540,7 +544,28 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
             allowUnfinished?: boolean;
         },
     ): Promise<Blob | undefined> {
-        const stream = await this.load(id, as, []);
+        let stream = await this.load(id, as, []);
+
+        /**
+         * If the user hasn't requested an incomplete blob and the
+         * stream isn't complete wait for the stream download before progressing
+         */
+        if (!options?.allowUnfinished && !stream?.isBinaryStreamEnded()) {
+            stream = await new Promise<BinaryCoStream>((resolve) => {
+                const unsubscribe = subscribeToCoValue(
+                    this,
+                    id,
+                    as,
+                    [],
+                    (value) => {
+                        if (value.isBinaryStreamEnded()) {
+                            unsubscribe();
+                            resolve(value);
+                        }
+                    },
+                );
+            });
+        }
 
         return stream?.toBlob({
             allowUnfinished: options?.allowUnfinished,
