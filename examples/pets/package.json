@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-pets",
   "private": true,
-  "version": "0.0.98-hotfixes.5",
+  "version": "0.0.98",
   "type": "module",
   "scripts": {
     "dev": "vite",

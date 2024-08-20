@@ -1,5 +1,18 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.33
+
+### Patch Changes
+
+-   fdde8db: Handle ws closing while buffering
+-   07fe2b9: Wait if WS buffer is full
+-   3bf5127: Allow crashing whole node on peer errors
+-   Updated dependencies [b297c93]
+-   Updated dependencies [3bf5127]
+-   Updated dependencies [a8b74ff]
+-   Updated dependencies [db53161]
+    -   cojson@0.7.33
+
 ## 0.7.33-hotfixes.5
 
 ### Patch Changes

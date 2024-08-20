@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.80-hotfixes.5",
+  "version": "0.0.80",
   "type": "module",
   "scripts": {
     "dev": "vite",

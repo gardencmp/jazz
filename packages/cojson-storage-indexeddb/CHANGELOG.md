@@ -1,5 +1,16 @@
 # cojson-storage-indexeddb
 
+## 0.7.33
+
+### Patch Changes
+
+-   3bf5127: Allow crashing whole node on peer errors
+-   Updated dependencies [b297c93]
+-   Updated dependencies [3bf5127]
+-   Updated dependencies [a8b74ff]
+-   Updated dependencies [db53161]
+    -   cojson@0.7.33
+
 ## 0.7.33-hotfixes.5
 
 ### Patch Changes

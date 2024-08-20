@@ -1,5 +1,13 @@
 # cojson
 
+## 0.7.33
+
+### Patch Changes
+
+-   b297c93: Improve logging
+-   3bf5127: Allow crashing whole node on peer errors
+-   a8b74ff: Throw properly on peer that should crash on close
+
 ## 0.7.33-hotfixes.5
 
 ### Patch Changes
