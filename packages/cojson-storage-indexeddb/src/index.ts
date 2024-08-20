@@ -92,7 +92,7 @@ export class IDBStorage {
         const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
             localNodeName,
             "storage",
-            { peer1role: "client", peer2role: "server", trace },
+            { peer1role: "client", peer2role: "server", trace, crashOnClose: true },
         );
 
         await IDBStorage.open(

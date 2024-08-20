@@ -134,5 +134,6 @@ export function createWebSocketPeer({
             },
         },
         role,
+        crashOnClose: false,
     };
 }

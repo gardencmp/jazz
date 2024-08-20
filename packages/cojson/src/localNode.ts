@@ -49,6 +49,8 @@ export class LocalNode {
     /** @category 3. Low-level */
     syncManager = new SyncManager(this);
 
+    crashed: Error | undefined = undefined;
+
     /** @category 3. Low-level */
     constructor(
         account: ControlledAccountOrAgent,
@@ -240,6 +242,10 @@ export class LocalNode {
 
     /** @internal */
     createCoValue(header: CoValueHeader): CoValueCore {
+        if (this.crashed) {
+            throw new Error("Trying to create CoValue after node has crashed", { cause: this.crashed });
+        }
+
         const coValue = new CoValueCore(header, this);
         this.coValues[coValue.id] = { state: "loaded", coValue: coValue };
 
@@ -257,6 +263,10 @@ export class LocalNode {
             onProgress?: (progress: number) => void;
         } = {},
     ): Promise<CoValueCore | "unavailable"> {
+        if (this.crashed) {
+            throw new Error("Trying to load CoValue after node has crashed", { cause: this.crashed });
+        }
+
         let entry = this.coValues[id];
         if (!entry) {
             const peersToWaitFor = new Set(
