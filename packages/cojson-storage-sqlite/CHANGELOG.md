@@ -1,5 +1,11 @@
 # cojson-storage-sqlite
 
+## 0.7.33-hotfixes.6
+
+### Patch Changes
+
+-   Get rid of simulated errors
+
 ## 0.7.33-hotfixes.5
 
 ### Patch Changes
