@@ -396,11 +396,13 @@ export class SyncManager {
             if (peer.crashOnClose) {
                 console.error("Unexepcted close from peer", peer.id);
                 this.local.crashed = new Error("Unexpected close from peer");
+                throw new Error("Unexpected close from peer");
             }
         }).catch((e) => {
             console.error("Error processing messages from peer", peer.id, e);
             if (peer.crashOnClose) {
                 this.local.crashed = e;
+                throw new Error(e);
             }
         }).finally(() => {
             peer.outgoing.close();
