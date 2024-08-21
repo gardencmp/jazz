@@ -672,12 +672,14 @@ export class SyncManager {
 
             if (result.isErr()) {
                 console.error(
-                    "Failed to add transactions",
+                    "Failed to add transactions from",
+                    peer.id,
                     result.error,
                     msg.id,
                     newTransactions.length + " new transactions",
-                    "we have" + ourTotalnTxs,
-                    "they have" + theirTotalnTxs,
+                    "after: " + newContentForSession.after,
+                    "our last known tx idx initially: " + ourKnownTxIdx,
+                    "our last known tx idx now: " + coValue.sessionLogs.get(sessionID)?.transactions.length,
                 );
                 continue;
             }
