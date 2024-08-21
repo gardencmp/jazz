@@ -634,7 +634,7 @@ export class SyncManager {
 
             const before = performance.now();
             // eslint-disable-next-line neverthrow/must-use-result
-            const result = await coValue.tryAddTransactionsAsync(
+            const result = coValue.tryAddTransactions(
                 sessionID,
                 newTransactions,
                 undefined,

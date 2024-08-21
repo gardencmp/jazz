@@ -26,7 +26,7 @@ import { coreToCoValue } from "./coreToCoValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
-import { err, ok, Result, ResultAsync } from "neverthrow";
+import { err, ok, Result } from "neverthrow";
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -262,7 +262,7 @@ export class CoValueCore {
             });
     }
 
-    tryAddTransactionsAsync(
+    /*tryAddTransactionsAsync(
         sessionID: SessionID,
         newTransactions: Transaction[],
         givenExpectedNewHash: Hash | undefined,
@@ -392,7 +392,7 @@ export class CoValueCore {
                 thisDone();
                 return err;
             });
-    }
+    }*/
 
     private doAddTransactions(
         sessionID: SessionID,
