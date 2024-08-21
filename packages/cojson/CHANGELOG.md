@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.34-neverthrow.4
+
+### Patch Changes
+
+-   Stop using tryAddTransactionsAsync
+
 ## 0.7.34-neverthrow.3
 
 ### Patch Changes
