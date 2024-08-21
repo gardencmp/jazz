@@ -5,7 +5,7 @@ const generalConfig = {
   LAST_UPDATED: "2024-07-22",
   PUBLIC_DOMAIN: "jazz.tools",
   PUBLIC_URL: "https://www.jazz.tools",
-  EMAIL: "callumflack@gmail.com",
+  EMAIL: "hello@gcmp.io",
   GITHUB_URL: "https://github.com/callumflack",
   CALENDLY_URL: "https://calendly.com/callumflack/30min",
   TWITTER_URL: "https://twitter.com/callumflack",

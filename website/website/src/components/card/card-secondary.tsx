@@ -1,17 +1,12 @@
-import { notFound } from "next/navigation";
 import { Link } from "@/components/ui/link";
-import { getDocPosts } from "@/lib/mdx-utils";
-import clsx from "clsx";
-import { PixelarticonsFileAlt, PixelarticonsClock } from "@/components/icons";
 import {
-  ClockIcon,
-  CaretRightIcon,
   ArrowTopRightIcon,
-  GitHubLogoIcon,
+  CaretRightIcon,
   CubeIcon,
+  GitHubLogoIcon,
 } from "@radix-ui/react-icons";
-import { File, Pre, Code } from "@/components/mdx/mdx-components";
-// import { Theme } from "@/lib/types";
+import clsx from "clsx";
+// import { Theme } from "@/components/theme";
 
 type ItemProps = {
   heading: string;

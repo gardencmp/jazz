@@ -6,6 +6,8 @@
 @import "@radix-ui/colors/indigo-dark.css";
 @import "@radix-ui/colors/amber.css";
 @import "@radix-ui/colors/amber-dark.css";
+@import "@radix-ui/colors/gold.css";
+@import "@radix-ui/colors/gold-dark.css";
 
 /* 
   Our app is monochrome, so we only need the color-gray scale, no color-accent scale. See: https://www.radix-ui.com/themes/docs/theme/color 
@@ -19,9 +21,13 @@
     /* backgrounds */
     /* --color-gray-base: var(--sand-1); */
     --color-gray-base: #fefefe;
+    --color-gray-base: #fff;
+    /* --color-gray-base: #f7f7f7; */
     --color-gray-bg-subtle: var(--sand-2);
     --color-gray-bg: var(--sand-3);
-    /* --color-gray-bg: #f7f7f7; */ /* Apple */
+    --color-gray-bg: #f6f5f4; /* Notion */
+    --color-gray-bg: #f6f9fc; /* Stripe */
+    --color-gray-bg: #f7f7f7; /* Apple */
     --color-gray-bg-hover: var(--sand-3);
     --color-gray-bg-active: var(--sand-4);
 
@@ -44,7 +50,10 @@
     --color-accent-bg-subtle: var(--indigo-2);
     /* --color-accent-bg: var(--indigo-3); */
     --color-accent-bg: #edeff9;
-    --color-accent-bg-active: var(--indigo-4);
+    /* --color-accent-bg-active: var(--indigo-4); */
+    --color-accent-bg-active: #edeff9;
+    /* --color-accent-border: var(--indigo-6); */
+    --color-accent-border: #3313f7;
     --color-accent-solid: var(--indigo-9);
     --color-accent-solid-hover: var(--indigo-10);
     /* --color-accent-fill: var(--indigo-11); */
@@ -52,14 +61,37 @@
     --color-accent-fill-contrast: var(--indigo-12);
 
     /* COVALUES */
-    --color-cov-bg: #ff9b8e;
+    /* --color-cov-bg: #ff9b8e;
     --color-cov-bg: #f1e2dd;
+    --color-cov-bg: #f5ece4;
+    --color-cov-bg: #fff0e8;
+    --color-cov-bg-active: #fff0e8;
     --color-cov-solid: #ff9b8e;
+    --color-cov-solid: #b64400;
     --color-cov-fill: #863f25;
+    --color-cov-fill: #aa4906; */
+    --color-cov-bg-subtle: var(--gold-2);
+    --color-cov-bg: var(--gold-3);
+    --color-cov-bg-active: var(--gold-4);
+    --color-cov-border: var(--gold-6);
+    --color-cov-solid: var(--gold-9);
+    --color-cov-solid-hover: var(--gold-10);
+    --color-cov-fill: var(--gold-11);
+    --color-cov-fill-contrast: var(--gold-12);
+
+    /* MESH */
+    --color-mesh-fill: #9d34da;
 
     /* NOTICE */
     --color-notice-bg: var(--amber-3);
     --color-notice-solid: var(--amber-9);
+
+    /* STRIPE GUIDE LINES */
+    --guideDashedColor: rgba(66, 71, 112, 0.09);
+    --guideDashedColor: transparent;
+    --guideSolidColor: rgba(66, 71, 112, 0.06);
+    --guideSolidColor: rgba(66, 71, 112, 0.09);
+    --guideDarkColor: rgba(66, 71, 112, 0.12);
   }
 }
 

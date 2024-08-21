@@ -1,26 +1,6 @@
 import { MailIcon } from "lucide-react";
-
-export function NewsletterButton() {
-  return (
-    <button
-      onClick={() =>
-        (window as any).ml_account("webforms", "5744530", "p5o0j8", "show")
-      }
-      className="flex items-center gap-2 px-2 py-1 text-black rounded bg-stone-300 hover:bg-stone-200 dark:bg-stone-950 dark:hover:bg-stone-800 dark:text-white"
-    >
-      <MailIcon className="" size="14" /> Subscribe
-    </button>
-  );
-}
-
-{
-  /* <input
-        type="email"
-        autoComplete="email"
-        placeholder="you@example.com"
-        className="max-w-[14rem] border border-stone-200 dark:border-stone-900 px-2 py-1 rounded w-full"
-        /> */
-}
+import { Button } from "@/components/ui/button";
+import clsx from "clsx";
 
 export function Newsletter() {
   return (
@@ -30,20 +10,20 @@ export function Newsletter() {
         className="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-5744530"
       >
         <form
-          className="flex gap-2"
           action="https://static.mailerlite.com/webforms/submit/p5o0j8"
-          data-code="p5o0j8"
           method="post"
           target="_blank"
+          data-code="p5o0j8"
+          className="flex items-center bg-canvas rounded-sm overflow-hidden pr-[3px] text-fill"
         >
           <input
             aria-label="email"
             aria-required="true"
             type="email"
-            className="text-base form-control max-w-[18rem] border border-stone-300 dark:border-transparent shadow-sm dark:bg-stone-925 px-2 py-1 rounded w-full"
+            className="px-w3 h-[calc(var(--height-button)+6px)] flex-1 placeholder:text-solid focus-visible:outline-none"
             data-inputmask=""
             name="fields[email]"
-            placeholder="Email"
+            placeholder="Your email"
             autoComplete="email"
           />
 
@@ -62,14 +42,18 @@ export function Newsletter() {
             value="111453104"
           />
           <input type="hidden" name="ml-submit" value="1" />
-          <button
+          <Button
             type="submit"
-            className="flex items-center gap-2 px-3 py-1 text-white rounded shadow-sm bg-stone-925 dark:bg-black hover:bg-stone-800"
+            variant="ghost"
+            className="rounded-none"
+            PrefixIcon={<MailIcon className="size-em" />}
           >
-            <MailIcon className="" size="14" /> Subscribe
-          </button>
+            Subscribe
+          </Button>
           <input type="hidden" name="anticsrf" value="true" />
         </form>
+
+        {/* TODO: validation states */}
         <div
           className="ml-form-successBody row-success"
           style={{ display: "none" }}

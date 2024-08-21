@@ -22,7 +22,7 @@ export default function Doc({ params }: Props) {
   const headings = extractHeadings(post.content);
 
   return (
-    <div className="relative container max-w-fit md:flex">
+    <div className="relative container max-w-fit md:flex pb-under-content pt-under-nav-content">
       <DocsNav guideDocs={docsList} />
       <DocContent post={post} />
       <DocMapScroller headings={headings} />

@@ -8,3 +8,4 @@ export * from "./clipboard-copy";
 export * from "./alert";
 // export * from "./code";
 export * from "./grid";
+export * from "./badge";

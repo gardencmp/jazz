@@ -1,75 +1,35 @@
-import Image from "next/image";
-import clsx from "clsx";
+import { Card, CardHeading } from "@/components/card";
+import { SectionHeadingSecondary } from "@/components/layout";
+import { getContent } from "@/lib/mdx-utils";
+import { CylinderIcon, DatabaseBackupIcon, RouteIcon } from "lucide-react";
 import {
-  WorkflowIcon,
-  UploadCloudIcon,
-  PlaneIcon,
-  MonitorSmartphoneIcon,
-  GaugeIcon,
-  UsersIcon,
-  FileLock2Icon,
-  HardDriveDownloadIcon,
-  KeyRoundIcon,
-} from "lucide-react";
-import HomeContent from "./(home)/content/home.mdx";
-import { CustomMDX } from "@/components/mdx";
-import { CardMetaHeading, APICard } from "@/components/card";
-import { MDXRemote } from "next-mdx-remote";
-import { serialize } from "next-mdx-remote/serialize";
-import { parseFrontmatter } from "@/lib/mdx-utils";
-import fs from "fs/promises";
-import path from "path";
-import {
-  RiRouteLine,
-  RiArrowGoBackFill,
-  RiArchiveDrawerLine,
-} from "@/components/icons";
+  CustomSection,
+  EnterpriseSection,
+  FaqSection,
+  PricingSection,
+} from "./components";
 
-async function getHomeContent() {
-  const dataStructuresPath = path.join(
-    process.cwd(),
-    "src/app/(home)/content/covalues-datastructures.mdx",
-  );
-  const filesPath = path.join(
-    process.cwd(),
-    "src/app/(home)/content/covalues-files.mdx",
-  );
-  const permsPath = path.join(
-    process.cwd(),
-    "src/app/(home)/content/covalues-perms.mdx",
-  );
-
-  const [source1, source2, source3] = await Promise.all([
-    fs.readFile(dataStructuresPath, "utf8"),
-    fs.readFile(filesPath, "utf8"),
-    fs.readFile(permsPath, "utf8"),
-  ]);
-
-  const dataStructures = parseFrontmatter(source1);
-  const files = parseFrontmatter(source2);
-  const perms = parseFrontmatter(source3);
-
-  return { dataStructures, files, perms };
-}
+const contentPath = "src/app/mesh/content";
+const customFiles = ["custom-backup", "custom-diy", "custom-completely"];
+const contentFiles = [...customFiles];
 
 export default async function MeshPage() {
-  const { dataStructures, files, perms } = await getHomeContent();
+  const content = await getContent(contentPath, contentFiles);
+  const customContent = customFiles.map((key) => content[key]);
 
   return (
-    <div className="relative space-y-w24">
-      <section className="container max-w-docs space-y-w12">
+    <>
+      <section className="container max-w-docs space-y-w12 pb-w24 pt-under-nav-content">
         <header className="grid grid-cols-12 gap-w6">
           <div className="col-span-full lg:col-span-9 ml-[-0.2em]">
             <h1 className="Text-super text-accent-fill">
               Sync & Storage Mesh.
             </h1>
-            <h2 className="Text-super text-solid">
+            <h2 className="Text-super text-fill-contrast text-balance">
               The first Collaboration Delivery Network.
             </h2>
           </div>
-          <p
-            className={clsx("col-span-full lg:col-span-8 text-large text-fill")}
-          >
+          <p className="col-span-full lg:col-span-8 text-large text-fill text-balance">
             Real-time sync and storage infrastructure that scales up to millions
             of users.
             <span className="font-medium text-fill-contrast lg:table">
@@ -77,35 +37,64 @@ export default async function MeshPage() {
             </span>
           </p>
         </header>
+
         <div className="grid grid-cols-12 gap-w4">
-          <APICard>
-            <CardMetaHeading icon={RiRouteLine} iconSize="large">
+          <Card>
+            <CardHeading Icon={<RouteIcon />} iconSize="large">
               Optional Mesh Routing
-            </CardMetaHeading>
-            <div className="prose code-simple">
+            </CardHeading>
+            <div className="prose text-fill-contrast">
               Get ultra-low latency between any group of users with our
               decentralized mesh interconnect.
             </div>
-          </APICard>
-          <APICard>
-            <CardMetaHeading icon={RiArrowGoBackFill} iconSize="large">
+          </Card>
+          <Card>
+            <CardHeading Icon={<DatabaseBackupIcon />} iconSize="large">
               Smart caching
-            </CardMetaHeading>
-            <div className="prose code-simple">
+            </CardHeading>
+            <div className="prose text-fill-contrast">
               Give users instant load times, with their latest data state always
               cached close to them.
             </div>
-          </APICard>
-          <APICard>
-            <CardMetaHeading icon={RiArchiveDrawerLine} iconSize="large">
+          </Card>
+          <Card>
+            <CardHeading Icon={<CylinderIcon />} iconSize="large">
               Storage
-            </CardMetaHeading>
-            <div className="prose code-simple">
+            </CardHeading>
+            <div className="prose text-fill-contrast">
               Store files and media streams as idiomatic CoValues without S3.
             </div>
-          </APICard>
+          </Card>
         </div>
       </section>
-    </div>
+
+      {/* <hr className="border-guide-dark" /> */}
+      <section className="bg-background pt-w12 pb-w16">
+        <div className="container max-w-docs space-y-w8">
+          <div className="space-y-w8">
+            <SectionHeadingSecondary>Pricing</SectionHeadingSecondary>
+            <PricingSection />
+          </div>
+          <div className="">
+            <FaqSection />
+          </div>
+        </div>
+      </section>
+
+      {/* TODO: GLOBAL */}
+
+      <hr className="border-guide-dark" />
+      <section className="bg-background pt-w12 pb-w16 mt-[0px]">
+        <div className="container max-w-docs">
+          <EnterpriseSection />
+        </div>
+      </section>
+      <hr className="border-guide-dark" />
+      <section className="bg-background pt-w12 pb-w16">
+        <div className="container max-w-docs space-y-w8">
+          <CustomSection contentItems={customContent} />
+        </div>
+      </section>
+    </>
   );
 }

@@ -122,3 +122,20 @@ export function getDocsList() {
       };
     });
 }
+
+export async function getContent(contentPath: string, fileNames: string[]) {
+  const filePaths = fileNames.map((name) =>
+    path.join(process.cwd(), `${contentPath}/${name}.mdx`),
+  );
+
+  const fileContents = await Promise.all(
+    filePaths.map((filePath) => fs.readFileSync(filePath, "utf8")),
+  );
+
+  return Object.fromEntries(
+    fileNames.map((name, index) => [
+      name,
+      parseFrontmatter(fileContents[index]),
+    ]),
+  );
+}

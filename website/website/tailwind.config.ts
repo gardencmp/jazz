@@ -59,18 +59,24 @@ const config: Config = {
         "accent-background-subtle": "var(--color-accent-bg-subtle)",
         "accent-background": "var(--color-accent-bg)",
         "accent-background-active": "var(--color-accent-bg-active)",
+        "accent-border": "var(--color-accent-border)",
         accent: "var(--color-accent-solid)",
         "accent-hover": "var(--color-accent-solid-hover)",
         "accent-fill": "var(--color-accent-fill)",
         "accent-fill-contrast": "var(--color-accent-fill-contrast)",
 
         // COVALUES
+        "cov-background-subtle": "var(--color-cov-bg-subtle)",
         "cov-background": "var(--color-cov-bg)",
-        // "cov-background-active": "var(--color-cov-bg-active)",
-        cov: "var(--color-cov-solid)",
-        // "cov-hover": "var(--color-cov-solid-hover)",
+        "cov-background-active": "var(--color-cov-bg-active)",
+        "cov-border": "var(--color-cov-border)",
+        "cov-solid": "var(--color-cov-solid)",
+        "cov-solid-hover": "var(--color-cov-solid-hover)",
         "cov-fill": "var(--color-cov-fill)",
-        // "cov-fill-contrast": "var(--color-cov-fill-contrast)",
+        "cov-fill-contrast": "var(--color-cov-fill-contrast)",
+
+        // MESH
+        "mesh-fill": "var(--color-mesh-fill)",
 
         // "yellow-bg": "#fff1d6",
         // "yellow-bg": "#faf6ed",
@@ -80,6 +86,10 @@ const config: Config = {
         // NOTICES
         "notice-background": "var(--color-notice-bg)",
         notice: "var(--color-notice-solid)",
+
+        // GUIDES
+        guide: "var(--guideSolidColor)",
+        "guide-dark": "var(--guideDarkColor)",
 
         // ALPHAS: text-black-a4
         black: generateScale("black"),
@@ -113,7 +123,7 @@ const config: Config = {
         heading: [generateClampSize(500, 1200, 20, 27), { lineHeight: "1.25" }],
         subtitle: [generateClampSize(500, 1200, 22, 33), { lineHeight: "1.2" }],
         title: [generateClampSize(500, 1200, 27, 42), { lineHeight: "1.2" }],
-        super: [generateClampSize(500, 1200, 39, 60), { lineHeight: "0.96" }],
+        super: [generateClampSize(500, 1200, 39, 60), { lineHeight: "0.98" }],
         code: ["0.85em", { lineHeight: "1.6" }],
       },
       letterSpacing: {
@@ -130,6 +140,7 @@ const config: Config = {
         "inset-2x": "var(--space-inset-2x)",
         "under-nav": "var(--space-under-nav)",
         "under-nav-nudge": "var(--space-under-nav-nudge)",
+        "under-nav-content": "var(--space-under-nav-content)",
         "under-content": "calc(5*var(--space-inset))",
         em: "1em",
 

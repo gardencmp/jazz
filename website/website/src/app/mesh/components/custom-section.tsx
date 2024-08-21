@@ -7,27 +7,18 @@ type Props = {
   contentItems: ParsedContent[];
 };
 
-export const CovaluesSection = ({ contentItems }: Props) => (
+export const CustomSection = ({ contentItems }: Props) => (
   <>
     <PackagesSection
-      theme="covalues"
-      heading="Collaborative Values"
-      subheading="Your new building blocks."
+      theme="mesh"
+      heading="Custom Deployment Scenarios"
+      subheading="You can rely on Jazz Mesh. But you don't have to."
       link="/docs"
       description={
-        <>
-          <p className="">
-            Based on CRDTs and public-key cryptography, CoValues…
-          </p>
-          <ul className="list-disc list-inside pl-[2px]">
-            <li>Can be read & edited like simple local JSON state</li>
-            <li>
-              Can be created anywhere, are automatically synced & persisted
-            </li>
-            <li>Always keep full edit history & author metadata</li>
-            <li>Automatically resolve most conflicts</li>
-          </ul>
-        </>
+        <p className="text-balance">
+          Because Jazz is open-source, you can optionally run your own sync
+          nodes — in a variety of setups.
+        </p>
       }
     >
       {contentItems.map((item, index) => (

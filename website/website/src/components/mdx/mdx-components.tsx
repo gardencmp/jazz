@@ -5,7 +5,8 @@ import { highlight } from "sugar-high";
 import React, { useId, ReactNode } from "react";
 import { Slogan, ClipboardCopy, Alert } from "./index";
 import * as HTMLExamples from "@/app/docs/content/guide-html";
-import { Grid, GridCard, Badge } from "./grid";
+import { Grid, GridCard } from "./grid";
+import { Badge } from "./badge";
 import clsx from "clsx";
 
 interface TableProps {

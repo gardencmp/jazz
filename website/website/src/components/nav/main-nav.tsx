@@ -5,6 +5,7 @@ import { JazzLogoTest } from "@/components/jazz-logo-test";
 import clsx from "clsx";
 import { primaryItems, secondaryItems, socialLinks } from "./main-nav-data";
 import { NavLink, NavLinkLogo } from "./nav-link";
+import { MaskedGridLines } from "../layout/masked-bg";
 
 export function MainNav() {
   return (
@@ -17,6 +18,7 @@ export function MainNav() {
           // menuOpen ? "h-[100dvh]" : "h-auto",
         )}
       >
+        <MaskedGridLines />
         <div className="container max-w-docs flex items-center justify-between h-nav">
           <div className="flex items-center gap-1">
             <NavLinkLogo prominent href="/" className="pr-w3">
@@ -44,7 +46,7 @@ export function MainNav() {
             </div>
           </div>
         </div>
-        <hr className="-mt-px" />
+        <hr className="-mt-px border-background-hover" />
       </nav>
     </>
   );

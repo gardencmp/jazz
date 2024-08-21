@@ -12,6 +12,7 @@ import {
 } from "@radix-ui/react-icons";
 import { File, Pre, Code } from "@/components/mdx/mdx-components";
 import { CardSecondary, HeadingLinkCaret } from "@/components/card";
+import { SectionSecondary } from "@/components/layout";
 
 export const metadata = {
   title: "jazz - Docs",
@@ -27,7 +28,7 @@ export default function DocsIndexPage() {
   }
 
   return (
-    <div className="relative container max-w-docs space-y-w8 pb-under-content">
+    <div className="relative container max-w-docs space-y-w8 pb-under-content pt-under-nav-content">
       <header className="grid grid-cols-12 gap-2">
         <div className="col-span-12 flex items-center gap-1.5">
           {/* <PixelarticonsFileAlt className="text-[2em] text-accent-fill transform translate-y-[-1px]" /> */}
@@ -45,7 +46,7 @@ export default function DocsIndexPage() {
       </header>
 
       <div className={clsx("PageContainer space-y-w8")}>
-        <Section
+        <SectionSecondary
           title="Guides"
           className={clsx(
             // "gap-x-2.5 gap-y-w4",
@@ -100,9 +101,9 @@ export default function DocsIndexPage() {
               )}
             />
           ))}
-        </Section>
+        </SectionSecondary>
 
-        <Section title="API" className={clsx("gap-2.5")}>
+        <SectionSecondary title="API" className={clsx("gap-2.5")}>
           {apis.map((item) => (
             <CardSecondary
               key={item.link}
@@ -116,36 +117,11 @@ export default function DocsIndexPage() {
               )}
             />
           ))}
-        </Section>
+        </SectionSecondary>
       </div>
     </div>
   );
 }
-
-const Section = ({
-  title,
-  children,
-  className,
-}: {
-  title: string;
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <div className="space-y-w4">
-    <div className="space-y-2">
-      <h1 className="Text-meta text-fill-contrast leading-none">{title}</h1>
-      <hr className="border-lin" />
-    </div>
-    <div className={clsx("grid grid-cols-12", className)}>
-      {children}
-      {/* <div className="flex flex-col gap-inset h-[420px] border rounded-lg">
-        <h2 className="Text-heading !text-solid mt-auto p-w4">
-          More coming soon…
-        </h2>
-      </div> */}
-    </div>
-  </div>
-);
 
 const GuideArt = () => (
   <div className="prose [&_.File]:!my-0">

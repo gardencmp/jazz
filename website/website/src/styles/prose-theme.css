@@ -2,6 +2,9 @@
 .prose {
   @apply space-y-3;
 }
+.prose-sm {
+  @apply !space-y-1.5;
+}
 
 /* HEADINGS */
 .prose h1:not(.not-prose) {

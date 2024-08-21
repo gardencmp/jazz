@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 import { Footer } from "@/components/nav/footer";
+import { MaskedGridLines } from "@/components/layout/masked-bg";
 
 export const metadata: Metadata = {
   title: "jazz - Instant sync",
@@ -42,9 +43,10 @@ export default function RootLayout({
         )}
       >
         <Providers>
+          <MaskedGridLines />
           <MainNav />
           {/* min-h-screen */}
-          <main className="pt-[calc(2.5*var(--space-inset))]">{children}</main>
+          <main className="">{children}</main>
           <Footer />
         </Providers>
         <SpeedInsights />

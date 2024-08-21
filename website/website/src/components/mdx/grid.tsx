@@ -49,25 +49,3 @@ export const CardMetaHeading = ({
     </h3>
   );
 };
-
-export const Badge = ({
-  children,
-  theme = "default",
-  ...props
-}: {
-  children: ReactNode;
-  theme?: "default" | "accent";
-}) => {
-  return (
-    <div
-      className={clsx(
-        "not-prose Text-meta !text-fine !leading-none !font-normal !text-fill",
-        "rounded-full px-2 py-[0.25em] border inline",
-        theme === "default" && "border-stone-300 dark:border-stone-700",
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};

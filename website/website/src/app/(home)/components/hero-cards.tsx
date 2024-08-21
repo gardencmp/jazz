@@ -15,9 +15,12 @@ export function HeroCards() {
   const featureGroup1 = features.slice(0, 4);
   const featureGroup2 = features.slice(4);
   return (
-    <div className="lg:mx-[-2.5vw] relative">
-      <div className="gridLine-vertical left-0"></div>
-      <div className="grid grid-cols-12 grid-rows-3 gap-2 gridLine-after gridLine-before">
+    <div className="lg:mx-[-3vw] relative">
+      <p className="text-large font-medium px-w3 lg:px-[3vw] py-w6 gridLine-after gridLine-before bg-background">
+        {/* Features that used to take months now work out of the box.{" "} */}
+        <span className="text-accent-fill">Hard things are easy now.</span>
+      </p>
+      <div className="grid grid-cols-12 grid-rows-3 gap-2 gridLine-after">
         {featureGroup1.map((item) => (
           <Feature key={item.label} label={item.label} Icon={item.Icon} />
         ))}
@@ -27,7 +30,8 @@ export function HeroCards() {
           <Feature key={item.label} label={item.label} Icon={item.Icon} />
         ))}
       </div>
-      <div className="gridLine-vertical right-0"></div>
+      <div className="gridLine-vertical left-0 z-10"></div>
+      <div className="gridLine-vertical right-0 z-10"></div>
       {/* <div className="grid grid-cols-12 grid-rows-3 gap-2 gridLine-after">
         {features.map((item, index) => (
           // index === 4 ? (
@@ -55,7 +59,7 @@ const FeatureCard = ({
 }) => (
   <div
     className={clsx(
-      "flex items-center justify-center rounded-lg",
+      "flex items-center justify-center rounded-lg bg-canvas",
       // "bg-background-hover",
       // "border bg-canvas",
       // "col-span-4 row-span-1 px-w8 py-w6", // px-w4 py-w3
