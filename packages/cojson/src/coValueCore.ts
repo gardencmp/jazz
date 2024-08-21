@@ -108,6 +108,7 @@ export class CoValueCore {
     _cachedKnownState?: CoValueKnownState;
     _cachedDependentOn?: RawCoID[];
     _cachedNewContentSinceEmpty?: NewContentMessage[] | undefined;
+    _currentAsyncAddTransaction?: Promise<void>;
 
     constructor(
         header: CoValueHeader,
@@ -267,95 +268,129 @@ export class CoValueCore {
         givenExpectedNewHash: Hash | undefined,
         newSignature: Signature,
     ): ResultAsync<true, TryAddTransactionsError> {
-        return this.node
-            .resolveAccountAgentAsync(
-                accountOrAgentIDfromSessionID(sessionID),
-                "Expected to know signer of transaction",
+        const currentAsyncAddTransaction = this._currentAsyncAddTransaction;
+        let maybeAwaitPrevious:
+            | ResultAsync<void, TryAddTransactionsError>
+            | undefined;
+        let thisDone = () => {};
+
+        if (currentAsyncAddTransaction) {
+            // eslint-disable-next-line neverthrow/must-use-result
+            maybeAwaitPrevious = ResultAsync.fromSafePromise(
+                currentAsyncAddTransaction,
+            );
+        } else {
+            // eslint-disable-next-line neverthrow/must-use-result
+            maybeAwaitPrevious = ResultAsync.fromSafePromise(Promise.resolve());
+            this._currentAsyncAddTransaction = new Promise((resolve) => {
+                thisDone = resolve;
+            });
+        }
+
+        return maybeAwaitPrevious
+            .andThen((_previousDone) =>
+                this.node
+                    .resolveAccountAgentAsync(
+                        accountOrAgentIDfromSessionID(sessionID),
+                        "Expected to know signer of transaction",
+                    )
+                    .andThen((agent) => {
+                        const signerID = this.crypto.getAgentSignerID(agent);
+
+                        const nTxBefore =
+                            this.sessionLogs.get(sessionID)?.transactions
+                                .length ?? 0;
+
+                        // const beforeHash = performance.now();
+                        return ResultAsync.fromSafePromise(
+                            this.expectedNewHashAfterAsync(
+                                sessionID,
+                                newTransactions,
+                            ),
+                        ).andThen(({ expectedNewHash, newStreamingHash }) => {
+                            // const afterHash = performance.now();
+                            // console.log(
+                            //     "Hashing took",
+                            //     afterHash - beforeHash
+                            // );
+
+                            const nTxAfter =
+                                this.sessionLogs.get(sessionID)?.transactions
+                                    .length ?? 0;
+
+                            if (nTxAfter !== nTxBefore) {
+                                const newTransactionLengthBefore =
+                                    newTransactions.length;
+                                newTransactions = newTransactions.slice(
+                                    nTxAfter - nTxBefore,
+                                );
+                                console.warn(
+                                    "Transactions changed while async hashing",
+                                    {
+                                        nTxBefore,
+                                        nTxAfter,
+                                        newTransactionLengthBefore,
+                                        remainingNewTransactions:
+                                            newTransactions.length,
+                                    },
+                                );
+                            }
+
+                            if (
+                                givenExpectedNewHash &&
+                                givenExpectedNewHash !== expectedNewHash
+                            ) {
+                                return err({
+                                    type: "InvalidHash",
+                                    id: this.id,
+                                    expectedNewHash,
+                                    givenExpectedNewHash,
+                                } satisfies InvalidHashError);
+                            }
+
+                            performance.mark("verifyStart" + this.id);
+                            if (
+                                !this.crypto.verify(
+                                    newSignature,
+                                    expectedNewHash,
+                                    signerID,
+                                )
+                            ) {
+                                return err({
+                                    type: "InvalidSignature",
+                                    id: this.id,
+                                    newSignature,
+                                    sessionID,
+                                    signerID,
+                                } satisfies InvalidSignatureError);
+                            }
+                            performance.mark("verifyEnd" + this.id);
+                            performance.measure(
+                                "verify" + this.id,
+                                "verifyStart" + this.id,
+                                "verifyEnd" + this.id,
+                            );
+
+                            this.doAddTransactions(
+                                sessionID,
+                                newTransactions,
+                                newSignature,
+                                expectedNewHash,
+                                newStreamingHash,
+                                "deferred",
+                            );
+
+                            return ok(true as const);
+                        });
+                    }),
             )
-            .andThen((agent) => {
-                const signerID = this.crypto.getAgentSignerID(agent);
-
-                const nTxBefore =
-                    this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
-
-                // const beforeHash = performance.now();
-                return ResultAsync.fromSafePromise(
-                    this.expectedNewHashAfterAsync(sessionID, newTransactions),
-                ).andThen(({ expectedNewHash, newStreamingHash }) => {
-                    // const afterHash = performance.now();
-                    // console.log(
-                    //     "Hashing took",
-                    //     afterHash - beforeHash
-                    // );
-
-                    const nTxAfter =
-                        this.sessionLogs.get(sessionID)?.transactions.length ??
-                        0;
-
-                    if (nTxAfter !== nTxBefore) {
-                        const newTransactionLengthBefore =
-                            newTransactions.length;
-                        newTransactions = newTransactions.slice(
-                            nTxAfter - nTxBefore,
-                        );
-                        console.warn(
-                            "Transactions changed while async hashing",
-                            {
-                                nTxBefore,
-                                nTxAfter,
-                                newTransactionLengthBefore,
-                                remainingNewTransactions:
-                                    newTransactions.length,
-                            },
-                        );
-                    }
-
-                    if (
-                        givenExpectedNewHash &&
-                        givenExpectedNewHash !== expectedNewHash
-                    ) {
-                        return err({
-                            type: "InvalidHash",
-                            id: this.id,
-                            expectedNewHash,
-                            givenExpectedNewHash,
-                        } satisfies InvalidHashError);
-                    }
-
-                    performance.mark("verifyStart" + this.id);
-                    if (
-                        !this.crypto.verify(
-                            newSignature,
-                            expectedNewHash,
-                            signerID,
-                        )
-                    ) {
-                        return err({
-                            type: "InvalidSignature",
-                            id: this.id,
-                            newSignature,
-                            sessionID,
-                            signerID,
-                        } satisfies InvalidSignatureError);
-                    }
-                    performance.mark("verifyEnd" + this.id);
-                    performance.measure(
-                        "verify" + this.id,
-                        "verifyStart" + this.id,
-                        "verifyEnd" + this.id,
-                    );
-
-                    this.doAddTransactions(
-                        sessionID,
-                        newTransactions,
-                        newSignature,
-                        expectedNewHash,
-                        newStreamingHash,
-                        "deferred",
-                    );
-
-                    return ok(true as const);
-                });
+            .map((trueResult) => {
+                thisDone();
+                return trueResult;
+            })
+            .mapErr((err) => {
+                thisDone();
+                return err;
             });
     }
 
