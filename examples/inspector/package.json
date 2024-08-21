@@ -1,7 +1,7 @@
 {
   "name": "jazz-inspector",
   "private": true,
-  "version": "0.0.59-neverthrow.1",
+  "version": "0.0.59-neverthrow.2",
   "type": "module",
   "scripts": {
     "dev": "vite",

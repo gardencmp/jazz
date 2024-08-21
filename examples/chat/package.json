@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.81-neverthrow.1",
+  "version": "0.0.81-neverthrow.2",
   "type": "module",
   "scripts": {
     "dev": "vite",

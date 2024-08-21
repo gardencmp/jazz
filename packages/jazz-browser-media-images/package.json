@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.7.34-neverthrow.1",
+  "version": "0.7.34-neverthrow.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",

@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.34-neverthrow.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.34-neverthrow.2
+
 ## 0.7.34-neverthrow.1
 
 ### Patch Changes

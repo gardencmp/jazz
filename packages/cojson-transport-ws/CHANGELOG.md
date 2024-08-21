@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.34-neverthrow.2
+
+### Patch Changes
+
+-   Remove WS buffer filling log message
+
 ## 0.7.34-neverthrow.1
 
 ### Patch Changes
