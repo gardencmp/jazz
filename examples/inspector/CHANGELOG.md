@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.59-neverthrow.3
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.3
+  - cojson-transport-ws@0.7.34-neverthrow.3
+
 ## 0.0.59-neverthrow.2
 
 ### Patch Changes

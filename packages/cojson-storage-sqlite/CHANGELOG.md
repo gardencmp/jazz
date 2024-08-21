@@ -1,5 +1,12 @@
 # cojson-storage-sqlite
 
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.3
+
 ## 0.7.34-neverthrow.1
 
 ### Patch Changes

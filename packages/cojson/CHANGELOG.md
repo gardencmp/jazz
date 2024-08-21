@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Better log message for failed transactions
+
 ## 0.7.34-neverthrow.1
 
 ### Patch Changes

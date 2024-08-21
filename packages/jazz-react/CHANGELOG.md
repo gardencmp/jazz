@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.3
+    -   jazz-browser@0.7.34-neverthrow.3
+    -   jazz-tools@0.7.34-neverthrow.3
+
 ## 0.7.34-neverthrow.2
 
 ### Patch Changes

@@ -5,7 +5,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.34-neverthrow.2",
+    "version": "0.7.34-neverthrow.3",
     "dependencies": {
         "cojson": "workspace:*",
         "cojson-transport-ws": "workspace:*",
