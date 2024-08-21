@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.34-neverthrow.1
+
+### Patch Changes
+
+-   Only one async transaction per CoValue at a time again
+
 ## 0.7.34-neverthrow.0
 
 ### Patch Changes

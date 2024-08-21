@@ -1,5 +1,12 @@
 # cojson-storage-indexeddb
 
+## 0.7.34-neverthrow.1
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.1
+
 ## 0.7.34-neverthrow.0
 
 ### Patch Changes
