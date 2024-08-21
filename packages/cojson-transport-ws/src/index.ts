@@ -110,7 +110,6 @@ export function createWebSocketPeer({
                 await websocketOpen;
                 if (websocket.readyState === 1) {
                     while (websocket.bufferedAmount > 1_000_000) {
-                        console.log("WS buffer filling", id, websocket.bufferedAmount);
                         await new Promise((resolve) =>
                             setTimeout(resolve, 100),
                         );
