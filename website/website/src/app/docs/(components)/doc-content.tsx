@@ -1,7 +1,9 @@
+"use client";
+
 import { CustomMDX } from "@/components/mdx";
 import { Link } from "@/components/ui/link";
 import { MdxData } from "@/lib/mdx-types";
-import { formatDate } from "@/lib/mdx-utils";
+import { formatDate } from "@/lib/format-date";
 import { CalendarIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 
 interface DocContentProps {

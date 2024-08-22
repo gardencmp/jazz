@@ -66,9 +66,7 @@
 .prose pre code .sh__line::before {
   counter-increment: sh-line-number 1;
   content: counter(sh-line-number);
-  margin-right: 20px;
-  text-align: right;
-  color: #888;
+  @apply !font-normal text-solid text-right mr-[20px];
 }
 
 /* FAILING TESTS */

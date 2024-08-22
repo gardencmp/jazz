@@ -24,7 +24,7 @@ export const EnterpriseSection = () => (
             services?
           </p>
           <p className="">
-            Let's talk:{" "}
+            Let&rsquo;s talk:{" "}
             <Link href={`mailto:${config.EMAIL}`} className="link">
               {config.EMAIL}
             </Link>

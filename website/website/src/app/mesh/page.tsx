@@ -1,6 +1,6 @@
 import { Card, CardHeading } from "@/components/card";
 import { SectionHeadingSecondary } from "@/components/layout";
-import { getContent } from "@/lib/mdx-utils";
+import { getMdxData } from "@/lib/mdx-server-utils";
 import { CylinderIcon, DatabaseBackupIcon, RouteIcon } from "lucide-react";
 import {
   CustomSection,
@@ -9,13 +9,11 @@ import {
   PricingSection,
 } from "./components";
 
-const contentPath = "src/app/mesh/content";
-const customFiles = ["custom-backup", "custom-diy", "custom-completely"];
-const contentFiles = [...customFiles];
+const contentDir = "src/app/mesh/content";
 
 export default async function MeshPage() {
-  const content = await getContent(contentPath, contentFiles);
-  const customContent = customFiles.map((key) => content[key]);
+  const content = await getMdxData(contentDir);
+  const customContent = content.filter((item) => item.slug.includes("custom"));
 
   return (
     <>

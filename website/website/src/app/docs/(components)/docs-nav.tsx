@@ -1,6 +1,5 @@
 "use client";
 
-// import { NavCommentPackage } from "./nav-comment-package";
 import { Accordion } from "@/components/ui/accordion";
 import { MdxDocNav } from "@/lib/mdx-types";
 import clsx from "clsx";
@@ -12,8 +11,17 @@ import {
   itemActiveStyle,
 } from "./docs-nav-accordion";
 
-export function DocsNav({ guideDocs }: { guideDocs: MdxDocNav[] }) {
-  const [openItem, setOpenItem] = useState("Guides");
+export function DocsNav({
+  docs,
+  currentPath,
+}: {
+  docs: MdxDocNav[];
+  currentPath: string;
+}) {
+  const [openItem, setOpenItem] = useState(currentPath);
+
+  const guidesDocsList = docs.filter((doc) => doc.kind === "guides");
+  const apiDocsList = docs.filter((doc) => doc.kind === "api");
 
   // TODO: open at /<mdx-grup> based on matching pathname
 
@@ -40,13 +48,12 @@ export function DocsNav({ guideDocs }: { guideDocs: MdxDocNav[] }) {
             collapsible
           >
             <DocsNavAccordion name="Guides" className={clsx(itemActiveStyle)}>
-              <DocsNavList docs={guideDocs} />
+              <DocsNavList docs={guidesDocsList} kind="guides" />
             </DocsNavAccordion>
-
+            <DocsNavAccordion name="API" className={clsx(itemActiveStyle)}>
+              <DocsNavList docs={apiDocsList} kind="api" />
+            </DocsNavAccordion>
             <DocsNavAccordion name="Recipes">
-              <div className={docsNavListStyle}>Coming soon…</div>
-            </DocsNavAccordion>
-            <DocsNavAccordion name="API">
               <div className={docsNavListStyle}>Coming soon…</div>
             </DocsNavAccordion>
           </Accordion>

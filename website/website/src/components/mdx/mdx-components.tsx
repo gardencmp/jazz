@@ -4,7 +4,7 @@ import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
 import { highlight } from "sugar-high";
 import React, { useId, ReactNode } from "react";
 import { Slogan, ClipboardCopy, Alert } from "./index";
-import * as HTMLExamples from "@/app/docs/content/guide-html";
+import * as HTMLExamples from "@/app/docs/(content)/guide-html";
 import { Grid, GridCard } from "./grid";
 import { Badge } from "./badge";
 import clsx from "clsx";
@@ -163,9 +163,9 @@ export function File({
           .join("\n")}
       </style>
       {name && (
-        <h4 className="h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono">
+        <div className="h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono">
           {name}
-        </h4>
+        </div>
       )}
       {children}
     </div>
@@ -208,7 +208,7 @@ function createHeading(level: 1 | 2 | 3 | 4 | 5 | 6) {
   return Heading;
 }
 
-let components = {
+export const components = {
   h1: createHeading(1),
   h2: createHeading(2),
   // h3: createHeading(3),
@@ -222,12 +222,13 @@ let components = {
   code: Code as React.ComponentType<React.HTMLAttributes<HTMLElement>>,
   pre: Pre as React.ComponentType<React.HTMLAttributes<HTMLPreElement>>,
   Table: Table as React.ComponentType<any>,
+  File: File as React.ComponentType<FileProps>,
   Slogan,
   Alert,
-  File: File as React.ComponentType<FileProps>,
   Grid,
   GridCard,
   Badge,
+  ...HTMLExamples,
 };
 
 interface CustomMDXProps extends MDXRemoteProps {
@@ -240,7 +241,6 @@ export function CustomMDX(props: CustomMDXProps) {
       {...props}
       components={{
         ...components,
-        ...HTMLExamples,
         ...(props.components || {}),
       }}
     />

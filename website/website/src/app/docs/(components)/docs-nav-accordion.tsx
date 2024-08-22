@@ -45,7 +45,13 @@ export function DocsNavAccordion({
 
 export const docsNavListStyle = "space-y-[2px] pl-3 py-1";
 
-export function DocsNavList({ docs }: { docs: MdxDocNav[] }) {
+export function DocsNavList({
+  docs,
+  kind,
+}: {
+  docs: MdxDocNav[];
+  kind: string;
+}) {
   const pathname = usePathname();
   return (
     <ul className={docsNavListStyle}>
@@ -54,11 +60,13 @@ export function DocsNavList({ docs }: { docs: MdxDocNav[] }) {
           key={index}
           className={clsx(
             itemStyle,
-            pathname === `/docs/${doc.slug}` && itemActiveStyle,
+            pathname === `/docs/${kind}/${doc.slug}` && itemActiveStyle,
             "flex items-center",
           )}
         >
-          <DocNavLink href={`/docs/${doc.slug}`}>{doc.title}</DocNavLink>
+          <DocNavLink href={`/docs/${kind}/${doc.slug}`}>
+            {doc.title}
+          </DocNavLink>
         </li>
       ))}
     </ul>

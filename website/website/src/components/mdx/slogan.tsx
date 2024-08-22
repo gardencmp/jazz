@@ -1,16 +1,17 @@
-import { cn } from "@/lib/utils";
+import clsx from "clsx";
 
-export function Slogan(props: { children: React.ReactNode; small?: boolean }) {
+// small?: boolean;
+export const Slogan = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
-      className={cn(
+      className={clsx(
         "Text-heading text-stone-700 dark:text-stone-500",
         // props.small
         //     ? "text-lg lg:text-xl -mt-2"
         //     : "text-3xl lg:text-4xl -mt-5",
       )}
     >
-      {props.children}
+      {children}
     </div>
   );
-}
+};

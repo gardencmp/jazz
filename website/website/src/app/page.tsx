@@ -1,32 +1,21 @@
-import { getContent } from "@/lib/mdx-utils";
+import { getMdxData } from "@/lib/mdx-server-utils";
 import {
   CovaluesSection,
   HeroCards,
   MeshSection,
   ToolkitSection,
 } from "./(home)/components";
-import { MaskedGridLines } from "@/components/layout/masked-bg";
 
-const contentPath = "src/app/(home)/content";
-const covaluesFiles = [
-  "covalues-datastructures",
-  "covalues-files",
-  "covalues-perms",
-];
-const toolkitPaths = [
-  "toolkit-auth",
-  "toolkit-autosub",
-  "toolkit-cursors",
-  "toolkit-dbsync",
-  "toolkit-upload",
-  "toolkit-video",
-];
-const contentFiles = [...covaluesFiles, ...toolkitPaths];
+const contentDir = "src/app/(home)/content";
 
 export default async function HomePage() {
-  const content = await getContent(contentPath, contentFiles);
-  const covaluesContent = covaluesFiles.map((key) => content[key]);
-  const toolkitContent = toolkitPaths.map((key) => content[key]);
+  const content = await getMdxData(contentDir);
+  const covaluesContent = content.filter((item) =>
+    item.slug.includes("covalues"),
+  );
+  const toolkitContent = content.filter((item) =>
+    item.slug.includes("toolkit"),
+  );
 
   return (
     <>

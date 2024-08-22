@@ -20,12 +20,11 @@ async function convertJsonToMdx() {
   const today = new Date().toISOString().split("T")[0];
 
   const mdxContent = `---
+kind: "api"
 title: ${categoryTitle}
 publishedAt: ${today}
 summary: TODO!
 ---
-
-# ${categoryTitle}
 
 ## ${name}
 

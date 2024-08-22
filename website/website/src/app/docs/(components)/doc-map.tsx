@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
-import { BookmarkIcon, BookmarkFilledIcon } from "@radix-ui/react-icons";
-import { RiBookmarkFill } from "@/components/icons";
 import { MdxHeading } from "@/lib/mdx-types";
+import { cn } from "@/lib/utils";
+import { BookmarkIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ArticleMapProps {
   headings: MdxHeading[];
@@ -41,7 +40,7 @@ export const DocMap = ({ headings, scrollPosition }: ArticleMapProps) => {
     >
       <div className="space-y-3 text-small">
         <div className="flex items-center gap-1.5 font-medium text-fill-contrast -ml-[2px]">
-          <BookmarkFilledIcon className="size-em transform translate-y-[-0.1em]" />
+          <BookmarkIcon className="size-em transform translate-y-[-0.1em]" />
           On this page
         </div>
         <ul

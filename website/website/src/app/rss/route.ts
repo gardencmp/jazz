@@ -1,8 +1,11 @@
 import config from "@/config";
-import { getDocPosts } from "@/lib/mdx-utils";
+import { getMdxData } from "@/lib/mdx-server-utils";
+import path from "path";
+
+const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
 
 export async function GET() {
-  let allDocs = await getDocPosts();
+  let allDocs = await getMdxData(docsDir);
 
   const itemsXml = allDocs
     .sort((a, b) => {

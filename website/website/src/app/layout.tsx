@@ -8,10 +8,11 @@ import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 import { Footer } from "@/components/nav/footer";
 import { MaskedGridLines } from "@/components/layout/masked-bg";
+import config from "@/config";
 
 export const metadata: Metadata = {
-  title: "jazz - Instant sync",
-  description: "Go beyond request/response - ship modern apps with sync.",
+  title: config.DEFAULT_TITLE,
+  description: config.DEFAULT_DESCRIPTION,
 };
 
 // https://nextjs.org/docs/app/api-reference/functions/generate-viewport

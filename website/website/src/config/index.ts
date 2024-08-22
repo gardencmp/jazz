@@ -6,15 +6,16 @@ const generalConfig = {
   PUBLIC_DOMAIN: "jazz.tools",
   PUBLIC_URL: "https://www.jazz.tools",
   EMAIL: "hello@gcmp.io",
-  GITHUB_URL: "https://github.com/callumflack",
-  CALENDLY_URL: "https://calendly.com/callumflack/30min",
-  TWITTER_URL: "https://twitter.com/callumflack",
-  LINKEDIN_URL: "https://www.linkedin.com/in/callumflack/",
-  SUBSTACK_URL: "https://thelittoralline.substack.com/",
-  READCV_URL: "https://read.cv/callum",
+  GITHUB_URL: "https://github.com/gardencmp/jazz",
+  TWITTER_URL: "https://twitter.com/anselm_io",
+  DEFAULT_TITLE: "jazz - Instant sync",
+  DEFAULT_DESCRIPTION:
+    "Go beyond request/response - ship modern apps with sync.",
 };
 
-export default {
+const config = {
   ...generalConfig,
   isProduction,
 };
+
+export default config;

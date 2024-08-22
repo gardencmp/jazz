@@ -1,18 +1,22 @@
 ---
-title: "Build a pet app"
+kind: "guides"
+title: "Build an issue tracker"
 publishedAt: "2024-08-14"
-summary: "Build an issue tracker with distributed state in 5 minutes."
+summary: "Build an issue tracker with distributed state in 15 minutes."
+link: https://github.com/gardencmp/jazz/blob/main/examples/todo/README.md
 ---
 
-## WIP placeholder!
+## Overview
 
 Our issues app will be quite simple, but it will have team collaboration. <span className="text-nowrap">Let's call it... &ldquo;Circular.&rdquo;</span>
 
-We'll build everything step-by-step, in typical, immediately usable stages. We'll explore many important things Jazz does &mdash; so follow along or just pick things out.
+We'll build everything step-by-step, in typical, immediately usable stages. We'll explore many important things Jazz does &mdash; follow along or just pick things out.
 
 ## Project Setup
 
 Create a project called "circular" from a generic Vite starter template:
+
+<File name="terminal">
 
 ```bash
 npx degit gardencmp/vite-ts-react-tailwind circular
@@ -21,42 +25,48 @@ npm install
 npm run dev
 ```
 
+</File>
+
 You should now have an empty app running, typically at [localhost:5173](http://localhost:5173). If you make changes to the code, the app will automatically refresh.
 
-In a new terminal window, install `jazz-tools` and `jazz-react`<br/>
+In a new terminal window, install `jazz-tools` and `jazz-react`:
+
+<File name="terminal">
 
 ```bash
-cd circular
-npm install jazz-tools jazz-react
+ cd circular
+ npm install jazz-tools jazz-react
 ```
+
+</File>
 
 Modify `src/main.tsx` to set up a Jazz context:
 
+<File name="src/main.tsx" highlightLines={[5,7,8,9,10,11]}>
+
 ```tsx
-import React from "react"; // old
-import ReactDOM from "react-dom/client"; // old
-import App from "./App.tsx"; // old
-import "./index.css"; // old
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
 import { createJazzReactContext, DemoAuth } from "jazz-react";
-// old
+
 const Jazz = createJazzReactContext({
   auth: DemoAuth({ appName: "Circular" }),
   peer: "wss://mesh.jazz.tools/?key=you@example.com", // <- put your email here to get a proper API key later
 });
 export const { useAccount, useCoState } = Jazz;
-// old
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  // old
   <Jazz.Provider>
     <React.StrictMode>
-      {" "}
-      // old // old
-      <App /> // old
-    </React.StrictMode>{" "}
-    // old
+      <App />
+    </React.StrictMode>
   </Jazz.Provider>,
-); // old
+);
 ```
+
+</File>
 
 This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
 
@@ -83,6 +93,8 @@ CoValues are designed to be read like simple local JSON state. Let's see how we 
 
 Create a new file `src/components/Issue.tsx` and add the following:
 
+<File name="src/components/Issue.tsx">
+
 ```tsx
 import { Issue } from "../schema";
 
@@ -98,6 +110,8 @@ export function IssueComponent({ issue }: { issue: Issue }) {
 }
 ```
 
+</File>
+
 Simple enough!
 
 ### Creating CoValues
@@ -105,6 +119,8 @@ Simple enough!
 To actually see an Issue, we have to create one. This is where things start to get interesting...
 
 Let's modify `src/App.tsx` to prepare for creating an Issue and then rendering it:
+
+<File name="src/App.tsx">
 
 ```tsx
 import { useState } from "react";
@@ -125,8 +141,11 @@ function App() {
 export default App; // old
 ```
 
+</File>
+
 Now, finally, let's implement creating an issue:
 
+<File name="src/App.tsx">
 ```tsx
 import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
@@ -162,34 +181,20 @@ function App() {
 // old
 export default App; // old
 ```
+</File>
 
-🏁 Now you should be able to create a new issue by clicking the button and then see it rendered!
+<Alert>
+  Now you should be able to create a new issue by clicking the button and then
+  see it rendered!
+</Alert>
 
-```html
-<div
-  className="text-xs uppercase text-stone-400 dark:text-stone-600 tracking-wider -mb-3"
->
-  Preview
-</div>
-<div
-  className="p-3 md:-mx-3 rounded border border-stone-100 dark:border-stone-900 bg-white dark:bg-black not-prose"
->
-  <div
-    className="grid grid-cols-6 text-sm border-r border-b [&>*]:p-2 [&>*]:border-l [&>*]:border-t"
-  >
-    <h2>Buy terrarium</h2>
-    <p className="col-span-3">Make sure it's big enough for 10 snails.</p>
-    <p>Estimate: 5</p>
-    <p>Status: backlog</p>
-  </div>
-</div>
-```
+<GuideInitRender />
 
 We'll already notice one interesting thing here:
 
 - We have to create every CoValue with an `owner`!
-  - this will determine access rights on the CoValue, which we'll learn about in "Groups & Permissions"
-  - here we set `owner` to the current user `me`, which we get from the Jazz context / `useAccount`
+- this will determine access rights on the CoValue, which we'll learn about in "Groups & Permissions"
+- here we set `owner` to the current user `me`, which we get from the Jazz context / `useAccount`
 
 **Behind the scenes, Jazz not only creates the Issue in memory but also automatically syncs an encrypted version to the cloud and persists it locally. The Issue also has a globally unique ID.**
 
@@ -204,11 +209,12 @@ And since this is a React app, it would be nice to subscribe to edits of the CoV
 This is exactly what the `useCoState` hook is for!
 
 - Note that `useCoState` doesn't take a CoValue directly, but rather a CoValue's schema, plus its `ID`.
-  - So we'll slightly adapt our `useState` to only keep track of an issue ID...
-  - ...and then use `useCoState` to get the actual issue
+- So we'll slightly adapt our `useState` to only keep track of an issue ID...
+- ...and then use `useCoState` to get the actual issue
 
 Let's modify `src/App.tsx`:
 
+<File name="src/App.tsx">
 ```tsx
 import { useState } from "react"; // old
 import { Issue } from "./schema"; // old
@@ -250,9 +256,11 @@ function App() {
 // old
 export default App; // old
 ```
+</File>
 
 And now for the exciting part! Let's make `src/components/Issue.tsx` an editing component.
 
+<File name="src/components/Issue.tsx">
 ```tsx
 import { Issue } from "../schema"; // old
 // old
@@ -305,3 +313,5 @@ export function IssueComponent({ issue }: { issue: Issue }) {
   ); // old
 } // old
 ```
+</File>
+import { highlight } from "sugar-high"

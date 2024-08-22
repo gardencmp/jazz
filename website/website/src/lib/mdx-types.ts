@@ -1,4 +1,7 @@
+export type DocKind = "guides" | "api"; //match the doc URL segment
+
 export type Metadata = {
+  kind: string;
   title: string;
   publishedAt: string;
   summary: string;
@@ -24,6 +27,7 @@ export type MdxHeading = {
 };
 
 export type MdxDocNav = {
+  kind: string;
   slug: string;
   title: string;
   summary: string;
