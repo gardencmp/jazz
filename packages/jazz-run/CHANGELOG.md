@@ -1,5 +1,15 @@
 # jazz-autosub
 
+## 0.7.34-neverthrow.8
+
+### Patch Changes
+
+-   Use queueable fork
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.8
+    -   cojson-transport-ws@0.7.34-neverthrow.8
+    -   jazz-tools@0.7.34-neverthrow.8
+
 ## 0.7.34-neverthrow.7
 
 ### Patch Changes

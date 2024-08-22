@@ -1,5 +1,12 @@
 # jazz-browser-media-images
 
+## 0.7.34-neverthrow.8
+
+### Patch Changes
+
+-   jazz-browser@0.7.34-neverthrow.8
+-   jazz-tools@0.7.34-neverthrow.8
+
 ## 0.7.34-neverthrow.7
 
 ### Patch Changes
