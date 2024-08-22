@@ -5,7 +5,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.34-neverthrow.7",
+    "version": "0.7.34-neverthrow.4",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
@@ -25,7 +25,7 @@
         "@scure/base": "^1.1.1",
         "hash-wasm": "^4.9.0",
         "neverthrow": "^7.0.1",
-        "queueable": "git+https://github.com/gardencmp/queueueue#876ba73"
+        "queueueue": "^4.1.2"
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",
