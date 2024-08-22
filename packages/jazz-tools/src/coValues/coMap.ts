@@ -10,6 +10,7 @@ import type {
     DepthsIn,
     DeeplyLoaded,
     CoValueClass,
+    co,
 } from "../internal.js";
 import {
     Account,
@@ -35,8 +36,10 @@ type CoMapEdit<V> = {
 };
 
 export type Simplify<A> = {
-    [K in keyof A]: A[K]
-} extends infer B ? B : never
+    [K in keyof A]: A[K];
+} extends infer B
+    ? B
+    : never;
 
 /**
  * CoMaps are collaborative versions of plain objects, mapping string-like keys to values.
@@ -494,11 +497,44 @@ export type CoKeys<Map extends object> = Exclude<
     keyof CoMap
 >;
 
+/**
+ * Force required ref fields to be non nullable
+ *
+ * Considering that:
+ * - Optional refs are typed as co<InstanceType<CoValueClass> | null | undefined>
+ * - Required refs are typed as co<InstanceType<CoValueClass> | null>
+ *
+ * This type works in two steps:
+ * - Remove the null from both types
+ * - Then we check if the input type accepts undefined, if positive we put the null union back
+ *
+ * So the optional refs stays unchanged while we safely remove the null union
+ * from required refs
+ *
+ * This way required refs can be marked as required in the CoMapInit while
+ * staying a nullable property for value access.
+ *
+ * Example:
+ *
+ * const map = MyCoMap.create({
+ *   requiredRef: NestedMap.create({}) // null is not valid here
+ * })
+ *
+ * map.requiredRef // this value is still nullable
+ */
+type ForceRequiredRef<V> = V extends co<InstanceType<CoValueClass> | null>
+    ? NonNullable<V>
+    : V extends co<InstanceType<CoValueClass> | undefined>
+      ? V | null
+      : V;
+
 export type CoMapInit<Map extends object> = {
     [Key in CoKeys<Map> as undefined extends Map[Key]
         ? never
-        : IfCo<Map[Key], Key>]: Map[Key];
-} & { [Key in CoKeys<Map> as IfCo<Map[Key], Key>]?: Map[Key] };
+        : IfCo<Map[Key], Key>]: ForceRequiredRef<Map[Key]>;
+} & {
+    [Key in CoKeys<Map> as IfCo<Map[Key], Key>]?: ForceRequiredRef<Map[Key]>;
+};
 
 // TODO: cache handlers per descriptor for performance?
 const CoMapProxyHandler: ProxyHandler<CoMap> = {
