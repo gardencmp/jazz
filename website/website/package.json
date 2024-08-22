@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node docs-gen-typedoc-json.mjs --build && node docs-json-to-mdx.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "ts": "tsc --noEmit --incremental",
@@ -36,6 +36,7 @@
     "react": "^18",
     "react-dom": "^18",
     "shadcn-ui": "latest",
+    "shiki-twoslash": "^3.1.2",
     "sugar-high": "^0.7.0",
     "tabs": "^0.2.0",
     "tailwind-merge": "^2.5.2",
@@ -50,7 +51,7 @@
     "postcss": "^8.4.35",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.9",
-    "typedoc": "^0.26.5",
+    "typedoc": "^0.26.6",
     "typescript": "^5"
   }
 }
