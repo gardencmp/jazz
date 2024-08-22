@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.34-neverthrow.6
+
+### Patch Changes
+
+-   Fix peer deps
+
 ## 0.7.34-neverthrow.5
 
 ### Patch Changes

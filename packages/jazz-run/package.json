@@ -11,6 +11,7 @@
         "prepublishOnly": "npm run build"
     },
     "dependencies": {
+        "effect": "^3.6.5",
         "@effect/cli": "^0.41.2",
         "@effect/schema": "^0.71.1",
         "@effect/platform-node": "^0.57.2",

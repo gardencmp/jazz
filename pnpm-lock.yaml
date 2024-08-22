@@ -661,6 +661,9 @@ importers:
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../cojson-transport-ws
+      effect:
+        specifier: ^3.6.5
+        version: 3.6.5
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools
