@@ -448,8 +448,8 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
       queueable:
-        specifier: ^5.3.2
-        version: 5.3.2
+        specifier: git+https://github.com/gardencmp/queueueue#876ba73
+        version: https://codeload.github.com/gardencmp/queueueue/tar.gz/876ba73
     devDependencies:
       '@types/jest':
         specifier: ^29.5.3
@@ -3751,8 +3751,9 @@ packages:
   queue-tick@1.0.1:
     resolution: {integrity: sha512-kJt5qhMxoszgU/62PLP1CJytzd2NKetjSRnyuj31fDd3Rlcz3fzlFdFLD1SItunPwyqEOkca6GbV612BWfaBag==}
 
-  queueable@5.3.2:
-    resolution: {integrity: sha512-/2ZxV1PJh7J9Q/h9ewZ4fLMmDreUlbwrWsBnluvDoKW6Nw0gbWm5hN+kiWfdDMw1o/QTAFxV9wx4KpuN5IA7OA==}
+  queueable@https://codeload.github.com/gardencmp/queueueue/tar.gz/876ba73:
+    resolution: {tarball: https://codeload.github.com/gardencmp/queueueue/tar.gz/876ba73}
+    version: 4.1.1
     engines: {node: '>=18'}
 
   quick-lru@4.0.1:
@@ -8068,7 +8069,7 @@ snapshots:
 
   queue-tick@1.0.1: {}
 
-  queueable@5.3.2:
+  queueable@https://codeload.github.com/gardencmp/queueueue/tar.gz/876ba73:
     dependencies:
       fast-list: 1.0.3
 
