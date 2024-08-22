@@ -36,7 +36,9 @@ export function NewPetPostForm() {
                 const petPost = PartialPetPost.create(
                     {
                         name,
-                        reactions: PetReactions.create([], { owner: me }),
+                        reactions: PetReactions.create([], {
+                            owner: petPostGroup,
+                        }),
                     },
                     { owner: petPostGroup },
                 );
