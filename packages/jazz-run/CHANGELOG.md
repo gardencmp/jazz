@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.34-neverthrow.5
+
+### Patch Changes
+
+-   Hack to make jazz-run account create work
+
 ## 0.7.34-neverthrow.4
 
 ### Patch Changes
