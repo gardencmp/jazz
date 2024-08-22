@@ -1,16 +1,16 @@
-import { getBlogPosts } from "@/lib/mdx-utils";
+import { getDocPosts } from "@/lib/mdx-utils";
 import config from "@/config";
 
 export default async function sitemap() {
-  let blogs = getBlogPosts().map((post) => ({
-    url: `${config.PUBLIC_URL}/blog/${post.slug}`,
+  let docs = getDocPosts().map((post) => ({
+    url: `${config.PUBLIC_URL}/docs/${post.slug}`,
     lastModified: post.metadata.publishedAt,
   }));
 
-  let routes = ["", "/blog"].map((route) => ({
+  let routes = ["", "/docs", "/mesh"].map((route) => ({
     url: `${config.PUBLIC_URL}${route}`,
     lastModified: new Date().toISOString().split("T")[0],
   }));
 
-  return [...routes, ...blogs];
+  return [...routes, ...docs];
 }

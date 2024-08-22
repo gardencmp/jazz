@@ -1,10 +1,10 @@
 import config from "@/config";
-import { getBlogPosts } from "@/lib/mdx-utils";
+import { getDocPosts } from "@/lib/mdx-utils";
 
 export async function GET() {
-  let allBlogs = await getBlogPosts();
+  let allDocs = await getDocPosts();
 
-  const itemsXml = allBlogs
+  const itemsXml = allDocs
     .sort((a, b) => {
       if (new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt)) {
         return -1;
@@ -27,9 +27,9 @@ export async function GET() {
   const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
   <rss version="2.0">
     <channel>
-        <title>My Portfolio</title>
+        <title>${config.DEFAULT_TITLE}</title>
         <link>${config.PUBLIC_URL}</link>
-        <description>This is my portfolio RSS feed</description>
+        <description>${config.DEFAULT_DESCRIPTION}</description>
         ${itemsXml}
     </channel>
   </rss>`;
