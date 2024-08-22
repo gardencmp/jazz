@@ -12,7 +12,7 @@ interface DocContentProps {
 
 export function DocContent({ post }: DocContentProps) {
   return (
-    <section className="PageContainer container px-[48px] max-w-[720px] space-y-w8">
+    <section className="PageContainer container lg:px-[48px] max-w-[720px] space-y-w8">
       <header className="space-y-1.5">
         <h1 className="Text-title text-fill-contrast">{post.metadata.title}</h1>
         <div className="flex items-center gap-2.5 text-small text-solid">

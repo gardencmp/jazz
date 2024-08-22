@@ -235,7 +235,7 @@ interface CustomMDXProps extends MDXRemoteProps {
   components?: Record<string, React.ComponentType<any>>;
 }
 
-export function CustomMDX(props: CustomMDXProps) {
+export const CustomMDX = (props: CustomMDXProps) => {
   return (
     <MDXRemote
       {...props}
@@ -245,4 +245,4 @@ export function CustomMDX(props: CustomMDXProps) {
       }}
     />
   );
-}
+};
