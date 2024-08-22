@@ -1,5 +1,25 @@
 # jazz-autosub
 
+## 0.7.34
+
+### Patch Changes
+
+-   1232c02: Hack to make jazz-run account create work
+-   2c3a40c: Use fork of queueable
+-   0d8175b: Fix deps even more
+-   032f69f: Fix peer deps
+-   4e16575: Use queueable fork
+-   Updated dependencies [5d91f9f]
+-   Updated dependencies [5094e6d]
+-   Updated dependencies [b09589b]
+-   Updated dependencies [2c3a40c]
+-   Updated dependencies [406ab9b]
+-   Updated dependencies [4e16575]
+-   Updated dependencies [ea882ab]
+    -   cojson@0.7.34
+    -   cojson-transport-ws@0.7.34
+    -   jazz-tools@0.7.34
+
 ## 0.7.34-neverthrow.8
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser",
-  "version": "0.7.34-neverthrow.8",
+  "version": "0.7.34",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
