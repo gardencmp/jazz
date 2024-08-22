@@ -1,5 +1,13 @@
 # jazz-example-pets
 
+## 0.0.99-neverthrow.5
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.7
+-   jazz-tools@0.7.34-neverthrow.7
+-   jazz-browser-media-images@0.7.34-neverthrow.7
+
 ## 0.0.99-neverthrow.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Use fork of queueable
+
 ## 0.7.34-neverthrow.4
 
 ### Patch Changes

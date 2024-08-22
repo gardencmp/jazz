@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.7
+    -   cojson-storage-indexeddb@0.7.34-neverthrow.7
+    -   cojson-transport-ws@0.7.34-neverthrow.7
+    -   jazz-tools@0.7.34-neverthrow.7
+
 ## 0.7.34-neverthrow.4
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.7
+
 ## 0.7.34-neverthrow.4
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # jazz-example-chat
 
+## 0.0.81-neverthrow.5
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.7
+  - jazz-react@0.7.34-neverthrow.7
+  - jazz-tools@0.7.34-neverthrow.7
+
 ## 0.0.81-neverthrow.4
 
 ### Patch Changes
