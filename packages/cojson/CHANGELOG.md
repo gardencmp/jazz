@@ -1,5 +1,52 @@
 # cojson
 
+## 0.7.34
+
+### Patch Changes
+
+-   5d91f9f: Stop using tryAddTransactionsAsync
+-   5094e6d: Start introducing neverthrow, make tryAddNewTransactionsAsync and handleNewContent less throwy
+-   b09589b: Only one async transaction per CoValue at a time again
+-   2c3a40c: Use fork of queueable
+-   4e16575: Use queueable fork
+-   ea882ab: Better log message for failed transactions
+
+## 0.7.34-neverthrow.8
+
+### Patch Changes
+
+-   Use queueable fork
+
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Use fork of queueable
+
+## 0.7.34-neverthrow.4
+
+### Patch Changes
+
+-   Stop using tryAddTransactionsAsync
+
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Better log message for failed transactions
+
+## 0.7.34-neverthrow.1
+
+### Patch Changes
+
+-   Only one async transaction per CoValue at a time again
+
+## 0.7.34-neverthrow.0
+
+### Patch Changes
+
+-   Start introducing neverthrow, make tryAddNewTransactionsAsync and handleNewContent less throwy
+
 ## 0.7.33
 
 ### Patch Changes

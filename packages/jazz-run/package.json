@@ -3,7 +3,7 @@
     "bin": "./dist/index.js",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.33",
+    "version": "0.7.34",
     "scripts": {
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
@@ -11,20 +11,21 @@
         "prepublishOnly": "npm run build"
     },
     "dependencies": {
-        "@effect/cli": "^0.36.21",
-        "@effect/platform-node": "^0.49.2",
-        "@effect/schema": "^0.66.16",
+        "effect": "^3.6.5",
+        "@effect/cli": "^0.41.2",
+        "@effect/schema": "^0.71.1",
+        "@effect/platform-node": "^0.57.2",
+        "@effect/printer": "^0.34.5",
+        "@effect/printer-ansi": "^0.34.5",
+        "@effect/typeclass": "^0.25.5",
         "cojson": "workspace:*",
         "cojson-transport-ws": "workspace:*",
-        "effect": "^3.5.2",
-        "fast-check": "^3.17.2",
         "jazz-tools": "workspace:*",
         "ws": "^8.14.2"
     },
     "devDependencies": {
         "@types/ws": "^8.5.5",
-        "typescript": "^5.3.3",
-        "vitest": "^0.34.6"
+        "typescript": "^5.3.3"
     },
     "lint-staged": {
         "*.{ts,tsx}": "eslint --fix",

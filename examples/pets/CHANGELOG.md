@@ -1,5 +1,68 @@
 # jazz-example-pets
 
+## 0.0.99
+
+### Patch Changes
+
+-   jazz-react@0.7.34
+-   jazz-tools@0.7.34
+-   jazz-browser-media-images@0.7.34
+
+## 0.0.99-neverthrow.6
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.8
+-   jazz-tools@0.7.34-neverthrow.8
+-   jazz-browser-media-images@0.7.34-neverthrow.8
+
+## 0.0.99-neverthrow.5
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.7
+-   jazz-tools@0.7.34-neverthrow.7
+-   jazz-browser-media-images@0.7.34-neverthrow.7
+
+## 0.0.99-neverthrow.4
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.4
+-   jazz-tools@0.7.34-neverthrow.4
+-   jazz-browser-media-images@0.7.34-neverthrow.4
+
+## 0.0.99-neverthrow.3
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.3
+-   jazz-tools@0.7.34-neverthrow.3
+-   jazz-browser-media-images@0.7.34-neverthrow.3
+
+## 0.0.99-neverthrow.2
+
+### Patch Changes
+
+-   jazz-browser-media-images@0.7.34-neverthrow.2
+-   jazz-react@0.7.34-neverthrow.2
+
+## 0.0.99-neverthrow.1
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.1
+-   jazz-tools@0.7.34-neverthrow.1
+-   jazz-browser-media-images@0.7.34-neverthrow.1
+
+## 0.0.99-neverthrow.0
+
+### Patch Changes
+
+-   jazz-react@0.7.34-neverthrow.0
+-   jazz-tools@0.7.34-neverthrow.0
+-   jazz-browser-media-images@0.7.34-neverthrow.0
+
 ## 0.0.98
 
 ### Patch Changes

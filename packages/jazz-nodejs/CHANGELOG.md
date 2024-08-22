@@ -1,5 +1,81 @@
 # jazz-autosub
 
+## 0.7.34
+
+### Patch Changes
+
+-   Updated dependencies [5d91f9f]
+-   Updated dependencies [5094e6d]
+-   Updated dependencies [b09589b]
+-   Updated dependencies [2c3a40c]
+-   Updated dependencies [406ab9b]
+-   Updated dependencies [4e16575]
+-   Updated dependencies [ea882ab]
+    -   cojson@0.7.34
+    -   cojson-transport-ws@0.7.34
+    -   jazz-tools@0.7.34
+
+## 0.7.34-neverthrow.8
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.8
+    -   cojson-transport-ws@0.7.34-neverthrow.8
+    -   jazz-tools@0.7.34-neverthrow.8
+
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.7
+    -   cojson-transport-ws@0.7.34-neverthrow.7
+    -   jazz-tools@0.7.34-neverthrow.7
+
+## 0.7.34-neverthrow.4
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.4
+    -   cojson-transport-ws@0.7.34-neverthrow.4
+    -   jazz-tools@0.7.34-neverthrow.4
+
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.3
+    -   cojson-transport-ws@0.7.34-neverthrow.3
+    -   jazz-tools@0.7.34-neverthrow.3
+
+## 0.7.34-neverthrow.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.34-neverthrow.2
+
+## 0.7.34-neverthrow.1
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.1
+    -   cojson-transport-ws@0.7.34-neverthrow.1
+    -   jazz-tools@0.7.34-neverthrow.1
+
+## 0.7.34-neverthrow.0
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.0
+    -   cojson-transport-ws@0.7.34-neverthrow.0
+    -   jazz-tools@0.7.34-neverthrow.0
+
 ## 0.7.33
 
 ### Patch Changes

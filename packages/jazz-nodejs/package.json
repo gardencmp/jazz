@@ -5,7 +5,7 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.33",
+    "version": "0.7.34",
     "dependencies": {
         "cojson": "workspace:*",
         "cojson-transport-ws": "workspace:*",

@@ -249,8 +249,22 @@ export function determineValidTransactions(
                         const effectiveTransactor =
                             transactor === groupContent.id &&
                             groupAtTime instanceof RawAccount
-                                ? groupAtTime.currentAgentID()
+                                ? groupAtTime.currentAgentID().match(
+                                      (agentID) => agentID,
+                                      (e) => {
+                                          console.error(
+                                              "Error while determining current agent ID in valid transactions",
+                                              e,
+                                          );
+                                          return undefined;
+                                      },
+                                  )
                                 : transactor;
+
+                        if (!effectiveTransactor) {
+                            return false;
+                        }
+
                         const transactorRoleAtTxTime =
                             groupAtTime.get(effectiveTransactor) ||
                             groupAtTime.get(EVERYONE);

@@ -7,6 +7,7 @@ import {
     StreamingHash,
     KeyID,
     CryptoProvider,
+    SignerID,
 } from "./crypto/crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { base58 } from "@scure/base";
@@ -16,7 +17,7 @@ import {
     isKeyForKeyField,
 } from "./permissions.js";
 import { RawGroup } from "./coValues/group.js";
-import { LocalNode } from "./localNode.js";
+import { LocalNode, ResolveAccountAgentError } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { AccountID, ControlledAccountOrAgent } from "./coValues/account.js";
@@ -25,6 +26,7 @@ import { coreToCoValue } from "./coreToCoValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
+import { err, ok, Result } from "neverthrow";
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -103,10 +105,10 @@ export class CoValueCore {
     _decryptionCache: {
         [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined;
     } = {};
-    currentlyAsyncApplyingTxDone?: Promise<void>;
     _cachedKnownState?: CoValueKnownState;
     _cachedDependentOn?: RawCoID[];
     _cachedNewContentSinceEmpty?: NewContentMessage[] | undefined;
+    _currentAsyncAddTransaction?: Promise<void>;
 
     constructor(
         header: CoValueHeader,
@@ -182,7 +184,9 @@ export class CoValueCore {
             this.header.meta?.type === "account"
                 ? (this.node.currentSessionID.replace(
                       this.node.account.id,
-                      this.node.account.currentAgentID(),
+                      this.node.account
+                          .currentAgentID()
+                          ._unsafeUnwrap({ withStackTrace: true }),
                   ) as SessionID)
                 : this.node.currentSessionID;
 
@@ -197,167 +201,198 @@ export class CoValueCore {
         newTransactions: Transaction[],
         givenExpectedNewHash: Hash | undefined,
         newSignature: Signature,
-    ): boolean {
-        const signerID = this.crypto.getAgentSignerID(
-            this.node.resolveAccountAgent(
+    ): Result<true, TryAddTransactionsError> {
+        return this.node
+            .resolveAccountAgent(
                 accountOrAgentIDfromSessionID(sessionID),
                 "Expected to know signer of transaction",
-            ),
-        );
+            )
+            .andThen((agent) => {
+                const signerID = this.crypto.getAgentSignerID(agent);
 
-        if (!signerID) {
-            console.warn(
-                "Unknown agent",
-                accountOrAgentIDfromSessionID(sessionID),
-            );
-            return false;
-        }
+                // const beforeHash = performance.now();
+                const { expectedNewHash, newStreamingHash } =
+                    this.expectedNewHashAfter(sessionID, newTransactions);
+                // const afterHash = performance.now();
+                // console.log(
+                //     "Hashing took",
+                //     afterHash - beforeHash
+                // );
 
-        // const beforeHash = performance.now();
-        const { expectedNewHash, newStreamingHash } = this.expectedNewHashAfter(
-            sessionID,
-            newTransactions,
-        );
-        // const afterHash = performance.now();
-        // console.log(
-        //     "Hashing took",
-        //     afterHash - beforeHash
-        // );
+                if (
+                    givenExpectedNewHash &&
+                    givenExpectedNewHash !== expectedNewHash
+                ) {
+                    return err({
+                        type: "InvalidHash",
+                        id: this.id,
+                        expectedNewHash,
+                        givenExpectedNewHash,
+                    } satisfies InvalidHashError);
+                }
 
-        if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
-            console.warn("Invalid hash", {
-                expectedNewHash,
-                givenExpectedNewHash,
+                // const beforeVerify = performance.now();
+                if (
+                    !this.crypto.verify(newSignature, expectedNewHash, signerID)
+                ) {
+                    return err({
+                        type: "InvalidSignature",
+                        id: this.id,
+                        newSignature,
+                        sessionID,
+                        signerID,
+                    } satisfies InvalidSignatureError);
+                }
+                // const afterVerify = performance.now();
+                // console.log(
+                //     "Verify took",
+                //     afterVerify - beforeVerify
+                // );
+
+                this.doAddTransactions(
+                    sessionID,
+                    newTransactions,
+                    newSignature,
+                    expectedNewHash,
+                    newStreamingHash,
+                    "immediate",
+                );
+
+                return ok(true as const);
             });
-            return false;
-        }
-
-        // const beforeVerify = performance.now();
-        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
-            console.warn(
-                "Invalid signature in",
-                this.id,
-                newSignature,
-                expectedNewHash,
-                signerID,
-            );
-            return false;
-        }
-        // const afterVerify = performance.now();
-        // console.log(
-        //     "Verify took",
-        //     afterVerify - beforeVerify
-        // );
-
-        this.doAddTransactions(
-            sessionID,
-            newTransactions,
-            newSignature,
-            expectedNewHash,
-            newStreamingHash,
-            "immediate",
-        );
-
-        return true;
     }
 
-    async tryAddTransactionsAsync(
+    /*tryAddTransactionsAsync(
         sessionID: SessionID,
         newTransactions: Transaction[],
         givenExpectedNewHash: Hash | undefined,
         newSignature: Signature,
-    ): Promise<boolean> {
-        if (this.currentlyAsyncApplyingTxDone) {
-            await this.currentlyAsyncApplyingTxDone;
-        }
-        let resolveDone!: () => void;
+    ): ResultAsync<true, TryAddTransactionsError> {
+        const currentAsyncAddTransaction = this._currentAsyncAddTransaction;
+        let maybeAwaitPrevious:
+            | ResultAsync<void, TryAddTransactionsError>
+            | undefined;
+        let thisDone = () => {};
 
-        this.currentlyAsyncApplyingTxDone = new Promise((resolve) => {
-            resolveDone = resolve;
-        });
-
-        const signerID = this.crypto.getAgentSignerID(
-            await this.node.resolveAccountAgentAsync(
-                accountOrAgentIDfromSessionID(sessionID),
-                "Expected to know signer of transaction",
-            ),
-        );
-
-        if (!signerID) {
-            console.warn(
-                "Unknown agent",
-                accountOrAgentIDfromSessionID(sessionID),
+        if (currentAsyncAddTransaction) {
+            // eslint-disable-next-line neverthrow/must-use-result
+            maybeAwaitPrevious = ResultAsync.fromSafePromise(
+                currentAsyncAddTransaction,
             );
-            resolveDone();
-            return false;
-        }
-
-        const nTxBefore =
-            this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
-
-        // const beforeHash = performance.now();
-        const { expectedNewHash, newStreamingHash } =
-            await this.expectedNewHashAfterAsync(sessionID, newTransactions);
-        // const afterHash = performance.now();
-        // console.log(
-        //     "Hashing took",
-        //     afterHash - beforeHash
-        // );
-
-        const nTxAfter =
-            this.sessionLogs.get(sessionID)?.transactions.length ?? 0;
-
-        if (nTxAfter !== nTxBefore) {
-            const newTransactionLengthBefore = newTransactions.length;
-            newTransactions = newTransactions.slice(nTxAfter - nTxBefore);
-            console.warn("Transactions changed while async hashing", {
-                nTxBefore,
-                nTxAfter,
-                newTransactionLengthBefore,
-                remainingNewTransactions: newTransactions.length,
+        } else {
+            // eslint-disable-next-line neverthrow/must-use-result
+            maybeAwaitPrevious = ResultAsync.fromSafePromise(Promise.resolve());
+            this._currentAsyncAddTransaction = new Promise((resolve) => {
+                thisDone = resolve;
             });
         }
 
-        if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
-            console.warn("Invalid hash", {
-                expectedNewHash,
-                givenExpectedNewHash,
+        return maybeAwaitPrevious
+            .andThen((_previousDone) =>
+                this.node
+                    .resolveAccountAgentAsync(
+                        accountOrAgentIDfromSessionID(sessionID),
+                        "Expected to know signer of transaction",
+                    )
+                    .andThen((agent) => {
+                        const signerID = this.crypto.getAgentSignerID(agent);
+
+                        const nTxBefore =
+                            this.sessionLogs.get(sessionID)?.transactions
+                                .length ?? 0;
+
+                        // const beforeHash = performance.now();
+                        return ResultAsync.fromSafePromise(
+                            this.expectedNewHashAfterAsync(
+                                sessionID,
+                                newTransactions,
+                            ),
+                        ).andThen(({ expectedNewHash, newStreamingHash }) => {
+                            // const afterHash = performance.now();
+                            // console.log(
+                            //     "Hashing took",
+                            //     afterHash - beforeHash
+                            // );
+
+                            const nTxAfter =
+                                this.sessionLogs.get(sessionID)?.transactions
+                                    .length ?? 0;
+
+                            if (nTxAfter !== nTxBefore) {
+                                const newTransactionLengthBefore =
+                                    newTransactions.length;
+                                newTransactions = newTransactions.slice(
+                                    nTxAfter - nTxBefore,
+                                );
+                                console.warn(
+                                    "Transactions changed while async hashing",
+                                    {
+                                        nTxBefore,
+                                        nTxAfter,
+                                        newTransactionLengthBefore,
+                                        remainingNewTransactions:
+                                            newTransactions.length,
+                                    },
+                                );
+                            }
+
+                            if (
+                                givenExpectedNewHash &&
+                                givenExpectedNewHash !== expectedNewHash
+                            ) {
+                                return err({
+                                    type: "InvalidHash",
+                                    id: this.id,
+                                    expectedNewHash,
+                                    givenExpectedNewHash,
+                                } satisfies InvalidHashError);
+                            }
+
+                            performance.mark("verifyStart" + this.id);
+                            if (
+                                !this.crypto.verify(
+                                    newSignature,
+                                    expectedNewHash,
+                                    signerID,
+                                )
+                            ) {
+                                return err({
+                                    type: "InvalidSignature",
+                                    id: this.id,
+                                    newSignature,
+                                    sessionID,
+                                    signerID,
+                                } satisfies InvalidSignatureError);
+                            }
+                            performance.mark("verifyEnd" + this.id);
+                            performance.measure(
+                                "verify" + this.id,
+                                "verifyStart" + this.id,
+                                "verifyEnd" + this.id,
+                            );
+
+                            this.doAddTransactions(
+                                sessionID,
+                                newTransactions,
+                                newSignature,
+                                expectedNewHash,
+                                newStreamingHash,
+                                "deferred",
+                            );
+
+                            return ok(true as const);
+                        });
+                    }),
+            )
+            .map((trueResult) => {
+                thisDone();
+                return trueResult;
+            })
+            .mapErr((err) => {
+                thisDone();
+                return err;
             });
-            resolveDone();
-            return false;
-        }
-
-        performance.mark("verifyStart" + this.id);
-        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
-            console.warn(
-                "Invalid signature in",
-                this.id,
-                newSignature,
-                expectedNewHash,
-                signerID,
-            );
-            resolveDone();
-            return false;
-        }
-        performance.mark("verifyEnd" + this.id);
-        performance.measure(
-            "verify" + this.id,
-            "verifyStart" + this.id,
-            "verifyEnd" + this.id,
-        );
-
-        this.doAddTransactions(
-            sessionID,
-            newTransactions,
-            newSignature,
-            expectedNewHash,
-            newStreamingHash,
-            "deferred",
-        );
-
-        resolveDone();
-        return true;
-    }
+    }*/
 
     private doAddTransactions(
         sessionID: SessionID,
@@ -545,7 +580,9 @@ export class CoValueCore {
             this.header.meta?.type === "account"
                 ? (this.node.currentSessionID.replace(
                       this.node.account.id,
-                      this.node.account.currentAgentID(),
+                      this.node.account
+                          .currentAgentID()
+                          ._unsafeUnwrap({ withStackTrace: true }),
                   ) as SessionID)
                 : this.node.currentSessionID;
 
@@ -563,7 +600,7 @@ export class CoValueCore {
             [transaction],
             expectedNewHash,
             signature,
-        );
+        )._unsafeUnwrap({ withStackTrace: true });
 
         if (success) {
             void this.node.syncManager.syncCoValue(this);
@@ -709,7 +746,9 @@ export class CoValueCore {
             // Try to find key revelation for us
             const lookupAccountOrAgentID =
                 this.header.meta?.type === "account"
-                    ? this.node.account.currentAgentID()
+                    ? this.node.account
+                          .currentAgentID()
+                          ._unsafeUnwrap({ withStackTrace: true })
                     : this.node.account.id;
 
             const lastReadyKeyEdit = content.lastEditAt(
@@ -718,10 +757,9 @@ export class CoValueCore {
 
             if (lastReadyKeyEdit?.value) {
                 const revealer = lastReadyKeyEdit.by;
-                const revealerAgent = this.node.resolveAccountAgent(
-                    revealer,
-                    "Expected to know revealer",
-                );
+                const revealerAgent = this.node
+                    .resolveAccountAgent(revealer, "Expected to know revealer")
+                    ._unsafeUnwrap({ withStackTrace: true });
 
                 const secret = this.crypto.unseal(
                     lastReadyKeyEdit.value,
@@ -986,3 +1024,23 @@ function getNextKnownSignatureIdx(
                 idx >= (sentStateForSessionID ?? knownStateForSessionID ?? -1),
         );
 }
+
+export type InvalidHashError = {
+    type: "InvalidHash";
+    id: RawCoID;
+    expectedNewHash: Hash;
+    givenExpectedNewHash: Hash;
+};
+
+export type InvalidSignatureError = {
+    type: "InvalidSignature";
+    id: RawCoID;
+    newSignature: Signature;
+    sessionID: SessionID;
+    signerID: SignerID;
+};
+
+export type TryAddTransactionsError =
+    | ResolveAccountAgentError
+    | InvalidHashError
+    | InvalidSignatureError;

@@ -5,13 +5,14 @@
     "types": "src/index.ts",
     "type": "module",
     "license": "MIT",
-    "version": "0.7.33",
+    "version": "0.7.34",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
         "@typescript-eslint/parser": "^6.2.1",
         "eslint": "^8.46.0",
         "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-neverthrow": "^1.1.4",
         "eslint-plugin-require-extensions": "^0.1.3",
         "typescript": "5.0.2",
         "vitest": "^0.34.6"
@@ -23,7 +24,8 @@
         "@noble/hashes": "^1.4.0",
         "@scure/base": "^1.1.1",
         "hash-wasm": "^4.9.0",
-        "queueable": "^5.3.2"
+        "neverthrow": "^7.0.1",
+        "queueueue": "^4.1.2"
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",
