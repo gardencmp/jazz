@@ -1,25 +1,19 @@
-"use client";
-
 import config from "@/config";
-import { usePathname } from "next/navigation";
 import { MdxData, MdxDocNav, MdxHeading } from "@/lib/mdx-types";
 import { DocContent, DocMapScroller, DocsNav } from "./index";
 
-interface ClientPostProps {
+interface PostProps {
   post: MdxData;
   docsList: MdxDocNav[];
   headings: MdxHeading[];
+  // defines the URL path to the kind of doc
+  kind: "guides" | "api";
 }
 
-export function ClientPost({ post, docsList, headings }: ClientPostProps) {
-  const pathname = usePathname();
-  const segments = pathname.split("/");
-  const lastSegment = segments[segments.length - 2]; // 'guides' or 'api'
-  const path = `docs/${lastSegment}`;
-
+export function Post({ post, docsList, headings, kind }: PostProps) {
   return (
     <div className="relative container max-w-fit md:flex pb-under-content pt-under-nav-content">
-      <DocsNav docs={docsList} currentPath={lastSegment} />
+      <DocsNav docs={docsList} currentPath={kind} />
       <DocContent post={post} />
       <DocMapScroller headings={headings} />
       <script
@@ -38,7 +32,7 @@ export function ClientPost({ post, docsList, headings }: ClientPostProps) {
               : `${config.PUBLIC_URL}/og?title=${encodeURIComponent(
                   post.metadata.title,
                 )}`,
-            url: `${config.PUBLIC_URL}/${path}/${post.slug}`,
+            url: `${config.PUBLIC_URL}/docs/${kind}/${post.slug}`,
             author: {
               "@type": "Person",
               name: "My Portfolio",

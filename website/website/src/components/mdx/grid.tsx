@@ -2,13 +2,13 @@ import { ReactNode } from "react";
 import clsx from "clsx";
 import { RiDashboardHorizontalFill } from "@/components/icons";
 
-export function Grid({
+export const Grid = ({
   className,
   children,
 }: {
   className?: string;
   children: ReactNode;
-}) {
+}) => {
   return (
     <div
       className={clsx(
@@ -20,9 +20,12 @@ export function Grid({
       {children}
     </div>
   );
-}
+};
 
-export function GridCard(props: { children: ReactNode; className?: string }) {
+export const GridCard = (props: {
+  children: ReactNode;
+  className?: string;
+}) => {
   return (
     <div
       className={clsx(
@@ -34,7 +37,7 @@ export function GridCard(props: { children: ReactNode; className?: string }) {
       {props.children}
     </div>
   );
-}
+};
 
 export const CardMetaHeading = ({
   children,

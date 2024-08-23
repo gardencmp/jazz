@@ -1,8 +1,7 @@
-// export * from "./mdx-dynamic";
-export * from "./mdx-components";
 export * from "./alert";
+export * from "./code";
+export * from "./pre-code";
 export * from "./clipboard-copy";
-export * from "./responsive-iframe";
-export * from "./slogan";
 export * from "./badge";
-export * from "./grid";
+
+export { CustomMDX } from "./mdx-components";

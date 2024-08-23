@@ -8,8 +8,9 @@ import {
 
 const contentDir = "src/app/(home)/content";
 
-export default async function HomePage() {
-  const content = await getMdxData(contentDir);
+export default function HomePage() {
+  const content = getMdxData(contentDir);
+  // console.log(content);
   const covaluesContent = content.filter((item) =>
     item.slug.includes("covalues"),
   );

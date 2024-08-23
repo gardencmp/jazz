@@ -12,8 +12,8 @@ export const metadata = {
   description: "Jazz Guide, FAQ & Docs.",
 };
 
-export default async function DocsIndexPage() {
-  const allDocs = await getMdxData(docsDir);
+export default function DocsIndexPage() {
+  const allDocs = getMdxData(docsDir);
   const quickstart = allDocs.find((doc) => doc.slug === QUICKSTART_SLUG);
   // console.log("allDocs", allDocs);
   // console.log("quickstart", quickstart);

@@ -1,6 +1,6 @@
 import { CardSecondary, HeadingLinkCaret } from "@/components/card";
 import { SectionSecondary } from "@/components/layout";
-import { Code, File, Pre } from "@/components/mdx/mdx-components";
+import { Code, File, Pre } from "@/components/mdx";
 import { Link } from "@/components/ui/link";
 import { MdxData } from "@/lib/mdx-types";
 import { ClockIcon } from "lucide-react";

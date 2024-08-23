@@ -4,8 +4,8 @@ import path from "path";
 
 const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
 
-export async function GET() {
-  let allDocs = await getMdxData(docsDir);
+export function GET() {
+  let allDocs = getMdxData(docsDir);
 
   const itemsXml = allDocs
     .sort((a, b) => {

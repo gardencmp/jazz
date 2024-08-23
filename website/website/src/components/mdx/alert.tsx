@@ -13,7 +13,7 @@ interface AlertProps extends React.HTMLAttributes<HTMLElement> {
   theme?: keyof typeof themeIcons;
 }
 
-export function Alert({ children, theme = "notice", ...props }: AlertProps) {
+export const Alert = ({ children, theme = "notice", ...props }: AlertProps) => {
   const IconComponent = themeIcons[theme];
 
   return (
@@ -31,4 +31,4 @@ export function Alert({ children, theme = "notice", ...props }: AlertProps) {
       {children}
     </div>
   );
-}
+};

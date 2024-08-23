@@ -1,4 +1,4 @@
-export type DocKind = "guides" | "api"; //match the doc URL segment
+export type DocKind = "guides" | "api"; // match the doc URL segment
 
 export type Metadata = {
   kind: string;
@@ -15,8 +15,8 @@ export type ParsedContent = {
 };
 
 export type MdxData = {
-  metadata: Metadata;
   slug: string;
+  metadata: Metadata;
   content: string;
 };
 

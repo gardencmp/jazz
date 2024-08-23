@@ -5,40 +5,40 @@ import {
 } from "@/lib/mdx-server-utils";
 import { notFound } from "next/navigation";
 import {
-  ClientPost,
+  Post,
   generateMetadata as generateMetadataComponent,
 } from "../../(components)";
 import path from "path";
 
 const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
 
-async function getPost(slug: string) {
-  let allDocs = await getMdxData(docsDir);
+function getPost(slug: string) {
+  let allDocs = getMdxData(docsDir);
   return allDocs.find((doc) => doc.slug === slug);
 }
 
-export default async function GuideSlugPage({
+export default function GuideSlugPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const post = await getPost(params.slug);
+  const post = getPost(params.slug);
   if (!post) {
     notFound();
   }
 
-  const docsList = await getDocsList(docsDir);
+  const docsList = getDocsList(docsDir);
   const headings = extractHeadings(post.content);
+  // console.log("post", post);
+  // console.log("docsList", docsList);
 
-  return <ClientPost post={post} docsList={docsList} headings={headings} />;
+  return (
+    <Post post={post} docsList={docsList} headings={headings} kind="guides" />
+  );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const post = await getPost(params.slug);
+export function generateMetadata({ params }: { params: { slug: string } }) {
+  const post = getPost(params.slug);
   if (!post) {
     notFound();
   }
@@ -46,7 +46,7 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const allDocs = await getMdxData(docsDir);
+  const allDocs = getMdxData(docsDir);
   return allDocs.map((doc) => ({
     slug: doc.slug,
   }));

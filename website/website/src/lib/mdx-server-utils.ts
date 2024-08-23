@@ -1,10 +1,12 @@
 import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
-import { MdxHeading, ParsedContent, MdxData, Metadata } from "./mdx-types";
+import path from "path";
+import { MdxHeading, Metadata, ParsedContent } from "./mdx-types";
+
+const MDX_EXTENSION = ".mdx";
 
 export function getMDXFiles(dir: string): string[] {
-  return fs.readdirSync(dir).filter((file) => file.endsWith(".mdx"));
+  return fs.readdirSync(dir).filter((file) => file.endsWith(MDX_EXTENSION));
 }
 
 export function readMDXFile(filePath: string): ParsedContent {
@@ -13,25 +15,44 @@ export function readMDXFile(filePath: string): ParsedContent {
   return { metadata: data as Metadata, content };
 }
 
-export async function getMdxData(dir: string): Promise<MdxData[]> {
-  const files = await fs.promises.readdir(dir);
-  const mdxFiles = files.filter((file) => file.endsWith(".mdx"));
+export function getMdxData(dir: string) {
+  let mdxFiles = getMDXFiles(dir);
 
-  const mdxDataPromises = mdxFiles.map(async (file) => {
+  return mdxFiles.map((file) => {
     const filePath = path.join(dir, file);
-    const { metadata, content } = await readMDXFile(filePath);
+    const { metadata, content } = readMDXFile(filePath);
+    // const slug = path.basename(file, path.extname(file));
+    const slug = file.replace(new RegExp(`${MDX_EXTENSION}$`), "");
+
     return {
       metadata,
-      slug: file.replace(/\.mdx$/, ""),
+      slug,
       content,
     };
   });
-
-  return Promise.all(mdxDataPromises);
 }
 
-export async function getDocsList(dir: string) {
-  const docs = await getMdxData(dir);
+// function getMDXData(dir) {
+//   let mdxFiles = getMDXFiles(dir);
+//   return mdxFiles.map((file) => {
+//     let { metadata, content } = readMDXFile(path.join(dir, file));
+//     let slug = path.basename(file, path.extname(file));
+//     let tweetIds = extractTweetIds(content);
+//     return {
+//       metadata,
+//       slug,
+//       tweetIds,
+//       content,
+//     };
+//   });
+// }
+
+export function getBlogPosts() {
+  return getMdxData(path.join(process.cwd(), "content"));
+}
+
+export function getDocsList(dir: string) {
+  const docs = getMdxData(dir);
   return docs.map(({ metadata, slug }) => ({
     kind: metadata.kind,
     slug,

@@ -1,9 +1,8 @@
-"use client";
-
 import { CustomMDX } from "@/components/mdx";
 import { Link } from "@/components/ui/link";
 import { MdxData } from "@/lib/mdx-types";
 import { formatDate } from "@/lib/format-date";
+import { Suspense } from "react";
 import { CalendarIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 
 interface DocContentProps {
@@ -25,10 +24,12 @@ export function DocContent({ post }: DocContentProps) {
             Code
           </Link>
           <hr className="hr-vertical h-[13px]" />
-          <p className="flex items-center gap-1.5">
-            <CalendarIcon className="size-em" />
-            {formatDate(post.metadata.publishedAt)}
-          </p>
+          <Suspense fallback={<p className="h-5" />}>
+            <p className="flex items-center gap-1.5">
+              <CalendarIcon className="size-em" />
+              {formatDate(post.metadata.publishedAt)}
+            </p>
+          </Suspense>
         </div>
       </header>
       <article className="prose">

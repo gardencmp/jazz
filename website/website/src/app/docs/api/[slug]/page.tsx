@@ -5,7 +5,7 @@ import {
 } from "@/lib/mdx-server-utils";
 import { notFound } from "next/navigation";
 import {
-  ClientPost,
+  Post,
   generateMetadata as generateMetadataComponent,
 } from "../../(components)";
 import path from "path";
@@ -30,7 +30,9 @@ export default async function ApiSlugPage({
   const docsList = await getDocsList(docsDir);
   const headings = extractHeadings(post.content);
 
-  return <ClientPost post={post} docsList={docsList} headings={headings} />;
+  return (
+    <Post post={post} docsList={docsList} headings={headings} kind="api" />
+  );
 }
 
 export async function generateMetadata({
