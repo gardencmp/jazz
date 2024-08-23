@@ -1,5 +1,170 @@
 # jazz-autosub
 
+## 0.7.34
+
+### Patch Changes
+
+-   1232c02: Hack to make jazz-run account create work
+-   2c3a40c: Use fork of queueable
+-   0d8175b: Fix deps even more
+-   032f69f: Fix peer deps
+-   4e16575: Use queueable fork
+-   Updated dependencies [5d91f9f]
+-   Updated dependencies [5094e6d]
+-   Updated dependencies [b09589b]
+-   Updated dependencies [2c3a40c]
+-   Updated dependencies [406ab9b]
+-   Updated dependencies [4e16575]
+-   Updated dependencies [ea882ab]
+    -   cojson@0.7.34
+    -   cojson-transport-ws@0.7.34
+    -   jazz-tools@0.7.34
+
+## 0.7.34-neverthrow.8
+
+### Patch Changes
+
+-   Use queueable fork
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.8
+    -   cojson-transport-ws@0.7.34-neverthrow.8
+    -   jazz-tools@0.7.34-neverthrow.8
+
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Use fork of queueable
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.7
+    -   cojson-transport-ws@0.7.34-neverthrow.7
+    -   jazz-tools@0.7.34-neverthrow.7
+
+## 0.7.34-neverthrow.6
+
+### Patch Changes
+
+-   Fix deps even more
+
+## 0.7.34-neverthrow.6
+
+### Patch Changes
+
+-   Fix peer deps
+
+## 0.7.34-neverthrow.5
+
+### Patch Changes
+
+-   Hack to make jazz-run account create work
+
+## 0.7.34-neverthrow.4
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.4
+    -   cojson-transport-ws@0.7.34-neverthrow.4
+    -   jazz-tools@0.7.34-neverthrow.4
+
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.3
+    -   cojson-transport-ws@0.7.34-neverthrow.3
+    -   jazz-tools@0.7.34-neverthrow.3
+
+## 0.7.34-neverthrow.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.34-neverthrow.2
+
+## 0.7.34-neverthrow.1
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.1
+    -   cojson-transport-ws@0.7.34-neverthrow.1
+    -   jazz-tools@0.7.34-neverthrow.1
+
+## 0.7.34-neverthrow.0
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.0
+    -   cojson-transport-ws@0.7.34-neverthrow.0
+    -   jazz-tools@0.7.34-neverthrow.0
+
+## 0.7.33
+
+### Patch Changes
+
+-   Updated dependencies [fdde8db]
+-   Updated dependencies [b297c93]
+-   Updated dependencies [07fe2b9]
+-   Updated dependencies [3bf5127]
+-   Updated dependencies [a8b74ff]
+-   Updated dependencies [db53161]
+    -   cojson-transport-ws@0.7.33
+    -   cojson@0.7.33
+    -   jazz-tools@0.7.33
+
+## 0.7.33-hotfixes.5
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.5
+    -   cojson-transport-ws@0.7.33-hotfixes.5
+    -   jazz-tools@0.7.33-hotfixes.5
+
+## 0.7.33-hotfixes.4
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.4
+    -   cojson-transport-ws@0.7.33-hotfixes.4
+    -   jazz-tools@0.7.33-hotfixes.4
+
+## 0.7.33-hotfixes.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.33-hotfixes.3
+    -   cojson@0.7.33-hotfixes.3
+    -   jazz-tools@0.7.33-hotfixes.3
+
+## 0.7.33-hotfixes.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.33-hotfixes.2
+
+## 0.7.33-hotfixes.1
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson-transport-ws@0.7.33-hotfixes.1
+
+## 0.7.33-hotfixes.0
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.0
+    -   cojson-transport-ws@0.7.33-hotfixes.0
+    -   jazz-tools@0.7.33-hotfixes.0
+
 ## 0.7.32
 
 ### Patch Changes

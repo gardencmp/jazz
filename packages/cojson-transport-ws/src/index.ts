@@ -29,6 +29,7 @@ interface AnyWebSocket {
     close(): void;
     send(data: string): void;
     readyState: number;
+    bufferedAmount: number;
 }
 
 const g: typeof globalThis & {
@@ -108,6 +109,15 @@ export function createWebSocketPeer({
             async push(msg) {
                 await websocketOpen;
                 if (websocket.readyState === 1) {
+                    while (websocket.bufferedAmount > 1_000_000) {
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 100),
+                        );
+                        if (websocket.readyState !== 1) {
+                            console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
+                            return;
+                        }
+                    }
                     websocket.send(JSON.stringify(msg));
                 }
             },
@@ -123,5 +133,6 @@ export function createWebSocketPeer({
             },
         },
         role,
+        crashOnClose: false,
     };
 }

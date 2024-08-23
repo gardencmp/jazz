@@ -1,5 +1,139 @@
 # jazz-example-chat
 
+## 0.0.81
+
+### Patch Changes
+
+- Updated dependencies [5d91f9f]
+- Updated dependencies [5094e6d]
+- Updated dependencies [b09589b]
+- Updated dependencies [2c3a40c]
+- Updated dependencies [4e16575]
+- Updated dependencies [ea882ab]
+  - cojson@0.7.34
+  - jazz-react@0.7.34
+  - jazz-tools@0.7.34
+
+## 0.0.81-neverthrow.6
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.8
+  - jazz-react@0.7.34-neverthrow.8
+  - jazz-tools@0.7.34-neverthrow.8
+
+## 0.0.81-neverthrow.5
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.7
+  - jazz-react@0.7.34-neverthrow.7
+  - jazz-tools@0.7.34-neverthrow.7
+
+## 0.0.81-neverthrow.4
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.4
+  - jazz-react@0.7.34-neverthrow.4
+  - jazz-tools@0.7.34-neverthrow.4
+
+## 0.0.81-neverthrow.3
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.3
+  - jazz-react@0.7.34-neverthrow.3
+  - jazz-tools@0.7.34-neverthrow.3
+
+## 0.0.81-neverthrow.2
+
+### Patch Changes
+
+- jazz-react@0.7.34-neverthrow.2
+
+## 0.0.81-neverthrow.1
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.1
+  - jazz-react@0.7.34-neverthrow.1
+  - jazz-tools@0.7.34-neverthrow.1
+
+## 0.0.81-neverthrow.0
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.0
+  - jazz-react@0.7.34-neverthrow.0
+  - jazz-tools@0.7.34-neverthrow.0
+
+## 0.0.80
+
+### Patch Changes
+
+- Updated dependencies [b297c93]
+- Updated dependencies [3bf5127]
+- Updated dependencies [a8b74ff]
+- Updated dependencies [db53161]
+  - cojson@0.7.33
+  - jazz-react@0.7.33
+  - jazz-tools@0.7.33
+
+## 0.0.80-hotfixes.5
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.5
+  - jazz-react@0.7.33-hotfixes.5
+  - jazz-tools@0.7.33-hotfixes.5
+
+## 0.0.80-hotfixes.4
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.4
+  - jazz-react@0.7.33-hotfixes.4
+  - jazz-tools@0.7.33-hotfixes.4
+
+## 0.0.80-hotfixes.3
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.3
+  - jazz-react@0.7.33-hotfixes.3
+  - jazz-tools@0.7.33-hotfixes.3
+
+## 0.0.80-hotfixes.2
+
+### Patch Changes
+
+- jazz-react@0.7.33-hotfixes.2
+
+## 0.0.80-hotfixes.1
+
+### Patch Changes
+
+- jazz-react@0.7.33-hotfixes.1
+
+## 0.0.80-hotfixes.0
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.0
+  - jazz-react@0.7.33-hotfixes.0
+  - jazz-tools@0.7.33-hotfixes.0
+
 ## 0.0.79
 
 ### Patch Changes

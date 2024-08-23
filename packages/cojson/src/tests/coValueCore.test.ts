@@ -36,12 +36,14 @@ test("Can create coValue with new agent credentials and add transaction to it", 
     );
 
     expect(
-        coValue.tryAddTransactions(
-            node.currentSessionID,
-            [transaction],
-            expectedNewHash,
-            Crypto.sign(account.currentSignerSecret(), expectedNewHash),
-        ),
+        coValue
+            .tryAddTransactions(
+                node.currentSessionID,
+                [transaction],
+                expectedNewHash,
+                Crypto.sign(account.currentSignerSecret(), expectedNewHash),
+            )
+            ._unsafeUnwrap(),
     ).toBe(true);
 });
 
@@ -72,8 +74,9 @@ test("transactions with wrong signature are rejected", () => {
         [transaction],
     );
 
-    expect(
-        coValue.tryAddTransactions(
+    // eslint-disable-next-line neverthrow/must-use-result
+    coValue
+        .tryAddTransactions(
             node.currentSessionID,
             [transaction],
             expectedNewHash,
@@ -81,8 +84,8 @@ test("transactions with wrong signature are rejected", () => {
                 Crypto.getAgentSignerSecret(wrongAgent),
                 expectedNewHash,
             ),
-        ),
-    ).toBe(false);
+        )
+        ._unsafeUnwrapErr({ withStackTrace: true });
 });
 
 test("transactions with correctly signed, but wrong hash are rejected", () => {
@@ -121,14 +124,15 @@ test("transactions with correctly signed, but wrong hash are rejected", () => {
         ],
     );
 
-    expect(
-        coValue.tryAddTransactions(
+    // eslint-disable-next-line neverthrow/must-use-result
+    coValue
+        .tryAddTransactions(
             node.currentSessionID,
             [transaction],
             expectedNewHash,
             Crypto.sign(account.currentSignerSecret(), expectedNewHash),
-        ),
-    ).toBe(false);
+        )
+        ._unsafeUnwrapErr({ withStackTrace: true });
 });
 
 test("New transactions in a group correctly update owned values, including subscriptions", async () => {
@@ -174,12 +178,14 @@ test("New transactions in a group correctly update owned values, including subsc
 
     expect(map.core.getValidSortedTransactions().length).toBe(1);
 
-    const manuallyAdddedTxSuccess = group.core.tryAddTransactions(
-        node.currentSessionID,
-        [resignationThatWeJustLearnedAbout],
-        expectedNewHash,
-        signature,
-    );
+    const manuallyAdddedTxSuccess = group.core
+        .tryAddTransactions(
+            node.currentSessionID,
+            [resignationThatWeJustLearnedAbout],
+            expectedNewHash,
+            signature,
+        )
+        ._unsafeUnwrap({ withStackTrace: true });
 
     expect(manuallyAdddedTxSuccess).toBe(true);
 

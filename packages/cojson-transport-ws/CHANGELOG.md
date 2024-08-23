@@ -1,5 +1,120 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.34
+
+### Patch Changes
+
+-   406ab9b: Remove WS buffer filling log message
+-   Updated dependencies [5d91f9f]
+-   Updated dependencies [5094e6d]
+-   Updated dependencies [b09589b]
+-   Updated dependencies [2c3a40c]
+-   Updated dependencies [4e16575]
+-   Updated dependencies [ea882ab]
+    -   cojson@0.7.34
+
+## 0.7.34-neverthrow.8
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.8
+
+## 0.7.34-neverthrow.7
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.7
+
+## 0.7.34-neverthrow.4
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.4
+
+## 0.7.34-neverthrow.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.3
+
+## 0.7.34-neverthrow.2
+
+### Patch Changes
+
+-   Remove WS buffer filling log message
+
+## 0.7.34-neverthrow.1
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.1
+
+## 0.7.34-neverthrow.0
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.34-neverthrow.0
+
+## 0.7.33
+
+### Patch Changes
+
+-   fdde8db: Handle ws closing while buffering
+-   07fe2b9: Wait if WS buffer is full
+-   3bf5127: Allow crashing whole node on peer errors
+-   Updated dependencies [b297c93]
+-   Updated dependencies [3bf5127]
+-   Updated dependencies [a8b74ff]
+-   Updated dependencies [db53161]
+    -   cojson@0.7.33
+
+## 0.7.33-hotfixes.5
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.5
+
+## 0.7.33-hotfixes.4
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.4
+
+## 0.7.33-hotfixes.3
+
+### Patch Changes
+
+-   Allow crashing whole node on peer errors
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.3
+
+## 0.7.33-hotfixes.2
+
+### Patch Changes
+
+-   Handle ws closing while buffering
+
+## 0.7.33-hotfixes.1
+
+### Patch Changes
+
+-   Wait if WS buffer is full
+
+## 0.7.33-hotfixes.0
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.33-hotfixes.0
+
 ## 0.7.31
 
 ### Patch Changes

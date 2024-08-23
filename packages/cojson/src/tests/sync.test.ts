@@ -32,6 +32,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     await inTx.push({
@@ -109,6 +110,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     await inTx.push({
@@ -182,6 +184,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     await inTx.push({
@@ -294,6 +297,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     // expect((await outRxQ.next()).value).toMatchObject(groupStateEx(group));
@@ -366,6 +370,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     await inTx.push({
@@ -463,6 +468,7 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     map.set("hello", "world", "trusting");
@@ -498,6 +504,7 @@ test.todo(
             incoming: inRx,
             outgoing: outTx,
             role: "server",
+            crashOnClose: true,
         });
 
         // expect((await outRxQ.next()).value).toMatchObject({
@@ -573,6 +580,7 @@ test.skip("If we add a server peer, newly created coValues are auto-subscribed t
         incoming: inRx,
         outgoing: outTx,
         role: "server",
+        crashOnClose: true,
     });
 
     // expect((await outRxQ.next()).value).toMatchObject({
@@ -627,6 +635,7 @@ test("When we connect a new server peer, we try to sync all existing coValues to
         incoming: inRx,
         outgoing: outTx,
         role: "server",
+        crashOnClose: true,
     });
 
     // const _adminSubscribeMessage = await outRxQ.next();
@@ -662,6 +671,7 @@ test("When receiving a subscribe with a known state that is ahead of our own, pe
         incoming: inRx,
         outgoing: outTx,
         role: "peer",
+        crashOnClose: true,
     });
 
     await inTx.push({
@@ -700,6 +710,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         incoming: inRx1,
         outgoing: outTx1,
         role: "server",
+        crashOnClose: true,
     });
 
     const node2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
@@ -713,6 +724,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         incoming: inRx2,
         outgoing: outTx2,
         role: "client",
+        crashOnClose: true,
     });
 
     const adminSubscribeMessage = (await outRxQ1.next()).value;

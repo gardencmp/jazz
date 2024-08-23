@@ -1,12 +1,13 @@
 # Jazz Chat Example
 
-Live version: https://example-chat.jazz.tools
+Live version: [https://chat.jazz.tools](https://chat.jazz.tools)
 
 ## Installing & running the example locally
 
 (this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
 Start by checking out `jazz`
+
 ```bash
 git clone https://github.com/gardencmp/jazz.git
 cd jazz/examples/chat
@@ -33,7 +34,6 @@ pnpm dev
 ## Questions / problems / feedback
 
 If you have feedback, let us know on [Discord](https://discord.gg/utDMjHYg42) or open an issue or PR to fix something that seems wrong.
-
 
 ## Configuration: sync server
 

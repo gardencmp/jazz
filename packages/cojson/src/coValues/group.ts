@@ -120,7 +120,9 @@ export class RawGroup<
             const agent =
                 typeof account === "string"
                     ? account
-                    : account.currentAgentID();
+                    : account
+                          .currentAgentID()
+                          ._unsafeUnwrap({ withStackTrace: true });
             this.set(memberKey, role, "trusting");
 
             if (this.get(memberKey) !== role) {
@@ -175,7 +177,7 @@ export class RawGroup<
             const reader = this.core.node.resolveAccountAgent(
                 readerID,
                 "Expected to know currently permitted reader",
-            );
+            )._unsafeUnwrap({ withStackTrace: true });
 
             this.set(
                 `${newReadKey.id}_for_${readerID}`,

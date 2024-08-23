@@ -1,42 +1,7 @@
-# Jazz Chat Example
+# Jazz Inspector
 
-Live version: https://example-chat.jazz.tools
+Live address: https://inspector.jazz.tools
 
-## Installing & running the example locally
+Use this to visually inspect a Jazz account or other CoValue.
 
-(this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
-
-Start by checking out `jazz`
-```bash
-git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/chat
-pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/chat # or any other directory
-tar -xf /tmp/jazz-example-chat-* --strip-components 1 -C ~/jazz-examples/chat
-cd ~/jazz-examples/chat
-```
-
-This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
-
-Install dependencies:
-
-```bash
-pnpm install
-```
-
-Start the dev server:
-
-```bash
-pnpm dev
-```
-
-## Questions / problems / feedback
-
-If you have feedback, let us know on [Discord](https://discord.gg/utDMjHYg42) or open an issue or PR to fix something that seems wrong.
-
-
-## Configuration: sync server
-
-By default, the example app uses [Jazz Global Mesh](https://jazz.tools/mesh) (`wss://sync.jazz.tools`) - so cross-device use, invites and collaboration should just work.
-
-You can also run a local sync server by running `npx cojson-simple-sync` and adding the query param `?sync=ws://localhost:4200` to the URL of the example app (for example: `http://localhost:5173/?sync=ws://localhost:4200`), or by setting the `sync` parameter of the `<WithJazz>` provider component in [./src/2_main.tsx](./src/2_main.tsx).
+For now, you can get your account credentials from the `jazz-logged-in-secret` local-storage key from within your Jazz app.

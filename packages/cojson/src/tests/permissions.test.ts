@@ -354,7 +354,7 @@ test("Admins can set group read key and then use it to create and read private t
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -410,7 +410,7 @@ test("Admins can set group read key and then writers can use it to create and re
     const revelation1 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -422,7 +422,7 @@ test("Admins can set group read key and then writers can use it to create and re
     const revelation2 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: writer.currentSealerID(),
+        to: writer.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -489,7 +489,7 @@ test("Admins can set group read key and then use it to create private transactio
     const revelation1 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -501,7 +501,7 @@ test("Admins can set group read key and then use it to create private transactio
     const revelation2 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: reader.currentSealerID(),
+        to: reader.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -576,7 +576,7 @@ test("Admins can set group read key and then use it to create private transactio
     const revelation1 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -588,7 +588,7 @@ test("Admins can set group read key and then use it to create private transactio
     const revelation2 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: reader1.currentSealerID(),
+        to: reader1.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -627,7 +627,7 @@ test("Admins can set group read key and then use it to create private transactio
     const revelation3 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: reader2.currentSealerID(),
+        to: reader2.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -692,7 +692,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const revelation1 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -722,7 +722,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const revelation2 = Crypto.seal({
         message: readKey2,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -775,7 +775,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -802,7 +802,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const revelation2 = Crypto.seal({
         message: readKey2,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -814,7 +814,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
     const revelation3 = Crypto.seal({
         message: readKey2,
         from: admin.currentSealerSecret(),
-        to: reader.currentSealerID(),
+        to: reader.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -910,7 +910,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const revelation1 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -922,7 +922,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const revelation2 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: reader.currentSealerID(),
+        to: reader.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -934,7 +934,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const revelation3 = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: reader2.currentSealerID(),
+        to: reader2.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -980,7 +980,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const newRevelation1 = Crypto.seal({
         message: readKey2,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -996,7 +996,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     const newRevelation2 = Crypto.seal({
         message: readKey2,
         from: admin.currentSealerSecret(),
-        to: reader2.currentSealerID(),
+        to: reader2.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1121,7 +1121,7 @@ test("Admins can create an adminInvite, which can add an admin", () => {
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1231,7 +1231,7 @@ test("Admins can create a writerInvite, which can add a writer", () => {
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1334,7 +1334,7 @@ test("Admins can create a readerInvite, which can add a reader", () => {
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1427,7 +1427,7 @@ test("WriterInvites can not invite admins", () => {
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1481,7 +1481,7 @@ test("ReaderInvites can not invite admins", () => {
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1535,7 +1535,7 @@ test("ReaderInvites can not invite writers", () => {
     const revelation = Crypto.seal({
         message: readKey,
         from: admin.currentSealerSecret(),
-        to: admin.currentSealerID(),
+        to: admin.currentSealerID()._unsafeUnwrap(),
         nOnceMaterial: {
             in: groupCore.id,
             tx: groupCore.nextTransactionID(),
@@ -1610,7 +1610,7 @@ test("Can give read permission to 'everyone'", () => {
         childObject
             .testWithDifferentAccount(
                 newAccount,
-                newRandomSessionID(newAccount.currentAgentID()),
+                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
@@ -1639,7 +1639,7 @@ test("Can give read permissions to 'everyone' (high-level)", async () => {
         childObject.core
             .testWithDifferentAccount(
                 new ControlledAgent(Crypto.newRandomAgentSecret(), Crypto),
-                newRandomSessionID(newAccount.currentAgentID()),
+                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
@@ -1680,7 +1680,7 @@ test("Can give write permission to 'everyone'", async () => {
         childObject
             .testWithDifferentAccount(
                 newAccount,
-                newRandomSessionID(newAccount.currentAgentID()),
+                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
@@ -1715,7 +1715,7 @@ test("Can give write permissions to 'everyone' (high-level)", async () => {
         childObject.core
             .testWithDifferentAccount(
                 newAccount,
-                newRandomSessionID(newAccount.currentAgentID()),
+                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );

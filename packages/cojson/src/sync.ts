@@ -72,8 +72,8 @@ export interface Peer {
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
-    delayOnError?: number;
     priority?: number;
+    crashOnClose: boolean;
 }
 
 export interface PeerState {
@@ -83,8 +83,8 @@ export interface PeerState {
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
-    delayOnError?: number;
     priority?: number;
+    crashOnClose: boolean;
 }
 
 export function combinedKnownStates(
@@ -343,8 +343,8 @@ export class SyncManager {
             outgoing: peer.outgoing,
             toldKnownState: new Set(),
             role: peer.role,
-            delayOnError: peer.delayOnError,
             priority: peer.priority,
+            crashOnClose: peer.crashOnClose,
         };
         this.peers[peer.id] = peerState;
 
@@ -392,12 +392,31 @@ export class SyncManager {
             }
         };
 
-        processMessages().catch((e) => {
-            console.error("Error processing messages from peer", peer.id, e);
-        }).finally(() => {
-            peer.outgoing.close();
-            delete this.peers[peer.id];
-        });
+        processMessages()
+            .then(() => {
+                if (peer.crashOnClose) {
+                    console.error("Unexepcted close from peer", peer.id);
+                    this.local.crashed = new Error(
+                        "Unexpected close from peer",
+                    );
+                    throw new Error("Unexpected close from peer");
+                }
+            })
+            .catch((e) => {
+                console.error(
+                    "Error processing messages from peer",
+                    peer.id,
+                    e,
+                );
+                if (peer.crashOnClose) {
+                    this.local.crashed = e;
+                    throw new Error(e);
+                }
+            })
+            .finally(() => {
+                peer.outgoing.close();
+                delete this.peers[peer.id];
+            });
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
@@ -446,12 +465,12 @@ export class SyncManager {
         }
 
         if (entry.state === "loading") {
-            console.log(
-                "Waiting for loaded",
-                msg.id,
-                "after message from",
-                peer.id,
-            );
+            // console.debug(
+            //     "Waiting for loaded",
+            //     msg.id,
+            //     "after message from",
+            //     peer.id,
+            // );
             const loaded = await entry.done;
             // console.log("Loaded", msg.id, loaded);
             if (loaded === "unavailable") {
@@ -542,9 +561,10 @@ export class SyncManager {
         let entry = this.local.coValues[msg.id];
 
         if (!entry) {
-            throw new Error(
+            console.error(
                 `Expected coValue entry for ${msg.id} to be created on new content, missing subscribe?`,
             );
+            return;
         }
 
         let resolveAfterDone: ((coValue: CoValueCore) => void) | undefined;
@@ -552,14 +572,16 @@ export class SyncManager {
         const peerOptimisticKnownState = peer.optimisticKnownStates[msg.id];
 
         if (!peerOptimisticKnownState) {
-            throw new Error(
+            console.error(
                 "Expected optimisticKnownState to be set for coValue we receive new content for",
             );
+            return;
         }
 
         if (entry.state === "loading") {
             if (!msg.header) {
-                throw new Error("Expected header to be sent in first message");
+                console.error("Expected header to be sent in first message");
+                return;
             }
 
             const firstPeerStateEntry = entry.firstPeerState[peer.id];
@@ -611,7 +633,8 @@ export class SyncManager {
             }
 
             const before = performance.now();
-            const success = await coValue.tryAddTransactionsAsync(
+            // eslint-disable-next-line neverthrow/must-use-result
+            const result = coValue.tryAddTransactions(
                 sessionID,
                 newTransactions,
                 undefined,
@@ -647,15 +670,16 @@ export class SyncManager {
 
             entry.onProgress?.(ourTotalnTxs / theirTotalnTxs);
 
-            if (!success) {
+            if (result.isErr()) {
                 console.error(
-                    "Failed to add transactions",
+                    "Failed to add transactions from",
+                    peer.id,
+                    result.error,
                     msg.id,
-                    JSON.stringify(newTransactions, (k, v) =>
-                        k === "changes" || k === "encryptedChanges"
-                            ? v.slice(0, 20) + "..."
-                            : v,
-                    ),
+                    newTransactions.length + " new transactions",
+                    "after: " + newContentForSession.after,
+                    "our last known tx idx initially: " + ourKnownTxIdx,
+                    "our last known tx idx now: " + coValue.sessionLogs.get(sessionID)?.transactions.length,
                 );
                 continue;
             }

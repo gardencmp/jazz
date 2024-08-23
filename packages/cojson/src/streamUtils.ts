@@ -1,6 +1,6 @@
 import { Peer, PeerID, SyncMessage } from "./sync.js";
-import { Channel } from "queueable";
-export { Channel } from "queueable";
+import { Channel } from "queueueue";
+export { Channel } from "queueueue";
 
 export function connectedPeers(
     peer1id: PeerID,
@@ -9,10 +9,12 @@ export function connectedPeers(
         trace = false,
         peer1role = "peer",
         peer2role = "peer",
+        crashOnClose = false,
     }: {
         trace?: boolean;
         peer1role?: Peer["role"];
         peer2role?: Peer["role"];
+        crashOnClose?: boolean;
     } = {},
 ): [Peer, Peer] {
     const [from1to2Rx, from1to2Tx] = newQueuePair(
@@ -27,6 +29,7 @@ export function connectedPeers(
         incoming: from2to1Rx,
         outgoing: from1to2Tx,
         role: peer2role,
+        crashOnClose: crashOnClose,
     };
 
     const peer1AsPeer: Peer = {
@@ -34,6 +37,7 @@ export function connectedPeers(
         incoming: from1to2Rx,
         outgoing: from2to1Tx,
         role: peer1role,
+        crashOnClose: crashOnClose,
     };
 
     return [peer1AsPeer, peer2AsPeer];
