@@ -1,7 +1,7 @@
 import { getMdxData } from "@/lib/mdx-server-utils";
 import {
   CovaluesSection,
-  HeroCards,
+  HeroCards2,
   MeshSection,
   ToolkitSection,
 } from "./(home)/components";
@@ -36,15 +36,15 @@ export default async function HomePage() {
               </span>
             </h1> */}
           </div>
-          <div className="space-y-2 col-span-full lg:col-span-10">
-            <p className="text-large text-fill-contrast text-balance">
+          <div className="space-y-2 col-span-full lg:col-span-11">
+            <p className="text-subheading text-fill text-balance">
               Jazz is an open-source toolkit that replaces APIs, databases and
               message queues with a single new abstraction—“Collaborative
               Values”—distributed state with secure permissions built-in.
-              Features that used to take months now work out of the box.
-              {/* <span className="font-medium text-fill-contrast lg:table">
-                …now work out-of-the-box.
-              </span> */}
+              <span className="font-medium text-fill-contrast lg:table">
+                Features that used to take months now work out of the box.
+                {/* …now work out-of-the-box. */}
+              </span>
             </p>
             {/* <p className="text-large text-fill">
               Features that used to take months now work out-of-the-box.
@@ -54,7 +54,7 @@ export default async function HomePage() {
             </p> */}
           </div>
         </header>
-        <HeroCards />
+        <HeroCards2 />
       </section>
 
       {/* <hr className="border-guide-dark" /> */}

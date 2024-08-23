@@ -49,6 +49,27 @@ export function HeroCards() {
     </div>
   );
 }
+export function HeroCards2() {
+  const featureGroup1 = features.slice(0, 4);
+  const featureGroup2 = features.slice(4);
+  return (
+    <div className="relative">
+      {/* <p className="text-large font-medium px-w3 lg:px-[3vw] py-w6  bg-background">
+        <span className="text-accent-fill">Hard things are easy now.</span>
+      </p> */}
+      <div className="grid grid-cols-12 grid-rows-3 gap-2">
+        {featureGroup1.map((item) => (
+          <Feature key={item.label} label={item.label} Icon={item.Icon} />
+        ))}
+      </div>
+      <div className="grid grid-cols-12 grid-rows-3 gap-2">
+        {featureGroup2.map((item) => (
+          <Feature key={item.label} label={item.label} Icon={item.Icon} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const FeatureCard = ({
   children,
@@ -87,7 +108,7 @@ const Feature = ({
         strokeWidth={1.5}
         strokeLinecap="butt"
         // size={40}
-        className="size-[2em] text-accent"
+        className="size-[3em] text-accent"
       />
       <p
         className={clsx(

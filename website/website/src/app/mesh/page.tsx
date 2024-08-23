@@ -17,7 +17,7 @@ export default async function MeshPage() {
 
   return (
     <>
-      <section className="container max-w-docs space-y-w12 pb-w24 pt-under-nav-content">
+      <section className="container max-w-docs space-y-w8 pb-w12 pt-under-nav-content">
         <header className="grid grid-cols-12 gap-w6">
           <div className="col-span-full lg:col-span-9 ml-[-0.2em]">
             <h1 className="Text-super text-accent-fill">
@@ -27,10 +27,10 @@ export default async function MeshPage() {
               The first Collaboration Delivery Network.
             </h2>
           </div>
-          <p className="col-span-full lg:col-span-8 text-large text-fill text-balance">
+          <p className="col-span-full lg:col-span-9 text-subheading text-fill text-balance">
             Real-time sync and storage infrastructure that scales up to millions
             of users.
-            <span className="font-medium text-fill-contrast lg:table">
+            <span className="text-fill-contrast lg:table">
               Pricing that scales down to zero.
             </span>
           </p>
