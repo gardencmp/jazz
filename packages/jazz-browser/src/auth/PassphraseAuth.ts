@@ -1,8 +1,11 @@
-import { AgentSecret, cojsonInternals, CryptoProvider, Peer } from "cojson";
-import { Account, CoValueClass, ID, isControlledAccount } from "jazz-tools";
+import { AgentSecret, cojsonInternals, CryptoProvider } from "cojson";
+import {
+    Account,
+    AuthMethod,
+    AuthResult,
+    ID,
+} from "jazz-tools";
 import * as bip39 from "@scure/bip39";
-import { AuthProvider } from "./auth.js";
-import { SessionProvider } from "../index.js";
 
 type LocalStorageData = {
     accountID: ID<Account>;
@@ -11,11 +14,8 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
-export class BrowserPassphraseAuth<Acc extends Account>
-    implements AuthProvider<Acc>
-{
+export class BrowserPassphraseAuth implements AuthMethod {
     constructor(
-        public accountSchema: CoValueClass<Acc> & typeof Account,
         public driver: BrowserPassphraseAuth.Driver,
         public wordlist: string[],
         public appName: string,
@@ -23,59 +23,93 @@ export class BrowserPassphraseAuth<Acc extends Account>
         public appHostname: string = window.location.hostname,
     ) {}
 
-    async createOrLoadAccount(
-        getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        crypto: CryptoProvider,
-    ): Promise<Acc> {
+    async start(crypto: CryptoProvider): Promise<AuthResult> {
         if (localStorage[localStorageKey]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey],
             ) as LocalStorageData;
 
-            const sessionID = await getSessionFor(localStorageData.accountID);
+            const accountID = localStorageData.accountID as ID<Account>;
+            const secret = localStorageData.accountSecret;
 
-            const account = (await this.accountSchema.become({
-                accountID: localStorageData.accountID as ID<Acc>,
-                accountSecret: localStorageData.accountSecret,
-                sessionID,
-                peersToLoadFrom: initialPeers,
-                crypto,
-            })) as Acc;
-
-            this.driver.onSignedIn({ logOut });
-
-            return Promise.resolve(account);
+            return {
+                type: "existing",
+                credentials: { accountID, secret },
+                onSuccess: () => {
+                    this.driver.onSignedIn({ logOut });
+                },
+                onError: (error: string | Error) => {
+                    this.driver.onError(error);
+                },
+            } satisfies AuthResult;
         } else {
-            return new Promise<Acc>((resolveAccount) => {
+            return new Promise<AuthResult>((resolve) => {
                 this.driver.onReady({
                     signUp: async (username, passphrase) => {
-                        const account = await signUp<Acc>(
-                            username,
+                        const secretSeed = bip39.mnemonicToEntropy(
                             passphrase,
                             this.wordlist,
-                            getSessionFor,
-                            this.appName,
-                            this.appHostname,
-                            this.accountSchema,
-                            initialPeers,
-                            crypto,
                         );
-                        resolveAccount(account);
-                        this.driver.onSignedIn({ logOut });
+                        const accountSecret =
+                            crypto.agentSecretFromSecretSeed(secretSeed);
+                        if (!accountSecret) {
+                            this.driver.onError("Invalid passphrase");
+                            return;
+                        }
+
+                        resolve({
+                            type: "new",
+                            creationProps: { name: username },
+                            initialSecret: accountSecret,
+                            saveCredentials: async (credentials) => {
+                                localStorage[localStorageKey] = JSON.stringify({
+                                    accountID: credentials.accountID,
+                                    accountSecret: credentials.secret,
+                                } satisfies LocalStorageData);
+                            },
+                            onSuccess: () => {
+                                this.driver.onSignedIn({ logOut });
+                            },
+                            onError: (error: string | Error) => {
+                                this.driver.onError(error);
+                            },
+                        });
                     },
                     logIn: async (passphrase: string) => {
-                        const account = await logIn<Acc>(
+                        const secretSeed = bip39.mnemonicToEntropy(
                             passphrase,
                             this.wordlist,
-                            getSessionFor,
-                            this.appHostname,
-                            this.accountSchema,
-                            initialPeers,
-                            crypto,
                         );
-                        resolveAccount(account);
-                        this.driver.onSignedIn({ logOut });
+                        const accountSecret =
+                            crypto.agentSecretFromSecretSeed(secretSeed);
+
+                        if (!accountSecret) {
+                            this.driver.onError("Invalid passphrase");
+                            return;
+                        }
+
+                        const accountID = cojsonInternals.idforHeader(
+                            cojsonInternals.accountHeaderForInitialAgentSecret(
+                                accountSecret,
+                                crypto,
+                            ),
+                            crypto,
+                        ) as ID<Account>;
+
+                        resolve({
+                            type: "existing",
+                            credentials: { accountID, secret: accountSecret },
+                            onSuccess: () => {
+                                localStorage[localStorageKey] = JSON.stringify({
+                                    accountID,
+                                    accountSecret,
+                                } satisfies LocalStorageData);
+                                this.driver.onSignedIn({ logOut });
+                            },
+                            onError: (error: string | Error) => {
+                                this.driver.onError(error);
+                            },
+                        });
                     },
                 });
             });
@@ -92,81 +126,8 @@ export namespace BrowserPassphraseAuth {
             logIn: (passphrase: string) => Promise<void>;
         }) => void;
         onSignedIn: (next: { logOut: () => void }) => void;
+        onError: (error: string | Error) => void;
     }
-}
-
-async function signUp<Acc extends Account>(
-    username: string,
-    passphrase: string,
-    wordlist: string[],
-    getSessionFor: SessionProvider,
-    _appName: string,
-    _appHostname: string,
-    accountSchema: CoValueClass<Acc> & typeof Account,
-    initialPeers: Peer[],
-    crypto: CryptoProvider,
-): Promise<Acc> {
-    const secretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
-
-    const account = (await accountSchema.create({
-        creationProps: { name: username },
-        initialAgentSecret: crypto.agentSecretFromSecretSeed(secretSeed),
-        peersToLoadFrom: initialPeers,
-        crypto,
-    })) as Acc;
-    if (!isControlledAccount(account)) {
-        throw "account is not a controlled account";
-    }
-
-    localStorage[localStorageKey] = JSON.stringify({
-        accountID: account.id as ID<Account>,
-        accountSecret: account._raw.agentSecret,
-    } satisfies LocalStorageData);
-
-    account._raw.core.node.currentSessionID = await getSessionFor(account.id);
-
-    return account;
-}
-
-async function logIn<Acc extends Account>(
-    passphrase: string,
-    wordlist: string[],
-    getSessionFor: SessionProvider,
-    _appHostname: string,
-    accountSchema: CoValueClass<Acc> & typeof Account,
-    initialPeers: Peer[],
-    crypto: CryptoProvider,
-): Promise<Acc> {
-    const accountSecretSeed = bip39.mnemonicToEntropy(passphrase, wordlist);
-
-    const accountSecret = crypto.agentSecretFromSecretSeed(accountSecretSeed);
-
-    if (!accountSecret) {
-        throw new Error("Invalid credential");
-    }
-
-    const accountID = cojsonInternals.idforHeader(
-        cojsonInternals.accountHeaderForInitialAgentSecret(
-            accountSecret,
-            crypto,
-        ),
-        crypto,
-    ) as ID<Acc>;
-
-    localStorage[localStorageKey] = JSON.stringify({
-        accountID: accountID,
-        accountSecret,
-    } satisfies LocalStorageData);
-
-    const account = (await accountSchema.become({
-        accountID,
-        accountSecret,
-        sessionID: await getSessionFor(accountID),
-        peersToLoadFrom: initialPeers,
-        crypto,
-    })) as Acc;
-
-    return account;
 }
 
 function logOut() {

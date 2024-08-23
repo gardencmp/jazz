@@ -9,26 +9,31 @@ import {
 } from "cojson";
 import { Account, CoValueClass, ID } from "../internal.js";
 
+export type AuthResult =
+    | {
+          type: "existing";
+          credentials: { accountID: ID<Account>; secret: AgentSecret };
+          onSuccess: () => void;
+          onError: (error: string | Error) => void;
+      }
+    | {
+          type: "new";
+          creationProps: { name: string };
+          initialSecret?: AgentSecret;
+          saveCredentials: (credentials: {
+              accountID: ID<Account>;
+              secret: AgentSecret;
+          }) => Promise<void>;
+          onSuccess: () => void;
+          onError: (error: string | Error) => void;
+      };
+
 export interface AuthMethod {
-    start(): Promise<
-        | {
-              type: "existing";
-              credentials: { accountID: ID<Account>; secret: AgentSecret };
-          }
-        | {
-              type: "new";
-              creationProps: { name: string };
-              saveCredentials: (credentials: {
-                  accountID: ID<Account>;
-                  secret: AgentSecret;
-              }) => Promise<void>;
-          }
-    >;
-    onError: (error: string | Error) => void;
+    start(crypto: CryptoProvider): Promise<AuthResult>;
 }
 
-export async function createJazzContext<A extends Account>({
-    AccountSchema = Account as unknown as CoValueClass<A> & {
+export async function createJazzContext<Acc extends Account>({
+    AccountSchema = Account as unknown as CoValueClass<Acc> & {
         fromNode: (typeof Account)["fromNode"];
     },
     auth,
@@ -36,17 +41,19 @@ export async function createJazzContext<A extends Account>({
     peersToLoadFrom,
     crypto,
 }: {
-    AccountSchema: CoValueClass<A> & { fromNode: (typeof Account)["fromNode"] };
+    AccountSchema: CoValueClass<Acc> & {
+        fromNode: (typeof Account)["fromNode"];
+    };
     auth: AuthMethod;
     sessionProvider: (
         accountID: ID<Account>,
     ) => Promise<{ sessionID: SessionID; sessionDone: () => void }>;
     peersToLoadFrom: Peer[];
     crypto: CryptoProvider;
-}): Promise<{ account: A; done: () => void }> {
+}): Promise<{ account: Acc; done: () => void }> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        const authResult = await auth.start();
+        const authResult = await auth.start(crypto);
 
         if (authResult.type === "existing") {
             try {
@@ -65,55 +72,67 @@ export async function createJazzContext<A extends Account>({
                         migration: async (rawAccount, _node, creationProps) => {
                             const account = new AccountSchema({
                                 fromRaw: rawAccount,
-                            }) as A;
+                            }) as Acc;
 
                             await account.migrate?.(creationProps);
                         },
                     });
 
+                    const account = AccountSchema.fromNode(node);
+                    authResult.onSuccess();
+
                     return {
-                        account: AccountSchema.fromNode(node),
+                        account,
                         done: () => {
                             node.gracefulShutdown();
                             sessionDone();
-                        }
+                        },
                     };
                 } catch (e) {
-                    auth.onError(
+                    authResult.onError(
                         new Error("Error loading account", { cause: e }),
                     );
                     sessionDone();
                 }
             } catch (e) {
-                auth.onError(
+                authResult.onError(
                     new Error("Error acquiring sessionID", { cause: e }),
                 );
             }
         } else if (authResult.type === "new") {
             try {
+                // TODO: figure out a way to not "waste" the first SessionID
                 const { node } = await LocalNode.withNewlyCreatedAccount({
                     creationProps: authResult.creationProps,
                     peersToLoadFrom: peersToLoadFrom,
                     crypto: crypto,
+                    initialAgentSecret: authResult.initialSecret,
                     migration: async (rawAccount, _node, creationProps) => {
                         const account = new AccountSchema({
                             fromRaw: rawAccount,
-                        }) as A;
+                        }) as Acc;
 
                         await account.migrate?.(creationProps);
                     },
                 });
 
-                // TODO: figure out a way to not "waste" the first SessionID
+                const account = AccountSchema.fromNode(node);
+
+                await authResult.saveCredentials({
+                    accountID: node.account.id as unknown as ID<Account>,
+                    secret: node.account.agentSecret,
+                });
+
+                authResult.onSuccess();
 
                 return {
-                    account: AccountSchema.fromNode(node),
+                    account,
                     done: () => {
                         node.gracefulShutdown();
-                    }
+                    },
                 };
             } catch (e) {
-                auth.onError(new Error("Error creating account", { cause: e }));
+                authResult.onError(new Error("Error creating account", { cause: e }));
             }
         }
     }

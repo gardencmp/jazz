@@ -9,13 +9,13 @@ import {
     CoValueClass,
     WasmCrypto,
     CryptoProvider,
+    AuthMethod,
+    createJazzContext,
 } from "jazz-tools";
 import { AccountID, LSMStorage } from "cojson";
-import { AuthProvider } from "./auth/auth.js";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import { createWebSocketPeer } from "cojson-transport-ws";
-export * from "./auth/auth.js";
 
 /** @category Context Creation */
 export type BrowserContext<Acc extends Account> = {
@@ -27,19 +27,24 @@ export type BrowserContext<Acc extends Account> = {
 /** @category Context Creation */
 export async function createJazzBrowserContext<Acc extends Account>({
     auth,
+    AccountSchema = Account as unknown as CoValueClass<Acc> & {
+        fromNode: (typeof Account)["fromNode"];
+    },
     peer: peerAddr,
     reconnectionTimeout: initialReconnectionTimeout = 500,
     storage = "indexedDB",
     crypto: customCrypto,
 }: {
-    auth: AuthProvider<Acc>;
+    auth: AuthMethod;
+    AccountSchema: CoValueClass<Acc> & {
+        fromNode: (typeof Account)["fromNode"];
+    };
     peer: `wss://${string}` | `ws://${string}`;
     reconnectionTimeout?: number;
     storage?: "indexedDB" | "singleTabOPFS";
     crypto?: CryptoProvider;
 }): Promise<BrowserContext<Acc>> {
     const crypto = customCrypto || (await WasmCrypto.create());
-    let sessionDone: () => void;
 
     const firstWsPeer = createWebSocketPeer({
         websocket: new WebSocket(peerAddr),
@@ -57,13 +62,11 @@ export async function createJazzBrowserContext<Acc extends Account>({
 
     window.addEventListener("online", onOnline);
 
-    const me = await auth.createOrLoadAccount(
-        (accountID) => {
-            const sessionHandle = getSessionHandleFor(accountID);
-            sessionDone = sessionHandle.done;
-            return sessionHandle.session;
-        },
-        [
+    const { account, done } = await createJazzContext({
+        AccountSchema,
+        auth,
+        crypto: await WasmCrypto.create(),
+        peersToLoadFrom: [
             storage === "indexedDB"
                 ? await IDBStorage.asPeer()
                 : await LSMStorage.asPeer({
@@ -72,13 +75,13 @@ export async function createJazzBrowserContext<Acc extends Account>({
                   }),
             firstWsPeer,
         ],
-        await WasmCrypto.create(),
-    );
+        sessionProvider: provideBroswerLockSession,
+    });
 
     async function websocketReconnectLoop() {
         while (shouldTryToReconnect) {
             if (
-                Object.keys(me._raw.core.node.syncManager.peers).some(
+                Object.keys(account._raw.core.node.syncManager.peers).some(
                     (peerId) => peerId.includes(peerAddr),
                 )
             ) {
@@ -108,12 +111,12 @@ export async function createJazzBrowserContext<Acc extends Account>({
                     );
                 });
 
-                me._raw.core.node.syncManager.addPeer(
+                account._raw.core.node.syncManager.addPeer(
                     createWebSocketPeer({
                         websocket: new WebSocket(peerAddr),
                         id: peerAddr + "@" + new Date().toISOString(),
                         role: "server",
-                    })
+                    }),
                 );
             }
         }
@@ -122,13 +125,11 @@ export async function createJazzBrowserContext<Acc extends Account>({
     void websocketReconnectLoop();
 
     return {
-        me,
+        me: account,
         done: () => {
             shouldTryToReconnect = false;
             window.removeEventListener("online", onOnline);
-            console.log("Cleaning up node");
-            me._raw.core.node.gracefulShutdown();
-            sessionDone?.();
+            done();
         },
     };
 }
@@ -138,18 +139,10 @@ export type SessionProvider = (
     accountID: ID<Account> | AgentID,
 ) => Promise<SessionID>;
 
-/** @category Auth Providers */
-export type SessionHandle = {
-    session: Promise<SessionID>;
-    done: () => void;
-};
-
-export function getSessionHandleFor(
-    accountID: ID<Account> | AgentID,
-): SessionHandle {
-    let done!: () => void;
+export function provideBroswerLockSession(accountID: ID<Account> | AgentID) {
+    let sessionDone!: () => void;
     const donePromise = new Promise<void>((resolve) => {
-        done = resolve;
+        sessionDone = resolve;
     });
 
     let resolveSession: (sessionID: SessionID) => void;
@@ -201,10 +194,10 @@ export function getSessionHandleFor(
         throw new Error("Couldn't get lock on session after 100x2 tries");
     })();
 
-    return {
-        session: sessionPromise,
-        done,
-    };
+    return sessionPromise.then((sessionID) => ({
+        sessionID,
+        sessionDone,
+    }));
 }
 
 /** @category Invite Links */

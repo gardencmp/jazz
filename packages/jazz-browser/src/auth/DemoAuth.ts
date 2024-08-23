@@ -1,7 +1,5 @@
-import { AgentSecret, CryptoProvider, Peer } from "cojson";
-import { Account, CoValueClass, ID, isControlledAccount } from "jazz-tools";
-import { AuthProvider } from "./auth.js";
-import { SessionProvider } from "../index.js";
+import { AgentSecret } from "cojson";
+import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 
 type StorageData = {
     accountID: ID<Account>;
@@ -10,9 +8,8 @@ type StorageData = {
 
 const localStorageKey = "demo-auth-logged-in-secret";
 
-export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
+export class BrowserDemoAuth implements AuthMethod {
     constructor(
-        public accountSchema: CoValueClass<Acc> & typeof Account,
         public driver: BrowserDemoAuth.Driver,
         public appName: string,
         seedAccounts?: {
@@ -43,61 +40,63 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
         }
     }
 
-    async createOrLoadAccount(
-        getSessionFor: SessionProvider,
-        initialPeers: Peer[],
-        crypto: CryptoProvider,
-    ): Promise<Acc> {
+    async start() {
         if (localStorage["demo-auth-logged-in-secret"]) {
             const localStorageData = JSON.parse(
                 localStorage[localStorageKey],
             ) as StorageData;
 
-            const sessionID = await getSessionFor(localStorageData.accountID);
+            const accountID = localStorageData.accountID as ID<Account>;
+            const secret = localStorageData.accountSecret;
 
-            const account = (await this.accountSchema.become({
-                accountID: localStorageData.accountID as ID<Acc>,
-                accountSecret: localStorageData.accountSecret,
-                sessionID,
-                peersToLoadFrom: initialPeers,
-                crypto,
-            })) as Acc;
-
-            this.driver.onSignedIn({ logOut });
-            return Promise.resolve(account);
+            return {
+                type: "existing",
+                credentials: { accountID, secret },
+                onSuccess: () => {
+                    this.driver.onSignedIn({ logOut });
+                },
+                onError: (error: string | Error) => {
+                    this.driver.onError(error)
+                }
+            } satisfies AuthResult;
         } else {
-            return new Promise<Acc>((resolveAccount) => {
+            return new Promise<AuthResult>((resolve) => {
                 this.driver.onReady({
                     signUp: async (username) => {
-                        const account = (await this.accountSchema.create({
+                        resolve({
+                            type: "new",
                             creationProps: { name: username },
-                            peersToLoadFrom: initialPeers,
-                            crypto,
-                        })) as Acc;
-                        if (!isControlledAccount(account)) {
-                            throw "account is not a controlled account";
-                        }
+                            saveCredentials: async (credentials: {
+                                accountID: ID<Account>;
+                                secret: AgentSecret;
+                            }) => {
+                                const storageData = JSON.stringify({
+                                    accountID: credentials.accountID,
+                                    accountSecret: credentials.secret,
+                                } satisfies StorageData);
 
-                        const storageData = JSON.stringify({
-                            accountID: account.id,
-                            accountSecret: account._raw.agentSecret,
-                        } satisfies StorageData);
+                                localStorage["demo-auth-logged-in-secret"] =
+                                    storageData;
+                                localStorage[
+                                    "demo-auth-existing-users-" + username
+                                ] = storageData;
 
-                        localStorage["demo-auth-logged-in-secret"] =
-                            storageData;
-                        localStorage["demo-auth-existing-users-" + username] =
-                            storageData;
-
-                        localStorage["demo-auth-existing-users"] = localStorage[
-                            "demo-auth-existing-users"
-                        ]
-                            ? localStorage["demo-auth-existing-users"] +
-                              "," +
-                              username
-                            : username;
-
-                        resolveAccount(account);
-                        this.driver.onSignedIn({ logOut });
+                                localStorage["demo-auth-existing-users"] =
+                                    localStorage["demo-auth-existing-users"]
+                                        ? localStorage[
+                                              "demo-auth-existing-users"
+                                          ] +
+                                          "," +
+                                          username
+                                        : username;
+                            },
+                            onSuccess: () => {
+                                this.driver.onSignedIn({ logOut });
+                            },
+                            onError: (error: string | Error) => {
+                                this.driver.onError(error)
+                            }
+                        });
                     },
                     existingUsers:
                         localStorage["demo-auth-existing-users"]?.split(",") ??
@@ -112,18 +111,19 @@ export class BrowserDemoAuth<Acc extends Account> implements AuthProvider<Acc> {
                         localStorage["demo-auth-logged-in-secret"] =
                             JSON.stringify(storageData);
 
-                        const account = (await this.accountSchema.become({
-                            accountID: storageData.accountID as ID<Acc>,
-                            accountSecret: storageData.accountSecret,
-                            sessionID: await getSessionFor(
-                                storageData.accountID,
-                            ),
-                            peersToLoadFrom: initialPeers,
-                            crypto,
-                        })) as Acc;
-
-                        resolveAccount(account);
-                        this.driver.onSignedIn({ logOut });
+                        resolve({
+                            type: "existing",
+                            credentials: {
+                                accountID: storageData.accountID,
+                                secret: storageData.accountSecret,
+                            },
+                            onSuccess: () => {
+                                this.driver.onSignedIn({ logOut });
+                            },
+                            onError: (error: string | Error) => {
+                                this.driver.onError(error)
+                            }
+                        });
                     },
                 });
             });
@@ -141,6 +141,7 @@ export namespace BrowserDemoAuth {
             logInAs: (existingUser: string) => Promise<void>;
         }) => void;
         onSignedIn: (next: { logOut: () => void }) => void;
+        onError: (error: string | Error) => void;
     }
 }
 
