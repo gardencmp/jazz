@@ -1,4 +1,4 @@
-import { getMdxData } from "@/lib/mdx-server-utils";
+import { getMdxData } from "@/lib/mdx-utils";
 import config from "@/config";
 import path from "path";
 

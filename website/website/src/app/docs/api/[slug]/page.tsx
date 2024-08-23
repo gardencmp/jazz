@@ -1,8 +1,4 @@
-import {
-  getMdxData,
-  getDocsList,
-  extractHeadings,
-} from "@/lib/mdx-server-utils";
+import { getMdxData, getDocsList, extractHeadings } from "@/lib/mdx-utils";
 import { notFound } from "next/navigation";
 import {
   Post,

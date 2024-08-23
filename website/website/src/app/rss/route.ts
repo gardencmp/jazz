@@ -1,5 +1,5 @@
 import config from "@/config";
-import { getMdxData } from "@/lib/mdx-server-utils";
+import { getMdxData } from "@/lib/mdx-utils";
 import path from "path";
 
 const docsDir = path.join(process.cwd(), "src/app/docs/(content)");

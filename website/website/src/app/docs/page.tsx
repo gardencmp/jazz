@@ -1,4 +1,4 @@
-import { getMdxData } from "@/lib/mdx-server-utils";
+import { getMdxData } from "@/lib/mdx-utils";
 import { notFound } from "next/navigation";
 import path from "path";
 import { DocsIndexPage as DocsIndexPageComponent } from "./(components)";

@@ -1,6 +1,6 @@
 import { Card, CardHeading } from "@/components/card";
 import { SectionHeadingSecondary } from "@/components/layout";
-import { getMdxData } from "@/lib/mdx-server-utils";
+import { getMdxData } from "@/lib/mdx-utils";
 import { CylinderIcon, DatabaseBackupIcon, RouteIcon } from "lucide-react";
 import {
   CustomSection,
