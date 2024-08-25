@@ -1,5 +1,4 @@
-import { Account, BinaryCoStream } from "jazz-tools";
-import { MusicaAccount, MusicTrack } from "./1_schema";
+import { MusicaAccount } from "./1_schema";
 
 export async function getNextTrack(account: MusicaAccount) {
     if (!account.root?.activePlaylist?.tracks) return;
@@ -28,16 +27,4 @@ export async function getPrevTrack(account: MusicaAccount) {
 
     const previousIndex = (currentIndex - 1 + tracks.length) % tracks.length;
     return tracks[previousIndex];
-}
-
-export async function loadMusicFileAsBlob(track: MusicTrack, account: Account) {
-    let blob: Blob | undefined = undefined;
-
-    while (!blob) {
-        blob = await BinaryCoStream.loadAsBlob(track._refs.file.id, account);
-
-        await new Promise((resolve) => setTimeout(resolve, 150));
-    }
-
-    return blob;
 }

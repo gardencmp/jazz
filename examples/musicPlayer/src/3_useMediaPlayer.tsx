@@ -3,8 +3,8 @@ import { usePlayState } from "@/lib/audio/usePlayState";
 import { useAccount, useCoState } from "./0_jazz";
 import { MusicTrack, Playlist } from "@/1_schema";
 import { useRef, useState } from "react";
-import { getNextTrack, getPrevTrack, loadMusicFileAsBlob } from "./5_getters";
-import { ID } from "jazz-tools";
+import { getNextTrack, getPrevTrack } from "./5_getters";
+import { BinaryCoStream, ID } from "jazz-tools";
 
 export function useMediaPlayer() {
     const { me } = useAccount();
@@ -26,7 +26,12 @@ export function useMediaPlayer() {
 
         setLoading(track.id);
 
-        const file = await loadMusicFileAsBlob(track, me);
+        const file = await BinaryCoStream.loadAsBlob(track._refs.file.id, me);
+
+        if (!file) {
+            setLoading(null);
+            return;
+        }
 
         // Check if another track has been loaded during
         // the file download

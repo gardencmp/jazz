@@ -70,7 +70,10 @@ function App() {
                     <b>Playlists</b>
                     <div className="flex px-1 py-6 gap-6">
                         {playlists.map((playlist) => (
-                            <Link to={`/playlist/${playlist.id}`}>
+                            <Link
+                                key={playlist.id}
+                                to={`/playlist/${playlist.id}`}
+                            >
                                 {playlist.title}
                             </Link>
                         ))}
@@ -101,11 +104,25 @@ function App() {
 function InvitePage() {
     const navigate = useNavigate();
 
+    const { me } = useAccount({
+        root: {
+            playlists: [],
+        },
+    });
+
     useAcceptInvite({
         invitedObjectSchema: Playlist,
         onAccept: useCallback(
-            (playlistId: ID<Playlist>) => navigate("/playlist/" + playlistId),
-            [navigate],
+            async (playlistId: ID<Playlist>) => {
+                if (!me) return;
+
+                const playlist = await Playlist.load(playlistId, me, {});
+
+                if (playlist) me.root.playlists.push(playlist);
+
+                navigate("/playlist/" + playlistId);
+            },
+            [navigate, me],
         ),
     });
 

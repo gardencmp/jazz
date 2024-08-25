@@ -1,15 +1,16 @@
-import { useParams } from "react-router";
-import { Playlist } from "./1_schema";
-import { ID } from "jazz-tools";
-import { useAccount, useCoState } from "./0_jazz";
-import { ChangeEvent } from "react";
-import { MusicTrackRow } from "./components/MusicTrackRow";
-import { useMediaPlayer } from "./3_useMediaPlayer";
-import { usePlayState } from "./lib/audio/usePlayState";
-import { addTrackToPlaylist } from "./4_actions";
-import { Link } from "./basicComponents/Link";
-import { Button } from "./basicComponents/Button";
 import { createInviteLink } from "jazz-react";
+import { ID } from "jazz-tools";
+import { ChangeEvent } from "react";
+import { useParams } from "react-router";
+import { useAccount, useCoState } from "./0_jazz";
+import { Playlist } from "./1_schema";
+import { useMediaPlayer } from "./3_useMediaPlayer";
+import { addTrackToPlaylist } from "./4_actions";
+import { Button } from "./basicComponents/Button";
+import { Link } from "./basicComponents/Link";
+import { MusicTrackRow } from "./components/MusicTrackRow";
+import { usePlayState } from "./lib/audio/usePlayState";
+import { AddTracksToPlaylistSection } from "./components/AddTracksToPlaylistSection";
 
 export function PlaylistPage() {
     const { playlistId } = useParams<{ playlistId: ID<Playlist> }>();
@@ -19,23 +20,10 @@ export function PlaylistPage() {
         tracks: [{}],
     });
 
-    const { me } = useAccount({
-        root: {
-            rootPlaylist: {
-                tracks: [{}],
-            },
-        },
-    });
+    const { me } = useAccount();
 
     const playState = usePlayState();
     const isPlaying = playState.value === "play";
-
-    const currentTracksIds = new Set(
-        playlist?.tracks.map((track) => track._refs.sourceTrack?.id),
-    );
-    const tracksToAdd = me?.root.rootPlaylist.tracks.filter(
-        (track) => !currentTracksIds.has(track.id),
-    );
 
     if (!playlist) return null;
 
@@ -86,26 +74,12 @@ export function PlaylistPage() {
                 )}
             </ul>
 
-            <div>
-                Add tracks to the playlist
-                <ul className="flex flex-col px-1 py-6 gap-6">
-                    {tracksToAdd?.map(
-                        (track) =>
-                            track && (
-                                <MusicTrackRow
-                                    track={track}
-                                    key={track.id}
-                                    isLoading={false}
-                                    isPlaying={false}
-                                    isActive={false}
-                                    onClick={() =>
-                                        addTrackToPlaylist(playlist, track, me)
-                                    }
-                                />
-                            ),
-                    )}
-                </ul>
-            </div>
+            <AddTracksToPlaylistSection
+                playlist={playlist}
+                onTrackClick={(track) =>
+                    addTrackToPlaylist(playlist, track, me)
+                }
+            />
         </>
     );
 }
