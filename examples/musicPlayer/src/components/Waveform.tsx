@@ -42,11 +42,10 @@ export function Waveform(props: { track: MusicTrack; height: number }) {
             {waveformData.map((value, i) => (
                 <button
                     type="button"
-                    // biome-ignore lint/suspicious/noArrayIndexKey: it's ok here
                     key={i}
                     onClick={() => seek(i)}
                     className={cn(
-                        "w-1 transition-colors rounded-none rounded-t-lg",
+                        "w-1 transition-colors rounded-none rounded-t-lg min-h-1",
                         activeBar >= i ? "bg-gray-500" : "bg-gray-300",
                         "hover:bg-black hover:border-1 hover:border-solid hover:border-black",
                         "focus-visible:outline-black focus:outline-none",

@@ -1,7 +1,9 @@
 import { MediaPlayer } from "@/3_useMediaPlayer";
 import { usePlayState } from "@/lib/audio/usePlayState";
-import { Waveform } from "./waveform";
+import { Waveform } from "./Waveform";
 import { useAccount } from "@/0_jazz";
+import { useMediaEndListener } from "@/lib/audio/useMediaEndListener";
+import { useKeyboardListener } from "@/lib/useKeyboardListener";
 
 export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const playState = usePlayState();
@@ -12,6 +14,13 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
             activePlaylist: {},
         },
     }).me?.root.activePlaylist;
+
+    useMediaEndListener(mediaPlayer.playNextTrack);
+    useKeyboardListener("Space", () => {
+        if (document.activeElement !== document.body) return;
+
+        playState.toggle();
+    });
 
     if (!mediaPlayer.activeTrack) return null;
 

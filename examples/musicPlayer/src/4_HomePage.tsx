@@ -38,7 +38,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                     </div>
                 </div>
             )}
-            <ul className="flex flex-col px-1 py-6 gap-6">
+            <ul className="flex flex-col">
                 {tracks?.map(
                     (track) =>
                         track && (
@@ -46,9 +46,9 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                                 track={track}
                                 key={track.id}
                                 isLoading={mediaPlayer.loading === track.id}
-                                isPlaying={isPlaying}
-                                isActive={
-                                    mediaPlayer.activeTrack?.id === track.id
+                                isPlaying={
+                                    mediaPlayer.activeTrack?.id === track.id &&
+                                    isPlaying
                                 }
                                 onClick={mediaPlayer.setActiveTrack}
                             />

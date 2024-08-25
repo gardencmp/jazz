@@ -5,7 +5,6 @@ import { MusicTrack, Playlist } from "@/1_schema";
 import { useRef, useState } from "react";
 import { getNextTrack, getPrevTrack } from "./lib/getters";
 import { BinaryCoStream, ID } from "jazz-tools";
-import { useMediaEndListener } from "./lib/audio/useMediaEndListener";
 
 export function useMediaPlayer() {
     const { me } = useAccount();
@@ -87,10 +86,6 @@ export function useMediaPlayer() {
             playState.toggle();
         }
     }
-
-    useMediaEndListener(() => {
-        playNextTrack();
-    });
 
     return {
         activeTrack,

@@ -1,13 +1,14 @@
 import { useAccount, useCoState } from "@/0_jazz";
 import { Playlist, MusicTrack, ListOfTracks } from "@/1_schema";
-import { cn } from "@/lib/utils";
+import { Button } from "@/basicComponents/Button";
+import { useState } from "react";
 
 export function AddTracksToPlaylistSection({
     playlist,
     onTrackClick,
 }: {
     playlist: Playlist;
-    onTrackClick: (track: MusicTrack) => void;
+    onTrackClick: (track: MusicTrack) => Promise<void>;
 }) {
     const { me } = useAccount({
         root: {
@@ -35,17 +36,44 @@ export function AddTracksToPlaylistSection({
                 {tracksToAdd.map((track) => (
                     <li
                         key={track.id}
-                        className={cn("flex gap-6  p-3 bg-slate-200")}
+                        className={"flex items-center gap-6 bg-slate-200"}
                     >
-                        <div className="w-6 flex justify-center">
-                            <button onClick={() => onTrackClick(track)}>
-                                +
-                            </button>
-                        </div>
+                        <AddTrackButton
+                            track={track}
+                            onTrackClick={onTrackClick}
+                        />
                         {track.title}
                     </li>
                 ))}
             </ul>
         </div>
+    );
+}
+
+function AddTrackButton({
+    track,
+    onTrackClick,
+}: {
+    track: MusicTrack;
+    onTrackClick: (track: MusicTrack) => Promise<void>;
+}) {
+    const [isLoading, setLoading] = useState(false);
+
+    async function handleClick() {
+        if (isLoading) return;
+
+        setLoading(true);
+
+        try {
+            await onTrackClick(track);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <Button className="py-2 px-4" onClick={handleClick}>
+            {isLoading ? <div className="animate-spin">߷</div> : "+"}
+        </Button>
     );
 }

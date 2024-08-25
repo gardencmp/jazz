@@ -13,8 +13,8 @@ export function FileUploadButton(props: {
     }
 
     return (
-        <button className="p-2 bg-blue-300 hover:cursor-pointer flex items-center">
-            <label className="flex items-center">
+        <button className="bg-blue-300 hover:cursor-pointer flex items-center">
+            <label className="flex items-center  cursor-pointer p-2">
                 <input type="file" onChange={handleFileLoad} multiple hidden />
                 {props.children}
             </label>

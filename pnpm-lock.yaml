@@ -250,9 +250,6 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
-      jazz-browser-media-images:
-        specifier: workspace:*
-        version: link:../../packages/jazz-browser-media-images
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react

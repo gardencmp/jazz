@@ -53,7 +53,7 @@ export function PlaylistPage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
 
                 <Button onClick={handlePlaylistShareClick}>Share</Button>
             </div>
-            <ul className="flex flex-col px-1 py-6 gap-6">
+            <ul className="flex flex-col py-6">
                 {playlist.tracks?.map(
                     (track) =>
                         track && (
@@ -61,9 +61,9 @@ export function PlaylistPage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                                 track={track}
                                 key={track.id}
                                 isLoading={mediaPlayer.loading === track.id}
-                                isPlaying={isPlaying}
-                                isActive={
-                                    mediaPlayer.activeTrack?.id === track.id
+                                isPlaying={
+                                    mediaPlayer.activeTrack?.id === track.id &&
+                                    isPlaying
                                 }
                                 onClick={() => {
                                     mediaPlayer.setActiveTrack(track, playlist);

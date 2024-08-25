@@ -5,13 +5,11 @@ import { ChangeEvent } from "react";
 export function MusicTrackRow({
     track,
     isLoading,
-    isActive,
     isPlaying,
     onClick,
 }: {
     track: MusicTrack;
     isLoading: boolean;
-    isActive: boolean;
     isPlaying: boolean;
     onClick: (track: MusicTrack) => void;
 }) {
@@ -20,23 +18,24 @@ export function MusicTrackRow({
     }
 
     return (
-        <li
-            className={cn(
-                "flex gap-6  p-3",
-                isActive ? "bg-slate-400" : "bg-slate-200",
-            )}
-        >
-            <div className="w-6 flex justify-center">
+        <li className={"flex gap-1  hover:bg-slate-200 group py-2 px-2"}>
+            <button
+                className={cn(
+                    "flex items-center justify-center bg-transparent w-8 h-8 ",
+                    !isPlaying && "group-hover:bg-slate-300 rounded-full",
+                )}
+                onClick={() => onClick(track)}
+            >
                 {isLoading ? (
                     <div className="animate-spin">߷</div>
-                ) : !isActive || !isPlaying ? (
-                    <button onClick={() => onClick(track)}>▶️</button>
+                ) : isPlaying ? (
+                    "⏸️"
                 ) : (
-                    <button onClick={() => onClick(track)}>⏸️</button>
+                    "▶️"
                 )}
-            </div>
+            </button>
             <input
-                className="w-full bg-transparent"
+                className="w-full bg-transparent px-1"
                 value={track.title}
                 onChange={handleTrackTitleChange}
             />
