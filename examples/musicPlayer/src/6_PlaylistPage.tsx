@@ -2,7 +2,7 @@ import { createInviteLink } from "jazz-react";
 import { ID } from "jazz-tools";
 import { ChangeEvent } from "react";
 import { useParams } from "react-router";
-import { useAccount, useCoState } from "./0_jazz";
+import { useAccount, useCoState } from "./2_main";
 import { Playlist } from "./1_schema";
 import { MediaPlayer } from "./3_useMediaPlayer";
 import { addTrackToPlaylist } from "./5_actions";

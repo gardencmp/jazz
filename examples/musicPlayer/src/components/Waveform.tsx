@@ -1,4 +1,4 @@
-import { useCoState } from "@/0_jazz";
+import { useCoState } from "@/2_main";
 import { MusicTrack, MusicTrackWaveform } from "@/1_schema";
 import { usePlayerCurrentTime } from "@/lib/audio/usePlayerCurrentTime";
 import { cn } from "@/lib/utils";

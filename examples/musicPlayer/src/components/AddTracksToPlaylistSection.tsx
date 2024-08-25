@@ -1,4 +1,4 @@
-import { useAccount, useCoState } from "@/0_jazz";
+import { useAccount, useCoState } from "@/2_main";
 import { Playlist, MusicTrack, ListOfTracks } from "@/1_schema";
 import { Button } from "@/basicComponents/Button";
 import { useState } from "react";

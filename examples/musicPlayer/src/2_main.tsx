@@ -1,16 +1,25 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createHashRouter } from "react-router-dom";
-import { Jazz, useAccount } from "./0_jazz";
+import { createHashRouter, RouterProvider } from "react-router-dom";
+import { useMediaPlayer } from "./3_useMediaPlayer";
 import { HomePage } from "./4_HomePage";
+import { createNewPlaylist, uploadMusicTracks } from "./5_actions";
 import { PlaylistPage } from "./6_PlaylistPage";
 import { InvitePage } from "./7_InvitePage";
-import "./index.css";
-import { useMediaPlayer } from "./3_useMediaPlayer";
-import { PlayerControls } from "./components/PlayerControls";
-import { uploadMusicTracks, createNewPlaylist } from "./5_actions";
 import { Button } from "./basicComponents/Button";
 import { FileUploadButton } from "./basicComponents/FileUploadButton";
+import { PlayerControls } from "./components/PlayerControls";
+import "./index.css";
+
+import { MusicaAccount } from "@/1_schema";
+import { createJazzReactContext, DemoAuth } from "jazz-react";
+
+export const Jazz = createJazzReactContext({
+    auth: DemoAuth({ appName: "Musica Jazz", accountSchema: MusicaAccount }),
+    peer: `wss://mesh.jazz.tools/?key=example@email.com`,
+});
+
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function Main() {
     const mediaPlayer = useMediaPlayer();

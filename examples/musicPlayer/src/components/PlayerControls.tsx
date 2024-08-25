@@ -1,7 +1,7 @@
 import { MediaPlayer } from "@/3_useMediaPlayer";
 import { usePlayState } from "@/lib/audio/usePlayState";
 import { Waveform } from "./Waveform";
-import { useAccount } from "@/0_jazz";
+import { useAccount } from "@/2_main";
 import { useMediaEndListener } from "@/lib/audio/useMediaEndListener";
 import { useKeyboardListener } from "@/lib/useKeyboardListener";
 

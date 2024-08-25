@@ -1,4 +1,4 @@
-import { useAccount } from "./0_jazz";
+import { useAccount } from "./2_main";
 import { MediaPlayer } from "./3_useMediaPlayer";
 import { Link } from "./basicComponents/Link";
 import { MusicTrackRow } from "./components/MusicTrackRow";
