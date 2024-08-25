@@ -20,6 +20,7 @@ export class MusicTrack extends CoMap {
     // Using a separate CoMap to lazy load this value
     waveform = co.ref(MusicTrackWaveform);
     sourceTrack = co.optional.ref(MusicTrack);
+    isTheExampleTrack = co.optional.boolean;
 
     migrate() {
         if (Array.isArray(this.waveform)) {
@@ -73,6 +74,7 @@ export class MusicaAccount extends Account {
                         ownership,
                     ),
                     title: "Example audio",
+                    isTheExampleTrack: true,
                 },
                 ownership,
             );

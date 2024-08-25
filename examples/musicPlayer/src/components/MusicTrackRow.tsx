@@ -18,7 +18,12 @@ export function MusicTrackRow({
     }
 
     return (
-        <li className={"flex gap-1  hover:bg-slate-200 group py-2 px-2"}>
+        <li
+            className={
+                "flex gap-1  hover:bg-slate-200 group py-2 px-2 cursor-pointer"
+            }
+            onClick={() => onClick(track)}
+        >
             <button
                 className={cn(
                     "flex items-center justify-center bg-transparent w-8 h-8 ",
@@ -34,11 +39,17 @@ export function MusicTrackRow({
                     "▶️"
                 )}
             </button>
-            <input
-                className="w-full bg-transparent px-1"
-                value={track.title}
-                onChange={handleTrackTitleChange}
-            />
+            <div className="relative" onClick={(evt) => evt.stopPropagation()}>
+                <input
+                    className="absolute w-full h-full left-0 bg-transparent px-1"
+                    value={track.title}
+                    onChange={handleTrackTitleChange}
+                    spellCheck="false"
+                />
+                <span className="opacity-0 px-1 w-fit pointer-events-none whitespace-pre">
+                    {track.title}
+                </span>
+            </div>
         </li>
     );
 }

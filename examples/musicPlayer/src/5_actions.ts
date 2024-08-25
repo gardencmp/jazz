@@ -16,6 +16,14 @@ export async function uploadMusicTracks(
 
     if (!rootPlaylistTracks) return;
 
+    const exampleTrackIndex = rootPlaylistTracks.findIndex(
+        (track) => track?.isTheExampleTrack,
+    );
+
+    if (exampleTrackIndex !== -1) {
+        rootPlaylistTracks.splice(exampleTrackIndex, 1);
+    }
+
     const ownership = {
         owner: account,
     };

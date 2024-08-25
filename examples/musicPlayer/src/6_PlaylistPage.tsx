@@ -42,7 +42,7 @@ export function PlaylistPage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
 
     return (
         <>
-            <div className="flex bg-gray-300">
+            <div className="flex bg-gray-200">
                 <Link to="/">Back</Link>
 
                 <input
