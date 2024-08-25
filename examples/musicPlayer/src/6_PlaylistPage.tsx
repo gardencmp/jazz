@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
 import { Playlist } from "./1_schema";
 import { ID } from "jazz-tools";
-import { useAccount, useCoState } from "./lib/jazz";
+import { useAccount, useCoState } from "./0_jazz";
 import { ChangeEvent } from "react";
 import { MusicTrackRow } from "./components/MusicTrackRow";
 import { useMediaPlayer } from "./3_useMediaPlayer";
@@ -30,7 +30,9 @@ export function PlaylistPage() {
     const playState = usePlayState();
     const isPlaying = playState.value === "play";
 
-    const currentTracksIds = new Set(playlist?.tracks.map((track) => track.id));
+    const currentTracksIds = new Set(
+        playlist?.tracks.map((track) => track._refs.sourceTrack?.id),
+    );
     const tracksToAdd = me?.root.rootPlaylist.tracks.filter(
         (track) => !currentTracksIds.has(track.id),
     );
@@ -97,7 +99,7 @@ export function PlaylistPage() {
                                     isPlaying={false}
                                     isActive={false}
                                     onClick={() =>
-                                        addTrackToPlaylist(playlist, track)
+                                        addTrackToPlaylist(playlist, track, me)
                                     }
                                 />
                             ),

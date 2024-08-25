@@ -1,6 +1,6 @@
 import { usePlayMedia } from "@/lib/audio/usePlayMedia";
 import { usePlayState } from "@/lib/audio/usePlayState";
-import { useAccount, useCoState } from "@/lib/jazz";
+import { useAccount, useCoState } from "./0_jazz";
 import { MusicTrack, Playlist } from "@/1_schema";
 import { useRef, useState } from "react";
 import { getNextTrack, getPrevTrack, loadMusicFileAsBlob } from "./5_getters";

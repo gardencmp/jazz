@@ -63,6 +63,33 @@ export async function createNewPlaylist(account: MusicaAccount) {
 export async function addTrackToPlaylist(
     playlist: Playlist,
     track: MusicTrack,
+    account: MusicaAccount | undefined,
 ) {
-    playlist.tracks?.push(track);
+    if (!account) return;
+
+    const ownership = { owner: playlist._owner };
+    const blob = await BinaryCoStream.loadAsBlob(track._refs.file.id, account);
+    const waveform = await MusicTrackWaveform.load(
+        track._refs.waveform.id,
+        account,
+        {},
+    );
+
+    if (!blob || !waveform) return;
+
+    const trackClone = MusicTrack.create(
+        {
+            file: await BinaryCoStream.createFromBlob(blob, ownership),
+            duration: track.duration,
+            waveform: MusicTrackWaveform.create(
+                { data: waveform.data },
+                ownership,
+            ),
+            title: track.title,
+            sourceTrack: track,
+        },
+        ownership,
+    );
+
+    playlist.tracks?.push(trackClone);
 }

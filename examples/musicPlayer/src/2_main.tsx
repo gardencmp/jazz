@@ -10,7 +10,7 @@ import { useMediaPlayer } from "./3_useMediaPlayer";
 import { createNewPlaylist, uploadMusicTracks } from "./4_actions";
 import { useMediaEndListener } from "./lib/audio/useMediaEndListener";
 import { usePlayState } from "./lib/audio/usePlayState";
-import { Jazz, useAcceptInvite, useAccount } from "./lib/jazz";
+import { Jazz, useAcceptInvite, useAccount } from "./0_jazz";
 import { FileUploadButton } from "./basicComponents/FileUploadButton";
 import { MusicTrackRow } from "./components/MusicTrackRow";
 import { PlaylistPage } from "./6_PlaylistPage";
