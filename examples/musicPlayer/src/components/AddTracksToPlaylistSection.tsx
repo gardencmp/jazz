@@ -33,7 +33,10 @@ export function AddTracksToPlaylistSection({
             Add tracks to the playlist
             <ul className="flex flex-col px-1 py-6 gap-6">
                 {tracksToAdd.map((track) => (
-                    <li className={cn("flex gap-6  p-3 bg-slate-200")}>
+                    <li
+                        key={track.id}
+                        className={cn("flex gap-6  p-3 bg-slate-200")}
+                    >
                         <div className="w-6 flex justify-center">
                             <button onClick={() => onTrackClick(track)}>
                                 +

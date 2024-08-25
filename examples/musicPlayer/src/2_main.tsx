@@ -1,153 +1,75 @@
-import React, { useCallback } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
-import {
-    RouterProvider,
-    createHashRouter,
-    useNavigate,
-} from "react-router-dom";
+import { RouterProvider, createHashRouter } from "react-router-dom";
+import { Jazz, useAccount } from "./0_jazz";
+import { HomePage } from "./4_HomePage";
+import { PlaylistPage } from "./6_PlaylistPage";
+import { InvitePage } from "./7_InvitePage";
 import "./index.css";
 import { useMediaPlayer } from "./3_useMediaPlayer";
-import { createNewPlaylist, uploadMusicTracks } from "./4_actions";
-import { useMediaEndListener } from "./lib/audio/useMediaEndListener";
-import { usePlayState } from "./lib/audio/usePlayState";
-import { Jazz, useAcceptInvite, useAccount } from "./0_jazz";
-import { FileUploadButton } from "./basicComponents/FileUploadButton";
-import { MusicTrackRow } from "./components/MusicTrackRow";
-import { PlaylistPage } from "./6_PlaylistPage";
+import { PlayerControls } from "./components/PlayerControls";
+import { uploadMusicTracks, createNewPlaylist } from "./5_actions";
 import { Button } from "./basicComponents/Button";
-import { Link } from "./basicComponents/Link";
-import { Playlist } from "./1_schema";
-import { ID } from "jazz-tools";
+import { FileUploadButton } from "./basicComponents/FileUploadButton";
 
-function App() {
-    const navigate = useNavigate();
+function Main() {
     const mediaPlayer = useMediaPlayer();
-    const { me } = useAccount({
-        root: {
-            rootPlaylist: {
-                tracks: [{}],
-            },
-            playlists: [{}],
-        },
-    });
 
-    const tracks = me?.root.rootPlaylist.tracks;
-
-    const playState = usePlayState();
-    const isPlaying = playState.value === "play";
-
-    useMediaEndListener(() => {
-        mediaPlayer.playNextTrack();
-    });
+    const { me } = useAccount();
 
     async function handleFileLoad(files: FileList) {
         if (!me) return;
 
         await uploadMusicTracks(me, files);
     }
+
     async function handleCreatePlaylist() {
         if (!me) return;
 
         const playlist = await createNewPlaylist(me);
 
-        navigate(`/playlist/${playlist.id}`);
+        router.navigate(`/playlist/${playlist.id}`);
     }
 
-    const playlists = me?.root.playlists;
+    const router = createHashRouter([
+        {
+            path: "/",
+            element: <HomePage mediaPlayer={mediaPlayer} />,
+        },
+        {
+            path: "/playlist/:playlistId",
+            element: <PlaylistPage mediaPlayer={mediaPlayer} />,
+        },
+        {
+            path: "/invite/*",
+            element: <InvitePage />,
+        },
+    ]);
 
     return (
         <>
-            <div className="flex p-1 gap-3">
-                <FileUploadButton onFileLoad={handleFileLoad}>
-                    Add file
-                </FileUploadButton>
-                <Button onClick={handleCreatePlaylist}>
-                    Create new playlist
-                </Button>
-            </div>
-            {playlists && playlists.length > 0 && (
-                <div>
-                    <b>Playlists</b>
-                    <div className="flex px-1 py-6 gap-6">
-                        {playlists.map((playlist) => (
-                            <Link
-                                key={playlist.id}
-                                to={`/playlist/${playlist.id}`}
-                            >
-                                {playlist.title}
-                            </Link>
-                        ))}
-                    </div>
+            <div className="flex items-center bg-gray-300">
+                <img src="jazz-logo.png" className="px-3 h-[20px]" />
+                <div className="text-nowrap">Jazz music player</div>
+                <div className="flex w-full gap-1 justify-end">
+                    <FileUploadButton onFileLoad={handleFileLoad}>
+                        Add file
+                    </FileUploadButton>
+                    <Button onClick={handleCreatePlaylist}>
+                        Create new playlist
+                    </Button>
                 </div>
-            )}
-            <ul className="flex flex-col px-1 py-6 gap-6">
-                {tracks?.map(
-                    (track) =>
-                        track && (
-                            <MusicTrackRow
-                                track={track}
-                                key={track.id}
-                                isLoading={mediaPlayer.loading === track.id}
-                                isPlaying={isPlaying}
-                                isActive={
-                                    mediaPlayer.activeTrack?.id === track.id
-                                }
-                                onClick={mediaPlayer.setActiveTrack}
-                            />
-                        ),
-                )}
-            </ul>
+            </div>
+            <RouterProvider router={router} />
+            <PlayerControls mediaPlayer={mediaPlayer} />
         </>
     );
 }
 
-function InvitePage() {
-    const navigate = useNavigate();
-
-    const { me } = useAccount({
-        root: {
-            playlists: [],
-        },
-    });
-
-    useAcceptInvite({
-        invitedObjectSchema: Playlist,
-        onAccept: useCallback(
-            async (playlistId: ID<Playlist>) => {
-                if (!me) return;
-
-                const playlist = await Playlist.load(playlistId, me, {});
-
-                if (playlist) me.root.playlists.push(playlist);
-
-                navigate("/playlist/" + playlistId);
-            },
-            [navigate, me],
-        ),
-    });
-
-    return <p>Accepting invite....</p>;
-}
-
-const router = createHashRouter([
-    {
-        path: "/",
-        element: <App />,
-    },
-    {
-        path: "/playlist/:playlistId",
-        element: <PlaylistPage />,
-    },
-    {
-        path: "/invite/*",
-        element: <InvitePage />,
-    },
-]);
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <Jazz.Provider>
-            <RouterProvider router={router} />
+            <Main />
         </Jazz.Provider>
     </React.StrictMode>,
 );

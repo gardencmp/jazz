@@ -4,7 +4,6 @@ import { createJazzReactContext, DemoAuth } from "jazz-react";
 export const Jazz = createJazzReactContext({
     auth: DemoAuth({ appName: "Musica Jazz", accountSchema: MusicaAccount }),
     peer: `wss://mesh.jazz.tools/?key=example@email.com`,
-    // peer: `ws://localhost:4200/?key=example@email.com`,
 });
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;

@@ -6,6 +6,7 @@ import {
     Profile,
     Account,
 } from "jazz-tools";
+import { getAudioFileData } from "./lib/audio/getAudioFileData";
 
 export class MusicTrackWaveform extends CoMap {
     data = co.json<number[]>();
@@ -52,14 +53,34 @@ export class MusicaAccount extends Account {
     profile = co.ref(Profile);
     root = co.ref(MusicaAccountRoot);
 
-    migrate(creationProps?: { name: string }) {
+    async migrate(creationProps?: { name: string }) {
         super.migrate(creationProps);
         if (!this._refs.root) {
             const ownership = { owner: this };
 
+            const trackFile = await (await fetch("/example.mp3")).blob();
+            const data = await getAudioFileData(trackFile);
+
+            const initialMusicTrack = MusicTrack.create(
+                {
+                    file: await BinaryCoStream.createFromBlob(
+                        trackFile,
+                        ownership,
+                    ),
+                    duration: data.duration,
+                    waveform: MusicTrackWaveform.create(
+                        { data: data.waveform },
+                        ownership,
+                    ),
+                    title: "Example audio",
+                },
+                ownership,
+            );
+
+            const tracks = ListOfTracks.create([initialMusicTrack], ownership);
             const rootPlaylist = Playlist.create(
                 {
-                    tracks: ListOfTracks.create([], ownership),
+                    tracks,
                     title: "",
                 },
                 ownership,
@@ -69,7 +90,7 @@ export class MusicaAccount extends Account {
                 {
                     rootPlaylist,
                     playlists: ListOfPlaylists.create([], ownership),
-                    activeTrack: null,
+                    activeTrack: initialMusicTrack,
                     activePlaylist: rootPlaylist,
                 },
                 ownership,

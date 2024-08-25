@@ -4,17 +4,16 @@ import { ChangeEvent } from "react";
 import { useParams } from "react-router";
 import { useAccount, useCoState } from "./0_jazz";
 import { Playlist } from "./1_schema";
-import { useMediaPlayer } from "./3_useMediaPlayer";
-import { addTrackToPlaylist } from "./4_actions";
+import { MediaPlayer } from "./3_useMediaPlayer";
+import { addTrackToPlaylist } from "./5_actions";
 import { Button } from "./basicComponents/Button";
 import { Link } from "./basicComponents/Link";
 import { MusicTrackRow } from "./components/MusicTrackRow";
 import { usePlayState } from "./lib/audio/usePlayState";
 import { AddTracksToPlaylistSection } from "./components/AddTracksToPlaylistSection";
 
-export function PlaylistPage() {
+export function PlaylistPage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const { playlistId } = useParams<{ playlistId: ID<Playlist> }>();
-    const mediaPlayer = useMediaPlayer();
 
     const playlist = useCoState(Playlist, playlistId, {
         tracks: [{}],
@@ -47,7 +46,7 @@ export function PlaylistPage() {
                 <Link to="/">Back</Link>
 
                 <input
-                    className="w-full bg-transparent p-1 m-3"
+                    className="w-full bg-transparent p-1 m-1"
                     value={playlist.title}
                     onChange={handlePlaylistTitleChange}
                 />

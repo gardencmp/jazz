@@ -3,8 +3,9 @@ import { usePlayState } from "@/lib/audio/usePlayState";
 import { useAccount, useCoState } from "./0_jazz";
 import { MusicTrack, Playlist } from "@/1_schema";
 import { useRef, useState } from "react";
-import { getNextTrack, getPrevTrack } from "./5_getters";
+import { getNextTrack, getPrevTrack } from "./lib/getters";
 import { BinaryCoStream, ID } from "jazz-tools";
+import { useMediaEndListener } from "./lib/audio/useMediaEndListener";
 
 export function useMediaPlayer() {
     const { me } = useAccount();
@@ -87,6 +88,10 @@ export function useMediaPlayer() {
         }
     }
 
+    useMediaEndListener(() => {
+        playNextTrack();
+    });
+
     return {
         activeTrack,
         setActiveTrack,
@@ -95,3 +100,5 @@ export function useMediaPlayer() {
         loading,
     };
 }
+
+export type MediaPlayer = ReturnType<typeof useMediaPlayer>;
