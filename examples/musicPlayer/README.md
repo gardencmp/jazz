@@ -1,19 +1,20 @@
-# Jazz Rate-My-Pet List Example
+# Jazz Music Player Example
 
-Live version: https://example-pets.jazz.tools
+Live version: https://example-musicplayer.jazz.tools
 
 ## Installing & running the example locally
 
 (this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
 Start by checking out `jazz`
+
 ```bash
 git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/pets
+cd jazz/examples/musicPlayer
 pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/pets # or any other directory
-tar -xf /tmp/jazz-example-pets-* --strip-components 1 -C ~/jazz-examples/pets
-cd ~/jazz-examples/pets
+mkdir -p ~/jazz-examples/musicPlayer # or any other directory
+tar -xf /tmp/jazz-example-musicPlayer-* --strip-components 1 -C ~/jazz-examples/musicPlayer
+cd ~/jazz-examples/musicPlayer
 ```
 
 This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
@@ -33,7 +34,6 @@ pnpm dev
 ## Questions / problems / feedback
 
 If you have feedback, let us know on [Discord](https://discord.gg/utDMjHYg42) or open an issue or PR to fix something that seems wrong.
-
 
 ## Configuration: sync server
 
