@@ -21,7 +21,12 @@ export function InvitePage() {
 
                 const playlist = await Playlist.load(playlistId, me, {});
 
-                if (playlist) me.root.playlists.push(playlist);
+                if (
+                    playlist &&
+                    !me.root.playlists.some((item) => playlist.id !== item?.id)
+                ) {
+                    me.root.playlists.push(playlist);
+                }
 
                 navigate("/playlist/" + playlistId);
             },
