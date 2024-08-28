@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 // import twTypography from "@tailwindcss/typography";
 import twAnimate from "tailwindcss-animate";
 import { generateClampSize } from "./src/lib/generate-clamp-size";
+import { transform } from "next/dist/build/swc";
 
 // https://github.com/tailwindlabs/tailwindcss/blob/master/stubs/config.full.js
 // screens
@@ -116,6 +117,10 @@ const config: Config = {
           generateClampSize(500, 1200, 15, 17),
           { lineHeight: `${bodyLineHeight}` },
         ],
+        xlarge: [
+          generateClampSize(500, 1200, 17, 19),
+          { lineHeight: `${bodyLineHeight}` },
+        ],
         subheading: [
           generateClampSize(500, 1200, 18, 21),
           { lineHeight: "1.333" },
@@ -123,6 +128,10 @@ const config: Config = {
         heading: [generateClampSize(500, 1200, 20, 27), { lineHeight: "1.25" }],
         subtitle: [generateClampSize(500, 1200, 22, 33), { lineHeight: "1.2" }],
         title: [generateClampSize(500, 1200, 27, 42), { lineHeight: "1.2" }],
+        subsuper: [
+          generateClampSize(500, 1200, 32, 48),
+          { lineHeight: "0.98" },
+        ],
         super: [generateClampSize(500, 1200, 39, 60), { lineHeight: "0.98" }],
         code: ["0.85em", { lineHeight: "1.6" }],
       },
@@ -184,10 +193,15 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        spin: {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        spin: "spin 40s linear infinite",
       },
     },
   },

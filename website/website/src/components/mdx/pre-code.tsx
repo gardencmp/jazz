@@ -34,7 +34,7 @@ export const Pre = ({
   return (
     <>
       {showCopyAction && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="ClipboardCopyContainer absolute top-2 right-2 z-10">
           <ClipboardCopy className="text-large">{textContent}</ClipboardCopy>
         </div>
       )}
@@ -85,12 +85,11 @@ export const File = ({
           )
           .join("\n")}
       </style>
-      {name && (
-        <div className="h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono">
-          {name}
-        </div>
-      )}
+      {name && <div className={clsx(fileInnerStyle)}>{name}</div>}
       {children}
     </div>
   );
 };
+
+export const fileInnerStyle =
+  "h-[44px] flex items-center px-w4 font-mediu text-canvas border-b border-white-a5 text-[0.8em] font-mono";
