@@ -1,8 +1,24 @@
 import type { Metadata } from 'next';
-import { Manrope } from 'next/font/google';
 import './globals.css';
 
-const manrope = Manrope({ subsets: ['latin'] });
+import { Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+});
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+const pragmata = localFont({
+  src: "../../fonts/ppr_0829.woff2",
+  variable: "--font-ppr",
+});
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -16,7 +32,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={manrope.className}>{children}</body>
+      <body className={[
+        manrope.variable,
+        pragmata.variable,
+        inter.className,
+      ].join(" ")}>{children}</body>
     </html>
   );
 }

@@ -26,7 +26,7 @@ const inter = Inter({
     display: "swap",
 });
 const pragmata = localFont({
-    src: "../fonts/ppr_0829.woff2",
+    src: "../node_modules/gcmp-design-system/fonts/ppr_0829.woff2",
     variable: "--font-ppr",
 });
 

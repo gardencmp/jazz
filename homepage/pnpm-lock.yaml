@@ -8,6 +8,15 @@ importers:
 
   design-system:
     dependencies:
+      '@evilmartians/harmony':
+        specifier: ^1.0.0
+        version: 1.2.0
+      class-variance-authority:
+        specifier: ^0.7.0
+        version: 0.7.0
+      clsx:
+        specifier: ^2.0.0
+        version: 2.1.1
       next:
         specifier: 14.2.7
         version: 14.2.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -17,7 +26,19 @@ importers:
       react-dom:
         specifier: ^18
         version: 18.3.1(react@18.3.1)
+      tailwind-merge:
+        specifier: ^1.14.0
+        version: 1.14.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.3)
     devDependencies:
+      '@csstools/postcss-oklab-function':
+        specifier: ^3.0.6
+        version: 3.0.16(postcss@8.4.38)
+      '@tailwindcss/typography':
+        specifier: ^0.5.10
+        version: 0.5.13(tailwindcss@3.4.3)
       '@types/node':
         specifier: ^20
         version: 20.12.11
@@ -45,9 +66,6 @@ importers:
 
   homepage:
     dependencies:
-      '@evilmartians/harmony':
-        specifier: ^1.0.0
-        version: 1.2.0
       '@icons-pack/react-simple-icons':
         specifier: ^9.1.0
         version: 9.4.1(react@18.3.1)
@@ -69,12 +87,9 @@ importers:
       '@vercel/speed-insights':
         specifier: ^1.0.12
         version: 1.0.12(next@13.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
-      class-variance-authority:
-        specifier: ^0.7.0
-        version: 0.7.0
-      clsx:
-        specifier: ^2.0.0
-        version: 2.1.1
+      gcmp-design-system:
+        specifier: workspace:*
+        version: link:../design-system
       lucide-react:
         specifier: ^0.284.0
         version: 0.284.0(react@18.3.1)
@@ -105,22 +120,10 @@ importers:
       shiki-twoslash:
         specifier: ^3.1.2
         version: 3.1.2(typescript@5.4.5)
-      tailwind-merge:
-        specifier: ^1.14.0
-        version: 1.14.0
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.3)
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
     devDependencies:
-      '@csstools/postcss-oklab-function':
-        specifier: ^3.0.6
-        version: 3.0.16(postcss@8.4.38)
-      '@tailwindcss/typography':
-        specifier: ^0.5.10
-        version: 0.5.13(tailwindcss@3.4.3)
       '@types/node':
         specifier: ^20
         version: 20.12.11
