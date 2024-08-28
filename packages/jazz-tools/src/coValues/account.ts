@@ -356,3 +356,7 @@ export function isControlledAccount(account: Account): account is Account & {
 } {
     return account.isMe;
 }
+
+export type AccountClass<Acc extends Account> = CoValueClass<Acc> & {
+    fromNode: (typeof Account)["fromNode"];
+};

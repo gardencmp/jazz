@@ -1,17 +1,13 @@
 import React from "react";
-import { AuthProvider } from "jazz-browser";
-import { Account } from "jazz-tools";
+import { AuthMethod } from "jazz-tools";
 
 export type AuthState = "loading" | "ready" | "signedIn";
 
-/** @category Auth Providers */
-export type ReactAuthHook<Acc extends Account> = (
-    setJazzAuthState: (state: AuthState) => void,
-) => {
-    auth: AuthProvider<Acc>;
-    AuthUI: React.ReactNode;
-    logOut?: () => void;
-};
+/** @category Auth Methods */
+export const AuthMethodCtx = React.createContext<AuthMethod | undefined>(
+    undefined,
+);
+
 export { DemoAuth } from "./DemoAuth.js";
 export { PasskeyAuth } from "./PasskeyAuth.js";
 export { PassphraseAuth } from "./PassphraseAuth.js";

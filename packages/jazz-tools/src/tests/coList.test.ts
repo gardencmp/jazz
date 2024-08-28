@@ -7,6 +7,7 @@ import {
     WasmCrypto,
     co,
     cojsonInternals,
+    createJazzContext,
     isControlledAccount,
 } from "../index.js";
 
@@ -169,7 +170,7 @@ describe("CoList resolution", async () => {
             throw "me is not a controlled account";
         }
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await Account.become({
+        const meOnSecondPeer = await createJazzContext({
             accountID: me.id,
             accountSecret: me._raw.agentSecret,
             peersToLoadFrom: [initialAsPeer],

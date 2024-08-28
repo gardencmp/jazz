@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     consumeInviteLinkFromWindowLocation,
     createJazzBrowserContext,
@@ -6,6 +6,7 @@ import {
 
 import {
     Account,
+    AccountClass,
     CoValue,
     CoValueClass,
     DeeplyLoaded,
@@ -13,96 +14,58 @@ import {
     ID,
     subscribeToCoValue,
 } from "jazz-tools";
-import { AuthState, ReactAuthHook } from "./auth/auth.js";
+import { AuthMethodCtx } from "./auth/auth.js";
 
 /** @category Context & Hooks */
-export function createJazzReactContext<Acc extends Account>({
-    auth: useAuthHook,
-    peer,
-    storage = "indexedDB",
+export function createJazzReactApp<Acc extends Account>({
+    AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
-    auth: ReactAuthHook<Acc>;
-    peer: `wss://${string}` | `ws://${string}`;
-    storage?: "indexedDB" | "singleTabOPFS";
-}): JazzReactContext<Acc> {
-    const JazzContext = React.createContext<
-        | {
-              me: Acc;
-              logOut: () => void;
-          }
-        | undefined
-    >(undefined);
+    AccountSchema?: AccountClass<Acc>;
+} = {}): JazzReactContext<Acc> {
+    const JazzContext = React.createContext<Acc | undefined>(undefined);
 
     function Provider({
         children,
-        loading,
+        peer,
+        storage,
     }: {
         children: React.ReactNode;
-        loading?: React.ReactNode;
+        peer: `wss://${string}` | `ws://${string}`;
+        storage?: "indexedDB" | "singleTabOPFS";
     }) {
         const [me, setMe] = useState<Acc | undefined>();
-        const [authState, setAuthState] = useState<AuthState>("loading");
-        const { auth, AuthUI, logOut } = useAuthHook(setAuthState);
+        const auth = useContext(AuthMethodCtx);
+
+        if (!auth) {
+            throw new Error("Jazz.Provider must be used within an Auth Method Provider");
+        }
 
         useEffect(() => {
-            let done: (() => void) | undefined = undefined;
-            let stop = false;
-
-            (async () => {
-                const context = await createJazzBrowserContext<Acc>({
-                    auth: auth,
-                    peer:
-                        (new URLSearchParams(window.location.search).get(
-                            "peer",
-                        ) as typeof peer) || peer,
-                    storage,
-                });
-
-                if (stop) {
-                    context.done();
-                    return;
-                }
-
-                setMe(context.me);
-
-                done = () => {
-                    context.done();
-                };
-            })().catch((e) => {
-                console.error("Failed to create browser node", e);
+            const promiseWithDoneCallback = createJazzBrowserContext<Acc>({
+                AccountSchema,
+                auth,
+                peer,
+                storage,
+            }).then(({ me, done }) => {
+                setMe(me);
+                return done;
             });
 
             return () => {
-                stop = true;
-                done && done();
+                void promiseWithDoneCallback.then((done) => done());
             };
-        }, [auth]);
+        }, [AccountSchema, auth, peer, storage]);
 
-        return (
-            <>
-                {authState === "loading" ? loading : null}
-                {authState === "signedIn" && me && logOut ? (
-                    <JazzContext.Provider
-                        value={{
-                            me,
-                            logOut,
-                        }}
-                    >
-                        {children}
-                    </JazzContext.Provider>
-                ) : null}
-                {authState === "ready" && AuthUI}
-            </>
-        );
+        return <JazzContext.Provider value={me}>{children}</JazzContext.Provider>;
     }
 
-    function useAccount(): { me: Acc; logOut: () => void };
+    function useAccount(): { me: Acc };
     function useAccount<D extends DepthsIn<Acc>>(
         depth: D,
-    ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
+    ): { me: DeeplyLoaded<Acc, D> | undefined };
     function useAccount<D extends DepthsIn<Acc>>(
         depth?: D,
-    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
+    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined } {
         const context = React.useContext(JazzContext);
 
         if (!context) {
@@ -110,14 +73,13 @@ export function createJazzReactContext<Acc extends Account>({
         }
 
         const me = useCoState<Acc, D>(
-            context.me.constructor as CoValueClass<Acc>,
-            context.me.id,
+            context.constructor as CoValueClass<Acc>,
+            context.id,
             depth,
         );
 
         return {
-            me: depth === undefined ? me || context.me : me,
-            logOut: context.logOut,
+            me: depth === undefined ? me || context : me,
         };
     }
 
@@ -130,7 +92,7 @@ export function createJazzReactContext<Acc extends Account>({
         const [state, setState] = useState<{
             value: DeeplyLoaded<V, D> | undefined;
         }>({ value: undefined });
-        const me = React.useContext(JazzContext)?.me;
+        const me = React.useContext(JazzContext);
 
         useEffect(() => {
             if (!id || !me) return;
@@ -152,7 +114,7 @@ export function createJazzReactContext<Acc extends Account>({
         onAccept: (projectID: ID<V>) => void;
         forValueHint?: string;
     }): void {
-        const me = React.useContext(JazzContext)?.me;
+        const me = React.useContext(JazzContext);
         useEffect(() => {
             if (!me) return;
 
@@ -183,20 +145,19 @@ export interface JazzReactContext<Acc extends Account> {
     /** @category Provider Component */
     Provider: React.FC<{
         children: React.ReactNode;
-        loading?: React.ReactNode;
+        peer: `wss://${string}` | `ws://${string}`;
+        storage?: "indexedDB" | "singleTabOPFS";
     }>;
 
     /** @category Hooks */
     useAccount(): {
         me: Acc;
-        logOut: () => void;
     };
     /** @category Hooks */
     useAccount<D extends DepthsIn<Acc>>(
         depth: D,
     ): {
         me: DeeplyLoaded<Acc, D> | undefined;
-        logOut: () => void;
     };
 
     /** @category Hooks */

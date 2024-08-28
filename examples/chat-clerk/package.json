@@ -1,5 +1,5 @@
 {
-  "name": "jazz-example-chat",
+  "name": "jazz-example-chat-clerk",
   "private": true,
   "version": "0.0.79",
   "type": "module",
@@ -26,6 +26,7 @@
     "hash-slash": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-tools": "workspace:*",
+    "jazz-react-auth-clerk": "workspace:*",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",

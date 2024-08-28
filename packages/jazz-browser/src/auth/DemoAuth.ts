@@ -11,7 +11,6 @@ const localStorageKey = "demo-auth-logged-in-secret";
 export class BrowserDemoAuth implements AuthMethod {
     constructor(
         public driver: BrowserDemoAuth.Driver,
-        public appName: string,
         seedAccounts?: {
             [name: string]: {
                 accountID: ID<Account>;

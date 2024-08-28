@@ -7,7 +7,7 @@ import {
     RawAccount,
     SessionID,
 } from "cojson";
-import { Account, CoValueClass, ID } from "../internal.js";
+import { Account, AccountClass, ID } from "../internal.js";
 
 export type AuthResult =
     | {
@@ -33,17 +33,13 @@ export interface AuthMethod {
 }
 
 export async function createJazzContext<Acc extends Account>({
-    AccountSchema = Account as unknown as CoValueClass<Acc> & {
-        fromNode: (typeof Account)["fromNode"];
-    },
+    AccountSchema = Account as unknown as AccountClass<Acc>,
     auth,
     sessionProvider,
     peersToLoadFrom,
     crypto,
 }: {
-    AccountSchema: CoValueClass<Acc> & {
-        fromNode: (typeof Account)["fromNode"];
-    };
+    AccountSchema: AccountClass<Acc>;
     auth: AuthMethod;
     sessionProvider: (
         accountID: ID<Account>,

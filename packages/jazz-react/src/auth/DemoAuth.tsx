@@ -1,108 +1,81 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
-import { Account, CoValueClass, ID } from "jazz-tools";
-import { ReactAuthHook } from "./auth.js";
+import { Account, ID } from "jazz-tools";
 import { AgentSecret } from "cojson";
+import { AuthMethodCtx } from "./auth.js";
+
+type DemoAuthState =
+    | {
+          state: "uninitialized";
+      }
+    | {
+          state: "loading";
+      }
+    | {
+          state: "ready";
+          existingUsers: string[];
+          signUp: (username: string) => void;
+          logInAs: (existingUser: string) => void;
+      }
+    | {
+          state: "signedIn";
+          logOut: () => void;
+      };
+
+const DemoAuthStateCtx = createContext<{
+    state: DemoAuthState;
+    errors: string[];
+}>({
+    state: { state: "uninitialized" },
+    errors: [],
+});
 
 /** @category Auth Providers */
-export function DemoAuth<Acc extends Account = Account>({
-    accountSchema = Account as CoValueClass<Acc> & typeof Account,
-    appName,
-    appHostname,
-    Component = DemoAuth.BasicUI,
+export function DemoAuth({
+    children,
     seedAccounts,
 }: {
-    accountSchema?: CoValueClass<Acc> & typeof Account;
-    appName: string;
-    appHostname?: string;
-    Component?: DemoAuth.Component;
+    children: ReactNode;
     seedAccounts?: {
         [name: string]: { accountID: ID<Account>; accountSecret: AgentSecret };
     };
-}): ReactAuthHook<Acc> {
-    return function useLocalAuth(setJazzAuthState) {
-        const [authState, setAuthState] = useState<
-            | { state: "loading" }
-            | {
-                  state: "ready";
-                  existingUsers: string[];
-                  logInAs: (existingUser: string) => void;
-                  signUp: (username: string) => void;
-              }
-            | { state: "signedIn"; logOut: () => void }
-        >({ state: "loading" });
+}) {
+    const [errors, setErrors] = useState<string[]>([]);
+    const [state, setState] = useState<DemoAuthState>({ state: "loading" });
 
-        const [logOutCounter, setLogOutCounter] = useState(0);
-
-        useEffect(() => {
-            setJazzAuthState(authState.state);
-        }, [authState]);
-
-        const auth = useMemo(() => {
-            return new BrowserDemoAuth<Acc>(
-                accountSchema,
-                {
-                    onReady(next) {
-                        setAuthState({
-                            state: "ready",
-                            existingUsers: next.existingUsers,
-                            logInAs: next.logInAs,
-                            signUp: next.signUp,
-                        });
-                    },
-                    onSignedIn(next) {
-                        setAuthState({
-                            state: "signedIn",
-                            logOut: () => {
-                                next.logOut();
-                                setAuthState({ state: "loading" });
-                                setLogOutCounter((c) => c + 1);
-                            },
-                        });
-                    },
+    const authMethod = useMemo(() => {
+        return new BrowserDemoAuth(
+            {
+                onReady: ({ signUp, existingUsers, logInAs }) => {
+                    setState({
+                        state: "ready",
+                        signUp,
+                        existingUsers,
+                        logInAs,
+                    });
                 },
-                appName,
-                seedAccounts,
-            );
-        }, [appName, appHostname, logOutCounter, seedAccounts]);
+                onSignedIn: ({ logOut }) => {
+                    setState({ state: "signedIn", logOut });
+                },
+                onError: (error) => {
+                    setErrors((errors) => [...errors, error.toString()]);
+                },
+            },
+            seedAccounts,
+        );
+    }, [seedAccounts]);
 
-        const AuthUI =
-            authState.state === "ready"
-                ? Component({
-                      appName,
-                      loading: false,
-                      existingUsers: authState.existingUsers,
-                      logInAs: authState.logInAs,
-                      signUp: authState.signUp,
-                  })
-                : Component({
-                      appName,
-                      loading: false,
-                      existingUsers: [],
-                      logInAs: () => {},
-                      signUp: (_) => {},
-                  });
-
-        return {
-            auth,
-            AuthUI,
-            logOut:
-                authState.state === "signedIn" ? authState.logOut : undefined,
-        };
-    };
+    return (
+        <DemoAuthStateCtx.Provider value={{ state, errors }}>
+            <AuthMethodCtx.Provider value={authMethod}>
+                {children}
+            </AuthMethodCtx.Provider>
+        </DemoAuthStateCtx.Provider>
+    );
 }
 
-const DemoAuthBasicUI = ({
-    appName,
-    existingUsers,
-    logInAs,
-    signUp,
-}: {
-    appName: string;
-    existingUsers: string[];
-    logInAs: (existingUser: string) => void;
-    signUp: (username: string) => void;
-}) => {
+const DemoAuthBasicUI = ({ appName }: { appName: string }) => {
+    const { state, errors } = useContext(DemoAuthStateCtx);
     const [username, setUsername] = useState<string>("");
     const darkMode =
         typeof window !== "undefined"
@@ -120,87 +93,96 @@ const DemoAuthBasicUI = ({
                 ...(darkMode ? { background: "#000" } : {}),
             }}
         >
-            <div
-                style={{
-                    width: "18rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "2rem",
-                }}
-            >
-                <h1
-                    style={{
-                        color: darkMode ? "#fff" : "#000",
-                        textAlign: "center",
-                    }}
-                >
-                    {appName}
-                </h1>
-                <form
+            {state.state === "loading" ? (
+                <div>Loading...</div>
+            ) : state.state === "ready" ? (
+                <div
                     style={{
                         width: "18rem",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "0.5rem",
-                    }}
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        signUp(username);
+                        gap: "2rem",
                     }}
                 >
-                    <input
-                        placeholder="Display name"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        autoComplete="webauthn"
+                    <h1
                         style={{
-                            border: darkMode
-                                ? "2px solid #444"
-                                : "2px solid #ddd",
-                            padding: "11px 8px",
-                            borderRadius: "6px",
-                            background: darkMode ? "#000" : "#fff",
                             color: darkMode ? "#fff" : "#000",
+                            textAlign: "center",
                         }}
-                    />
-                    <input
-                        type="submit"
-                        value="Sign Up as new account"
+                    >
+                        {appName}
+                    </h1>
+                    {errors.map((error) => (
+                        <div key={error} style={{ color: "red" }}>
+                            {error}
+                        </div>
+                    ))}
+                    <form
                         style={{
-                            padding: "13px 5px",
-                            border: "none",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            background: darkMode ? "#444" : "#ddd",
-                            color: darkMode ? "#fff" : "#000",
+                            width: "18rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.5rem",
                         }}
-                    />
-                </form>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.5rem",
-                    }}
-                >
-                    {existingUsers.map((user) => (
-                        <button
-                            key={user}
-                            onClick={() => logInAs(user)}
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            state.signUp(username);
+                        }}
+                    >
+                        <input
+                            placeholder="Display name"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            autoComplete="webauthn"
                             style={{
-                                background: darkMode ? "#222" : "#eee",
+                                border: darkMode
+                                    ? "2px solid #444"
+                                    : "2px solid #ddd",
+                                padding: "11px 8px",
+                                borderRadius: "6px",
+                                background: darkMode ? "#000" : "#fff",
                                 color: darkMode ? "#fff" : "#000",
+                            }}
+                        />
+                        <input
+                            type="submit"
+                            value="Sign Up as new account"
+                            style={{
                                 padding: "13px 5px",
                                 border: "none",
                                 borderRadius: "6px",
                                 cursor: "pointer",
+                                background: darkMode ? "#444" : "#ddd",
+                                color: darkMode ? "#fff" : "#000",
                             }}
-                        >
-                            Log In as "{user}"
-                        </button>
-                    ))}
+                        />
+                    </form>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.5rem",
+                        }}
+                    >
+                        {state.existingUsers.map((user) => (
+                            <button
+                                key={user}
+                                onClick={() => state.logInAs(user)}
+                                style={{
+                                    background: darkMode ? "#222" : "#eee",
+                                    color: darkMode ? "#fff" : "#000",
+                                    padding: "13px 5px",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                Log In as "{user}"
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            ) : null}
         </div>
     );
 };
@@ -208,12 +190,5 @@ const DemoAuthBasicUI = ({
 /** @category Auth Providers */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DemoAuth {
-    export type Component = (props: {
-        appName: string;
-        loading: boolean;
-        existingUsers: string[];
-        logInAs: (existingUser: string) => void;
-        signUp: (username: string) => void;
-    }) => ReactNode;
     export const BasicUI = DemoAuthBasicUI;
 }

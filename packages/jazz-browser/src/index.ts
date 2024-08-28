@@ -16,6 +16,9 @@ import { AccountID, LSMStorage } from "cojson";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import { createWebSocketPeer } from "cojson-transport-ws";
+export { BrowserDemoAuth } from './auth/DemoAuth.js'
+export { BrowserPasskeyAuth } from './auth/PasskeyAuth.js'
+export { BrowserPassphraseAuth } from './auth/PassphraseAuth.js'
 
 /** @category Context Creation */
 export type BrowserContext<Acc extends Account> = {
