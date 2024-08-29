@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "node docs-gen-typedoc-json.mjs --build && node docs-json-to-mdx.mjs && next build",
+    "build": "node docs-gen-typedoc-json.mjs --build && tsx docs-json-to-mdx.ts && next build",
     "start": "next start",
     "lint": "next lint",
     "ts": "tsc --noEmit --incremental",
@@ -40,7 +40,8 @@
     "sugar-high": "^0.7.0",
     "tabs": "^0.2.0",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.0"
   },
   "devDependencies": {
     "@types/node": "^20",

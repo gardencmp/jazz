@@ -1,0 +1,118 @@
+import { readFile, writeFile } from "fs/promises";
+import path from "path";
+
+const READ_DIR = "docs-typedoc";
+const WRITE_DIR = "src/app/docs/api/(content)";
+
+const categoryOrder = [
+  "CoValues",
+  "Context & Hooks",
+  "Context Creation",
+  "Identity & Permissions",
+  "Schema definition",
+  "Abstract interfaces",
+  "Media",
+  "Auth Providers",
+  "Invite Links",
+  "Declaration",
+  "Content",
+  "Creation",
+  "Subscription & Loading",
+  "Collaboration",
+  "Stringifying & Inspection",
+  "Internals",
+  "Type Helpers",
+  "Other",
+];
+
+async function convertJsonToMdx(jsonFiles) {
+  for (const jsonFile of jsonFiles) {
+    const jsonContent = await readFile(
+      path.join(READ_DIR, `${jsonFile}.json`),
+      "utf-8"
+    );
+    const data = JSON.parse(jsonContent);
+    
+    const groupHeading = data.categories.find(c => c.title === 'Image creation').children
+    const groupHeading2 = data.categories.flatMap(c => c.children).map(id => data.children.find(child => child.id === id))
+
+    const mdxContent = `---
+kind: "api"
+title: "${data.name}"
+publishedAt: "${new Date().toISOString().split("T")[0]}"
+summary: TODO!
+groupHeading: "${groupHeading.map(g => g.name).join(", ")}"
+---
+
+${Object.entries(
+      data.children.reduce((acc, child) => {
+        const { name, kindString, children, signatures, comment, category } = child;
+        const [signature] = signatures || [];
+
+        const isUndocumented = !comment || !comment.shortText;
+
+        const childContent = `## ${name} ${kindString || ""}
+${isUndocumented ? "// undocumented" : comment?.shortText || ""}
+
+${
+  signature
+    ? `\`\`\`typescript
+${name}(${
+        signature.parameters?.map((param) => param.name).join(", ") || ""
+      }): ${signature.type?.name || "void"}${
+        signature.type?.typeArguments
+          ? `<${signature.type.typeArguments.map((arg) => arg.name).join(", ")}>`
+          : ""
+      }
+
+${
+  signature.parameters
+    ?.map(
+      (param) =>
+        `${param.name}: ${
+          param.type.types
+            ? param.type.types.map((t) => t.name).join(" | ")
+            : param.type.name
+        }`
+    )
+    .join(",\n") || ""
+}
+\`\`\`
+`
+    : (children || [])
+        .map(
+          (child) =>
+            `${child.name}${
+              child.signatures?.[0]?.parameters
+                ? `(${child.signatures[0].parameters
+                    .map((param) => param.name)
+                    .join(", ")})`
+                : ""
+            }: ${child.signatures?.[0]?.type?.name || "void"}`
+        )
+        .join("\n")
+}
+`;
+
+        const sectionName = category || categoryOrder[categoryOrder.length - 1];
+        if (!acc[sectionName]) {
+          acc[sectionName] = [];
+        }
+        acc[sectionName].push(childContent);
+
+        return acc;
+      }, {})
+    )
+      .map(([section, content]) => `// ${section}\n\n${content.join("\n\n")}`)
+      .join("\n\n")}
+`;
+
+    await writeFile(
+      path.join(WRITE_DIR, `${data.name}.mdx`),
+      mdxContent.trim()
+    );
+  }
+}
+
+const jsonFiles = ["jazz-browser", "jazz-browser-media-images"];
+convertJsonToMdx(jsonFiles);

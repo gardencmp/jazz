@@ -1,0 +1,139 @@
+---
+kind: "api"
+title: "jazz-browser"
+publishedAt: "2024-08-29"
+summary: TODO!
+---
+
+// Other
+
+## createJazzBrowserContext 
+// undocumented
+
+```typescript
+createJazzBrowserContext(__namedParameters): Promise<BrowserContext>
+
+__namedParameters: undefined
+```
+
+
+
+## getSessionHandleFor 
+// undocumented
+
+```typescript
+getSessionHandleFor(accountID): SessionHandle
+
+accountID:  | ID
+```
+
+
+
+## createInviteLink 
+// undocumented
+
+```typescript
+createInviteLink(value, role, __namedParameters): string
+
+value: C,
+role:  |  | ,
+__namedParameters: undefined
+```
+
+
+
+## parseInviteLink 
+// undocumented
+
+```typescript
+parseInviteLink(inviteURL): void
+
+inviteURL: string
+```
+
+
+
+## consumeInviteLinkFromWindowLocation 
+// undocumented
+
+```typescript
+consumeInviteLinkFromWindowLocation(__namedParameters): Promise<>
+
+__namedParameters: undefined
+```
+
+
+
+## BrowserContext 
+// undocumented
+
+
+
+
+## SessionProvider 
+// undocumented
+
+
+
+
+## SessionHandle 
+// undocumented
+
+
+
+
+## AuthProvider 
+// undocumented
+
+createOrLoadAccount(getSessionFor, initialPeers, crypto): Promise
+
+
+## BrowserDemoAuth 
+// undocumented
+
+constructor(accountSchema, driver, appName, seedAccounts): BrowserDemoAuth
+accountSchema: void
+driver: void
+appName: void
+createOrLoadAccount(getSessionFor, initialPeers, crypto): Promise
+
+
+## BrowserDemoAuth 
+// undocumented
+
+Driver: void
+
+
+## BrowserPasskeyAuth 
+// undocumented
+
+constructor(accountSchema, driver, appName, appHostname): BrowserPasskeyAuth
+accountSchema: void
+driver: void
+appName: void
+appHostname: void
+createOrLoadAccount(getSessionFor, initialPeers, crypto): Promise
+
+
+## BrowserPasskeyAuth 
+// undocumented
+
+Driver: void
+
+
+## BrowserPassphraseAuth 
+// undocumented
+
+constructor(accountSchema, driver, wordlist, appName, appHostname): BrowserPassphraseAuth
+accountSchema: void
+driver: void
+wordlist: void
+appName: void
+appHostname: void
+createOrLoadAccount(getSessionFor, initialPeers, crypto): Promise
+
+
+## BrowserPassphraseAuth 
+// undocumented
+
+Driver: void

@@ -4,7 +4,6 @@ import { Code, File, Pre } from "@/components/mdx";
 import { Link } from "@/components/ui/link";
 import { MdxData } from "@/lib/mdx-types";
 import { ClockIcon } from "lucide-react";
-import { guideExamples } from "../guides/(content)/guide-examples";
 import clsx from "clsx";
 
 /* {quickstartDoc.metadata.title} */
@@ -81,7 +80,8 @@ export const DocsIndexPage = ({
             .map((item) => (
               <CardSecondary
                 key={item.link}
-                link={item.link}
+                // link={item.link}
+                link={`/docs/api/${item.link}`}
                 heading={item.name}
                 description={item.summary}
                 theme="package"
@@ -138,12 +138,30 @@ const apis = [
     level: 1,
     name: "jazz-browser",
     summary: "Summary TODO",
-    link: "https://github.com/gardencmp/jazz/blob/main/examples/todo/README.md",
+    link: "jazz-browser",
   },
   {
     level: 2,
     name: "jazz-browser-media-images",
     summary: "Summary TODO",
     link: "jazz-browser-media-images",
+  },
+];
+
+export const guideExamples = [
+  {
+    name: "Chat",
+    summary: "Build an issue tracker with distributed state in 15 minutes.",
+    link: "https://github.com/gardencmp/jazz/blob/main/examples/todo/README.md",
+  },
+  {
+    name: "Pets",
+    summary: "Build an issue tracker with distributed state in 15 minutes.",
+    link: "https://github.com/gardencmp/jazz/blob/main/examples/todo/README.md",
+  },
+  {
+    name: "Inspector",
+    summary: "Build an issue tracker with distributed state in 15 minutes.",
+    link: "https://github.com/gardencmp/jazz/blob/main/examples/todo/README.md",
   },
 ];
