@@ -8,7 +8,7 @@ import localFont from "next/font/local";
 
 import { GcmpLogo, JazzLogo } from "@/components/logos";
 import { SiGithub, SiDiscord, SiTwitter } from "@icons-pack/react-simple-icons";
-import { Nav, NavLink, Newsletter, NewsletterButton } from "@/components/nav";
+import { Nav, NavLink } from "gcmp-design-system/src/app/components/molecules/Nav";
 import { DocNav } from "@/components/docs/nav";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -189,10 +189,10 @@ export default function RootLayout({
                                     Roadmap
                                 </NavLink>
                             </div>
-                            <div className="col-span-3 md:col-start-2 lg:col-start-auto flex flex-col gap-2 text-sm">
+                            {/* <div className="col-span-3 md:col-start-2 lg:col-start-auto flex flex-col gap-2 text-sm">
                                 Sign up for updates:
                                 <Newsletter />
-                            </div>
+                            </div> */}
                         </div>
                     </footer>
                 </ThemeProvider>
