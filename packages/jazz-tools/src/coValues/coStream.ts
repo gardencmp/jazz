@@ -1,5 +1,5 @@
 import type {
-    AccountID,
+    RawAccountID,
     AgentID,
     BinaryStreamInfo,
     CojsonInternalTypes,
@@ -228,7 +228,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
 function entryFromRawEntry<Item>(
     accessFrom: CoValue,
     rawEntry: {
-        by: AccountID | AgentID;
+        by: RawAccountID | AgentID;
         tx: CojsonInternalTypes.TransactionID;
         at: Date;
         value: JsonValue;
@@ -301,7 +301,7 @@ function entryFromRawEntry<Item>(
 export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
     get(target, key, receiver) {
         if (typeof key === "string" && key.startsWith("co_")) {
-            const rawEntry = target._raw.lastItemBy(key as AccountID);
+            const rawEntry = target._raw.lastItemBy(key as RawAccountID);
 
             if (!rawEntry) return;
             const entry = entryFromRawEntry(
@@ -314,7 +314,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
 
             Object.defineProperty(entry, "all", {
                 get: () => {
-                    const allRawEntries = target._raw.itemsBy(key as AccountID);
+                    const allRawEntries = target._raw.itemsBy(key as RawAccountID);
                     return (function* () {
                         while (true) {
                             const rawEntry = allRawEntries.next();

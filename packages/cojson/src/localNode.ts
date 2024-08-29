@@ -19,7 +19,7 @@ import {
     ControlledAccountOrAgent,
     RawControlledAccount,
     ControlledAgent,
-    AccountID,
+    RawAccountID,
     RawProfile,
     RawAccountMigration,
     InvalidAccountAgentIDError,
@@ -81,7 +81,7 @@ export class LocalNode {
         initialAgentSecret?: AgentSecret;
     }): Promise<{
         node: LocalNode;
-        accountID: AccountID;
+        accountID: RawAccountID;
         accountSecret: AgentSecret;
         sessionID: SessionID;
     }> {
@@ -173,7 +173,7 @@ export class LocalNode {
         crypto,
         migration,
     }: {
-        accountID: AccountID;
+        accountID: RawAccountID;
         accountSecret: AgentSecret;
         sessionID: SessionID | undefined;
         peersToLoadFrom: Peer[];
@@ -470,7 +470,7 @@ export class LocalNode {
     }
 
     /** @internal */
-    expectProfileLoaded(id: AccountID, expectation?: string): RawProfile {
+    expectProfileLoaded(id: RawAccountID, expectation?: string): RawProfile {
         const account = this.expectCoValueLoaded(id, expectation);
         const profileID = expectGroup(account.getCurrentContent()).get(
             "profile",
@@ -533,7 +533,7 @@ export class LocalNode {
 
     /** @internal */
     resolveAccountAgent(
-        id: AccountID | AgentID,
+        id: RawAccountID | AgentID,
         expectation?: string,
     ): Result<AgentID, ResolveAccountAgentError> {
         if (isAgentID(id)) {
@@ -560,7 +560,7 @@ export class LocalNode {
     }
 
     resolveAccountAgentAsync(
-        id: AccountID | AgentID,
+        id: RawAccountID | AgentID,
         expectation?: string,
     ): ResultAsync<AgentID, ResolveAccountAgentError> {
         if (isAgentID(id)) {
@@ -731,19 +731,19 @@ export type LoadCoValueCoreError = {
     type: "ErrorLoadingCoValueCore";
     error: unknown;
     expectation?: string;
-    id: AccountID;
+    id: RawAccountID;
 };
 
 export type AccountUnavailableFromAllPeersError = {
     type: "AccountUnavailableFromAllPeers";
     expectation?: string;
-    id: AccountID;
+    id: RawAccountID;
 };
 
 export type UnexpectedlyNotAccountError = {
     type: "UnexpectedlyNotAccount";
     expectation?: string;
-    id: AccountID;
+    id: RawAccountID;
 };
 
 export type ResolveAccountAgentError =

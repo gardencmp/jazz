@@ -9,5 +9,5 @@ export const AuthMethodCtx = React.createContext<AuthMethod | undefined>(
 );
 
 export { DemoAuth } from "./DemoAuth.js";
-export { PasskeyAuth } from "./PasskeyAuth.js";
+export { PasskeyAuth, usePasskeyAuth } from "./PasskeyAuth.js";
 export { PassphraseAuth } from "./PassphraseAuth.js";

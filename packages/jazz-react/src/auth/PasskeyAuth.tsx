@@ -72,8 +72,12 @@ export function PasskeyAuth({
     );
 }
 
+export const usePasskeyAuth = () => {
+    return useContext(PasskeyAuthStateCtx);
+};
+
 const PasskeyAuthBasicUI = () => {
-    const { state, errors } = useContext(PasskeyAuthStateCtx);
+    const { state, errors } = usePasskeyAuth();
     const [username, setUsername] = useState<string>("");
 
     if (state.state !== "ready") {

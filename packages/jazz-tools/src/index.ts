@@ -28,4 +28,9 @@ export type { DepthsIn, DeeplyLoaded } from "./internal.js";
 
 export { loadCoValue, subscribeToCoValue } from "./internal.js";
 
-export { type AuthMethod, type AuthResult, createJazzContext } from "./internal.js";
+export {
+    type AuthMethod,
+    type AuthResult,
+    createJazzContext,
+    fixedCredentialsAuth,
+} from "./internal.js";

@@ -50,7 +50,7 @@ import type {
 import { DisconnectedError, PingTimeoutError } from "./sync.js";
 import type { AgentSecret } from "./crypto/crypto.js";
 import type {
-    AccountID,
+    RawAccountID,
     AccountMeta,
     RawAccountMigration,
 } from "./coValues/account.js";
@@ -96,7 +96,7 @@ export {
     CoID,
     AnyRawCoValue,
     RawAccount,
-    AccountID,
+    RawAccountID,
     AccountMeta,
     RawAccountMigration,
     RawProfile as Profile,

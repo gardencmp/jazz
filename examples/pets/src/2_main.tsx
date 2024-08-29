@@ -3,14 +3,13 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactContext, PasskeyAuth } from "jazz-react";
+import { createJazzReactApp, PasskeyAuth, usePasskeyAuth } from "jazz-react";
 
 import {
     Button,
     ThemeProvider,
     TitleAndLogo,
 } from "./basicComponents/index.ts";
-import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
 import { PetAccount, PetPost } from "./1_schema.ts";
@@ -24,16 +23,7 @@ import { PetAccount, PetPost } from "./1_schema.ts";
 
 const appName = "Jazz Rate My Pet Example";
 
-const auth = PasskeyAuth<PetAccount>({
-    appName,
-    Component: PrettyAuthUI,
-    accountSchema: PetAccount,
-});
-
-const Jazz = createJazzReactContext({
-    auth,
-    peer: "wss://mesh.jazz.tools/?key=you@example.com",
-});
+const Jazz = createJazzReactApp({ AccountSchema: PetAccount });
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
@@ -42,9 +32,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider loading={<div>Loading</div>}>
-                    <App />
-                </Jazz.Provider>
+                <PasskeyAuth appName={appName}>
+                    <Jazz.Provider peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io">
+                        <App />
+                    </Jazz.Provider>
+                    <PasskeyAuth.BasicUI />
+                </PasskeyAuth>
             </div>
         </ThemeProvider>
     </React.StrictMode>,
@@ -58,7 +51,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 
 export default function App() {
-    const { logOut } = useAccount();
+    const {state: passKeyState} = usePasskeyAuth();
 
     const router = createHashRouter([
         {
@@ -88,12 +81,16 @@ export default function App() {
         <>
             <RouterProvider router={router} />
 
-            <Button
-                onClick={() => router.navigate("/").then(logOut)}
-                variant="outline"
-            >
-                Log Out
-            </Button>
+            {passKeyState.state === "signedIn" && (
+                <Button
+                    onClick={() =>
+                        router.navigate("/").then(passKeyState.logOut)
+                    }
+                    variant="outline"
+                >
+                    Log Out
+                </Button>
+            )}
         </>
     );
 }

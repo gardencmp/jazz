@@ -63,11 +63,11 @@ type IDMarker<out T> = { __type(_: never): T };
 
 /** @internal */
 export class CoValueBase implements CoValue {
-    id!: ID<this>;
-    _type!: string;
-    _raw!: RawCoValue;
+    declare id: ID<this>;
+    declare _type: string;
+    declare _raw: RawCoValue;
     /** @category Internals */
-    _instanceID!: string;
+    declare _instanceID: string;
 
     get _owner(): Account | Group {
         const owner =

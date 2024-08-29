@@ -7,7 +7,6 @@ import { ChatScreen } from "./chatScreen.tsx";
 import { StrictMode } from "react";
 
 import { ClerkProvider, SignedIn, useAuth } from "@clerk/clerk-react";
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 export class Message extends CoMap {
     text = co.string;

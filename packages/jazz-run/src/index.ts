@@ -7,10 +7,10 @@ import { WebSocket } from "ws";
 import {
     Account,
     WasmCrypto,
-    cojsonInternals,
+    createJazzContext,
     isControlledAccount,
 } from "jazz-tools";
-import type { AccountID } from "cojson";
+import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools/src/internal";
 
 const jazzTools = Command.make("jazz-tools");
 
@@ -63,14 +63,14 @@ const accountCreate = Command.make(
             });
 
             yield* Effect.promise(async () =>
-                Account.become({
-                    accountID: account.id,
-                    accountSecret: account._raw.agentSecret,
-                    sessionID: cojsonInternals.newRandomSessionID(
-                        account.id as unknown as AccountID,
-                    ),
+                createJazzContext({
+                    auth: fixedCredentialsAuth({
+                        accountID: account.id,
+                        secret: account._raw.agentSecret,
+                    }),
+                    sessionProvider: randomSessionProvider,
                     peersToLoadFrom: [peer2],
-                    crypto,
+                    crypto
                 }),
             );
 

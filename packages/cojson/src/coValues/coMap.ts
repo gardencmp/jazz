@@ -4,7 +4,7 @@ import { CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
-import { AccountID } from "./account.js";
+import { RawAccountID } from "./account.js";
 import type { RawGroup } from "./group.js";
 
 type MapOp<K extends string, V extends JsonValue | undefined> = {
@@ -196,7 +196,7 @@ export class RawCoMapView<
         n: number,
     ):
         | {
-              by: AccountID | AgentID;
+              by: RawAccountID | AgentID;
               tx: TransactionID;
               at: Date;
               value?: Shape[K];
@@ -226,7 +226,7 @@ export class RawCoMapView<
         key: K,
     ):
         | {
-              by: AccountID | AgentID;
+              by: RawAccountID | AgentID;
               tx: TransactionID;
               at: Date;
               value?: Shape[K];

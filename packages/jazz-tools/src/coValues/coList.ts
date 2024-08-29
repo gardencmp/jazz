@@ -80,16 +80,16 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     /**
      * The ID of this `CoList`
      * @category Content */
-    id!: ID<this>;
+    declare id: ID<this>;
     /** @category Type Helpers */
-    _type!: "CoList";
+    declare _type: "CoList";
     static {
         this.prototype._type = "CoList";
     }
     /** @category Internals */
-    _raw!: RawCoList;
+    declare _raw: RawCoList;
     /** @category Internals */
-    _instanceID!: string;
+    declare _instanceID: string;
 
     /** @internal This is only a marker type and doesn't exist at runtime */
     [ItemsSym]!: Item;

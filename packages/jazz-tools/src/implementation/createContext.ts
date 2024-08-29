@@ -1,10 +1,12 @@
 import {
     AgentSecret,
     CoID,
+    cojsonInternals,
     CryptoProvider,
     LocalNode,
     Peer,
     RawAccount,
+    RawAccountID,
     SessionID,
 } from "cojson";
 import { Account, AccountClass, ID } from "../internal.js";
@@ -32,6 +34,29 @@ export interface AuthMethod {
     start(crypto: CryptoProvider): Promise<AuthResult>;
 }
 
+export const fixedCredentialsAuth = (credentials: {
+    accountID: ID<Account>;
+    secret: AgentSecret;
+}): AuthMethod => {
+    return {
+        start: async () => ({
+            type: "existing",
+            credentials,
+            onSuccess: () => {},
+            onError: () => {},
+        }),
+    };
+};
+
+export async function randomSessionProvider(accountID: ID<Account>) {
+    return {
+        sessionID: cojsonInternals.newRandomSessionID(
+            accountID as unknown as RawAccountID,
+        ),
+        sessionDone: () => {},
+    };
+}
+
 export async function createJazzContext<Acc extends Account>({
     AccountSchema = Account as unknown as AccountClass<Acc>,
     auth,
@@ -39,7 +64,7 @@ export async function createJazzContext<Acc extends Account>({
     peersToLoadFrom,
     crypto,
 }: {
-    AccountSchema: AccountClass<Acc>;
+    AccountSchema?: AccountClass<Acc>;
     auth: AuthMethod;
     sessionProvider: (
         accountID: ID<Account>,
@@ -128,7 +153,9 @@ export async function createJazzContext<Acc extends Account>({
                     },
                 };
             } catch (e) {
-                authResult.onError(new Error("Error creating account", { cause: e }));
+                authResult.onError(
+                    new Error("Error creating account", { cause: e }),
+                );
             }
         }
     }

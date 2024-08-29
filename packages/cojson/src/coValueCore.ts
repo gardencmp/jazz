@@ -20,7 +20,7 @@ import { RawGroup } from "./coValues/group.js";
 import { LocalNode, ResolveAccountAgentError } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { AccountID, ControlledAccountOrAgent } from "./coValues/account.js";
+import { RawAccountID, ControlledAccountOrAgent } from "./coValues/account.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { coreToCoValue } from "./coreToCoValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -53,7 +53,7 @@ export function idforHeader(
     return `co_z${hash.slice("shortHash_z".length)}`;
 }
 
-export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {
+export function newRandomSessionID(accountID: RawAccountID | AgentID): SessionID {
     return `${accountID}_session_z${base58.encode(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).crypto.getRandomValues(new Uint8Array(8)),
@@ -990,7 +990,7 @@ export class CoValueCore {
         return this.header.ruleset.type === "group"
             ? expectGroup(this.getCurrentContent())
                   .keys()
-                  .filter((k): k is AccountID => k.startsWith("co_"))
+                  .filter((k): k is RawAccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByGroup"
               ? [
                     this.header.ruleset.group,
@@ -1002,7 +1002,7 @@ export class CoValueCore {
                                 ),
                             )
                             .filter(
-                                (session): session is AccountID =>
+                                (session): session is RawAccountID =>
                                     isAccountID(session) && session !== this.id,
                             ),
                     ),

@@ -1,6 +1,5 @@
 import { expect, describe, test } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
-import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import {
     BinaryCoStream,
     ID,
@@ -10,7 +9,10 @@ import {
     WasmCrypto,
     isControlledAccount,
     cojsonInternals,
+    createJazzContext,
+    fixedCredentialsAuth,
 } from "../index.js";
+import { randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -95,12 +97,13 @@ describe("CoStream resolution", async () => {
             throw "me is not a controlled account";
         }
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
+        const { account: meOnSecondPeer } = await createJazzContext({
+            auth: fixedCredentialsAuth({
+                accountID: me.id,
+                secret: me._raw.agentSecret,
+            }),
+            sessionProvider: randomSessionProvider,
             peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
 
@@ -191,12 +194,13 @@ describe("CoStream resolution", async () => {
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
+        const { account: meOnSecondPeer } = await createJazzContext({
+            auth: fixedCredentialsAuth({
+                accountID: me.id,
+                secret: me._raw.agentSecret,
+            }),
+            sessionProvider: randomSessionProvider,
             peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
 
@@ -334,12 +338,13 @@ describe("BinaryCoStream loading & Subscription", async () => {
             throw "me is not a controlled account";
         }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
+        const { account: meOnSecondPeer } = await createJazzContext({
+            auth: fixedCredentialsAuth({
+                accountID: me.id,
+                secret: me._raw.agentSecret,
+            }),
+            sessionProvider: randomSessionProvider,
             peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
 
@@ -369,12 +374,13 @@ describe("BinaryCoStream loading & Subscription", async () => {
         if (!isControlledAccount(me)) {
             throw "me is not a controlled account";
         }
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
+        const { account: meOnSecondPeer } = await createJazzContext({
+            auth: fixedCredentialsAuth({
+                accountID: me.id,
+                secret: me._raw.agentSecret,
+            }),
+            sessionProvider: randomSessionProvider,
             peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
 

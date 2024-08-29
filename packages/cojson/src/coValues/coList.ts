@@ -4,7 +4,7 @@ import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
-import { AccountID } from "./account.js";
+import { RawAccountID } from "./account.js";
 import { RawGroup } from "./group.js";
 
 type OpID = TransactionID & { changeIdx: number };
@@ -325,7 +325,7 @@ export class RawCoListView<
     /** @category 5. Edit history */
     editAt(idx: number):
         | {
-              by: AccountID | AgentID;
+              by: RawAccountID | AgentID;
               tx: TransactionID;
               at: Date;
               value: Item;
@@ -351,13 +351,13 @@ export class RawCoListView<
 
     /** @category 5. Edit history */
     deletionEdits(): {
-        by: AccountID | AgentID;
+        by: RawAccountID | AgentID;
         tx: TransactionID;
         at: Date;
         // TODO: add indices that are now before and after the deleted item
     }[] {
         const edits: {
-            by: AccountID | AgentID;
+            by: RawAccountID | AgentID;
             tx: TransactionID;
             at: Date;
         }[] = [];

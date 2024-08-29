@@ -5,7 +5,7 @@ import {
     Peer,
     CojsonInternalTypes,
     MAX_RECOMMENDED_TX_SIZE,
-    AccountID,
+    RawAccountID,
     IncomingSyncStream,
     OutgoingSyncQueue,
 } from "cojson";
@@ -759,7 +759,7 @@ function getDependedOnCoValues(
                                 ),
                             )
                             .filter(
-                                (accountID): accountID is AccountID =>
+                                (accountID): accountID is RawAccountID =>
                                     cojsonInternals.isAccountID(accountID) &&
                                     accountID !== theirKnown.id,
                             ),

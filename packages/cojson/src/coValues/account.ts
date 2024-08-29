@@ -63,7 +63,7 @@ export class RawAccount<
 }
 
 export interface ControlledAccountOrAgent {
-    id: AccountID | AgentID;
+    id: RawAccountID | AgentID;
     agentSecret: AgentSecret;
 
     currentAgentID: () => Result<AgentID, InvalidAccountAgentIDError>;
@@ -170,7 +170,7 @@ export class ControlledAgent implements ControlledAccountOrAgent {
 }
 
 export type AccountMeta = { type: "account" };
-export type AccountID = CoID<RawAccount>;
+export type RawAccountID = CoID<RawAccount>;
 
 export type ProfileShape = {
     name: string;

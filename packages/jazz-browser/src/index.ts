@@ -12,7 +12,7 @@ import {
     AuthMethod,
     createJazzContext,
 } from "jazz-tools";
-import { AccountID, LSMStorage } from "cojson";
+import { RawAccountID, LSMStorage } from "cojson";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import { createWebSocketPeer } from "cojson-transport-ws";
@@ -167,7 +167,7 @@ export function provideBroswerLockSession(accountID: ID<Account> | AgentID) {
                         const sessionID =
                             localStorage[accountID + "_" + idx] ||
                             cojsonInternals.newRandomSessionID(
-                                accountID as AccountID | AgentID,
+                                accountID as RawAccountID | AgentID,
                             );
                         localStorage[accountID + "_" + idx] = sessionID;
 

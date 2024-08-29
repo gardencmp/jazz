@@ -5,7 +5,7 @@ import {
     CojsonInternalTypes,
     SessionID,
     MAX_RECOMMENDED_TX_SIZE,
-    AccountID,
+    RawAccountID,
     IncomingSyncStream,
     OutgoingSyncQueue,
 } from "cojson";
@@ -424,7 +424,7 @@ export class SQLiteStorage {
                                         ),
                                     )
                                     .filter(
-                                        (accountID): accountID is AccountID =>
+                                        (accountID): accountID is RawAccountID =>
                                             cojsonInternals.isAccountID(
                                                 accountID,
                                             ) && accountID !== theirKnown.id,

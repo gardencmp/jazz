@@ -5,7 +5,7 @@ import { MapOpPayload } from "../coValues/coMap.js";
 import { RawGroup } from "../coValues/group.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 import { connectedPeers, newQueuePair } from "../streamUtils.js";
-import { AccountID } from "../coValues/account.js";
+import { RawAccountID } from "../coValues/account.js";
 import { stableStringify } from "../jsonStringify.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { expectMap } from "../coValue.js";
@@ -1097,7 +1097,7 @@ function groupContentEx(group: RawGroup) {
     };
 }
 
-function _admContEx(adminID: AccountID) {
+function _admContEx(adminID: RawAccountID) {
     return {
         action: "content",
         id: adminID,
@@ -1111,7 +1111,7 @@ function groupStateEx(group: RawGroup) {
     };
 }
 
-function _admStateEx(adminID: AccountID) {
+function _admStateEx(adminID: RawAccountID) {
     return {
         action: "known",
         id: adminID,

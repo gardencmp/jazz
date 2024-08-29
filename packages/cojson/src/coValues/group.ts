@@ -5,7 +5,7 @@ import { JsonObject } from "../jsonValue.js";
 import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
 import { Encrypted, KeyID, KeySecret, Sealed } from "../crypto/crypto.js";
 import { AgentID, isAgentID } from "../ids.js";
-import { RawAccount, AccountID, ControlledAccountOrAgent } from "./account.js";
+import { RawAccount, RawAccountID, ControlledAccountOrAgent } from "./account.js";
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
 
@@ -15,10 +15,10 @@ export type Everyone = "everyone";
 export type GroupShape = {
     profile: CoID<RawCoMap> | null;
     root: CoID<RawCoMap> | null;
-    [key: AccountID | AgentID]: Role;
+    [key: RawAccountID | AgentID]: Role;
     [EVERYONE]?: Role;
     readKey?: KeyID;
-    [revelationFor: `${KeyID}_for_${AccountID | AgentID}`]: Sealed<KeySecret>;
+    [revelationFor: `${KeyID}_for_${RawAccountID | AgentID}`]: Sealed<KeySecret>;
     [revelationFor: `${KeyID}_for_${Everyone}`]: KeySecret;
     [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
         KeySecret,
@@ -55,12 +55,12 @@ export class RawGroup<
      *
      * @category 1. Role reading
      */
-    roleOf(accountID: AccountID): Role | undefined {
+    roleOf(accountID: RawAccountID): Role | undefined {
         return this.roleOfInternal(accountID);
     }
 
     /** @internal */
-    roleOfInternal(accountID: AccountID | AgentID): Role | undefined {
+    roleOfInternal(accountID: RawAccountID | AgentID): Role | undefined {
         return this.get(accountID);
     }
 
@@ -156,7 +156,7 @@ export class RawGroup<
             } else {
                 return false;
             }
-        }) as (AccountID | AgentID)[];
+        }) as (RawAccountID | AgentID)[];
 
         const maybeCurrentReadKey = this.core.getCurrentReadKey();
 
