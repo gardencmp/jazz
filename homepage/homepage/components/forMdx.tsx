@@ -1,10 +1,12 @@
+import { heroHeadingProseClasses } from "gcmp-design-system/src/app/components/atoms/Headings";
+
 export function Prose(props: { children: ReactNode; className?: string }) {
     return (
         <div
             className={[
                 "max-w-none prose-stone dark:prose-invert",
                 "prose-headings:font-display",
-                "prose-h1:text-5xl lg:prose-h1:text-6xl prose-h1:font-medium prose-h1:tracking-tighter",
+                heroHeadingProseClasses,
                 "prose-h2:text-2xl lg:prose-h2:text-3xl prose-h2:font-medium prose-h2:tracking-tight",
                 "prose-p:max-w-3xl prose-p:leading-snug",
                 "prose-strong:font-medium",
