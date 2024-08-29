@@ -3,7 +3,7 @@
   "version": "0.7.33-new-auth.0",
   "type": "module",
   "main": "dist/index.js",
-  "types": "src/index.ts",
+  "types": "src/index.tsx",
   "license": "MIT",
   "dependencies": {},
   "peerDependencies": {

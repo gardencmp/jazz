@@ -18,6 +18,7 @@ function App() {
     const { me } = useAccount();
 
     const createChat = () => {
+        if (!me) return;
         const group = Group.create({ owner: me });
         group.addMember("everyone", "writer");
         const chat = Chat.create([], { owner: group });
@@ -27,7 +28,7 @@ function App() {
     return (
         <div className="flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white">
             <div className="rounded mb-5 px-2 py-1 text-sm self-end">
-                {me.profile?.name} · {/*<button onClick={logOut}>Log Out</button>*/}
+                {me?.profile?.name} · {/*<button onClick={logOut}>Log Out</button>*/}
             </div>
             {useIframeHashRouter().route({
                 "/": () => createChat() as never,

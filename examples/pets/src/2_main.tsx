@@ -98,7 +98,7 @@ export default function App() {
 export function PostOverview() {
     const { me } = useAccount();
 
-    const myPosts = me.root?.posts;
+    const myPosts = me?.root?.posts;
 
     return (
         <>

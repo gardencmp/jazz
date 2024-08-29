@@ -59,7 +59,7 @@ export function createJazzReactApp<Acc extends Account>({
         return <JazzContext.Provider value={me}>{children}</JazzContext.Provider>;
     }
 
-    function useAccount(): { me: Acc };
+    function useAccount(): { me: Acc | undefined };
     function useAccount<D extends DepthsIn<Acc>>(
         depth: D,
     ): { me: DeeplyLoaded<Acc, D> | undefined };
@@ -68,13 +68,9 @@ export function createJazzReactApp<Acc extends Account>({
     ): { me: Acc | DeeplyLoaded<Acc, D> | undefined } {
         const context = React.useContext(JazzContext);
 
-        if (!context) {
-            throw new Error("useAccount must be used within a JazzProvider");
-        }
-
         const me = useCoState<Acc, D>(
-            context.constructor as CoValueClass<Acc>,
-            context.id,
+            context?.constructor as CoValueClass<Acc>,
+            context?.id,
             depth,
         );
 
@@ -151,7 +147,7 @@ export interface JazzReactContext<Acc extends Account> {
 
     /** @category Hooks */
     useAccount(): {
-        me: Acc;
+        me: Acc | undefined;
     };
     /** @category Hooks */
     useAccount<D extends DepthsIn<Acc>>(
