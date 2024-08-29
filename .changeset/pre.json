@@ -23,6 +23,7 @@
   },
   "changesets": [
     "small-students-buy",
-    "smart-mice-camp"
+    "smart-mice-camp",
+    "twelve-lobsters-pull"
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.82-new-auth.0",
+  "version": "0.0.82-new-auth.1",
   "type": "module",
   "scripts": {
     "dev": "vite",

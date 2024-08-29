@@ -1,5 +1,12 @@
 # jazz-browser-media-images
 
+## 0.7.33-new-auth.1
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-react@0.7.35-new-auth.1
+
 ## 0.7.33-new-auth.0
 
 ### Patch Changes

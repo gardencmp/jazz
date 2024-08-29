@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.7.35-new-auth.1
+
+### Patch Changes
+
+-   Make me in useAccount potentially undefined to work with logged out state
+
 ## 0.7.35-new-auth.0
 
 ### Patch Changes
