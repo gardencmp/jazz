@@ -33,10 +33,9 @@ export function ComingSoonBadge({ when = "soon" }: { when?: string }) {
     );
 }
 
-import { IframeHTMLAttributes, ReactNode } from "react";
+import { IframeHTMLAttributes } from "react";
 import { ResponsiveIframe as ResponsiveIframeClient } from "./ResponsiveIframe";
-import { HandIcon, MousePointer2Icon, TextCursorIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { MousePointer2Icon } from "lucide-react";
 
 export function ResponsiveIframe(
     props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
