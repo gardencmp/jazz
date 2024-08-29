@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.35-new-auth.0
+
+### Patch Changes
+
+-   Implement new top-level context creation and auth method API
+-   Updated dependencies
+    -   jazz-browser@0.7.35-new-auth.0
+    -   jazz-tools@0.7.35-new-auth.0
+
 ## 0.7.34
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.82-new-auth.0
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-react@0.7.35-new-auth.0
+  - jazz-tools@0.7.35-new-auth.0
+
 ## 0.0.81
 
 ### Patch Changes

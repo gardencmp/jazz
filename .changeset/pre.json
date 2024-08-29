@@ -1,0 +1,28 @@
+{
+  "mode": "pre",
+  "tag": "new-auth",
+  "initialVersions": {
+    "jazz-example-chat": "0.0.81",
+    "jazz-example-chat-clerk": "0.0.79",
+    "jazz-inspector": "0.0.59",
+    "jazz-example-pets": "0.0.99",
+    "jazz-example-todo": "0.0.98",
+    "cojson": "0.7.34",
+    "cojson-storage-indexeddb": "0.7.34",
+    "cojson-storage-sqlite": "0.7.34",
+    "cojson-transport-ws": "0.7.34",
+    "hash-slash": "0.2.0",
+    "jazz-browser": "0.7.34",
+    "jazz-browser-auth-clerk": "0.7.32",
+    "jazz-browser-media-images": "0.7.34",
+    "jazz-nodejs": "0.7.34",
+    "jazz-react": "0.7.34",
+    "jazz-react-auth-clerk": "0.7.32",
+    "jazz-run": "0.7.34",
+    "jazz-tools": "0.7.34"
+  },
+  "changesets": [
+    "small-students-buy",
+    "smart-mice-camp"
+  ]
+}

@@ -1,5 +1,16 @@
 # jazz-example-chat
 
+## 0.0.80-new-auth.0
+
+### Patch Changes
+
+- Implement Clerk auth method + example
+- Updated dependencies
+- Updated dependencies
+  - jazz-react-auth-clerk@0.7.33-new-auth.0
+  - jazz-react@0.7.35-new-auth.0
+  - jazz-tools@0.7.35-new-auth.0
+
 ## 0.0.79
 
 ### Patch Changes

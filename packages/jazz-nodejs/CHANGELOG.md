@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.35-new-auth.0
+
+### Patch Changes
+
+-   Implement new top-level context creation and auth method API
+-   Updated dependencies
+    -   jazz-tools@0.7.35-new-auth.0
+
 ## 0.7.34
 
 ### Patch Changes

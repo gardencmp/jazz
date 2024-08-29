@@ -1,5 +1,15 @@
 # jazz-browser-media-images
 
+## 0.7.33-new-auth.0
+
+### Patch Changes
+
+-   Implement Clerk auth method + example
+-   Updated dependencies
+    -   jazz-react@0.7.35-new-auth.0
+    -   jazz-tools@0.7.35-new-auth.0
+    -   jazz-browser-auth-clerk@0.7.33-new-auth.0
+
 ## 0.7.32
 
 ### Patch Changes
