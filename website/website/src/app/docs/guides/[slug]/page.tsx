@@ -6,7 +6,7 @@ import {
 } from "../../(components)";
 import path from "path";
 
-const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
+const docsDir = path.join(process.cwd(), "src/app/docs/guides/(content)");
 
 function getPost(slug: string) {
   let allDocs = getMdxData(docsDir);

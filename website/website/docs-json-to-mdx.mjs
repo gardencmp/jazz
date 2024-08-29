@@ -22,7 +22,7 @@ async function convertJsonToMdx() {
   const mdxContent = `---
 kind: "api"
 title: ${categoryTitle}
-publishedAt: ${today}
+publishedAt: "${today}"
 summary: TODO!
 ---
 
@@ -33,12 +33,15 @@ ${name}(${signature.parameters.map((param) => param.name).join(", ")}): ${signat
 
 ${signature.parameters.map((param) => `${param.name}: ${param.type.types ? param.type.types.map((t) => t.name).join(" | ") : param.type.name}`).join(",\n")}
 \`\`\`
-  `;
+`;
 
   await writeFile(
-    path.join("src/app/docs/(content)/jazz-browser-media-images.mdx"),
+    path.join("src/app/docs/api/(content)/jazz-browser-media-images.mdx"),
     mdxContent.trim(),
   );
+  // const outputDir = path.join("src/app/docs/api/(content)");
+  // const outputFilePath = path.join(outputDir, `${name}.mdx`);
+  // await writeFile(outputFilePath, mdxContent.trim());
 }
 
 convertJsonToMdx();

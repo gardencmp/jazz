@@ -5,7 +5,7 @@ import { DocsIndexPage as DocsIndexPageComponent } from "./(components)";
 
 // We depend on /(content)/quickstart.mdx to exist for this page
 const QUICKSTART_SLUG = "quickstart";
-const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
+const guidessDir = path.join(process.cwd(), "src/app/docs/guides/(content)");
 
 export const metadata = {
   title: "jazz - Docs",
@@ -13,7 +13,7 @@ export const metadata = {
 };
 
 export default function DocsIndexPage() {
-  const allDocs = getMdxData(docsDir);
+  const allDocs = getMdxData(guidessDir);
   const quickstart = allDocs.find((doc) => doc.slug === QUICKSTART_SLUG);
   // console.log("allDocs", allDocs);
   // console.log("quickstart", quickstart);

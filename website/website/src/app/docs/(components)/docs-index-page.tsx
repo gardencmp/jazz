@@ -4,7 +4,7 @@ import { Code, File, Pre } from "@/components/mdx";
 import { Link } from "@/components/ui/link";
 import { MdxData } from "@/lib/mdx-types";
 import { ClockIcon } from "lucide-react";
-import { guideExamples } from "../(content)/guide-examples";
+import { guideExamples } from "../guides/(content)/guide-examples";
 import clsx from "clsx";
 
 /* {quickstartDoc.metadata.title} */

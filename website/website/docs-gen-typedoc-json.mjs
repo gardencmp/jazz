@@ -42,15 +42,29 @@ for (const { packageName, entryPoint } of [
   });
   if (process.argv.includes("--build")) {
     const project = await app.convert();
-    await app.generateJson(project, "./docs-typedoc/" + packageName + ".json");
-    console.log(packageName + " done.");
-  } else {
-    app.convertAndWatch(async (project) => {
+
+    // guard `project`
+    if (project) {
       await app.generateJson(
         project,
         "./docs-typedoc/" + packageName + ".json",
       );
       console.log(packageName + " done.");
+    } else {
+      console.error(`Failed to convert ${packageName}`);
+    }
+  } else {
+    app.convertAndWatch(async (project) => {
+      // Add null check here
+      if (project) {
+        await app.generateJson(
+          project,
+          "./docs-typedoc/" + packageName + ".json",
+        );
+        console.log(packageName + " done.");
+      } else {
+        console.error(`Failed to convert ${packageName}`);
+      }
     });
   }
 }

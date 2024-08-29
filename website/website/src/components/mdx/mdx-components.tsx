@@ -5,7 +5,7 @@ import { Badge } from "./badge";
 import { CustomLink } from "./custom-link";
 import { Code } from "./code";
 import { File, FileProps, Pre } from "./pre-code";
-import * as HTMLExamples from "@/app/docs/(content)/guide-html";
+import * as HTMLExamples from "@/app/docs/guides/(content)/guide-html";
 
 export const components = {
   h1: createHeading(1),

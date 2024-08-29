@@ -2,11 +2,17 @@ import { getMdxData } from "@/lib/mdx-utils";
 import config from "@/config";
 import path from "path";
 
-const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
+const guidesDir = path.join(process.cwd(), "src/app/docs/guides/(content)");
+const apiDir = path.join(process.cwd(), "src/app/docs/api/(content)");
 
 export default async function sitemap() {
-  let docs = (await getMdxData(docsDir)).map((post) => ({
-    url: `${config.PUBLIC_URL}/docs/${post.slug}`,
+  let guides = (await getMdxData(guidesDir)).map((post) => ({
+    url: `${config.PUBLIC_URL}/docs/guides/${post.slug}`,
+    lastModified: post.metadata.publishedAt,
+  }));
+
+  let apis = (await getMdxData(apiDir)).map((post) => ({
+    url: `${config.PUBLIC_URL}/docs/api/${post.slug}`,
     lastModified: post.metadata.publishedAt,
   }));
 
@@ -15,5 +21,5 @@ export default async function sitemap() {
     lastModified: new Date().toISOString().split("T")[0],
   }));
 
-  return [...routes, ...docs];
+  return [...routes, ...guides, ...apis];
 }

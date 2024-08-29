@@ -6,24 +6,21 @@ import {
 } from "../../(components)";
 import path from "path";
 
-const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
+const docsDir = path.join(process.cwd(), "src/app/docs/api/(content)");
 
-async function getPost(slug: string) {
-  let allDocs = await getMdxData(docsDir);
+function getPost(slug: string) {
+  let allDocs = getMdxData(docsDir);
+  // console.log(allDocs);
   return allDocs.find((doc) => doc.slug === slug);
 }
 
-export default async function ApiSlugPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const post = await getPost(params.slug);
+export default function ApiSlugPage({ params }: { params: { slug: string } }) {
+  const post = getPost(params.slug);
   if (!post) {
     notFound();
   }
 
-  const docsList = await getDocsList(docsDir);
+  const docsList = getDocsList(docsDir);
   const headings = extractHeadings(post.content);
 
   return (
@@ -31,12 +28,8 @@ export default async function ApiSlugPage({
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const post = await getPost(params.slug);
+export function generateMetadata({ params }: { params: { slug: string } }) {
+  const post = getPost(params.slug);
   if (!post) {
     notFound();
   }
@@ -44,7 +37,7 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const allDocs = await getMdxData(docsDir);
+  const allDocs = getMdxData(docsDir);
   return allDocs.map((doc) => ({
     slug: doc.slug,
   }));

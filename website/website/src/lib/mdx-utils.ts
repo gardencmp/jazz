@@ -32,6 +32,42 @@ export function getMdxData(dir: string) {
   });
 }
 
+// export function getMdxData(dir: string) {
+//   let mdxFiles = getMDXFiles(dir);
+
+//   const docsData = mdxFiles.map((file) => {
+//     const filePath = path.join(dir, file);
+//     const { metadata, content } = readMDXFile(filePath);
+//     const slug = file.replace(new RegExp(`${MDX_EXTENSION}$`), "");
+
+//     // Log the file contents
+//     console.log(`File: ${file}`);
+//     console.log("Slug:", slug);
+//     // console.log("Metadata:", metadata);
+//     // console.log("Content:", content);
+
+//     return {
+//       metadata,
+//       slug,
+//       content,
+//     };
+//   });
+
+//   return docsData.filter((doc) => {
+//     // Filter out docs with empty or invalid metadata
+//     const hasValidMetadata = doc.metadata && typeof doc.metadata === "object";
+
+//     // Filter out docs with empty or invalid slug
+//     const hasValidSlug =
+//       typeof doc.slug === "string" && doc.slug.trim().length > 0;
+
+//     // Filter out docs with empty content
+//     const hasValidContent = typeof doc.content === "string";
+
+//     return hasValidMetadata && hasValidSlug && hasValidContent;
+//   });
+// }
+
 // function getMDXData(dir) {
 //   let mdxFiles = getMDXFiles(dir);
 //   return mdxFiles.map((file) => {

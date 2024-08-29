@@ -2,10 +2,11 @@ import config from "@/config";
 import { getMdxData } from "@/lib/mdx-utils";
 import path from "path";
 
-const docsDir = path.join(process.cwd(), "src/app/docs/(content)");
+const guidesDir = path.join(process.cwd(), "src/app/docs/guides/(content)");
+const apiDir = path.join(process.cwd(), "src/app/docs/api/(content)");
 
 export function GET() {
-  let allDocs = getMdxData(docsDir);
+  let allDocs = [...getMdxData(guidesDir), ...getMdxData(apiDir)];
 
   const itemsXml = allDocs
     .sort((a, b) => {
