@@ -1,93 +1,44 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
+import { LoginPage } from "./pages/LoginPage";
+import { HomePage } from "./pages/HomePage";
+import { NewPostPage } from "./pages/NewPostPage";
+import { PostPage } from "./pages/PostPage";
 
 test("create a new post and share", async ({ page }) => {
-    await page.goto("/");
+    const loginPage = new LoginPage(page);
 
-    await page.getByRole("textbox").fill("S. Mario");
+    await loginPage.goto();
+    await loginPage.fillUsername("S. Mario");
+    await loginPage.signup();
 
-    await page
-        .getByRole("button", {
-            name: "Sign Up as new account",
-        })
-        .click();
+    const homePage = new HomePage(page);
 
-    await page
-        .getByRole("link", {
-            name: "New Post",
-        })
-        .click();
+    await homePage.navigateToNewPost();
 
-    await page.getByPlaceholder("Pet name").fill("Yoshi");
+    const newPostPage = new NewPostPage(page);
 
-    // Start waiting for file chooser before clicking. Note no await.
-    const fileChooserPromise = page.waitForEvent("filechooser");
+    await newPostPage.fillPetName("Yoshi");
+    await newPostPage.uploadFile("./public/jazz-logo.png");
+    await newPostPage.submit();
 
-    await page.getByTestId("file-upload").click();
+    const postPage = new PostPage(page);
 
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles("./public/jazz-logo.png");
+    await postPage.expectLoaded("Yoshi");
 
-    await page
-        .getByRole("button", {
-            name: "Submit Post",
-        })
-        .click();
+    const invitation = await postPage.getShareLink();
 
-    expect(
-        page.getByRole("heading", {
-            name: "Yoshi",
-        }),
-    ).toBeVisible();
+    await postPage.logout();
 
-    await page
-        .getByRole("button", {
-            name: "Share",
-        })
-        .click();
+    await loginPage.expectLoaded();
 
-    await page
-        .getByRole("button", {
-            name: "Log out",
-        })
-        .click();
-
-    await page.getByRole("textbox").clear();
-    await page.getByRole("textbox").fill("Luigi");
-
-    await page
-        .getByRole("button", {
-            name: "Sign Up as new account",
-        })
-        .click();
-
-    const invitation = await page.evaluate(() =>
-        navigator.clipboard.readText(),
-    );
+    await loginPage.fillUsername("Luigi");
+    await loginPage.signup();
 
     await page.goto(invitation);
     await page.reload();
 
-    await expect(
-        page.getByRole("heading", {
-            name: "Yoshi",
-        }),
-    ).toBeVisible();
-
-    await expect(
-        page.getByRole("button", {
-            name: "😍",
-        }),
-    ).toHaveAttribute("data-selected", "false");
-
-    await page
-        .getByRole("button", {
-            name: "😍",
-        })
-        .click();
-
-    await expect(
-        page.getByRole("button", {
-            name: "😍",
-        }),
-    ).toHaveAttribute("data-selected", "true");
+    await postPage.expectLoaded("Yoshi");
+    await postPage.expectReactionSelected("😍", false);
+    await postPage.toggleReaction("😍");
+    await postPage.expectReactionSelected("😍", true);
 });
