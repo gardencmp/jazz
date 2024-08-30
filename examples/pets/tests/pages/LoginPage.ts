@@ -22,6 +22,14 @@ export class LoginPage {
         await this.usernameInput.fill(value);
     }
 
+    async loginAs(value: string) {
+        await this.page
+            .getByRole("button", {
+                name: `Log In as "${value}"`,
+            })
+            .click();
+    }
+
     async signup() {
         await this.signupButton.click();
     }

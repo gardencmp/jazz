@@ -38,7 +38,15 @@ test("create a new post and share", async ({ page }) => {
     await page.reload();
 
     await postPage.expectLoaded("Yoshi");
-    await postPage.expectReactionSelected("😍", false);
+    await postPage.expectReactionSelectedByCurrentUser("😍", false);
     await postPage.toggleReaction("😍");
-    await postPage.expectReactionSelected("😍", true);
+    await postPage.expectReactionSelectedByCurrentUser("😍", true);
+
+    await postPage.logout();
+    await loginPage.expectLoaded();
+    await loginPage.loginAs("S. Mario");
+
+    await homePage.navigateToPost("Yoshi");
+    await postPage.expectLoaded("Yoshi");
+    await postPage.expectReactionSelectedByInvitedUser("😍", "Luigi");
 });

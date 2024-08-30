@@ -23,12 +23,19 @@ export class PostPage {
         ).toBeVisible();
     }
 
-    async expectReactionSelected(emoji: string, selected: boolean) {
+    async expectReactionSelectedByCurrentUser(
+        emoji: string,
+        selected: boolean,
+    ) {
         await expect(
             this.page.getByRole("button", {
                 name: emoji,
             }),
         ).toHaveAttribute("data-selected", String(selected));
+    }
+
+    async expectReactionSelectedByInvitedUser(emoji: string, userName: string) {
+        await expect(this.page.getByText(`${emoji} ${userName}`)).toBeVisible();
     }
 
     async toggleReaction(emoji: string) {

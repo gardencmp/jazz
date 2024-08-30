@@ -15,6 +15,14 @@ export class HomePage {
         });
     }
 
+    async navigateToPost(petName: string) {
+        await this.page
+            .getByRole("link", {
+                name: petName,
+            })
+            .click();
+    }
+
     async navigateToNewPost() {
         await this.newPostLink.click();
     }
