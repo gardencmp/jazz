@@ -36,6 +36,7 @@ jobs:
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
+        working-directory: ./examples/${{ matrix.example }}
 
       - name: Run Playwright tests
         run: pnpm exec playwright test
