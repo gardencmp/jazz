@@ -1,5 +1,22 @@
-import clsx from "clsx";
 import { ReactNode } from "react";
+import { H2 } from "../atoms/Headings";
+import clsx from "clsx";
+
+function H2Sub({ children }: { children: React.ReactNode }) {
+    return (
+        <p
+            className={clsx(
+                "text-lg lg:text-xl",
+                "leading-snug",
+                "tracking-tight",
+                "max-w-4xl",
+                "text-stone-700 dark:text-stone-500"
+            )}
+        >
+            {children}
+        </p>
+    );
+}
 
 export function SectionHeader({
     title,
@@ -9,29 +26,9 @@ export function SectionHeader({
     slogan: ReactNode;
 }) {
     return (
-        <header className="mb-5">
-            <h2
-                className={clsx(
-                    "font-display",
-                    "text-2xl",
-                    "mb-2",
-                    "font-semibold",
-                    "tracking-tight"
-                )}
-            >
-                {title}
-            </h2>
-            <h3
-                className={clsx(
-                    "text-lg lg:text-xl",
-                    "leading-snug",
-                    "tracking-tight",
-                    "max-w-4xl",
-                    "text-stone-700 dark:text-stone-500"
-                )}
-            >
-                {slogan}
-            </h3>
-        </header>
+        <hgroup className="mb-5">
+            <H2>{title}</H2>
+            <H2Sub>{slogan}</H2Sub>
+        </hgroup>
     );
 }

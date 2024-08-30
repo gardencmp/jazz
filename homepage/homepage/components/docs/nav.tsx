@@ -1,7 +1,60 @@
-import { ReactNode } from "react";
-import { ClassRef, PropRef } from "./tags";
 import { requestProject } from "./requestProject";
 import { PackageIcon } from "lucide-react";
+import { DocNavLink } from "gcmp-design-system/src/app/components/atoms/DocNavLink";
+import { JazzLogo } from "../logos";
+import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
+import { SiDiscord, SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
+
+export function JazzNav() {
+    return (
+        <Nav
+            mainLogo={<JazzLogo className="w-24 -ml-2" />}
+            items={[
+                { title: "Home", href: "/" },
+                { title: "Sync & Storage Mesh", href: "/mesh" },
+                {
+                    title: "Docs",
+                    href: "/docs",
+                },
+                {
+                    title: "Blog",
+                    href: "https://gcmp.io/news",
+                    firstOnRight: true,
+                    newTab: true,
+                },
+                {
+                    title: "Releases",
+                    href: "https://github.com/gardencmp/jazz/releases",
+                    newTab: true,
+                },
+                {
+                    title: "Roadmap",
+                    href: "https://github.com/orgs/gardencmp/projects/4/views/3",
+                    newTab: true,
+                },
+                {
+                    title: "GitHub",
+                    href: "https://github.com/gardencmp/jazz",
+                    newTab: true,
+                    icon: <SiGithub className="w-5" />,
+                },
+                {
+                    title: "Discord",
+                    href: "https://discord.gg/utDMjHYg42",
+                    newTab: true,
+                    icon: <SiDiscord className="w-5" />,
+                },
+                {
+                    title: "X",
+                    href: "https://x.com/jazz_tools",
+                    newTab: true,
+                    icon: <SiTwitter className="w-5" />,
+                },
+            ]}
+            docNav={<DocNav />}
+        />
+    );
+}
 
 export function DocNav() {
     return (
@@ -142,22 +195,5 @@ export async function NavPackage({
                 );
             })}
         </>
-    );
-}
-
-export function DocNavLink({
-    href,
-    children,
-}: {
-    href: string;
-    children: ReactNode;
-}) {
-    return (
-        <a
-            href={href}
-            className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
-        >
-            {children}
-        </a>
     );
 }

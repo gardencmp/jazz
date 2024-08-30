@@ -1,8 +1,4 @@
-import {
-    MultiplayerIcon,
-    ResponsiveIframe,
-    ComingSoonBadge,
-} from "@/components/forMdx";
+import { MultiplayerIcon, ResponsiveIframe } from "@/components/forMdx";
 import {
     Prose,
     SmallProse,
@@ -13,6 +9,12 @@ import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecul
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
+import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
+import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
+import { UL } from "gcmp-design-system/src/app/components/molecules/List";
+import { LI } from "gcmp-design-system/src/app/components/atoms/ListItem";
+import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
+import { TextLink } from "gcmp-design-system/src/app/components/atoms/TextLink";
 
 import {
     UploadCloudIcon,
@@ -22,6 +24,8 @@ import {
     FileLock2Icon,
     HardDriveDownloadIcon,
     KeyRoundIcon,
+    HandshakeIcon,
+    SquareMousePointerIcon,
 } from "lucide-react";
 
 import { App_tsx, ChatScreen_tsx } from "@/codeSamples/examples/chat/src";
@@ -45,6 +49,7 @@ import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import MeshIntro from "./meshIntro.mdx";
+import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 
 export default function Home() {
     return (
@@ -61,7 +66,7 @@ export default function Home() {
                 />
                 <LabelledFeatureIcon
                     label="Real-time multiplayer"
-                    icon={MultiplayerIcon}
+                    icon={SquareMousePointerIcon}
                 />
                 <LabelledFeatureIcon
                     label="Team/social features"
@@ -129,28 +134,37 @@ export default function Home() {
                 className="grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
-                    #### `CoMap`
+                    <H3>
+                        <CodeRef>CoMap</CodeRef>
+                    </H3>
                     <SmallProse>
                         <CoMapDescription />
                     </SmallProse>
                 </GridCard>
 
                 <GridCard>
-                    #### `CoList`
+                    <H3>
+                        <CodeRef>CoList</CodeRef>
+                    </H3>
                     <SmallProse>
                         <CoListDescription />
                     </SmallProse>
                 </GridCard>
 
                 <GridCard>
-                    #### `CoPlainText` & `CoRichText` <ComingSoonBadge />
+                    <H3>
+                        <CodeRef>CoPlainText</CodeRef> &{" "}
+                        <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
+                    </H3>
                     <SmallProse>
                         <CoPlainTextDescription />
                     </SmallProse>
                 </GridCard>
 
                 <GridCard>
-                    #### `CoStream`
+                    <H3>
+                        <CodeRef>CoStream</CodeRef>
+                    </H3>
                     <SmallProse>
                         <CoStreamDescription />
                     </SmallProse>
@@ -162,14 +176,18 @@ export default function Home() {
                 className="grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
-                    #### `BinaryCoStream`
+                    <H3>
+                        <CodeRef>BinaryCoStream</CodeRef>
+                    </H3>
                     <SmallProse>
                         <BinaryCoStreamDescription />
                     </SmallProse>
                 </GridCard>
 
                 <GridCard>
-                    #### `ImageDefinition`
+                    <H3>
+                        <CodeRef>ImageDefinition</CodeRef>
+                    </H3>
                     <SmallProse>
                         <ImageDefinitionDescription />
                     </SmallProse>
@@ -181,13 +199,17 @@ export default function Home() {
                 className="grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
-                    #### `Group`
+                    <H3>
+                        <CodeRef>Group</CodeRef>
+                    </H3>
                     <SmallProse>
                         <GroupDescription />
                     </SmallProse>
                 </GridCard>
                 <GridCard>
-                    #### `Account`
+                    <H3>
+                        <CodeRef>Account</CodeRef>
+                    </H3>
                     <SmallProse>
                         <AccountDescription />
                     </SmallProse>
@@ -248,7 +270,12 @@ export default function Home() {
                 <GridCard>
                     <SectionHeader
                         title="File upload & download"
-                        slogan="Just use `<input type='file'/>`."
+                        slogan={
+                            <>
+                                Just use{" "}
+                                <CodeRef>{`<input type='file'/>`}</CodeRef>.
+                            </>
+                        }
                     />
                     <SmallProse>
                         <FileUploadDownloadDescription />
@@ -275,17 +302,23 @@ export default function Home() {
                 <MeshIntro />
             </Prose>
 
-            <Link href="/mesh" target="_blank">
-                Learn more about Jazz Mesh
-            </Link>
-            ## Get Started -{" "}
-            <Link href="/docs" target="_blank">
-                Read the docs
-            </Link>
-            -{" "}
-            <Link href="https://discord.gg/utDMjHYg42" target="_blank">
-                Join our Discord
-            </Link>
+            <P>{'->'} <TextLink href="/mesh" target="_blank">
+                     Learn more about Jazz Mesh
+                </TextLink></P>
+
+            <H3>Get Started</H3>
+            <UL>
+                <LI>
+                    <TextLink href="/docs" target="_blank">
+                        Read the docs
+                    </TextLink>
+                </LI>
+                <LI>
+                    <TextLink href="https://discord.gg/utDMjHYg42" target="_blank">
+                        Join our Discord
+                    </TextLink>
+                </LI>
+            </UL>
         </>
     );
 }
