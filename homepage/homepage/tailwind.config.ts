@@ -1,7 +1,8 @@
 import type { Config } from "tailwindcss";
+const designSystemConfig = require("../design-system/tailwind.config.ts");
 
 const config: Config = {
-    presets: [require("gcmp-design-system/tailwind.config.js")],
+    presets: [designSystemConfig],
     darkMode: ["class"],
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",

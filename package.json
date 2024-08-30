@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "homepage/*"
   ],
   "packageManager": "pnpm@9.1.4",
   "devDependencies": {
@@ -16,8 +17,8 @@
     "vitest": "1.5.3"
   },
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build && cd homepage/homepage && pnpm run build",
+    "dev": "turbo run dev --parallel --filter=$HOMEPAGE_JAZZ_DIR --filter=$GCMP_DESIGN_SYSTEM_DIR",
+    "build": "turbo run build --filter=$HOMEPAGE_JAZZ_DIR --filter=$GCMP_DESIGN_SYSTEM_DIR",
     "lint": "turbo lint && cd homepage/homepage && pnpm run lint",
     "test": "turbo test",
     "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",

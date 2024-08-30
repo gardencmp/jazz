@@ -7,10 +7,17 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "outputs": [".next/**", "!.next/cache/**"],
+      "inputs": ["./design-system/**/*"]
     },
     "test": {},
     "lint": {},
-    "type-check": {}
-  }
+    "type-check": {},
+    "concurrency": 16
+  },
+  "globalEnv": [
+    "HOMEPAGE_JAZZ_DIR=homepage/homepage",
+    "GCMP_DESIGN_SYSTEM_DIR=homepage/design-system"
+  ]
 }

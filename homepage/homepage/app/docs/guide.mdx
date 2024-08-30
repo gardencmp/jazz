@@ -1,7 +1,10 @@
-import { Slogan } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { Slogan } from "gcmp-design-system/src/components/atoms/Headings";
 import { JazzLogo } from "@/components/logos";
 
-<h1 id="guide">Learn some <JazzLogo className="h-[1.3em] relative -top-0.5 inline-block -ml-[0.1em] -mr-[0.1em]"/></h1>
+<h1 id="guide">
+    Learn some{" "}
+    <JazzLogo className="h-[1.3em] relative -top-0.5 inline-block -ml-[0.1em] -mr-[0.1em]" />
+</h1>
 <Slogan>Build an issue tracker with distributed state.</Slogan>
 
 Our issues app will be quite simple, but it will have team collaboration. <span className="text-nowrap">**Let's call it... &ldquo;Circular.&rdquo;**</span>
@@ -502,7 +505,8 @@ Add the following to `src/schema.ts`:
 ```ts
 import { CoMap, CoList, co } from "jazz-tools";
 // old
-export class Issue extends CoMap { // old
+export class Issue extends CoMap {
+    // old
     title = co.string; // old
     description = co.string; // old
     estimate = co.number; // old

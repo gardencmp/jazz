@@ -1,10 +1,8 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-@import "gcmp-design-system/src/styles/color-theme.css";
-@import "gcmp-design-system/src/styles/spacing-theme.css";
-
-@layer base, shiki;
+@import "./color-theme.css";
+@import "./spacing-theme.css";
 
 @layer base {
   * {
@@ -31,7 +29,19 @@
     /* transition everywhere */
     transition: color 50ms ease 0s;
   }
-  .overlay-close {
-    background-color: "black";
+}
+
+/* These utilities can be applied in the base & component layers */
+@layer utilities {
+  .link {
+    @apply relative;
+    @apply underline underline-offset-[0.25em];
+    @apply decoration-solid decoration-[0.025em];
+    @apply hover:text-accent;
+    @apply hover:decoration-accent hover:decoration-[0.05em];
+  }
+  .hr-vertical {
+    /* must add a height when used within a flex parent */
+    @apply w-px border-l;
   }
 }

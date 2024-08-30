@@ -1,0 +1,34 @@
+:root {
+  /* TODO! */
+  --stone-50: #fefbf5;
+  --stone-100: #f7f3ee;
+  --stone-200: #e7e3de;
+  --stone-300: #d2cec9;
+  --stone-400: #bdbab5;
+  --stone-500: #aaa6a1;
+  --stone-600: #87837f;
+  --stone-700: #6d6965;
+  --stone-800: #4e4a46;
+  --stone-900: #312e2a;
+  --stone-950: #171411;
+}
+
+@supports (color: oklch(0% 0 0)) {
+  @media (color-gamut: p3) {
+    :root {
+      --stone-50: oklch(0.988281 0.002 75);
+      --stone-75: oklch(0.980563 0.002 75);
+      --stone-100: oklch(0.964844 0.002 75);
+      --stone-200: oklch(0.917969 0.002 75);
+      --stone-300: oklch(0.853516 0.002 75);
+      --stone-400: oklch(0.789063 0.002 75);
+      --stone-500: oklch(0.726563 0.002 75);
+      --stone-600: oklch(0.613281 0.002 75);
+      --stone-700: oklch(0.523438 0.002 75);
+      --stone-800: oklch(0.412109 0.002 75);
+      --stone-900: oklch(0.302734 0.002 75);
+      --stone-925: oklch(0.22 0.002 75);
+      --stone-950: oklch(0.193359 0.002 75);
+    }
+  }
+}
