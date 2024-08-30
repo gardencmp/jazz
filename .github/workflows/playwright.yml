@@ -2,19 +2,19 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-    test:
+  test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          example: ["pets"]
+    strategy:
+      matrix:
+        example: ["pets"]
 
-      steps:
+    steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Pnpm Build
         run: |
@@ -47,4 +47,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-
