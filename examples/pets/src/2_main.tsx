@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactContext, PasskeyAuth } from "jazz-react";
+import { createJazzReactContext, DemoAuth, PasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -14,6 +14,7 @@ import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
 import { PetAccount, PetPost } from "./1_schema.ts";
+import { supportsWebAuthn } from "./lib/support.ts";
 
 /** Walkthrough: The top-level provider `<WithJazz/>`
  *
@@ -24,14 +25,19 @@ import { PetAccount, PetPost } from "./1_schema.ts";
 
 const appName = "Jazz Rate My Pet Example";
 
-const auth = PasskeyAuth<PetAccount>({
+const passkeyAuth = PasskeyAuth<PetAccount>({
     appName,
     Component: PrettyAuthUI,
     accountSchema: PetAccount,
 });
 
+const authFallback = DemoAuth<PetAccount>({
+    appName,
+    accountSchema: PetAccount,
+});
+
 const Jazz = createJazzReactContext({
-    auth,
+    auth: supportsWebAuthn ? passkeyAuth : authFallback,
     peer: "wss://mesh.jazz.tools/?key=you@example.com",
 });
 // eslint-disable-next-line react-refresh/only-export-components
