@@ -15,7 +15,7 @@ export class PostPage {
         });
     }
 
-    async expectLoaded(petName: string) {
+    async expectPetName(petName: string) {
         await expect(
             this.page.getByRole("heading", {
                 name: petName,
@@ -34,7 +34,7 @@ export class PostPage {
         ).toHaveAttribute("data-selected", String(selected));
     }
 
-    async expectReactionSelectedByInvitedUser(emoji: string, userName: string) {
+    async expectReactionByUser(emoji: string, userName: string) {
         await expect(this.page.getByText(`${emoji} ${userName}`)).toBeVisible();
     }
 

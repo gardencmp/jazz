@@ -23,7 +23,7 @@ test("create a new post and share", async ({ page }) => {
 
     const postPage = new PostPage(page);
 
-    await postPage.expectLoaded("Yoshi");
+    await postPage.expectPetName("Yoshi");
 
     const invitation = await postPage.getShareLink();
 
@@ -37,7 +37,7 @@ test("create a new post and share", async ({ page }) => {
     await page.goto(invitation);
     await page.reload();
 
-    await postPage.expectLoaded("Yoshi");
+    await postPage.expectPetName("Yoshi");
     await postPage.expectReactionSelectedByCurrentUser("😍", false);
     await postPage.toggleReaction("😍");
     await postPage.expectReactionSelectedByCurrentUser("😍", true);
@@ -47,6 +47,6 @@ test("create a new post and share", async ({ page }) => {
     await loginPage.loginAs("S. Mario");
 
     await homePage.navigateToPost("Yoshi");
-    await postPage.expectLoaded("Yoshi");
-    await postPage.expectReactionSelectedByInvitedUser("😍", "Luigi");
+    await postPage.expectPetName("Yoshi");
+    await postPage.expectReactionByUser("😍", "Luigi");
 });
