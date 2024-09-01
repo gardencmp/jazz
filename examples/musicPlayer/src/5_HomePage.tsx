@@ -1,5 +1,5 @@
 import { useAccount } from "./2_main";
-import { MediaPlayer } from "./3_useMediaPlayer";
+import { MediaPlayer } from "./4_useMediaPlayer";
 import { Link } from "./basicComponents/Link";
 import { MusicTrackRow } from "./components/MusicTrackRow";
 import { usePlayState } from "./lib/audio/usePlayState";

@@ -8,16 +8,16 @@ import {
 } from "jazz-tools";
 import { getAudioFileData } from "./lib/audio/getAudioFileData";
 
-/**
- * Hello!
+/** Walkthrough: Defining the data model with CoJSON
  *
- * Welcome to the Jazz musicPlayer example! 🎶
+ *  Here, we define our main data model of tasks, lists of tasks and projects
+ *  using CoJSON's collaborative map and list types, CoMap & CoList.
  *
- * This is our first checkpoint the Schema definition.
- * In Jazz the schema is defined as code so you can control all you data model from here.
- *
- * By extending CoMap you can create your models and define schema migrations.
- */
+ *  CoMap values and CoLists items can contain:
+ *  - arbitrary immutable JSON
+ *  - other CoValues
+ **/
+
 export class MusicTrack extends CoMap {
     /**
      *  Attributes are defined as class properties
@@ -65,28 +65,30 @@ export class Playlist extends CoMap {
 
 export class ListOfPlaylists extends CoList.Of(co.ref(Playlist)) {}
 
+/** The account root is an app-specific per-user private `CoMap`
+ *  where you can store top-level objects for that user */
 export class MusicaAccountRoot extends CoMap {
+    // The root playlist works as container for the tracks that
+    // the user has uploaded
     rootPlaylist = co.ref(Playlist);
+    // Here we store the list of playlists that the user has created
+    // or that has been invited to
     playlists = co.ref(ListOfPlaylists);
+    // We store the active track and playlist as coValue here
+    // so when the user reloads the page can see the last played
+    // track and playlist
+    // You can also add the position in time if you want make it possible
+    // to resume the song
     activeTrack = co.optional.ref(MusicTrack);
     activePlaylist = co.ref(Playlist);
 }
 
-/**
- * You can extend the Account type to link the user
- * to the data you want to be easily discoverable.
- *
- * Inside root for example we define the main list of tracks
- * we want to be visible from the hompage and the
- * list of playlists related to the user.
- */
 export class MusicaAccount extends Account {
     profile = co.ref(Profile);
     root = co.ref(MusicaAccountRoot);
 
-    /**
-     * The migration function can also be used to fill the
-     * initial data.
+    /** The account migration is run on account creation and on every log-in.
+     *  You can use it to set up the account root and any other initial CoValues you need.
      *
      * It's a nice way to shape the inital structure of the account data
      * and add "onboarding" info.
@@ -137,3 +139,5 @@ export class MusicaAccount extends Account {
         }
     }
 }
+
+/** Walkthrough: Continue with ./2_main.tsx */

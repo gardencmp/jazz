@@ -232,18 +232,6 @@ importers:
 
   examples/musicPlayer:
     dependencies:
-      '@radix-ui/react-checkbox':
-        specifier: ^1.0.4
-        version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@radix-ui/react-slot':
-        specifier: ^1.0.2
-        version: 1.0.2(@types/react@18.2.45)(react@18.2.0)
-      '@radix-ui/react-toast':
-        specifier: ^1.1.4
-        version: 1.1.5(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@types/qrcode':
-        specifier: ^1.5.1
-        version: 1.5.5
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -256,12 +244,6 @@ importers:
       jazz-tools:
         specifier: workspace:*
         version: link:../../packages/jazz-tools
-      lucide-react:
-        specifier: ^0.274.0
-        version: 0.274.0(react@18.2.0)
-      qrcode:
-        specifier: ^1.5.3
-        version: 1.5.3
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -280,9 +262,6 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.0(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
-      uniqolor:
-        specifier: ^1.1.0
-        version: 1.1.1
     devDependencies:
       '@types/react':
         specifier: ^18.2.15

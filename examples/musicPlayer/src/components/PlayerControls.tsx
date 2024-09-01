@@ -1,4 +1,4 @@
-import { MediaPlayer } from "@/3_useMediaPlayer";
+import { MediaPlayer } from "@/4_useMediaPlayer";
 import { usePlayState } from "@/lib/audio/usePlayState";
 import { Waveform } from "./Waveform";
 import { useAccount } from "@/2_main";

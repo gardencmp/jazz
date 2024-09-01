@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { useMediaPlayer } from "./3_useMediaPlayer";
-import { HomePage } from "./4_HomePage";
-import { createNewPlaylist, uploadMusicTracks } from "./5_actions";
+import { useMediaPlayer } from "./4_useMediaPlayer";
+import { HomePage } from "./5_HomePage";
+import { createNewPlaylist, uploadMusicTracks } from "./3_actions";
 import { PlaylistPage } from "./6_PlaylistPage";
 import { InvitePage } from "./7_InvitePage";
 import { Button } from "./basicComponents/Button";
@@ -14,9 +14,19 @@ import "./index.css";
 import { MusicaAccount } from "@/1_schema";
 import { createJazzReactContext, DemoAuth } from "jazz-react";
 
-export const Jazz = createJazzReactContext({
+/**
+ * Walkthrough: The top-level provider `<Jazz.Provider/>`
+ *
+ * This shows how to use the top-level provider `<Jazz.Provider/>`,
+ * which provides the rest of the app with a controlled account (used through `useAccount` later).
+ * Here we use `DemoAuth` which is great for prototyping you app without wasting time on figuring out
+ * the best way to do auth.
+ *
+ * `<Jazz.Provider/>` also runs our account migration
+ */
+const Jazz = createJazzReactContext({
     auth: DemoAuth({ appName: "Musica Jazz", accountSchema: MusicaAccount }),
-    peer: `ws://localhost:4200/?key=example@email.com`,
+    peer: "wss://mesh.jazz.tools/?key=you@example.com",
 });
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
@@ -24,11 +34,20 @@ export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 function Main() {
     const mediaPlayer = useMediaPlayer();
 
+    /**
+     * `me` represents the current user account, which will determine
+     *  access rights to CoValues. We get it from the top-level provider `<WithJazz/>`.
+     */
     const { me } = useAccount();
 
     async function handleFileLoad(files: FileList) {
         if (!me) return;
 
+        /**
+         * Follow this function definition to see how we update
+         * values in Jazz and manage files!
+         */
+        /** Walkthrough: Continue with ./3_actions.ts */
         await uploadMusicTracks(me, files);
     }
 
