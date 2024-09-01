@@ -11,6 +11,7 @@ import {
     isControlledAccount,
 } from "jazz-tools";
 import type { AccountID } from "cojson";
+import { startCoJsonSimpleSync } from "./startCoJsonSimpleSync.js";
 
 const jazzTools = Command.make("jazz-tools");
 
@@ -86,7 +87,9 @@ const accountBase = Command.make("account");
 
 const account = accountBase.pipe(Command.withSubcommands([accountCreate]));
 
-const command = jazzTools.pipe(Command.withSubcommands([account]));
+const command = jazzTools.pipe(
+    Command.withSubcommands([account, startCoJsonSimpleSync]),
+);
 
 const cli = Command.run(command, {
     name: "Jazz CLI Tools",
