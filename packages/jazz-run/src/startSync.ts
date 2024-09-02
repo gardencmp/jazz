@@ -9,15 +9,35 @@ import { WebSocketServer } from "ws";
 
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { Effect } from "effect";
+import { SQLiteStorage } from "cojson-storage-sqlite";
+import { dirname } from "node:path";
+import { mkdir } from "node:fs/promises";
 
 const port = Options.text("port")
     .pipe(Options.withAlias("p"))
+    .pipe(
+        Options.withDescription(
+            "Select a different port for the WebSocket server. Default is 4200",
+        ),
+    )
     .pipe(Options.withDefault("4200"));
 
-export const startCoJsonSimpleSync = Command.make(
-    "cojson-simple-sync",
-    { port },
-    ({ port }) => {
+const inMemory = Options.boolean("in-memory").pipe(
+    Options.withDescription("Use an in-memory storage instead of file-based"),
+);
+
+const db = Options.file("db")
+    .pipe(
+        Options.withDescription(
+            "The path to the file where to store the data. Default is 'sync-db/storage.db'",
+        ),
+    )
+    .pipe(Options.withDefault("sync-db/storage.db"));
+
+export const startSync = Command.make(
+    "sync",
+    { port, inMemory, db },
+    ({ port, inMemory, db }) => {
         return Effect.gen(function* () {
             const crypto = yield* Effect.promise(() => WasmCrypto.create());
 
@@ -27,6 +47,14 @@ export const startCoJsonSimpleSync = Command.make(
                 "COJSON sync server listening on port " + wss.options.port,
             );
 
+            /**
+             * In Jazz the communication is decentralized
+             * so the sync server is implemented as "just another peer" in the network
+             *
+             * LocalNode is the class we use to manage the connected peers that could be:
+             * - the storage layer
+             * - the WebSocket connections
+             */
             const agentSecret = crypto.newRandomAgentSecret();
             const agentID = crypto.getAgentID(agentSecret);
 
@@ -36,7 +64,20 @@ export const startCoJsonSimpleSync = Command.make(
                 crypto,
             );
 
+            if (!inMemory) {
+                yield* Effect.promise(() =>
+                    mkdir(dirname(db), { recursive: true }),
+                );
+
+                const storage = yield* Effect.promise(() =>
+                    SQLiteStorage.asPeer({ filename: db }),
+                );
+
+                localNode.syncManager.addPeer(storage);
+            }
+
             wss.on("connection", function connection(ws, req) {
+                // ping/pong for the connection livenerss
                 const pinging = setInterval(() => {
                     ws.send(
                         JSON.stringify({
