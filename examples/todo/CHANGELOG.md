@@ -1,5 +1,13 @@
 # jazz-example-todo
 
+## 0.0.99-unique.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.35-unique.2
+    -   jazz-react@0.7.35-unique.2
+
 ## 0.0.99-new-auth.1
 
 ### Patch Changes

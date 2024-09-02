@@ -1,5 +1,15 @@
 # jazz-example-chat
 
+## 0.0.80-unique.2
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-tools@0.7.35-unique.2
+  - cojson@0.7.35-unique.2
+  - jazz-react@0.7.35-unique.2
+  - jazz-react-auth-clerk@0.7.33-unique.2
+
 ## 0.0.80-new-auth.1
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat-clerk",
   "private": true,
-  "version": "0.0.80-new-auth.1",
+  "version": "0.0.80-unique.2",
   "type": "module",
   "scripts": {
     "dev": "vite",

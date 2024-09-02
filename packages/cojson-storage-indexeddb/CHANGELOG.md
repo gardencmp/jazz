@@ -1,5 +1,12 @@
 # cojson-storage-indexeddb
 
+## 0.7.35-unique.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.35-unique.2
+
 ## 0.7.34
 
 ### Patch Changes

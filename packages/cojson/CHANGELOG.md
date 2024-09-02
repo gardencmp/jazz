@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.35-unique.2
+
+### Patch Changes
+
+-   First sketch of API for creating and finding unique CoValues
+
 ## 0.7.34
 
 ### Patch Changes

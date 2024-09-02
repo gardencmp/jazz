@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-auth-clerk",
-  "version": "0.7.33-new-auth.1",
+  "version": "0.7.33-unique.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",

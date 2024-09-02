@@ -1,5 +1,13 @@
 # jazz-autosub
 
+## 0.7.35-unique.2
+
+### Patch Changes
+
+-   First sketch of API for creating and finding unique CoValues
+-   Updated dependencies
+    -   cojson@0.7.35-unique.2
+
 ## 0.7.35-new-auth.0
 
 ### Patch Changes

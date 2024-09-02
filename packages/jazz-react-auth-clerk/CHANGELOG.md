@@ -1,5 +1,15 @@
 # jazz-browser-media-images
 
+## 0.7.33-unique.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.35-unique.2
+    -   cojson@0.7.35-unique.2
+    -   jazz-browser-auth-clerk@0.7.33-unique.1
+    -   jazz-react@0.7.35-unique.2
+
 ## 0.7.33-new-auth.1
 
 ### Patch Changes

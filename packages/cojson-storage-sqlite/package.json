@@ -1,7 +1,7 @@
 {
   "name": "cojson-storage-sqlite",
   "type": "module",
-  "version": "0.7.34",
+  "version": "0.7.35-unique.2",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",

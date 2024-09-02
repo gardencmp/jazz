@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.7.35-unique.2
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.35-unique.2
+    -   cojson@0.7.35-unique.2
+    -   cojson-transport-ws@0.7.35-unique.2
+
 ## 0.7.35-new-auth.0
 
 ### Patch Changes

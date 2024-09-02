@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser",
-  "version": "0.7.35-new-auth.0",
+  "version": "0.7.35-unique.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
