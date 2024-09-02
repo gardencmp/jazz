@@ -1,0 +1,31 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "./color-theme.css";
+
+:root {
+  font-family: "Manrope", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply bg-canvas;
+  }
+  ::selection {
+    @apply bg-fill text-canvas;
+  }
+  body {
+    @apply font-sans font-normal antialiased;
+    @apply text-base;
+    @apply bg-canvas text-fill;
+
+    /* transition color everywhere: do NOT use tailwind here as the variablesare inherited across every transition across the codebase */
+    transition: color 50ms ease 0s;
+  }
+}

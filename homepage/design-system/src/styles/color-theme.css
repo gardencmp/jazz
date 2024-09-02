@@ -1,0 +1,32 @@
+@import "./color-custom-stone.css";
+@import "./color-custom-stone-dark.css";
+
+@layer base {
+  :root {
+    /* GRAY */
+    /* backgrounds & panels */
+    --color-gray-base: var(--stone-50);
+    --color-gray-bg-subtle: var(--stone-75);
+    --color-gray-bg: var(--stone-100);
+    --color-gray-bg-hover: var(--stone-200);
+    --color-gray-bg-active: var(--stone-300);
+
+    /* borders, lines & focus rings */
+    --color-gray-border: var(--stone-300);
+    --color-gray-border-hover: var(--stone-400);
+    --color-gray-line: var(--stone-500);
+
+    /* solids */
+    --color-gray-light: var(--stone-600);
+    --color-gray-solid: var(--stone-700);
+    --color-gray-solid-hover: var(--stone-800);
+
+    /* fills */
+    --color-gray-fill: var(--stone-900);
+    --color-gray-fill-contrast: var(--stone-950);
+
+    /* ACCENT */
+    /* TODO: We'll populate this schema as we need… */
+    --color-accent-fill: #3313f7;
+  }
+}
