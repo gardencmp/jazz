@@ -8,6 +8,7 @@ import { AgentID, isAgentID } from "../ids.js";
 import { RawAccount, RawAccountID, ControlledAccountOrAgent } from "./account.js";
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
+import { CoValueUniqueness } from "../coValueCore.js";
 
 export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
@@ -255,6 +256,7 @@ export class RawGroup<
         init?: M["_shape"],
         meta?: M["headerMeta"],
         initPrivacy: "trusting" | "private" = "private",
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()
     ): M {
         const map = this.core.node
             .createCoValue({
@@ -264,7 +266,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...this.core.crypto.createdNowUnique(),
+                ...uniqueness
             })
             .getCurrentContent() as M;
 
@@ -287,6 +289,7 @@ export class RawGroup<
         init?: L["_item"][],
         meta?: L["headerMeta"],
         initPrivacy: "trusting" | "private" = "private",
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()
     ): L {
         const list = this.core.node
             .createCoValue({
@@ -296,7 +299,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...this.core.crypto.createdNowUnique(),
+                ...uniqueness
             })
             .getCurrentContent() as L;
 
@@ -310,7 +313,7 @@ export class RawGroup<
     }
 
     /** @category 3. Value creation */
-    createStream<C extends RawCoStream>(meta?: C["headerMeta"]): C {
+    createStream<C extends RawCoStream>(meta?: C["headerMeta"], uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()): C {
         return this.core.node
             .createCoValue({
                 type: "costream",
@@ -319,7 +322,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...this.core.crypto.createdNowUnique(),
+                ...uniqueness
             })
             .getCurrentContent() as C;
     }
@@ -327,6 +330,7 @@ export class RawGroup<
     /** @category 3. Value creation */
     createBinaryStream<C extends RawBinaryCoStream>(
         meta: C["headerMeta"] = { type: "binary" },
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()
     ): C {
         return this.core.node
             .createCoValue({
@@ -336,7 +340,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta,
-                ...this.core.crypto.createdNowUnique(),
+                ...uniqueness
             })
             .getCurrentContent() as C;
     }

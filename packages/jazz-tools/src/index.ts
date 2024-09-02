@@ -11,6 +11,7 @@ export type {
     AgentID,
     SyncMessage,
     CryptoProvider,
+    CoValueUniqueness,
 } from "cojson";
 
 export type { ID, CoValue } from "./internal.js";

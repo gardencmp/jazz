@@ -2,6 +2,7 @@ import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
 import {
     CoValueCore,
     CoValueHeader,
+    CoValueUniqueness,
     newRandomSessionID,
 } from "./coValueCore.js";
 import {
@@ -606,12 +607,12 @@ export class LocalNode {
     /**
      * @deprecated use Account.createGroup() instead
      */
-    createGroup(): RawGroup {
+    createGroup(uniqueness: CoValueUniqueness = this.crypto.createdNowUnique()): RawGroup {
         const groupCoValue = this.createCoValue({
             type: "comap",
             ruleset: { type: "group", initialAdmin: this.account.id },
             meta: null,
-            ...this.crypto.createdNowUnique(),
+            ...uniqueness
         });
 
         const group = expectGroup(groupCoValue.getCurrentContent());

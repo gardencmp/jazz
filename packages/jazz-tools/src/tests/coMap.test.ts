@@ -11,31 +11,31 @@ import {
     createJazzContext,
     fixedCredentialsAuth,
 } from "../index.js";
-import { randomSessionProvider } from "../internal.js";
+import { Group, randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
+
+class TestMap extends CoMap {
+    color = co.string;
+    _height = co.number;
+    birthday = co.encoded(Encoders.Date);
+    name? = co.string;
+    nullable = co.optional.encoded<string | undefined>({
+        encode: (value: string | undefined) => value || null,
+        decode: (value: unknown) => (value as string) || undefined,
+    });
+    optionalDate = co.optional.encoded(Encoders.Date);
+
+    get roughColor() {
+        return this.color + "ish";
+    }
+}
 
 describe("Simple CoMap operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
         crypto: Crypto,
     });
-
-    class TestMap extends CoMap {
-        color = co.string;
-        _height = co.number;
-        birthday = co.encoded(Encoders.Date);
-        name? = co.string;
-        nullable = co.optional.encoded<string | undefined>({
-            encode: (value: string | undefined) => value || null,
-            decode: (value: unknown) => (value as string) || undefined,
-        });
-        optionalDate = co.optional.encoded(Encoders.Date);
-
-        get roughColor() {
-            return this.color + "ish";
-        }
-    }
 
     console.log("TestMap schema", TestMap.prototype._schema);
 
@@ -736,5 +736,30 @@ describe("CoMap applyDiff", async () => {
         expect(map.name).toEqual("Ian");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map as any).invalidField).toBeUndefined();
+    });
+});
+
+describe("Creating and finding unique CoMaps", async () => {
+    test("Creating and finding unique CoMaps", async () => {
+        const me = await Account.create({
+            creationProps: { name: "Tester McTesterson" },
+            crypto: Crypto,
+        });
+
+        const group = await Group.create({
+            owner: me,
+        });
+
+        const alice = TestMap.create({
+            name: "Alice",
+            _height: 100,
+            birthday: new Date("1990-01-01"),
+            color: "red",
+
+        }, { owner: group, unique: { name: "Alice" } });
+
+        const foundAlice = TestMap.findUnique({ name: "Alice" }, group.id, me);
+
+        expect(foundAlice).toEqual(alice.id);
     });
 });

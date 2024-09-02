@@ -1,4 +1,9 @@
-import type { JsonValue, RawCoMap } from "cojson";
+import {
+    cojsonInternals,
+    type CoValueUniqueness,
+    type JsonValue,
+    type RawCoMap,
+} from "cojson";
 import type {
     CoValue,
     Schema,
@@ -35,8 +40,10 @@ type CoMapEdit<V> = {
 };
 
 export type Simplify<A> = {
-    [K in keyof A]: A[K]
-} extends infer B ? B : never
+    [K in keyof A]: A[K];
+} extends infer B
+    ? B
+    : never;
 
 /**
  * CoMaps are collaborative versions of plain objects, mapping string-like keys to values.
@@ -237,10 +244,19 @@ export class CoMap extends CoValueBase implements CoValue {
     static create<M extends CoMap>(
         this: CoValueClass<M>,
         init: Simplify<CoMapInit<M>>,
-        options: { owner: Account | Group },
+        options: {
+            owner: Account | Group;
+            unique?: CoValueUniqueness["uniqueness"];
+        },
     ) {
         const instance = new this();
-        const raw = instance.rawFromInit(init, options.owner);
+        const raw = instance.rawFromInit(
+            init,
+            options.owner,
+            options.unique === undefined
+                ? undefined
+                : { uniqueness: options.unique },
+        );
         Object.defineProperties(instance, {
             id: {
                 value: raw.id,
@@ -293,6 +309,7 @@ export class CoMap extends CoValueBase implements CoValue {
     rawFromInit<Fields extends object = Record<string, any>>(
         init: Simplify<CoMapInit<Fields>> | undefined,
         owner: Account | Group,
+        uniqueness?: CoValueUniqueness,
     ) {
         const rawOwner = owner._raw;
 
@@ -326,7 +343,7 @@ export class CoMap extends CoValueBase implements CoValue {
                 }
             }
 
-        return rawOwner.createMap(rawInit);
+        return rawOwner.createMap(rawInit, null, "private", uniqueness);
     }
 
     /**
@@ -424,6 +441,27 @@ export class CoMap extends CoValueBase implements CoValue {
         listener: (value: DeeplyLoaded<M, Depth>) => void,
     ): () => void {
         return subscribeToCoValue<M, Depth>(this, id, as, depth, listener);
+    }
+
+    static findUnique<M extends CoMap>(
+        this: CoValueClass<M>,
+        unique: CoValueUniqueness['uniqueness'],
+        ownerID: ID<Account> | ID<Group>,
+        as: Account | Group,
+    ) {
+        const header = {
+            type: "comap" as const,
+            ruleset: {
+                type: "ownedByGroup" as const,
+                group: ownerID,
+            },
+            meta: null,
+            uniqueness: unique,
+        };
+        return cojsonInternals.idforHeader(
+            header,
+            as._raw.core.crypto,
+        ) as ID<M>;
     }
 
     /**

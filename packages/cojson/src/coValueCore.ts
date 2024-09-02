@@ -41,9 +41,9 @@ export type CoValueHeader = {
     type: AnyRawCoValue["type"];
     ruleset: RulesetDef;
     meta: JsonObject | null;
-    createdAt: `2${string}` | null;
-    uniqueness: `z${string}` | null;
-};
+} & CoValueUniqueness;
+
+export type CoValueUniqueness = {uniqueness: JsonValue, createdAt?: `2${string}` | null}
 
 export function idforHeader(
     header: CoValueHeader,

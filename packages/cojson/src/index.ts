@@ -1,5 +1,6 @@
 import {
     CoValueCore,
+    type CoValueUniqueness,
     newRandomSessionID,
     MAX_RECOMMENDED_TX_SIZE,
     idforHeader,
@@ -130,6 +131,7 @@ export type {
     OutgoingSyncQueue,
     DisconnectedError,
     PingTimeoutError,
+    CoValueUniqueness
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
