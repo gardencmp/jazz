@@ -47,14 +47,6 @@ export const startSync = Command.make(
                 "COJSON sync server listening on port " + wss.options.port,
             );
 
-            /**
-             * In Jazz the communication is decentralized
-             * so the sync server is implemented as "just another peer" in the network
-             *
-             * LocalNode is the class we use to manage the connected peers that could be:
-             * - the storage layer
-             * - the WebSocket connections
-             */
             const agentSecret = crypto.newRandomAgentSecret();
             const agentID = crypto.getAgentID(agentSecret);
 
@@ -77,7 +69,7 @@ export const startSync = Command.make(
             }
 
             wss.on("connection", function connection(ws, req) {
-                // ping/pong for the connection livenerss
+                // ping/pong for the connection liveness
                 const pinging = setInterval(() => {
                     ws.send(
                         JSON.stringify({
@@ -114,8 +106,8 @@ export const startSync = Command.make(
                 );
             });
 
-            // Indefintely pending promise to keep the server up
-            yield* Effect.promise(() => new Promise(() => {}));
+            // Keep the server up
+            yield* Effect.never;
         });
     },
 );
