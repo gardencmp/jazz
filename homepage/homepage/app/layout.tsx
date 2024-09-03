@@ -10,6 +10,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { JazzNav } from "@/components/docs/nav";
 import { JazzFooter } from "@/components/docs/footer";
+import { spaceVariants } from "gcmp-design-system/src/app/components/atoms";
+import { cx } from "class-variance-authority";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -56,7 +58,14 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <JazzNav />
-                    <main className="flex min-h-screen flex-col p-8 max-w-[80rem] w-full [&_*]:scroll-mt-[6rem]">
+                    <main
+                        className={cx(
+                            spaceVariants({
+                                vertical: "major",
+                            }),
+                            "py-d16",
+                        )}
+                    >
                         {children}
                     </main>
                     <JazzFooter />

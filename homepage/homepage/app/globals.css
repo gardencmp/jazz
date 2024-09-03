@@ -2,6 +2,7 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 @import "gcmp-design-system/src/styles/color-theme.css";
+@import "gcmp-design-system/src/styles/space-theme.css";
 @import "gcmp-design-system/src/styles/base-theme.css";
 @import "../styles/code-theme.css";
 

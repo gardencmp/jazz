@@ -15,6 +15,7 @@ import { UL } from "gcmp-design-system/src/app/components/molecules/List";
 import { LI } from "gcmp-design-system/src/app/components/atoms/ListItem";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
 import { TextLink } from "gcmp-design-system/src/app/components/atoms/TextLink";
+import { GroupWithSpace } from "gcmp-design-system/src/app/components/atoms";
 
 import {
     UploadCloudIcon,
@@ -54,63 +55,64 @@ import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 export default function Home() {
     return (
         <>
-            <HeroHeader
-                title="Instant sync."
-                slogan="A new way to build apps with distributed state."
-            />
+            <GroupWithSpace as="section" vertical="minor">
+                <HeroHeader
+                    title="Instant sync."
+                    slogan="A new way to build apps with distributed state."
+                />
+                <HairlineBleedGrid>
+                    <LabelledFeatureIcon
+                        label="Cross-device sync"
+                        icon={MonitorSmartphoneIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Real-time multiplayer"
+                        icon={SquareMousePointerIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Team/social features"
+                        icon={UsersIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Built-in permissions"
+                        icon={FileLock2Icon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Cloud sync & storage"
+                        icon={UploadCloudIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="On-device storage"
+                        icon={HardDriveDownloadIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Instant UI updates"
+                        icon={GaugeIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="E2EE & signatures"
+                        icon={KeyRoundIcon}
+                    />
 
-            <HairlineBleedGrid>
-                <LabelledFeatureIcon
-                    label="Cross-device sync"
-                    icon={MonitorSmartphoneIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Real-time multiplayer"
-                    icon={SquareMousePointerIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Team/social features"
-                    icon={UsersIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Built-in permissions"
-                    icon={FileLock2Icon}
-                />
-                <LabelledFeatureIcon
-                    label="Cloud sync & storage"
-                    icon={UploadCloudIcon}
-                />
-                <LabelledFeatureIcon
-                    label="On-device storage"
-                    icon={HardDriveDownloadIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Instant UI updates"
-                    icon={GaugeIcon}
-                />
-                <LabelledFeatureIcon
-                    label="E2EE & signatures"
-                    icon={KeyRoundIcon}
-                />
+                    <div className="col-span-2 col-start-1 row-span-2 row-start-1 px-4 pb-4 text-base md:px-6">
+                        <Prose>
+                            <Intro />
+                        </Prose>
+                    </div>
+                </HairlineBleedGrid>
+            </GroupWithSpace>
 
-                <div className="col-start-1 row-start-1 row-span-2 col-span-2 px-4 md:px-6 pb-4 text-base">
-                    <Prose>
-                        <Intro />
-                    </Prose>
-                </div>
-            </HairlineBleedGrid>
-
-            <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
+            <GroupWithSpace as="section" vertical="minor">
                 <SectionHeader
                     title="First impressions..."
                     slogan="A chat app in 84 lines of code."
                 />
 
                 <GappedGrid className="mt-0 -mx-4 md:-mx-6">
-                    <div className="md:col-start-1 col-span-2">
+                    <div className="col-span-2 md:col-start-1">
                         <App_tsx />
                     </div>
-                    <div className="md:col-start-3 col-span-2">
+                    <div className="col-span-2 md:col-start-3">
                         <ChatScreen_tsx />
                     </div>
                     <ResponsiveIframe
@@ -119,102 +121,108 @@ export default function Home() {
                         className="lg:col-start-5 col-span-2 rounded-xl overflow-hidden min-h-[50vh]"
                     />
                 </GappedGrid>
-            </div>
+            </GroupWithSpace>
 
-            <SectionHeader
-                title="Collaborative Values"
-                slogan="Your new building blocks."
-            />
-            <Prose>
-                <CoValuesIntro />
-            </Prose>
+            <GroupWithSpace as="section" vertical="minor">
+                <SectionHeader
+                    title="Collaborative Values"
+                    slogan="Your new building blocks."
+                />
+                <Prose>
+                    <CoValuesIntro />
+                </Prose>
 
-            <GappedGrid
-                title="Bread-and-butter datastructures"
-                className="grid-cols-2 lg:grid-cols-4"
-            >
-                <GridCard>
-                    <H3>
-                        <CodeRef>CoMap</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <CoMapDescription />
-                    </SmallProse>
-                </GridCard>
+                <GappedGrid
+                    title="Bread-and-butter datastructures"
+                    className="grid-cols-2 lg:grid-cols-4"
+                >
+                    <GridCard>
+                        <H3>
+                            <CodeRef>CoMap</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <CoMapDescription />
+                        </SmallProse>
+                    </GridCard>
 
-                <GridCard>
-                    <H3>
-                        <CodeRef>CoList</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <CoListDescription />
-                    </SmallProse>
-                </GridCard>
+                    <GridCard>
+                        <H3>
+                            <CodeRef>CoList</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <CoListDescription />
+                        </SmallProse>
+                    </GridCard>
 
-                <GridCard>
-                    <H3>
-                        <CodeRef>CoPlainText</CodeRef> &{" "}
-                        <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
-                    </H3>
-                    <SmallProse>
-                        <CoPlainTextDescription />
-                    </SmallProse>
-                </GridCard>
+                    <GridCard>
+                        <H3>
+                            <CodeRef>CoPlainText</CodeRef> &{" "}
+                            <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
+                        </H3>
+                        <SmallProse>
+                            <CoPlainTextDescription />
+                        </SmallProse>
+                    </GridCard>
 
-                <GridCard>
-                    <H3>
-                        <CodeRef>CoStream</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <CoStreamDescription />
-                    </SmallProse>
-                </GridCard>
-            </GappedGrid>
+                    <GridCard>
+                        <H3>
+                            <CodeRef>CoStream</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <CoStreamDescription />
+                        </SmallProse>
+                    </GridCard>
+                </GappedGrid>
+            </GroupWithSpace>
 
-            <GappedGrid
-                title="First-class files & binary data"
-                className="grid-cols-2 lg:grid-cols-4"
-            >
-                <GridCard>
-                    <H3>
-                        <CodeRef>BinaryCoStream</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <BinaryCoStreamDescription />
-                    </SmallProse>
-                </GridCard>
+            <GroupWithSpace as="section" vertical="minor">
+                <GappedGrid
+                    title="First-class files & binary data"
+                    className="grid-cols-2 lg:grid-cols-4"
+                >
+                    <GridCard>
+                        <H3>
+                            <CodeRef>BinaryCoStream</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <BinaryCoStreamDescription />
+                        </SmallProse>
+                    </GridCard>
 
-                <GridCard>
-                    <H3>
-                        <CodeRef>ImageDefinition</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <ImageDefinitionDescription />
-                    </SmallProse>
-                </GridCard>
-            </GappedGrid>
+                    <GridCard>
+                        <H3>
+                            <CodeRef>ImageDefinition</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <ImageDefinitionDescription />
+                        </SmallProse>
+                    </GridCard>
+                </GappedGrid>
+            </GroupWithSpace>
 
-            <GappedGrid
-                title="Secure permissions, authorship & teams"
-                className="grid-cols-2 lg:grid-cols-4"
-            >
-                <GridCard>
-                    <H3>
-                        <CodeRef>Group</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <GroupDescription />
-                    </SmallProse>
-                </GridCard>
-                <GridCard>
-                    <H3>
-                        <CodeRef>Account</CodeRef>
-                    </H3>
-                    <SmallProse>
-                        <AccountDescription />
-                    </SmallProse>
-                </GridCard>
-            </GappedGrid>
+            <GroupWithSpace as="section" vertical="minor">
+                <GappedGrid
+                    title="Secure permissions, authorship & teams"
+                    className="grid-cols-2 lg:grid-cols-4"
+                >
+                    <GridCard>
+                        <H3>
+                            <CodeRef>Group</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <GroupDescription />
+                        </SmallProse>
+                    </GridCard>
+                    <GridCard>
+                        <H3>
+                            <CodeRef>Account</CodeRef>
+                        </H3>
+                        <SmallProse>
+                            <AccountDescription />
+                        </SmallProse>
+                    </GridCard>
+                </GappedGrid>
+            </GroupWithSpace>
 
             <SectionHeader
                 title="The Jazz Toolkit"
@@ -293,32 +301,42 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <SectionHeader
-                title="Jazz Mesh"
-                slogan="Serverless sync & storage for Jazz apps"
-            />
+            <GroupWithSpace as="section" vertical="minor">
+                <SectionHeader
+                    title="Jazz Mesh"
+                    slogan="Serverless sync & storage for Jazz apps"
+                />
 
-            <Prose>
-                <MeshIntro />
-            </Prose>
+                <Prose>
+                    <MeshIntro />
+                </Prose>
 
-            <P>{'->'} <TextLink href="/mesh" target="_blank">
-                     Learn more about Jazz Mesh
-                </TextLink></P>
-
-            <H3>Get Started</H3>
-            <UL>
-                <LI>
-                    <TextLink href="/docs" target="_blank">
-                        Read the docs
+                <P>
+                    {"->"}{" "}
+                    <TextLink href="/mesh" target="_blank">
+                        Learn more about Jazz Mesh
                     </TextLink>
-                </LI>
-                <LI>
-                    <TextLink href="https://discord.gg/utDMjHYg42" target="_blank">
-                        Join our Discord
-                    </TextLink>
-                </LI>
-            </UL>
+                </P>
+            </GroupWithSpace>
+
+            <GroupWithSpace as="section" vertical="minor">
+                <H3>Get Started</H3>
+                <UL>
+                    <LI>
+                        <TextLink href="/docs" target="_blank">
+                            Read the docs
+                        </TextLink>
+                    </LI>
+                    <LI>
+                        <TextLink
+                            href="https://discord.gg/utDMjHYg42"
+                            target="_blank"
+                        >
+                            Join our Discord
+                        </TextLink>
+                    </LI>
+                </UL>
+            </GroupWithSpace>
         </>
     );
 }
