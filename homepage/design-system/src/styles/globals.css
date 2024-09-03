@@ -2,6 +2,7 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 @import "./color-theme.css";
+@import "./space-theme.css";
 @import "./base-theme.css";
 
 :root {
@@ -9,11 +10,4 @@
   font-optical-sizing: auto;
   font-weight: 300;
   font-style: normal;
-}
-
-@layer base {
-  body {
-    @apply font-sans font-normal antialiased;
-    @apply text-base;
-  }
 }

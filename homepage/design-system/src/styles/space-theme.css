@@ -1,0 +1,23 @@
+/* @import "@radix-ui/colors/black-alpha.css"; */
+/* @import "@evilmartians/harmony/css/stone.css"; */
+@import "./color-custom-stone.css";
+@import "./color-custom-stone-dark.css";
+
+@layer base {
+  :root {
+    --radius: 8px;
+    --height-nav: 80px;
+    --height-tab: 54px;
+    --space-inset: 20px;
+    --space-inset-2x: calc(var(--space-inset) * 2);
+
+    --container-text-px: 660px;
+    --container-text: calc(var(--container-text-px) - (var(--space-inset) * 2));
+    --container-hero-px: 1000px;
+    --container-hero: calc(var(--container-hero-px) - (var(--space-inset) * 2));
+
+    --inset-full: calc((100vw - (var(--space-inset) * 2)));
+    --inset-text: calc((100vw - var(--container-text)) / 2);
+    --inset-hero: calc((100vw - var(--container-hero)) / 2);
+  }
+}
