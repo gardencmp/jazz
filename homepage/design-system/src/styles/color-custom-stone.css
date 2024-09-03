@@ -1,6 +1,6 @@
 :root {
-  /* TODO! */
   --stone-50: #fefbf5;
+  --stone-75: #fcf9f2;
   --stone-100: #f7f3ee;
   --stone-200: #e7e3de;
   --stone-300: #d2cec9;
@@ -10,6 +10,7 @@
   --stone-700: #6d6965;
   --stone-800: #4e4a46;
   --stone-900: #312e2a;
+  --stone-925: #252320;
   --stone-950: #171411;
 }
 

@@ -12,6 +12,7 @@
     --color-gray-bg-active: var(--stone-300);
 
     /* borders, lines & focus rings */
+    --color-gray-border-light: var(--stone-200);
     --color-gray-border: var(--stone-300);
     --color-gray-border-hover: var(--stone-400);
     --color-gray-line: var(--stone-500);
@@ -29,4 +30,13 @@
     /* TODO: We'll populate this schema as we need… */
     --color-accent-fill: #3313f7;
   }
+}
+
+/* 
+  Dark theme variations.
+  Because `.dark` only exists when next-themes renders it, 
+  we don't wrap it in `base` b/c we don't want Tailwind to omit it.
+ */
+.dark {
+  --color-gray-solid: var(--stone-500);
 }
