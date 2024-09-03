@@ -1,0 +1,17 @@
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply bg-canvas;
+  }
+  ::selection {
+    @apply bg-fill text-canvas;
+  }
+  body {
+    @apply bg-canvas text-fill;
+
+    /* transition color everywhere: do NOT use tailwind here as the variables are inherited across every transition across the codebase */
+    transition: color 50ms ease 0s;
+  }
+}

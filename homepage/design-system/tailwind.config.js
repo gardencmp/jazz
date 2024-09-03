@@ -12,15 +12,16 @@ const config = {
   theme: {
     colors: {
       // DARK SPECTRUM
-      canvas: "var(--color-gray-base)",
+      canvas: "var(--color-gray-base)", // avoids name clash with text-base
       "background-subtle": "var(--color-gray-bg-subtle)",
       background: "var(--color-gray-bg)",
       "background-hover": "var(--color-gray-bg-hover)",
       "background-active": "var(--color-gray-bg-active)",
-      line: "var(--color-gray-line)",
+      "border-light": "var(--color-gray-border-light)",
       border: "var(--color-gray-border)",
       "border-hover": "var(--color-gray-border-hover)",
-      "solid-lite": "var(--color-gray-lite)",
+      line: "var(--color-gray-line)",
+      "solid-light": "var(--color-gray-light)",
       solid: "var(--color-gray-solid)",
       "solid-hover": "var(--color-gray-solid-hover)",
       fill: "var(--color-gray-fill-contrast)",
