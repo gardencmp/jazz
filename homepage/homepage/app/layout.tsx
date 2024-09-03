@@ -44,7 +44,7 @@ export default function RootLayout({
                     manrope.variable,
                     pragmata.variable,
                     inter.className,
-                    "flex flex-col items-center bg-stone-50 dark:bg-stone-950 overflow-x-hidden",
+                    "flex flex-col items-center overflow-x-hidden",
                 ].join(" ")}
             >
                 <SpeedInsights />
