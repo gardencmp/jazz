@@ -1,18 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import Button from "../components/button";
-import Table from "../components/table";
-import NewItemModal, {
-  PasswordItemFormValues,
-} from "../components/new-item-modal";
-import InviteModal from "../components/invite-modal";
+import Button from "./components/button";
+import Table from "./components/table";
+import NewItemModal from "./components/new-item-modal";
+import InviteModal from "./components/invite-modal";
 
-import { saveItem, deleteItem, createFolder } from "../actions";
-import { Alert, AlertDescription } from "../components/alert";
-import { Folder, FolderList, PasswordItem } from "../schema";
-import { useAccount, useCoState } from "../main";
+import { saveItem, deleteItem, createFolder, updateItem } from "./4_actions";
+import { Alert, AlertDescription } from "./components/alert";
+import { Folder, FolderList, PasswordItem } from "./1_schema";
+import { useAccount, useCoState } from "./2_main";
 import { CoMapInit, Group, ID } from "jazz-tools";
 import { useNavigate, useParams } from "react-router-dom";
+import { PasswordItemFormValues } from "./types";
 
 const VaultPage: React.FC = () => {
   const { me, logOut } = useAccount();
@@ -69,7 +68,7 @@ const VaultPage: React.FC = () => {
   const handleUpdateItem = async (updatedItem: PasswordItemFormValues) => {
     if (!editingItem) return;
     try {
-      editingItem.applyDiff(updatedItem as Partial<CoMapInit<PasswordItem>>);
+      updateItem(editingItem, updatedItem);
       setEditingItem(null);
     } catch (err: any) {
       setError("Failed to update item. Please try again.");

@@ -4,9 +4,10 @@ import {
   PasswordItem,
   PasswordList,
   PasswordManagerAccount,
-} from "./schema";
+} from "./1_schema";
 import { CoMapInit } from "jazz-tools";
 import { createInviteLink } from "jazz-react";
+import { PasswordItemFormValues } from "./types";
 
 export const saveItem = (item: CoMapInit<PasswordItem>): PasswordItem => {
   const passwordItem = PasswordItem.create(item, {
@@ -16,13 +17,12 @@ export const saveItem = (item: CoMapInit<PasswordItem>): PasswordItem => {
   return passwordItem;
 };
 
-export const updateItem = (item: PasswordItem): PasswordItem => {
-  item;
-  const passwordItem = PasswordItem.create(item, {
-    owner: item.folder!._owner,
-  });
-  passwordItem.folder?.items?.push(passwordItem);
-  return passwordItem;
+export const updateItem = (
+  item: PasswordItem,
+  values: PasswordItemFormValues
+): PasswordItem => {
+  item.applyDiff(values as Partial<CoMapInit<PasswordItem>>);
+  return item;
 };
 
 export const deleteItem = (item: PasswordItem): void => {

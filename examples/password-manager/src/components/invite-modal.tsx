@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { shareFolder } from "../actions";
-import { Folder } from "../schema";
+import { shareFolder } from "../4_actions";
+import { Folder } from "../1_schema";
 import { Group } from "jazz-tools";
 
 interface InviteModalProps {

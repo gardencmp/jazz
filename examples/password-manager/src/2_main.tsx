@@ -1,8 +1,8 @@
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import App from "./5_App.tsx";
 import "./index.css";
 import { createJazzReactContext, PasskeyAuth } from "jazz-react";
-import { PasswordManagerAccount } from "./schema.ts";
+import { PasswordManagerAccount } from "./1_schema.ts";
 
 const auth = PasskeyAuth<PasswordManagerAccount>({
   appName: "Jazz Password Manager",

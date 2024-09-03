@@ -1,19 +1,11 @@
 import React, { useEffect } from "react";
-import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import BaseModal from "./base-modal";
 import Button from "./button";
 import { Alert, AlertDescription } from "./alert";
-import { Folder } from "../schema";
+import { Folder } from "../1_schema";
 import { CoMap } from "jazz-tools";
-
-export interface PasswordItemFormValues extends FieldValues {
-  name: string;
-  username?: string;
-  password: string;
-  uri?: string;
-  deleted: boolean;
-  folder: Folder | null;
-}
+import { PasswordItemFormValues } from "../types";
 
 interface NewItemModalProps {
   isOpen: boolean;
