@@ -9,6 +9,8 @@
     @apply bg-fill text-canvas;
   }
   body {
+    @apply font-sans font-normal antialiased;
+    @apply text-base;
     @apply bg-canvas text-fill;
 
     /* transition color everywhere: do NOT use tailwind here as the variables are inherited across every transition across the codebase */

@@ -2,7 +2,7 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 @import "gcmp-design-system/src/styles/color-theme.css";
-@import "gcmp-design-system/src/styles/apply-color-theme.css";
+@import "gcmp-design-system/src/styles/base-theme.css";
 @import "../styles/code-theme.css";
 
 @layer base, shiki;

@@ -2,7 +2,7 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 @import "./color-theme.css";
-@import "./apply-color-theme.css";
+@import "./base-theme.css";
 
 :root {
   font-family: "Manrope", sans-serif;
