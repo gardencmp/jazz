@@ -10,5 +10,8 @@ const config: Config = {
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./node_modules/gcmp-design-system/src/**/*.{js,ts,jsx,tsx,mdx}",
     ],
+    theme: {
+        extend: {},
+    },
 };
 export default config;

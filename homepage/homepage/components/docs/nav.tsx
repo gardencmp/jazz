@@ -136,7 +136,7 @@ export function DocNav() {
                 </li>
             </ul>
 
-            <p className="font-medium border-t -mx-4 px-4 pt-4 border-stone-200 dark:border-stone-800">
+            <p className="px-4 pt-4 -mx-4 font-medium border-t border-stone-200 dark:border-stone-800">
                 <DocNavLink href="#faq">FAQ</DocNavLink>
             </p>
 
@@ -158,7 +158,7 @@ export async function NavPackage({
 
     return (
         <>
-            <h2 className="text-sm mt-4 flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 ">
+            <h2 className="flex items-center gap-1 px-4 pt-4 mt-4 -mx-4 text-sm border-t border-background-hover">
                 <code className="font-bold">{packageName}</code>{" "}
                 <PackageIcon size={15} strokeWidth={1.5} />
             </h2>
@@ -169,7 +169,7 @@ export async function NavPackage({
                         open={category.title !== "Other"}
                         className="[&:not([open])_summary]:after:content-['...']"
                     >
-                        <summary className="block text-xs mt-2 cursor-pointer">
+                        <summary className="block mt-2 text-xs cursor-pointer">
                             {category.title}
                         </summary>
                         <div className="text-sm -ml-0.5 max-w-full text-balance">
