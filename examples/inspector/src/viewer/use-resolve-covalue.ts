@@ -58,7 +58,6 @@ export async function resolveCoValue(
     }
 > {
   const value = await node.load(coValueId);
-  console.log("[resolveCoValue] value", value);
 
   if (value === "unavailable") {
     return {
