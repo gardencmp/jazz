@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
@@ -65,7 +64,7 @@ test("Can create account with one node, and then load it on another", async () =
     const node2 = await LocalNode.withLoadedAccount({
         accountID,
         accountSecret,
-        sessionID: newRandomSessionID(accountID),
+        sessionID: Crypto.newRandomSessionID(accountID),
         peersToLoadFrom: [node1asPeer],
         crypto: Crypto,
     });

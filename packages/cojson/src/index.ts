@@ -1,7 +1,6 @@
 import {
     CoValueCore,
     type CoValueUniqueness,
-    newRandomSessionID,
     MAX_RECOMMENDED_TX_SIZE,
     idforHeader,
 } from "./coValueCore.js";
@@ -65,7 +64,6 @@ import { FileSystem } from "./storage/FileSystem.js";
 
 /** @hidden */
 export const cojsonInternals = {
-    newRandomSessionID,
     connectedPeers,
     rawCoIDtoBytes,
     rawCoIDfromBytes,

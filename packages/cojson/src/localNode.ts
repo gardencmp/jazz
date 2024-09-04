@@ -3,7 +3,6 @@ import {
     CoValueCore,
     CoValueHeader,
     CoValueUniqueness,
-    newRandomSessionID,
 } from "./coValueCore.js";
 import {
     InviteSecret,
@@ -89,7 +88,7 @@ export class LocalNode {
         const throwawayAgent = crypto.newRandomAgentSecret();
         const setupNode = new LocalNode(
             new ControlledAgent(throwawayAgent, crypto),
-            newRandomSessionID(crypto.getAgentID(throwawayAgent)),
+            crypto.newRandomSessionID(crypto.getAgentID(throwawayAgent)),
             crypto,
         );
 
@@ -97,7 +96,7 @@ export class LocalNode {
 
         const nodeWithAccount = account.core.node.testWithDifferentAccount(
             account,
-            newRandomSessionID(account.id),
+            crypto.newRandomSessionID(account.id),
         );
 
         const accountOnNodeWithAccount =
@@ -183,7 +182,7 @@ export class LocalNode {
     }): Promise<LocalNode> {
         const loadingNode = new LocalNode(
             new ControlledAgent(accountSecret, crypto),
-            newRandomSessionID(accountID),
+            crypto.newRandomSessionID(accountID),
             crypto,
         );
 
@@ -207,7 +206,7 @@ export class LocalNode {
         // since this is all synchronous, we can just swap out nodes for the SyncManager
         const node = loadingNode.testWithDifferentAccount(
             controlledAccount,
-            sessionID || newRandomSessionID(accountID),
+            sessionID || crypto.newRandomSessionID(accountID),
         );
         node.syncManager = loadingNode.syncManager;
         node.syncManager.local = node;
@@ -430,7 +429,7 @@ export class LocalNode {
             group.core
                 .testWithDifferentAccount(
                     new ControlledAgent(inviteAgentSecret, this.crypto),
-                    newRandomSessionID(inviteAgentID),
+                    this.crypto.newRandomSessionID(inviteAgentID),
                 )
                 .getCurrentContent(),
         );
@@ -500,7 +499,7 @@ export class LocalNode {
             )
                 .testWithDifferentAccount(
                     new ControlledAgent(agentSecret, this.crypto),
-                    newRandomSessionID(accountAgentID),
+                    this.crypto.newRandomSessionID(accountAgentID),
                 )
                 .getCurrentContent(),
         );

@@ -1,5 +1,4 @@
 import { expect } from "vitest";
-import { newRandomSessionID } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import { ControlledAgent } from "../coValues/account.js";
@@ -14,7 +13,7 @@ export function randomAnonymousAccountAndSessionID(): [
 ] {
     const agentSecret = Crypto.newRandomAgentSecret();
 
-    const sessionID = newRandomSessionID(Crypto.getAgentID(agentSecret));
+    const sessionID = Crypto.newRandomSessionID(Crypto.getAgentID(agentSecret));
 
     return [new ControlledAgent(agentSecret, Crypto), sessionID];
 }

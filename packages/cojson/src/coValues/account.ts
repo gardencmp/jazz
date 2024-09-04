@@ -133,7 +133,6 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
     }
 }
 
-/** @hidden */
 export class ControlledAgent implements ControlledAccountOrAgent {
     constructor(
         public agentSecret: AgentSecret,

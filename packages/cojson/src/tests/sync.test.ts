@@ -9,7 +9,6 @@ import { RawAccountID } from "../coValues/account.js";
 import { stableStringify } from "../jsonStringify.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { expectMap } from "../coValue.js";
-import { newRandomSessionID } from "../coValueCore.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -713,7 +712,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         crashOnClose: true,
     });
 
-    const node2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+    const node2 = new LocalNode(admin, Crypto.newRandomSessionID(admin.id), Crypto);
 
     const [inRx2, inTx2] = newQueuePair();
     const [outRx2, outTx2] = newQueuePair();
@@ -864,7 +863,7 @@ test("Can sync a coValue through a server to another client", async () => {
     client1.syncManager.addPeer(serverAsPeerForClient1);
     server.syncManager.addPeer(client1AsPeer);
 
-    const client2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+    const client2 = new LocalNode(admin, Crypto.newRandomSessionID(admin.id), Crypto);
 
     const [serverAsPeerForClient2, client2AsPeer] = connectedPeers(
         "serverFor2",
@@ -916,7 +915,7 @@ test("Can sync a coValue with private transactions through a server to another c
     client1.syncManager.addPeer(serverAsPeer);
     server.syncManager.addPeer(client1AsPeer);
 
-    const client2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+    const client2 = new LocalNode(admin, client1.crypto.newRandomSessionID(admin.id), Crypto);
 
     const [serverAsOtherPeer, client2AsPeer] = await connectedPeers(
         "server",
@@ -1064,7 +1063,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
     const map = group.createMap();
     map.set("hello", "world", "trusting");
 
-    const node2 = new LocalNode(admin, newRandomSessionID(admin.id), Crypto);
+    const node2 = new LocalNode(admin, Crypto.newRandomSessionID(admin.id), Crypto);
 
     const [node1asPeer, node2asPeer] = await connectedPeers("peer1", "peer2", {
         peer1role: "server",

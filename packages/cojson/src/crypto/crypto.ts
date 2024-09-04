@@ -2,6 +2,7 @@ import { JsonValue } from "../jsonValue.js";
 import { base58 } from "@scure/base";
 import { AgentID, RawCoID, TransactionID } from "../ids.js";
 import { Stringified, parseJSON, stableStringify } from "../jsonStringify.js";
+import { RawAccountID, SessionID } from "../index.js";
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;
@@ -289,6 +290,10 @@ export abstract class CryptoProvider<Blake3State = any> {
                 context: textEncoder.encode("sign"),
             }),
         )}`;
+    }
+
+    newRandomSessionID(accountID: RawAccountID | AgentID): SessionID {
+        return `${accountID}_session_z${base58.encode(this.randomBytes(8))}`;
     }
 }
 

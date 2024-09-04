@@ -10,7 +10,6 @@ import {
     SignerID,
 } from "./crypto/crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
-import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
     determineValidTransactions,
@@ -19,7 +18,7 @@ import {
 import { RawGroup } from "./coValues/group.js";
 import { LocalNode, ResolveAccountAgentError } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
-import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
+import { RawCoID, SessionID, TransactionID } from "./ids.js";
 import { RawAccountID, ControlledAccountOrAgent } from "./coValues/account.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { coreToCoValue } from "./coreToCoValue.js";
@@ -51,13 +50,6 @@ export function idforHeader(
 ): RawCoID {
     const hash = crypto.shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
-}
-
-export function newRandomSessionID(accountID: RawAccountID | AgentID): SessionID {
-    return `${accountID}_session_z${base58.encode(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).crypto.getRandomValues(new Uint8Array(8)),
-    )}`;
 }
 
 type SessionLog = {

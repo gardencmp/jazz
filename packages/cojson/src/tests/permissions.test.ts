@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { newRandomSessionID } from "../coValueCore.js";
 import { expectMap } from "../coValue.js";
 import {
     newGroup,
@@ -27,7 +26,7 @@ test("Added admin can add a third admin to a group", () => {
         groupCore
             .testWithDifferentAccount(
                 otherAdmin,
-                newRandomSessionID(otherAdmin.id),
+                Crypto.newRandomSessionID(otherAdmin.id),
             )
             .getCurrentContent(),
     );
@@ -47,7 +46,7 @@ test("Added adming can add a third admin to a group (high level)", () => {
         group.core
             .testWithDifferentAccount(
                 otherAdmin,
-                newRandomSessionID(otherAdmin.id),
+                Crypto.newRandomSessionID(otherAdmin.id),
             )
             .getCurrentContent(),
     );
@@ -73,7 +72,7 @@ test("Admins can't demote other admins in a group", () => {
         groupCore
             .testWithDifferentAccount(
                 otherAdmin,
-                newRandomSessionID(otherAdmin.id),
+                Crypto.newRandomSessionID(otherAdmin.id),
             )
             .getCurrentContent(),
     );
@@ -89,7 +88,7 @@ test("Admins can't demote other admins in a group (high level)", () => {
         group.core
             .testWithDifferentAccount(
                 otherAdmin,
-                newRandomSessionID(otherAdmin.id),
+                Crypto.newRandomSessionID(otherAdmin.id),
             )
             .getCurrentContent(),
     );
@@ -114,7 +113,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
     const groupAsWriter = expectGroup(
         groupCore
-            .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
+            .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
             .getCurrentContent(),
     );
 
@@ -142,7 +141,7 @@ test("Admins an add writers to a group, who can't add admins, writers, or reader
 
     const groupAsWriter = expectGroup(
         group.core
-            .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
+            .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
             .getCurrentContent(),
     );
 
@@ -174,7 +173,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 
     const groupAsReader = expectGroup(
         groupCore
-            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
             .getCurrentContent(),
     );
 
@@ -203,7 +202,7 @@ test("Admins can add readers to a group, who can't add admins, writers, or reade
 
     const groupAsReader = expectGroup(
         group.core
-            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
             .getCurrentContent(),
     );
 
@@ -267,7 +266,7 @@ test("Writers can write to an object that is owned by their group", () => {
 
     const childObjectAsWriter = childObject.testWithDifferentAccount(
         writer,
-        newRandomSessionID(writer.id),
+        Crypto.newRandomSessionID(writer.id),
     );
 
     const childContentAsWriter = expectMap(
@@ -289,7 +288,7 @@ test("Writers can write to an object that is owned by their group (high level)",
 
     const childObjectAsWriter = expectMap(
         childObject.core
-            .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
+            .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
             .getCurrentContent(),
     );
 
@@ -315,7 +314,7 @@ test("Readers can not write to an object that is owned by their group", () => {
 
     const childObjectAsReader = childObject.testWithDifferentAccount(
         reader,
-        newRandomSessionID(reader.id),
+        Crypto.newRandomSessionID(reader.id),
     );
 
     const childContentAsReader = expectMap(
@@ -337,7 +336,7 @@ test("Readers can not write to an object that is owned by their group (high leve
 
     const childObjectAsReader = expectMap(
         childObject.core
-            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
             .getCurrentContent(),
     );
 
@@ -442,7 +441,7 @@ test("Admins can set group read key and then writers can use it to create and re
 
     const childObjectAsWriter = childObject.testWithDifferentAccount(
         writer,
-        newRandomSessionID(writer.id),
+        Crypto.newRandomSessionID(writer.id),
     );
 
     expect(childObject.getCurrentReadKey().secret).toEqual(readKey);
@@ -466,7 +465,7 @@ test("Admins can set group read key and then writers can use it to create and re
 
     const childObjectAsWriter = expectMap(
         childObject.core
-            .testWithDifferentAccount(writer, newRandomSessionID(writer.id))
+            .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
             .getCurrentContent(),
     );
 
@@ -526,7 +525,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const childObjectAsReader = childObject.testWithDifferentAccount(
         reader,
-        newRandomSessionID(reader.id),
+        Crypto.newRandomSessionID(reader.id),
     );
 
     expect(childObjectAsReader.getCurrentReadKey().secret).toEqual(readKey);
@@ -552,7 +551,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const childContentAsReader = expectMap(
         childObject.core
-            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
             .getCurrentContent(),
     );
 
@@ -613,7 +612,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const childObjectAsReader1 = childObject.testWithDifferentAccount(
         reader1,
-        newRandomSessionID(reader1.id),
+        Crypto.newRandomSessionID(reader1.id),
     );
 
     expect(childObjectAsReader1.getCurrentReadKey().secret).toEqual(readKey);
@@ -638,7 +637,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const childObjectAsReader2 = childObject.testWithDifferentAccount(
         reader2,
-        newRandomSessionID(reader2.id),
+        Crypto.newRandomSessionID(reader2.id),
     );
 
     expect(childObjectAsReader2.getCurrentReadKey().secret).toEqual(readKey);
@@ -666,7 +665,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const childContentAsReader1 = expectMap(
         childObject.core
-            .testWithDifferentAccount(reader1, newRandomSessionID(reader1.id))
+            .testWithDifferentAccount(reader1, Crypto.newRandomSessionID(reader1.id))
             .getCurrentContent(),
     );
 
@@ -676,7 +675,7 @@ test("Admins can set group read key and then use it to create private transactio
 
     const childContentAsReader2 = expectMap(
         childObject.core
-            .testWithDifferentAccount(reader2, newRandomSessionID(reader2.id))
+            .testWithDifferentAccount(reader2, Crypto.newRandomSessionID(reader2.id))
             .getCurrentContent(),
     );
 
@@ -845,7 +844,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     const childObjectAsReader = childObject.testWithDifferentAccount(
         reader,
-        newRandomSessionID(reader.id),
+        Crypto.newRandomSessionID(reader.id),
     );
 
     expect(childObjectAsReader.getCurrentReadKey().secret).toEqual(readKey2);
@@ -883,7 +882,7 @@ test("Admins can set group read key, make a private transaction in an owned obje
 
     const childContentAsReader = expectMap(
         childObject.core
-            .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+            .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
             .getCurrentContent(),
     );
 
@@ -959,7 +958,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     let childObjectAsReader = childObject.testWithDifferentAccount(
         reader,
-        newRandomSessionID(reader.id),
+        Crypto.newRandomSessionID(reader.id),
     );
 
     expect(
@@ -968,7 +967,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     let childObjectAsReader2 = childObject.testWithDifferentAccount(
         reader,
-        newRandomSessionID(reader.id),
+        Crypto.newRandomSessionID(reader.id),
     );
 
     expect(
@@ -1024,11 +1023,11 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     // TODO: make sure these instances of coValues sync between each other so this isn't necessary?
     childObjectAsReader = childObject.testWithDifferentAccount(
         reader,
-        newRandomSessionID(reader.id),
+        Crypto.newRandomSessionID(reader.id),
     );
     childObjectAsReader2 = childObject.testWithDifferentAccount(
         reader2,
-        newRandomSessionID(reader2.id),
+        Crypto.newRandomSessionID(reader2.id),
     );
 
     expect(
@@ -1072,7 +1071,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
 
     const childContentAsReader2 = expectMap(
         childObject.core
-            .testWithDifferentAccount(reader2, newRandomSessionID(reader2.id))
+            .testWithDifferentAccount(reader2, Crypto.newRandomSessionID(reader2.id))
             .getCurrentContent(),
     );
 
@@ -1083,7 +1082,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
     expect(
         expectMap(
             childObject.core
-                .testWithDifferentAccount(reader, newRandomSessionID(reader.id))
+                .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
                 .getCurrentContent(),
         ).get("foo3"),
     ).toBeUndefined();
@@ -1151,7 +1150,7 @@ test("Admins can create an adminInvite, which can add an admin", () => {
         groupCore
             .testWithDifferentAccount(
                 new ControlledAgent(inviteSecret, Crypto),
-                newRandomSessionID(inviteID),
+                Crypto.newRandomSessionID(inviteID),
             )
             .getCurrentContent(),
     );
@@ -1198,7 +1197,7 @@ test("Admins can create an adminInvite, which can add an admin (high-level)", as
 
     const nodeAsInvitedAdmin = node.testWithDifferentAccount(
         new ControlledAgent(invitedAdminSecret, Crypto),
-        newRandomSessionID(invitedAdminID),
+        Crypto.newRandomSessionID(invitedAdminID),
     );
 
     await nodeAsInvitedAdmin.acceptInvite(group.id, inviteSecret);
@@ -1261,7 +1260,7 @@ test("Admins can create a writerInvite, which can add a writer", () => {
         groupCore
             .testWithDifferentAccount(
                 new ControlledAgent(inviteSecret, Crypto),
-                newRandomSessionID(inviteID),
+                Crypto.newRandomSessionID(inviteID),
             )
             .getCurrentContent(),
     );
@@ -1308,7 +1307,7 @@ test("Admins can create a writerInvite, which can add a writer (high-level)", as
 
     const nodeAsInvitedWriter = node.testWithDifferentAccount(
         new ControlledAgent(invitedWriterSecret, Crypto),
-        newRandomSessionID(invitedWriterID),
+        Crypto.newRandomSessionID(invitedWriterID),
     );
 
     await nodeAsInvitedWriter.acceptInvite(group.id, inviteSecret);
@@ -1364,7 +1363,7 @@ test("Admins can create a readerInvite, which can add a reader", () => {
         groupCore
             .testWithDifferentAccount(
                 new ControlledAgent(inviteSecret, Crypto),
-                newRandomSessionID(inviteID),
+                Crypto.newRandomSessionID(inviteID),
             )
             .getCurrentContent(),
     );
@@ -1401,7 +1400,7 @@ test("Admins can create a readerInvite, which can add a reader (high-level)", as
 
     const nodeAsInvitedReader = node.testWithDifferentAccount(
         new ControlledAgent(invitedReaderSecret, Crypto),
-        newRandomSessionID(invitedReaderID),
+        Crypto.newRandomSessionID(invitedReaderID),
     );
 
     await nodeAsInvitedReader.acceptInvite(group.id, inviteSecret);
@@ -1457,7 +1456,7 @@ test("WriterInvites can not invite admins", () => {
         groupCore
             .testWithDifferentAccount(
                 new ControlledAgent(inviteSecret, Crypto),
-                newRandomSessionID(inviteID),
+                Crypto.newRandomSessionID(inviteID),
             )
             .getCurrentContent(),
     );
@@ -1511,7 +1510,7 @@ test("ReaderInvites can not invite admins", () => {
         groupCore
             .testWithDifferentAccount(
                 new ControlledAgent(inviteSecret, Crypto),
-                newRandomSessionID(inviteID),
+                Crypto.newRandomSessionID(inviteID),
             )
             .getCurrentContent(),
     );
@@ -1565,7 +1564,7 @@ test("ReaderInvites can not invite writers", () => {
         groupCore
             .testWithDifferentAccount(
                 new ControlledAgent(inviteSecret, Crypto),
-                newRandomSessionID(inviteID),
+                Crypto.newRandomSessionID(inviteID),
             )
             .getCurrentContent(),
     );
@@ -1610,7 +1609,7 @@ test("Can give read permission to 'everyone'", () => {
         childObject
             .testWithDifferentAccount(
                 newAccount,
-                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
+                Crypto.newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
@@ -1639,7 +1638,7 @@ test("Can give read permissions to 'everyone' (high-level)", async () => {
         childObject.core
             .testWithDifferentAccount(
                 new ControlledAgent(Crypto.newRandomAgentSecret(), Crypto),
-                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
+                Crypto.newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
@@ -1680,7 +1679,7 @@ test("Can give write permission to 'everyone'", async () => {
         childObject
             .testWithDifferentAccount(
                 newAccount,
-                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
+                Crypto.newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
@@ -1715,7 +1714,7 @@ test("Can give write permissions to 'everyone' (high-level)", async () => {
         childObject.core
             .testWithDifferentAccount(
                 newAccount,
-                newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
+                Crypto.newRandomSessionID(newAccount.currentAgentID()._unsafeUnwrap()),
             )
             .getCurrentContent(),
     );
