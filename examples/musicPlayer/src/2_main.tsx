@@ -14,6 +14,8 @@ import "./index.css";
 import { MusicaAccount } from "@/1_schema";
 import { createJazzReactContext, DemoAuth } from "jazz-react";
 
+const syncServer = new URLSearchParams(location.search).get("sync") as `ws://${string}` | `wss://${string}` | undefined;
+
 /**
  * Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
@@ -26,7 +28,7 @@ import { createJazzReactContext, DemoAuth } from "jazz-react";
  */
 const Jazz = createJazzReactContext({
     auth: DemoAuth({ appName: "Musica Jazz", accountSchema: MusicaAccount }),
-    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+    peer: syncServer ?? "wss://mesh.jazz.tools/?key=you@example.com",
 });
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;

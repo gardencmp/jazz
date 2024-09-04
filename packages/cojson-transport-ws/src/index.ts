@@ -40,6 +40,7 @@ const g: typeof globalThis & {
     }[];
 } = globalThis;
 
+
 export function createWebSocketPeer({
     id,
     websocket,
@@ -102,22 +103,43 @@ export function createWebSocketPeer({
         }
     });
 
+    let waitForBufferPromise:  Promise<void> | null = null;
+
+    async function waitForLessBuffer() {
+        if (websocket.readyState !== 1) return;
+
+        while (websocket.bufferedAmount > 1_000_000) {
+            await new Promise<void>((resolve) =>
+                setTimeout(resolve, 10),
+            );
+
+            if (websocket.readyState !== 1) {
+                console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
+                return;
+            }
+        }
+    }
+
     return {
         id,
         incoming,
         outgoing: {
             async push(msg) {
-                await websocketOpen;
-                if (websocket.readyState === 1) {
-                    while (websocket.bufferedAmount > 1_000_000) {
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, 100),
-                        );
-                        if (websocket.readyState !== 1) {
-                            console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
-                            return;
-                        }
+                if (websocket.readyState !== 1) {
+                  await websocketOpen;
+                }
+
+                while (websocket.bufferedAmount >= 1_000_000) {
+                    if (waitForBufferPromise) {
+                        await waitForBufferPromise;
+                    } else {
+                        waitForBufferPromise = waitForLessBuffer();
+                        await waitForBufferPromise;
+                        waitForBufferPromise = null;
                     }
+                }
+
+                if (websocket.readyState === 1) {
                     websocket.send(JSON.stringify(msg));
                 }
             },
