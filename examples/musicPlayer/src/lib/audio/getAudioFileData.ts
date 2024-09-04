@@ -5,12 +5,12 @@ export async function getAudioFileData(file: Blob, samples = 200) {
     const decodedAudio = await ctx.decodeAudioData(buffer);
 
     return {
-        waveform: transformDecodedAudioToWaweformData(decodedAudio, samples),
+        waveform: transformDecodedAudioToWaveformData(decodedAudio, samples),
         duration: decodedAudio.duration,
     };
 }
 
-const transformDecodedAudioToWaweformData = (
+const transformDecodedAudioToWaveformData = (
     audioBuffer: AudioBuffer,
     samples: number,
 ) => {
