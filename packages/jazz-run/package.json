@@ -20,6 +20,7 @@
         "@effect/typeclass": "^0.25.5",
         "cojson": "workspace:*",
         "cojson-transport-ws": "workspace:*",
+        "cojson-storage-sqlite": "workspace:*",
         "jazz-tools": "workspace:*",
         "ws": "^8.14.2"
     },

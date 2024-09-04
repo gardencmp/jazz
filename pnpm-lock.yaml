@@ -734,6 +734,9 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../cojson
+      cojson-storage-sqlite:
+        specifier: workspace:*
+        version: link:../cojson-storage-sqlite
       cojson-transport-ws:
         specifier: workspace:*
         version: link:../cojson-transport-ws
