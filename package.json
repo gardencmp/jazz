@@ -23,6 +23,8 @@
     "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
+    "monorepo-linting": "npx sherif@1.0.0",
+    "monorepo-linting:fix": "npx sherif@1.0.0 --fix",
     "release": "pnpm changeset publish && git push --follow-tags"
   },
   "lint-staged": {},

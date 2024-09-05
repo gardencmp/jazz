@@ -230,8 +230,6 @@ importers:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@22.5.1)
 
-  examples/musicPlayer: {}
-
   examples/password-manager:
     dependencies:
       jazz-react:

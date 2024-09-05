@@ -16,7 +16,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.node-version'
-          cache: 'pnpm'
 
       - name: Run sherif
         run: npx sherif@1.0.0
