@@ -567,6 +567,9 @@ importers:
       '@vitest/browser':
         specifier: ^0.34.1
         version: 0.34.6(esbuild@0.19.10)(rollup@4.9.1)(vitest@1.5.3)
+      fake-indexeddb:
+        specifier: ^6.0.0
+        version: 6.0.0
       vitest:
         specifier: 1.5.3
         version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)
@@ -2770,6 +2773,10 @@ packages:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
     hasBin: true
+
+  fake-indexeddb@6.0.0:
+    resolution: {integrity: sha512-YEboHE5VfopUclOck7LncgIqskAqnv4q0EWbYCaxKKjAvO93c+TJIaBuGy8CBFdbg9nKdpN3AuPRwVBJ4k7NrQ==}
+    engines: {node: '>=18'}
 
   fast-check@3.17.2:
     resolution: {integrity: sha512-+3DPTxtxABLgmmVpYxrash3DHoq0cMa1jjLYNp3qqokKKhqVEaS4lbnaDKqWU5Dd6C2pEudPPBAEEQ9nUou9OQ==}
@@ -7100,6 +7107,8 @@ snapshots:
       '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
+
+  fake-indexeddb@6.0.0: {}
 
   fast-check@3.17.2:
     dependencies:

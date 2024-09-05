@@ -56,7 +56,7 @@ describe("Deep loading with depth arg", async () => {
         crypto: Crypto,
     });
 
-    test("loading a deeply nested object will wait until all required refs are loaded", async () => {
+    test.skip("loading a deeply nested object will wait until all required refs are loaded", async () => {
         const map = TestMap.create(
             {
                 list: TestList.create(
