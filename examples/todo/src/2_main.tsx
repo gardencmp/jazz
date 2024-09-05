@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactApp, PasskeyAuth, usePasskeyAuth } from "jazz-react";
+import { createJazzReactApp, PasskeyAuthBasicUI, usePasskeyAuth } from "jazz-react";
 
 import {
     Button,
@@ -36,17 +36,31 @@ const Jazz = createJazzReactApp<TodoAccount>({
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
+    const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
+
+    return (
+        <Jazz.Provider
+            auth={passkeyAuth}
+            peer="wss://mesh.jazz.tools/?key=todo-example-jazz@gcmp.io"
+        >
+            {passKeyState.state === "signedIn" ? (
+                children
+            ) : (
+                <PasskeyAuthBasicUI state={passKeyState} />
+            )}
+        </Jazz.Provider>
+    );
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     // <React.StrictMode>
     <ThemeProvider>
         <TitleAndLogo name={appName} />
         <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-            <PasskeyAuth appName={appName}>
-                <Jazz.Provider peer="wss://mesh.jazz.tools/?key=todo-example-jazz@gcmp.io">
-                    <App />
-                </Jazz.Provider>
-                <PasskeyAuth.BasicUI />
-            </PasskeyAuth>
+            <JazzAndAuth>
+                <App />
+            </JazzAndAuth>
         </div>
     </ThemeProvider>,
     // </React.StrictMode>
@@ -61,7 +75,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 export default function App() {
     // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
-    const { state: passKeyState } = usePasskeyAuth();
 
     const router = createHashRouter([
         {
@@ -90,7 +103,7 @@ export default function App() {
         <>
             <RouterProvider router={router} />
 
-            {passKeyState.state === "signedIn" && (
+            {/* {passKeyState.state === "signedIn" && (
                 <Button
                     onClick={() =>
                         router.navigate("/").then(passKeyState.logOut)
@@ -99,7 +112,7 @@ export default function App() {
                 >
                     Log Out
                 </Button>
-            )}
+            )} */}
         </>
     );
 }

@@ -1,5 +1,14 @@
 # jazz-browser-media-images
 
+## 0.7.33-guest-auth.3
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-react@0.7.35-guest-auth.3
+    -   jazz-tools@0.7.35-guest-auth.3
+    -   jazz-browser-auth-clerk@0.7.33-guest-auth.2
+
 ## 0.7.33-unique.2
 
 ### Patch Changes

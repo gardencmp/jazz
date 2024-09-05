@@ -3,20 +3,20 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactApp, PasskeyAuth, usePasskeyAuth } from "jazz-react";
-
 import {
-    Button,
-    ThemeProvider,
-    TitleAndLogo,
-} from "./basicComponents/index.ts";
+    createJazzReactApp,
+    PasskeyAuthBasicUI,
+    usePasskeyAuth,
+} from "jazz-react";
+
+import { ThemeProvider, TitleAndLogo } from "./basicComponents/index.ts";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
 import { PetAccount, PetPost } from "./1_schema.ts";
 
-/** Walkthrough: The top-level provider `<WithJazz/>`
+/** Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
- *  This shows how to use the top-level provider `<WithJazz/>`,
+ *  This shows how to use the top-level provider `<Jazz.Provider/>`,
  *  which provides the rest of the app with a `LocalNode` (used through `useJazz` later),
  *  based on `LocalAuth` that uses PassKeys (aka WebAuthn) to store a user's account secret
  *  - no backend needed. */
@@ -27,17 +27,31 @@ const Jazz = createJazzReactApp({ AccountSchema: PetAccount });
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
+    const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
+
+    return (
+        <Jazz.Provider
+            auth={passkeyAuth}
+            peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
+        >
+            {passKeyState.state === "signedIn" ? (
+                children
+            ) : (
+                <PasskeyAuthBasicUI state={passKeyState} />
+            )}
+        </Jazz.Provider>
+    );
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <PasskeyAuth appName={appName}>
-                    <Jazz.Provider peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io">
-                        <App />
-                    </Jazz.Provider>
-                    <PasskeyAuth.BasicUI />
-                </PasskeyAuth>
+                <JazzAndAuth>
+                    <App />
+                </JazzAndAuth>
             </div>
         </ThemeProvider>
     </React.StrictMode>,
@@ -51,8 +65,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 
 export default function App() {
-    const {state: passKeyState} = usePasskeyAuth();
-
     const router = createHashRouter([
         {
             path: "/",
@@ -81,7 +93,7 @@ export default function App() {
         <>
             <RouterProvider router={router} />
 
-            {passKeyState.state === "signedIn" && (
+            {/* {passKeyState.state === "signedIn" && (
                 <Button
                     onClick={() =>
                         router.navigate("/").then(passKeyState.logOut)
@@ -90,7 +102,7 @@ export default function App() {
                 >
                     Log Out
                 </Button>
-            )}
+            )} */}
         </>
     );
 }

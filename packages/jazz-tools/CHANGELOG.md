@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.35-guest-auth.3
+
+### Patch Changes
+
+-   Implement guest auth without account
+
 ## 0.7.35-unique.2
 
 ### Patch Changes

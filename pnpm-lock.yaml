@@ -671,9 +671,6 @@ importers:
 
   packages/jazz-browser-auth-clerk:
     dependencies:
-      '@clerk/types':
-        specifier: ^3.65.3
-        version: 3.65.3
       cojson:
         specifier: workspace:*
         version: link:../cojson
@@ -765,9 +762,6 @@ importers:
 
   packages/jazz-react-auth-clerk:
     dependencies:
-      '@clerk/clerk-react':
-        specifier: ^4.0.0
-        version: 4.32.3(react@18.2.0)
       cojson:
         specifier: workspace:*
         version: link:../cojson
@@ -928,26 +922,12 @@ packages:
   '@changesets/write@0.3.1':
     resolution: {integrity: sha512-SyGtMXzH3qFqlHKcvFY2eX+6b0NGiFcNav8AFsYwy5l8hejOeoeTDemu5Yjmke2V5jpzY+pBvM0vCCQ3gdZpfw==}
 
-  '@clerk/clerk-react@4.32.3':
-    resolution: {integrity: sha512-qLKazE3ERUcQwzIaRzLH7BszConlTRsDZuW5hDrFA4T3KNv5ReaFP7W2nW+dvfCz1UC6RC3E4622k1fmfXC6+A==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      react: '>=16'
-
   '@clerk/clerk-react@5.4.1':
     resolution: {integrity: sha512-r0P5kEFWh3Cyl+PrNWM7oW/+0aPaB0Zp80MzQLTvpSSGgemYoDHgybmc2Twc4rS0GOJ455y5uSB1smTh0G+ztw==}
     engines: {node: '>=18.17.0'}
     peerDependencies:
       react: '>=18 || >=19.0.0-beta'
       react-dom: '>=18 || >=19.0.0-beta'
-
-  '@clerk/shared@1.4.1':
-    resolution: {integrity: sha512-3rlZy0Hadnb1dw6x+4MGEC7dpZLlIVY3mZTwWRRS4CILWowVAccwfW84paN2XNlM12lJgMc+w66WNdw19XFtpg==}
-    peerDependencies:
-      react: '>=16'
-    peerDependenciesMeta:
-      react:
-        optional: true
 
   '@clerk/shared@2.5.1':
     resolution: {integrity: sha512-RslzZvjolG8ToZlegV8XPEkINQ4XM23lO2xS6ZtJEeGzRzchkpEBUOYywjG6aGtJDByWBY2OxyrPaa5rwx1XEg==}
@@ -960,10 +940,6 @@ packages:
         optional: true
       react-dom:
         optional: true
-
-  '@clerk/types@3.65.3':
-    resolution: {integrity: sha512-q2BvCBK3H9SxLyoSsybAFTcbW6s50JPY8JACFqzenBbByOyolgIXPJNE0MStUUnNc7lRrPDkoLuZZf71X7JqIw==}
-    engines: {node: '>=14'}
 
   '@clerk/types@4.13.1':
     resolution: {integrity: sha512-AfFTA1Du0pog62CSl23Y8NNDN+iHwXdUQAp/sQ/LbE+/wYBOMSaV5d+cS5F4HX+/uzXgKsc3BpCNI/Th3CLNHg==}
@@ -3324,10 +3300,6 @@ packages:
   js-cookie@2.2.1:
     resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
 
-  js-cookie@3.0.1:
-    resolution: {integrity: sha512-+0rgsUXZu4ncpPxRL+lNEptWMOWl9etvPHc/koSRp6MPwpRYAhmk0dUG00J4bxVV3r9uUzfo24wW0knS07SKSw==}
-    engines: {node: '>=12'}
-
   js-cookie@3.0.5:
     resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
     engines: {node: '>=14'}
@@ -5171,13 +5143,6 @@ snapshots:
       human-id: 1.0.2
       prettier: 2.8.8
 
-  '@clerk/clerk-react@4.32.3(react@18.2.0)':
-    dependencies:
-      '@clerk/shared': 1.4.1(react@18.2.0)
-      '@clerk/types': 3.65.3
-      react: 18.2.0
-      tslib: 2.4.1
-
   '@clerk/clerk-react@5.4.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@clerk/shared': 2.5.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -5185,14 +5150,6 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       tslib: 2.4.1
-
-  '@clerk/shared@1.4.1(react@18.2.0)':
-    dependencies:
-      glob-to-regexp: 0.4.1
-      js-cookie: 3.0.1
-      swr: 2.2.0(react@18.2.0)
-    optionalDependencies:
-      react: 18.2.0
 
   '@clerk/shared@2.5.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
@@ -5204,10 +5161,6 @@ snapshots:
     optionalDependencies:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-
-  '@clerk/types@3.65.3':
-    dependencies:
-      csstype: 3.1.1
 
   '@clerk/types@4.13.1':
     dependencies:
@@ -7726,8 +7679,6 @@ snapshots:
   jiti@1.21.0: {}
 
   js-cookie@2.2.1: {}
-
-  js-cookie@3.0.1: {}
 
   js-cookie@3.0.5: {}
 

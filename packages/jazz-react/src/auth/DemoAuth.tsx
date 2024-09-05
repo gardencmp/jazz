@@ -1,10 +1,9 @@
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BrowserDemoAuth } from "jazz-browser";
 import { Account, ID } from "jazz-tools";
 import { AgentSecret } from "cojson";
-import { AuthMethodCtx } from "./auth.js";
 
-type DemoAuthState =
+type DemoAuthState = (
     | {
           state: "uninitialized";
       }
@@ -20,28 +19,23 @@ type DemoAuthState =
     | {
           state: "signedIn";
           logOut: () => void;
-      };
-
-const DemoAuthStateCtx = createContext<{
-    state: DemoAuthState;
+      }
+) & {
     errors: string[];
-}>({
-    state: { state: "uninitialized" },
-    errors: [],
-});
+};
 
 /** @category Auth Providers */
-export function DemoAuth({
-    children,
+export function useDemoAuth({
     seedAccounts,
 }: {
-    children: ReactNode;
     seedAccounts?: {
         [name: string]: { accountID: ID<Account>; accountSecret: AgentSecret };
     };
-}) {
-    const [errors, setErrors] = useState<string[]>([]);
-    const [state, setState] = useState<DemoAuthState>({ state: "loading" });
+} = {}) {
+    const [state, setState] = useState<DemoAuthState>({
+        state: "loading",
+        errors: [],
+    });
 
     const authMethod = useMemo(() => {
         return new BrowserDemoAuth(
@@ -52,30 +46,33 @@ export function DemoAuth({
                         signUp,
                         existingUsers,
                         logInAs,
+                        errors: [],
                     });
                 },
                 onSignedIn: ({ logOut }) => {
-                    setState({ state: "signedIn", logOut });
+                    setState({ state: "signedIn", logOut, errors: [] });
                 },
                 onError: (error) => {
-                    setErrors((errors) => [...errors, error.toString()]);
+                    setState((current) => ({
+                        ...current,
+                        errors: [...current.errors, error.toString()],
+                    }));
                 },
             },
             seedAccounts,
         );
     }, [seedAccounts]);
 
-    return (
-        <DemoAuthStateCtx.Provider value={{ state, errors }}>
-            <AuthMethodCtx.Provider value={authMethod}>
-                {children}
-            </AuthMethodCtx.Provider>
-        </DemoAuthStateCtx.Provider>
-    );
+    return [authMethod, state] as const;
 }
 
-const DemoAuthBasicUI = ({ appName }: { appName: string }) => {
-    const { state, errors } = useContext(DemoAuthStateCtx);
+export const DemoAuthBasicUI = ({
+    appName,
+    state,
+}: {
+    appName: string;
+    state: DemoAuthState;
+}) => {
     const [username, setUsername] = useState<string>("");
     const darkMode =
         typeof window !== "undefined"
@@ -112,7 +109,7 @@ const DemoAuthBasicUI = ({ appName }: { appName: string }) => {
                     >
                         {appName}
                     </h1>
-                    {errors.map((error) => (
+                    {state.errors.map((error) => (
                         <div key={error} style={{ color: "red" }}>
                             {error}
                         </div>
@@ -186,9 +183,3 @@ const DemoAuthBasicUI = ({ appName }: { appName: string }) => {
         </div>
     );
 };
-
-/** @category Auth Providers */
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace DemoAuth {
-    export const BasicUI = DemoAuthBasicUI;
-}

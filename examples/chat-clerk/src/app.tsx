@@ -1,12 +1,17 @@
 import { CoMap, CoList, co, Group, ID } from "jazz-tools";
 import { createJazzReactApp } from "jazz-react";
-import { JazzClerkAuth } from "jazz-react-auth-clerk";
+import { useJazzClerkAuth } from "jazz-react-auth-clerk";
 import { createRoot } from "react-dom/client";
 import { useIframeHashRouter } from "hash-slash";
 import { ChatScreen } from "./chatScreen.tsx";
 import { StrictMode } from "react";
 
-import { ClerkProvider, SignedIn, useAuth } from "@clerk/clerk-react";
+import {
+    ClerkProvider,
+    SignInButton,
+    useAuth,
+    useClerk,
+} from "@clerk/clerk-react";
 
 export class Message extends CoMap {
     text = co.string;
@@ -16,6 +21,29 @@ export class Chat extends CoList.Of(co.ref(Message)) {}
 
 const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
+
+function AuthAndJazz({ children }: { children: React.ReactNode }) {
+    const clerk = useClerk();
+    const [auth, state] = useJazzClerkAuth(clerk);
+
+    return (
+        <>
+            {state.errors.map((error) => (
+                <div key={error}>{error}</div>
+            ))}
+            {auth ? (
+                <Jazz.Provider
+                    auth={auth}
+                    peer="wss://mesh.jazz.tools/?key=chat-example-jazz-clerk@gcmp.io"
+                >
+                    {children}
+                </Jazz.Provider>
+            ) : (
+                <SignInButton />
+            )}
+        </>
+    );
+}
 
 function App() {
     const { signOut } = useAuth();
@@ -49,14 +77,9 @@ createRoot(document.getElementById("root")!).render(
             publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
             afterSignOutUrl="/"
         >
-            <JazzClerkAuth>
-                <SignedIn>
-                    <Jazz.Provider peer="wss://mesh.jazz.tools/?key=chat-example-jazz-clerk@gcmp.io">
-                        <App />
-                    </Jazz.Provider>
-                </SignedIn>
-                <JazzClerkAuth.BasicUI appName="Chat" />
-            </JazzClerkAuth>
+            <AuthAndJazz>
+                <App />
+            </AuthAndJazz>
         </ClerkProvider>
     </StrictMode>
 );

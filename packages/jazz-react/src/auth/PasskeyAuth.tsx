@@ -1,8 +1,7 @@
-import { useMemo, useState, ReactNode, createContext, useContext } from "react";
+import { useMemo, useState } from "react";
 import { BrowserPasskeyAuth } from "jazz-browser";
-import { AuthMethodCtx } from "./auth.js";
 
-export type PasskeyAuthState =
+export type PasskeyAuthState = (
     | { state: "uninitialized" }
     | { state: "loading" }
     | {
@@ -10,29 +9,22 @@ export type PasskeyAuthState =
           logIn: () => void;
           signUp: (username: string) => void;
       }
-    | { state: "signedIn"; logOut: () => void };
-
-const PasskeyAuthStateCtx = createContext<{
-    state: PasskeyAuthState;
+    | { state: "signedIn"; logOut: () => void }
+) & {
     errors: string[];
-}>({
-    state: { state: "uninitialized" },
-    errors: [],
-});
+};
 
 /** @category Auth Providers */
-export function PasskeyAuth({
-    children,
+export function usePasskeyAuth({
     appName,
     appHostname,
 }: {
-    children: ReactNode;
     appName: string;
     appHostname?: string;
 }) {
-    const [errors, setErrors] = useState<string[]>([]);
     const [state, setState] = useState<PasskeyAuthState>({
         state: "loading",
+        errors: [],
     });
 
     const authMethod = useMemo(() => {
@@ -43,6 +35,7 @@ export function PasskeyAuth({
                         state: "ready",
                         logIn: next.logIn,
                         signUp: next.signUp,
+                        errors: [],
                     });
                 },
                 onSignedIn(next) {
@@ -50,12 +43,16 @@ export function PasskeyAuth({
                         state: "signedIn",
                         logOut: () => {
                             next.logOut();
-                            setState({ state: "loading" });
+                            setState({ state: "loading", errors: [] });
                         },
+                        errors: [],
                     });
                 },
                 onError(error) {
-                    setErrors((errors) => [...errors, error.toString()]);
+                    setState((state) => ({
+                        ...state,
+                        errors: [...state.errors, error.toString()],
+                    }));
                 },
             },
             appName,
@@ -63,21 +60,10 @@ export function PasskeyAuth({
         );
     }, [appName, appHostname]);
 
-    return (
-        <PasskeyAuthStateCtx.Provider value={{ state, errors }}>
-            <AuthMethodCtx.Provider value={authMethod}>
-                {children}
-            </AuthMethodCtx.Provider>
-        </PasskeyAuthStateCtx.Provider>
-    );
+    return [authMethod, state] as const;
 }
 
-export const usePasskeyAuth = () => {
-    return useContext(PasskeyAuthStateCtx);
-};
-
-const PasskeyAuthBasicUI = () => {
-    const { state, errors } = usePasskeyAuth();
+export const PasskeyAuthBasicUI = ({ state }: { state: PasskeyAuthState }) => {
     const [username, setUsername] = useState<string>("");
 
     if (state.state !== "ready") {
@@ -104,9 +90,9 @@ const PasskeyAuthBasicUI = () => {
                     gap: "2rem",
                 }}
             >
-                {errors.length > 0 && (
+                {state.errors.length > 0 && (
                     <div style={{ color: "red" }}>
-                        {errors.map((error, index) => (
+                        {state.errors.map((error, index) => (
                             <div key={index}>{error}</div>
                         ))}
                     </div>
@@ -164,14 +150,3 @@ const PasskeyAuthBasicUI = () => {
         </div>
     );
 };
-
-/** @category Auth Providers */
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace PasskeyAuth {
-    export type Component = (props: {
-        loading: boolean;
-        logIn: () => void;
-        signUp: (username: string) => void;
-    }) => ReactNode;
-    export const BasicUI = PasskeyAuthBasicUI;
-}

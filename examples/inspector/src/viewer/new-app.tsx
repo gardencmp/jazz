@@ -6,7 +6,6 @@ import {
     RawAccount,
     AgentSecret,
     RawAccountID,
-    cojsonInternals,
     WasmCrypto,
 } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
@@ -69,7 +68,7 @@ export default function CoJsonViewerApp() {
             const node = await LocalNode.withLoadedAccount({
                 accountID: currentAccount.id,
                 accountSecret: currentAccount.secret,
-                sessionID: cojsonInternals.newRandomSessionID(
+                sessionID: crypto.newRandomSessionID(
                     currentAccount.id,
                 ),
                 peersToLoadFrom: [wsPeer],

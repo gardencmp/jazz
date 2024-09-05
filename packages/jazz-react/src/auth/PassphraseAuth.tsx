@@ -1,44 +1,34 @@
-import { useMemo, useState, ReactNode, createContext, useContext } from "react";
+import { useMemo, useState } from "react";
 import { BrowserPassphraseAuth } from "jazz-browser";
 import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
-import { AuthMethodCtx } from "./auth.js";
 
 export type PassphraseAuthState =
-    | { state: "uninitialized" }
+    (| { state: "uninitialized" }
     | { state: "loading" }
     | {
           state: "ready";
           logIn: (passphrase: string) => void;
           signUp: (username: string, passphrase: string) => void;
+          generateRandomPassphrase: () => string;
       }
-    | { state: "signedIn"; logOut: () => void };
-
-const PassphraseAuthStateCtx = createContext<{
-    state: PassphraseAuthState;
+    | { state: "signedIn"; logOut: () => void }) & {
     errors: string[];
-    generateRandomPassphrase: () => string;
-}>({
-    state: { state: "uninitialized" },
-    errors: [],
-    generateRandomPassphrase: () => "",
-});
+};
 
 /** @category Auth Providers */
-export function PassphraseAuth({
-    children,
+export function usePassphraseAuth({
     appName,
     appHostname,
     wordlist,
 }: {
-    children: ReactNode;
     appName: string;
     appHostname?: string;
     wordlist: string[];
 }) {
-    const [errors, setErrors] = useState<string[]>([]);
     const [state, setState] = useState<PassphraseAuthState>({
         state: "loading",
+        errors: [],
     });
 
     const generateRandomPassphrase = () => {
@@ -56,6 +46,8 @@ export function PassphraseAuth({
                         state: "ready",
                         logIn: next.logIn,
                         signUp: next.signUp,
+                        generateRandomPassphrase,
+                        errors: [],
                     });
                 },
                 onSignedIn(next) {
@@ -63,12 +55,13 @@ export function PassphraseAuth({
                         state: "signedIn",
                         logOut: () => {
                             next.logOut();
-                            setState({ state: "loading" });
+                            setState({ state: "loading", errors: [] });
                         },
+                        errors: [],
                     });
                 },
                 onError(error) {
-                    setErrors((errors) => [...errors, error.toString()]);
+                    setState((state) => ({ ...state, errors: [...state.errors, error.toString()] }));
                 },
             },
             wordlist,
@@ -77,17 +70,10 @@ export function PassphraseAuth({
         );
     }, [appName, appHostname, wordlist]);
 
-    return (
-        <PassphraseAuthStateCtx.Provider value={{ state, errors, generateRandomPassphrase }}>
-            <AuthMethodCtx.Provider value={authMethod}>
-                {children}
-            </AuthMethodCtx.Provider>
-        </PassphraseAuthStateCtx.Provider>
-    );
+    return [authMethod, state] as const;
 }
 
-const PassphraseAuthBasicUI = () => {
-    const { state, errors, generateRandomPassphrase } = useContext(PassphraseAuthStateCtx);
+export const PassphraseAuthBasicUI = (state: PassphraseAuthState) => {
     const [username, setUsername] = useState<string>("");
     const [passphrase, setPassphrase] = useState<string>("");
     const [loginPassphrase, setLoginPassphrase] = useState<string>("");
@@ -116,9 +102,9 @@ const PassphraseAuthBasicUI = () => {
                     gap: "2rem",
                 }}
             >
-                {errors.length > 0 && (
+                {state.errors.length > 0 && (
                     <div style={{ color: "red" }}>
-                        {errors.map((error, index) => (
+                        {state.errors.map((error, index) => (
                             <div key={index}>{error}</div>
                         ))}
                     </div>
@@ -153,7 +139,7 @@ const PassphraseAuthBasicUI = () => {
                         <button
                             type="button"
                             onClick={(e) => {
-                                setPassphrase(generateRandomPassphrase());
+                                setPassphrase(state.generateRandomPassphrase());
                                 e.preventDefault();
                             }}
                             style={{
@@ -230,9 +216,3 @@ const PassphraseAuthBasicUI = () => {
         </div>
     );
 };
-
-/** @category Auth Providers */
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace PassphraseAuth {
-    export const BasicUI = PassphraseAuthBasicUI;
-}

@@ -1,7 +1,7 @@
 import {
     AgentSecret,
     CoID,
-    cojsonInternals,
+    ControlledAgent,
     CryptoProvider,
     LocalNode,
     Peer,
@@ -48,38 +48,75 @@ export const fixedCredentialsAuth = (credentials: {
     };
 };
 
-export async function randomSessionProvider(accountID: ID<Account>) {
+export async function randomSessionProvider(
+    accountID: ID<Account>,
+    crypto: CryptoProvider,
+) {
     return {
-        sessionID: cojsonInternals.newRandomSessionID(
+        sessionID: crypto.newRandomSessionID(
             accountID as unknown as RawAccountID,
         ),
         sessionDone: () => {},
     };
 }
 
-export async function createJazzContext<Acc extends Account>({
-    AccountSchema = Account as unknown as AccountClass<Acc>,
-    auth,
-    sessionProvider,
-    peersToLoadFrom,
-    crypto,
-}: {
+type ContextParamsWithAuth<Acc extends Account> = {
     AccountSchema?: AccountClass<Acc>;
     auth: AuthMethod;
     sessionProvider: (
         accountID: ID<Account>,
+        crypto: CryptoProvider,
     ) => Promise<{ sessionID: SessionID; sessionDone: () => void }>;
+} & BaseContextParams;
+
+type BaseContextParams = {
     peersToLoadFrom: Peer[];
     crypto: CryptoProvider;
-}): Promise<{ account: Acc; done: () => void }> {
+};
+
+export async function createJazzContext<Acc extends Account>({
+    AccountSchema,
+    auth,
+    sessionProvider,
+    peersToLoadFrom,
+    crypto,
+}: ContextParamsWithAuth<Acc>): Promise<{ account: Acc; done: () => void }>;
+export async function createJazzContext({
+    peersToLoadFrom,
+    crypto,
+}: BaseContextParams): Promise<{ agent: AnonymousJazzAgent; done: () => void }>;
+export async function createJazzContext<Acc extends Account>(
+    options: ContextParamsWithAuth<Acc> | BaseContextParams,
+): Promise<
+    | { account: Acc; done: () => void }
+    | { agent: AnonymousJazzAgent; done: () => void }
+>
+export async function createJazzContext<Acc extends Account>(
+    options: ContextParamsWithAuth<Acc> | BaseContextParams,
+): Promise<
+    | { account: Acc; done: () => void }
+    | { agent: AnonymousJazzAgent; done: () => void }
+> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
+        if (!("auth" in options)) {
+            return createAnonymousJazzContext({
+                peersToLoadFrom: options.peersToLoadFrom,
+                crypto: options.crypto,
+            });
+        }
+
+        const { auth, sessionProvider, peersToLoadFrom, crypto } = options;
+        const AccountSchema =
+            options.AccountSchema ?? (Account as unknown as AccountClass<Acc>);
+
         const authResult = await auth.start(crypto);
 
         if (authResult.type === "existing") {
             try {
                 const { sessionID, sessionDone } = await sessionProvider(
                     authResult.credentials.accountID,
+                    crypto,
                 );
 
                 try {
@@ -159,4 +196,34 @@ export async function createJazzContext<Acc extends Account>({
             }
         }
     }
+}
+
+export class AnonymousJazzAgent {
+    constructor(public node: LocalNode) {}
+}
+
+export async function createAnonymousJazzContext({
+    peersToLoadFrom,
+    crypto,
+}: {
+    peersToLoadFrom: Peer[];
+    crypto: CryptoProvider;
+}): Promise<{ agent: AnonymousJazzAgent; done: () => void }> {
+    const agentSecret = crypto.newRandomAgentSecret();
+    const rawAgent = new ControlledAgent(agentSecret, crypto);
+
+    const node = new LocalNode(
+        rawAgent,
+        crypto.newRandomSessionID(rawAgent.id),
+        crypto,
+    );
+
+    for (const peer of peersToLoadFrom) {
+        node.syncManager.addPeer(peer);
+    }
+
+    return {
+        agent: new AnonymousJazzAgent(node),
+        done: () => {},
+    };
 }

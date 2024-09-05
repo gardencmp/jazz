@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-auth-clerk",
-  "version": "0.7.33-unique.2",
+  "version": "0.7.33-guest-auth.3",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",
@@ -11,7 +11,6 @@
     "jazz-tools": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-browser-auth-clerk": "workspace:*",
-    "@clerk/clerk-react": "^4.0.0",
     "react": "^18.2.0"
   },
   "scripts": {

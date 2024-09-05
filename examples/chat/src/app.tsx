@@ -1,5 +1,5 @@
 import { CoMap, CoList, co, Group, ID } from "jazz-tools";
-import { createJazzReactApp, DemoAuth } from "jazz-react";
+import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
 import { createRoot } from "react-dom/client";
 import { useIframeHashRouter } from "hash-slash";
 import { ChatScreen } from "./chatScreen.tsx";
@@ -28,7 +28,8 @@ function App() {
     return (
         <div className="flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white">
             <div className="rounded mb-5 px-2 py-1 text-sm self-end">
-                {me?.profile?.name} · {/*<button onClick={logOut}>Log Out</button>*/}
+                {me?.profile?.name} ·{" "}
+                {/*<button onClick={logOut}>Log Out</button>*/}
             </div>
             {useIframeHashRouter().route({
                 "/": () => createChat() as never,
@@ -38,13 +39,27 @@ function App() {
     );
 }
 
+function AuthAndJazz({ children }: { children: React.ReactNode }) {
+    const [auth, state] = useDemoAuth();
+
+    return (
+        <Jazz.Provider
+            auth={auth}
+            peer="wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io"
+        >
+            {state.state === "signedIn" ? (
+                children
+            ) : (
+                <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+            )}
+        </Jazz.Provider>
+    );
+}
+
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <DemoAuth>
-            <DemoAuth.BasicUI appName="Jazz Chat" />
-            <Jazz.Provider peer="wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io">
-                <App />
-            </Jazz.Provider>
-        </DemoAuth>
+        <AuthAndJazz>
+            <App />
+        </AuthAndJazz>
     </StrictMode>
 );

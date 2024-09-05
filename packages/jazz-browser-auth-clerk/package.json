@@ -1,6 +1,6 @@
 {
     "name": "jazz-browser-auth-clerk",
-    "version": "0.7.33-unique.1",
+    "version": "0.7.33-guest-auth.2",
     "type": "module",
     "main": "dist/index.js",
     "types": "src/index.ts",
@@ -9,8 +9,7 @@
     "peerDependencies": {
         "cojson": "workspace:*",
         "jazz-tools": "workspace:*",
-        "jazz-browser": "workspace:*",
-        "@clerk/types": "^3.65.3"
+        "jazz-browser": "workspace:*"
     },
     "scripts": {
         "lint": "eslint . --ext ts,tsx",

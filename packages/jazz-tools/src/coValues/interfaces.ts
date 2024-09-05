@@ -1,6 +1,6 @@
 import type { CojsonInternalTypes, RawCoValue } from "cojson";
 import { RawAccount } from "cojson";
-import type { DeeplyLoaded, DepthsIn } from "../internal.js";
+import type { AnonymousJazzAgent, DeeplyLoaded, DepthsIn } from "../internal.js";
 import {
     Account,
     Group,
@@ -170,7 +170,7 @@ export function ensureCoValueLoaded<V extends CoValue, Depth>(
 export function subscribeToCoValue<V extends CoValue, Depth>(
     cls: CoValueClass<V>,
     id: ID<V>,
-    as: Account,
+    as: Account | AnonymousJazzAgent,
     depth: Depth & DepthsIn<V>,
     listener: (value: DeeplyLoaded<V, Depth>) => void,
     onUnavailable?: () => void,
