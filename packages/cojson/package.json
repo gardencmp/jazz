@@ -14,8 +14,8 @@
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-neverthrow": "^1.1.4",
         "eslint-plugin-require-extensions": "^0.1.3",
-        "typescript": "5.0.2",
-        "vitest": "^0.34.6"
+        "typescript": "^5.3.3",
+        "vitest": "1.5.3"
     },
     "dependencies": {
         "@hazae41/berith": "^1.2.6",

@@ -1,23 +1,19 @@
-name: Playwright Tests
+name: Unit Tests
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - 'main'
 
 jobs:
-  test:
-    timeout-minutes: 60
+  unit-tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        example: ["pets"]
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Enable corepack
         run: corepack enable
@@ -40,25 +36,12 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Pnpm Build
         run: pnpm turbo build;
-        working-directory: ./examples/${{ matrix.example }}
 
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
-        working-directory: ./examples/${{ matrix.example }}
-
-      - name: Run Playwright tests
-        run: pnpm exec playwright test
-        working-directory: ./examples/${{ matrix.example }}
-
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: ${{ matrix.example }}-playwright-report
-          path: ./examples/${{ matrix.example }}/playwright-report/
-          retention-days: 30
+      - name: Unit Tests
+        run: pnpm test

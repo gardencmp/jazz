@@ -19,10 +19,12 @@
     "dev": "turbo dev",
     "build": "turbo build && cd homepage/homepage && pnpm run build",
     "lint": "turbo lint && cd homepage/homepage && pnpm run lint",
-    "test": "turbo test",
+    "test": "vitest",
     "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
     "changeset": "changeset",
     "changeset-version": "changeset version",
+    "monorepo-linting": "npx sherif@1.0.0",
+    "monorepo-linting:fix": "npx sherif@1.0.0 --fix",
     "release": "pnpm changeset publish && git push --follow-tags"
   },
   "lint-staged": {},
