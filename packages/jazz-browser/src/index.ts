@@ -56,7 +56,7 @@ export async function createJazzBrowserContext(
 ): Promise<BrowserGuestContext>;
 export async function createJazzBrowserContext<Acc extends Account>(
     options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
-): Promise<BrowserContext<Acc> | BrowserGuestContext>
+): Promise<BrowserContext<Acc> | BrowserGuestContext>;
 export async function createJazzBrowserContext<Acc extends Account>(
     options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
 ): Promise<BrowserContext<Acc> | BrowserGuestContext> {
@@ -85,12 +85,12 @@ export async function createJazzBrowserContext<Acc extends Account>(
                   auth: options.auth,
                   crypto: await WasmCrypto.create(),
                   peersToLoadFrom: [
-                      options.storage === "indexedDB"
-                          ? await IDBStorage.asPeer()
-                          : await LSMStorage.asPeer({
+                      options.storage === "singleTabOPFS"
+                          ? await LSMStorage.asPeer({
                                 fs: new OPFSFilesystem(crypto),
                                 // trace: true,
-                            }),
+                            })
+                          : await IDBStorage.asPeer(),
                       firstWsPeer,
                   ],
                   sessionProvider: provideBroswerLockSession,
@@ -98,12 +98,12 @@ export async function createJazzBrowserContext<Acc extends Account>(
             : await createJazzContext({
                   crypto: await WasmCrypto.create(),
                   peersToLoadFrom: [
-                      options.storage === "indexedDB"
-                          ? await IDBStorage.asPeer()
-                          : await LSMStorage.asPeer({
+                      options.storage === "singleTabOPFS"
+                          ? await LSMStorage.asPeer({
                                 fs: new OPFSFilesystem(crypto),
                                 // trace: true,
-                            }),
+                            })
+                          : await IDBStorage.asPeer(),
                       firstWsPeer,
                   ],
               });

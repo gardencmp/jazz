@@ -124,7 +124,7 @@ export class Ref<out V extends CoValue> {
 export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
-    controlledAccount: Account,
+    controlledAccount: Account | AnonymousJazzAgent,
     refSchemaForKey: (key: Keys) => RefEncoded<CoValue>,
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;

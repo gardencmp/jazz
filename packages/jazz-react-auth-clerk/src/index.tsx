@@ -23,7 +23,7 @@ export function useJazzClerkAuth(clerk: MinimalClerkClient & {
         } else {
             return undefined;
         }
-    }, [clerk]);
+    }, [clerk.user]);
 
     return [authMethod, state] as const;
 }

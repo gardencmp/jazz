@@ -68,7 +68,9 @@ export function createJazzReactApp<Acc extends Account>({
         }, [AccountSchema, auth, peer, storage]);
 
         return (
-            <JazzContext.Provider value={ctx}>{children}</JazzContext.Provider>
+            <JazzContext.Provider value={ctx}>
+                {ctx && children}
+            </JazzContext.Provider>
         );
     }
 
@@ -102,14 +104,36 @@ export function createJazzReactApp<Acc extends Account>({
         };
     }
 
-    function useAccountOrGuest(): Acc | AnonymousJazzAgent {
+    function useAccountOrGuest(): { me: Acc | AnonymousJazzAgent };
+    function useAccountOrGuest<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): { me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent };
+    function useAccountOrGuest<D extends DepthsIn<Acc>>(
+        depth?: D,
+    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
         const context = React.useContext(JazzContext);
 
         if (!context) {
-            throw new Error("useAccountOrGuest must be used within a JazzProvider");
+            throw new Error(
+                "useAccountOrGuest must be used within a JazzProvider",
+            );
         }
 
-        return "me" in context ? context.me : context.guest;
+        const contextMe = "me" in context ? context.me : undefined;
+
+        const me = useCoState<Acc, D>(
+            contextMe?.constructor as CoValueClass<Acc>,
+            contextMe?.id,
+            depth,
+        );
+
+        if ("me" in context) {
+            return {
+                me: depth === undefined ? me || context.me : me,
+            };
+        } else {
+            return { me: context.guest };
+        }
     }
 
     function useCoState<V extends CoValue, D>(
@@ -130,9 +154,15 @@ export function createJazzReactApp<Acc extends Account>({
         useEffect(() => {
             if (!id) return;
 
-            return subscribeToCoValue(Schema, id, "me" in context ? context.me : context.guest, depth, (value) => {
-                setState({ value });
-            });
+            return subscribeToCoValue(
+                Schema,
+                id,
+                "me" in context ? context.me : context.guest,
+                depth,
+                (value) => {
+                    setState({ value });
+                },
+            );
         }, [Schema, id, context]);
 
         return state.value;
@@ -150,11 +180,15 @@ export function createJazzReactApp<Acc extends Account>({
         const context = React.useContext(JazzContext);
 
         if (!context) {
-            throw new Error("useAcceptInvite must be used within a JazzProvider");
+            throw new Error(
+                "useAcceptInvite must be used within a JazzProvider",
+            );
         }
 
         if (!("me" in context)) {
-            throw new Error("useAcceptInvite can't be used in a JazzProvider with auth === 'guest'.");
+            throw new Error(
+                "useAcceptInvite can't be used in a JazzProvider with auth === 'guest'.",
+            );
         }
 
         useEffect(() => {
@@ -205,7 +239,14 @@ export interface JazzReactApp<Acc extends Account> {
     };
 
     /** @category Hooks */
-    useAccountOrGuest(): Acc | AnonymousJazzAgent;
+    useAccountOrGuest(): {
+        me: Acc | AnonymousJazzAgent;
+    };
+    useAccountOrGuest<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): {
+        me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent;
+    };
     /** @category Hooks */
     useCoState<V extends CoValue, D>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

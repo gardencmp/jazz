@@ -5,6 +5,7 @@ import type {
     ID,
     CoValueClass,
     CoValueFromRaw,
+    AnonymousJazzAgent,
 } from "../internal.js";
 
 export const subscriptionsScopes = new WeakMap<
@@ -17,7 +18,7 @@ const TRACE_INVALIDATIONS = false;
 
 export class SubscriptionScope<Root extends CoValue> {
     scopeID: string = `scope-${Math.random().toString(36).slice(2)}`;
-    subscriber: Account;
+    subscriber: Account | AnonymousJazzAgent;
     entries = new Map<
         ID<CoValue>,
         | { state: "loading"; immediatelyUnsub?: boolean }
@@ -89,32 +90,34 @@ export class SubscriptionScope<Root extends CoValue> {
                 immediatelyUnsub: false,
             } as const;
             this.entries.set(accessedOrSetId, loadingEntry);
-            void this.subscriber._raw.core.node
-                .loadCoValueCore(accessedOrSetId)
-                .then((core) => {
-                    if (
-                        loadingEntry.state === "loading" &&
-                        loadingEntry.immediatelyUnsub
-                    ) {
-                        return;
-                    }
-                    if (core !== "unavailable") {
-                        const entry = {
-                            state: "loaded" as const,
-                            rawUnsub: () => {}, // placeholder
-                        };
-                        this.entries.set(accessedOrSetId, entry);
+            const node =
+                this.subscriber._type === "Account"
+                    ? this.subscriber._raw.core.node
+                    : this.subscriber.node;
+            void node.loadCoValueCore(accessedOrSetId).then((core) => {
+                if (
+                    loadingEntry.state === "loading" &&
+                    loadingEntry.immediatelyUnsub
+                ) {
+                    return;
+                }
+                if (core !== "unavailable") {
+                    const entry = {
+                        state: "loaded" as const,
+                        rawUnsub: () => {}, // placeholder
+                    };
+                    this.entries.set(accessedOrSetId, entry);
 
-                        const rawUnsub = core.subscribe((rawUpdate) => {
-                            // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
-                            if (!rawUpdate) return;
-                            this.invalidate(accessedOrSetId);
-                            this.scheduleUpdate();
-                        });
+                    const rawUnsub = core.subscribe((rawUpdate) => {
+                        // console.log("ref update", this.scopeID, accessedOrSetId, JSON.stringify(rawUpdate))
+                        if (!rawUpdate) return;
+                        this.invalidate(accessedOrSetId);
+                        this.scheduleUpdate();
+                    });
 
-                        entry.rawUnsub = rawUnsub;
-                    }
-                });
+                    entry.rawUnsub = rawUnsub;
+                }
+            });
         }
     }
 

@@ -15,6 +15,7 @@ import type {
     DepthsIn,
     DeeplyLoaded,
     CoValueClass,
+    AnonymousJazzAgent,
 } from "../internal.js";
 import {
     Account,
@@ -192,11 +193,6 @@ export class CoMap extends CoValueBase implements CoValue {
         }) as {
             [Key in CoKeys<this>]: IfCo<this[Key], CoMapEdit<this[Key]>>;
         };
-    }
-
-    /** @internal */
-    get _loadedAs() {
-        return Account.fromNode(this._raw.core.node);
     }
 
     /** @internal */
@@ -445,9 +441,9 @@ export class CoMap extends CoValueBase implements CoValue {
 
     static findUnique<M extends CoMap>(
         this: CoValueClass<M>,
-        unique: CoValueUniqueness['uniqueness'],
+        unique: CoValueUniqueness["uniqueness"],
         ownerID: ID<Account> | ID<Group>,
-        as: Account | Group,
+        as: Account | Group | AnonymousJazzAgent,
     ) {
         const header = {
             type: "comap" as const,
@@ -458,10 +454,9 @@ export class CoMap extends CoValueBase implements CoValue {
             meta: null,
             uniqueness: unique,
         };
-        return cojsonInternals.idforHeader(
-            header,
-            as._raw.core.crypto,
-        ) as ID<M>;
+        const crypto =
+            as._type === "Anonymous" ? as.node.crypto : as._raw.core.crypto;
+        return cojsonInternals.idforHeader(header, crypto) as ID<M>;
     }
 
     /**

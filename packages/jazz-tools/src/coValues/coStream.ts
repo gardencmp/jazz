@@ -20,6 +20,7 @@ import type {
     CoValueClass,
     DeeplyLoaded,
     DepthsIn,
+    AnonymousJazzAgent,
 } from "../internal.js";
 import {
     ItemsSym,
@@ -77,13 +78,21 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     [key: ID<Account>]: CoStreamEntry<Item>;
 
     get byMe(): CoStreamEntry<Item> | undefined {
-        return this[this._loadedAs.id];
+        if (this._loadedAs._type === "Account") {
+            return this[this._loadedAs.id];
+        } else {
+            return undefined;
+        }
     }
     perSession!: {
         [key: SessionID]: CoStreamEntry<Item>;
     };
     get inCurrentSession(): CoStreamEntry<Item> | undefined {
-        return this.perSession[this._loadedAs.sessionID!];
+        if (this._loadedAs._type === "Account") {
+            return this.perSession[this._loadedAs.sessionID!];
+        } else {
+            return undefined;
+        }
     }
 
     constructor(
@@ -233,7 +242,7 @@ function entryFromRawEntry<Item>(
         at: Date;
         value: JsonValue;
     },
-    loadedAs: Account,
+    loadedAs: Account | AnonymousJazzAgent,
     accountID: ID<Account> | undefined,
     itemField: Schema,
 ): Omit<CoStreamEntry<Item>, "all"> {

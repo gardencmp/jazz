@@ -199,6 +199,7 @@ export async function createJazzContext<Acc extends Account>(
 }
 
 export class AnonymousJazzAgent {
+    _type = "Anonymous" as const;
     constructor(public node: LocalNode) {}
 }
 

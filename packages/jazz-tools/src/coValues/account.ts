@@ -1,5 +1,5 @@
 import { LocalNode, cojsonInternals } from "cojson";
-import type {
+import {
     AgentSecret,
     CoID,
     CryptoProvider,
@@ -21,6 +21,7 @@ import {
     RefIfCoValue,
     DeeplyLoaded,
     DepthsIn,
+    AnonymousJazzAgent,
 } from "../internal.js";
 import {
     Group,
@@ -67,8 +68,13 @@ export class Account extends CoValueBase implements CoValue {
     get _owner(): Account {
         return this as Account;
     }
-    get _loadedAs(): Account {
-        return this.isMe ? this : Account.fromNode(this._raw.core.node);
+    get _loadedAs(): Account | AnonymousJazzAgent {
+        if (this.isMe) return this;
+
+        if (this._raw.core.node.account instanceof RawAccount) {
+            return Account.fromRaw(this._raw.core.node.account);
+        }
+        return new AnonymousJazzAgent(this._raw.core.node);
     }
 
     declare profile: Profile | null;

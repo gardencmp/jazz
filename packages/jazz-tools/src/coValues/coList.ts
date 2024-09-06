@@ -14,6 +14,7 @@ import type {
 } from "../internal.js";
 import {
     Account,
+    AnonymousJazzAgent,
     Group,
     ItemsSym,
     Ref,
@@ -163,7 +164,10 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     }
 
     get _loadedAs() {
-        return Account.fromNode(this._raw.core.node);
+        if (this._raw.core.node.account instanceof RawAccount) {
+            return Account.fromRaw(this._raw.core.node.account);
+        }
+        return new AnonymousJazzAgent(this._raw.core.node);
     }
 
     static get [Symbol.species]() {
