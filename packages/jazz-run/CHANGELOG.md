@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.7.35-guest-auth.4
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.35-guest-auth.4
+
 ## 0.7.35-guest-auth.3
 
 ### Patch Changes

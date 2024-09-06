@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.7.35-guest-auth.4
+
+### Patch Changes
+
+-   Make anonymous auth work better
+
 ## 0.7.35-guest-auth.3
 
 ### Patch Changes

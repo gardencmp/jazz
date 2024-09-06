@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.7.35-guest-auth.4
+
+### Patch Changes
+
+-   Make anonymous auth work better
+-   Updated dependencies
+    -   jazz-browser@0.7.35-guest-auth.4
+    -   jazz-tools@0.7.35-guest-auth.4
+
 ## 0.7.35-guest-auth.3
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-pets",
   "private": true,
-  "version": "0.0.100-guest-auth.3",
+  "version": "0.0.100-guest-auth.4",
   "type": "module",
   "scripts": {
     "dev": "vite",

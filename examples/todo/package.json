@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-todo",
   "private": true,
-  "version": "0.0.99-guest-auth.3",
+  "version": "0.0.99-guest-auth.4",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.82-guest-auth.4
+
+### Patch Changes
+
+- Updated dependencies
+  - jazz-react@0.7.35-guest-auth.4
+  - jazz-tools@0.7.35-guest-auth.4
+
 ## 0.0.82-guest-auth.3
 
 ### Patch Changes
