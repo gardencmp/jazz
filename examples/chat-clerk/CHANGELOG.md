@@ -1,5 +1,15 @@
 # jazz-example-chat
 
+## 0.0.80-guest-auth.5
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.35-guest-auth.5
+  - jazz-react@0.7.35-guest-auth.5
+  - jazz-react-auth-clerk@0.7.35-guest-auth.5
+  - jazz-tools@0.7.35-guest-auth.5
+
 ## 0.0.80-guest-auth.4
 
 ### Patch Changes

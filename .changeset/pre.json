@@ -22,6 +22,7 @@
     "jazz-tools": "0.7.35-unique.2"
   },
   "changesets": [
+    "beige-hats-judge",
     "dirty-plants-sniff",
     "shiny-peaches-grab",
     "small-students-buy",

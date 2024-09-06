@@ -1,5 +1,11 @@
 # cojson
 
+## 0.7.35-guest-auth.5
+
+### Patch Changes
+
+-   Move session generation to crypto provider
+
 ## 0.7.35-unique.2
 
 ### Patch Changes

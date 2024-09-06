@@ -1,5 +1,12 @@
 # jazz-example-todo
 
+## 0.0.99-guest-auth.5
+
+### Patch Changes
+
+-   jazz-react@0.7.35-guest-auth.5
+-   jazz-tools@0.7.35-guest-auth.5
+
 ## 0.0.99-guest-auth.4
 
 ### Patch Changes

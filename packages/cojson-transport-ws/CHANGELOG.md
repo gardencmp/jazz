@@ -1,5 +1,12 @@
 # cojson-transport-nodejs-ws
 
+## 0.7.35-guest-auth.5
+
+### Patch Changes
+
+-   Updated dependencies
+    -   cojson@0.7.35-guest-auth.5
+
 ## 0.7.35-unique.2
 
 ### Patch Changes

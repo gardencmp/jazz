@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.60-guest-auth.1
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.35-guest-auth.5
+  - cojson-transport-ws@0.7.35-guest-auth.5
+
 ## 0.0.60-unique.0
 
 ### Patch Changes

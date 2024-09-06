@@ -1,6 +1,6 @@
 {
     "name": "jazz-browser-auth-clerk",
-    "version": "0.7.35-guest-auth.4",
+    "version": "0.7.35-guest-auth.5",
     "type": "module",
     "main": "dist/index.js",
     "types": "src/index.ts",
