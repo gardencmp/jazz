@@ -13,6 +13,7 @@ import "./index.css";
 
 import { MusicaAccount } from "@/1_schema";
 import { createJazzReactContext, DemoAuth } from "jazz-react";
+import { useUploadExampleData } from "./lib/useUploadExampleData";
 
 /**
  * Walkthrough: The top-level provider `<Jazz.Provider/>`
@@ -33,6 +34,8 @@ export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function Main() {
     const mediaPlayer = useMediaPlayer();
+
+    useUploadExampleData();
 
     /**
      * `me` represents the current user account, which will determine
