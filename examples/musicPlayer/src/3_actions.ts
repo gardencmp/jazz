@@ -24,7 +24,7 @@ import {
 
 export async function uploadMusicTracks(
     account: MusicaAccount,
-    files: FileList,
+    files: Iterable<File>,
 ) {
     // The ownership object defines the user that owns the created coValues
     // by setting the ownership with "account" we configure the coValues to be private

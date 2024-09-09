@@ -6,7 +6,6 @@ import {
     Profile,
     Account,
 } from "jazz-tools";
-import { getAudioFileData } from "./lib/audio/getAudioFileData";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -81,17 +80,17 @@ export class MusicaAccountRoot extends CoMap {
     // to resume the song
     activeTrack = co.optional.ref(MusicTrack);
     activePlaylist = co.ref(Playlist);
+
+    exampleDataLoaded = co.optional.boolean;
 }
 
 export class MusicaAccount extends Account {
     profile = co.ref(Profile);
     root = co.ref(MusicaAccountRoot);
 
-    /** The account migration is run on account creation and on every log-in.
+    /** 
+     *  The account migration is run on account creation and on every log-in.
      *  You can use it to set up the account root and any other initial CoValues you need.
-     *
-     * It's a nice way to shape the inital structure of the account data
-     * and add "onboarding" info.
      */
     async migrate(creationProps?: { name: string }) {
         super.migrate(creationProps);
@@ -99,26 +98,7 @@ export class MusicaAccount extends Account {
         if (!this._refs.root) {
             const ownership = { owner: this };
 
-            const trackFile = await (await fetch("/example.mp3")).blob();
-            const data = await getAudioFileData(trackFile);
-
-            const initialMusicTrack = MusicTrack.create(
-                {
-                    file: await BinaryCoStream.createFromBlob(
-                        trackFile,
-                        ownership,
-                    ),
-                    duration: data.duration,
-                    waveform: MusicTrackWaveform.create(
-                        { data: data.waveform },
-                        ownership,
-                    ),
-                    title: "Example audio",
-                },
-                ownership,
-            );
-
-            const tracks = ListOfTracks.create([initialMusicTrack], ownership);
+            const tracks = ListOfTracks.create([], ownership);
             const rootPlaylist = Playlist.create(
                 {
                     tracks,
@@ -131,8 +111,9 @@ export class MusicaAccount extends Account {
                 {
                     rootPlaylist,
                     playlists: ListOfPlaylists.create([], ownership),
-                    activeTrack: initialMusicTrack,
+                    activeTrack: null,
                     activePlaylist: rootPlaylist,
+                    exampleDataLoaded: false,
                 },
                 ownership,
             );
