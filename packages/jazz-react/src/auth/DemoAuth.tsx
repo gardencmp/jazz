@@ -77,7 +77,7 @@ export function DemoAuth<Acc extends Account = Account>({
                   })
                 : Component({
                       appName,
-                      loading: false,
+                      loading: true,
                       existingUsers: [],
                       logInAs: () => {},
                       signUp: (_) => {},
