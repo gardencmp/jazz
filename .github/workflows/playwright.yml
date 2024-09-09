@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: ["pets"]
+        project: ["examples/pets", "e2e/BinaryCoStream"]
 
     steps:
       - uses: actions/checkout@v3
@@ -46,19 +46,19 @@ jobs:
 
       - name: Pnpm Build
         run: pnpm turbo build;
-        working-directory: ./examples/${{ matrix.example }}
+        working-directory: ./${{ matrix.project }}
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
-        working-directory: ./examples/${{ matrix.example }}
+        working-directory: ./${{ matrix.project }}
 
       - name: Run Playwright tests
         run: pnpm exec playwright test
-        working-directory: ./examples/${{ matrix.example }}
+        working-directory: ./${{ matrix.project }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: ${{ matrix.example }}-playwright-report
-          path: ./examples/${{ matrix.example }}/playwright-report/
+          name: ${{ matrix.project }}-playwright-report
+          path: ./${{ matrix.project }}/playwright-report/
           retention-days: 30
