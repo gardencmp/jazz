@@ -7,6 +7,7 @@ import { getDownloaderPeerUrl } from "./lib/getDownloaderPeerUrl";
 import { UploadedFile } from "./schema";
 import { waitForCoValue } from "./lib/waitForCoValue";
 import { getDefaultFileSize, getIsAutoUpload } from "./lib/searchParams";
+import { BytesRadioGroup } from "./lib/BytesRadioGroup";
 
 export function UploaderPeer() {
   const account = useAccount();
@@ -56,26 +57,7 @@ export function UploaderPeer() {
 
   return (
     <>
-      <p>
-        <BytesRadioInput
-          label="100KB"
-          value={1e5}
-          selectedValue={bytes}
-          onChange={setBytes}
-        />
-        <BytesRadioInput
-          label="1MB"
-          value={1e6}
-          selectedValue={bytes}
-          onChange={setBytes}
-        />
-        <BytesRadioInput
-          label="10MB"
-          value={1e7}
-          selectedValue={bytes}
-          onChange={setBytes}
-        />
-      </p>
+      <BytesRadioGroup selectedValue={bytes} onChange={setBytes} />
 
       <button onClick={uploadTestFile}>Upload Test File</button>
       {uploadedFileId && <div>{uploadedFileId}</div>}
@@ -93,22 +75,4 @@ export function UploaderPeer() {
   );
 }
 
-function BytesRadioInput(props: {
-  label: string;
-  value: number;
-  selectedValue: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <label>
-      <input
-        type="radio"
-        name="bytes"
-        value={props.value}
-        checked={props.value === props.selectedValue}
-        onChange={() => props.onChange(props.value)}
-      />
-      {props.label}
-    </label>
-  );
-}
+

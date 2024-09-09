@@ -10,5 +10,5 @@ export function getIsAutoUpload() {
 }
 
 export function getDefaultFileSize() {
-    return parseInt(new URLSearchParams(location.search).get("fileSize") ?? 1e5.toString());
+    return parseInt(new URLSearchParams(location.search).get("fileSize") ?? 1e3.toString());
 }
