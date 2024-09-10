@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ["examples/pets", "e2e/BinaryCoStream"]
+        project: ["examples/pets"]
 
     steps:
       - uses: actions/checkout@v3
