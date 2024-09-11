@@ -27,6 +27,52 @@ importers:
         specifier: 1.5.3
         version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)
 
+  e2e/BinaryCoStream:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../../packages/cojson
+      hash-slash:
+        specifier: workspace:*
+        version: link:../../packages/hash-slash
+      is-ci:
+        specifier: ^3.0.1
+        version: 3.0.1
+      jazz-react:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.46.1
+        version: 1.46.1
+      '@types/node':
+        specifier: ^22.5.1
+        version: 22.5.1
+      '@types/react':
+        specifier: ^18.2.19
+        version: 18.2.45
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.18
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.3.2
+        version: 3.5.0(vite@5.0.10(@types/node@22.5.1))
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vite:
+        specifier: ^5.0.10
+        version: 5.0.10(@types/node@22.5.1)
+
   examples/chat:
     dependencies:
       '@radix-ui/react-checkbox':
@@ -6118,7 +6164,7 @@ snapshots:
 
   '@types/qrcode@1.5.5':
     dependencies:
-      '@types/node': 20.10.5
+      '@types/node': 22.5.1
 
   '@types/react-dom@18.2.18':
     dependencies:
