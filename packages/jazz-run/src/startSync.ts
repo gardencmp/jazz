@@ -89,7 +89,9 @@ export const startSync = Command.make(
                         ?.split(",")[0]
                         ?.trim() || req.socket.remoteAddress;
 
-                const clientId = clientAddress + "@" + new Date().toISOString();
+                const url = req.url ? new URL(`http://${process.env.HOST ?? 'localhost'}${req.url}`) : undefined;
+
+                const clientId = clientAddress + "@" + new Date().toISOString() + url?.search;
 
                 localNode.syncManager.addPeer(
                     createWebSocketPeer({

@@ -6,12 +6,18 @@ export async function generateTestFile(me: Account, bytes: number) {
   group.addMember("everyone", "writer");
 
   const ownership = { owner: group };
+
+  const file = await BinaryCoStream.createFromBlob(
+    new Blob(['1'.repeat(bytes)], { type: 'image/png' }),
+    {
+      ...ownership,
+      nonBlocking: true,
+    }
+  )
+
   const testFile = UploadedFile.create(
     {
-      file: await BinaryCoStream.createFromBlob(
-        new Blob(['1'.repeat(bytes)], { type: 'image/png' }),
-        ownership
-      ),
+      file,
       syncCompleted: false,
     },
     ownership
