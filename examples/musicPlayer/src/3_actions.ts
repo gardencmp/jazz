@@ -40,7 +40,10 @@ export async function uploadMusicTracks(
         // to share across devices and users and available offline!
         const binaryCoStream = await BinaryCoStream.createFromBlob(
             file,
-            ownership,
+            {
+                ...ownership,
+                nonBlocking: true,
+            },
         );
 
         const musicTrack = MusicTrack.create(
@@ -112,7 +115,10 @@ export async function addTrackToPlaylist(
 
     const trackClone = MusicTrack.create(
         {
-            file: await BinaryCoStream.createFromBlob(blob, ownership),
+            file: await BinaryCoStream.createFromBlob(blob, {
+                ...ownership,
+                nonBlocking: true,
+            }),
             duration: track.duration,
             waveform: MusicTrackWaveform.create(
                 { data: waveform.data },

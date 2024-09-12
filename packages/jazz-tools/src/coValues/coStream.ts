@@ -577,6 +577,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
         options: {
             owner: Group | Account;
             onProgress?: (progress: number) => void;
+            nonBlocking?: boolean;
         },
     ): Promise<BinaryCoStream> {
         const stream = this.create({ owner: options.owner });
@@ -593,26 +594,34 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
 
         let lastProgressUpdate = Date.now();
 
-        for (let idx = 0; idx < data.length; idx += chunkSize) {
-            stream.push(data.slice(idx, idx + chunkSize));
-
-            if (Date.now() - lastProgressUpdate > 100) {
-                options.onProgress?.(idx / data.length);
-                lastProgressUpdate = Date.now();
+        async function loadChunks() {
+            for (let idx = 0; idx < data.length; idx += chunkSize) {
+                stream.push(data.slice(idx, idx + chunkSize));
+    
+                if (Date.now() - lastProgressUpdate > 100) {
+                    options.onProgress?.(idx / data.length);
+                    lastProgressUpdate = Date.now();
+                }
+    
+                await new Promise((resolve) => setTimeout(resolve, 0));
             }
-
-            await new Promise((resolve) => setTimeout(resolve, 0));
+            stream.end();
+            const end = Date.now();
+    
+            console.debug(
+                "Finished creating binary stream in",
+                (end - start) / 1000,
+                "s - Throughput in MB/s",
+                (1000 * (blob.size / (end - start))) / (1024 * 1024),
+            );
+            options.onProgress?.(1);
         }
-        stream.end();
-        const end = Date.now();
 
-        console.debug(
-            "Finished creating binary stream in",
-            (end - start) / 1000,
-            "s - Throughput in MB/s",
-            (1000 * (blob.size / (end - start))) / (1024 * 1024),
-        );
-        options.onProgress?.(1);
+        if (options.nonBlocking) {
+            void loadChunks();
+        } else {
+            await loadChunks();
+        }
 
         return stream;
     }

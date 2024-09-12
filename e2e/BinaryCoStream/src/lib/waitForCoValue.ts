@@ -15,17 +15,25 @@ export function waitForCoValue<T extends CoValue>(
   depth: DepthsIn<T>
 ) {
   return new Promise<T>((resolve) => {
-    const unsubscribe = subscribeToCoValue(
-      coMap,
-      valueId,
-      account,
-      depth,
-      (value) => {
-        if (predicate(value)) {
-          resolve(value);
+    function subscribe() {
+      const unsubscribe = subscribeToCoValue(
+        coMap,
+        valueId,
+        account,
+        depth,
+        (value) => {
+          if (predicate(value)) {
+            resolve(value);
+            unsubscribe();
+          }
+        },
+        () => {
           unsubscribe();
+          setTimeout(subscribe, 100);
         }
-      }
-    );
+      );
+    }
+
+    subscribe();
   });
 }
