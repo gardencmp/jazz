@@ -182,10 +182,10 @@ export function createWebSocketPeer({
         processingActive = false;
     }
 
-    function pushToQueue(msg: SyncMessage, lowPriority?: boolean) {
+    function pushToQueue(msg: SyncMessage) {
         const { promise, resolve } = promiseWithResolvers<void>();
 
-        if (lowPriority === true) {
+        if (msg.action === "content" && msg.lowPriority) {
             lowPriorityQueue.push({ msg, promise, resolve });
         } else {
             highPriorityQueue.push({ msg, promise, resolve });
@@ -217,8 +217,8 @@ export function createWebSocketPeer({
         id,
         incoming,
         outgoing: {
-            async push(msg, lowPriority) {
-                return pushToQueue(msg, lowPriority);
+            async push(msg) {
+                return pushToQueue(msg);
             },
             close() {
                 console.log("Trying to close", id, websocket.readyState);

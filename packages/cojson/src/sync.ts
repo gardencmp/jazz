@@ -64,7 +64,7 @@ export type IncomingSyncStream = AsyncIterable<
     SyncMessage | DisconnectedError | PingTimeoutError
 >;
 export type OutgoingSyncQueue = {
-    push: (msg: SyncMessage, lowPriority?: boolean) => Promise<unknown>;
+    push: (msg: SyncMessage) => Promise<unknown>;
     close: () => void;
 };
 
@@ -311,7 +311,12 @@ export class SyncManager {
                     //     } header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
-                    this.trySendToPeer(peer, piece, lowPriority).catch((e) => {
+
+                    if (lowPriority) {
+                        piece.lowPriority = true;
+                    }
+
+                    this.trySendToPeer(peer, piece).catch((e) => {
                         console.error("Error sending content piece", e);
                     });
 
@@ -421,8 +426,8 @@ export class SyncManager {
             });
     }
 
-    trySendToPeer(peer: PeerState, msg: SyncMessage, lowPriority: boolean = false) {
-        return peer.outgoing.push(msg, lowPriority);
+    trySendToPeer(peer: PeerState, msg: SyncMessage) {
+        return peer.outgoing.push(msg);
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
