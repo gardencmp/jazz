@@ -43,20 +43,26 @@ const g: typeof globalThis & {
 function promiseWithResolvers<R>() {
     let resolve = (_: R) => {};
     let reject = (_: unknown) => {};
-  
+
     const promise = new Promise<R>((_resolve, _reject) => {
-      resolve = _resolve;
-      reject = _reject;
+        resolve = _resolve;
+        reject = _reject;
     });
-  
+
     return {
-      promise,
-      resolve,
-      reject,
+        promise,
+        resolve,
+        reject,
     };
-  }
+}
 
 const BUFFER_LIMIT = 100_000;
+
+type QueueEntry = {
+    msg: SyncMessage;
+    promise: Promise<void>;
+    resolve: () => void;
+};
 
 export function createWebSocketPeer({
     id,
@@ -120,8 +126,8 @@ export function createWebSocketPeer({
         }
     });
 
-    const highPriorityQueue: {msg: SyncMessage, promise:Promise<void>, resolve: () => void}[] = [];
-    const lowPriorityQueue: {msg: SyncMessage,  promise:Promise<void>, resolve: () => void}[] = [];
+    const highPriorityQueue: QueueEntry[] = [];
+    const lowPriorityQueue: QueueEntry[] = [];
 
     let processingActive = false;
 
@@ -136,6 +142,8 @@ export function createWebSocketPeer({
             await websocketOpen;
         }
 
+        let roundRobinCycle = 0;
+
         while (highPriorityQueue.length > 0 || lowPriorityQueue.length > 0) {
             if (websocket.bufferedAmount > BUFFER_LIMIT) {
                 await waitForLessBuffer();
@@ -145,10 +153,28 @@ export function createWebSocketPeer({
                 return;
             }
 
-            const entry = highPriorityQueue.shift() ?? lowPriorityQueue.shift();
+            let entry: QueueEntry | undefined = undefined;
+
+            /**
+             * We send a low priority message every 2 high priority messages.
+             * This is to prevent starvation of low priority messages when a lot
+             * of high priority messages are sent in a row.
+             */
+            const highPriorityActive =
+                roundRobinCycle < 2 || lowPriorityQueue.length === 0;
+
+            if (highPriorityQueue.length > 0 && highPriorityActive) {
+                entry = highPriorityQueue.shift();
+
+                roundRobinCycle++;
+            } else if (lowPriorityQueue.length > 0) {
+                entry = lowPriorityQueue.shift();
+                roundRobinCycle = 0;
+            }
 
             if (entry) {
                 websocket.send(JSON.stringify(entry.msg));
+
                 entry.resolve();
             }
         }
@@ -174,12 +200,14 @@ export function createWebSocketPeer({
         if (websocket.readyState !== 1) return;
 
         while (websocket.bufferedAmount > BUFFER_LIMIT) {
-            await new Promise<void>((resolve) =>
-                setTimeout(resolve, 10),
-            );
+            await new Promise<void>((resolve) => setTimeout(resolve, 10));
 
             if (websocket.readyState !== 1) {
-                console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
+                console.log(
+                    "WebSocket closed while buffering",
+                    id,
+                    websocket.bufferedAmount,
+                );
                 return;
             }
         }
@@ -193,11 +221,15 @@ export function createWebSocketPeer({
                 return pushToQueue(msg, lowPriority);
             },
             close() {
-                console.log("Trying to close", id, websocket.readyState)
+                console.log("Trying to close", id, websocket.readyState);
                 if (websocket.readyState === 0) {
-                    websocket.addEventListener("open", function handleClose() {
-                        websocket.close();
-                    }, { once: true });
+                    websocket.addEventListener(
+                        "open",
+                        function handleClose() {
+                            websocket.close();
+                        },
+                        { once: true },
+                    );
                 } else if (websocket.readyState == 1) {
                     websocket.close();
                 }
