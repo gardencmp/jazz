@@ -38,6 +38,7 @@ export type NewContentMessage = {
     action: "content";
     id: RawCoID;
     header?: CoValueHeader;
+    lowPriority?: boolean;
     new: {
         [sessionID: SessionID]: SessionNewContent;
     };
@@ -63,7 +64,7 @@ export type IncomingSyncStream = AsyncIterable<
     SyncMessage | DisconnectedError | PingTimeoutError
 >;
 export type OutgoingSyncQueue = {
-    push: (msg: SyncMessage) => Promise<unknown>;
+    push: (msg: SyncMessage, lowPriority?: boolean) => Promise<unknown>;
     close: () => void;
 };
 
@@ -282,7 +283,7 @@ export class SyncManager {
         }
     }
 
-    async sendNewContentIncludingDependencies(id: RawCoID, peer: PeerState) {
+    async sendNewContentIncludingDependencies(id: RawCoID, peer: PeerState, lowPriority: boolean = false) {
         const coValue = this.local.expectCoValueLoaded(id);
 
         await Promise.all(
@@ -310,9 +311,10 @@ export class SyncManager {
                     //     } header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
-                    this.trySendToPeer(peer, piece).catch((e) => {
+                    this.trySendToPeer(peer, piece, lowPriority).catch((e) => {
                         console.error("Error sending content piece", e);
                     });
+
                     if (performance.now() - lastYield > 10) {
                         await new Promise<void>((resolve) => {
                             setTimeout(resolve, 0);
@@ -419,8 +421,8 @@ export class SyncManager {
             });
     }
 
-    trySendToPeer(peer: PeerState, msg: SyncMessage) {
-        return peer.outgoing.push(msg);
+    trySendToPeer(peer: PeerState, msg: SyncMessage, lowPriority: boolean = false) {
+        return peer.outgoing.push(msg, lowPriority);
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
@@ -758,9 +760,12 @@ export class SyncManager {
                     coValue.id,
                     peer,
                 );
+
+                const isLowPriorityContent = coValue.header.type === "costream";
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,
                     peer,
+                    isLowPriorityContent,
                 );
             } else if (peer.role === "server") {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);

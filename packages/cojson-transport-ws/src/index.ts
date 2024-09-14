@@ -40,6 +40,24 @@ const g: typeof globalThis & {
     }[];
 } = globalThis;
 
+function promiseWithResolvers<R>() {
+    let resolve = (_: R) => {};
+    let reject = (_: unknown) => {};
+  
+    const promise = new Promise<R>((_resolve, _reject) => {
+      resolve = _resolve;
+      reject = _reject;
+    });
+  
+    return {
+      promise,
+      resolve,
+      reject,
+    };
+  }
+
+const BUFFER_LIMIT = 100_000;
+
 export function createWebSocketPeer({
     id,
     websocket,
@@ -102,24 +120,77 @@ export function createWebSocketPeer({
         }
     });
 
+    const highPriorityQueue: {msg: SyncMessage, promise:Promise<void>, resolve: () => void}[] = [];
+    const lowPriorityQueue: {msg: SyncMessage,  promise:Promise<void>, resolve: () => void}[] = [];
+
+    let processingActive = false;
+
+    async function processQueue() {
+        if (processingActive) {
+            return;
+        }
+
+        processingActive = true;
+
+        if (websocket.readyState !== 1) {
+            await websocketOpen;
+        }
+
+        while (highPriorityQueue.length > 0 || lowPriorityQueue.length > 0) {
+            if (websocket.bufferedAmount > BUFFER_LIMIT) {
+                await waitForLessBuffer();
+            }
+
+            if (websocket.readyState !== 1) {
+                return;
+            }
+
+            const entry = highPriorityQueue.shift() ?? lowPriorityQueue.shift();
+
+            if (entry) {
+                websocket.send(JSON.stringify(entry.msg));
+                entry.resolve();
+            }
+        }
+
+        processingActive = false;
+    }
+
+    function pushToQueue(msg: SyncMessage, lowPriority?: boolean) {
+        const { promise, resolve } = promiseWithResolvers<void>();
+
+        if (lowPriority === true) {
+            lowPriorityQueue.push({ msg, promise, resolve });
+        } else {
+            highPriorityQueue.push({ msg, promise, resolve });
+        }
+
+        void processQueue();
+
+        return promise;
+    }
+
+    async function waitForLessBuffer() {
+        if (websocket.readyState !== 1) return;
+
+        while (websocket.bufferedAmount > BUFFER_LIMIT) {
+            await new Promise<void>((resolve) =>
+                setTimeout(resolve, 10),
+            );
+
+            if (websocket.readyState !== 1) {
+                console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
+                return;
+            }
+        }
+    }
+
     return {
         id,
         incoming,
         outgoing: {
-            async push(msg) {
-                await websocketOpen;
-                if (websocket.readyState === 1) {
-                    while (websocket.bufferedAmount > 1_000_000) {
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, 100),
-                        );
-                        if (websocket.readyState !== 1) {
-                            console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
-                            return;
-                        }
-                    }
-                    websocket.send(JSON.stringify(msg));
-                }
+            async push(msg, lowPriority) {
+                return pushToQueue(msg, lowPriority);
             },
             close() {
                 console.log("Trying to close", id, websocket.readyState)
