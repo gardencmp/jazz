@@ -5,34 +5,10 @@ import {
     SyncMessage,
     cojsonInternals,
 } from "cojson";
+import { PriorityBasedMessageQueue } from "./PriorityBasedMessageQueue.js";
+import { AnyWebSocket, PingMsg } from "./types.js";
 
-interface WebsocketEvents {
-    close: { code: number; reason: string };
-    message: { data: unknown };
-    open: void;
-}
-interface PingMsg {
-    time: number;
-    dc: string;
-}
-
-interface AnyWebSocket {
-    addEventListener<K extends keyof WebsocketEvents>(
-        type: K,
-        listener: (event: WebsocketEvents[K]) => void,
-        options?: { once: boolean },
-    ): void;
-    removeEventListener<K extends keyof WebsocketEvents>(
-        type: K,
-        listener: (event: WebsocketEvents[K]) => void,
-    ): void;
-    close(): void;
-    send(data: string): void;
-    readyState: number;
-    bufferedAmount: number;
-}
-
-const g: typeof globalThis & {
+ const g: typeof globalThis & {
     jazzPings?: {
         received: number;
         sent: number;
@@ -40,29 +16,8 @@ const g: typeof globalThis & {
     }[];
 } = globalThis;
 
-function promiseWithResolvers<R>() {
-    let resolve = (_: R) => {};
-    let reject = (_: unknown) => {};
-
-    const promise = new Promise<R>((_resolve, _reject) => {
-        resolve = _resolve;
-        reject = _reject;
-    });
-
-    return {
-        promise,
-        resolve,
-        reject,
-    };
-}
-
-const BUFFER_LIMIT = 100_000;
-
-type QueueEntry = {
-    msg: SyncMessage;
-    promise: Promise<void>;
-    resolve: () => void;
-};
+export const BUFFER_LIMIT = 100_000;
+export const BUFFER_LIMIT_POLLING_INTERVAL = 10;
 
 export function createWebSocketPeer({
     id,
@@ -92,6 +47,7 @@ export function createWebSocketPeer({
     websocket.addEventListener("message", function handleIncomingMsg(event) {
         const msg = JSON.parse(event.data as string);
         pingTimeout && clearTimeout(pingTimeout);
+
         if (msg?.type === "ping") {
             const ping = msg as PingMsg;
             g.jazzPings ||= [];
@@ -126,100 +82,55 @@ export function createWebSocketPeer({
         }
     });
 
-    const highPriorityQueue: QueueEntry[] = [];
-    const lowPriorityQueue: QueueEntry[] = [];
+    const outgoingMessageQueue = new PriorityBasedMessageQueue();
 
-    let processingActive = false;
+    let processing = false;
 
     async function processQueue() {
-        if (processingActive) {
+        if (processing) {
             return;
         }
 
-        processingActive = true;
+        processing = true;
 
-        if (websocket.readyState !== 1) {
-            await websocketOpen;
-        }
+        await websocketOpen;
 
-        let roundRobinCycle = 0;
-
-        while (highPriorityQueue.length > 0 || lowPriorityQueue.length > 0) {
-            if (websocket.bufferedAmount > BUFFER_LIMIT) {
-                await waitForLessBuffer();
+        while (outgoingMessageQueue.isNonEmpty()) {
+            while (websocket.bufferedAmount > BUFFER_LIMIT && websocket.readyState === 1) {
+                await new Promise<void>((resolve) => setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL));
             }
 
             if (websocket.readyState !== 1) {
-                return;
+                break;
             }
 
-            let entry: QueueEntry | undefined = undefined;
-
-            /**
-             * We send a low priority message every 2 high priority messages.
-             * This is to prevent starvation of low priority messages when a lot
-             * of high priority messages are sent in a row.
-             */
-            const highPriorityActive =
-                roundRobinCycle < 2 || lowPriorityQueue.length === 0;
-
-            if (highPriorityQueue.length > 0 && highPriorityActive) {
-                entry = highPriorityQueue.shift();
-
-                roundRobinCycle++;
-            } else if (lowPriorityQueue.length > 0) {
-                entry = lowPriorityQueue.shift();
-                roundRobinCycle = 0;
-            }
+            const entry = outgoingMessageQueue.pull();
 
             if (entry) {
                 websocket.send(JSON.stringify(entry.msg));
 
+                // Flag that the message has been sent
                 entry.resolve();
             }
         }
 
-        processingActive = false;
+        processing = false;
     }
 
-    function pushToQueue(msg: SyncMessage) {
-        const { promise, resolve } = promiseWithResolvers<void>();
-
-        if (msg.action === "content" && msg.lowPriority) {
-            lowPriorityQueue.push({ msg, promise, resolve });
-        } else {
-            highPriorityQueue.push({ msg, promise, resolve });
-        }
+    function pushMessage(msg: SyncMessage) {
+        const promise = outgoingMessageQueue.push(msg);
 
         void processQueue();
 
+        // Resolves when the message has been sent
         return promise;
-    }
-
-    async function waitForLessBuffer() {
-        if (websocket.readyState !== 1) return;
-
-        while (websocket.bufferedAmount > BUFFER_LIMIT) {
-            await new Promise<void>((resolve) => setTimeout(resolve, 10));
-
-            if (websocket.readyState !== 1) {
-                console.log(
-                    "WebSocket closed while buffering",
-                    id,
-                    websocket.bufferedAmount,
-                );
-                return;
-            }
-        }
     }
 
     return {
         id,
         incoming,
         outgoing: {
-            async push(msg) {
-                return pushToQueue(msg);
-            },
+            push: pushMessage,
             close() {
                 console.log("Trying to close", id, websocket.readyState);
                 if (websocket.readyState === 0) {
