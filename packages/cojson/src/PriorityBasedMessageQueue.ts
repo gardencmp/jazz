@@ -1,4 +1,3 @@
-import { CO_VALUE_PRIORITY } from "./coValue.js";
 import { SyncMessage } from "./sync.js";
 
 function promiseWithResolvers<R>() {
@@ -24,71 +23,76 @@ type QueueEntry = {
     reject: (_: unknown) => void;
 };
 
+function getOrderedQueueList(priorities: number[]) {
+    const source = priorities.slice().sort((a, b) => b - a);
+    const indexes: Record<number, number> = {};
+    const queues: QueueEntry[][] = new Array(priorities.length);
+
+    source.forEach((priority, i) => {
+        indexes[priority] = i;
+        queues[i] = [];
+    });
+
+    return { indexes, list: queues };
+}
+
+function getWeighedRoundRobin(priorities: number[]) {
+    const items: number[] = [];
+
+    for (const priority of priorities) {
+        for (let i = 0; i < priority; i++) {
+            items.push(priority);
+        }
+    }
+
+    let cycle = 0;
+    return (): number => {
+        return items[cycle++ % items.length]!;
+    };
+}
+
 export class PriorityBasedMessageQueue {
-    private lowPriorityQueue: QueueEntry[] = [];
-    private mediumPriorityQueue: QueueEntry[] = [];
-    private highPriorityQueue: QueueEntry[] = [];
-    private cycle = 0;
+    private queues = getOrderedQueueList(this.priorities);
+    private weighedRoundRobin = getWeighedRoundRobin(this.priorities);
+
+    constructor(private priorities: number[], private defaultPriority: number) {}
+
+    private getQueue(priority: number) {
+        return this.queues.list[this.queues.indexes[priority]!];
+    }
 
     public push(msg: SyncMessage) {
         const { promise, resolve, reject } = promiseWithResolvers<void>();
         const entry: QueueEntry = { msg, promise, resolve, reject };
 
-        if ('priority' in msg) {
-            switch (msg.priority) {
-                case CO_VALUE_PRIORITY.HIGH:
-                    this.highPriorityQueue.push(entry);
-                    break;
-                case CO_VALUE_PRIORITY.MEDIUM:
-                    this.mediumPriorityQueue.push(entry);
-                    break;
-                case CO_VALUE_PRIORITY.LOW:
-                    this.lowPriorityQueue.push(entry);
-                    break;
-            }
+        if ("priority" in msg) {
+            const queue = this.getQueue(msg.priority);
+
+            queue?.push(entry);
         } else {
-            this.highPriorityQueue.push(entry);
+            this.getQueue(this.defaultPriority)?.push(entry);
         }
 
         return promise;
     }
 
     public isNonEmpty() {
-        return (
-            this.highPriorityQueue.length > 0 ||
-            this.mediumPriorityQueue.length > 0 ||
-            this.lowPriorityQueue.length > 0
-        );
+        return this.queues.list.some((queue) => queue.length > 0);
     }
 
     public pull() {
-        if (this.highPriorityQueue.length > 0) {
-            if (this.cycle < 3) {
-                this.cycle++;
-                return this.highPriorityQueue.shift();
-            }
+        const selectedPriority = this.weighedRoundRobin();
+        let activeQueue: QueueEntry[] | undefined = this.getQueue(selectedPriority);
+
+        // If the active queue is empty, we need to select the non-empty queue with the highest priority.
+        if (activeQueue?.length === 0) {
+            activeQueue = this.queues.list.find((queue) => queue.length > 0);
         }
 
-        if (this.mediumPriorityQueue.length > 0) {
-            if (this.cycle < 5) {
-                this.cycle++;
-                return this.mediumPriorityQueue.shift();
-            }
+        if (!activeQueue) {
+            return;
         }
 
-        if (this.lowPriorityQueue.length > 0) {
-            this.cycle = 0;
-            return this.lowPriorityQueue.shift();
-        }
-
-        if (this.highPriorityQueue.length > 0) {
-            return this.highPriorityQueue.shift();
-        }
-
-        if (this.mediumPriorityQueue.length > 0) {
-            return this.mediumPriorityQueue.shift();
-        }
-
-        return undefined;
+        return activeQueue.shift();
     }
 }

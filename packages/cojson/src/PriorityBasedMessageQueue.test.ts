@@ -9,14 +9,18 @@ function createMessage(priority?: CoValuePriority): SyncMessage {
         : { action: "load", id: "co_ztest-id", header: false, sessions: {} };
 }
 
+function setup() {
+    return new PriorityBasedMessageQueue(Object.values(CO_VALUE_PRIORITY), CO_VALUE_PRIORITY.HIGH);
+}
+
 describe("PriorityBasedMessageQueue", () => {
     test("should initialize with empty queues", () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
         expect(queue.isNonEmpty()).toBe(false);
     });
 
     test("should push messages to correct priority queues", async () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
 
         void queue.push(createMessage(CO_VALUE_PRIORITY.HIGH));
         void queue.push(createMessage(CO_VALUE_PRIORITY.MEDIUM));
@@ -27,7 +31,7 @@ describe("PriorityBasedMessageQueue", () => {
     });
 
     test("should pull messages in correct priority order", () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
 
         void queue.push(createMessage(CO_VALUE_PRIORITY.LOW));
         void queue.push(createMessage(CO_VALUE_PRIORITY.HIGH));
@@ -48,7 +52,7 @@ describe("PriorityBasedMessageQueue", () => {
     });
 
     test("should handle cycle-based priority", () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
 
         void queue.push(createMessage(CO_VALUE_PRIORITY.HIGH));
         void queue.push(createMessage(CO_VALUE_PRIORITY.HIGH));
@@ -90,12 +94,12 @@ describe("PriorityBasedMessageQueue", () => {
     });
 
     test("should return undefined when queue is empty", () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
         expect(queue.pull()).toBeUndefined();
     });
 
     test("should resolve promises when messages are pulled", async () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
         const promise = queue.push(createMessage(CO_VALUE_PRIORITY.HIGH));
 
         const resolvedPromise = Promise.race([
@@ -110,7 +114,7 @@ describe("PriorityBasedMessageQueue", () => {
     });
 
     test("should propagate errors to the push promise", async () => {
-        const queue = new PriorityBasedMessageQueue();
+        const queue = setup();
         const promise = queue.push(createMessage(CO_VALUE_PRIORITY.HIGH));
 
         const resolvedPromise = Promise.race([
@@ -120,7 +124,7 @@ describe("PriorityBasedMessageQueue", () => {
 
         const entry = queue.pull();
         entry?.reject(new Error("test error"));
-        
+
         await expect(resolvedPromise).to.rejects.toEqual(new Error("test error"))
     });
 });
