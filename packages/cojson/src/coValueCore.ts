@@ -1,4 +1,4 @@
-import { AnyRawCoValue, RawCoValue } from "./coValue.js";
+import { AnyRawCoValue, CO_VALUE_PRIORITY, CoValuePriority, RawCoValue } from "./coValue.js";
 import {
     Encrypted,
     Hash,
@@ -109,6 +109,7 @@ export class CoValueCore {
     _cachedDependentOn?: RawCoID[];
     _cachedNewContentSinceEmpty?: NewContentMessage[] | undefined;
     _currentAsyncAddTransaction?: Promise<void>;
+    _priority: CoValuePriority = CO_VALUE_PRIORITY.MEDIUM;
 
     constructor(
         header: CoValueHeader,
@@ -132,6 +133,10 @@ export class CoValueCore {
                     }
                 });
         }
+    }
+
+    setPriority(priority: CoValuePriority) {
+        this._priority = priority;
     }
 
     get sessionLogs(): Map<SessionID, SessionLog> {
@@ -850,6 +855,7 @@ export class CoValueCore {
             action: "content",
             id: this.id,
             header: knownState?.header ? undefined : this.header,
+            priority: this._priority,
             new: {},
         };
 
@@ -922,6 +928,7 @@ export class CoValueCore {
                         id: this.id,
                         header: undefined,
                         new: {},
+                        priority: this._priority,
                     };
                     pieces.push(currentPiece);
                     pieceSize = pieceSize - oldPieceSize;

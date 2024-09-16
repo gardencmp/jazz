@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { CoID, RawCoValue } from "../coValue.js";
+import { CO_VALUE_PRIORITY, CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
@@ -95,6 +95,8 @@ export class RawCoListView<
         this.deletionsByInsertion = {};
         this.afterStart = [];
         this.beforeEnd = [];
+
+        this.core.setPriority(CO_VALUE_PRIORITY.MEDIUM)
 
         for (const {
             txID,

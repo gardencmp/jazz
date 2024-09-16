@@ -55,9 +55,8 @@ describe("createWebSocketPeer", () => {
         messageHandler?.(messageEvent);
 
         // Check if the ping was recorded in the global jazzPings array
-        expect(g.jazzPings).toBeDefined();
-        expect(g.jazzPings!.length).toBeGreaterThan(0);
-        expect(g.jazzPings![g.jazzPings!.length - 1]).toMatchObject({
+        expect(g.jazzPings?.length).toBeGreaterThan(0);
+        expect(g.jazzPings?.at(-1)).toMatchObject({
             sent: pingMessage.time,
             dc: pingMessage.dc,
         });
@@ -108,22 +107,7 @@ describe("createWebSocketPeer", () => {
         await expect(promise).resolves.toBeUndefined();
     });
 
-    test("should schedule outgoing messages based on priority", async () => {
-        const { peer, mockWebSocket } = setup();
 
-        const message: SyncMessage = { action: "known", id: "co_ztest", header: false, sessions: {} };
-        const lowPriorityMsg: SyncMessage = { action: "content", id: "co_zlow", lowPriority: true, new: {} };
-        
-        const promise1 = peer.outgoing.push(lowPriorityMsg);
-        const promise2 = peer.outgoing.push(message);
-
-        await new Promise<void>(queueMicrotask);
-
-        expect(mockWebSocket.send).toHaveBeenNthCalledWith(1, JSON.stringify(message));
-        expect(mockWebSocket.send).toHaveBeenNthCalledWith(2, JSON.stringify(lowPriorityMsg));
-        await expect(promise1).resolves.toBeUndefined();
-        await expect(promise2).resolves.toBeUndefined();
-    });
 
     test("should stop sending messages when the websocket is closed", async () => {
         const { peer, mockWebSocket } = setup();
@@ -133,7 +117,7 @@ describe("createWebSocketPeer", () => {
         });
 
         const message1: SyncMessage = { action: "known", id: "co_ztest", header: false, sessions: {} };
-        const message2: SyncMessage = { action: "content", id: "co_zlow", new: {} };
+        const message2: SyncMessage = { action: "content", id: "co_zlow", new: {}, priority: 1 };
         
         void peer.outgoing.push(message1);
         void peer.outgoing.push(message2);
@@ -153,7 +137,7 @@ describe("createWebSocketPeer", () => {
         });
 
         const message1: SyncMessage = { action: "known", id: "co_ztest", header: false, sessions: {} };
-        const message2: SyncMessage = { action: "content", id: "co_zlow", new: {} };
+        const message2: SyncMessage = { action: "content", id: "co_zlow", new: {}, priority: 1 };
         
         void peer.outgoing.push(message1);
         void peer.outgoing.push(message2);

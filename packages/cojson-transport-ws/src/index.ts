@@ -5,7 +5,6 @@ import {
     SyncMessage,
     cojsonInternals,
 } from "cojson";
-import { PriorityBasedMessageQueue } from "./PriorityBasedMessageQueue.js";
 import { AnyWebSocket, PingMsg } from "./types.js";
 
  const g: typeof globalThis & {
@@ -82,48 +81,20 @@ export function createWebSocketPeer({
         }
     });
 
-    const outgoingMessageQueue = new PriorityBasedMessageQueue();
+    async function pushMessage(msg: SyncMessage) {
+        if (websocket.readyState !== 1) {
+            await websocketOpen;
+        }
 
-    let processing = false;
+        while (websocket.bufferedAmount > BUFFER_LIMIT && websocket.readyState === 1) {
+            await new Promise<void>((resolve) => setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL));
+        }
 
-    async function processQueue() {
-        if (processing) {
+        if (websocket.readyState !== 1) {
             return;
         }
 
-        processing = true;
-
-        await websocketOpen;
-
-        while (outgoingMessageQueue.isNonEmpty()) {
-            while (websocket.bufferedAmount > BUFFER_LIMIT && websocket.readyState === 1) {
-                await new Promise<void>((resolve) => setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL));
-            }
-
-            if (websocket.readyState !== 1) {
-                break;
-            }
-
-            const entry = outgoingMessageQueue.pull();
-
-            if (entry) {
-                websocket.send(JSON.stringify(entry.msg));
-
-                // Flag that the message has been sent
-                entry.resolve();
-            }
-        }
-
-        processing = false;
-    }
-
-    function pushMessage(msg: SyncMessage) {
-        const promise = outgoingMessageQueue.push(msg);
-
-        void processQueue();
-
-        // Resolves when the message has been sent
-        return promise;
+        websocket.send(JSON.stringify(msg));
     }
 
     return {

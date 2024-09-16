@@ -1,4 +1,4 @@
-import { CoID } from "../coValue.js";
+import { CO_VALUE_PRIORITY, CoID } from "../coValue.js";
 import { RawCoMap } from "./coMap.js";
 import { RawCoList } from "./coList.js";
 import { JsonObject } from "../jsonValue.js";
@@ -8,6 +8,7 @@ import { AgentID, isAgentID } from "../ids.js";
 import { RawAccount, AccountID, ControlledAccountOrAgent } from "./account.js";
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
+import { CoValueCore } from "../index.js";
 
 export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
@@ -50,6 +51,11 @@ export type GroupShape = {
 export class RawGroup<
     Meta extends JsonObject | null = JsonObject | null,
 > extends RawCoMap<GroupShape, Meta> {
+    constructor(core: CoValueCore, options?: { ignorePrivateTransactions: true },) {
+        super(core, options);
+        this.core.setPriority(CO_VALUE_PRIORITY.HIGH);
+    }
+
     /**
      * Returns the current role of a given account.
      *

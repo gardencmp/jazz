@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { RawCoValue, CoID } from "../coValue.js";
+import { RawCoValue, CoID, CO_VALUE_PRIORITY } from "../coValue.js";
 import { isAccountID } from "../typeUtils/isAccountID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
@@ -59,6 +59,7 @@ export class RawCoStreamView<
         this.core = core;
         this.items = {};
         this.fillFromCoValue();
+        this.core.setPriority(CO_VALUE_PRIORITY.LOW);
     }
 
     get headerMeta(): Meta {

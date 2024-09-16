@@ -271,6 +271,7 @@ export class SQLiteStorage {
                 id: theirKnown.id,
                 header: theirKnown.header ? undefined : parsedHeader,
                 new: {},
+                priority: cojsonInternals.CO_VALUE_PRIORITY.MEDIUM,
             },
         ];
 
@@ -357,6 +358,7 @@ export class SQLiteStorage {
                             action: "content",
                             id: theirKnown.id,
                             new: {},
+                            priority: cojsonInternals.CO_VALUE_PRIORITY.MEDIUM,
                         });
                     } else if (
                         idx ===

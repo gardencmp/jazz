@@ -6,7 +6,7 @@ import {
 } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { LocalNode } from "./localNode.js";
-import type { RawCoValue } from "./coValue.js";
+import { CO_VALUE_PRIORITY, type RawCoValue } from "./coValue.js";
 import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoStream, RawBinaryCoStream } from "./coValues/coStream.js";
@@ -80,6 +80,7 @@ export const cojsonInternals = {
     idforHeader,
     StreamingHash,
     Channel,
+    CO_VALUE_PRIORITY,
 };
 
 export {

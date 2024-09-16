@@ -8,7 +8,7 @@ import { connectedPeers, newQueuePair } from "../streamUtils.js";
 import { AccountID } from "../coValues/account.js";
 import { stableStringify } from "../jsonStringify.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
-import { expectMap } from "../coValue.js";
+import { CO_VALUE_PRIORITY, expectMap } from "../coValue.js";
 import { newRandomSessionID } from "../coValueCore.js";
 
 const Crypto = await WasmCrypto.create();
@@ -87,6 +87,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     .lastSignature!,
             },
         },
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 });
 
@@ -161,6 +162,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     .lastSignature!,
             },
         },
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 });
 test.todo(
@@ -215,6 +217,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 
     map.set("hello", "world", "trusting");
@@ -245,6 +248,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     .lastSignature!,
             },
         },
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 
     map.set("goodbye", "world", "trusting");
@@ -275,6 +279,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     .lastSignature!,
             },
         },
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 });
 
@@ -350,6 +355,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     .lastSignature!,
             },
         },
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 });
 
@@ -401,6 +407,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 
     map.set("hello", "world", "trusting");
@@ -448,6 +455,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     .lastSignature!,
             },
         },
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 });
 
@@ -561,6 +569,7 @@ test.todo(
                     )!.lastSignature!,
                 },
             },
+            priority: CO_VALUE_PRIORITY.HIGH,
         } satisfies SyncMessage);
     },
 );
@@ -611,6 +620,7 @@ test.skip("If we add a server peer, newly created coValues are auto-subscribed t
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 });
 
@@ -777,6 +787,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: CO_VALUE_PRIORITY.HIGH,
     } satisfies SyncMessage);
 
     await inTx2.push(mapSubscriptionMsg);

@@ -4,6 +4,7 @@ import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { PeerState } from "./PeerState.js";
+import { CoValuePriority } from "./coValue.js";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -39,7 +40,7 @@ export type NewContentMessage = {
     action: "content";
     id: RawCoID;
     header?: CoValueHeader;
-    lowPriority?: boolean;
+    priority: CoValuePriority;
     new: {
         [sessionID: SessionID]: SessionNewContent;
     };
@@ -276,7 +277,6 @@ export class SyncManager {
     async sendNewContentIncludingDependencies(
         id: RawCoID,
         peer: PeerState,
-        lowPriority: boolean = false,
     ) {
         const coValue = this.local.expectCoValueLoaded(id);
 
@@ -305,10 +305,6 @@ export class SyncManager {
                     //     } header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
-
-                    if (lowPriority) {
-                        piece.lowPriority = true;
-                    }
 
                     this.trySendToPeer(peer, piece).catch((e: unknown) => {
                         console.error("Error sending content piece", e);
@@ -751,12 +747,9 @@ export class SyncManager {
                     coValue.id,
                     peer,
                 );
-
-                const isLowPriorityContent = coValue.header.type === "costream";
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,
                     peer,
-                    isLowPriorityContent,
                 );
             } else if (peer.role === "server") {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);

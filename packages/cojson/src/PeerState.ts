@@ -1,4 +1,5 @@
 import { RawCoID } from "./ids.js";
+import { PriorityBasedMessageQueue } from "./PriorityBasedMessageQueue.js";
 import { CoValueKnownState, Peer, SyncMessage } from "./sync.js";
 
 export class PeerState {
@@ -9,12 +10,43 @@ export class PeerState {
     readonly priority = this.peer.priority;
     readonly crashOnClose = this.peer.crashOnClose;
 
+    private queue = new PriorityBasedMessageQueue();
+
     closed = false;
 
     constructor(private peer: Peer) {}
 
+    private processing = false;
+
+    async processQueue() {
+        if (this.processing) {
+            return;
+        }
+
+        this.processing = true;
+
+        while (this.queue.isNonEmpty()) {
+            const entry = this.queue.pull();
+
+            console.debug("Processing message", entry?.msg, this.queue, this.peer);
+
+            if (entry) {
+                await this.peer.outgoing
+                    .push(entry.msg)
+                    .then(entry.resolve)
+                    .catch(entry.reject);
+            }
+        }
+
+        this.processing = false;
+    }
+
     pushOutgoingMessage(msg: SyncMessage) {
-        return this.peer.outgoing.push(msg);
+        const promise = this.queue.push(msg);
+
+        void this.processQueue();
+
+        return promise;
     }
 
     get incoming() {
