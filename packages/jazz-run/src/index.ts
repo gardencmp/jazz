@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* istanbul ignore file -- @preserve */
 import { Command, Options } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Console, Effect } from "effect";
