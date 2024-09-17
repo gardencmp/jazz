@@ -2,13 +2,11 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeProvider";
 
-import { Manrope } from "next/font/google";
-import { Inter } from "next/font/google";
-import localFont from "next/font/local";
+import { IBM_Plex_Mono, Inter, Manrope } from "next/font/google";
 
 import { GcmpLogo, JazzLogo } from "@/components/logos";
 import { SiGithub, SiDiscord, SiTwitter } from "@icons-pack/react-simple-icons";
-import { Nav, NavLink, Newsletter, NewsletterButton } from "@/components/nav";
+import { Nav, NavLink, Newsletter } from "@/components/nav";
 import { DocNav } from "@/components/docs/nav";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -20,14 +18,18 @@ const manrope = Manrope({
     variable: "--font-manrope",
     display: "swap",
 });
+
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
     display: "swap",
 });
-const pragmata = localFont({
-    src: "../fonts/ppr_0829.woff2",
-    variable: "--font-ppr",
+
+const ibmPlexMono = IBM_Plex_Mono({
+    subsets: ["latin"],
+    variable: "--font-ibm-plex-mono",
+    display: "swap",
+    weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -45,7 +47,7 @@ export default function RootLayout({
             <body
                 className={[
                     manrope.variable,
-                    pragmata.variable,
+                    ibmPlexMono.variable,
                     inter.className,
                     "flex flex-col items-center bg-stone-50 dark:bg-stone-950 overflow-x-hidden",
                 ].join(" ")}
