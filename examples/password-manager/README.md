@@ -1,6 +1,6 @@
 # Password Manager Example
 
-Live version: https://example-pass-manager.jazz.tools
+Live version: https://passwords-demo.jazz.tools
 
 ![Password Manager Screenshot](demo.png "Screenshot")
 
