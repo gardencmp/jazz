@@ -33,7 +33,7 @@ const config: Config = {
         extend: {
             fontFamily: {
                 display: ["var(--font-manrope)"],
-                mono: ["var(--font-ibm-plex-mono)"],
+                mono: ["var(--font-commit-mono)"],
             },
             // shadcn-ui
             colors: {

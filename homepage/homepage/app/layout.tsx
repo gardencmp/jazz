@@ -2,7 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeProvider";
 
-import { IBM_Plex_Mono, Inter, Manrope } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
+import localFont from "next/font/local";
 
 import { GcmpLogo, JazzLogo } from "@/components/logos";
 import { SiGithub, SiDiscord, SiTwitter } from "@icons-pack/react-simple-icons";
@@ -25,11 +26,21 @@ const inter = Inter({
     display: "swap",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-    subsets: ["latin"],
-    variable: "--font-ibm-plex-mono",
+const commitMono = localFont({
+    src: [
+        {
+            path: "../fonts/CommitMono-Regular.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../fonts/CommitMono-Regular.woff",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-commit-mono",
     display: "swap",
-    weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +58,7 @@ export default function RootLayout({
             <body
                 className={[
                     manrope.variable,
-                    ibmPlexMono.variable,
+                    commitMono.variable,
                     inter.className,
                     "flex flex-col items-center bg-stone-50 dark:bg-stone-950 overflow-x-hidden",
                 ].join(" ")}
