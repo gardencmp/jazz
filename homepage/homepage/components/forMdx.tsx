@@ -1,3 +1,5 @@
+import { ChatCodeExample } from "@/components/ChatCodeExample";
+
 export function Prose(props: { children: ReactNode; className?: string }) {
     return (
         <div
@@ -138,4 +140,8 @@ export function ResponsiveIframe(
     props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
 ) {
     return <ResponsiveIframeClient {...props} />;
+}
+
+export function CodeExample() {
+    return <ChatCodeExample />;
 }

@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 import harmonyPalette from "@evilmartians/harmony/tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindCSSAnimate from "tailwindcss-animate";
+import colors from "tailwindcss/colors";
 
 const config: Config = {
     darkMode: ["class"],
@@ -29,6 +30,7 @@ const config: Config = {
                 "925": "oklch(0.220000 0.002 75 / <alpha-value>)",
                 "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
             },
+            indigo: colors.indigo,
         },
         extend: {
             fontFamily: {
