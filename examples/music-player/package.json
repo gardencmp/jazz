@@ -15,10 +15,14 @@
         "*.{js,jsx,mdx,json}": "prettier --write"
     },
     "dependencies": {
+        "@radix-ui/react-dropdown-menu": "^2.1.1",
+        "@radix-ui/react-slot": "^1.0.2",
+        "@radix-ui/react-toast": "^1.1.4",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
-        "jazz-react": "workspace:0.8.2",
-        "jazz-tools": "workspace:0.8.2",
+        "jazz-react": "workspace:*",
+        "jazz-tools": "workspace:*",
+        "lucide-react": "^0.274.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router": "^6.16.0",

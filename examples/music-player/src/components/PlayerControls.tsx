@@ -1,9 +1,10 @@
-import { MediaPlayer } from "@/4_useMediaPlayer";
+import { MediaPlayer } from "@/5_useMediaPlayer";
 import { usePlayState } from "@/lib/audio/usePlayState";
 import { Waveform } from "./Waveform";
 import { useAccount } from "@/2_main";
 import { useMediaEndListener } from "@/lib/audio/useMediaEndListener";
 import { useKeyboardListener } from "@/lib/useKeyboardListener";
+import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 
 export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const playState = usePlayState();
@@ -26,28 +27,43 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
 
     const activeTrackTitle = mediaPlayer.activeTrack.title;
 
-    const head = activePlaylist?.title
-        ? `${activePlaylist.title} / ${activeTrackTitle}`
-        : activeTrackTitle;
-
     return (
-        <div className=" flex flex-col fixed bottom-0 left-0 border-t-2 w-full p-4 gap-3">
-            <div>Playling: {head}</div>
-            <div className="flex items-center w-full">
-                <div className="flex flex-shrink gap-3 text-xl">
-                    {" "}
-                    <button onClick={mediaPlayer.playPrevTrack}>⏮️</button>
-                    {mediaPlayer.loading ? (
-                        <div className="animate-spin">߷</div>
-                    ) : !isPlaying ? (
-                        <button onClick={playState.toggle}>▶️</button>
-                    ) : (
-                        <button onClick={playState.toggle}>⏸️</button>
-                    )}
-                    <button onClick={mediaPlayer.playNextTrack}>⏭️</button>
+        <footer className="flex items-center justify-between p-4 gap-4 bg-white border-t border-gray-200 fixed bottom-0 left-0 right-0 w-full">
+            <div className="flex justify-center items-center space-x-2">
+                <div className="flex items-center space-x-4">
+                    <button
+                        onClick={mediaPlayer.playPrevTrack}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        <SkipBack size={20} />
+                    </button>
+                    <button
+                        onClick={playState.toggle}
+                        className="w-[42px] h-[42px] flex items-center justify-center bg-blue-600 rounded-full text-white hover:bg-blue-700"
+                    >
+                        {isPlaying ? (
+                            <Pause size={24} fill="currentColor" />
+                        ) : (
+                            <Play size={24} fill="currentColor" />
+                        )}
+                    </button>
+                    <button
+                        onClick={mediaPlayer.playNextTrack}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        <SkipForward size={20} />
+                    </button>
                 </div>
+            </div>
+            <div className=" sm:hidden md:flex flex-col flex-shrink-1 items-center w-[75%]"> 
                 <Waveform track={mediaPlayer.activeTrack} height={30} />
             </div>
-        </div>
+            <div className="flex flex-col items-end  gap-1 text-right min-w-fit w-[25%]">
+                <h4 className="font-medium text-blue-800">
+                    {activeTrackTitle}
+                </h4>
+                <p className="text-sm text-gray-600">{activePlaylist?.title || "All tracks"}</p>
+            </div>
+        </footer>
     );
 }

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAccount } from "../2_main";
-import { uploadMusicTracks } from "@/3_actions";
+import { uploadMusicTracks } from "@/4_actions";
 import { MusicaAccount } from "@/1_schema";
 
 export function useUploadExampleData() {
