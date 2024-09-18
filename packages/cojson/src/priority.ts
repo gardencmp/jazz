@@ -23,18 +23,16 @@ export function getPriorityFromHeader(header: CoValueHeader | undefined | boolea
         return CO_VALUE_PRIORITY.MEDIUM;
     }
 
-    if (header.type === "costream") {
-        return CO_VALUE_PRIORITY.LOW;
+    if (header.meta?.type === "account") {
+        return CO_VALUE_PRIORITY.HIGH;
     }
 
-    if (header.meta) {
-        if (header.meta.type === "account") {
-            return CO_VALUE_PRIORITY.HIGH;
-        }
-    
-        if (header.meta.type === "group") {
-            return CO_VALUE_PRIORITY.HIGH;
-        }
+    if (header.ruleset.type === "group") {
+        return CO_VALUE_PRIORITY.HIGH;
+    }
+
+    if (header.type === "costream" && header.meta?.type === "binary") {
+        return CO_VALUE_PRIORITY.LOW;
     }
 
     return CO_VALUE_PRIORITY.MEDIUM;

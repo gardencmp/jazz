@@ -610,7 +610,7 @@ export class LocalNode {
         const groupCoValue = this.createCoValue({
             type: "comap",
             ruleset: { type: "group", initialAdmin: this.account.id },
-            meta: { type: "group" },
+            meta: null,
             ...this.crypto.createdNowUnique(),
         });
 

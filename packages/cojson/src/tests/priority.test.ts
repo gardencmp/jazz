@@ -13,12 +13,24 @@ describe("getPriorityFromHeader", () => {
         expect(getPriorityFromHeader(undefined)).toEqual(CO_VALUE_PRIORITY.MEDIUM);
     });
 
-    test("returns LOW priority for costream type", () => {
+    test("returns MEDIUM priority for costream type", () => {
         const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
         const costream = node.createCoValue({
             type: "costream",
             ruleset: { type: "unsafeAllowAll" },
             meta: null,
+            ...Crypto.createdNowUnique(),
+        });
+
+        expect(getPriorityFromHeader(costream.header)).toEqual(CO_VALUE_PRIORITY.MEDIUM);
+    });
+
+    test("returns LOW priority for binary costream type", () => {
+        const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
+        const costream = node.createCoValue({
+            type: "costream",
+            ruleset: { type: "unsafeAllowAll" },
+            meta: { type: "binary" },
             ...Crypto.createdNowUnique(),
         });
 
