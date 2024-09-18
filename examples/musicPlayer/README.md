@@ -1,6 +1,6 @@
 # Jazz Music Player Example
 
-Live version: https://example-musicplayer.jazz.tools
+Live version: https://music-demo.jazz.tools
 
 ## Installing & running the example locally
 

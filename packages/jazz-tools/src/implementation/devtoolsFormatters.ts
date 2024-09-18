@@ -1,3 +1,4 @@
+/* istanbul ignore file -- @preserve */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ItemsSym } from "./symbols.js";
 

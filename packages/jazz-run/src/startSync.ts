@@ -1,3 +1,4 @@
+/* istanbul ignore file -- @preserve */
 import { Command, Options } from "@effect/cli";
 import {
     ControlledAgent,
