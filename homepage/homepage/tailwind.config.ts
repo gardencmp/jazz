@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 import harmonyPalette from "@evilmartians/harmony/tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindCSSAnimate from "tailwindcss-animate";
+import colors from "tailwindcss/colors";
 
 const config: Config = {
     darkMode: ["class"],
@@ -28,6 +29,11 @@ const config: Config = {
                 "900": "oklch(0.302734 0.002 75 / <alpha-value>)",
                 "925": "oklch(0.220000 0.002 75 / <alpha-value>)",
                 "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
+            },
+            blue: {
+                ...colors.blue,
+                "700": "#3313F7",
+                DEFAULT: "#3313F7",
             },
         },
         extend: {

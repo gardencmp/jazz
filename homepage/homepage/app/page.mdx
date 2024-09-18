@@ -1,19 +1,16 @@
 import {
     Slogan,
     Grid,
-    GridItem,
     GridFeature,
     GridCard,
     MultiplayerIcon,
     ResponsiveIframe,
     ComingSoonBadge,
-    Prose
+    Prose,
+    CodeExampleTabs,
 } from "@/components/forMdx";
-import { JazzLogo, LocalFirstConfLogo } from "@/components/logos";
 import {
-    WorkflowIcon,
     UploadCloudIcon,
-    PlaneIcon,
     MonitorSmartphoneIcon,
     GaugeIcon,
     UsersIcon,
@@ -58,19 +55,28 @@ Features that used to take months to build now work out-of-the-box.
 ### First impressions&hellip;
 <Slogan small>A chat app in 84 lines of code.</Slogan>
 
-<Grid className="mt-0 -mx-4 md:-mx-6">
-<GridItem className="md:col-start-1 col-span-2">
 
-<App_tsx/>
+<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-0 -mx-4 md:-mx-6">
+<CodeExampleTabs
+  tabs={[
+    {
+      name: "app.tsx",
+      content: <App_tsx />,
+    },
+    {
+      name: "chatScreen.tsx",
+      content: <ChatScreen_tsx />,
+    },
+  ]}
+  className="lg:col-span-2"
+/>
 
-</GridItem>
-<GridItem className="md:col-start-3 col-span-2">
-
-<ChatScreen_tsx/>
-
-</GridItem>
-<ResponsiveIframe src="https://chat.jazz.tools" localSrc="http://localhost:5173" className="lg:col-start-5 col-span-2 rounded-xl overflow-hidden min-h-[50vh]"/>
-</Grid>
+<ResponsiveIframe
+  src="https://chat.jazz.tools"
+  localSrc="http://localhost:5173"
+  className="rounded-sm shadow-sm overflow-hidden min-h-[50vh]"
+/>
+</div>
 </div>
 
 ## Collaborative Values
