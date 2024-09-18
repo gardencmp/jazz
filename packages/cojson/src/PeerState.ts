@@ -14,6 +14,12 @@ export class PeerState {
     readonly priority = this.peer.priority;
     readonly crashOnClose = this.peer.crashOnClose;
 
+    /**
+     * We set as default priority HIGH to handle all the messages without a
+     * priority property as HIGH priority.
+     *
+     * This way we consider all the non-content messsages as HIGH priority.
+     */
     private queue = new PriorityBasedMessageQueue(CO_VALUE_PRIORITY.HIGH);
 
     closed = false;
@@ -29,8 +35,12 @@ export class PeerState {
 
         this.processing = true;
 
+
         let entry: QueueEntry | undefined;
         while ((entry = this.queue.pull())) {
+            // Awaiting the push to send one message at a time
+            // This way when the peer is "under pressure" we can enqueue all 
+            // the coming messages and organize them by priority
             await this.peer.outgoing
                 .push(entry.msg)
                 .then(entry.resolve)

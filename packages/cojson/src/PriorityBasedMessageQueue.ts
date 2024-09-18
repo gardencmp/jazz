@@ -24,6 +24,9 @@ export type QueueEntry = {
     reject: (_: unknown) => void;
 };
 
+/**
+ * Since we have a fixed range of priority values (0-7) we can create a fixed array of queues.
+ */
 type Tuple<T, N extends number, A extends unknown[] = []> = A extends { length: N } ? A : Tuple<T, N, [...A, T]>;
 type QueueTuple = Tuple<QueueEntry[], 8>;
 
