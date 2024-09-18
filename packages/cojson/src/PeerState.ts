@@ -21,12 +21,10 @@ export class PeerState {
      * This way we consider all the non-content messsages as HIGH priority.
      */
     private queue = new PriorityBasedMessageQueue(CO_VALUE_PRIORITY.HIGH);
-
-    closed = false;
+    private processing = false;
+    public closed = false;
 
     constructor(private peer: Peer) {}
-
-    private processing = false;
 
     async processQueue() {
         if (this.processing) {
