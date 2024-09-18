@@ -55,11 +55,11 @@ export function ResponsiveIframe(
     return (
         <div
             className={
-                "w-full h-full flex flex-col items-stretch border dark:border-stone-900 " +
+                "w-full h-full flex flex-col items-stretch border dark:border-stone-800 " +
                 props.className
             }
         >
-            <div className="rounded-t-sm bg-white border-b dark:bg-stone-900 py-1.5 px-10 flex">
+            <div className="rounded-t-sm bg-white border-b dark:border-stone-800 dark:bg-stone-900 py-1.5 px-10 flex">
                 <input
                     className="text-xs px-1 py-0.5 bg-white dark:bg-stone-900 outline outline-1 outline-stone-200 dark:outline-stone-800 w-full rounded text-center"
                     value={url?.replace("http://", "").replace("https://", "")}

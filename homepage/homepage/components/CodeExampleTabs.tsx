@@ -23,18 +23,19 @@ export function CodeExampleTabs({
         <div
             className={clsx(
                 "shadow-sm bg-white border rounded-sm overflow-hidden h-full flex flex-col",
+                "dark:bg-stone-925 dark:border-stone-800",
                 className,
             )}
         >
-            <div className="flex border-b">
+            <div className="flex border-b dark:border-stone-800 dark:bg-stone-900">
                 {tabs.map((tab, index) => (
                     <div key={index}>
                         <button
                             key={index}
                             className={clsx(
                                 activeTab === index
-                                    ? "border-indigo-500 bg-white text-stone-700"
-                                    : "border-transparent text-stone-500 hover:text-stone-700",
+                                    ? "border-indigo-500 bg-white text-stone-700 dark:bg-stone-925 dark:text-indigo-400 dark:border-indigo-400"
+                                    : "border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-indigo-400",
                                 "flex items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 ",
                             )}
                             onClick={() => setActiveTab(index)}
