@@ -96,7 +96,9 @@ export default function Mesh() {
                 <GridCard>
                     <H3>
                         Mesh Pro <ComingSoonBadge />
-                        <div className="float-right"><span className="text-2xl">$79</span>/mo</div>
+                        <div className="float-right">
+                            <span className="text-2xl">$79</span>/mo
+                        </div>
                     </H3>
                     <UL>
                         <LI>High-priority sync</LI>
@@ -183,7 +185,8 @@ export default function Mesh() {
                 or hybrids?
                 <br />
                 SLAs and dedicated support? White-glove integration services?
-                Let&apos;s talk: <a href="mailto:hello@gcmp.io">hello@gcmp.io</a>
+                Let&apos;s talk:{" "}
+                <a href="mailto:hello@gcmp.io">hello@gcmp.io</a>
             </P>
             <SectionHeader
                 title="Custom Deployment Scenarios"
