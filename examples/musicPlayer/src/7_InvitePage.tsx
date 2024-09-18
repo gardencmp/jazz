@@ -23,7 +23,7 @@ export function InvitePage() {
 
                 if (
                     playlist &&
-                    !me.root.playlists.some((item) => playlist.id !== item?.id)
+                    !me.root.playlists.some((item) => playlist.id === item?.id)
                 ) {
                     me.root.playlists.push(playlist);
                 }
