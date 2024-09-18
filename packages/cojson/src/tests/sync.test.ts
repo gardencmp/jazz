@@ -1450,13 +1450,13 @@ describe("sync - extra tests", () => {
         expect(mapOnNode3.get("initial")).toBe("value");
 
         // Simulate network partition: disconnect node3 from node1 and node2
-        node1.syncManager.peers["node3"]?.outgoing.close();
+        node1.syncManager.peers["node3"]?.gracefulShutdown();
         delete node1.syncManager.peers["node3"];
-        node2.syncManager.peers["node3"]?.outgoing.close();
+        node2.syncManager.peers["node3"]?.gracefulShutdown();
         delete node2.syncManager.peers["node3"];
-        node3.syncManager.peers["node1"]?.outgoing.close();
+        node3.syncManager.peers["node1"]?.gracefulShutdown();
         delete node3.syncManager.peers["node1"];
-        node3.syncManager.peers["node2"]?.outgoing.close();
+        node3.syncManager.peers["node2"]?.gracefulShutdown();
         delete node3.syncManager.peers["node2"];
 
         // Make changes on both sides of the partition
