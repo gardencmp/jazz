@@ -30,7 +30,11 @@ const config: Config = {
                 "925": "oklch(0.220000 0.002 75 / <alpha-value>)",
                 "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
             },
-            indigo: colors.indigo,
+            blue: {
+                ...colors.blue,
+                "700": "#3313F7",
+                DEFAULT: "#3313F7",
+            },
         },
         extend: {
             fontFamily: {
