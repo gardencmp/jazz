@@ -1,22 +1,23 @@
 "use client";
 
-import { App_tsx, ChatScreen_tsx } from "@/codeSamples/examples/chat/src";
 import { useState } from "react";
 import { clsx } from "clsx";
 
-export function ChatCodeExample({ className = "" }: { className?: string }) {
-    const [activeTab, setActiveTab] = useState(0);
+interface CodeExampleTab {
+    name: string;
+    content: React.ReactNode;
+}
 
-    const tabs = [
-        {
-            name: "app.tsx",
-            content: <App_tsx />,
-        },
-        {
-            name: "chatScreen.tsx",
-            content: <ChatScreen_tsx />,
-        },
-    ];
+export interface CodeExampleTabsProps {
+    tabs: Array<CodeExampleTab>;
+    className?: string;
+}
+
+export function CodeExampleTabs({
+    tabs,
+    className = "",
+}: CodeExampleTabsProps) {
+    const [activeTab, setActiveTab] = useState(0);
 
     return (
         <div

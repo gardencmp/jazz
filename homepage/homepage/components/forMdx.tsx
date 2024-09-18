@@ -1,4 +1,7 @@
-import { ChatCodeExample as ChatCodeExampleClient } from "@/components/ChatCodeExample";
+import {
+    CodeExampleTabs as CodeExampleTabsClient,
+    CodeExampleTabsProps,
+} from "@/components/CodeExampleTabs";
 
 export function Prose(props: { children: ReactNode; className?: string }) {
     return (
@@ -142,6 +145,6 @@ export function ResponsiveIframe(
     return <ResponsiveIframeClient {...props} />;
 }
 
-export function ChatCodeExample({ className }: { className?: string }) {
-    return <ChatCodeExampleClient className={className} />;
+export function CodeExampleTabs(props: CodeExampleTabsProps) {
+    return <CodeExampleTabsClient {...props} />;
 }
