@@ -73,11 +73,7 @@ function RenderPackageChild({
         return child.getAllSignatures().map((signature, i) => {
             const paramTypes = printParamsWithTypes(signature);
             return (
-                <div
-                    key={i}
-                    id={inPackage + "/" + child.name}
-                    className="not-prose mt-4"
-                >
+                <div key={i} id={child.name} className="not-prose mt-4">
                     {
                         <Highlight hide={[0, 2]}>
                             {`function \n${printSimpleSignature(child, signature) + ":"}\n {}`}
@@ -102,7 +98,7 @@ function RenderPackageChild({
         });
     } else {
         return (
-            <h4 id={inPackage + "/" + child.name}>
+            <h4 id={child.name}>
                 {child.name} {child.type?.type}
             </h4>
         );
@@ -123,7 +119,7 @@ function RenderTypeAlias({
     );
     return (
         <div className="mt-4">
-            <h4 className="not-prose" id={inPackage + "/" + child.name}>
+            <h4 className="not-prose" id={child.name}>
                 <Highlight>{`type ${child.name}`}</Highlight>
             </h4>
             <p className="not-prose text-sm ml-4">

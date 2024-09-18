@@ -129,7 +129,7 @@ export async function NavPackage({
                                             <a
                                                 key={child.id}
                                                 className="text-sm inline-block px-2 m-0.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
-                                                href={`#${packageName}/${child.name}`}
+                                                href={`/docs/api-reference/${packageName}#${child.name}`}
                                             >
                                                 <code>{child.name}</code>
                                             </a>

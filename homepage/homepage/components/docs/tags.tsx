@@ -58,15 +58,15 @@ export function ClassOrInterface({
     return (
         <div className="relative not-prose">
             <a
-                id={inPackage + "/" + name}
-                href={"#" + inPackage + "/" + name}
+                id={name}
+                href={"#" + name}
                 className="absolute md:top-[3.5rem] -ml-6 w-4 flex items-center justify-center opacity-0 peer-group-hover:opacity-100 target:opacity-100"
                 tabIndex={-1}
             >
                 <LinkIcon size={15} />
             </a>
             <h4 className="peer sticky top-0 pt-[0.5rem] md:top-[2.5rem] md:pt-[3rem] bg-stone-50 dark:bg-stone-950 z-20">
-                <a href={"#" + inPackage + "/" + name}>
+                <a href={"#" + name}>
                     <Highlight>
                         {(isInterface ? "interface " : "class ") +
                             name +
