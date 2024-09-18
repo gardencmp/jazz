@@ -5,40 +5,18 @@ import {
     SyncMessage,
     cojsonInternals,
 } from "cojson";
+import { AnyWebSocket, PingMsg } from "./types.js";
 
-interface WebsocketEvents {
-    close: { code: number; reason: string };
-    message: { data: unknown };
-    open: void;
-}
-interface PingMsg {
-    time: number;
-    dc: string;
-}
-
-interface AnyWebSocket {
-    addEventListener<K extends keyof WebsocketEvents>(
-        type: K,
-        listener: (event: WebsocketEvents[K]) => void,
-        options?: { once: boolean },
-    ): void;
-    removeEventListener<K extends keyof WebsocketEvents>(
-        type: K,
-        listener: (event: WebsocketEvents[K]) => void,
-    ): void;
-    close(): void;
-    send(data: string): void;
-    readyState: number;
-    bufferedAmount: number;
-}
-
-const g: typeof globalThis & {
+ const g: typeof globalThis & {
     jazzPings?: {
         received: number;
         sent: number;
         dc: string;
     }[];
 } = globalThis;
+
+export const BUFFER_LIMIT = 100_000;
+export const BUFFER_LIMIT_POLLING_INTERVAL = 10;
 
 export function createWebSocketPeer({
     id,
@@ -68,6 +46,7 @@ export function createWebSocketPeer({
     websocket.addEventListener("message", function handleIncomingMsg(event) {
         const msg = JSON.parse(event.data as string);
         pingTimeout && clearTimeout(pingTimeout);
+
         if (msg?.type === "ping") {
             const ping = msg as PingMsg;
             g.jazzPings ||= [];
@@ -102,31 +81,37 @@ export function createWebSocketPeer({
         }
     });
 
+    async function pushMessage(msg: SyncMessage) {
+        if (websocket.readyState !== 1) {
+            await websocketOpen;
+        }
+
+        while (websocket.bufferedAmount > BUFFER_LIMIT && websocket.readyState === 1) {
+            await new Promise<void>((resolve) => setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL));
+        }
+
+        if (websocket.readyState !== 1) {
+            return;
+        }
+
+        websocket.send(JSON.stringify(msg));
+    }
+
     return {
         id,
         incoming,
         outgoing: {
-            async push(msg) {
-                await websocketOpen;
-                if (websocket.readyState === 1) {
-                    while (websocket.bufferedAmount > 1_000_000) {
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, 100),
-                        );
-                        if (websocket.readyState !== 1) {
-                            console.log("WebSocket closed while buffering", id, websocket.bufferedAmount);
-                            return;
-                        }
-                    }
-                    websocket.send(JSON.stringify(msg));
-                }
-            },
+            push: pushMessage,
             close() {
-                console.log("Trying to close", id, websocket.readyState)
+                console.log("Trying to close", id, websocket.readyState);
                 if (websocket.readyState === 0) {
-                    websocket.addEventListener("open", function handleClose() {
-                        websocket.close();
-                    }, { once: true });
+                    websocket.addEventListener(
+                        "open",
+                        function handleClose() {
+                            websocket.close();
+                        },
+                        { once: true },
+                    );
                 } else if (websocket.readyState == 1) {
                     websocket.close();
                 }

@@ -9,7 +9,8 @@ import { AccountID } from "../coValues/account.js";
 import { stableStringify } from "../jsonStringify.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { expectMap } from "../coValue.js";
-import { newRandomSessionID } from "../coValueCore.js";
+import { CoValueHeader, newRandomSessionID } from "../coValueCore.js";
+import { getPriorityFromHeader } from "../priority.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -56,16 +57,18 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     const newContentMsg = (await outRxQ.next()).value;
 
+    const expectedHeader = {
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        createdAt: map.core.header.createdAt,
+        uniqueness: map.core.header.uniqueness,
+    } satisfies CoValueHeader;
+
     expect(newContentMsg).toEqual({
         action: "content",
         id: map.core.id,
-        header: {
-            type: "comap",
-            ruleset: { type: "ownedByGroup", group: group.id },
-            meta: null,
-            createdAt: map.core.header.createdAt,
-            uniqueness: map.core.header.uniqueness,
-        },
+        header: expectedHeader,
         new: {
             [node.currentSessionID]: {
                 after: 0,
@@ -87,6 +90,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -161,6 +165,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 test.todo(
@@ -215,6 +220,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     map.set("hello", "world", "trusting");
@@ -245,6 +251,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     map.set("goodbye", "world", "trusting");
@@ -275,6 +282,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -350,6 +358,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -401,6 +410,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     map.set("hello", "world", "trusting");
@@ -448,6 +458,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -561,6 +572,7 @@ test.todo(
                     )!.lastSignature!,
                 },
             },
+            priority: getPriorityFromHeader(map.core.header),
         } satisfies SyncMessage);
     },
 );
@@ -611,6 +623,7 @@ test.skip("If we add a server peer, newly created coValues are auto-subscribed t
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -777,6 +790,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     await inTx2.push(mapSubscriptionMsg);
@@ -1436,13 +1450,13 @@ describe("sync - extra tests", () => {
         expect(mapOnNode3.get("initial")).toBe("value");
 
         // Simulate network partition: disconnect node3 from node1 and node2
-        node1.syncManager.peers["node3"]?.outgoing.close();
+        node1.syncManager.peers["node3"]?.gracefulShutdown();
         delete node1.syncManager.peers["node3"];
-        node2.syncManager.peers["node3"]?.outgoing.close();
+        node2.syncManager.peers["node3"]?.gracefulShutdown();
         delete node2.syncManager.peers["node3"];
-        node3.syncManager.peers["node1"]?.outgoing.close();
+        node3.syncManager.peers["node1"]?.gracefulShutdown();
         delete node3.syncManager.peers["node1"];
-        node3.syncManager.peers["node2"]?.outgoing.close();
+        node3.syncManager.peers["node2"]?.gracefulShutdown();
         delete node3.syncManager.peers["node2"];
 
         // Make changes on both sides of the partition
