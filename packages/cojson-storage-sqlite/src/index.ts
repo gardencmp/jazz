@@ -265,13 +265,14 @@ export class SQLiteStorage {
             return;
         }
 
+        const priority = cojsonInternals.getPriorityFromHeader(parsedHeader);
         const newContentPieces: CojsonInternalTypes.NewContentMessage[] = [
             {
                 action: "content",
                 id: theirKnown.id,
                 header: theirKnown.header ? undefined : parsedHeader,
                 new: {},
-                priority: cojsonInternals.CO_VALUE_PRIORITY.MEDIUM,
+                priority,
             },
         ];
 
@@ -358,7 +359,7 @@ export class SQLiteStorage {
                             action: "content",
                             id: theirKnown.id,
                             new: {},
-                            priority: cojsonInternals.CO_VALUE_PRIORITY.MEDIUM,
+                            priority,
                         });
                     } else if (
                         idx ===

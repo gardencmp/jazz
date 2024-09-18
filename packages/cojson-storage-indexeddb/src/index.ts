@@ -309,7 +309,7 @@ export class IDBStorage {
                                     ? undefined
                                     : coValueRow?.header,
                                 new: {},
-                                priority: cojsonInternals.CO_VALUE_PRIORITY.MEDIUM,
+                                priority: cojsonInternals.getPriorityFromHeader(coValueRow?.header),
                             },
                         ];
 
@@ -710,7 +710,7 @@ function collectNewTxs(
                 action: "content",
                 id: theirKnown.id,
                 new: {},
-                priority:  cojsonInternals.CO_VALUE_PRIORITY.MEDIUM,
+                priority: cojsonInternals.getPriorityFromHeader(undefined),
             });
         } else if (idx === firstNewTxIdx + newTxsInSession.length - 1) {
             sessionEntry.lastSignature = sessionRow.lastSignature;

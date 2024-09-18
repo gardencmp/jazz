@@ -1,6 +1,9 @@
-import { CO_VALUE_PRIORITY } from "./coValue.js";
 import { RawCoID } from "./ids.js";
-import { PriorityBasedMessageQueue } from "./PriorityBasedMessageQueue.js";
+import { CO_VALUE_PRIORITY } from "./priority.js";
+import {
+    PriorityBasedMessageQueue,
+    QueueEntry,
+} from "./PriorityBasedMessageQueue.js";
 import { CoValueKnownState, Peer, SyncMessage } from "./sync.js";
 
 export class PeerState {
@@ -11,10 +14,7 @@ export class PeerState {
     readonly priority = this.peer.priority;
     readonly crashOnClose = this.peer.crashOnClose;
 
-    private queue = new PriorityBasedMessageQueue(
-        Object.values(CO_VALUE_PRIORITY),
-        CO_VALUE_PRIORITY.HIGH,
-    );
+    private queue = new PriorityBasedMessageQueue(CO_VALUE_PRIORITY.HIGH);
 
     closed = false;
 
@@ -29,15 +29,12 @@ export class PeerState {
 
         this.processing = true;
 
-        while (this.queue.isNonEmpty()) {
-            const entry = this.queue.pull();
-
-            if (entry) {
-                await this.peer.outgoing
-                    .push(entry.msg)
-                    .then(entry.resolve)
-                    .catch(entry.reject);
-            }
+        let entry: QueueEntry | undefined;
+        while ((entry = this.queue.pull())) {
+            await this.peer.outgoing
+                .push(entry.msg)
+                .then(entry.resolve)
+                .catch(entry.reject);
         }
 
         this.processing = false;

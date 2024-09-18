@@ -1,7 +1,7 @@
 import { describe, test, expect, vi } from "vitest";
-import { PeerState } from "./PeerState.js";
-import { Peer, SyncMessage } from "./sync.js";
-import { CO_VALUE_PRIORITY } from "./coValue.js";
+import { PeerState } from "../PeerState.js";
+import { Peer, SyncMessage } from "../sync.js";
+import { CO_VALUE_PRIORITY } from "../priority.js";
 
 function setup() {
     const mockPeer: Peer = {

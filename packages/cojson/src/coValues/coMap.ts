@@ -1,6 +1,6 @@
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { AgentID, TransactionID } from "../ids.js";
-import { CoID, CO_VALUE_PRIORITY, RawCoValue } from "../coValue.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
@@ -55,8 +55,6 @@ export class RawCoMapView<
         this.id = core.id as CoID<this>;
         this.core = core;
         this.ops = {};
-
-        this.core.setPriority(CO_VALUE_PRIORITY.MEDIUM)
 
         for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
             options,

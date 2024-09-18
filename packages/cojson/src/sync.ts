@@ -4,7 +4,7 @@ import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { PeerState } from "./PeerState.js";
-import { CoValuePriority } from "./coValue.js";
+import { CoValuePriority } from "./priority.js";
 
 export type CoValueKnownState = {
     id: RawCoID;

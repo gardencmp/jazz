@@ -11,30 +11,12 @@ export type CoID<T extends RawCoValue> = RawCoID & {
     readonly __type: T;
 };
 
-/**
- * The priority of a `CoValue` determines how much priority is given
- * to its content messages.
- * 
- * The priority value is handled as weight in the weighed round robin algorithm
- * used to determine the order in which messages are sent.
- */
-export const CO_VALUE_PRIORITY = {
-    HIGH: 3,
-    MEDIUM: 2,
-    LOW: 1,
-} as const;
-
-export type CoValuePriority =
-    (typeof CO_VALUE_PRIORITY)[keyof typeof CO_VALUE_PRIORITY];
-
 export interface RawCoValue {
     /** The `CoValue`'s (precisely typed) `CoID` */
     id: CoID<this>;
     core: CoValueCore;
     /** Specifies which kind of `CoValue` this is */
     type: string;
-    /** Specifies the priority of the outgoing message related to this `CoValue`. Defaults to MEDIUM */
-    priority?: CoValuePriority;
     /** The `CoValue`'s (precisely typed) static metadata */
     headerMeta: JsonObject | null;
     /** The `Group` this `CoValue` belongs to (determining permissions) */
