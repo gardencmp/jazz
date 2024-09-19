@@ -3,6 +3,7 @@ import { ClassRef, PropRef } from "./tags";
 import { requestProject } from "./requestProject";
 import { PackageIcon } from "lucide-react";
 import Link from "next/link";
+import { packages } from "@/lib/packages";
 
 export function DocNav() {
     return (
@@ -79,11 +80,9 @@ export function DocNav() {
                     <DocNavLink>Backend Workers</DocNavLink>
                 </li>
             </ul>
-            <NavPackage package="jazz-tools" />
-            <NavPackage package="jazz-react" />
-            <NavPackage package="jazz-browser" />
-            <NavPackage package="jazz-browser-media-images" />
-            <NavPackage package="jazz-nodejs" />
+            {packages.map((packageName) => (
+                <NavPackage key={packageName} package={packageName} />
+            ))}
         </>
     );
 }

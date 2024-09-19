@@ -1,6 +1,11 @@
 import { Prose } from "@/components/forMdx";
 import { DocNav } from "@/components/docs/nav";
 
+export const metadata = {
+    title: "jazz - Docs",
+    description: "Jazz Guide & Docs.",
+};
+
 export default function DocsLayout({
     children,
 }: {
