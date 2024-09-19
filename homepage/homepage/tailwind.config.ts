@@ -93,7 +93,7 @@ const config: Config = {
             typography: () => ({
                 DEFAULT: {
                     css: {
-                        "maxWidth": null,
+                        maxWidth: null,
                     },
                 },
             }),
@@ -106,9 +106,14 @@ const config: Config = {
                 lg: "2rem",
             },
             screens: {
-                lg: "80rem",
+                md: "960px",
+                lg: "1280px",
             },
-        }
+        },
+        screens: {
+            md: "960px",
+            lg: "1280px",
+        },
     },
     plugins: [tailwindCSSAnimate, typography()],
 };

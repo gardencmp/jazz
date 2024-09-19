@@ -44,7 +44,7 @@ export function Nav({
                     menuOpen ? "h-[100dvh]" : "h-16",
                 ].join(" ")}
             >
-                <div className="flex flex-wrap px-8 items-center max-sm:justify-between lg:gap-2 container w-full">
+                <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
                     <div className="flex items-center flex-shrink">
                         <NavLinkLogo prominent href="/" className="-ml-2">
                             {mainLogo}
@@ -102,7 +102,7 @@ export function Nav({
             ></div>
             <nav
                 className={cn(
-                    "lg:hidden fixed flex flex-col bottom-4 right-4 z-50",
+                    "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
                     "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : "",
                 )}
@@ -237,7 +237,7 @@ export function NavLink({
         <Link
             href={href}
             className={cn(
-                "px-2 lg:px-4 py-3 text-sm",
+                "px-2 md:px-4 py-3 text-sm",
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
@@ -279,7 +279,7 @@ export function NavLinkLogo({
         <Link
             href={href}
             className={cn(
-                "max-sm:px-4 px-2 lg:px-3 py-3 transition-opacity hover:transition-none",
+                "max-sm:px-4 px-2 md:px-3 py-3 transition-opacity hover:transition-none",
                 path === href
                     ? "cursor-default"
                     : prominent
