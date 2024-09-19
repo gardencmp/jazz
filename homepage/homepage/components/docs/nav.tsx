@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { ClassRef, PropRef } from "./tags";
 import { requestProject } from "./requestProject";
 import { PackageIcon } from "lucide-react";
+import Link from "next/link";
 
 export function DocNav() {
     return (
@@ -117,13 +118,13 @@ export async function NavPackage({
                                         child.name !==
                                             children[i - 1]!.name) && (
                                         <>
-                                            <a
+                                            <Link
                                                 key={child.id}
                                                 className="text-sm inline-block px-2 m-0.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
                                                 href={`/docs/api-reference/${packageName}#${child.name}`}
                                             >
                                                 <code>{child.name}</code>
-                                            </a>
+                                            </Link>
                                             {"\u200B"}
                                         </>
                                     ),
@@ -145,12 +146,12 @@ export function DocNavLink({
 }) {
     if (href) {
         return (
-            <a
+            <Link
                 href={href}
                 className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
             >
                 {children}
-            </a>
+            </Link>
         );
     }
 
