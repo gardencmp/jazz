@@ -107,10 +107,10 @@ export async function NavPackage({
                         open={category.title !== "Other"}
                         className="[&:not([open])_summary]:after:content-['...']"
                     >
-                        <summary className="block text-xs mt-2 cursor-pointer">
+                        <summary className="block text-xs mt-2 mb-1 cursor-pointer">
                             {category.title}
                         </summary>
-                        <div className="text-sm -ml-0.5 max-w-full text-balance">
+                        <div className="flex gap-1 flex-wrap text-balance">
                             {category.children.map(
                                 (child, i, children) =>
                                     (i == 0 ||
@@ -119,12 +119,11 @@ export async function NavPackage({
                                         <>
                                             <Link
                                                 key={child.id}
-                                                className="text-sm inline-block px-2 m-0.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
+                                                className="text-ellipsis overflow-hidden text-xs font-mono py-0.5 px-1.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100"
                                                 href={`/docs/api-reference/${packageName}#${child.name}`}
                                             >
-                                                <code>{child.name}</code>
+                                                {child.name}
                                             </Link>
-                                            {"\u200B"}
                                         </>
                                     ),
                             )}
