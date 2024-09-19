@@ -44,7 +44,7 @@ export function Nav({
                     menuOpen ? "h-[100dvh]" : "h-16",
                 ].join(" ")}
             >
-                <div className="flex flex-wrap px-8 items-center max-sm:justify-between lg:gap-2 max-w-[80rem] w-full">
+                <div className="flex flex-wrap px-8 items-center max-sm:justify-between lg:gap-2 container w-full">
                     <div className="flex items-center flex-shrink">
                         <NavLinkLogo prominent href="/" className="-ml-2">
                             {mainLogo}
@@ -102,7 +102,7 @@ export function Nav({
             ></div>
             <nav
                 className={cn(
-                    "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
+                    "lg:hidden fixed flex flex-col bottom-4 right-4 z-50",
                     "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : "",
                 )}

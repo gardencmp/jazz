@@ -90,7 +90,25 @@ const config: Config = {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
             },
+            typography: () => ({
+                DEFAULT: {
+                    css: {
+                        "maxWidth": null,
+                    },
+                },
+            }),
         },
+        container: {
+            center: true,
+            padding: {
+                DEFAULT: "0.75rem",
+                sm: "1rem",
+                lg: "2rem",
+            },
+            screens: {
+                lg: "80rem",
+            },
+        }
     },
     plugins: [tailwindCSSAnimate, typography()],
 };
