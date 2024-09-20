@@ -1,5 +1,6 @@
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { JazzLogo } from "@/components/logos";
+import { ComingSoonBadge } from 'gcmp-design-system/src/app/components/atoms/ComingSoonBadge'
 
 <div className="not-prose">
 <HeroHeader
@@ -485,6 +486,9 @@ export default App; // old
 
 This concludes our intro to the essence of CoValues. Hopefully you're starting to have a feeling for how CoValues behave and how they're magically available everywhere.
 
+<h3 id="simple-public-sharing">Simple Public Sharing</h3>
+<ComingSoonBadge/>
+
 <h2 id="refs-and-on-demand-subscribe">Refs & Auto-Subscribe</h2>
 
 Now let's have a look at how to compose CoValues into more complex structures and build a whole app around them.
@@ -658,18 +662,10 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 -   Now, we can get rid of a lot of coniditional accesses because we know that once `project` is loaded, `project.issues` and each `Issue` in it will be loaded as well.
 -   This also results in only one rerender and visual update when everything is loaded, which is faster (especially for long lists) and gives you more control over the loading UX.
 
-TODO: explainer about not loaded vs not set/defined and `_refs` basics
+TODO: explain about not loaded vs not set/defined and `_refs` basics
 
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
 </div>
 {" -> "}
 <a href="https://github.com/gardencmp/jazz/issues/186">Complain on GitHub</a>
-
-<h2 id="groups-and-permissions">Groups & Permissions</h2>
-
-<h2 id="auth-accounts-and-migrations">Auth, Accounts & Migrations</h2>
-
-<h2 id="edits-and-time-travel">Edit Metadata & Time Travel</h2>
-
-<h2 id="backend-workers">Backend Workers</h2>

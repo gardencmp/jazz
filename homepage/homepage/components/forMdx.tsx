@@ -1,4 +1,3 @@
-
 import {
     CodeExampleTabs as CodeExampleTabsClient,
     CodeExampleTabsProps,
@@ -30,7 +29,6 @@ export function MultiplayerIcon({
         </div>
     );
 }
-
 
 import { IframeHTMLAttributes } from "react";
 import { ResponsiveIframe as ResponsiveIframeClient } from "./ResponsiveIframe";
