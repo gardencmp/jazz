@@ -6,7 +6,7 @@ import {
     createShikiHighlighter,
 } from "shiki-twoslash";
 
-const targetDoc = "app/page.mdx";
+const targetDoc = "app/(home)/page.tsx";
 
 const targetDocSrc = await readFile(targetDoc, "utf8");
 

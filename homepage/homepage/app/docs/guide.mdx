@@ -1,8 +1,13 @@
-import { Slogan } from "@/components/forMdx";
+import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { JazzLogo } from "@/components/logos";
 
-<h1 id="guide">Learn some <JazzLogo className="h-[1.3em] relative -top-0.5 inline-block -ml-[0.1em] -mr-[0.1em]"/></h1>
-<Slogan>Build an issue tracker with distributed state.</Slogan>
+<div className="not-prose">
+<HeroHeader
+    title={<>Learn some <JazzLogo className="h-[1.3em] relative -top-0.5 inline-block -ml-[0.1em] -mr-[0.1em]"/></>}
+    slogan="Build an issue tracker with distributed state."
+    pt={false}
+/>
+</div>
 
 Our issues app will be quite simple, but it will have team collaboration. <span className="text-nowrap">**Let's call it... &ldquo;Circular.&rdquo;**</span>
 
