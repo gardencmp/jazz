@@ -44,7 +44,7 @@ export function Nav({
                     menuOpen ? "h-[100dvh]" : "h-16",
                 ].join(" ")}
             >
-                <div className="flex flex-wrap px-8 items-center max-sm:justify-between lg:gap-2 max-w-[80rem] w-full">
+                <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
                     <div className="flex items-center flex-shrink">
                         <NavLinkLogo prominent href="/" className="-ml-2">
                             {mainLogo}
@@ -237,7 +237,7 @@ export function NavLink({
         <Link
             href={href}
             className={cn(
-                "px-2 lg:px-4 py-3 text-sm",
+                "px-2 md:px-4 py-3 text-sm",
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
@@ -279,7 +279,7 @@ export function NavLinkLogo({
         <Link
             href={href}
             className={cn(
-                "max-sm:px-4 px-2 lg:px-3 py-3 transition-opacity hover:transition-none",
+                "max-sm:px-4 px-2 md:px-3 py-3 transition-opacity hover:transition-none",
                 path === href
                     ? "cursor-default"
                     : prominent
