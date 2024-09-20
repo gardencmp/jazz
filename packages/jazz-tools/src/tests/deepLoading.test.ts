@@ -57,6 +57,7 @@ describe("Deep loading with depth arg", async () => {
     });
 
     test("loading a deeply nested object will wait until all required refs are loaded", async () => {
+        const ownership = { owner: me };
         const map = TestMap.create(
             {
                 list: TestList.create(
@@ -67,19 +68,19 @@ describe("Deep loading with depth arg", async () => {
                                     [
                                         InnermostMap.create(
                                             { value: "hello" },
-                                            { owner: me },
+                                            ownership,
                                         ),
                                     ],
-                                    { owner: me },
+                                    ownership,
                                 ),
                             },
-                            { owner: me },
+                            ownership,
                         ),
                     ],
-                    { owner: me },
+                    ownership,
                 ),
             },
-            { owner: me },
+            ownership,
         );
 
         const map1 = await TestMap.load(map.id, meOnSecondPeer, {});
@@ -138,8 +139,8 @@ describe("Deep loading with depth arg", async () => {
             throw new Error("map4 is undefined");
         }
         expect(map4.list[0]?.stream).not.toBe(null);
-        expect(map4.list[0]?.stream?.[me.id]).toBe(undefined)
-        expect(map4.list[0]?.stream?.byMe?.value).toBe(undefined);
+        expect(map4.list[0]?.stream?.[me.id]).not.toBe(null);
+        expect(map4.list[0]?.stream?.byMe?.value).toBe(null);
 
         const map5 = await TestMap.load(map.id, meOnSecondPeer, {
             list: [{ stream: [{}] }],

@@ -97,6 +97,7 @@ export function NewPetPostForm() {
                     type="file"
                     disabled={!newPetPost?.name}
                     onChange={onImageSelected}
+                    data-testid="file-upload"
                 />
             )}
 

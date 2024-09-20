@@ -27,11 +27,16 @@ const config = {
                 "925": "oklch(0.220000 0.002 75 / <alpha-value>)",
                 "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
             },
+            blue: {
+                ...harmonyPalette.blue,
+                "700": "#3313F7",
+                DEFAULT: "#3313F7",
+            },
         },
         extend: {
             fontFamily: {
                 display: ["var(--font-manrope)"],
-                mono: ["var(--font-ppr)"],
+                mono: ["var(--font-commit-mono)"],
             },
             // shadcn-ui
             colors: {

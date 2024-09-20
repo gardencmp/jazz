@@ -11,15 +11,16 @@
         "prepublishOnly": "npm run build"
     },
     "dependencies": {
-        "effect": "^3.6.5",
         "@effect/cli": "^0.41.2",
-        "@effect/schema": "^0.71.1",
         "@effect/platform-node": "^0.57.2",
         "@effect/printer": "^0.34.5",
         "@effect/printer-ansi": "^0.34.5",
+        "@effect/schema": "^0.71.1",
         "@effect/typeclass": "^0.25.5",
         "cojson": "workspace:*",
+        "cojson-storage-sqlite": "workspace:*",
         "cojson-transport-ws": "workspace:*",
+        "effect": "^3.6.5",
         "jazz-tools": "workspace:*",
         "ws": "^8.14.2"
     },

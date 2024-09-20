@@ -2,8 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeProvider";
 
-import { Manrope } from "next/font/google";
-import { Inter } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import localFont from "next/font/local";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -17,14 +16,28 @@ const manrope = Manrope({
     variable: "--font-manrope",
     display: "swap",
 });
+
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
     display: "swap",
 });
-const pragmata = localFont({
-    src: "../node_modules/gcmp-design-system/fonts/ppr_0829.woff2",
-    variable: "--font-ppr",
+
+const commitMono = localFont({
+    src: [
+        {
+            path: "../../design-system/fonts/CommitMono-Regular.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../../design-system/fonts/CommitMono-Regular.woff",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-commit-mono",
+    display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +55,7 @@ export default function RootLayout({
             <body
                 className={[
                     manrope.variable,
-                    pragmata.variable,
+                    commitMono.variable,
                     inter.className,
                     "flex flex-col items-center bg-stone-50 dark:bg-stone-950 overflow-x-hidden",
                 ].join(" ")}

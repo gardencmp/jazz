@@ -104,6 +104,54 @@ export async function resolveCoValue(
     };
 }
 
+function subscribeToCoValue(
+    coValueId: CoID<RawCoValue>,
+    node: LocalNode,
+    callback: (result: Awaited<ReturnType<typeof resolveCoValue>>) => void,
+) {
+    return node.subscribe(coValueId, (value) => {
+        if (value === "unavailable") {
+            callback({
+                value: undefined,
+                snapshot: "unavailable",
+                type: null,
+                extendedType: undefined,
+            });
+        } else {
+            const snapshot = value.toJSON() as JSONObject;
+            const type = value.type as CoJsonType;
+            let extendedType: ExtendedCoJsonType | undefined;
+
+            if (type === "comap") {
+                if (isBrowserImage(snapshot)) {
+                    extendedType = "image";
+                } else if (isAccount(snapshot)) {
+                    extendedType = "account";
+                } else if (isGroup(snapshot)) {
+                    extendedType = "group";
+                } else {
+                    const children = Object.values(snapshot).slice(0, 10);
+                    if (
+                        children.every(
+                            (c) => typeof c === "string" && c.startsWith("co_"),
+                        ) &&
+                        children.length > 3
+                    ) {
+                        extendedType = "record";
+                    }
+                }
+            }
+
+            callback({
+                value,
+                snapshot,
+                type,
+                extendedType,
+            });
+        }
+    });
+}
+
 export function useResolvedCoValue(
     coValueId: CoID<RawCoValue>,
     node: LocalNode,
@@ -112,7 +160,17 @@ export function useResolvedCoValue(
         useState<Awaited<ReturnType<typeof resolveCoValue>>>();
 
     useEffect(() => {
-        resolveCoValue(coValueId, node).then(setResult);
+        let isMounted = true;
+        const unsubscribe = subscribeToCoValue(coValueId, node, (newResult) => {
+            if (isMounted) {
+                setResult(newResult);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
     }, [coValueId, node]);
 
     return (
@@ -134,18 +192,30 @@ export function useResolvedCoValues(
     >([]);
 
     useEffect(() => {
-        console.log("RETECHING", coValueIds);
-        const fetchResults = async () => {
-            if (coValueIds.length === 0) return;
-            const resolvedValues = await Promise.all(
-                coValueIds.map((coValueId) => resolveCoValue(coValueId, node)),
+        let isMounted = true;
+        const unsubscribes: (() => void)[] = [];
+
+        coValueIds.forEach((coValueId, index) => {
+            const unsubscribe = subscribeToCoValue(
+                coValueId,
+                node,
+                (newResult) => {
+                    if (isMounted) {
+                        setResults((prevResults) => {
+                            const newResults = [...prevResults];
+                            newResults[index] = newResult;
+                            return newResults;
+                        });
+                    }
+                },
             );
+            unsubscribes.push(unsubscribe);
+        });
 
-            console.log({ resolvedValues });
-            setResults(resolvedValues);
+        return () => {
+            isMounted = false;
+            unsubscribes.forEach((unsubscribe) => unsubscribe());
         };
-
-        fetchResults();
     }, [coValueIds, node]);
 
     return results;

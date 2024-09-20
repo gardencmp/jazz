@@ -532,7 +532,7 @@ import { ID, Group } from "jazz-tools"
 function App() { // old
     const { me } = useAccount(); // old
     const [projectID, setProjectID] = useState<ID<Project> | undefined>(
-        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined,// old
+        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined,
     );
     // old
     const issue = useCoState(Issue, issueID); // *bin*

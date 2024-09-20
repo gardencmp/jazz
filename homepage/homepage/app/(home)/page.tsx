@@ -1,4 +1,4 @@
-import { MultiplayerIcon, ResponsiveIframe } from "@/components/forMdx";
+import { CodeExampleTabs, ResponsiveIframe } from "@/components/forMdx";
 import {
     Prose,
     SmallProse,
@@ -24,8 +24,7 @@ import {
     FileLock2Icon,
     HardDriveDownloadIcon,
     KeyRoundIcon,
-    HandshakeIcon,
-    SquareMousePointerIcon,
+    MousePointerSquareDashedIcon,
 } from "lucide-react";
 
 import { App_tsx, ChatScreen_tsx } from "@/codeSamples/examples/chat/src";
@@ -66,7 +65,7 @@ export default function Home() {
                 />
                 <LabelledFeatureIcon
                     label="Real-time multiplayer"
-                    icon={SquareMousePointerIcon}
+                    icon={MousePointerSquareDashedIcon}
                 />
                 <LabelledFeatureIcon
                     label="Team/social features"
@@ -107,16 +106,23 @@ export default function Home() {
                 />
 
                 <GappedGrid className="mt-0 -mx-4 md:-mx-6">
-                    <div className="md:col-start-1 col-span-2">
-                        <App_tsx />
-                    </div>
-                    <div className="md:col-start-3 col-span-2">
-                        <ChatScreen_tsx />
-                    </div>
+                    <CodeExampleTabs
+                        tabs={[
+                            {
+                                name: "app.tsx",
+                                content: <App_tsx />,
+                            },
+                            {
+                                name: "chatScreen.tsx",
+                                content: <ChatScreen_tsx />,
+                            },
+                        ]}
+                        className="col-span-full md:col-span-4"
+                    />
                     <ResponsiveIframe
                         src="https://chat.jazz.tools"
                         localSrc="http://localhost:5173"
-                        className="lg:col-start-5 col-span-2 rounded-xl overflow-hidden min-h-[50vh]"
+                        className="col-span-full lg:col-span-2 rounded-xl overflow-hidden min-h-[50vh]"
                     />
                 </GappedGrid>
             </div>
@@ -302,9 +308,12 @@ export default function Home() {
                 <MeshIntro />
             </Prose>
 
-            <P>{'->'} <TextLink href="/mesh" target="_blank">
-                     Learn more about Jazz Mesh
-                </TextLink></P>
+            <P>
+                {"->"}{" "}
+                <TextLink href="/mesh" target="_blank">
+                    Learn more about Jazz Mesh
+                </TextLink>
+            </P>
 
             <H3>Get Started</H3>
             <UL>
@@ -314,7 +323,10 @@ export default function Home() {
                     </TextLink>
                 </LI>
                 <LI>
-                    <TextLink href="https://discord.gg/utDMjHYg42" target="_blank">
+                    <TextLink
+                        href="https://discord.gg/utDMjHYg42"
+                        target="_blank"
+                    >
                         Join our Discord
                     </TextLink>
                 </LI>

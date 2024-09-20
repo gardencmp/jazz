@@ -590,10 +590,20 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
             } else if ("encoded" in descriptor) {
                 target._raw.set(key, descriptor.encoded.encode(value));
             } else if (isRefEncoded(descriptor)) {
-                target._raw.set(key, value.id);
-                subscriptionsScopes
-                    .get(target)
-                    ?.onRefAccessedOrSet(target.id, value.id);
+                if (value === null) {
+                    if (descriptor.optional) {
+                        target._raw.set(key, null);
+                    } else {
+                        throw new Error(
+                            `Cannot set required reference ${key} to null`,
+                        );
+                    }
+                } else {
+                    target._raw.set(key, value.id);
+                    subscriptionsScopes
+                        .get(target)
+                        ?.onRefAccessedOrSet(target.id, value.id);
+                }
             }
             return true;
         } else {

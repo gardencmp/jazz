@@ -1,3 +1,9 @@
+
+import {
+    CodeExampleTabs as CodeExampleTabsClient,
+    CodeExampleTabsProps,
+} from "@/components/CodeExampleTabs";
+
 export function MultiplayerIcon({
     color,
     strokeWidth,
@@ -34,4 +40,8 @@ export function ResponsiveIframe(
     props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
 ) {
     return <ResponsiveIframeClient {...props} />;
+}
+
+export function CodeExampleTabs(props: CodeExampleTabsProps) {
+    return <CodeExampleTabsClient {...props} />;
 }
