@@ -1,7 +1,7 @@
 import { DocNav } from "@/components/docs/nav";
 import { PackageDocs } from "@/components/docs/packageDocs";
 import Guide from "./guide.mdx";
-import { Prose } from "@/components/forMdx";
+import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
 export const metadata = {
     title: "jazz - Docs",

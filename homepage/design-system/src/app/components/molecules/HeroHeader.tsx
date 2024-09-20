@@ -22,12 +22,14 @@ function H1Sub({ children }: { children: React.ReactNode }) {
 export function HeroHeader({
     title,
     slogan,
+    pt = true,
 }: {
     title: ReactNode;
     slogan: ReactNode;
+    pt?: boolean;
 }) {
     return (
-        <hgroup className="md:pt-20 mb-10">
+        <hgroup className={clsx(pt && "md:pt-20", "mb-10")}>
             <H1>{title}</H1>
             <H1Sub>{slogan}</H1Sub>
         </hgroup>
