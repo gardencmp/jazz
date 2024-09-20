@@ -13,6 +13,7 @@ export async function generateTestFile(me: Account, bytes: number) {
         ownership
       ),
       syncCompleted: false,
+      coMapDownloaded: false,
     },
     ownership
   );

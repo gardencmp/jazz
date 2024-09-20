@@ -1,6 +1,6 @@
 import { ID } from "jazz-tools";
 import { useEffect, useState } from "react";
-import { useAccount } from "./jazz";
+import { useAccount, useCoState } from "./jazz";
 import { createCredentiallessIframe } from "./lib/createCredentiallessIframe";
 import { generateTestFile } from "./lib/generateTestFile";
 import { getDownloaderPeerUrl } from "./lib/getDownloaderPeerUrl";
@@ -17,6 +17,8 @@ export function UploaderPeer() {
   const [syncDuration, setSyncDuration] = useState<number | null>(null);
   const [bytes, setBytes] = useState(getDefaultFileSize);
 
+  const testFile = useCoState(UploadedFile, uploadedFileId, {});
+
   async function uploadTestFile() {
     if (!account) return;
 
@@ -29,6 +31,7 @@ export function UploaderPeer() {
     const iframe = createCredentiallessIframe(getDownloaderPeerUrl(file));
     document.body.appendChild(iframe);
 
+    setSyncDuration(null);
     setUploadedFileId(file.id);
 
     // The downloader peer will set the syncCompleted to true when the download is complete.
@@ -69,6 +72,11 @@ export function UploaderPeer() {
       {uploadedFileId && (
         <div data-testid="result">
           Sync Completed: {String(Boolean(syncDuration))}
+        </div>
+      )}
+      {testFile?.coMapDownloaded && (
+        <div data-testid="co-map-downloaded">
+          CoMap synced!
         </div>
       )}
     </>
