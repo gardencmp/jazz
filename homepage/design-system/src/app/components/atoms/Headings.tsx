@@ -47,3 +47,7 @@ export function H3({ children }: { children: React.ReactNode }) {
         </h3>
     );
 }
+
+export function H4({ children }: { children: React.ReactNode }) {
+    return <h4 className="text-bold">{children}</h4>;
+}
