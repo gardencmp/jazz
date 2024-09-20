@@ -90,6 +90,9 @@ importers:
       '@vercel/speed-insights':
         specifier: ^1.0.12
         version: 1.0.12(next@13.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       gcmp-design-system:
         specifier: workspace:*
         version: link:../design-system
@@ -123,6 +126,12 @@ importers:
       shiki-twoslash:
         specifier: ^3.1.2
         version: 3.1.2(typescript@5.4.5)
+      tailwind-merge:
+        specifier: ^1.14.0
+        version: 1.14.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.3)
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
