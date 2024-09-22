@@ -50,21 +50,39 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
     import ReactDOM from "react-dom/client"; // old
     import App from "./App.tsx"; // old
     import "./index.css"; // old
-    import { createJazzReactContext, DemoAuth } from "jazz-react";
+    import {
+        createJazzReactApp,
+        useDemoAuth,
+        DemoAuthBasicUI,
+    } from "jazz-react";
      // old
-    const Jazz = createJazzReactContext({
-        auth: DemoAuth({ appName: "Circular" }),
-        peer: "wss://mesh.jazz.tools/?key=you@example.com", // <- put your email here to get a proper API key later
-    });
+    const Jazz = createJazzReactApp();
     export const { useAccount, useCoState } = Jazz;
+
+    function JazzAndAuth({ children }: { children: React.ReactNode }) {
+        const [auth, authState] = useDemoAuth();
+
+        return (
+            <>
+                <Jazz.Provider
+                    auth={auth}
+                    // replace `you@example.com` with your email as a temporary API key
+                    peer="wss://mesh.jazz.tools/?key=you@example.com"
+                >
+                    { authState.state === "signedIn" && children }
+                </Jazz.Provider>
+                <DemoAuthBasicUI appName="Circular" state={authState} />
+            </>
+        );
+    }
+
     // old
     ReactDOM.createRoot(document.getElementById("root")!).render( // old
-        <Jazz.Provider>
-            <React.StrictMode> // old
-                {" "}// old
-                <App /> // old
-            </React.StrictMode>{" "}// old
-        </Jazz.Provider>,
+        <React.StrictMode> // old
+            <JazzAndAuth>
+                <App />
+            </JazzAndAuth>
+        </React.StrictMode>// old
     ); // old
     ```
 

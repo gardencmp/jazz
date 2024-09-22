@@ -28,17 +28,17 @@ const Jazz = createJazzReactApp({ AccountSchema: PetAccount });
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-    const [passkeyAuth, passKeyState] = useDemoAuth();
+    const [auth, authState] = useDemoAuth();
 
     return (
         <>
             <Jazz.Provider
-                auth={passkeyAuth}
+                auth={auth}
                 peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
             >
-                {passKeyState.state === "signedIn" && children}
+                {authState.state === "signedIn" && children}
             </Jazz.Provider>
-            <DemoAuthBasicUI appName={appName} state={passKeyState} />
+            <DemoAuthBasicUI appName={appName} state={authState} />
         </>
     );
 }
