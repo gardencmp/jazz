@@ -4,7 +4,6 @@ import {
     ControlledAgent,
     LocalNode,
     WasmCrypto,
-    cojsonInternals,
 } from "cojson";
 import { WebSocketServer } from "ws";
 
@@ -53,7 +52,7 @@ export const startSync = Command.make(
 
             const localNode = new LocalNode(
                 new ControlledAgent(agentSecret, crypto),
-                cojsonInternals.newRandomSessionID(agentID),
+                crypto.newRandomSessionID(agentID),
                 crypto,
             );
 

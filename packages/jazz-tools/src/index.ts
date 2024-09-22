@@ -34,6 +34,7 @@ export {
     type AuthResult,
     createJazzContext,
     fixedCredentialsAuth,
+    ephemeralCredentialsAuth,
     AnonymousJazzAgent,
     createAnonymousJazzContext,
 } from "./internal.js";

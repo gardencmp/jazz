@@ -48,6 +48,18 @@ export const fixedCredentialsAuth = (credentials: {
     };
 };
 
+export const ephemeralCredentialsAuth = (): AuthMethod => {
+    return {
+        start: async () => ({
+            type: "new",
+            creationProps: { name: "Ephemeral" },
+            saveCredentials: async () => {},
+            onSuccess: () => {},
+            onError: () => {},
+        }),
+    };
+};
+
 export async function randomSessionProvider(
     accountID: ID<Account>,
     crypto: CryptoProvider,
