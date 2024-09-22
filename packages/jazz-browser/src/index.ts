@@ -31,6 +31,7 @@ export type BrowserContext<Acc extends Account> = {
 
 export type BrowserGuestContext = {
     guest: AnonymousJazzAgent;
+    logOut: () => void;
     done: () => void;
 };
 

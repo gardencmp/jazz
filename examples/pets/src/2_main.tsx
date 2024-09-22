@@ -96,7 +96,7 @@ export default function App() {
 
             <Button
                 onClick={() =>
-                    router.navigate("/").then(logOut)
+                    router.navigate("/").then(() => logOut())
                 }
                 variant="outline"
             >

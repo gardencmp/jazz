@@ -44,6 +44,8 @@ export function createJazzReactApp<Acc extends Account>({
             BrowserContext<Acc> | BrowserGuestContext | undefined
         >();
 
+        const [sessionCount, setSessionCount] = useState(0);
+
         useEffect(() => {
             const promiseWithDoneCallback = createJazzBrowserContext<Acc>(
                 auth === "guest"
@@ -58,14 +60,18 @@ export function createJazzReactApp<Acc extends Account>({
                           storage,
                       },
             ).then((context) => {
-                setCtx(context);
+                setCtx({...context, logOut: () => {
+                    context.logOut();
+                    setCtx(undefined);
+                    setSessionCount(sessionCount + 1);
+                }});
                 return context.done;
             });
 
             return () => {
                 void promiseWithDoneCallback.then((done) => done());
             };
-        }, [AccountSchema, auth, peer, storage]);
+        }, [AccountSchema, auth, peer, storage, sessionCount]);
 
         return (
             <JazzContext.Provider value={ctx}>
