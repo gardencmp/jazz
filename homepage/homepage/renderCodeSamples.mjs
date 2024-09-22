@@ -6,7 +6,7 @@ import {
     createShikiHighlighter,
 } from "shiki-twoslash";
 
-const targetDoc = "app/page.mdx";
+const targetDoc = "app/(home)/page.tsx";
 
 const targetDocSrc = await readFile(targetDoc, "utf8");
 
@@ -93,11 +93,9 @@ await rm("./codeSamples", { recursive: true, force: true });
                     const component = `export function ${
                         path.basename(filename).slice(0, 1).toUpperCase() +
                         path.basename(filename).slice(1).replace(".", "_")
-                    }() {\n\treturn <div className="shiki-outer"><div className="shiki-filename">${path.basename(
-                        filename,
-                    )}</div><div className="not-prose" dangerouslySetInnerHTML={{__html: \`${html
+                    }() {\n\treturn <div className="not-prose" dangerouslySetInnerHTML={{__html: \`${html
                         .replace(/`/g, "\\`")
-                        .replace(/\$/g, "\\$")}\`\n\t}}/></div>;\n}`;
+                        .replace(/\$/g, "\\$")}\`\n\t}}/>;\n}`;
 
                     return component;
                 }),

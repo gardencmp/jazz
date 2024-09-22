@@ -3,6 +3,8 @@ import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { LocalNode, newLoadingState } from "./localNode.js";
 import { RawCoID, SessionID } from "./ids.js";
+import { PeerState } from "./PeerState.js";
+import { CoValuePriority } from "./priority.js";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -38,6 +40,7 @@ export type NewContentMessage = {
     action: "content";
     id: RawCoID;
     header?: CoValueHeader;
+    priority: CoValuePriority;
     new: {
         [sessionID: SessionID]: SessionNewContent;
     };
@@ -69,17 +72,6 @@ export type OutgoingSyncQueue = {
 
 export interface Peer {
     id: PeerID;
-    incoming: IncomingSyncStream;
-    outgoing: OutgoingSyncQueue;
-    role: "peer" | "server" | "client";
-    priority?: number;
-    crashOnClose: boolean;
-}
-
-export interface PeerState {
-    id: PeerID;
-    optimisticKnownStates: { [id: RawCoID]: CoValueKnownState };
-    toldKnownState: Set<RawCoID>;
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
     role: "peer" | "server" | "client";
@@ -141,7 +133,7 @@ export class SyncManager {
 
         for (const peer of eligiblePeers) {
             // console.log("loading", id, "from", peer.id);
-            await peer.outgoing.push({
+            await peer.pushOutgoingMessage({
                 action: "load",
                 id: id,
                 header: false,
@@ -227,7 +219,7 @@ export class SyncManager {
                 id,
                 header: false,
                 sessions: {},
-            }).catch((e) => {
+            }).catch((e: unknown) => {
                 console.error("Error sending load", e);
             });
             return;
@@ -244,7 +236,7 @@ export class SyncManager {
             this.trySendToPeer(peer, {
                 action: "load",
                 ...coValue.knownState(),
-            }).catch((e) => {
+            }).catch((e: unknown) => {
                 console.error("Error sending load", e);
             });
         }
@@ -274,7 +266,7 @@ export class SyncManager {
                 action: "known",
                 asDependencyOf,
                 ...coValue.knownState(),
-            }).catch((e) => {
+            }).catch((e: unknown) => {
                 console.error("Error sending known state", e);
             });
 
@@ -282,7 +274,10 @@ export class SyncManager {
         }
     }
 
-    async sendNewContentIncludingDependencies(id: RawCoID, peer: PeerState) {
+    async sendNewContentIncludingDependencies(
+        id: RawCoID,
+        peer: PeerState,
+    ) {
         const coValue = this.local.expectCoValueLoaded(id);
 
         await Promise.all(
@@ -310,9 +305,11 @@ export class SyncManager {
                     //     } header: ${!!piece.header}`,
                     //     // Object.values(piece.new).map((s) => s.newTransactions)
                     // );
-                    this.trySendToPeer(peer, piece).catch((e) => {
+
+                    this.trySendToPeer(peer, piece).catch((e: unknown) => {
                         console.error("Error sending content piece", e);
                     });
+
                     if (performance.now() - lastYield > 10) {
                         await new Promise<void>((resolve) => {
                             setTimeout(resolve, 0);
@@ -336,16 +333,7 @@ export class SyncManager {
     }
 
     addPeer(peer: Peer) {
-        const peerState: PeerState = {
-            id: peer.id,
-            optimisticKnownStates: {},
-            incoming: peer.incoming,
-            outgoing: peer.outgoing,
-            toldKnownState: new Set(),
-            role: peer.role,
-            priority: peer.priority,
-            crashOnClose: peer.crashOnClose,
-        };
+        const peerState = new PeerState(peer);
         this.peers[peer.id] = peerState;
 
         if (peer.role === "server") {
@@ -420,7 +408,7 @@ export class SyncManager {
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
-        return peer.outgoing.push(msg);
+        return peer.pushOutgoingMessage(msg);
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
@@ -679,7 +667,8 @@ export class SyncManager {
                     newTransactions.length + " new transactions",
                     "after: " + newContentForSession.after,
                     "our last known tx idx initially: " + ourKnownTxIdx,
-                    "our last known tx idx now: " + coValue.sessionLogs.get(sessionID)?.transactions.length,
+                    "our last known tx idx now: " +
+                        coValue.sessionLogs.get(sessionID)?.transactions.length,
                 );
                 continue;
             }
@@ -774,11 +763,7 @@ export class SyncManager {
 
     gracefulShutdown() {
         for (const peer of Object.values(this.peers)) {
-            console.debug("Gracefully closing", peer.id);
-            peer.outgoing.close();
-            peer.incoming = (async function* () {
-                yield "Disconnected" as const;
-            })();
+            peer.gracefulShutdown();
         }
     }
 }

@@ -1,5 +1,5 @@
-import { Prose } from "@/components/forMdx";
 import { DocNav } from "@/components/docs/nav";
+import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { cn } from "@/lib/utils";
 
 export const metadata = {

@@ -6,6 +6,7 @@ import { getHighlighter } from "shiki";
 const nextConfig = {
     // Configure `pageExtensions`` to include MDX files
     pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
+    transpilePackages: ["gcmp-design-system"],
     // Optionally, add any other Next.js config below
     experimental: {
         serverActions: true,

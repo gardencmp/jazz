@@ -1,12 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { MailIcon, MenuIcon, SearchIcon, XIcon } from "lucide-react";
-import Link from "next/link";
+import { MenuIcon, XIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
-import { BreadCrumb } from "./breadcrumb";
-import { DocNav } from "./docs/nav";
+import { BreadCrumb } from "../molecules/Breadcrumb";
+import clsx from "clsx";
+import Link from "next/link";
 
 export function Nav({
     mainLogo,
@@ -37,11 +36,13 @@ export function Nav({
         <>
             <nav
                 className={[
-                    "hidden md:flex sticky left-0 right-0 top-0 max-sm:bottom-0 w-full justify-center",
-                    "bg-stone-50 dark:bg-stone-950 border-b max-sm:border-t border-stone-50 dark:border-b-stone-950",
-                    "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
-                    "z-50",
-                    menuOpen ? "h-[100dvh]" : "h-16",
+                    clsx(
+                        "hidden md:flex sticky left-0 right-0 top-0 max-sm:bottom-0 w-full justify-center",
+                        "bg-stone-50 dark:bg-stone-950 border-b max-sm:border-t border-stone-50 dark:border-b-stone-950",
+                        "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
+                        "z-50",
+                        menuOpen ? "h-[100dvh]" : "h-16"
+                    )
                 ].join(" ")}
             >
                 <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
@@ -64,7 +65,7 @@ export function Nav({
                                 key={i}
                                 href={item.href}
                                 newTab={item.newTab}
-                                className={cn(
+                                className={clsx(
                                     "max-sm:w-full",
                                     item.firstOnRight ? "md:ml-auto" : "",
                                 )}
@@ -95,20 +96,20 @@ export function Nav({
                     setMenuOpen(false);
                     setSearchOpen(false);
                 }}
-                className={cn(
+                className={clsx(
                     menuOpen || searchOpen ? "block" : "hidden",
                     "fixed top-0 bottom-0 left-0 right-0 bg-stone-200/80 dark:bg-black/80 w-full h-full z-20",
                 )}
             ></div>
             <nav
-                className={cn(
+                className={clsx(
                     "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
                     "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : "",
                 )}
             >
                 <div
-                    className={cn(menuOpen ? "block" : "hidden", " px-2 pb-2")}
+                    className={clsx(menuOpen ? "block" : "hidden", " px-2 pb-2")}
                 >
                     <div className="flex items-center w-full border-b border-stone-100 dark:border-stone-900">
                         <NavLinkLogo
@@ -166,7 +167,7 @@ export function Nav({
                                     href={item.href}
                                     onClick={() => setMenuOpen(false)}
                                     newTab={item.newTab}
-                                    className={cn("")}
+                                    className={clsx("")}
                                 >
                                     {item.title}
                                 </NavLink>
@@ -176,7 +177,7 @@ export function Nav({
                 <div className="flex items-center self-stretch justify-end">
                     {/* <input
                         type="text"
-                        className={cn(
+                        className={clsx(
                             menuOpen || searchOpen ? "" : "hidden",
                             "ml-2 border border-stone-200 dark:border-stone-900 px-2 py-1 rounded w-full"
                         )}
@@ -218,7 +219,7 @@ export function Nav({
     );
 }
 
-export function NavLink({
+function NavLink({
     href,
     className,
     children,
@@ -236,8 +237,8 @@ export function NavLink({
     return (
         <Link
             href={href}
-            className={cn(
-                "px-2 md:px-4 py-3 text-sm",
+            className={clsx(
+                "px-2 lg:px-4 py-3 text-sm",
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
@@ -258,7 +259,7 @@ export function NavLink({
     );
 }
 
-export function NavLinkLogo({
+function NavLinkLogo({
     href,
     className,
     children,
@@ -278,8 +279,8 @@ export function NavLinkLogo({
     return (
         <Link
             href={href}
-            className={cn(
-                "max-sm:px-4 px-2 md:px-3 py-3 transition-opacity hover:transition-none",
+            className={clsx(
+                "max-sm:px-4 px-2 lg:px-3 py-3 transition-opacity hover:transition-none",
                 path === href
                     ? "cursor-default"
                     : prominent
@@ -293,120 +294,5 @@ export function NavLinkLogo({
         >
             {children}
         </Link>
-    );
-}
-
-export function NewsletterButton() {
-    return (
-        <button
-            onClick={() =>
-                (window as any).ml_account(
-                    "webforms",
-                    "5744530",
-                    "p5o0j8",
-                    "show",
-                )
-            }
-            className="flex px-2 py-1 rounded gap-2 items-center bg-stone-300 hover:bg-stone-200 dark:bg-stone-950 dark:hover:bg-stone-800 text-black dark:text-white"
-        >
-            <MailIcon className="" size="14" /> Subscribe
-        </button>
-    );
-}
-
-{
-    /* <input
-                                    type="email"
-                                    autoComplete="email"
-                                    placeholder="you@example.com"
-                                    className="max-w-[14rem] border border-stone-200 dark:border-stone-900 px-2 py-1 rounded w-full"
-                                /> */
-}
-
-export function Newsletter() {
-    return (
-        <>
-            <div
-                id="mlb2-5744530"
-                className="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-5744530"
-            >
-                <form
-                    className="flex gap-2"
-                    action="https://static.mailerlite.com/webforms/submit/p5o0j8"
-                    data-code="p5o0j8"
-                    method="post"
-                    target="_blank"
-                >
-                    <input
-                        aria-label="email"
-                        aria-required="true"
-                        type="email"
-                        className="text-base form-control max-w-[18rem] border border-stone-300 dark:border-transparent shadow-sm dark:bg-stone-925 px-2 py-1 rounded w-full"
-                        data-inputmask=""
-                        name="fields[email]"
-                        placeholder="Email"
-                        autoComplete="email"
-                    />
-
-                    <input
-                        type="checkbox"
-                        className="hidden"
-                        name="groups[]"
-                        value="112132481"
-                        checked
-                        readOnly
-                    />
-                    <input
-                        type="checkbox"
-                        className="hidden"
-                        name="groups[]"
-                        value="111453104"
-                    />
-                    <input type="hidden" name="ml-submit" value="1" />
-                    <button
-                        type="submit"
-                        className="flex px-3 py-1 rounded gap-2 items-center shadow-sm bg-stone-925 dark:bg-black hover:bg-stone-800 text-white"
-                    >
-                        <MailIcon className="" size="14" /> Subscribe
-                    </button>
-                    <input type="hidden" name="anticsrf" value="true" />
-                </form>
-                <div
-                    className="ml-form-successBody row-success"
-                    style={{ display: "none" }}
-                >
-                    <div className="ml-form-successContent">
-                        <p>You&apos;re subscribed 🎉</p>
-                    </div>
-                </div>
-            </div>
-            <script
-                dangerouslySetInnerHTML={{
-                    __html: `
-function ml_webform_success_5744530(){var r=ml_jQuery||jQuery;r(".ml-subscribe-form-5744530 .row-success").show(),r(".ml-subscribe-form-5744530 .row-form").hide()}
-`,
-                }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src="https://track.mailerlite.com/webforms/o/5744530/p5o0j8?v1697487427"
-                width="1"
-                height="1"
-                style={{
-                    maxWidth: "1px",
-                    maxHeight: "1px",
-                    visibility: "hidden",
-                    padding: 0,
-                    margin: 0,
-                    display: "block",
-                }}
-                alt="."
-            />
-            <script
-                src="https://static.mailerlite.com/js/w/webforms.min.js?vd4de52e171e8eb9c47c0c20caf367ddf"
-                type="text/javascript"
-                defer
-            ></script>
-        </>
     );
 }

@@ -1,5 +1,6 @@
 import { RawCoID, SessionID } from "../ids.js";
 import { MAX_RECOMMENDED_TX_SIZE } from "../index.js";
+import { getPriorityFromHeader } from "../priority.js";
 import { CoValueKnownState, NewContentMessage } from "../sync.js";
 import { CoValueChunk } from "./index.js";
 
@@ -15,6 +16,7 @@ export function contentSinceChunk(
         action: "content",
         header: known?.header ? undefined : chunk.header,
         new: {},
+        priority: getPriorityFromHeader(chunk.header),
     });
 
     for (const [sessionID, sessionsEntry] of Object.entries(

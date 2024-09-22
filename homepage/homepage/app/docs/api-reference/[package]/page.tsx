@@ -21,3 +21,14 @@ export async function generateMetadata({ params }: Props) {
         description: `API reference for ${packageName}.`,
     };
 }
+
+export async function generateStaticParams() {
+    // TODO: ideally we check which files exist in ../../typedoc
+    return [
+        "jazz-tools",
+        "jazz-react",
+        "jazz-nodejs",
+        "jazz-browser",
+        "jazz-browser-media-images",
+    ].map((pkg) => ({ package: pkg }));
+}
