@@ -7,7 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^8.5.2",
-    "cojson": "workspace:*",
+    "cojson": "workspace:^0.7.35",
     "typescript": "^5.3.3"
   },
   "devDependencies": {

@@ -7,9 +7,9 @@
     "license": "MIT",
     "version": "0.7.35-guest-auth.6",
     "dependencies": {
-        "cojson": "workspace:*",
-        "cojson-transport-ws": "workspace:*",
-        "jazz-tools": "workspace:*",
+        "cojson": "workspace:^0.7.35",
+        "cojson-transport-ws": "workspace:^0.7.35",
+        "jazz-tools": "workspace:^0.7.35",
         "ws": "^8.14.2"
     },
     "devDependencies": {
