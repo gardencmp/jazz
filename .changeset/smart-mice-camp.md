@@ -1,8 +1,8 @@
 ---
-"jazz-browser": patch
-"jazz-nodejs": patch
-"jazz-react": patch
-"jazz-tools": patch
+"jazz-browser": minor
+"jazz-nodejs": minor
+"jazz-react": minor
+"jazz-tools": minor
 ---
 
 Implement new top-level context creation and auth method API
