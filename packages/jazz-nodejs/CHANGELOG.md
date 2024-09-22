@@ -1,5 +1,23 @@
 # jazz-autosub
 
+## 0.8.0
+
+### Minor Changes
+
+-   bcec3be: Implement new top-level context creation and auth method API
+
+### Patch Changes
+
+-   Updated dependencies [6a147c2]
+-   Updated dependencies [ad40b88]
+-   Updated dependencies [23369dc]
+-   Updated dependencies [c2b62a0]
+-   Updated dependencies [1a979b6]
+-   Updated dependencies [bcec3be]
+    -   cojson@0.8.0
+    -   jazz-tools@0.8.0
+    -   cojson-transport-ws@0.8.0
+
 ## 0.7.35-guest-auth.6
 
 ### Patch Changes

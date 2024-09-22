@@ -1,5 +1,12 @@
 # cojson
 
+## 0.8.0
+
+### Patch Changes
+
+-   6a147c2: Move session generation to crypto provider
+-   ad40b88: First sketch of API for creating and finding unique CoValues
+
 ## 0.7.35
 
 ### Patch Changes

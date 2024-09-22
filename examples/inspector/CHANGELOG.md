@@ -4,6 +4,15 @@
 
 ### Patch Changes
 
+- Updated dependencies [6a147c2]
+- Updated dependencies [ad40b88]
+  - cojson@0.8.0
+  - cojson-transport-ws@0.8.0
+
+## 0.0.60
+
+### Patch Changes
+
 - 63daf6a: fix(inspector): subscribe to latent covalues instead of loading them immediately
 - Updated dependencies [35bbcd9]
 - Updated dependencies [f350e90]

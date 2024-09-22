@@ -1,5 +1,21 @@
 # jazz-tools
 
+## 0.8.0
+
+### Minor Changes
+
+-   bcec3be: Implement new top-level context creation and auth method API
+
+### Patch Changes
+
+-   ad40b88: First sketch of API for creating and finding unique CoValues
+-   23369dc: Re-add logout functionality to AuthMethods
+-   c2b62a0: Make anonymous auth work better
+-   1a979b6: Implement guest auth without account
+-   Updated dependencies [6a147c2]
+-   Updated dependencies [ad40b88]
+    -   cojson@0.8.0
+
 ## 0.7.35-guest-auth.6
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # jazz-browser-media-images
 
+## 0.8.0
+
+### Patch Changes
+
+-   Updated dependencies [ad40b88]
+-   Updated dependencies [23369dc]
+-   Updated dependencies [c2b62a0]
+-   Updated dependencies [1a979b6]
+-   Updated dependencies [bcec3be]
+    -   jazz-tools@0.8.0
+    -   jazz-browser@0.8.0
+
 ## 0.7.35-guest-auth.6
 
 ### Patch Changes
