@@ -45,7 +45,7 @@ export function Nav({
                     )
                 ].join(" ")}
             >
-                <div className="flex flex-wrap px-8 items-center max-sm:justify-between lg:gap-2 max-w-[80rem] w-full">
+                <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
                     <div className="flex items-center flex-shrink">
                         <NavLinkLogo prominent href="/" className="-ml-2">
                             {mainLogo}

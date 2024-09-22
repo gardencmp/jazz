@@ -94,6 +94,22 @@ const config = {
                 "accordion-up": "accordion-up 0.2s ease-out",
             },
         },
+        container: {
+            center: true,
+            padding: {
+                DEFAULT: "0.75rem",
+                sm: "1rem",
+                lg: "2rem",
+            },
+            screens: {
+                md: "960px",
+                lg: "1280px",
+            },
+        },
+        screens: {
+            md: "960px",
+            lg: "1280px",
+        },
     },
     plugins: [tailwindCSSAnimate, typography()],
 };

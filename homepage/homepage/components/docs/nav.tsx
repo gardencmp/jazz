@@ -1,62 +1,8 @@
 import { requestProject } from "./requestProject";
 import { PackageIcon } from "lucide-react";
-import { DocNavLink } from "gcmp-design-system/src/app/components/atoms/DocNavLink";
-import { JazzLogo } from "../logos";
-import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
-import { SiDiscord, SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
 import { packages } from "@/lib/packages";
 import Link from "next/link";
-
-export function JazzNav() {
-    return (
-        <Nav
-            mainLogo={<JazzLogo className="w-24 -ml-2" />}
-            items={[
-                { title: "Home", href: "/" },
-                { title: "Sync & Storage Mesh", href: "/mesh" },
-                {
-                    title: "Docs",
-                    href: "/docs",
-                },
-                {
-                    title: "Blog",
-                    href: "https://gcmp.io/news",
-                    firstOnRight: true,
-                    newTab: true,
-                },
-                {
-                    title: "Releases",
-                    href: "https://github.com/gardencmp/jazz/releases",
-                    newTab: true,
-                },
-                {
-                    title: "Roadmap",
-                    href: "https://github.com/orgs/gardencmp/projects/4/views/3",
-                    newTab: true,
-                },
-                {
-                    title: "GitHub",
-                    href: "https://github.com/gardencmp/jazz",
-                    newTab: true,
-                    icon: <SiGithub className="w-5" />,
-                },
-                {
-                    title: "Discord",
-                    href: "https://discord.gg/utDMjHYg42",
-                    newTab: true,
-                    icon: <SiDiscord className="w-5" />,
-                },
-                {
-                    title: "X",
-                    href: "https://x.com/jazz_tools",
-                    newTab: true,
-                    icon: <SiTwitter className="w-5" />,
-                },
-            ]}
-            docNav={<DocNav />}
-        />
-    );
-}
+import { ReactNode } from "react";
 
 export function DocNav() {
     const comingSoon = [
@@ -158,10 +104,10 @@ export async function NavPackage({
                         open={category.title !== "Other"}
                         className="[&:not([open])_summary]:after:content-['...']"
                     >
-                        <summary className="block text-xs mt-2 cursor-pointer">
+                        <summary className="block text-xs mt-2 mb-1 cursor-pointer">
                             {category.title}
                         </summary>
-                        <div className="text-sm -ml-0.5 max-w-full text-balance">
+                        <div className="flex gap-1 flex-wrap text-balance">
                             {category.children.map(
                                 (child, i, children) =>
                                     (i == 0 ||
@@ -170,12 +116,11 @@ export async function NavPackage({
                                         <>
                                             <Link
                                                 key={child.id}
-                                                className="text-sm inline-block px-2 m-0.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
+                                                className="text-ellipsis overflow-hidden text-xs font-mono py-0.5 px-1.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100"
                                                 href={`/docs/api-reference/${packageName}#${child.name}`}
                                             >
-                                                <code>{child.name}</code>
+                                                {child.name}
                                             </Link>
-                                            {"\u200B"}
                                         </>
                                     ),
                             )}
@@ -185,4 +130,25 @@ export async function NavPackage({
             })}
         </>
     );
+}
+
+export function DocNavLink({
+    href,
+    children,
+}: {
+    href?: string;
+    children: ReactNode;
+}) {
+    if (href) {
+        return (
+            <Link
+                href={href}
+                className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
+            >
+                {children}
+            </Link>
+        );
+    }
+
+    return <span className="py-1">{children}</span>;
 }
