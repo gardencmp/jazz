@@ -4,7 +4,8 @@
     "type": "module",
     "workspaces": [
         "packages/*",
-        "examples/*"
+        "examples/*",
+        "e2e/*"
     ],
     "packageManager": "pnpm@9.1.4",
     "devDependencies": {
