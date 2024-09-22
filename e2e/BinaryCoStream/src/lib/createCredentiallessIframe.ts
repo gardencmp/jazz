@@ -15,6 +15,7 @@ export function createCredentiallessIframe(url: string) {
   iframe.style.position = "absolute";
   iframe.style.top = "0";
   iframe.style.right = "0";
+  iframe.setAttribute("data-testid", "downloader-peer");
 
   return iframe;
 }

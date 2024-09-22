@@ -9,6 +9,8 @@ async function getUploadedFile(
   uploadedFileId: ID<UploadedFile>) {
   const uploadedFile = await waitForCoValue(UploadedFile, uploadedFileId, me, Boolean, {})
 
+  uploadedFile.coMapDownloaded = true;
+
   await BinaryCoStream.loadAsBlob(uploadedFile._refs.file.id, me);
 
   return uploadedFile;
