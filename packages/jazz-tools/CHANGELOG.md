@@ -1,5 +1,17 @@
 # jazz-autosub
 
+## 0.7.35
+
+### Patch Changes
+
+-   49a8b54: Fix on CoMapInit to not allow null values on required refs
+-   6f80282: fix: handle null values for co.refs
+-   35bbcd9: Fix loadAsBlob resolving too early
+-   f350e90: Added a priority system for the sync messages
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [f350e90]
+    -   cojson@0.7.35
+
 ## 0.7.34
 
 ### Patch Changes

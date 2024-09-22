@@ -1,5 +1,12 @@
 # cojson
 
+## 0.7.35
+
+### Patch Changes
+
+-   35bbcd9: Clean up binary stream ending logic
+-   f350e90: Added a priority system for the sync messages
+
 ## 0.7.34
 
 ### Patch Changes

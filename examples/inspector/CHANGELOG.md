@@ -1,5 +1,15 @@
 # jazz-example-chat
 
+## 0.0.60
+
+### Patch Changes
+
+- 63daf6a: fix(inspector): subscribe to latent covalues instead of loading them immediately
+- Updated dependencies [35bbcd9]
+- Updated dependencies [f350e90]
+  - cojson@0.7.35
+  - cojson-transport-ws@0.7.35
+
 ## 0.0.59
 
 ### Patch Changes

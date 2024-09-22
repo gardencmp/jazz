@@ -1,5 +1,14 @@
 # cojson-storage-sqlite
 
+## 0.7.35
+
+### Patch Changes
+
+-   f350e90: Added a priority system for the sync messages
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [f350e90]
+    -   cojson@0.7.35
+
 ## 0.7.34
 
 ### Patch Changes
