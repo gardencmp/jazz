@@ -6,7 +6,7 @@ import {
 } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { LocalNode } from "./localNode.js";
-import type { RawCoValue } from "./coValue.js";
+import { type RawCoValue } from "./coValue.js";
 import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoStream, RawBinaryCoStream } from "./coValues/coStream.js";
@@ -61,6 +61,7 @@ type Value = JsonValue | AnyRawCoValue;
 
 import { LSMStorage, BlockFilename, WalFilename } from "./storage/index.js";
 import { FileSystem } from "./storage/FileSystem.js";
+import { getPriorityFromHeader } from "./priority.js";
 
 /** @hidden */
 export const cojsonInternals = {
@@ -79,6 +80,7 @@ export const cojsonInternals = {
     idforHeader,
     StreamingHash,
     Channel,
+    getPriorityFromHeader,
 };
 
 export {

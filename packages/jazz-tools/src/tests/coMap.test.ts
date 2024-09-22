@@ -1,4 +1,4 @@
-import { expect, describe, test } from "vitest";
+import { expect, describe, test, expectTypeOf } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import {
     Account,
@@ -592,6 +592,7 @@ describe("CoMap applyDiff", async () => {
         birthday = co.encoded(Encoders.Date);
         nested = co.ref(NestedMap);
         optionalField = co.optional.string;
+        optionalNested = co.optional.ref(NestedMap);
     }
 
     class NestedMap extends CoMap {
@@ -736,6 +737,143 @@ describe("CoMap applyDiff", async () => {
         expect(map.name).toEqual("Ian");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((map as any).invalidField).toBeUndefined();
+    });
+
+    test("applyDiff with optional reference set to null", () => {
+        const map = TestMap.create(
+            {
+                name: "Jack",
+                age: 50,
+                isActive: true,
+                birthday: new Date("1970-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+                optionalNested: NestedMap.create(
+                    { value: "optional" },
+                    { owner: me },
+                ),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            optionalNested: null,
+        };
+
+        map.applyDiff(newValues);
+
+        expect(map.optionalNested).toBeNull();
+    });
+
+    test("applyDiff with required reference set to null should throw", () => {
+        const map = TestMap.create(
+            {
+                name: "Kate",
+                age: 55,
+                isActive: true,
+                birthday: new Date("1965-01-01"),
+                nested: NestedMap.create({ value: "original" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        const newValues = {
+            nested: null,
+        };
+
+        // @ts-expect-error testing invalid usage
+        expect(() => map.applyDiff(newValues)).toThrowError(
+            "Cannot set required reference nested to null",
+        );
+    });
+});
+
+describe("CoMap Typescript validation", async () => {
+    const me = await Account.create({
+        creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
+    });
+
+    test("Is not ok to pass null into a required ref", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.optional.ref(NestedMap);
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            {
+                optional: NestedMap.create({ value: "" }, { owner: me }),
+                // @ts-expect-error null can't be passed to a non-optional field
+                required: null,
+            },
+            { owner: me },
+        );
+    });
+
+    test("Is not ok if a required ref is omitted", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.ref(NestedMap, { optional: true });
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            // @ts-expect-error non-optional fields can't be omitted
+            {},
+            { owner: me },
+        );
+    });
+
+    test("Is ok to omit optional fields", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.ref(NestedMap, { optional: true });
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            {
+                required: NestedMap.create({ value: "" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        expectTypeOf<typeof TestMap.create<TestMap>>().toBeCallableWith(
+            {
+                required: NestedMap.create({ value: "" }, { owner: me }),
+                optional: null,
+            },
+            { owner: me },
+        );
+    });
+
+    test("the required refs should be nullable", () => {
+        class TestMap extends CoMap {
+            required = co.ref(NestedMap);
+            optional = co.ref(NestedMap, { optional: true });
+        }
+
+        class NestedMap extends CoMap {
+            value = co.string;
+        }
+
+        const map = TestMap.create(
+            {
+                required: NestedMap.create({ value: "" }, { owner: me }),
+            },
+            { owner: me },
+        );
+
+        expectTypeOf(map.required).toBeNullable();
     });
 });
 

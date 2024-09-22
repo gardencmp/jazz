@@ -1,55 +1,17 @@
 # jazz-example-pets
 
-## 0.0.100-guest-auth.5
+## 0.0.100
 
 ### Patch Changes
 
--   jazz-react@0.7.35-guest-auth.5
--   jazz-tools@0.7.35-guest-auth.5
--   jazz-browser-media-images@0.7.35-guest-auth.5
-
-## 0.0.100-guest-auth.4
-
-### Patch Changes
-
--   Updated dependencies
-    -   jazz-react@0.7.35-guest-auth.4
-    -   jazz-tools@0.7.35-guest-auth.4
-    -   jazz-browser-media-images@0.7.35-guest-auth.4
-
-## 0.0.100-guest-auth.3
-
-### Patch Changes
-
--   Updated dependencies
-    -   jazz-react@0.7.35-guest-auth.3
-    -   jazz-tools@0.7.35-guest-auth.3
-    -   jazz-browser-media-images@0.7.35-guest-auth.3
-
-## 0.0.100-unique.2
-
-### Patch Changes
-
--   Updated dependencies
-    -   jazz-tools@0.7.35-unique.2
-    -   jazz-browser-media-images@0.7.35-unique.2
-    -   jazz-react@0.7.35-unique.2
-
-## 0.0.100-new-auth.1
-
-### Patch Changes
-
--   Updated dependencies
-    -   jazz-react@0.7.35-new-auth.1
-
-## 0.0.100-new-auth.0
-
-### Patch Changes
-
--   Updated dependencies
-    -   jazz-react@0.7.35-new-auth.0
-    -   jazz-tools@0.7.35-new-auth.0
-    -   jazz-browser-media-images@0.7.35-new-auth.0
+-   Updated dependencies [49a8b54]
+-   Updated dependencies [6f80282]
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [cac2ec9]
+-   Updated dependencies [f350e90]
+    -   jazz-tools@0.7.35
+    -   jazz-react@0.7.35
+    -   jazz-browser-media-images@0.7.35
 
 ## 0.0.99
 

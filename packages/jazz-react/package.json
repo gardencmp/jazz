@@ -8,9 +8,9 @@
   "dependencies": {
     "@scure/bip39": "^1.3.0",
     "cojson": "workspace:*",
-    "jazz-tools": "workspace:*",
     "jazz-browser": "workspace:*",
-    "typescript": "^5.1.6"
+    "jazz-tools": "workspace:*",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.19",

@@ -1,3 +1,5 @@
+import 'fake-indexeddb/auto'; // Polyfill for IndexedDB
+
 import { expect, test } from "vitest";
 import {
     ControlledAgent,

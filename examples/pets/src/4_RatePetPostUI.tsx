@@ -55,6 +55,9 @@ export function RatePetPostUI() {
                         }}
                         title={`React with ${reactionType}`}
                         className="text-2xl px-2"
+                        data-selected={
+                            petPost?.reactions?.byMe?.value === reactionType
+                        }
                     >
                         {reactionEmojiMap[reactionType]}
                     </Button>

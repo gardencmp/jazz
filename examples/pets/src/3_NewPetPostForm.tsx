@@ -37,7 +37,9 @@ export function NewPetPostForm() {
                 const petPost = PartialPetPost.create(
                     {
                         name,
-                        reactions: PetReactions.create([], { owner: me }),
+                        reactions: PetReactions.create([], {
+                            owner: petPostGroup,
+                        }),
                     },
                     { owner: petPostGroup },
                 );
@@ -96,6 +98,7 @@ export function NewPetPostForm() {
                     type="file"
                     disabled={!newPetPost?.name}
                     onChange={onImageSelected}
+                    data-testid="file-upload"
                 />
             )}
 

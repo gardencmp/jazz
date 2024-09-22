@@ -1,16 +1,11 @@
 # cojson
 
-## 0.7.35-guest-auth.5
+## 0.7.35
 
 ### Patch Changes
 
--   Move session generation to crypto provider
-
-## 0.7.35-unique.2
-
-### Patch Changes
-
--   First sketch of API for creating and finding unique CoValues
+-   35bbcd9: Clean up binary stream ending logic
+-   f350e90: Added a priority system for the sync messages
 
 ## 0.7.34
 

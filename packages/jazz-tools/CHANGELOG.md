@@ -1,37 +1,16 @@
-# jazz-autosub
+# jazz-tools
 
-## 0.7.35-guest-auth.5
-
-### Patch Changes
-
--   Updated dependencies
-    -   cojson@0.7.35-guest-auth.5
-
-## 0.7.35-guest-auth.4
+## 0.7.35
 
 ### Patch Changes
 
--   Make anonymous auth work better
-
-## 0.7.35-guest-auth.3
-
-### Patch Changes
-
--   Implement guest auth without account
-
-## 0.7.35-unique.2
-
-### Patch Changes
-
--   First sketch of API for creating and finding unique CoValues
--   Updated dependencies
-    -   cojson@0.7.35-unique.2
-
-## 0.7.35-new-auth.0
-
-### Patch Changes
-
--   Implement new top-level context creation and auth method API
+-   49a8b54: Fix on CoMapInit to not allow null values on required refs
+-   6f80282: fix: handle null values for co.refs
+-   35bbcd9: Fix loadAsBlob resolving too early
+-   f350e90: Added a priority system for the sync messages
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [f350e90]
+    -   cojson@0.7.35
 
 ## 0.7.34
 

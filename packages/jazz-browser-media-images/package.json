@@ -8,10 +8,10 @@
   "dependencies": {
     "@types/image-blob-reduce": "^4.1.1",
     "image-blob-reduce": "^4.1.0",
-    "jazz-tools": "workspace:*",
     "jazz-browser": "workspace:*",
+    "jazz-tools": "workspace:*",
     "pica": "^9.0.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.3.3"
   },
   "scripts": {
     "lint": "eslint . --ext ts,tsx",

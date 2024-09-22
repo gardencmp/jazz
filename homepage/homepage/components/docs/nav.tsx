@@ -1,97 +1,85 @@
-import { ReactNode } from "react";
-import { ClassRef, PropRef } from "./tags";
 import { requestProject } from "./requestProject";
 import { PackageIcon } from "lucide-react";
+import { packages } from "@/lib/packages";
+import Link from "next/link";
+import { ReactNode } from "react";
 
 export function DocNav() {
+    const comingSoon = [
+        "Groups & Permissions",
+        "Auth, Accounts & Migrations",
+        "Edit Metadata & Time Travel",
+        "Backend Workers",
+    ];
+
     return (
         <>
             <p className="mt-0 font-medium">
-                <DocNavLink href="#guide">Guide</DocNavLink>
+                <DocNavLink href="/docs">Guide</DocNavLink>
             </p>
-
             <ul>
                 <li>
-                    <DocNavLink href="#guide-setup">Project Setup</DocNavLink>
+                    <DocNavLink href="/docs#guide-setup">
+                        Project Setup
+                    </DocNavLink>
                 </li>
                 <li>
-                    <DocNavLink href="#intro-to-covalues">
+                    <DocNavLink href="/docs#intro-to-covalues">
                         Intro to CoValues
                     </DocNavLink>
                     <ul>
                         <li>
-                            <DocNavLink href="#declaring-covalues">
+                            <DocNavLink href="/docs#declaring-covalues">
                                 Declaration
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#reading-covalues">
+                            <DocNavLink href="/docs#reading-covalues">
                                 Reading
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#creating-covalues">
+                            <DocNavLink href="/docs#creating-covalues">
                                 Creation
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#editing-and-subscription">
+                            <DocNavLink href="/docs#editing-and-subscription">
                                 Editing & Subscription
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#persistence">
+                            <DocNavLink href="/docs#persistence">
                                 Persistence
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#remote-sync">
+                            <DocNavLink href="/docs#remote-sync">
                                 Remote Sync
                             </DocNavLink>
                         </li>
                         <li>
-                            <DocNavLink href="#simple-public-sharing">
+                            <DocNavLink href="/docs#simple-public-sharing">
                                 Simple Public Sharing
                             </DocNavLink>
                         </li>
                     </ul>
                 </li>
                 <li>
-                    <DocNavLink href="#refs-and-on-demand-subscribe">
+                    <DocNavLink href="/docs#refs-and-on-demand-subscribe">
                         Refs & Auto-Subscribe
                     </DocNavLink>
                 </li>
-                <li>
-                    <DocNavLink href="#groups-and-permissions">
-                        Groups & Permissions
-                    </DocNavLink>
-                </li>
-                <li>
-                    <DocNavLink href="#auth-accounts-and-migrations">
-                        Auth, Accounts & Migrations
-                    </DocNavLink>
-                </li>
-                <li>
-                    <DocNavLink href="#edits-and-time-travel">
-                        Edit Metadata & Time Travel
-                    </DocNavLink>
-                </li>
-                <li>
-                    <DocNavLink href="#backend-workers">
-                        Backend Workers
-                    </DocNavLink>
-                </li>
             </ul>
-
-            <p className="font-medium border-t -mx-4 px-4 pt-4 border-stone-200 dark:border-stone-800">
-                <DocNavLink href="#faq">FAQ</DocNavLink>
-            </p>
-
-            <NavPackage package="jazz-tools" />
-            <NavPackage package="jazz-react" />
-            <NavPackage package="jazz-browser" />
-            <NavPackage package="jazz-browser-media-images" />
-            <NavPackage package="jazz-nodejs" />
+            Coming soon:
+            <ul>
+                {comingSoon.map((item) => (
+                    <li key={item}>{item}</li>
+                ))}
+            </ul>
+            {packages.map((packageName) => (
+                <NavPackage key={packageName} package={packageName} />
+            ))}
         </>
     );
 }
@@ -116,24 +104,23 @@ export async function NavPackage({
                         open={category.title !== "Other"}
                         className="[&:not([open])_summary]:after:content-['...']"
                     >
-                        <summary className="block text-xs mt-2 cursor-pointer">
+                        <summary className="block text-xs mt-2 mb-1 cursor-pointer">
                             {category.title}
                         </summary>
-                        <div className="text-sm -ml-0.5 max-w-full text-balance">
+                        <div className="flex gap-1 flex-wrap text-balance">
                             {category.children.map(
                                 (child, i, children) =>
                                     (i == 0 ||
                                         child.name !==
                                             children[i - 1]!.name) && (
                                         <>
-                                            <a
+                                            <Link
                                                 key={child.id}
-                                                className="text-sm inline-block px-2 m-0.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100 cursor-pointer"
-                                                href={`#${packageName}/${child.name}`}
+                                                className="text-ellipsis overflow-hidden text-xs font-mono py-0.5 px-1.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100"
+                                                href={`/docs/api-reference/${packageName}#${child.name}`}
                                             >
-                                                <code>{child.name}</code>
-                                            </a>
-                                            {"\u200B"}
+                                                {child.name}
+                                            </Link>
                                         </>
                                     ),
                             )}
@@ -149,15 +136,19 @@ export function DocNavLink({
     href,
     children,
 }: {
-    href: string;
+    href?: string;
     children: ReactNode;
 }) {
-    return (
-        <a
-            href={href}
-            className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
-        >
-            {children}
-        </a>
-    );
+    if (href) {
+        return (
+            <Link
+                href={href}
+                className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
+            >
+                {children}
+            </Link>
+        );
+    }
+
+    return <span className="py-1">{children}</span>;
 }

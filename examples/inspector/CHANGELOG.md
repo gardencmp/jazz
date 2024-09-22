@@ -1,20 +1,14 @@
-# jazz-example-chat
+# jazz-example-inspector
 
-## 0.0.60-guest-auth.1
-
-### Patch Changes
-
-- Updated dependencies
-  - cojson@0.7.35-guest-auth.5
-  - cojson-transport-ws@0.7.35-guest-auth.5
-
-## 0.0.60-unique.0
+## 0.0.60
 
 ### Patch Changes
 
-- Updated dependencies
-  - cojson@0.7.35-unique.2
-  - cojson-transport-ws@0.7.35-unique.2
+- 63daf6a: fix(inspector): subscribe to latent covalues instead of loading them immediately
+- Updated dependencies [35bbcd9]
+- Updated dependencies [f350e90]
+  - cojson@0.7.35
+  - cojson-transport-ws@0.7.35
 
 ## 0.0.59
 

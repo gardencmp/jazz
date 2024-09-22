@@ -7,11 +7,12 @@
   "license": "MIT",
   "dependencies": {
     "cojson": "workspace:*",
-    "typescript": "^5.1.6"
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@vitest/browser": "^0.34.1",
-    "vitest": "^0.34.1",
+    "fake-indexeddb": "^6.0.0",
+    "vitest": "1.5.3",
     "webdriverio": "^8.15.0"
   },
   "scripts": {

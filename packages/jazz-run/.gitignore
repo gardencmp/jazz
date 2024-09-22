@@ -169,3 +169,5 @@ dist
 .pnp.\*
 
 .DS_Store
+
+sync-db/

@@ -1,48 +1,18 @@
 # jazz-browser
 
-## 0.7.35-guest-auth.5
+## 0.7.35
 
 ### Patch Changes
 
--   Updated dependencies
-    -   cojson@0.7.35-guest-auth.5
-    -   cojson-storage-indexeddb@0.7.35-guest-auth.5
-    -   cojson-transport-ws@0.7.35-guest-auth.5
-    -   jazz-tools@0.7.35-guest-auth.5
-
-## 0.7.35-guest-auth.4
-
-### Patch Changes
-
--   Make anonymous auth work better
--   Updated dependencies
-    -   jazz-tools@0.7.35-guest-auth.4
-
-## 0.7.35-guest-auth.3
-
-### Patch Changes
-
--   Implement guest auth without account
--   Updated dependencies
-    -   jazz-tools@0.7.35-guest-auth.3
-
-## 0.7.35-unique.2
-
-### Patch Changes
-
--   Updated dependencies
-    -   jazz-tools@0.7.35-unique.2
-    -   cojson@0.7.35-unique.2
-    -   cojson-storage-indexeddb@0.7.35-unique.2
-    -   cojson-transport-ws@0.7.35-unique.2
-
-## 0.7.35-new-auth.0
-
-### Patch Changes
-
--   Implement new top-level context creation and auth method API
--   Updated dependencies
-    -   jazz-tools@0.7.35-new-auth.0
+-   Updated dependencies [49a8b54]
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [6f80282]
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [f350e90]
+    -   jazz-tools@0.7.35
+    -   cojson@0.7.35
+    -   cojson-storage-indexeddb@0.7.35
+    -   cojson-transport-ws@0.7.35
 
 ## 0.7.34
 

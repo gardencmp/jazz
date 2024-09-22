@@ -88,6 +88,7 @@ function optionalRef<C extends CoValueClass>(
 
 function ref<C extends CoValueClass>(
     arg: C | ((_raw: InstanceType<C>["_raw"]) => C),
+    options?: never,
 ): co<InstanceType<C> | null>;
 function ref<C extends CoValueClass>(
     arg: C | ((_raw: InstanceType<C>["_raw"]) => C),

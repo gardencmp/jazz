@@ -26,6 +26,7 @@ import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { err, ok, Result } from "neverthrow";
+import { getPriorityFromHeader } from "./priority.js";
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -842,6 +843,7 @@ export class CoValueCore {
             action: "content",
             id: this.id,
             header: knownState?.header ? undefined : this.header,
+            priority: getPriorityFromHeader(this.header),
             new: {},
         };
 
@@ -914,6 +916,7 @@ export class CoValueCore {
                         id: this.id,
                         header: undefined,
                         new: {},
+                        priority: getPriorityFromHeader(this.header),
                     };
                     pieces.push(currentPiece);
                     pieceSize = pieceSize - oldPieceSize;

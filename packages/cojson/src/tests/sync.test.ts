@@ -1,7 +1,7 @@
-import { expect, test } from "vitest";
+import { expect, test, describe } from "vitest";
 import { LocalNode } from "../localNode.js";
 import { SyncMessage } from "../sync.js";
-import { MapOpPayload } from "../coValues/coMap.js";
+import { MapOpPayload, RawCoMap } from "../coValues/coMap.js";
 import { RawGroup } from "../coValues/group.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
 import { connectedPeers, newQueuePair } from "../streamUtils.js";
@@ -9,6 +9,8 @@ import { RawAccountID } from "../coValues/account.js";
 import { stableStringify } from "../jsonStringify.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { expectMap } from "../coValue.js";
+import { CoValueHeader } from "../coValueCore.js";
+import { getPriorityFromHeader } from "../priority.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -55,16 +57,18 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
 
     const newContentMsg = (await outRxQ.next()).value;
 
+    const expectedHeader = {
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        createdAt: map.core.header.createdAt,
+        uniqueness: map.core.header.uniqueness,
+    } satisfies CoValueHeader;
+
     expect(newContentMsg).toEqual({
         action: "content",
         id: map.core.id,
-        header: {
-            type: "comap",
-            ruleset: { type: "ownedByGroup", group: group.id },
-            meta: null,
-            createdAt: map.core.header.createdAt,
-            uniqueness: map.core.header.uniqueness,
-        },
+        header: expectedHeader,
         new: {
             [node.currentSessionID]: {
                 after: 0,
@@ -86,6 +90,7 @@ test("Node replies with initial tx and header to empty subscribe", async () => {
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -160,6 +165,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 test.todo(
@@ -214,6 +220,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     map.set("hello", "world", "trusting");
@@ -244,6 +251,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     map.set("goodbye", "world", "trusting");
@@ -274,6 +282,7 @@ test("After subscribing, node sends own known state and new txs to peer", async 
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -349,6 +358,7 @@ test("Client replies with known new content to tellKnownState from server", asyn
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -400,6 +410,7 @@ test("No matter the optimistic known state, node respects invalid known state me
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     map.set("hello", "world", "trusting");
@@ -447,6 +458,7 @@ test("No matter the optimistic known state, node respects invalid known state me
                     .lastSignature!,
             },
         },
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -560,6 +572,7 @@ test.todo(
                     )!.lastSignature!,
                 },
             },
+            priority: getPriorityFromHeader(map.core.header),
         } satisfies SyncMessage);
     },
 );
@@ -610,6 +623,7 @@ test.skip("If we add a server peer, newly created coValues are auto-subscribed t
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 });
 
@@ -776,6 +790,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
         id: map.core.id,
         header: map.core.header,
         new: {},
+        priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
 
     await inTx2.push(mapSubscriptionMsg);
@@ -850,7 +865,7 @@ test("Can sync a coValue through a server to another client", async () => {
 
     const server = new LocalNode(serverUser, serverSession, Crypto);
 
-    const [serverAsPeerForClient1, client1AsPeer] = await connectedPeers(
+    const [serverAsPeerForClient1, client1AsPeer] = connectedPeers(
         "serverFor1",
         "client1",
         {
@@ -902,22 +917,18 @@ test("Can sync a coValue with private transactions through a server to another c
 
     const server = new LocalNode(serverUser, serverSession, Crypto);
 
-    const [serverAsPeer, client1AsPeer] = await connectedPeers(
-        "server",
-        "client1",
-        {
-            trace: true,
-            peer1role: "server",
-            peer2role: "client",
-        },
-    );
+    const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
+        trace: true,
+        peer1role: "server",
+        peer2role: "client",
+    });
 
     client1.syncManager.addPeer(serverAsPeer);
     server.syncManager.addPeer(client1AsPeer);
 
     const client2 = new LocalNode(admin, client1.crypto.newRandomSessionID(admin.id), Crypto);
 
-    const [serverAsOtherPeer, client2AsPeer] = await connectedPeers(
+    const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
         "server",
         "client2",
         {
@@ -1065,7 +1076,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
     const node2 = new LocalNode(admin, Crypto.newRandomSessionID(admin.id), Crypto);
 
-    const [node1asPeer, node2asPeer] = await connectedPeers("peer1", "peer2", {
+    const [node1asPeer, node2asPeer] = connectedPeers("peer1", "peer2", {
         peer1role: "server",
         peer2role: "client",
         trace: true,
@@ -1087,6 +1098,458 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
     expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
         "world",
     );
+});
+
+describe("sync - extra tests", () => {
+    test("Node handles disconnection and reconnection of a peer gracefully", async () => {
+        // Create two nodes
+        const [admin1, session1] = randomAnonymousAccountAndSessionID();
+        const node1 = new LocalNode(admin1, session1, Crypto);
+
+        const [admin2, session2] = randomAnonymousAccountAndSessionID();
+        const node2 = new LocalNode(admin2, session2, Crypto);
+
+        // Create a group and a map on node1
+        const group = node1.createGroup();
+        group.addMember("everyone", "writer");
+        const map = group.createMap();
+        map.set("key1", "value1", "trusting");
+
+        // Connect the nodes
+        const [node1AsPeer, node2AsPeer] = connectedPeers("node1", "node2", {
+            peer1role: "server",
+            peer2role: "client",
+        });
+
+        node1.syncManager.addPeer(node2AsPeer);
+        node2.syncManager.addPeer(node1AsPeer);
+
+        // Wait for initial sync
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Verify that node2 has received the map
+        const mapOnNode2 = await node2.loadCoValueCore(map.core.id);
+        if (mapOnNode2 === "unavailable") {
+            throw new Error("Map is unavailable on node2");
+        }
+
+        expect(expectMap(mapOnNode2.getCurrentContent()).get("key1")).toEqual(
+            "value1",
+        );
+
+        // Simulate disconnection
+        node1.syncManager.gracefulShutdown();
+        node2.syncManager.gracefulShutdown();
+
+        // Make changes on node1 while disconnected
+        map.set("key2", "value2", "trusting");
+
+        // Simulate reconnection
+        const [newNode1AsPeer, newNode2AsPeer] = connectedPeers(
+            "node11",
+            "node22",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        node1.syncManager.addPeer(newNode2AsPeer);
+        node2.syncManager.addPeer(newNode1AsPeer);
+
+        // Wait for re-sync
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Verify that node2 has received the changes made during disconnection
+        const updatedMapOnNode2 = await node2.loadCoValueCore(map.core.id);
+        if (updatedMapOnNode2 === "unavailable") {
+            throw new Error("Updated map is unavailable on node2");
+        }
+
+        expect(
+            expectMap(updatedMapOnNode2.getCurrentContent()).get("key2"),
+        ).toEqual("value2");
+
+        // Make a new change on node2 to verify two-way sync
+        const mapOnNode2ForEdit = await node2.loadCoValueCore(map.core.id);
+        if (mapOnNode2ForEdit === "unavailable") {
+            throw new Error("Updated map is unavailable on node2");
+        }
+
+        const success = mapOnNode2ForEdit.makeTransaction(
+            [
+                {
+                    op: "set",
+                    key: "key3",
+                    value: "value3",
+                },
+            ],
+            "trusting",
+        );
+
+        if (!success) {
+            throw new Error("Failed to make transaction");
+        }
+
+        // Wait for sync back to node1
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const mapOnNode1 = await node1.loadCoValueCore(map.core.id);
+        if (mapOnNode1 === "unavailable") {
+            throw new Error("Updated map is unavailable on node1");
+        }
+
+        // Verify that node1 has received the change from node2
+        expect(expectMap(mapOnNode1.getCurrentContent()).get("key3")).toEqual(
+            "value3",
+        );
+    });
+    test("Concurrent modifications on multiple nodes are resolved correctly", async () => {
+        // Create three nodes
+        const [admin1, session1] = randomAnonymousAccountAndSessionID();
+        const node1 = new LocalNode(admin1, session1, Crypto);
+
+        const [admin2, session2] = randomAnonymousAccountAndSessionID();
+        const node2 = new LocalNode(admin2, session2, Crypto);
+
+        const [admin3, session3] = randomAnonymousAccountAndSessionID();
+        const node3 = new LocalNode(admin3, session3, Crypto);
+
+        // Create a group and a map on node1
+        const group = node1.createGroup();
+        group.addMember("everyone", "writer");
+        const map = group.createMap();
+
+        // Connect the nodes in a triangle topology
+        const [node1AsPeerFor2, node2AsPeerFor1] = connectedPeers(
+            "node1",
+            "node2",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        const [node2AsPeerFor3, node3AsPeerFor2] = connectedPeers(
+            "node2",
+            "node3",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        const [node3AsPeerFor1, node1AsPeerFor3] = connectedPeers(
+            "node3",
+            "node1",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        node1.syncManager.addPeer(node2AsPeerFor1);
+        node1.syncManager.addPeer(node3AsPeerFor1);
+        node2.syncManager.addPeer(node1AsPeerFor2);
+        node2.syncManager.addPeer(node3AsPeerFor2);
+        node3.syncManager.addPeer(node1AsPeerFor3);
+        node3.syncManager.addPeer(node2AsPeerFor3);
+
+        // Wait for initial sync
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Verify that all nodes have the map
+        const mapOnNode1 = await node1.loadCoValueCore(map.core.id);
+        const mapOnNode2 = await node2.loadCoValueCore(map.core.id);
+        const mapOnNode3 = await node3.loadCoValueCore(map.core.id);
+
+        if (
+            mapOnNode1 === "unavailable" ||
+            mapOnNode2 === "unavailable" ||
+            mapOnNode3 === "unavailable"
+        ) {
+            throw new Error("Map is unavailable on node2 or node3");
+        }
+
+        // Perform concurrent modifications
+        map.set("key1", "value1", "trusting");
+        new RawCoMap(mapOnNode2).set("key2", "value2", "trusting");
+        new RawCoMap(mapOnNode3).set("key3", "value3", "trusting");
+
+        // Wait for sync to complete
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Verify that all nodes have the same final state
+        const finalStateNode1 = expectMap(mapOnNode1.getCurrentContent());
+        const finalStateNode2 = expectMap(mapOnNode2.getCurrentContent());
+        const finalStateNode3 = expectMap(mapOnNode3.getCurrentContent());
+
+        const expectedState = {
+            key1: "value1",
+            key2: "value2",
+            key3: "value3",
+        };
+
+        expect(finalStateNode1.toJSON()).toEqual(expectedState);
+        expect(finalStateNode2.toJSON()).toEqual(expectedState);
+        expect(finalStateNode3.toJSON()).toEqual(expectedState);
+    });
+    test.skip("Large coValues are synced efficiently in chunks", async () => {
+        // Create two nodes
+        const [admin1, session1] = randomAnonymousAccountAndSessionID();
+        const node1 = new LocalNode(admin1, session1, Crypto);
+
+        const [admin2, session2] = randomAnonymousAccountAndSessionID();
+        const node2 = new LocalNode(admin2, session2, Crypto);
+
+        // Create a group and a large map on node1
+        const group = node1.createGroup();
+        group.addMember("everyone", "writer");
+        const largeMap = group.createMap();
+
+        // Generate a large amount of data (about 10MB)
+        const dataSize = 1 * 1024 * 1024;
+        const chunkSize = 1024; // 1KB chunks
+        const chunks = dataSize / chunkSize;
+
+        for (let i = 0; i < chunks; i++) {
+            const key = `key${i}`;
+            const value = Buffer.alloc(chunkSize, `value${i}`).toString(
+                "base64",
+            );
+            largeMap.set(key, value, "trusting");
+        }
+
+        // Connect the nodes
+        const [node1AsPeer, node2AsPeer] = connectedPeers("node1", "node2", {
+            peer1role: "server",
+            peer2role: "client",
+        });
+
+        node1.syncManager.addPeer(node2AsPeer);
+        node2.syncManager.addPeer(node1AsPeer);
+
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+
+        // Measure sync time
+        const startSync = performance.now();
+
+        // Load the large map on node2
+        const largeMapOnNode2 = await node2.loadCoValueCore(largeMap.core.id);
+        if (largeMapOnNode2 === "unavailable") {
+            throw new Error("Large map is unavailable on node2");
+        }
+
+        const endSync = performance.now();
+        const syncTime = endSync - startSync;
+
+        // Verify that all data was synced correctly
+        const syncedMap = new RawCoMap(largeMapOnNode2);
+        expect(
+            Object.keys(largeMapOnNode2.getCurrentContent().toJSON() || {})
+                .length,
+        ).toBe(chunks);
+
+        for (let i = 0; i < chunks; i++) {
+            const key = `key${i}`;
+            const expectedValue = Buffer.alloc(chunkSize, `value${i}`).toString(
+                "base64",
+            );
+            expect(syncedMap.get(key)).toBe(expectedValue);
+        }
+
+        // Check that sync time is reasonable (this threshold may need adjustment)
+        const reasonableSyncTime = 10; // 30 seconds
+        expect(syncTime).toBeLessThan(reasonableSyncTime);
+
+        // Check memory usage (this threshold may need adjustment)
+        const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // in MB
+        const reasonableMemoryUsage = 1; // 500 MB
+        expect(memoryUsage).toBeLessThan(reasonableMemoryUsage);
+    });
+    test("Node correctly handles and recovers from network partitions", async () => {
+        // Create three nodes
+        const [admin1, session1] = randomAnonymousAccountAndSessionID();
+        const node1 = new LocalNode(admin1, session1, Crypto);
+
+        const [admin2, session2] = randomAnonymousAccountAndSessionID();
+        const node2 = new LocalNode(admin2, session2, Crypto);
+
+        const [admin3, session3] = randomAnonymousAccountAndSessionID();
+        const node3 = new LocalNode(admin3, session3, Crypto);
+
+        // Create a group and a map on node1
+        const group = node1.createGroup();
+        group.addMember("everyone", "writer");
+        const map = group.createMap();
+        map.set("initial", "value", "trusting");
+
+        // Connect all nodes
+        const [node1AsPeerFor2, node2AsPeerFor1] = connectedPeers(
+            "node1",
+            "node2",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        const [node2AsPeerFor3, node3AsPeerFor2] = connectedPeers(
+            "node2",
+            "node3",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        const [node3AsPeerFor1, node1AsPeerFor3] = connectedPeers(
+            "node3",
+            "node1",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                // trace: true,
+            },
+        );
+
+        node1.syncManager.addPeer(node2AsPeerFor1);
+        node1.syncManager.addPeer(node3AsPeerFor1);
+        node2.syncManager.addPeer(node1AsPeerFor2);
+        node2.syncManager.addPeer(node3AsPeerFor2);
+        node3.syncManager.addPeer(node1AsPeerFor3);
+        node3.syncManager.addPeer(node2AsPeerFor3);
+
+        // Wait for initial sync
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Verify initial state
+        const mapOnNode1Core = await node1.loadCoValueCore(map.core.id);
+        const mapOnNode2Core = await node2.loadCoValueCore(map.core.id);
+        const mapOnNode3Core = await node3.loadCoValueCore(map.core.id);
+
+        if (
+            mapOnNode1Core === "unavailable" ||
+            mapOnNode2Core === "unavailable" ||
+            mapOnNode3Core === "unavailable"
+        ) {
+            throw new Error("Map is unavailable on node2 or node3");
+        }
+
+        // const mapOnNode1 = new RawCoMap(mapOnNode1Core);
+        const mapOnNode2 = new RawCoMap(mapOnNode2Core);
+        const mapOnNode3 = new RawCoMap(mapOnNode3Core);
+
+        expect(mapOnNode2.get("initial")).toBe("value");
+        expect(mapOnNode3.get("initial")).toBe("value");
+
+        // Simulate network partition: disconnect node3 from node1 and node2
+        node1.syncManager.peers["node3"]?.gracefulShutdown();
+        delete node1.syncManager.peers["node3"];
+        node2.syncManager.peers["node3"]?.gracefulShutdown();
+        delete node2.syncManager.peers["node3"];
+        node3.syncManager.peers["node1"]?.gracefulShutdown();
+        delete node3.syncManager.peers["node1"];
+        node3.syncManager.peers["node2"]?.gracefulShutdown();
+        delete node3.syncManager.peers["node2"];
+
+        // Make changes on both sides of the partition
+        map.set("node1", "partition", "trusting");
+        mapOnNode2.set("node2", "partition", "trusting");
+        mapOnNode3.set("node3", "partition", "trusting");
+
+        // Wait for sync between node1 and node2
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Verify that node1 and node2 are in sync, but node3 is not
+        expect(expectMap(mapOnNode1Core.getCurrentContent()).get("node1")).toBe(
+            "partition",
+        );
+        expect(expectMap(mapOnNode1Core.getCurrentContent()).get("node2")).toBe(
+            "partition",
+        );
+        expect(
+            expectMap(mapOnNode1Core.getCurrentContent()).toJSON()?.node3,
+        ).toBe(undefined);
+
+        expect(expectMap(mapOnNode2Core.getCurrentContent()).get("node1")).toBe(
+            "partition",
+        );
+        expect(expectMap(mapOnNode2Core.getCurrentContent()).get("node2")).toBe(
+            "partition",
+        );
+        expect(
+            expectMap(mapOnNode2Core.getCurrentContent()).toJSON()?.node3,
+        ).toBe(undefined);
+
+        expect(
+            expectMap(mapOnNode3Core.getCurrentContent()).toJSON()?.node1,
+        ).toBe(undefined);
+        expect(
+            expectMap(mapOnNode3Core.getCurrentContent()).toJSON()?.node2,
+        ).toBe(undefined);
+
+        expect(
+            expectMap(mapOnNode3Core.getCurrentContent()).toJSON()?.node3,
+        ).toBe("partition");
+
+        // Restore connectivity
+        const [newNode3AsPeerFor1, newNode1AsPeerFor3] = connectedPeers(
+            "node3",
+            "node1",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                trace: true,
+            },
+        );
+
+        const [newNode3AsPeerFor2, newNode2AsPeerFor3] = connectedPeers(
+            "node3",
+            "node2",
+            {
+                peer1role: "server",
+                peer2role: "client",
+                trace: true,
+            },
+        );
+
+        node1.syncManager.addPeer(newNode3AsPeerFor1);
+        node2.syncManager.addPeer(newNode3AsPeerFor2);
+        node3.syncManager.addPeer(newNode1AsPeerFor3);
+        node3.syncManager.addPeer(newNode2AsPeerFor3);
+
+        // Wait for re-sync
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Verify final state: all nodes should have all changes
+        const finalStateNode1 = expectMap(
+            mapOnNode1Core.getCurrentContent(),
+        ).toJSON();
+        const finalStateNode2 = expectMap(
+            mapOnNode2Core.getCurrentContent(),
+        ).toJSON();
+        const finalStateNode3 = expectMap(
+            mapOnNode3Core.getCurrentContent(),
+        ).toJSON();
+
+        const expectedFinalState = {
+            initial: "value",
+            node1: "partition",
+            node2: "partition",
+            node3: "partition",
+        };
+
+        expect(finalStateNode1).toEqual(expectedFinalState);
+        expect(finalStateNode2).toEqual(expectedFinalState);
+        expect(finalStateNode3).toEqual(expectedFinalState);
+    });
 });
 
 function groupContentEx(group: RawGroup) {
