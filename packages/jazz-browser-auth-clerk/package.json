@@ -9,10 +9,10 @@
         "*.{ts,tsx}": "eslint --fix",
         "*.{js,jsx,mdx,json}": "prettier --write"
     },
-    "peerDependencies": {
-        "cojson": "workspace:0.7.35-guest-auth.5",
+    "dependencies": {
         "jazz-browser": "workspace:0.7.35-guest-auth.6",
-        "jazz-tools": "workspace:0.7.35-guest-auth.6"
+        "jazz-tools": "workspace:0.7.35-guest-auth.6",
+        "cojson": "workspace:0.7.35-guest-auth.5"
     },
     "scripts": {
         "lint": "eslint . --ext ts,tsx",

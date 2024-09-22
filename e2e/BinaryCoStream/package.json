@@ -14,11 +14,11 @@
     "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "dependencies": {
-    "cojson": "workspace:^0.7.35",
-    "hash-slash": "workspace:^0.7.35",
+    "cojson": "workspace:0.7.35-guest-auth.5",
+    "hash-slash": "workspace:0.2.0",
     "is-ci": "^3.0.1",
-    "jazz-react": "workspace:^0.7.35",
-    "jazz-tools": "workspace:^0.7.35",
+    "jazz-react": "workspace:0.7.35-guest-auth.6",
+    "jazz-tools": "workspace:0.7.35-guest-auth.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
