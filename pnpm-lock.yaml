@@ -391,7 +391,7 @@ importers:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@22.5.1)
 
-  examples/musicPlayer:
+  examples/music-player:
     dependencies:
       class-variance-authority:
         specifier: ^0.7.0
