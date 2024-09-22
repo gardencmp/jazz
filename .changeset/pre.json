@@ -19,11 +19,15 @@
     "jazz-react": "0.7.35-unique.2",
     "jazz-react-auth-clerk": "0.7.33-unique.2",
     "jazz-run": "0.7.35-unique.2",
-    "jazz-tools": "0.7.35-unique.2"
+    "jazz-tools": "0.7.35-unique.2",
+    "jazz-example-music-player": "0.0.2",
+    "jazz-password-manager": "0.0.1",
+    "richtext": "0.0.0"
   },
   "changesets": [
     "beige-hats-judge",
     "dirty-plants-sniff",
+    "dirty-turtles-sniff",
     "shiny-peaches-grab",
     "small-students-buy",
     "small-tables-appear",

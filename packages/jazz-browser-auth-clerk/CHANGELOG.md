@@ -1,5 +1,13 @@
 # jazz-browser-media-images
 
+## 0.7.35-guest-auth.6
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-tools@0.7.35-guest-auth.6
+    -   jazz-browser@0.7.35-guest-auth.6
+
 ## 0.7.35-guest-auth.5
 
 ### Patch Changes

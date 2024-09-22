@@ -1,5 +1,13 @@
 # jazz-example-todo
 
+## 0.0.99-guest-auth.6
+
+### Patch Changes
+
+-   Updated dependencies
+    -   jazz-react@0.7.35-guest-auth.6
+    -   jazz-tools@0.7.35-guest-auth.6
+
 ## 0.0.99
 
 ### Patch Changes
