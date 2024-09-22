@@ -96,20 +96,23 @@ function Main() {
     );
 }
 
-function AuthAndJazz({ children }: { children: React.ReactNode }) {
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
     const [auth, state] = useDemoAuth();
 
     return (
-        <Jazz.Provider auth={auth} peer="wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io">
-            {state.state === "signedIn" ? children : <DemoAuthBasicUI appName="Jazz Music Player" state={state} />}
-        </Jazz.Provider>
+        <>
+            <Jazz.Provider auth={auth} peer="wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io">
+                {children}
+            </Jazz.Provider>
+            <DemoAuthBasicUI appName="Jazz Music Player" state={state} />
+        </>
     );
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <AuthAndJazz>
+        <JazzAndAuth>
             <Main />
-        </AuthAndJazz>
+        </JazzAndAuth>
     </React.StrictMode>,
 );

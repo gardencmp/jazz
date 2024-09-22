@@ -43,16 +43,15 @@ function AuthAndJazz({ children }: { children: React.ReactNode }) {
     const [auth, state] = useDemoAuth();
 
     return (
-        <Jazz.Provider
-            auth={auth}
-            peer="wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io"
-        >
-            {state.state === "signedIn" ? (
-                children
-            ) : (
-                <DemoAuthBasicUI appName="Jazz Chat" state={state} />
-            )}
-        </Jazz.Provider>
+        <>
+            <Jazz.Provider
+                auth={auth}
+                peer="wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io"
+            >
+                {children}
+            </Jazz.Provider>
+            <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+        </>
     );
 }
 

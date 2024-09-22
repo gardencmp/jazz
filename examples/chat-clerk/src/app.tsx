@@ -22,7 +22,7 @@ export class Chat extends CoList.Of(co.ref(Message)) {}
 const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
 
-function AuthAndJazz({ children }: { children: React.ReactNode }) {
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
     const clerk = useClerk();
     const [auth, state] = useJazzClerkAuth(clerk);
 
@@ -77,9 +77,9 @@ createRoot(document.getElementById("root")!).render(
             publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
             afterSignOutUrl="/"
         >
-            <AuthAndJazz>
+            <JazzAndAuth>
                 <App />
-            </AuthAndJazz>
+            </JazzAndAuth>
         </ClerkProvider>
     </StrictMode>
 );

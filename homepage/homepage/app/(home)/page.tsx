@@ -102,7 +102,7 @@ export default function Home() {
             <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
                 <SectionHeader
                     title="First impressions..."
-                    slogan="A chat app in 84 lines of code."
+                    slogan="A chat app in one screen of code."
                 />
 
                 <GappedGrid className="mt-0 -mx-4 md:-mx-6">

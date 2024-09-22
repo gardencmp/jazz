@@ -69,7 +69,7 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
                     // replace `you@example.com` with your email as a temporary API key
                     peer="wss://mesh.jazz.tools/?key=you@example.com"
                 >
-                    { authState.state === "signedIn" && children }
+                    {children}
                 </Jazz.Provider>
                 <DemoAuthBasicUI appName="Circular" state={authState} />
             </>

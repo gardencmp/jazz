@@ -36,7 +36,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
                 auth={auth}
                 peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
             >
-                {authState.state === "signedIn" && children}
+                {children}
             </Jazz.Provider>
             <DemoAuthBasicUI appName={appName} state={authState} />
         </>

@@ -41,16 +41,15 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
     const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
 
     return (
-        <Jazz.Provider
-            auth={passkeyAuth}
-            peer="wss://mesh.jazz.tools/?key=todo-example-jazz@gcmp.io"
-        >
-            {passKeyState.state === "signedIn" ? (
-                children
-            ) : (
-                <PasskeyAuthBasicUI state={passKeyState} />
-            )}
-        </Jazz.Provider>
+        <>
+            <Jazz.Provider
+                auth={passkeyAuth}
+                peer="wss://mesh.jazz.tools/?key=todo-example-jazz@gcmp.io"
+            >
+                {children}
+            </Jazz.Provider>
+            <PasskeyAuthBasicUI state={passKeyState} />
+        </>
     );
 }
 

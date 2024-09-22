@@ -15,29 +15,28 @@ const Jazz = createJazzReactApp<PasswordManagerAccount>({
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
-function AuthAndJazz({ children }: { children: React.ReactNode }) {
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
     const [auth, state] = usePasskeyAuth({
         appName: "Jazz Password Manager",
     });
 
     return (
-        <Jazz.Provider
-            auth={auth}
-            peer="wss://mesh.jazz.tools/?key=password-manager-example-jazz@gcmp.io"
-        >
-            {state.state === "signedIn" ? (
-                children
-            ) : (
-                <PasskeyAuthBasicUI state={state} />
-            )}
-        </Jazz.Provider>
+        <>
+            <Jazz.Provider
+                auth={auth}
+                peer="wss://mesh.jazz.tools/?key=password-manager-example-jazz@gcmp.io"
+            >
+                {children}
+            </Jazz.Provider>
+            <PasskeyAuthBasicUI state={state} />
+        </>
     );
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <AuthAndJazz>
+        <JazzAndAuth>
             <App />
-        </AuthAndJazz>
+        </JazzAndAuth>
     </React.StrictMode>
 );
