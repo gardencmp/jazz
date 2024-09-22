@@ -32,22 +32,20 @@ export function Footer({ logo, companyName, sections }: FooterProps) {
                         {companyName}
                     </p>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                    {sections.map((section, index) => (
-                        <div key={index} className="flex flex-col gap-2 text-sm">
-                            <h1 className="font-medium">{section.title}</h1>
-                            {section.links.map((link, linkIndex) => (
-                                <FooterLink
-                                    key={linkIndex}
-                                    href={link.href}
-                                    newTab={link.newTab}
-                                >
-                                    {link.label}
-                                </FooterLink>
-                            ))}
-                        </div>
-                    ))}
-                </div>
+                {sections.map((section, index) => (
+                    <div key={index} className="flex flex-col gap-2 text-sm">
+                        <h1 className="font-medium">{section.title}</h1>
+                        {section.links.map((link, linkIndex) => (
+                            <FooterLink
+                                key={linkIndex}
+                                href={link.href}
+                                newTab={link.newTab}
+                            >
+                                {link.label}
+                            </FooterLink>
+                        ))}
+                    </div>
+                ))}
             </div>
         </footer>
     );
@@ -76,7 +74,7 @@ function FooterLink({
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
-                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
+                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none"
             )}
             onClick={onClick}
             target={newTab ? "_blank" : undefined}

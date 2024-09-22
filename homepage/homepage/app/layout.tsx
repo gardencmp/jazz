@@ -7,8 +7,8 @@ import localFont from "next/font/local";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-import { JazzNav } from "@/components/docs/nav";
-import { JazzFooter } from "@/components/docs/footer";
+import { JazzNav } from "@/components/nav";
+import { JazzFooter } from "@/components/footer";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
