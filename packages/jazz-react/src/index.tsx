@@ -74,13 +74,13 @@ export function createJazzReactApp<Acc extends Account>({
         );
     }
 
-    function useAccount(): { me: Acc };
+    function useAccount(): { me: Acc; logOut: () => void };
     function useAccount<D extends DepthsIn<Acc>>(
         depth: D,
-    ): { me: DeeplyLoaded<Acc, D> | undefined };
+    ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
     function useAccount<D extends DepthsIn<Acc>>(
         depth?: D,
-    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined } {
+    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
         const context = React.useContext(JazzContext);
 
         if (!context) {
@@ -101,6 +101,7 @@ export function createJazzReactApp<Acc extends Account>({
 
         return {
             me: depth === undefined ? me || context.me : me,
+            logOut: context.logOut,
         };
     }
 
@@ -230,12 +231,14 @@ export interface JazzReactApp<Acc extends Account> {
     /** @category Hooks */
     useAccount(): {
         me: Acc;
+        logOut: () => void;
     };
     /** @category Hooks */
     useAccount<D extends DepthsIn<Acc>>(
         depth: D,
     ): {
         me: DeeplyLoaded<Acc, D> | undefined;
+        logOut: () => void;
     };
 
     /** @category Hooks */

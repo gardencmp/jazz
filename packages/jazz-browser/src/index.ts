@@ -24,6 +24,7 @@ export { BrowserPassphraseAuth } from "./auth/PassphraseAuth.js";
 /** @category Context Creation */
 export type BrowserContext<Acc extends Account> = {
     me: Acc;
+    logOut: () => void;
     // TODO: Symbol.dispose?
     done: () => void;
 };
@@ -167,6 +168,9 @@ export async function createJazzBrowserContext<Acc extends Account>(
                   window.removeEventListener("online", onOnline);
                   context.done();
               },
+              logOut: () => {
+                  context.logOut();
+              },
           }
         : {
               guest: context.agent,
@@ -174,6 +178,9 @@ export async function createJazzBrowserContext<Acc extends Account>(
                   shouldTryToReconnect = false;
                   window.removeEventListener("online", onOnline);
                   context.done();
+              },
+              logOut: () => {
+                  context.logOut();
               },
           };
 }

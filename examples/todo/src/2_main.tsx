@@ -16,6 +16,7 @@ import {
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
 import { TodoAccount, TodoProject } from "./1_schema.ts";
+import React from "react";
 
 /**
  * Walkthrough: The top-level provider `<Jazz.Provider/>`
@@ -54,16 +55,16 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    // <React.StrictMode>
-    <ThemeProvider>
-        <TitleAndLogo name={appName} />
-        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-            <JazzAndAuth>
-                <App />
-            </JazzAndAuth>
-        </div>
-    </ThemeProvider>,
-    // </React.StrictMode>
+    <React.StrictMode>
+        <ThemeProvider>
+            <TitleAndLogo name={appName} />
+            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+                <JazzAndAuth>
+                    <App />
+                </JazzAndAuth>
+            </div>
+        </ThemeProvider>,
+    </React.StrictMode>
 );
 
 /**
@@ -75,6 +76,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 export default function App() {
     // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
+    const { logOut } = useAccount();
 
     const router = createHashRouter([
         {
@@ -103,16 +105,14 @@ export default function App() {
         <>
             <RouterProvider router={router} />
 
-            {/* {passKeyState.state === "signedIn" && (
-                <Button
-                    onClick={() =>
-                        router.navigate("/").then(passKeyState.logOut)
-                    }
-                    variant="outline"
-                >
-                    Log Out
-                </Button>
-            )} */}
+            <Button
+                onClick={() =>
+                    router.navigate("/").then(logOut)
+                }
+                variant="outline"
+            >
+                Log Out
+            </Button>
         </>
     );
 }

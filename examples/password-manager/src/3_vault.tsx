@@ -14,7 +14,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PasswordItemFormValues } from "./types";
 
 const VaultPage: React.FC = () => {
-  const { me/*, logOut*/ } = useAccount();
+  const { me, logOut } = useAccount();
   const sharedFolderId = useParams<{ sharedFolderId: ID<Folder> }>()
     .sharedFolderId;
   const sharedFolder = useCoState(Folder, sharedFolderId);
@@ -111,7 +111,7 @@ const VaultPage: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      // logOut();
+      logOut();
     } catch (err) {
       setError("Failed to logout. Please try again.");
     }

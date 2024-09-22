@@ -15,7 +15,7 @@ const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
 
 function App() {
-    const { me } = useAccount();
+    const { me, logOut } = useAccount();
 
     const createChat = () => {
         if (!me) return;
@@ -29,7 +29,7 @@ function App() {
         <div className="flex flex-col items-center justify-between w-screen h-screen p-2 dark:bg-black dark:text-white">
             <div className="rounded mb-5 px-2 py-1 text-sm self-end">
                 {me?.profile?.name} ·{" "}
-                {/*<button onClick={logOut}>Log Out</button>*/}
+                <button onClick={logOut}>Log Out</button>
             </div>
             {useIframeHashRouter().route({
                 "/": () => createChat() as never,

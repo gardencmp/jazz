@@ -9,7 +9,7 @@ import {
     useDemoAuth,
 } from "jazz-react";
 
-import { ThemeProvider, TitleAndLogo } from "./basicComponents/index.ts";
+import { Button, ThemeProvider, TitleAndLogo } from "./basicComponents/index.ts";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
 import { PetAccount, PetPost } from "./1_schema.ts";
@@ -64,6 +64,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  */
 
 export default function App() {
+    const { logOut } = useAccount();
+
     const router = createHashRouter([
         {
             path: "/",
@@ -92,16 +94,14 @@ export default function App() {
         <>
             <RouterProvider router={router} />
 
-            {/* {passKeyState.state === "signedIn" && (
-                <Button
-                    onClick={() =>
-                        router.navigate("/").then(passKeyState.logOut)
-                    }
-                    variant="outline"
-                >
-                    Log Out
-                </Button>
-            )} */}
+            <Button
+                onClick={() =>
+                    router.navigate("/").then(logOut)
+                }
+                variant="outline"
+            >
+                Log Out
+            </Button>
         </>
     );
 }
