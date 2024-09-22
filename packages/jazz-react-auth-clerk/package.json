@@ -5,12 +5,15 @@
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",
-  "dependencies": {},
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*.{js,jsx,mdx,json}": "prettier --write"
+  },
   "peerDependencies": {
     "cojson": "workspace:*",
-    "jazz-tools": "workspace:*",
-    "jazz-react": "workspace:*",
     "jazz-browser-auth-clerk": "workspace:*",
+    "jazz-react": "workspace:*",
+    "jazz-tools": "workspace:*",
     "react": "^18.2.0"
   },
   "scripts": {
@@ -20,11 +23,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "@types/react": "^18.2.19"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
-    "*.{js,jsx,mdx,json}": "prettier --write"
+    "@types/react": "^18.2.19",
+    "typescript": "^5.3.3"
   }
 }
