@@ -17,6 +17,7 @@ export type AuthResult =
           credentials: { accountID: ID<Account>; secret: AgentSecret };
           onSuccess: () => void;
           onError: (error: string | Error) => void;
+          logOut: () => void;
       }
     | {
           type: "new";
@@ -28,6 +29,7 @@ export type AuthResult =
           }) => Promise<void>;
           onSuccess: () => void;
           onError: (error: string | Error) => void;
+          logOut: () => void;
       };
 
 export interface AuthMethod {
@@ -44,6 +46,7 @@ export const fixedCredentialsAuth = (credentials: {
             credentials,
             onSuccess: () => {},
             onError: () => {},
+            logOut: () => {},
         }),
     };
 };
@@ -56,6 +59,7 @@ export const ephemeralCredentialsAuth = (): AuthMethod => {
             saveCredentials: async () => {},
             onSuccess: () => {},
             onError: () => {},
+            logOut: () => {},
         }),
     };
 };
@@ -86,28 +90,40 @@ type BaseContextParams = {
     crypto: CryptoProvider;
 };
 
+export type JazzContextWithAccount<Acc extends Account> = {
+    account: Acc;
+    done: () => void;
+    logOut: () => void;
+};
+
+export type JazzContextWithAgent = {
+    agent: AnonymousJazzAgent;
+    done: () => void;
+    logOut: () => void;
+};
+
+export type JazzContext<Acc extends Account> = JazzContextWithAccount<Acc> | JazzContextWithAgent;
+
 export async function createJazzContext<Acc extends Account>({
     AccountSchema,
     auth,
     sessionProvider,
     peersToLoadFrom,
     crypto,
-}: ContextParamsWithAuth<Acc>): Promise<{ account: Acc; done: () => void }>;
+}: ContextParamsWithAuth<Acc>): Promise<JazzContextWithAccount<Acc>>;
 export async function createJazzContext({
     peersToLoadFrom,
     crypto,
-}: BaseContextParams): Promise<{ agent: AnonymousJazzAgent; done: () => void }>;
+}: BaseContextParams): Promise<JazzContextWithAgent>;
 export async function createJazzContext<Acc extends Account>(
     options: ContextParamsWithAuth<Acc> | BaseContextParams,
 ): Promise<
-    | { account: Acc; done: () => void }
-    | { agent: AnonymousJazzAgent; done: () => void }
+JazzContext<Acc>
 >
 export async function createJazzContext<Acc extends Account>(
     options: ContextParamsWithAuth<Acc> | BaseContextParams,
 ): Promise<
-    | { account: Acc; done: () => void }
-    | { agent: AnonymousJazzAgent; done: () => void }
+JazzContext<Acc>
 > {
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -157,6 +173,11 @@ export async function createJazzContext<Acc extends Account>(
                             node.gracefulShutdown();
                             sessionDone();
                         },
+                        logOut: () => {
+                            node.gracefulShutdown();
+                            sessionDone();
+                            authResult.logOut();
+                        },
                     };
                 } catch (e) {
                     authResult.onError(
@@ -200,6 +221,10 @@ export async function createJazzContext<Acc extends Account>(
                     done: () => {
                         node.gracefulShutdown();
                     },
+                    logOut: () => {
+                        node.gracefulShutdown();
+                        authResult.logOut();
+                    },
                 };
             } catch (e) {
                 authResult.onError(
@@ -221,7 +246,7 @@ export async function createAnonymousJazzContext({
 }: {
     peersToLoadFrom: Peer[];
     crypto: CryptoProvider;
-}): Promise<{ agent: AnonymousJazzAgent; done: () => void }> {
+}): Promise<JazzContextWithAgent> {
     const agentSecret = crypto.newRandomAgentSecret();
     const rawAgent = new ControlledAgent(agentSecret, crypto);
 
@@ -238,5 +263,6 @@ export async function createAnonymousJazzContext({
     return {
         agent: new AnonymousJazzAgent(node),
         done: () => {},
+        logOut: () => {},
     };
 }

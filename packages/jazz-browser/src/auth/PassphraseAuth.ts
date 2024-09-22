@@ -41,6 +41,9 @@ export class BrowserPassphraseAuth implements AuthMethod {
                 onError: (error: string | Error) => {
                     this.driver.onError(error);
                 },
+                logOut: () => {
+                    delete localStorage[localStorageKey];
+                },
             } satisfies AuthResult;
         } else {
             return new Promise<AuthResult>((resolve) => {
@@ -72,6 +75,9 @@ export class BrowserPassphraseAuth implements AuthMethod {
                             },
                             onError: (error: string | Error) => {
                                 this.driver.onError(error);
+                            },
+                            logOut: () => {
+                                delete localStorage[localStorageKey];
                             },
                         });
                     },
@@ -108,6 +114,9 @@ export class BrowserPassphraseAuth implements AuthMethod {
                             },
                             onError: (error: string | Error) => {
                                 this.driver.onError(error);
+                            },
+                            logOut: () => {
+                                delete localStorage[localStorageKey];
                             },
                         });
                     },

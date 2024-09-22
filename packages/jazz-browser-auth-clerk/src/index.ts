@@ -13,6 +13,7 @@ export type MinimalClerkClient = {
             unsafeMetadata: Record<string, any>;
         }) => Promise<unknown>;
     } | null | undefined;
+    signOut: () => Promise<void>;
 }
 
 export class BrowserClerkAuth implements AuthMethod {
@@ -39,6 +40,9 @@ export class BrowserClerkAuth implements AuthMethod {
                     onError: (error: string | Error) => {
                         this.driver.onError(error);
                     },
+                    logOut: () => {
+                        void this.clerkClient.signOut();
+                    },
                 };
             } else {
                 return {
@@ -63,6 +67,9 @@ export class BrowserClerkAuth implements AuthMethod {
                     onSuccess: () => {},
                     onError: (error: string | Error) => {
                         this.driver.onError(error);
+                    },
+                    logOut: () => {
+                        void this.clerkClient.signOut();
                     },
                 };
             }

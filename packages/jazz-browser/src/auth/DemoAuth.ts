@@ -56,6 +56,9 @@ export class BrowserDemoAuth implements AuthMethod {
                 },
                 onError: (error: string | Error) => {
                     this.driver.onError(error)
+                },
+                logOut: () => {
+                    delete localStorage[localStorageKey];
                 }
             } satisfies AuthResult;
         } else {
@@ -94,6 +97,9 @@ export class BrowserDemoAuth implements AuthMethod {
                             },
                             onError: (error: string | Error) => {
                                 this.driver.onError(error)
+                            },
+                            logOut: () => {
+                                delete localStorage[localStorageKey];
                             }
                         });
                     },
@@ -121,6 +127,9 @@ export class BrowserDemoAuth implements AuthMethod {
                             },
                             onError: (error: string | Error) => {
                                 this.driver.onError(error)
+                            },
+                            logOut: () => {
+                                delete localStorage[localStorageKey];
                             }
                         });
                     },
