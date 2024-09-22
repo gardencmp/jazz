@@ -5,8 +5,8 @@ import "./index.css";
 
 import {
     createJazzReactApp,
-    PasskeyAuthBasicUI,
-    usePasskeyAuth,
+    DemoAuthBasicUI,
+    useDemoAuth,
 } from "jazz-react";
 
 import { ThemeProvider, TitleAndLogo } from "./basicComponents/index.ts";
@@ -28,19 +28,18 @@ const Jazz = createJazzReactApp({ AccountSchema: PetAccount });
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-    const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
+    const [passkeyAuth, passKeyState] = useDemoAuth();
 
     return (
-        <Jazz.Provider
-            auth={passkeyAuth}
-            peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
-        >
-            {passKeyState.state === "signedIn" ? (
-                children
-            ) : (
-                <PasskeyAuthBasicUI state={passKeyState} />
-            )}
-        </Jazz.Provider>
+        <>
+            <Jazz.Provider
+                auth={passkeyAuth}
+                peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
+            >
+                {passKeyState.state === "signedIn" && children}
+            </Jazz.Provider>
+            <DemoAuthBasicUI appName={appName} state={passKeyState} />
+        </>
     );
 }
 

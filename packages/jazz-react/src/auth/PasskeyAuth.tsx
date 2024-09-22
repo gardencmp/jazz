@@ -66,6 +66,10 @@ export function usePasskeyAuth({
 export const PasskeyAuthBasicUI = ({ state }: { state: PasskeyAuthState }) => {
     const [username, setUsername] = useState<string>("");
 
+    if (state.state === "signedIn") {
+        return null;
+    }
+
     if (state.state !== "ready") {
         return <div>Loading...</div>;
     }
