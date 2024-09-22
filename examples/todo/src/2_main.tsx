@@ -6,17 +6,17 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactContext, PasskeyAuth } from "jazz-react";
+import { createJazzReactApp, PasskeyAuthBasicUI, usePasskeyAuth } from "jazz-react";
 
 import {
     Button,
     ThemeProvider,
     TitleAndLogo,
 } from "./basicComponents/index.ts";
-import { PrettyAuthUI } from "./components/Auth.tsx";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
 import { TodoAccount, TodoProject } from "./1_schema.ts";
+import React from "react";
 
 /**
  * Walkthrough: The top-level provider `<Jazz.Provider/>`
@@ -31,29 +31,40 @@ import { TodoAccount, TodoProject } from "./1_schema.ts";
 
 const appName = "Jazz Todo List Example";
 
-const auth = PasskeyAuth<TodoAccount>({
-    appName,
-    Component: PrettyAuthUI,
-    accountSchema: TodoAccount,
-});
-const Jazz = createJazzReactContext<TodoAccount>({
-    auth,
-    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+const Jazz = createJazzReactApp<TodoAccount>({
+    AccountSchema: TodoAccount,
 });
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
+    const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
+
+    return (
+        <Jazz.Provider
+            auth={passkeyAuth}
+            peer="wss://mesh.jazz.tools/?key=todo-example-jazz@gcmp.io"
+        >
+            {passKeyState.state === "signedIn" ? (
+                children
+            ) : (
+                <PasskeyAuthBasicUI state={passKeyState} />
+            )}
+        </Jazz.Provider>
+    );
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    // <React.StrictMode>
-    <ThemeProvider>
-        <TitleAndLogo name={appName} />
-        <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-            <Jazz.Provider>
-                <App />
-            </Jazz.Provider>
-        </div>
-    </ThemeProvider>,
-    // </React.StrictMode>
+    <React.StrictMode>
+        <ThemeProvider>
+            <TitleAndLogo name={appName} />
+            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+                <JazzAndAuth>
+                    <App />
+                </JazzAndAuth>
+            </div>
+        </ThemeProvider>,
+    </React.StrictMode>
 );
 
 /**
@@ -95,7 +106,9 @@ export default function App() {
             <RouterProvider router={router} />
 
             <Button
-                onClick={() => router.navigate("/").then(logOut)}
+                onClick={() =>
+                    router.navigate("/").then(logOut)
+                }
                 variant="outline"
             >
                 Log Out

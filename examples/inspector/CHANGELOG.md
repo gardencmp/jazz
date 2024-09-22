@@ -1,4 +1,4 @@
-# jazz-example-chat
+# jazz-example-inspector
 
 ## 0.0.60
 

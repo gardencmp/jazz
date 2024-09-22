@@ -7,12 +7,25 @@ import {
 import { CoValueKnownState, Peer, SyncMessage } from "./sync.js";
 
 export class PeerState {
+    constructor(private peer: Peer) {}
+
     readonly optimisticKnownStates: { [id: RawCoID]: CoValueKnownState } = {};
     readonly toldKnownState: Set<RawCoID> = new Set();
-    readonly id = this.peer.id;
-    readonly role = this.peer.role;
-    readonly priority = this.peer.priority;
-    readonly crashOnClose = this.peer.crashOnClose;
+    get id() {
+        return this.peer.id;
+    }
+
+    get role() {
+        return this.peer.role;
+    }
+
+    get priority() {
+        return this.peer.priority;
+    }
+
+    get crashOnClose() {
+        return this.peer.crashOnClose;
+    }
 
     /**
      * We set as default priority HIGH to handle all the messages without a
@@ -23,8 +36,6 @@ export class PeerState {
     private queue = new PriorityBasedMessageQueue(CO_VALUE_PRIORITY.HIGH);
     private processing = false;
     public closed = false;
-
-    constructor(private peer: Peer) {}
 
     async processQueue() {
         if (this.processing) {
@@ -37,7 +48,7 @@ export class PeerState {
         let entry: QueueEntry | undefined;
         while ((entry = this.queue.pull())) {
             // Awaiting the push to send one message at a time
-            // This way when the peer is "under pressure" we can enqueue all 
+            // This way when the peer is "under pressure" we can enqueue all
             // the coming messages and organize them by priority
             await this.peer.outgoing
                 .push(entry.msg)

@@ -5,7 +5,6 @@ import {
     ControlledAgent,
     LocalNode,
     WasmCrypto,
-    cojsonInternals,
 } from "cojson";
 import { IDBStorage } from "./index.js";
 
@@ -16,7 +15,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 
     const node = new LocalNode(
         new ControlledAgent(agentSecret, Crypto),
-        cojsonInternals.newRandomSessionID(Crypto.getAgentID(agentSecret)),
+        Crypto.newRandomSessionID(Crypto.getAgentID(agentSecret)),
         Crypto,
     );
 
@@ -36,7 +35,7 @@ test("Should be able to sync data to database and then load that from a new node
 
     const node1 = new LocalNode(
         new ControlledAgent(agentSecret, Crypto),
-        cojsonInternals.newRandomSessionID(Crypto.getAgentID(agentSecret)),
+        Crypto.newRandomSessionID(Crypto.getAgentID(agentSecret)),
         Crypto,
     );
 
@@ -56,7 +55,7 @@ test("Should be able to sync data to database and then load that from a new node
 
     const node2 = new LocalNode(
         new ControlledAgent(agentSecret, Crypto),
-        cojsonInternals.newRandomSessionID(Crypto.getAgentID(agentSecret)),
+        Crypto.newRandomSessionID(Crypto.getAgentID(agentSecret)),
         Crypto,
     );
 

@@ -1,4 +1,4 @@
-import { CoValueCore, CoValueHeader } from "../coValueCore.js";
+import { CoValueCore, CoValueHeader, CoValueUniqueness } from "../coValueCore.js";
 import { CoID, RawCoValue } from "../coValue.js";
 import {
     AgentSecret,
@@ -63,7 +63,7 @@ export class RawAccount<
 }
 
 export interface ControlledAccountOrAgent {
-    id: AccountID | AgentID;
+    id: RawAccountID | AgentID;
     agentSecret: AgentSecret;
 
     currentAgentID: () => Result<AgentID, InvalidAccountAgentIDError>;
@@ -92,8 +92,8 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
      * Creates a new group (with the current account as the group's first admin).
      * @category 1. High-level
      */
-    createGroup() {
-        return this.core.node.createGroup();
+    createGroup(uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()) {
+        return this.core.node.createGroup(uniqueness);
     }
 
     async acceptInvite<T extends RawCoValue>(
@@ -133,7 +133,6 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
     }
 }
 
-/** @hidden */
 export class ControlledAgent implements ControlledAccountOrAgent {
     constructor(
         public agentSecret: AgentSecret,
@@ -170,7 +169,7 @@ export class ControlledAgent implements ControlledAccountOrAgent {
 }
 
 export type AccountMeta = { type: "account" };
-export type AccountID = CoID<RawAccount>;
+export type RawAccountID = CoID<RawAccount>;
 
 export type ProfileShape = {
     name: string;

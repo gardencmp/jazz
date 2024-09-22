@@ -10,7 +10,6 @@ import {
     SignerID,
 } from "./crypto/crypto.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
-import { base58 } from "@scure/base";
 import {
     PermissionsDef as RulesetDef,
     determineValidTransactions,
@@ -19,8 +18,8 @@ import {
 import { RawGroup } from "./coValues/group.js";
 import { LocalNode, ResolveAccountAgentError } from "./localNode.js";
 import { CoValueKnownState, NewContentMessage } from "./sync.js";
-import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { AccountID, ControlledAccountOrAgent } from "./coValues/account.js";
+import { RawCoID, SessionID, TransactionID } from "./ids.js";
+import { RawAccountID, ControlledAccountOrAgent } from "./coValues/account.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { coreToCoValue } from "./coreToCoValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
@@ -42,9 +41,9 @@ export type CoValueHeader = {
     type: AnyRawCoValue["type"];
     ruleset: RulesetDef;
     meta: JsonObject | null;
-    createdAt: `2${string}` | null;
-    uniqueness: `z${string}` | null;
-};
+} & CoValueUniqueness;
+
+export type CoValueUniqueness = {uniqueness: JsonValue, createdAt?: `2${string}` | null}
 
 export function idforHeader(
     header: CoValueHeader,
@@ -52,13 +51,6 @@ export function idforHeader(
 ): RawCoID {
     const hash = crypto.shortHash(header);
     return `co_z${hash.slice("shortHash_z".length)}`;
-}
-
-export function newRandomSessionID(accountID: AccountID | AgentID): SessionID {
-    return `${accountID}_session_z${base58.encode(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).crypto.getRandomValues(new Uint8Array(8)),
-    )}`;
 }
 
 type SessionLog = {
@@ -993,7 +985,7 @@ export class CoValueCore {
         return this.header.ruleset.type === "group"
             ? expectGroup(this.getCurrentContent())
                   .keys()
-                  .filter((k): k is AccountID => k.startsWith("co_"))
+                  .filter((k): k is RawAccountID => k.startsWith("co_"))
             : this.header.ruleset.type === "ownedByGroup"
               ? [
                     this.header.ruleset.group,
@@ -1005,7 +997,7 @@ export class CoValueCore {
                                 ),
                             )
                             .filter(
-                                (session): session is AccountID =>
+                                (session): session is RawAccountID =>
                                     isAccountID(session) && session !== this.id,
                             ),
                     ),

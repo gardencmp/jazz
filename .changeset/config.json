@@ -9,6 +9,8 @@
             "jazz-tools",
             "jazz-browser",
             "jazz-browser-media-images",
+            "jazz-browser-auth-clerk",
+            "jazz-react-auth-clerk",
             "jazz-react",
             "jazz-nodejs",
             "jazz-run",

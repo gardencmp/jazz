@@ -1,6 +1,7 @@
 import type { CoID, RawCoValue } from "cojson";
 import type {
     Account,
+    AnonymousJazzAgent,
     CoValue,
     ID,
     RefEncoded,
@@ -19,7 +20,7 @@ const TRACE_ACCESSES = false;
 export class Ref<out V extends CoValue> {
     constructor(
         readonly id: ID<V>,
-        readonly controlledAccount: Account,
+        readonly controlledAccount: Account | AnonymousJazzAgent,
         readonly schema: RefEncoded<V>,
     ) {
         if (!isRefEncoded(schema)) {
@@ -28,9 +29,11 @@ export class Ref<out V extends CoValue> {
     }
 
     get value() {
-        const raw = this.controlledAccount._raw.core.node.getLoaded(
-            this.id as unknown as CoID<RawCoValue>,
-        );
+        const node =
+            "node" in this.controlledAccount
+                ? this.controlledAccount.node
+                : this.controlledAccount._raw.core.node;
+        const raw = node.getLoaded(this.id as unknown as CoID<RawCoValue>);
         if (raw) {
             let value = refCache.get(raw);
             if (value) {
@@ -48,7 +51,11 @@ export class Ref<out V extends CoValue> {
     private async loadHelper(options?: {
         onProgress: (p: number) => void;
     }): Promise<V | "unavailable"> {
-        const raw = await this.controlledAccount._raw.core.node.load(
+        const node =
+            "node" in this.controlledAccount
+                ? this.controlledAccount.node
+                : this.controlledAccount._raw.core.node;
+        const raw = await node.load(
             this.id as unknown as CoID<RawCoValue>,
             options?.onProgress,
         );
@@ -117,7 +124,7 @@ export class Ref<out V extends CoValue> {
 export function makeRefs<Keys extends string | number>(
     getIdForKey: (key: Keys) => ID<CoValue> | undefined,
     getKeysWithIds: () => Keys[],
-    controlledAccount: Account,
+    controlledAccount: Account | AnonymousJazzAgent,
     refSchemaForKey: (key: Keys) => RefEncoded<CoValue>,
 ): { [K in Keys]: Ref<CoValue> } & {
     [Symbol.iterator]: () => IterableIterator<Ref<CoValue>>;

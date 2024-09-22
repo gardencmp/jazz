@@ -29,6 +29,7 @@ export function NewPetPostForm() {
 
     const onChangeName = useCallback(
         (name: string) => {
+            if (!me) return;
             if (newPetPost) {
                 newPetPost.name = name;
             } else {
@@ -63,7 +64,7 @@ export function NewPetPostForm() {
     );
 
     const onSubmit = useCallback(() => {
-        if (!newPetPost) return;
+        if (!me || !newPetPost) return;
         const myPosts = me.root?.posts;
 
         if (!myPosts) {
@@ -73,7 +74,7 @@ export function NewPetPostForm() {
         myPosts.push(newPetPost as PetPost);
 
         navigate("/pet/" + newPetPost.id);
-    }, [me.root?.posts, newPetPost, navigate]);
+    }, [me?.root?.posts, newPetPost, navigate]);
 
     return (
         <div className="flex flex-col gap-10">

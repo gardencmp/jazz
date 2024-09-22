@@ -1,4 +1,4 @@
-import { AccountID } from "./coValues/account.js";
+import { RawAccountID } from "./coValues/account.js";
 import { base58 } from "@scure/base";
 import { shortHashLength } from "./crypto/crypto.js";
 
@@ -28,4 +28,4 @@ export function isAgentID(id: string): id is AgentID {
     );
 }
 
-export type SessionID = `${AccountID | AgentID}_session_z${string}`;
+export type SessionID = `${RawAccountID | AgentID}_session_z${string}`;

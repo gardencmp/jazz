@@ -1,4 +1,4 @@
-import type { AccountID, Everyone, RawGroup, Role } from "cojson";
+import type { RawAccountID, Everyone, RawGroup, Role } from "cojson";
 import type {
     CoValue,
     ID,
@@ -158,7 +158,7 @@ export class Group extends CoValueBase implements CoValue {
                 return key === "everyone" || key.startsWith("co_");
             })
             .map((id) => {
-                const role = this._raw.get(id as Everyone | AccountID);
+                const role = this._raw.get(id as Everyone | RawAccountID);
                 const accountID =
                     id === "everyone"
                         ? undefined

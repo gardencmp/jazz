@@ -182,6 +182,115 @@ importers:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@22.5.1)
 
+  examples/chat-clerk:
+    dependencies:
+      '@clerk/clerk-react':
+        specifier: ^5.4.1
+        version: 5.4.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@radix-ui/react-checkbox':
+        specifier: ^1.0.4
+        version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@radix-ui/react-slot':
+        specifier: ^1.0.2
+        version: 1.0.2(@types/react@18.2.45)(react@18.2.0)
+      '@radix-ui/react-toast':
+        specifier: ^1.1.4
+        version: 1.1.5(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      class-variance-authority:
+        specifier: ^0.7.0
+        version: 0.7.0
+      clsx:
+        specifier: ^2.0.0
+        version: 2.0.0
+      cojson:
+        specifier: workspace:*
+        version: link:../../packages/cojson
+      hash-slash:
+        specifier: workspace:*
+        version: link:../../packages/hash-slash
+      jazz-react:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react
+      jazz-react-auth-clerk:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react-auth-clerk
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
+      lucide-react:
+        specifier: ^0.274.0
+        version: 0.274.0(react@18.2.0)
+      qrcode:
+        specifier: ^1.5.3
+        version: 1.5.3
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      react-router:
+        specifier: ^6.16.0
+        version: 6.21.0(react@18.2.0)
+      react-router-dom:
+        specifier: ^6.16.0
+        version: 6.21.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-use:
+        specifier: ^17.4.0
+        version: 17.4.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      tailwind-merge:
+        specifier: ^1.14.0
+        version: 1.14.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.0(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
+      uniqolor:
+        specifier: ^1.1.0
+        version: 1.1.1
+    devDependencies:
+      '@types/qrcode':
+        specifier: ^1.5.1
+        version: 1.5.5
+      '@types/react':
+        specifier: ^18.2.19
+        version: 18.2.45
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.18
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.2.1
+        version: 6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.2.1
+        version: 6.15.0(eslint@8.56.0)(typescript@5.3.3)
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.3.2
+        version: 3.5.0(vite@5.0.10(@types/node@22.5.1))
+      autoprefixer:
+        specifier: ^10.4.14
+        version: 10.4.16(postcss@8.4.32)
+      eslint:
+        specifier: ^8.46.0
+        version: 8.56.0
+      eslint-plugin-react-hooks:
+        specifier: ^4.6.0
+        version: 4.6.0(eslint@8.56.0)
+      eslint-plugin-react-refresh:
+        specifier: ^0.4.3
+        version: 0.4.5(eslint@8.56.0)
+      postcss:
+        specifier: ^8.4.27
+        version: 8.4.32
+      tailwindcss:
+        specifier: ^3.3.3
+        version: 3.4.0(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vite:
+        specifier: ^5.0.10
+        version: 5.0.10(@types/node@22.5.1)
+
   examples/inspector:
     dependencies:
       '@radix-ui/react-checkbox':
@@ -528,6 +637,8 @@ importers:
         specifier: ^1.4.4
         version: 1.4.4(rollup@4.9.1)(vite@5.0.10(@types/node@22.5.1))
 
+  examples/richtext: {}
+
   examples/todo:
     dependencies:
       '@radix-ui/react-checkbox':
@@ -764,6 +875,22 @@ importers:
         specifier: ^5.3.3
         version: 5.3.3
 
+  packages/jazz-browser-auth-clerk:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+      jazz-browser:
+        specifier: workspace:*
+        version: link:../jazz-browser
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../jazz-tools
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
   packages/jazz-browser-media-images:
     dependencies:
       '@types/image-blob-reduce':
@@ -838,6 +965,31 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
+
+  packages/jazz-react-auth-clerk:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+      jazz-browser-auth-clerk:
+        specifier: workspace:*
+        version: link:../jazz-browser-auth-clerk
+      jazz-react:
+        specifier: workspace:*
+        version: link:../jazz-react
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../jazz-tools
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+    devDependencies:
+      '@types/react':
+        specifier: ^18.2.19
+        version: 18.2.45
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
 
   packages/jazz-run:
     dependencies:
@@ -1069,6 +1221,29 @@ packages:
 
   '@changesets/write@0.3.1':
     resolution: {integrity: sha512-SyGtMXzH3qFqlHKcvFY2eX+6b0NGiFcNav8AFsYwy5l8hejOeoeTDemu5Yjmke2V5jpzY+pBvM0vCCQ3gdZpfw==}
+
+  '@clerk/clerk-react@5.4.1':
+    resolution: {integrity: sha512-r0P5kEFWh3Cyl+PrNWM7oW/+0aPaB0Zp80MzQLTvpSSGgemYoDHgybmc2Twc4rS0GOJ455y5uSB1smTh0G+ztw==}
+    engines: {node: '>=18.17.0'}
+    peerDependencies:
+      react: '>=18 || >=19.0.0-beta'
+      react-dom: '>=18 || >=19.0.0-beta'
+
+  '@clerk/shared@2.5.1':
+    resolution: {integrity: sha512-RslzZvjolG8ToZlegV8XPEkINQ4XM23lO2xS6ZtJEeGzRzchkpEBUOYywjG6aGtJDByWBY2OxyrPaa5rwx1XEg==}
+    engines: {node: '>=18.17.0'}
+    peerDependencies:
+      react: '>=18 || >=19.0.0-beta'
+      react-dom: '>=18 || >=19.0.0-beta'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
+  '@clerk/types@4.13.1':
+    resolution: {integrity: sha512-AfFTA1Du0pog62CSl23Y8NNDN+iHwXdUQAp/sQ/LbE+/wYBOMSaV5d+cS5F4HX+/uzXgKsc3BpCNI/Th3CLNHg==}
+    engines: {node: '>=18.17.0'}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -2560,6 +2735,9 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
 
+  csstype@3.1.1:
+    resolution: {integrity: sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==}
+
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
@@ -3124,6 +3302,9 @@ packages:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
 
+  glob-to-regexp@0.4.1:
+    resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
+
   glob@10.3.10:
     resolution: {integrity: sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -3472,6 +3653,10 @@ packages:
 
   js-cookie@2.2.1:
     resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
+
+  js-cookie@3.0.5:
+    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
+    engines: {node: '>=14'}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -4488,6 +4673,9 @@ packages:
   std-env@3.6.0:
     resolution: {integrity: sha512-aFZ19IgVmhdB2uX599ve2kE6BIE3YMnQ6Gp6BURhW/oIzpXGKr878TQfAQZn1+i0Flcc/UKUy1gOlcfaUBCryg==}
 
+  std-env@3.7.0:
+    resolution: {integrity: sha512-JPbdCEQLj1w5GilpiHAx3qJvFndqybBysA3qUOnznweH4QbNYUsW/ea8QzSrnh0vNsezMMw5bcVool8lM0gwzg==}
+
   stream-transform@2.1.3:
     resolution: {integrity: sha512-9GHUiM5hMiCi6Y03jD2ARC1ettBXkQBoQAe7nJsPknnI0ow10aXjTnew8QtYQmLjzn974BnmWEAJgCY6ZP1DeQ==}
 
@@ -4569,6 +4757,11 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  swr@2.2.0:
+    resolution: {integrity: sha512-AjqHOv2lAhkuUdIiBu9xbuettzAzWXmCEcLONNKJRba87WAefz8Ca9d6ds/SzrPc235n1IxWYdhJ2zF3MNUaoQ==}
+    peerDependencies:
+      react: ^16.11.0 || ^17.0.0 || ^18.0.0
 
   tailwind-merge@1.14.0:
     resolution: {integrity: sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==}
@@ -4692,6 +4885,9 @@ packages:
 
   tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
+
+  tslib@2.4.1:
+    resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
 
   tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
@@ -4847,6 +5043,11 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  use-sync-external-store@1.2.2:
+    resolution: {integrity: sha512-PElTlVMwpblvbNqQ82d2n6RjStvdSoNe9FG28kNfz3WiXilJm4DdNkEzRhCZuIDwY8U08WVihhGR5iRqAwfDiw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   userhome@1.0.0:
     resolution: {integrity: sha512-ayFKY3H+Pwfy4W98yPdtH1VqH4psDeyW8lYYFzfecR9d6hqLpqhecktvYR3SEEXt7vG0S1JEpciI3g94pMErig==}
@@ -5428,6 +5629,29 @@ snapshots:
       fs-extra: 7.0.1
       human-id: 1.0.2
       prettier: 2.8.8
+
+  '@clerk/clerk-react@5.4.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@clerk/shared': 2.5.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@clerk/types': 4.13.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tslib: 2.4.1
+
+  '@clerk/shared@2.5.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@clerk/types': 4.13.1
+      glob-to-regexp: 0.4.1
+      js-cookie: 3.0.5
+      std-env: 3.7.0
+      swr: 2.2.0(react@18.2.0)
+    optionalDependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+
+  '@clerk/types@4.13.1':
+    dependencies:
+      csstype: 3.1.1
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -6899,6 +7123,8 @@ snapshots:
 
   cssesc@3.0.0: {}
 
+  csstype@3.1.1: {}
+
   csstype@3.1.3: {}
 
   csv-generate@3.4.3: {}
@@ -7545,6 +7771,8 @@ snapshots:
     dependencies:
       is-glob: 4.0.3
 
+  glob-to-regexp@0.4.1: {}
+
   glob@10.3.10:
     dependencies:
       foreground-child: 3.1.1
@@ -7912,6 +8140,8 @@ snapshots:
   jiti@1.21.0: {}
 
   js-cookie@2.2.1: {}
+
+  js-cookie@3.0.5: {}
 
   js-tokens@4.0.0: {}
 
@@ -8923,6 +9153,8 @@ snapshots:
 
   std-env@3.6.0: {}
 
+  std-env@3.7.0: {}
+
   stream-transform@2.1.3:
     dependencies:
       mixme: 0.5.10
@@ -9016,6 +9248,11 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  swr@2.2.0(react@18.2.0):
+    dependencies:
+      react: 18.2.0
+      use-sync-external-store: 1.2.2(react@18.2.0)
 
   tailwind-merge@1.14.0: {}
 
@@ -9156,6 +9393,8 @@ snapshots:
       '@swc/core': 1.7.22
 
   tslib@1.14.1: {}
+
+  tslib@2.4.1: {}
 
   tslib@2.6.2: {}
 
@@ -9317,6 +9556,10 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  use-sync-external-store@1.2.2(react@18.2.0):
+    dependencies:
+      react: 18.2.0
 
   userhome@1.0.0: {}
 

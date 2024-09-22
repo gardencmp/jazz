@@ -1,6 +1,6 @@
 import {
     CoValueCore,
-    newRandomSessionID,
+    type CoValueUniqueness,
     MAX_RECOMMENDED_TX_SIZE,
     idforHeader,
 } from "./coValueCore.js";
@@ -50,7 +50,7 @@ import type {
 import { DisconnectedError, PingTimeoutError } from "./sync.js";
 import type { AgentSecret } from "./crypto/crypto.js";
 import type {
-    AccountID,
+    RawAccountID,
     AccountMeta,
     RawAccountMigration,
 } from "./coValues/account.js";
@@ -65,7 +65,6 @@ import { getPriorityFromHeader } from "./priority.js";
 
 /** @hidden */
 export const cojsonInternals = {
-    newRandomSessionID,
     connectedPeers,
     rawCoIDtoBytes,
     rawCoIDfromBytes,
@@ -98,7 +97,7 @@ export {
     CoID,
     AnyRawCoValue,
     RawAccount,
-    AccountID,
+    RawAccountID,
     AccountMeta,
     RawAccountMigration,
     RawProfile as Profile,
@@ -132,6 +131,7 @@ export type {
     OutgoingSyncQueue,
     DisconnectedError,
     PingTimeoutError,
+    CoValueUniqueness
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

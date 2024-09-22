@@ -5,13 +5,13 @@ import { KeyID } from "./crypto/crypto.js";
 import { CoValueCore, Transaction } from "./coValueCore.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
-import { RawAccount, AccountID, RawProfile } from "./coValues/account.js";
+import { RawAccount, RawAccountID, RawProfile } from "./coValues/account.js";
 import { parseJSON } from "./jsonStringify.js";
 import { EVERYONE, Everyone } from "./coValues/group.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
 export type PermissionsDef =
-    | { type: "group"; initialAdmin: AccountID | AgentID }
+    | { type: "group"; initialAdmin: RawAccountID | AgentID }
     | { type: "ownedByGroup"; group: RawCoID }
     | { type: "unsafeAllowAll" };
 
@@ -53,7 +53,7 @@ export function determineValidTransactions(
         }
 
         const memberState: {
-            [agent: AccountID | AgentID]: Role;
+            [agent: RawAccountID | AgentID]: Role;
             [EVERYONE]?: Role;
         } = {};
 
@@ -99,7 +99,7 @@ export function determineValidTransactions(
             }
 
             const change = changes[0] as
-                | MapOpPayload<AccountID | AgentID | Everyone, Role>
+                | MapOpPayload<RawAccountID | AgentID | Everyone, Role>
                 | MapOpPayload<"readKey", JsonValue>
                 | MapOpPayload<"profile", CoID<RawProfile>>;
             if (changes.length !== 1) {
@@ -303,7 +303,7 @@ export function isKeyForKeyField(co: string): co is `${KeyID}_for_${KeyID}` {
 
 export function isKeyForAccountField(
     co: string,
-): co is `${KeyID}_for_${AccountID | AgentID}` {
+): co is `${KeyID}_for_${RawAccountID | AgentID}` {
     return (
         (co.startsWith("key_") &&
             (co.includes("_for_sealer") || co.includes("_for_co"))) ||

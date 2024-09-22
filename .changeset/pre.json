@@ -1,0 +1,37 @@
+{
+  "mode": "pre",
+  "tag": "guest-auth",
+  "initialVersions": {
+    "jazz-example-chat": "0.0.82-unique.2",
+    "jazz-example-chat-clerk": "0.0.80-unique.2",
+    "jazz-inspector": "0.0.60-unique.0",
+    "jazz-example-pets": "0.0.100-unique.2",
+    "jazz-example-todo": "0.0.99-unique.2",
+    "cojson": "0.7.35-unique.2",
+    "cojson-storage-indexeddb": "0.7.35-unique.2",
+    "cojson-storage-sqlite": "0.7.35-unique.2",
+    "cojson-transport-ws": "0.7.35-unique.2",
+    "hash-slash": "0.2.0",
+    "jazz-browser": "0.7.35-unique.2",
+    "jazz-browser-auth-clerk": "0.7.33-unique.1",
+    "jazz-browser-media-images": "0.7.35-unique.2",
+    "jazz-nodejs": "0.7.35-unique.2",
+    "jazz-react": "0.7.35-unique.2",
+    "jazz-react-auth-clerk": "0.7.33-unique.2",
+    "jazz-run": "0.7.35-unique.2",
+    "jazz-tools": "0.7.35-unique.2",
+    "jazz-example-music-player": "0.0.2",
+    "jazz-password-manager": "0.0.1",
+    "richtext": "0.0.0"
+  },
+  "changesets": [
+    "beige-hats-judge",
+    "dirty-plants-sniff",
+    "dirty-turtles-sniff",
+    "shiny-peaches-grab",
+    "small-students-buy",
+    "small-tables-appear",
+    "smart-mice-camp",
+    "twelve-lobsters-pull"
+  ]
+}

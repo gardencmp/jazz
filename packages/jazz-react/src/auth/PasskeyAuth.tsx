@@ -1,94 +1,80 @@
-import { useMemo, useState, ReactNode, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { BrowserPasskeyAuth } from "jazz-browser";
-import { Account, CoValueClass } from "jazz-tools";
-import { ReactAuthHook } from "./auth.js";
+
+export type PasskeyAuthState = (
+    | { state: "uninitialized" }
+    | { state: "loading" }
+    | {
+          state: "ready";
+          logIn: () => void;
+          signUp: (username: string) => void;
+      }
+    | { state: "signedIn"; logOut: () => void }
+) & {
+    errors: string[];
+};
 
 /** @category Auth Providers */
-export function PasskeyAuth<Acc extends Account>({
-    accountSchema,
+export function usePasskeyAuth({
     appName,
     appHostname,
-    Component = PasskeyAuth.BasicUI,
 }: {
-    accountSchema: CoValueClass<Acc> & typeof Account;
     appName: string;
     appHostname?: string;
-    Component?: PasskeyAuth.Component;
-}): ReactAuthHook<Acc> {
-    return function useLocalAuth(setJazzAuthState) {
-        const [authState, setAuthState] = useState<
-            | { state: "loading" }
-            | {
-                  state: "ready";
-                  logIn: () => void;
-                  signUp: (username: string) => void;
-              }
-            | { state: "signedIn"; logOut: () => void }
-        >({ state: "loading" });
+}) {
+    const [state, setState] = useState<PasskeyAuthState>({
+        state: "loading",
+        errors: [],
+    });
 
-        useEffect(() => {
-            setJazzAuthState(authState.state);
-        }, [authState]);
-
-        const [logOutCounter, setLogOutCounter] = useState(0);
-
-        const auth = useMemo(() => {
-            return new BrowserPasskeyAuth<Acc>(
-                accountSchema,
-                {
-                    onReady(next) {
-                        setAuthState({
-                            state: "ready",
-                            logIn: next.logIn,
-                            signUp: next.signUp,
-                        });
-                    },
-                    onSignedIn(next) {
-                        setAuthState({
-                            state: "signedIn",
-                            logOut: () => {
-                                next.logOut();
-                                setAuthState({ state: "loading" });
-                                setLogOutCounter((c) => c + 1);
-                            },
-                        });
-                    },
+    const authMethod = useMemo(() => {
+        return new BrowserPasskeyAuth(
+            {
+                onReady(next) {
+                    setState({
+                        state: "ready",
+                        logIn: next.logIn,
+                        signUp: next.signUp,
+                        errors: [],
+                    });
                 },
-                appName,
-                appHostname,
-            );
-        }, [appName, appHostname, logOutCounter]);
+                onSignedIn(next) {
+                    setState({
+                        state: "signedIn",
+                        logOut: () => {
+                            next.logOut();
+                            setState({ state: "loading", errors: [] });
+                        },
+                        errors: [],
+                    });
+                },
+                onError(error) {
+                    setState((state) => ({
+                        ...state,
+                        errors: [...state.errors, error.toString()],
+                    }));
+                },
+            },
+            appName,
+            appHostname,
+        );
+    }, [appName, appHostname]);
 
-        const AuthUI =
-            authState.state === "ready"
-                ? Component({
-                      loading: false,
-                      logIn: authState.logIn,
-                      signUp: authState.signUp,
-                  })
-                : Component({
-                      loading: true,
-                      logIn: () => {},
-                      signUp: (_) => {},
-                  });
-
-        return {
-            auth,
-            AuthUI,
-            logOut:
-                authState.state === "signedIn" ? authState.logOut : undefined,
-        };
-    };
+    return [authMethod, state] as const;
 }
 
-const PasskeyAuthBasicUI = ({
-    logIn,
-    signUp,
-}: {
-    logIn: () => void;
-    signUp: (username: string) => void;
-}) => {
+export const PasskeyAuthBasicUI = ({ state }: { state: PasskeyAuthState }) => {
     const [username, setUsername] = useState<string>("");
+
+    if (state.state === "signedIn") {
+        return null;
+    }
+
+    if (state.state !== "ready") {
+        return <div>Loading...</div>;
+    }
+
+    const { logIn, signUp } = state;
 
     return (
         <div
@@ -108,6 +94,13 @@ const PasskeyAuthBasicUI = ({
                     gap: "2rem",
                 }}
             >
+                {state.errors.length > 0 && (
+                    <div style={{ color: "red" }}>
+                        {state.errors.map((error, index) => (
+                            <div key={index}>{error}</div>
+                        ))}
+                    </div>
+                )}
                 <form
                     style={{
                         width: "18rem",
@@ -161,14 +154,3 @@ const PasskeyAuthBasicUI = ({
         </div>
     );
 };
-
-/** @category Auth Providers */
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace PasskeyAuth {
-    export type Component = (props: {
-        loading: boolean;
-        logIn: () => void;
-        signUp: (username: string) => void;
-    }) => ReactNode;
-    export const BasicUI = PasskeyAuthBasicUI;
-}

@@ -12,7 +12,7 @@ import { PlayerControls } from "./components/PlayerControls";
 import "./index.css";
 
 import { MusicaAccount } from "@/1_schema";
-import { createJazzReactContext, DemoAuth } from "jazz-react";
+import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
 import { useUploadExampleData } from "./lib/useUploadExampleData";
 
 /**
@@ -25,9 +25,8 @@ import { useUploadExampleData } from "./lib/useUploadExampleData";
  *
  * `<Jazz.Provider/>` also runs our account migration
  */
-const Jazz = createJazzReactContext({
-    auth: DemoAuth({ appName: "Musica Jazz", accountSchema: MusicaAccount }),
-    peer: "wss://mesh.jazz.tools/?key=you@example.com",
+const Jazz = createJazzReactApp({
+    AccountSchema: MusicaAccount
 });
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
@@ -97,10 +96,20 @@ function Main() {
     );
 }
 
+function AuthAndJazz({ children }: { children: React.ReactNode }) {
+    const [auth, state] = useDemoAuth();
+
+    return (
+        <Jazz.Provider auth={auth} peer="wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io">
+            {state.state === "signedIn" ? children : <DemoAuthBasicUI appName="Jazz Music Player" state={state} />}
+        </Jazz.Provider>
+    );
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <Jazz.Provider>
+        <AuthAndJazz>
             <Main />
-        </Jazz.Provider>
+        </AuthAndJazz>
     </React.StrictMode>,
 );

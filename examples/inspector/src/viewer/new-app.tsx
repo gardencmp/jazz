@@ -5,8 +5,7 @@ import {
     RawCoValue,
     RawAccount,
     AgentSecret,
-    AccountID,
-    cojsonInternals,
+    RawAccountID,
     WasmCrypto,
 } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
@@ -69,7 +68,7 @@ export default function CoJsonViewerApp() {
             const node = await LocalNode.withLoadedAccount({
                 accountID: currentAccount.id,
                 accountSecret: currentAccount.secret,
-                sessionID: cojsonInternals.newRandomSessionID(
+                sessionID: crypto.newRandomSessionID(
                     currentAccount.id,
                 ),
                 peersToLoadFrom: [wsPeer],
@@ -82,7 +81,7 @@ export default function CoJsonViewerApp() {
         });
     }, [currentAccount, goToIndex]);
 
-    const addAccount = (id: AccountID, secret: AgentSecret) => {
+    const addAccount = (id: RawAccountID, secret: AgentSecret) => {
         const newAccount = { id, secret };
         setAccounts([...accounts, newAccount]);
         setCurrentAccount(newAccount);
@@ -238,14 +237,14 @@ function AccountSwitcher({
 function AddAccountForm({
     addAccount,
 }: {
-    addAccount: (id: AccountID, secret: AgentSecret) => void;
+    addAccount: (id: RawAccountID, secret: AgentSecret) => void;
 }) {
     const [id, setId] = useState("");
     const [secret, setSecret] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        addAccount(id as AccountID, secret as AgentSecret);
+        addAccount(id as RawAccountID, secret as AgentSecret);
         setId("");
         setSecret("");
     };

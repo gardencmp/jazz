@@ -16,4 +16,6 @@ export * from "./coValues/deepLoading.js";
 
 export * from "./coValues/extensions/imageDef.js";
 
+export * from "./implementation/createContext.js";
+
 import "./implementation/devtoolsFormatters.js";

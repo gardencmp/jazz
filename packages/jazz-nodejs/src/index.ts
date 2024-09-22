@@ -1,22 +1,25 @@
-import { AgentSecret, Peer, SessionID, WasmCrypto } from "cojson";
+import { AgentSecret, Peer, WasmCrypto } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { Account, CoValueClass, ID } from "jazz-tools";
+import { Account, createJazzContext, ID } from "jazz-tools";
+import {
+    AccountClass,
+    fixedCredentialsAuth,
+    randomSessionProvider,
+} from "jazz-tools/src/internal";
 import { WebSocket } from "ws";
 
 /** @category Context Creation */
 export async function startWorker<Acc extends Account>({
     accountID = process.env.JAZZ_WORKER_ACCOUNT,
     accountSecret = process.env.JAZZ_WORKER_SECRET,
-    sessionID = process.env.JAZZ_WORKER_SESSION,
     syncServer: peer = "wss://sync.jazz.tools",
-    accountSchema = Account as unknown as CoValueClass<Acc> & typeof Account,
+    AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
     accountID?: string;
     accountSecret?: string;
-    sessionID?: string;
     syncServer?: string;
-    accountSchema?: CoValueClass<Acc> & typeof Account;
-}): Promise<{ worker: Acc }> {
+    AccountSchema?: AccountClass<Acc>;
+}): Promise<{ worker: Acc; done: () => void }> {
     const wsPeer: Peer = createWebSocketPeer({
         id: "upstream",
         websocket: new WebSocket(peer),
@@ -36,11 +39,14 @@ export async function startWorker<Acc extends Account>({
         throw new Error("Invalid accountSecret");
     }
 
-    const worker = await accountSchema.become({
-        accountID: accountID as ID<Acc>,
-        accountSecret: accountSecret as AgentSecret,
+    const { account: worker, done } = await createJazzContext({
+        auth: fixedCredentialsAuth({
+            accountID: accountID as ID<Acc>,
+            secret: accountSecret as AgentSecret,
+        }),
+        AccountSchema,
         // TODO: locked sessions similar to browser
-        sessionID: sessionID as SessionID | undefined,
+        sessionProvider: randomSessionProvider,
         peersToLoadFrom: [wsPeer],
         crypto: await WasmCrypto.create(),
     });
@@ -59,5 +65,5 @@ export async function startWorker<Acc extends Account>({
         }
     }, 5000);
 
-    return { worker: worker as Acc };
+    return { worker: worker as Acc, done };
 }

@@ -16,7 +16,7 @@ export function NewProjectForm() {
 
     const createProject = useCallback(
         (title: string) => {
-            if (!title) return;
+            if (!me || !title) return;
 
             // To create a new todo project, we first create a `Group`,
             // which is a scope for defining access rights (reader/writer/admin)

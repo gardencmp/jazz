@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.7.35",
+  "version": "0.7.35-guest-auth.6",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",

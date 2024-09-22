@@ -1,5 +1,5 @@
 import type {
-    AccountID,
+    RawAccountID,
     AgentID,
     BinaryStreamInfo,
     CojsonInternalTypes,
@@ -20,6 +20,7 @@ import type {
     CoValueClass,
     DeeplyLoaded,
     DepthsIn,
+    AnonymousJazzAgent,
 } from "../internal.js";
 import {
     ItemsSym,
@@ -77,13 +78,21 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     [key: ID<Account>]: CoStreamEntry<Item>;
 
     get byMe(): CoStreamEntry<Item> | undefined {
-        return this[this._loadedAs.id];
+        if (this._loadedAs._type === "Account") {
+            return this[this._loadedAs.id];
+        } else {
+            return undefined;
+        }
     }
     perSession!: {
         [key: SessionID]: CoStreamEntry<Item>;
     };
     get inCurrentSession(): CoStreamEntry<Item> | undefined {
-        return this.perSession[this._loadedAs.sessionID!];
+        if (this._loadedAs._type === "Account") {
+            return this.perSession[this._loadedAs.sessionID!];
+        } else {
+            return undefined;
+        }
     }
 
     constructor(
@@ -228,12 +237,12 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
 function entryFromRawEntry<Item>(
     accessFrom: CoValue,
     rawEntry: {
-        by: AccountID | AgentID;
+        by: RawAccountID | AgentID;
         tx: CojsonInternalTypes.TransactionID;
         at: Date;
         value: JsonValue;
     },
-    loadedAs: Account,
+    loadedAs: Account | AnonymousJazzAgent,
     accountID: ID<Account> | undefined,
     itemField: Schema,
 ): Omit<CoStreamEntry<Item>, "all"> {
@@ -301,7 +310,7 @@ function entryFromRawEntry<Item>(
 export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
     get(target, key, receiver) {
         if (typeof key === "string" && key.startsWith("co_")) {
-            const rawEntry = target._raw.lastItemBy(key as AccountID);
+            const rawEntry = target._raw.lastItemBy(key as RawAccountID);
 
             if (!rawEntry) return;
             const entry = entryFromRawEntry(
@@ -314,7 +323,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
 
             Object.defineProperty(entry, "all", {
                 get: () => {
-                    const allRawEntries = target._raw.itemsBy(key as AccountID);
+                    const allRawEntries = target._raw.itemsBy(key as RawAccountID);
                     return (function* () {
                         while (true) {
                             const rawEntry = allRawEntries.next();

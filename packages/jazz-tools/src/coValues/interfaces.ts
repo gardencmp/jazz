@@ -8,6 +8,7 @@ import {
     Ref,
     inspect,
     subscriptionsScopes,
+    AnonymousJazzAgent,
 } from "../internal.js";
 import { fulfillsDepth } from "./deepLoading.js";
 
@@ -35,7 +36,7 @@ export interface CoValue {
     /** @category Internals */
     _raw: RawCoValue;
     /** @internal */
-    readonly _loadedAs: Account;
+    readonly _loadedAs: Account | AnonymousJazzAgent;
     /** @category Stringifying & Inspection */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toJSON(key?: string, seenAbove?: ID<CoValue>[]): any[] | object | string;
@@ -63,11 +64,11 @@ type IDMarker<out T> = { __type(_: never): T };
 
 /** @internal */
 export class CoValueBase implements CoValue {
-    id!: ID<this>;
-    _type!: string;
-    _raw!: RawCoValue;
+    declare id: ID<this>;
+    declare _type: string;
+    declare _raw: RawCoValue;
     /** @category Internals */
-    _instanceID!: string;
+    declare _instanceID: string;
 
     get _owner(): Account | Group {
         const owner =
@@ -86,7 +87,10 @@ export class CoValueBase implements CoValue {
 
     /** @private */
     get _loadedAs() {
-        return Account.fromNode(this._raw.core.node);
+        if (this._raw.core.node.account instanceof RawAccount) {
+            return Account.fromRaw(this._raw.core.node.account);
+        }
+        return new AnonymousJazzAgent(this._raw.core.node);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,7 +138,7 @@ export class CoValueBase implements CoValue {
 export function loadCoValue<V extends CoValue, Depth>(
     cls: CoValueClass<V>,
     id: ID<V>,
-    as: Account,
+    as: Account | AnonymousJazzAgent,
     depth: Depth & DepthsIn<V>,
 ): Promise<DeeplyLoaded<V, Depth> | undefined> {
     return new Promise((resolve) => {
@@ -170,7 +174,7 @@ export function ensureCoValueLoaded<V extends CoValue, Depth>(
 export function subscribeToCoValue<V extends CoValue, Depth>(
     cls: CoValueClass<V>,
     id: ID<V>,
-    as: Account,
+    as: Account | AnonymousJazzAgent,
     depth: Depth & DepthsIn<V>,
     listener: (value: DeeplyLoaded<V, Depth>) => void,
     onUnavailable?: () => void,

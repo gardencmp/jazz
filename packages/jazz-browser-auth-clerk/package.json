@@ -1,0 +1,26 @@
+{
+    "name": "jazz-browser-auth-clerk",
+    "version": "0.7.35-guest-auth.6",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "src/index.ts",
+    "license": "MIT",
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+        "*.{js,jsx,mdx,json}": "prettier --write"
+    },
+    "peerDependencies": {
+        "cojson": "workspace:*",
+        "jazz-browser": "workspace:*",
+        "jazz-tools": "workspace:*"
+    },
+    "scripts": {
+        "lint": "eslint . --ext ts,tsx",
+        "format": "prettier --write './src/**/*.{ts,tsx}'",
+        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+        "prepublishOnly": "npm run build"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3"
+    }
+}

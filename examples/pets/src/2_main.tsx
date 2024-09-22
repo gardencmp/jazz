@@ -3,54 +3,54 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactContext, DemoAuth, PasskeyAuth } from "jazz-react";
-
 import {
-    Button,
-    ThemeProvider,
-    TitleAndLogo,
-} from "./basicComponents/index.ts";
-import { PrettyAuthUI } from "./components/Auth.tsx";
+    createJazzReactApp,
+    DemoAuthBasicUI,
+    useDemoAuth,
+} from "jazz-react";
+
+import { Button, ThemeProvider, TitleAndLogo } from "./basicComponents/index.ts";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
 import { PetAccount, PetPost } from "./1_schema.ts";
-import { supportsWebAuthn } from "./lib/support.ts";
 
-/** Walkthrough: The top-level provider `<WithJazz/>`
+/** Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
- *  This shows how to use the top-level provider `<WithJazz/>`,
+ *  This shows how to use the top-level provider `<Jazz.Provider/>`,
  *  which provides the rest of the app with a `LocalNode` (used through `useJazz` later),
  *  based on `LocalAuth` that uses PassKeys (aka WebAuthn) to store a user's account secret
  *  - no backend needed. */
 
 const appName = "Jazz Rate My Pet Example";
 
-const passkeyAuth = PasskeyAuth<PetAccount>({
-    appName,
-    Component: PrettyAuthUI,
-    accountSchema: PetAccount,
-});
-
-const authFallback = DemoAuth<PetAccount>({
-    appName,
-    accountSchema: PetAccount,
-});
-
-const Jazz = createJazzReactContext({
-    auth: supportsWebAuthn ? passkeyAuth : authFallback,
-    peer: "wss://mesh.jazz.tools/?key=you@example.com",
-});
+const Jazz = createJazzReactApp({ AccountSchema: PetAccount });
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
+
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
+    const [auth, authState] = useDemoAuth();
+
+    return (
+        <>
+            <Jazz.Provider
+                auth={auth}
+                peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
+            >
+                {authState.state === "signedIn" && children}
+            </Jazz.Provider>
+            <DemoAuthBasicUI appName={appName} state={authState} />
+        </>
+    );
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <ThemeProvider>
             <TitleAndLogo name={appName} />
             <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <Jazz.Provider loading={<div>Loading</div>}>
+                <JazzAndAuth>
                     <App />
-                </Jazz.Provider>
+                </JazzAndAuth>
             </div>
         </ThemeProvider>
     </React.StrictMode>,
@@ -95,7 +95,9 @@ export default function App() {
             <RouterProvider router={router} />
 
             <Button
-                onClick={() => router.navigate("/").then(logOut)}
+                onClick={() =>
+                    router.navigate("/").then(() => logOut())
+                }
                 variant="outline"
             >
                 Log Out
@@ -107,7 +109,7 @@ export default function App() {
 export function PostOverview() {
     const { me } = useAccount();
 
-    const myPosts = me.root?.posts;
+    const myPosts = me?.root?.posts;
 
     return (
         <>

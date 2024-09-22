@@ -7,7 +7,7 @@ import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfrom
 import { RawGroup } from "./group.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
-import { AccountID } from "./account.js";
+import { RawAccountID } from "./account.js";
 
 export type BinaryStreamInfo = {
     mimeType: string;
@@ -116,7 +116,7 @@ export class RawCoStreamView<
         return Object.keys(this.items) as SessionID[];
     }
 
-    accounts(): Set<AccountID> {
+    accounts(): Set<RawAccountID> {
         return new Set(
             this.sessions()
                 .map(accountOrAgentIDfromSessionID)
@@ -129,7 +129,7 @@ export class RawCoStreamView<
         n: number,
     ):
         | {
-              by: AccountID | AgentID;
+              by: RawAccountID | AgentID;
               tx: TransactionID;
               at: Date;
               value: Item;
@@ -151,7 +151,7 @@ export class RawCoStreamView<
 
     lastItemIn(sessionID: SessionID):
         | {
-              by: AccountID | AgentID;
+              by: RawAccountID | AgentID;
               tx: TransactionID;
               at: Date;
               value: Item;
@@ -175,9 +175,9 @@ export class RawCoStreamView<
         }
     }
 
-    lastItemBy(account: AccountID | AgentID):
+    lastItemBy(account: RawAccountID | AgentID):
         | {
-              by: AccountID | AgentID;
+              by: RawAccountID | AgentID;
               tx: TransactionID;
               at: Date;
               value: Item;
@@ -185,7 +185,7 @@ export class RawCoStreamView<
         | undefined {
         let latestItem:
             | {
-                  by: AccountID | AgentID;
+                  by: RawAccountID | AgentID;
                   tx: TransactionID;
                   at: Date;
                   value: Item;
@@ -210,7 +210,7 @@ export class RawCoStreamView<
         return latestItem;
     }
 
-    *itemsBy(account: AccountID | AgentID) {
+    *itemsBy(account: RawAccountID | AgentID) {
         // TODO: this can be made more lazy without a huge collect and sort
         const items = [
             ...Object.keys(this.items).flatMap((sessionID) =>

@@ -1,6 +1,5 @@
 import { expect, describe, test, expectTypeOf } from "vitest";
 import { connectedPeers } from "cojson/src/streamUtils.js";
-import { newRandomSessionID } from "cojson/src/coValueCore.js";
 import {
     Account,
     Encoders,
@@ -9,31 +8,34 @@ import {
     WasmCrypto,
     isControlledAccount,
     cojsonInternals,
+    createJazzContext,
+    fixedCredentialsAuth,
 } from "../index.js";
+import { Group, randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
+
+class TestMap extends CoMap {
+    color = co.string;
+    _height = co.number;
+    birthday = co.encoded(Encoders.Date);
+    name? = co.string;
+    nullable = co.optional.encoded<string | undefined>({
+        encode: (value: string | undefined) => value || null,
+        decode: (value: unknown) => (value as string) || undefined,
+    });
+    optionalDate = co.optional.encoded(Encoders.Date);
+
+    get roughColor() {
+        return this.color + "ish";
+    }
+}
 
 describe("Simple CoMap operations", async () => {
     const me = await Account.create({
         creationProps: { name: "Hermes Puggington" },
         crypto: Crypto,
     });
-
-    class TestMap extends CoMap {
-        color = co.string;
-        _height = co.number;
-        birthday = co.encoded(Encoders.Date);
-        name? = co.string;
-        nullable = co.optional.encoded<string | undefined>({
-            encode: (value: string | undefined) => value || null,
-            decode: (value: unknown) => (value as string) || undefined,
-        });
-        optionalDate = co.optional.encoded(Encoders.Date);
-
-        get roughColor() {
-            return this.color + "ish";
-        }
-    }
 
     console.log("TestMap schema", TestMap.prototype._schema);
 
@@ -297,12 +299,13 @@ describe("CoMap resolution", async () => {
             throw "me is not a controlled account";
         }
         me._raw.core.node.syncManager.addPeer(secondPeer);
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
+        const { account: meOnSecondPeer } = await createJazzContext({
+            auth: fixedCredentialsAuth({
+                accountID: me.id,
+                secret: me._raw.agentSecret,
+            }),
+            sessionProvider: randomSessionProvider,
             peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
 
@@ -371,12 +374,13 @@ describe("CoMap resolution", async () => {
             throw "me is not a controlled account";
         }
         me._raw.core.node.syncManager.addPeer(secondAsPeer);
-        const meOnSecondPeer = await Account.become({
-            accountID: me.id,
-            accountSecret: me._raw.agentSecret,
+        const { account: meOnSecondPeer } = await createJazzContext({
+            auth: fixedCredentialsAuth({
+                accountID: me.id,
+                secret: me._raw.agentSecret,
+            }),
+            sessionProvider: randomSessionProvider,
             peersToLoadFrom: [initialAsPeer],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sessionID: newRandomSessionID(me.id as any),
             crypto: Crypto,
         });
 
@@ -870,5 +874,30 @@ describe("CoMap Typescript validation", async () => {
         );
 
         expectTypeOf(map.required).toBeNullable();
+    });
+});
+
+describe("Creating and finding unique CoMaps", async () => {
+    test("Creating and finding unique CoMaps", async () => {
+        const me = await Account.create({
+            creationProps: { name: "Tester McTesterson" },
+            crypto: Crypto,
+        });
+
+        const group = await Group.create({
+            owner: me,
+        });
+
+        const alice = TestMap.create({
+            name: "Alice",
+            _height: 100,
+            birthday: new Date("1990-01-01"),
+            color: "red",
+
+        }, { owner: group, unique: { name: "Alice" } });
+
+        const foundAlice = TestMap.findUnique({ name: "Alice" }, group.id, me);
+
+        expect(foundAlice).toEqual(alice.id);
     });
 });

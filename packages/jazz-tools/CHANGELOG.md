@@ -1,4 +1,10 @@
-# jazz-autosub
+# jazz-tools
+
+## 0.7.35-guest-auth.6
+
+### Patch Changes
+
+-   Re-add logout functionality to AuthMethods
 
 ## 0.7.35
 

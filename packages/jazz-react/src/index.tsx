@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import {
+    BrowserContext,
+    BrowserGuestContext,
     consumeInviteLinkFromWindowLocation,
     createJazzBrowserContext,
 } from "jazz-browser";
 
 import {
     Account,
+    AccountClass,
+    AnonymousJazzAgent,
+    AuthMethod,
     CoValue,
     CoValueClass,
     DeeplyLoaded,
@@ -13,86 +18,65 @@ import {
     ID,
     subscribeToCoValue,
 } from "jazz-tools";
-import { AuthState, ReactAuthHook } from "./auth/auth.js";
 
 /** @category Context & Hooks */
-export function createJazzReactContext<Acc extends Account>({
-    auth: useAuthHook,
-    peer,
-    storage = "indexedDB",
+export function createJazzReactApp<Acc extends Account>({
+    AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
-    auth: ReactAuthHook<Acc>;
-    peer: `wss://${string}` | `ws://${string}`;
-    storage?: "indexedDB" | "singleTabOPFS";
-}): JazzReactContext<Acc> {
+    AccountSchema?: AccountClass<Acc>;
+} = {}): JazzReactApp<Acc> {
     const JazzContext = React.createContext<
-        | {
-              me: Acc;
-              logOut: () => void;
-          }
-        | undefined
+        BrowserContext<Acc> | BrowserGuestContext | undefined
     >(undefined);
 
     function Provider({
         children,
-        loading,
+        auth,
+        peer,
+        storage,
     }: {
         children: React.ReactNode;
-        loading?: React.ReactNode;
+        auth: AuthMethod | "guest";
+        peer: `wss://${string}` | `ws://${string}`;
+        storage?: "indexedDB" | "singleTabOPFS";
     }) {
-        const [me, setMe] = useState<Acc | undefined>();
-        const [authState, setAuthState] = useState<AuthState>("loading");
-        const { auth, AuthUI, logOut } = useAuthHook(setAuthState);
+        const [ctx, setCtx] = useState<
+            BrowserContext<Acc> | BrowserGuestContext | undefined
+        >();
+
+        const [sessionCount, setSessionCount] = useState(0);
 
         useEffect(() => {
-            let done: (() => void) | undefined = undefined;
-            let stop = false;
-
-            (async () => {
-                const context = await createJazzBrowserContext<Acc>({
-                    auth: auth,
-                    peer:
-                        (new URLSearchParams(window.location.search).get(
-                            "peer",
-                        ) as typeof peer) || peer,
-                    storage,
-                });
-
-                if (stop) {
-                    context.done();
-                    return;
-                }
-
-                setMe(context.me);
-
-                done = () => {
-                    context.done();
-                };
-            })().catch((e) => {
-                console.error("Failed to create browser node", e);
+            const promiseWithDoneCallback = createJazzBrowserContext<Acc>(
+                auth === "guest"
+                    ? {
+                          peer,
+                          storage,
+                      }
+                    : {
+                          AccountSchema,
+                          auth: auth,
+                          peer,
+                          storage,
+                      },
+            ).then((context) => {
+                setCtx({...context, logOut: () => {
+                    context.logOut();
+                    setCtx(undefined);
+                    setSessionCount(sessionCount + 1);
+                }});
+                return context.done;
             });
 
             return () => {
-                stop = true;
-                done && done();
+                void promiseWithDoneCallback.then((done) => done());
             };
-        }, [auth]);
+        }, [AccountSchema, auth, peer, storage, sessionCount]);
 
         return (
-            <>
-                {authState === "loading" ? loading : null}
-                {authState === "signedIn" && me && logOut ? (
-                    <JazzContext.Provider
-                        value={{
-                            me,
-                            logOut,
-                        }}
-                    >
-                        {children}
-                    </JazzContext.Provider>
-                ) : null}
-                {authState === "ready" && AuthUI}
-            </>
+            <JazzContext.Provider value={ctx}>
+                {ctx && children}
+            </JazzContext.Provider>
         );
     }
 
@@ -109,9 +93,15 @@ export function createJazzReactContext<Acc extends Account>({
             throw new Error("useAccount must be used within a JazzProvider");
         }
 
+        if (!("me" in context)) {
+            throw new Error(
+                "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()",
+            );
+        }
+
         const me = useCoState<Acc, D>(
-            context.me.constructor as CoValueClass<Acc>,
-            context.me.id,
+            context?.me.constructor as CoValueClass<Acc>,
+            context?.me.id,
             depth,
         );
 
@@ -119,6 +109,38 @@ export function createJazzReactContext<Acc extends Account>({
             me: depth === undefined ? me || context.me : me,
             logOut: context.logOut,
         };
+    }
+
+    function useAccountOrGuest(): { me: Acc | AnonymousJazzAgent };
+    function useAccountOrGuest<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): { me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent };
+    function useAccountOrGuest<D extends DepthsIn<Acc>>(
+        depth?: D,
+    ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
+        const context = React.useContext(JazzContext);
+
+        if (!context) {
+            throw new Error(
+                "useAccountOrGuest must be used within a JazzProvider",
+            );
+        }
+
+        const contextMe = "me" in context ? context.me : undefined;
+
+        const me = useCoState<Acc, D>(
+            contextMe?.constructor as CoValueClass<Acc>,
+            contextMe?.id,
+            depth,
+        );
+
+        if ("me" in context) {
+            return {
+                me: depth === undefined ? me || context.me : me,
+            };
+        } else {
+            return { me: context.guest };
+        }
     }
 
     function useCoState<V extends CoValue, D>(
@@ -130,15 +152,25 @@ export function createJazzReactContext<Acc extends Account>({
         const [state, setState] = useState<{
             value: DeeplyLoaded<V, D> | undefined;
         }>({ value: undefined });
-        const me = React.useContext(JazzContext)?.me;
+        const context = React.useContext(JazzContext);
+
+        if (!context) {
+            throw new Error("useCoState must be used within a JazzProvider");
+        }
 
         useEffect(() => {
-            if (!id || !me) return;
+            if (!id) return;
 
-            return subscribeToCoValue(Schema, id, me, depth, (value) => {
-                setState({ value });
-            });
-        }, [Schema, id, me]);
+            return subscribeToCoValue(
+                Schema,
+                id,
+                "me" in context ? context.me : context.guest,
+                depth,
+                (value) => {
+                    setState({ value });
+                },
+            );
+        }, [Schema, id, context]);
 
         return state.value;
     }
@@ -152,12 +184,25 @@ export function createJazzReactContext<Acc extends Account>({
         onAccept: (projectID: ID<V>) => void;
         forValueHint?: string;
     }): void {
-        const me = React.useContext(JazzContext)?.me;
+        const context = React.useContext(JazzContext);
+
+        if (!context) {
+            throw new Error(
+                "useAcceptInvite must be used within a JazzProvider",
+            );
+        }
+
+        if (!("me" in context)) {
+            throw new Error(
+                "useAcceptInvite can't be used in a JazzProvider with auth === 'guest'.",
+            );
+        }
+
         useEffect(() => {
-            if (!me) return;
+            if (!context) return;
 
             const result = consumeInviteLinkFromWindowLocation({
-                as: me,
+                as: context.me,
                 invitedObjectSchema,
                 forValueHint,
             });
@@ -173,17 +218,20 @@ export function createJazzReactContext<Acc extends Account>({
     return {
         Provider,
         useAccount,
+        useAccountOrGuest,
         useCoState,
         useAcceptInvite,
     };
 }
 
 /** @category Context & Hooks */
-export interface JazzReactContext<Acc extends Account> {
+export interface JazzReactApp<Acc extends Account> {
     /** @category Provider Component */
     Provider: React.FC<{
         children: React.ReactNode;
-        loading?: React.ReactNode;
+        auth: AuthMethod | "guest";
+        peer: `wss://${string}` | `ws://${string}`;
+        storage?: "indexedDB" | "singleTabOPFS";
     }>;
 
     /** @category Hooks */
@@ -199,6 +247,15 @@ export interface JazzReactContext<Acc extends Account> {
         logOut: () => void;
     };
 
+    /** @category Hooks */
+    useAccountOrGuest(): {
+        me: Acc | AnonymousJazzAgent;
+    };
+    useAccountOrGuest<D extends DepthsIn<Acc>>(
+        depth: D,
+    ): {
+        me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent;
+    };
     /** @category Hooks */
     useCoState<V extends CoValue, D>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
