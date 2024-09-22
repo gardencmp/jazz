@@ -7,7 +7,7 @@
     "license": "MIT",
     "version": "0.7.35-guest-auth.6",
     "dependencies": {
-        "cojson": "workspace:^0.7.35",
+        "cojson": "workspace:0.7.35-guest-auth.5",
         "fast-check": "^3.17.2"
     },
     "scripts": {

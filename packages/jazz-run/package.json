@@ -17,11 +17,11 @@
         "@effect/printer-ansi": "^0.34.5",
         "@effect/schema": "^0.71.1",
         "@effect/typeclass": "^0.25.5",
-        "cojson": "workspace:^0.7.35",
-        "cojson-storage-sqlite": "workspace:^0.7.35",
-        "cojson-transport-ws": "workspace:^0.7.35",
+        "cojson": "workspace:0.7.35-guest-auth.5",
+        "cojson-storage-sqlite": "workspace:0.7.35-guest-auth.5",
+        "cojson-transport-ws": "workspace:0.7.35-guest-auth.5",
         "effect": "^3.6.5",
-        "jazz-tools": "workspace:^0.7.35",
+        "jazz-tools": "workspace:0.7.35-guest-auth.6",
         "ws": "^8.14.2"
     },
     "devDependencies": {

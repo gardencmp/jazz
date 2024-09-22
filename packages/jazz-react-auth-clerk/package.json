@@ -10,10 +10,10 @@
     "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "peerDependencies": {
-    "cojson": "workspace:^0.7.35",
-    "jazz-browser-auth-clerk": "workspace:^0.7.35",
-    "jazz-react": "workspace:^0.7.35",
-    "jazz-tools": "workspace:^0.7.35",
+    "cojson": "workspace:0.7.35-guest-auth.5",
+    "jazz-browser-auth-clerk": "workspace:0.7.35-guest-auth.6",
+    "jazz-react": "workspace:0.7.35-guest-auth.6",
+    "jazz-tools": "workspace:0.7.35-guest-auth.6",
     "react": "^18.2.0"
   },
   "scripts": {
