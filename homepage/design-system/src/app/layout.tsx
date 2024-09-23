@@ -15,9 +15,22 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
-const pragmata = localFont({
-  src: "../../fonts/ppr_0829.woff2",
-  variable: "--font-ppr",
+
+const commitMono = localFont({
+  src: [
+    {
+      path: "../../fonts/CommitMono-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../fonts/CommitMono-Regular.woff",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-commit-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,12 +44,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={[
-        manrope.variable,
-        pragmata.variable,
-        inter.className,
-      ].join(" ")}>{children}</body>
+    <html lang="en" className="h-full">
+    <body className={[
+      manrope.variable,
+      commitMono.variable,
+      inter.className,
+      "h-full",
+    ].join(" ")}>{children}</body>
     </html>
   );
 }
