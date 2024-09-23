@@ -8,7 +8,7 @@ import {
 } from "jazz-tools";
 
 const JazzClient = createJazzReactApp();
-export const { useCoState } = JazzClient;
+export const { useCoState, useAccount } = JazzClient;
 
 export function JazzClientContext({
   children,
