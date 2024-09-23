@@ -93,10 +93,13 @@ export async function NavPackage({
 
     return (
         <>
-            <h2 className="text-sm mt-4 flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 ">
-                <code className="font-bold">{packageName}</code>{" "}
+            <Link
+                href={`/docs/api-reference/${packageName}`}
+                className="text-sm mt-4 font-mono flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 "
+            >
+                {packageName}
                 <PackageIcon size={15} strokeWidth={1.5} />
-            </h2>
+            </Link>
             {project.categories?.map((category) => {
                 return (
                     <details
