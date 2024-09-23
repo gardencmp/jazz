@@ -27,7 +27,7 @@ import {
     MousePointerSquareDashedIcon,
 } from "lucide-react";
 
-import { Main_tsx, Schema_ts, App_tsx, ChatScreen_tsx, DumbComponents_tsx } from "@/codeSamples/examples/chat/src";
+import { Main_tsx, Schema_ts, App_tsx, ChatScreen_tsx, Ui_tsx } from "@/codeSamples/examples/chat/src";
 
 import Intro from "./intro.mdx";
 import CoValuesIntro from "./coValuesIntro.mdx";
@@ -124,8 +124,8 @@ export default function Home() {
                                 content: <ChatScreen_tsx />,
                             },
                             {
-                                name: "dumbComponents.tsx",
-                                content: <DumbComponents_tsx />,
+                                name: "ui.tsx",
+                                content: <Ui_tsx />,
                             },
                         ]}
                         className="col-span-full md:col-span-4"

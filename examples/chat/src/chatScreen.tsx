@@ -8,7 +8,7 @@ import {
     ChatContainer,
     ChatInput,
     EmptyChatMessage,
-} from "./dumbComponents.tsx";
+} from "./ui.tsx";
 
 export function ChatScreen(props: { chatID: ID<Chat> }) {
     const chat = useCoState(Chat, props.chatID, [{}]);

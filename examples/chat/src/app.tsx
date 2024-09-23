@@ -3,7 +3,7 @@ import { useIframeHashRouter } from "hash-slash";
 import { useAccount } from "./main.tsx";
 import { Chat } from "./schema.ts";
 import { ChatScreen } from "./chatScreen.tsx";
-import { AppContainer, TopBar } from "./dumbComponents.tsx";
+import { AppContainer, TopBar } from "./ui.tsx";
 
 export function App() {
     const { me, logOut } = useAccount();
