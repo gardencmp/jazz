@@ -22,7 +22,13 @@ export function JazzClientContext({
 }) {
   return (
     <JazzClient.Provider
-      auth={fixedCredentialsAuth(credentials)}
+      auth={{
+        async start(crypto) {
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          return fixedCredentialsAuth(credentials).start(crypto)
+        }
+      }}
+
       peer="wss://mesh.jazz.tools/?key=you@example.com"
     >
       {children}

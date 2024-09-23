@@ -1,4 +1,5 @@
 import { Doc } from "../../schema";
+import { Tweet } from 'react-tweet'
 
 export function RenderDoc({ doc }: { doc: Doc }) {
   return (
@@ -18,6 +19,15 @@ export function RenderDoc({ doc }: { doc: Doc }) {
           doc.text = e.target.value;
         }}
       />
+      <input
+        type="text"
+        value={doc.tweet}
+        className="border rounded p-2 text-lg"
+        onChange={(e) => {
+          doc.tweet = e.target.value;
+        }}
+      />
+      {doc.tweet && <Tweet id={doc.tweet} />}
     </>
   );
 }

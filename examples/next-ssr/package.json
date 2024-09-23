@@ -1,5 +1,5 @@
 {
-  "name": "lotion",
+  "name": "jazz-example-next-ssr",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,12 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "jazz-nodejs": "^0.8.0",
-    "jazz-react": "^0.8.0",
-    "jazz-tools": "^0.8.0",
+    "jazz-nodejs": "workspace:^0.8.1",
+    "jazz-react": "workspace:^0.8.1",
+    "jazz-tools": "workspace:^0.8.1",
     "next": "14.2.13",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-tweet": "^3.2.1"
   },
   "devDependencies": {
     "@types/node": "^20",
