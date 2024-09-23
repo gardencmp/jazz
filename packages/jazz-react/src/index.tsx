@@ -75,12 +75,12 @@ export function createJazzReactApp<Acc extends Account>({
 
         return (
             <JazzContext.Provider value={ctx}>
-                {ctx && children}
+                {children}
             </JazzContext.Provider>
         );
     }
 
-    function useAccount(): { me: Acc; logOut: () => void };
+    function useAccount(): { me: Acc | undefined; logOut: () => void };
     function useAccount<D extends DepthsIn<Acc>>(
         depth: D,
     ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
@@ -89,25 +89,27 @@ export function createJazzReactApp<Acc extends Account>({
     ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
         const context = React.useContext(JazzContext);
 
-        if (!context) {
-            throw new Error("useAccount must be used within a JazzProvider");
-        }
+        // if (!context) {
+        //     throw new Error("useAccount must be used within a JazzProvider");
+        // }
 
-        if (!("me" in context)) {
-            throw new Error(
-                "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()",
-            );
-        }
+        // if (!("me" in context)) {
+        //     throw new Error(
+        //         "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()",
+        //     );
+        // }
+
+        const meInContext = context && "me" in context ? context.me : undefined;
 
         const me = useCoState<Acc, D>(
-            context?.me.constructor as CoValueClass<Acc>,
-            context?.me.id,
+            meInContext?.constructor as CoValueClass<Acc>,
+            meInContext?.id,
             depth,
         );
 
         return {
-            me: depth === undefined ? me || context.me : me,
-            logOut: context.logOut,
+            me: depth === undefined ? me || meInContext : me,
+            logOut: context?.logOut || (() => {}),
         };
     }
 
@@ -154,12 +156,8 @@ export function createJazzReactApp<Acc extends Account>({
         }>({ value: undefined });
         const context = React.useContext(JazzContext);
 
-        if (!context) {
-            throw new Error("useCoState must be used within a JazzProvider");
-        }
-
         useEffect(() => {
-            if (!id) return;
+            if (!id || !context) return;
 
             return subscribeToCoValue(
                 Schema,
@@ -171,6 +169,10 @@ export function createJazzReactApp<Acc extends Account>({
                 },
             );
         }, [Schema, id, context]);
+
+        if (!context) {
+            return undefined;
+        }
 
         return state.value;
     }
@@ -236,7 +238,7 @@ export interface JazzReactApp<Acc extends Account> {
 
     /** @category Hooks */
     useAccount(): {
-        me: Acc;
+        me: Acc | undefined;
         logOut: () => void;
     };
     /** @category Hooks */
