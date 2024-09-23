@@ -29,13 +29,13 @@ export async function PackageDocs({
 
     return (
         <>
-            <h2 className="flex items-center gap-2">
-                <code>{packageName}</code> <PackageIcon />
-            </h2>
+            <h1 className="flex font-mono items-center gap-2">
+                {packageName} <PackageIcon />
+            </h1>
             {project.categories?.map((category) => {
                 return (
                     <section key={category.title}>
-                        <h3>{category.title}</h3>
+                        <h2>{category.title}</h2>
                         {category.children.map((child) => (
                             <RenderPackageChild
                                 child={child}
@@ -98,9 +98,9 @@ function RenderPackageChild({
         });
     } else {
         return (
-            <h4 id={child.name}>
+            <h3 id={child.name}>
                 {child.name} {child.type?.type}
-            </h4>
+            </h3>
         );
     }
 }
@@ -119,9 +119,9 @@ function RenderTypeAlias({
     );
     return (
         <div className="mt-4">
-            <h4 className="not-prose" id={child.name}>
+            <h3 className="not-prose" id={child.name}>
                 <Highlight>{`type ${child.name}`}</Highlight>
-            </h4>
+            </h3>
             <p className="not-prose text-sm ml-4">
                 <Highlight>{`type ${child.name}${typeParameters?.length && `<${typeParameters?.join(", ")}>`} = ${printType(
                     child.type,
