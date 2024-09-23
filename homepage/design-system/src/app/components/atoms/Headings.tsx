@@ -5,6 +5,7 @@ export function H1({ children }: { children: React.ReactNode }) {
         <h1
             className={clsx(
                 "font-display",
+                "text-stone-1000 dark:text-white",
                 "text-5xl lg:text-6xl",
                 "mb-3",
                 "font-medium",
@@ -21,6 +22,7 @@ export function H2({ children }: { children: React.ReactNode }) {
         <h2
             className={clsx(
                 "font-display",
+                "text-stone-1000 dark:text-white",
                 "text-2xl",
                 "mb-2",
                 "font-semibold",
@@ -37,6 +39,7 @@ export function H3({ children }: { children: React.ReactNode }) {
         <h3
             className={clsx(
                 "font-display",
+                "text-stone-1000 dark:text-white",
                 "text-xl",
                 "mb-2",
                 "font-semibold",
