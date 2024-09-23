@@ -57,7 +57,7 @@ export default function RootLayout({
                     manrope.variable,
                     commitMono.variable,
                     inter.className,
-                    "flex flex-col items-center bg-stone-50 dark:bg-stone-950",
+                    "flex flex-col items-center bg-stone-50 text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
                 <SpeedInsights />

@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { ReactNode } from "react";
+import { H2 } from "../../components/atoms/Headings";
 
 export function GappedGrid({
     children,
@@ -18,13 +19,7 @@ export function GappedGrid({
                 className
             )}
         >
-            {title && <h2 className={clsx(
-                    "col-span-full",
-                    "font-display",
-                    "text-2xl",
-                    "font-semibold",
-                    "tracking-tight"
-                )}>{title}</h2>}
+            {title && <H2 className="col-span-full">{title}</H2>}
             {children}
         </div>
     );

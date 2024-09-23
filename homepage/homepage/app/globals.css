@@ -72,9 +72,7 @@
     * {
         @apply border-border;
     }
-    body {
-        @apply bg-background text-foreground;
-    }
+
     .overlay-close {
         background-color: "black";
     }
