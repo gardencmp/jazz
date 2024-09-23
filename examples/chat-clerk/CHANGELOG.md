@@ -1,88 +1,175 @@
 # jazz-example-chat
 
-## 0.0.80
+## 0.0.82
 
 ### Patch Changes
 
-- bcec3be: Implement Clerk auth method + example
 - Updated dependencies [6a147c2]
 - Updated dependencies [ad40b88]
 - Updated dependencies [23369dc]
 - Updated dependencies [c2b62a0]
-- Updated dependencies [bcec3be]
 - Updated dependencies [1a979b6]
 - Updated dependencies [bcec3be]
 - Updated dependencies [6ce2051]
   - cojson@0.8.0
   - jazz-tools@0.8.0
   - jazz-react@0.8.0
-  - jazz-react-auth-clerk@0.8.0
 
-## 0.0.80-guest-auth.6
+## 0.0.82-guest-auth.6
 
 ### Patch Changes
 
 - Updated dependencies
   - jazz-react@0.7.35-guest-auth.6
   - jazz-tools@0.7.35-guest-auth.6
-  - jazz-react-auth-clerk@0.7.35-guest-auth.6
 
-## 0.0.80-guest-auth.5
+## 0.0.82
+
+### Patch Changes
+
+- Updated dependencies [49a8b54]
+- Updated dependencies [35bbcd9]
+- Updated dependencies [6f80282]
+- Updated dependencies [35bbcd9]
+- Updated dependencies [cac2ec9]
+- Updated dependencies [f350e90]
+  - jazz-tools@0.7.35
+  - cojson@0.7.35
+  - jazz-react@0.7.35
+
+## 0.0.81
+
+### Patch Changes
+
+- Updated dependencies [5d91f9f]
+- Updated dependencies [5094e6d]
+- Updated dependencies [b09589b]
+- Updated dependencies [2c3a40c]
+- Updated dependencies [4e16575]
+- Updated dependencies [ea882ab]
+  - cojson@0.7.34
+  - jazz-react@0.7.34
+  - jazz-tools@0.7.34
+
+## 0.0.81-neverthrow.6
 
 ### Patch Changes
 
 - Updated dependencies
-  - cojson@0.7.35-guest-auth.5
-  - jazz-react@0.7.35-guest-auth.5
-  - jazz-react-auth-clerk@0.7.35-guest-auth.5
-  - jazz-tools@0.7.35-guest-auth.5
+  - cojson@0.7.34-neverthrow.8
+  - jazz-react@0.7.34-neverthrow.8
+  - jazz-tools@0.7.34-neverthrow.8
 
-## 0.0.80-guest-auth.4
-
-### Patch Changes
-
-- Updated dependencies
-  - jazz-react@0.7.35-guest-auth.4
-  - jazz-tools@0.7.35-guest-auth.4
-  - jazz-react-auth-clerk@0.7.35-guest-auth.4
-
-## 0.0.80-guest-auth.3
+## 0.0.81-neverthrow.5
 
 ### Patch Changes
 
 - Updated dependencies
-  - jazz-react@0.7.35-guest-auth.3
-  - jazz-tools@0.7.35-guest-auth.3
-  - jazz-react-auth-clerk@0.7.33-guest-auth.3
+  - cojson@0.7.34-neverthrow.7
+  - jazz-react@0.7.34-neverthrow.7
+  - jazz-tools@0.7.34-neverthrow.7
 
-## 0.0.80-unique.2
-
-### Patch Changes
-
-- Updated dependencies
-  - jazz-tools@0.7.35-unique.2
-  - cojson@0.7.35-unique.2
-  - jazz-react@0.7.35-unique.2
-  - jazz-react-auth-clerk@0.7.33-unique.2
-
-## 0.0.80-new-auth.1
+## 0.0.81-neverthrow.4
 
 ### Patch Changes
 
 - Updated dependencies
-  - jazz-react@0.7.35-new-auth.1
-  - jazz-react-auth-clerk@0.7.33-new-auth.1
+  - cojson@0.7.34-neverthrow.4
+  - jazz-react@0.7.34-neverthrow.4
+  - jazz-tools@0.7.34-neverthrow.4
 
-## 0.0.80-new-auth.0
+## 0.0.81-neverthrow.3
 
 ### Patch Changes
 
-- Implement Clerk auth method + example
 - Updated dependencies
+  - cojson@0.7.34-neverthrow.3
+  - jazz-react@0.7.34-neverthrow.3
+  - jazz-tools@0.7.34-neverthrow.3
+
+## 0.0.81-neverthrow.2
+
+### Patch Changes
+
+- jazz-react@0.7.34-neverthrow.2
+
+## 0.0.81-neverthrow.1
+
+### Patch Changes
+
 - Updated dependencies
-  - jazz-react-auth-clerk@0.7.33-new-auth.0
-  - jazz-react@0.7.35-new-auth.0
-  - jazz-tools@0.7.35-new-auth.0
+  - cojson@0.7.34-neverthrow.1
+  - jazz-react@0.7.34-neverthrow.1
+  - jazz-tools@0.7.34-neverthrow.1
+
+## 0.0.81-neverthrow.0
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.34-neverthrow.0
+  - jazz-react@0.7.34-neverthrow.0
+  - jazz-tools@0.7.34-neverthrow.0
+
+## 0.0.80
+
+### Patch Changes
+
+- Updated dependencies [b297c93]
+- Updated dependencies [3bf5127]
+- Updated dependencies [a8b74ff]
+- Updated dependencies [db53161]
+  - cojson@0.7.33
+  - jazz-react@0.7.33
+  - jazz-tools@0.7.33
+
+## 0.0.80-hotfixes.5
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.5
+  - jazz-react@0.7.33-hotfixes.5
+  - jazz-tools@0.7.33-hotfixes.5
+
+## 0.0.80-hotfixes.4
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.4
+  - jazz-react@0.7.33-hotfixes.4
+  - jazz-tools@0.7.33-hotfixes.4
+
+## 0.0.80-hotfixes.3
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.3
+  - jazz-react@0.7.33-hotfixes.3
+  - jazz-tools@0.7.33-hotfixes.3
+
+## 0.0.80-hotfixes.2
+
+### Patch Changes
+
+- jazz-react@0.7.33-hotfixes.2
+
+## 0.0.80-hotfixes.1
+
+### Patch Changes
+
+- jazz-react@0.7.33-hotfixes.1
+
+## 0.0.80-hotfixes.0
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.7.33-hotfixes.0
+  - jazz-react@0.7.33-hotfixes.0
+  - jazz-tools@0.7.33-hotfixes.0
 
 ## 0.0.79
 
