@@ -45,7 +45,9 @@ export function CodeExampleTabs({
                     </div>
                 ))}
             </div>
-            <div className="flex-1 overflow-y-auto">{tabs[activeTab].content}</div>
+            <div className="flex-1 overflow-y-auto">
+                {tabs[activeTab].content}
+            </div>
         </div>
     );
 }

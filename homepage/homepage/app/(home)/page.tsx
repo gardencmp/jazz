@@ -27,7 +27,13 @@ import {
     MousePointerSquareDashedIcon,
 } from "lucide-react";
 
-import { Main_tsx, Schema_ts, App_tsx, ChatScreen_tsx, Ui_tsx } from "@/codeSamples/examples/chat/src";
+import {
+    Main_tsx,
+    Schema_ts,
+    App_tsx,
+    ChatScreen_tsx,
+    Ui_tsx,
+} from "@/codeSamples/examples/chat/src";
 
 import Intro from "./intro.mdx";
 import CoValuesIntro from "./coValuesIntro.mdx";
