@@ -88,7 +88,7 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
 
     This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
 
-TODO: explain Auth
+{/* TODO: explain Auth */}
 
 <h2 id="intro-to-covalues">Intro to CoValues</h2>
 
@@ -122,7 +122,7 @@ export class Issue extends CoMap {
 }
 ```
 
-TODO: explain what's happening
+{/* TODO: explain what's happening */}
 
 <h3 id="reading-covalues">Reading from CoValues</h3>
 
@@ -683,7 +683,7 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 -   Now, we can get rid of a lot of coniditional accesses because we know that once `project` is loaded, `project.issues` and each `Issue` in it will be loaded as well.
 -   This also results in only one rerender and visual update when everything is loaded, which is faster (especially for long lists) and gives you more control over the loading UX.
 
-TODO: explain about not loaded vs not set/defined and `_refs` basics
+{/* TODO: explain about not loaded vs not set/defined and `_refs` basics */}
 
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
