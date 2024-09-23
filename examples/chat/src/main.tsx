@@ -7,25 +7,25 @@ const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-    const [auth, state] = useDemoAuth();
+  const [auth, state] = useDemoAuth();
 
-    return (
-        <>
-            <Jazz.Provider
-                auth={auth}
-                peer="wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io"
-            >
-                {children}
-            </Jazz.Provider>
-            <DemoAuthBasicUI appName="Jazz Chat" state={state} />
-        </>
-    );
+  return (
+    <>
+      <Jazz.Provider
+        auth={auth}
+        peer="wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io"
+      >
+        {children}
+      </Jazz.Provider>
+      <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+    </>
+  );
 }
 
 createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <JazzAndAuth>
-            <App />
-        </JazzAndAuth>
-    </StrictMode>
+  <StrictMode>
+    <JazzAndAuth>
+      <App />
+    </JazzAndAuth>
+  </StrictMode>
 );
