@@ -106,7 +106,7 @@ export function PropDecl({
     example?: ReactNode;
 }) {
     return (
-        <div className="py-2 border-t border-stone-200 dark:border-stone-800 mt-4 text-sm">
+        <div className="py-2 border-t border-stone-200 dark:border-stone-900 mt-4 text-sm">
             <div>
                 {name && <Highlight>{name + ":"}</Highlight>}
                 {"  "}
@@ -149,7 +149,7 @@ export function FnDecl({
     example: ReactNode;
 }) {
     return (
-        <div className="py-2 border-t border-stone-200 dark:border-stone-800 mt-4 text-sm">
+        <div className="py-2 border-t border-stone-200 dark:border-stone-900 mt-4 text-sm">
             <div>
                 {<Highlight>{signature + ":"}</Highlight>}{" "}
                 <span className="opacity-75 text-xs pl-1">

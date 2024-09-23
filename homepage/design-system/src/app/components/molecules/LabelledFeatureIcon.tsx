@@ -13,7 +13,7 @@ export function LabelledFeatureIcon({
             className={clsx(
                 "p-4 flex flex-col items-center justify-center gap-2",
                 "not-prose text-base",
-                "border border-stone-200 dark:border-stone-800 rounded-xl"
+                "border border-stone-200 dark:border-stone-900 rounded-xl"
             )}
         >
             <div className="text-stone-500 mr-2">

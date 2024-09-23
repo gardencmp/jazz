@@ -95,7 +95,7 @@ export async function NavPackage({
         <>
             <Link
                 href={`/docs/api-reference/${packageName}`}
-                className="text-sm mt-4 font-mono flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-800 "
+                className="text-sm mt-4 font-mono flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-900 "
             >
                 {packageName}
                 <PackageIcon size={15} strokeWidth={1.5} />
