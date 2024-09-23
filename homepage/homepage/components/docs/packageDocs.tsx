@@ -29,9 +29,9 @@ export async function PackageDocs({
 
     return (
         <>
-            <h1 className="flex font-mono items-center gap-2">
-                {packageName} <PackageIcon />
-            </h1>
+            <h2 className="flex items-center gap-2">
+                <code>{packageName}</code> <PackageIcon />
+            </h2>
             {project.categories?.map((category) => {
                 return (
                     <section key={category.title}>

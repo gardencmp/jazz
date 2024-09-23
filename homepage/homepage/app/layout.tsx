@@ -69,7 +69,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <JazzNav />
-                    <main className="flex min-h-screen flex-col p-8 max-w-[80rem] w-full [&_*]:scroll-mt-[6rem]">
+                    <main className="flex min-h-screen flex-col container w-full">
                         {children}
                     </main>
                     <JazzFooter />
