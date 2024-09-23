@@ -25,7 +25,6 @@ export const metadata = {
 export default function Mesh() {
     return (
         <>
-            <div className="md:pt-20" />
             <HeroHeader
                 title="Sync & Storage Mesh"
                 slogan="The first Collaboration Delivery Network."
