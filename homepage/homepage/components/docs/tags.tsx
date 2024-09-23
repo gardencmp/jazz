@@ -65,7 +65,7 @@ export function ClassOrInterface({
             >
                 <LinkIcon size={15} />
             </a>
-            <h4 className="peer sticky top-0 pt-[0.5rem] md:top-[2.5rem] md:pt-[3rem] bg-stone-50 dark:bg-stone-950 z-20">
+            <h3 className="peer sticky top-0 pt-[0.5rem] md:top-[2.5rem] md:pt-[3rem] bg-stone-50 dark:bg-stone-950 z-20">
                 <a href={"#" + name}>
                     <Highlight>
                         {(isInterface ? "interface " : "class ") +
@@ -73,7 +73,7 @@ export function ClassOrInterface({
                             typeParameters}
                     </Highlight>
                 </a>
-            </h4>
+            </h3>
             <div className="pl-2">
                 <div className=" mt-4 text-sm">{doc}</div>
                 <div className="">{children}</div>
