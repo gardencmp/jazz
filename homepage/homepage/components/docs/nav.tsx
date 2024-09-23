@@ -6,7 +6,6 @@ import { ReactNode } from "react";
 
 export function DocNav() {
     const comingSoon = [
-        "Groups & Permissions",
         "Auth, Accounts & Migrations",
         "Edit Metadata & Time Travel",
         "Backend Workers",
@@ -75,6 +74,11 @@ export function DocNav() {
                                 </DocNavLink>
                             </li>
                         </ul>
+                    </DocNavLink>
+                </li>
+                <li>
+                    <DocNavLink href="/docs#groups-and-permissions">
+                        Groups & Permissions
                     </DocNavLink>
                 </li>
             </ul>

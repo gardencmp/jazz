@@ -685,6 +685,117 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 
 {/* TODO: explain about not loaded vs not set/defined and `_refs` basics */}
 
+<h2 id="groups-and-permissions">Groups & Permissions</h2>
+
+We've seen briefly how we can use Groups to give everyone access to a Project,
+and how we can use `{ owner: me }` to make something private to the current user.
+
+This gives us a hint of how permissions work in Jazz: **every CoValue has an owner,
+and the access rights on that CoValue are determined by its owner.**
+
+ - If the owner is an Account, only that Account can read and write the CoValue.
+ - If the owner is a Group, the access rights depend on the *role* of the Account (that is trying to access the CoValue) in that Group.
+    - `"reader"`s can read but not write to CoValues belonging to the Group.
+    - `"writer"`s can read and write to CoValues belonging to the Group.
+    - `"admin"`s can read and write to CoValues belonging to the Group *and can add and remove other members from the Group itself.*
+
+Finally, there is an abstraction for creating *invitations to join a Group* (with a specific role) that you can use
+to add people without having to know their Account ID.
+
+Let's use these abstractions to build teams for a Project that we can invite people to.
+
+Turns out, we're already mostly there! First, let's remove making the Project public:
+
+{/* prettier-ignore */}
+```tsx
+import { useState } from "react"; // old
+import { Project, ListOfIssues } from "./schema"; // old
+import { ProjectComponent } from "./components/Project.tsx"; // old
+import { useAccount } from "./main"; // old
+import { ID, Group } from "jazz-tools" // old
+// old
+function App() { // old
+    const { me } = useAccount(); // old
+    const [projectID, setProjectID] = useState<ID<Project> | undefined>( // old
+        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined, // old
+    ); // old
+    // old
+    const createProject = () => { // old
+        const group = Group.create({ owner: me }); // old
+        group.addMember("everyone", "writer"); // *bin*
+        // old
+        const newProject = Project.create( // old
+            { // old
+                name: "New Project", // old
+                issues: ListOfIssues.create([], { owner: group }) // old
+            }, // old
+            { owner: group }, // old
+        ); // old
+        setProjectID(newProject.id); // old
+        window.history.pushState({}, "", `?project=${newProject.id}`); // old
+    }; // old
+    // old
+    if (projectID) { // old
+        return <ProjectComponent projectID={projectID} />; // old
+    } else { // old
+        return <button onClick={createProject}>Create Project</button>; // old
+    } // old
+} // old
+// old
+export default App; // old
+```
+
+Now, inside ProjectComponent, let's add a button to invite guests (read-only) or members (read-write) to the Project.
+
+{/* prettier-ignore */}
+```tsx
+import { ID } from "jazz-tools"; // old
+import { Project, Issue } from "../schema"; // old
+import { IssueComponent } from "./Issue.tsx"; // old
+import { useCoState } from "../main"; // old
+import { createInviteLink } from "jazz-react";
+// old
+
+export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// old
+    const project = useCoState(Project, projectID, { issues: [{}] }); // old
+
+    const invite = (role: "reader" | "writer") => {
+        const link = createInviteLink(project, role, { valueHint: "project" });
+        navigator.clipboard.writeText(link);
+    };
+
+    const createAndAddIssue = () => {// old
+        project?.issues.push(Issue.create({ // old
+            title: "",// old
+            description: "",// old
+            estimate: 0,// old
+            status: "backlog",// old
+        }, { owner: project._owner }));// old
+    };// old
+// old
+    return project ? (// old
+        <div>// old
+            <h1>{project.name}</h1>// old
+            {project._owner?.myRole() === "admin" && (
+                <>
+                    <button onClick={() => invite("reader")}>Invite Guest</button>
+                    <button onClick={() => invite("writer")}>Invite Member</button>
+                </>
+            )}
+            <div className="border-r border-b">// old
+                {project.issues.map((issue) => ( // old
+                    <IssueComponent key={issue.id} issue={issue} /> // old
+                ))}// old
+                <button onClick={createAndAddIssue}>Create Issue</button>// old
+            </div>// old
+        </div>// old
+    ) : (// old
+        <div>Loading project...</div>// old
+    );// old
+}// old
+```
+
+
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
 </div>
