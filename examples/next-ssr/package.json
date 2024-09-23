@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "WS_NO_BUFFER_UTIL=true next build",
-    "start": "next start",
+    "start": "WS_NO_BUFFER_UTIL=true next start",
     "lint": "next lint"
   },
   "dependencies": {
