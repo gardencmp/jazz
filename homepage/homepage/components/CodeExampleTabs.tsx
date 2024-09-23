@@ -22,7 +22,7 @@ export function CodeExampleTabs({
     return (
         <div
             className={clsx(
-                "shadow-sm bg-white border rounded-sm overflow-hidden h-full flex flex-col",
+                "shadow-sm bg-white border rounded-sm overflow-hidden h-[40rem] max-h-[80vh] flex flex-col",
                 "dark:bg-stone-925 dark:border-stone-800",
                 className,
             )}
@@ -45,7 +45,7 @@ export function CodeExampleTabs({
                     </div>
                 ))}
             </div>
-            <div className="flex-1">{tabs[activeTab].content}</div>
+            <div className="flex-1 overflow-y-auto">{tabs[activeTab].content}</div>
         </div>
     );
 }

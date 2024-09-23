@@ -27,8 +27,7 @@ import {
     MousePointerSquareDashedIcon,
 } from "lucide-react";
 
-import { App_tsx, ChatScreen_tsx } from "@/codeSamples/examples/chat/src";
-import Link from "next/link";
+import { Main_tsx, Schema_ts, App_tsx, ChatScreen_tsx, Ui_tsx } from "@/codeSamples/examples/chat/src";
 
 import Intro from "./intro.mdx";
 import CoValuesIntro from "./coValuesIntro.mdx";
@@ -102,19 +101,31 @@ export default function Home() {
             <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
                 <SectionHeader
                     title="First impressions..."
-                    slogan="A chat app in one screen of code."
+                    slogan="A chat app in 174 lines of code."
                 />
 
                 <GappedGrid className="mt-0 -mx-4 md:-mx-6">
                     <CodeExampleTabs
                         tabs={[
                             {
+                                name: "main.tsx",
+                                content: <Main_tsx />,
+                            },
+                            {
                                 name: "app.tsx",
                                 content: <App_tsx />,
                             },
                             {
+                                name: "schema.ts",
+                                content: <Schema_ts />,
+                            },
+                            {
                                 name: "chatScreen.tsx",
                                 content: <ChatScreen_tsx />,
+                            },
+                            {
+                                name: "ui.tsx",
+                                content: <Ui_tsx />,
                             },
                         ]}
                         className="col-span-full md:col-span-4"
