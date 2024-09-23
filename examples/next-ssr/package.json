@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "WS_NO_BUFFER_UTIL=true next build",
     "start": "next start",
     "lint": "next lint"
   },
