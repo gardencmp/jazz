@@ -37,4 +37,5 @@ export {
     ephemeralCredentialsAuth,
     AnonymousJazzAgent,
     createAnonymousJazzContext,
+    randomSessionProvider
 } from "./internal.js";
