@@ -22,6 +22,7 @@ export function NewDocButton() {
 
     setTimeout(() => {
       router.push(`/doc/${document.id}`);
+      router.refresh();
     }, 200);
   }
 
