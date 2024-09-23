@@ -1,5 +1,13 @@
 # jazz-run
 
+## 0.8.1
+
+### Patch Changes
+
+-   Expose randomSessionProvider and fix jazz-run
+-   Updated dependencies
+    -   jazz-tools@0.8.1
+
 ## 0.8.0
 
 ### Patch Changes
