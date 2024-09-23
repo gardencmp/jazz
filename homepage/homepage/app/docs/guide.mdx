@@ -451,7 +451,11 @@ To see that sync is also already working, try the following:
 -   copy the URL to a new tab in the same browser window and see the same issue
 -   edit the issue and see the changes reflected in the other tab!
 
-This works because we load the issue as the same account that created it and owns it (remember setting `{ owner: me }`?).
+This works because we load the issue as the same account that created it and owns it (remember how you set `{ owner: me }`).
+
+But how can we share an Issue with someone else?
+
+<h3 id="simple-public-sharing">Simple Public Sharing</h3>
 
 We'll learn more about access control in "Groups & Permissions", but for now let's build a super simple way of sharing an Issue by just making it publicly readable & writable.
 
@@ -503,9 +507,6 @@ export default App; // old
 🏁 Now you should be able to open the Issue (with its unique URL) on another device or browser, or send it to a friend and you should be able to **edit it together in realtime!**
 
 This concludes our intro to the essence of CoValues. Hopefully you're starting to have a feeling for how CoValues behave and how they're magically available everywhere.
-
-<h3 id="simple-public-sharing">Simple Public Sharing</h3>
-<ComingSoonBadge/>
 
 <h2 id="refs-and-on-demand-subscribe">Refs & Auto-Subscribe</h2>
 
@@ -635,6 +636,8 @@ Two things to note here:
 -   We create a new Issue like before, and then push it into the `issues` list of the Project. By setting the `owner` to the Project's owner, we ensure that the Issue has the same access rights as the project itself.
 -   We only need to use `useCoState` on the Project, and the nested `ListOfIssues` and each `Issue` will be **automatically loaded and subscribed to when we access them.**
 -   However, because either the `Project`, `ListOfIssues`, or each `Issue` might not be loaded yet, we have to check for them being defined.
+
+<h3 id="loading-depth">Precise Loading Depths</h3>
 
 The load-and-subscribe-on-access is a convenient way to have your rendering drive data loading (including in nested components!) and lets you quickly chuck UIs together without worrying too much about the shape of all data you'll need.
 

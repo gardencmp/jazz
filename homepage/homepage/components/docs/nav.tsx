@@ -68,6 +68,13 @@ export function DocNav() {
                 <li>
                     <DocNavLink href="/docs#refs-and-on-demand-subscribe">
                         Refs & Auto-Subscribe
+                        <ul>
+                            <li>
+                                <DocNavLink href="/docs#loading-depth">
+                                    Precise Loading Depths
+                                </DocNavLink>
+                            </li>
+                        </ul>
                     </DocNavLink>
                 </li>
             </ul>
