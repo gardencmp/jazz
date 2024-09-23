@@ -32,5 +32,14 @@
         "release": "pnpm changeset publish && git push --follow-tags"
     },
     "lint-staged": {},
-    "version": "0.0.0"
+    "version": "0.0.0",
+    "pnpm": {
+        "peerDependencyRules": {
+            "ignoreMissing": [
+                "@babel/*",
+                "expo-modules-*",
+                "typescript"
+            ]
+        }
+    }
 }
