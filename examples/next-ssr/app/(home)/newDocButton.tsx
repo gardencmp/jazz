@@ -20,13 +20,19 @@ export function NewDocButton() {
       { owner: me }
     );
 
-    router.push(`/doc/${document.id}`);
+    setTimeout(() => {
+      router.push(`/doc/${document.id}`);
+    }, 200);
   }
 
   return (
     <button
-      className="bg-blue-500 text-white px-4 py-2 rounded-md"
+      className={
+        (me ? "bg-blue-500" : "bg-gray-500") +
+        " text-white px-4 py-2 rounded-md"
+      }
       onClick={createDoc}
+      disabled={!me}
     >
       Create new document
     </button>

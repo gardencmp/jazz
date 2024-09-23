@@ -12,7 +12,18 @@ export default async function DocPage({
 
   console.log("Loaded ssrJazz");
 
-  const ssrDoc = await Doc.load(params.docId as ID<Doc>, JazzSSR.worker, {});
+  const ssrDoc = await new Promise((resolve) => {
+    let latestDoc: Doc | undefined = undefined;
+    Doc.subscribe(params.docId as ID<Doc>, JazzSSR.worker, {}, (doc) => {
+      latestDoc = doc;
+    });
+
+    setTimeout(() => {
+      if (latestDoc) {
+        resolve(latestDoc);
+      }
+    }, 100);
+  });
 
   console.log("Loaded ssrDoc", ssrDoc);
 
