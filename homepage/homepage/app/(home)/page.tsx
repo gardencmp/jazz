@@ -57,7 +57,7 @@ import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 
 export default function Home() {
     return (
-        <>
+        <div className="space-y-16">
             <HeroHeader
                 title="Instant sync."
                 slogan="A new way to build apps with distributed state."
@@ -104,13 +104,13 @@ export default function Home() {
                 </div>
             </HairlineBleedGrid>
 
-            <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
+            <div>
                 <SectionHeader
                     title="First impressions..."
                     slogan="A chat app in 174 lines of code."
                 />
 
-                <GappedGrid className="mt-0 -mx-4 md:-mx-6">
+                <GappedGrid className="mt-0">
                     <CodeExampleTabs
                         tabs={[
                             {
@@ -139,18 +139,21 @@ export default function Home() {
                     <ResponsiveIframe
                         src="https://chat.jazz.tools"
                         localSrc="http://localhost:5173"
-                        className="col-span-full lg:col-span-2 rounded-xl overflow-hidden min-h-[50vh]"
+                        className="order-first col-span-full lg:col-span-2 rounded-sm overflow-hidden min-h-[50vh] lg:order-last"
                     />
                 </GappedGrid>
             </div>
 
-            <SectionHeader
-                title="Collaborative Values"
-                slogan="Your new building blocks."
-            />
-            <Prose>
-                <CoValuesIntro />
-            </Prose>
+            <div>
+                <SectionHeader
+                    title="Collaborative Values"
+                    slogan="Your new building blocks."
+                />
+
+                <Prose>
+                    <CoValuesIntro />
+                </Prose>
+            </div>
 
             <GappedGrid
                 title="Bread-and-butter datastructures"
@@ -239,15 +242,17 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <SectionHeader
-                title="The Jazz Toolkit"
-                slogan="A high-level toolkit for building apps around CoValues."
-            />
+            <div>
+                <SectionHeader
+                    title="The Jazz Toolkit"
+                    slogan="A high-level toolkit for building apps around CoValues."
+                />
 
-            <Prose>Supported environments:</Prose>
-            <SmallProse>
-                <SupportedEnvironments />
-            </SmallProse>
+                <Prose>Supported environments:</Prose>
+                <SmallProse>
+                    <SupportedEnvironments />
+                </SmallProse>
+            </div>
 
             <GappedGrid>
                 <GridCard>
@@ -316,38 +321,42 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <SectionHeader
-                title="Jazz Mesh"
-                slogan="Serverless sync & storage for Jazz apps"
-            />
+            <div>
+                <SectionHeader
+                    title="Jazz Mesh"
+                    slogan="Serverless sync & storage for Jazz apps"
+                />
 
-            <Prose>
-                <MeshIntro />
-            </Prose>
+                <Prose>
+                    <MeshIntro />
+                </Prose>
 
-            <P>
-                {"->"}{" "}
-                <TextLink href="/mesh" target="_blank">
-                    Learn more about Jazz Mesh
-                </TextLink>
-            </P>
-
-            <H3>Get Started</H3>
-            <UL>
-                <LI>
-                    <TextLink href="/docs" target="_blank">
-                        Read the docs
+                <P>
+                    {"->"}{" "}
+                    <TextLink href="/mesh" target="_blank">
+                        Learn more about Jazz Mesh
                     </TextLink>
-                </LI>
-                <LI>
-                    <TextLink
-                        href="https://discord.gg/utDMjHYg42"
-                        target="_blank"
-                    >
-                        Join our Discord
-                    </TextLink>
-                </LI>
-            </UL>
-        </>
+                </P>
+            </div>
+
+            <div>
+                <H3>Get Started</H3>
+                <UL>
+                    <LI>
+                        <TextLink href="/docs" target="_blank">
+                            Read the docs
+                        </TextLink>
+                    </LI>
+                    <LI>
+                        <TextLink
+                            href="https://discord.gg/utDMjHYg42"
+                            target="_blank"
+                        >
+                            Join our Discord
+                        </TextLink>
+                    </LI>
+                </UL>
+            </div>
+        </div>
     );
 }

@@ -19,7 +19,9 @@ export function LabelledFeatureIcon({
             <div className="text-stone-500 mr-2">
                 <Icon strokeWidth={1} strokeLinecap="butt" size={40} />
             </div>
-            <div className="text-stone-700 dark:text-stone-300">{label}</div>
+            <div className="text-sm text-stone-700 md:text-base dark:text-stone-300">
+                {label}
+            </div>
         </div>
     );
 }
