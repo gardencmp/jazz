@@ -1,7 +1,7 @@
 "use client";
 
-import { useAccount } from "./jazz-client";
-import { Doc } from "./schema";
+import { useAccount } from "../jazz-client";
+import { Doc } from "../schema";
 import { useRouter } from "next/navigation";
 
 export function NewDocButton() {
@@ -14,7 +14,7 @@ export function NewDocButton() {
     const document = Doc.create(
       {
         title: "Untitled",
-        text: "",
+        text: "Lorem ipsum...",
         tweet: "",
       },
       { owner: me }
