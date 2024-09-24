@@ -5,7 +5,6 @@ import {
     useState,
     useRef,
     IframeHTMLAttributes,
-    useEffect,
 } from "react";
 
 export function ResponsiveIframe(
@@ -16,15 +15,6 @@ export function ResponsiveIframe(
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [url, setUrl] = useState<string | undefined>();
     const [src, setSrc] = useState<string | undefined>();
-    const [inviteUrl, setInviteUrl] = useState<string | undefined>(url);
-
-    useEffect(() => {
-        if (url?.includes("/chat/")) {
-            setInviteUrl(url?.replace("http://", "").replace("https://", ""));
-        } else {
-            setInviteUrl(undefined);
-        }
-    }, [url]);
 
     useLayoutEffect(() => {
         const listener = (e: MessageEvent) => {
@@ -68,35 +58,27 @@ export function ResponsiveIframe(
     }, [props.src, props.localSrc]);
 
     return (
-        <>
-            {inviteUrl && (
-                <div className="border-b dark:border-stone-900 dark:bg-stone-900 py-2 px-3">
-                    <div className="flex gap-3 text-xs items-center">
-                        <p>
-                            Invite friends to join the chat:{" "}
-                            <a
-                                href={inviteUrl}
-                                className="flex-1 underline text-blue-500"
-                            >
-                                {inviteUrl}
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            )}
-            <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 lg:p-12 dark:bg-stone-925">
-                <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
-                    <div className="h-full" ref={containerRef}>
-                        <iframe
-                            {...props}
-                            src={src}
-                            className="dark:bg-black w-full"
-                            {...dimensions}
-                            allowFullScreen
-                        />
-                    </div>
-                </div>
-            </div>
-        </>
+      <>
+          <input
+            className="border-b dark:border-stone-900 text-xs py-2 px-3"
+            value={url?.replace("http://", "").replace("https://", "")}
+            onClick={(e) => e.currentTarget.select()}
+            onBlur={(e) => e.currentTarget.setSelectionRange(0, 0)}
+            readOnly
+          />
+          <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 dark:bg-stone-925">
+              <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
+                  <div className="h-full" ref={containerRef}>
+                      <iframe
+                        {...props}
+                        src={src}
+                        className="dark:bg-black w-full"
+                        {...dimensions}
+                        allowFullScreen
+                      />
+                  </div>
+              </div>
+          </div>
+      </>
     );
 }
