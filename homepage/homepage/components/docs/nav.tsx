@@ -7,7 +7,6 @@ import { clsx } from "clsx";
 
 export function DocNav({ className }: { className?: string }) {
     const comingSoon = [
-        "Groups & Permissions",
         "Auth, Accounts & Migrations",
         "Edit Metadata & Time Travel",
         "Backend Workers",
@@ -41,6 +40,28 @@ export function DocNav({ className }: { className?: string }) {
         {
             name: "Simple Public Sharing",
             href: "/docs#simple-public-sharing",
+        },
+    ];
+
+    const refsItems = [
+        {
+            name: "Precise Loading Depths",
+            href: "/docs#loading-depth",
+        },
+    ];
+
+    const groupsItems = [
+        {
+            name: "Groups/Accounts as Scopes",
+            href: "/docs#groups-accounts-as-scopes",
+        },
+        {
+            name: "Creating Invites",
+            href: "/docs#creating-invites",
+        },
+        {
+            name: "Consuming Invites",
+            href: "/docs#consuming-invites",
         },
     ];
 
@@ -79,6 +100,35 @@ export function DocNav({ className }: { className?: string }) {
                         <DocNavLink href="/docs#refs-and-on-demand-subscribe">
                             Refs & Auto-Subscribe
                         </DocNavLink>
+                        <ul>
+                            {refsItems.map((item) => (
+                                <li key={item.name}>
+                                    <DocNavLink
+                                        className="pl-4"
+                                        href={item.href}
+                                    >
+                                        {item.name}
+                                    </DocNavLink>
+                                </li>
+                            ))}
+                        </ul>
+                    </li>
+                    <li>
+                        <DocNavLink href="/docs#groups-and-permissions">
+                            Groups & Permissions
+                        </DocNavLink>
+                        <ul>
+                            {groupsItems.map((item) => (
+                                <li key={item.name}>
+                                    <DocNavLink
+                                        className="pl-4"
+                                        href={item.href}
+                                    >
+                                        {item.name}
+                                    </DocNavLink>
+                                </li>
+                            ))}
+                        </ul>
                     </li>
                 </ul>
             </div>

@@ -10,9 +10,17 @@ import { ComingSoonBadge } from 'gcmp-design-system/src/app/components/atoms/Com
 />
 </div>
 
-Our issues app will be quite simple, but it will have team collaboration. <span className="text-nowrap">**Let's call it... &ldquo;Circular.&rdquo;**</span>
+## About this guide
 
-We'll build everything **step-by-step,** in typical, immediately usable stages. We'll explore many important things Jazz does &mdash; so **follow along** or **just pick things out.**
+You might notice that right now, this guide is the only form of documentation there is for Jazz.
+Over time, we're hoping to introduce independent doc sections for every concept in Jazz, but right now this works as:
+
+- a quickstart guide
+- a reference for the concepts in Jazz (ordered from simple & most important to more advanced)
+- a tutorial that makes you build a full app (that you can use as a base)
+
+Plus, if you get stuck or you have questions, [ask us on Discord](https://discord.gg/utDMjHYg42)
+and we'll know exactly where you're at.
 
 <h2 id="guide-setup">Project Setup</h2>
 
@@ -86,9 +94,9 @@ We'll build everything **step-by-step,** in typical, immediately usable stages. 
     ); // old
     ```
 
-    This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
+This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
 
-TODO: explain Auth
+{/* TODO: explain Auth */}
 
 <h2 id="intro-to-covalues">Intro to CoValues</h2>
 
@@ -122,7 +130,7 @@ export class Issue extends CoMap {
 }
 ```
 
-TODO: explain what's happening
+{/* TODO: explain what's happening */}
 
 <h3 id="reading-covalues">Reading from CoValues</h3>
 
@@ -451,7 +459,11 @@ To see that sync is also already working, try the following:
 -   copy the URL to a new tab in the same browser window and see the same issue
 -   edit the issue and see the changes reflected in the other tab!
 
-This works because we load the issue as the same account that created it and owns it (remember setting `{ owner: me }`?).
+This works because we load the issue as the same account that created it and owns it (remember how you set `{ owner: me }`).
+
+But how can we share an Issue with someone else?
+
+<h3 id="simple-public-sharing">Simple Public Sharing</h3>
 
 We'll learn more about access control in "Groups & Permissions", but for now let's build a super simple way of sharing an Issue by just making it publicly readable & writable.
 
@@ -503,9 +515,6 @@ export default App; // old
 🏁 Now you should be able to open the Issue (with its unique URL) on another device or browser, or send it to a friend and you should be able to **edit it together in realtime!**
 
 This concludes our intro to the essence of CoValues. Hopefully you're starting to have a feeling for how CoValues behave and how they're magically available everywhere.
-
-<h3 id="simple-public-sharing">Simple Public Sharing</h3>
-<ComingSoonBadge/>
 
 <h2 id="refs-and-on-demand-subscribe">Refs & Auto-Subscribe</h2>
 
@@ -636,6 +645,8 @@ Two things to note here:
 -   We only need to use `useCoState` on the Project, and the nested `ListOfIssues` and each `Issue` will be **automatically loaded and subscribed to when we access them.**
 -   However, because either the `Project`, `ListOfIssues`, or each `Issue` might not be loaded yet, we have to check for them being defined.
 
+<h3 id="loading-depth">Precise Loading Depths</h3>
+
 The load-and-subscribe-on-access is a convenient way to have your rendering drive data loading (including in nested components!) and lets you quickly chuck UIs together without worrying too much about the shape of all data you'll need.
 
 But you can also take more precise control over loading by defining a minimum-depth to load in `useCoState`:
@@ -680,8 +691,123 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 -   Now, we can get rid of a lot of coniditional accesses because we know that once `project` is loaded, `project.issues` and each `Issue` in it will be loaded as well.
 -   This also results in only one rerender and visual update when everything is loaded, which is faster (especially for long lists) and gives you more control over the loading UX.
 
-TODO: explain about not loaded vs not set/defined and `_refs` basics
+{/* TODO: explain about not loaded vs not set/defined and `_refs` basics */}
 
+<h2 id="groups-and-permissions">Groups & Permissions</h2>
+
+We've seen briefly how we can use Groups to give everyone access to a Project,
+and how we can use `{ owner: me }` to make something private to the current user.
+
+<h3 id="groups-accounts-as-scopes">Groups / Accounts as Permission Scopes</h3>
+
+This gives us a hint of how permissions work in Jazz: **every CoValue has an owner,
+and the access rights on that CoValue are determined by its owner.**
+
+ - If the owner is an Account, only that Account can read and write the CoValue.
+ - If the owner is a Group, the access rights depend on the *role* of the Account (that is trying to access the CoValue) in that Group.
+    - `"reader"`s can read but not write to CoValues belonging to the Group.
+    - `"writer"`s can read and write to CoValues belonging to the Group.
+    - `"admin"`s can read and write to CoValues belonging to the Group *and can add and remove other members from the Group itself.*
+
+<h3 id="creating-invites">Creating Invites</h3>
+
+There is also an abstraction for creating *invitations to join a Group* (with a specific role) that you can use
+to add people without having to know their Account ID.
+
+Let's use these abstractions to build teams for a Project that we can invite people to.
+
+Turns out, we're already mostly there! First, let's remove making the Project public:
+
+{/* prettier-ignore */}
+```tsx
+import { useState } from "react"; // old
+import { Project, ListOfIssues } from "./schema"; // old
+import { ProjectComponent } from "./components/Project.tsx"; // old
+import { useAccount } from "./main"; // old
+import { ID, Group } from "jazz-tools" // old
+// old
+function App() { // old
+    const { me } = useAccount(); // old
+    const [projectID, setProjectID] = useState<ID<Project> | undefined>( // old
+        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined, // old
+    ); // old
+    // old
+    const createProject = () => { // old
+        const group = Group.create({ owner: me }); // old
+        group.addMember("everyone", "writer"); // *bin*
+        // old
+        const newProject = Project.create( // old
+            { // old
+                name: "New Project", // old
+                issues: ListOfIssues.create([], { owner: group }) // old
+            }, // old
+            { owner: group }, // old
+        ); // old
+        setProjectID(newProject.id); // old
+        window.history.pushState({}, "", `?project=${newProject.id}`); // old
+    }; // old
+    // old
+    if (projectID) { // old
+        return <ProjectComponent projectID={projectID} />; // old
+    } else { // old
+        return <button onClick={createProject}>Create Project</button>; // old
+    } // old
+} // old
+// old
+export default App; // old
+```
+
+Now, inside ProjectComponent, let's add a button to invite guests (read-only) or members (read-write) to the Project.
+
+{/* prettier-ignore */}
+```tsx
+import { ID } from "jazz-tools"; // old
+import { Project, Issue } from "../schema"; // old
+import { IssueComponent } from "./Issue.tsx"; // old
+import { useCoState } from "../main"; // old
+import { createInviteLink } from "jazz-react";
+// old
+
+export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// old
+    const project = useCoState(Project, projectID, { issues: [{}] }); // old
+
+    const invite = (role: "reader" | "writer") => {
+        const link = createInviteLink(project, role, { valueHint: "project" });
+        navigator.clipboard.writeText(link);
+    };
+
+    const createAndAddIssue = () => {// old
+        project?.issues.push(Issue.create({ // old
+            title: "",// old
+            description: "",// old
+            estimate: 0,// old
+            status: "backlog",// old
+        }, { owner: project._owner }));// old
+    };// old
+// old
+    return project ? (// old
+        <div>// old
+            <h1>{project.name}</h1>// old
+            {project._owner?.myRole() === "admin" && (
+                <>
+                    <button onClick={() => invite("reader")}>Invite Guest</button>
+                    <button onClick={() => invite("writer")}>Invite Member</button>
+                </>
+            )}
+            <div className="border-r border-b">// old
+                {project.issues.map((issue) => ( // old
+                    <IssueComponent key={issue.id} issue={issue} /> // old
+                ))}// old
+                <button onClick={createAndAddIssue}>Create Issue</button>// old
+            </div>// old
+        </div>// old
+    ) : (// old
+        <div>Loading project...</div>// old
+    );// old
+}// old
+```
+
+<h3 id="consuming-invites">Consuming Invites</h3>
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
 </div>
