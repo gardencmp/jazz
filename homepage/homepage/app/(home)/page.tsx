@@ -110,7 +110,7 @@ export default function Home() {
                     slogan="A chat app in 174 lines of code."
                 />
 
-                <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:divide-stone-900">
+                <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:border-stone-900 dark:divide-stone-900">
                     <CodeExampleTabs
                         tabs={[
                             {

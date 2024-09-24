@@ -1,11 +1,7 @@
 "use client";
 
-import {
-    useLayoutEffect,
-    useState,
-    useRef,
-    IframeHTMLAttributes,
-} from "react";
+import { useLayoutEffect, useState, useRef, IframeHTMLAttributes } from "react";
+import { CopyIcon } from "lucide-react";
 
 export function ResponsiveIframe(
     props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
@@ -57,28 +53,51 @@ export function ResponsiveIframe(
         );
     }, [props.src, props.localSrc]);
 
+    const copyUrl = () => {
+        if (url) {
+            navigator.clipboard.writeText(url);
+        }
+    };
+
     return (
-      <>
-          <input
-            className="border-b dark:border-stone-900 text-xs py-2 px-3"
-            value={url?.replace("http://", "").replace("https://", "")}
-            onClick={(e) => e.currentTarget.select()}
-            onBlur={(e) => e.currentTarget.setSelectionRange(0, 0)}
-            readOnly
-          />
-          <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 dark:bg-stone-925">
-              <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
-                  <div className="h-full" ref={containerRef}>
-                      <iframe
-                        {...props}
-                        src={src}
-                        className="dark:bg-black w-full"
-                        {...dimensions}
-                        allowFullScreen
-                      />
-                  </div>
-              </div>
-          </div>
-      </>
+        <>
+            <div className="bg-white flex gap-3 border-b dark:border-stone-900 text-xs dark:bg-stone-925">
+                <input
+                    className="flex-1 font-mono bg-transparent overflow-hidden text-ellipsis py-2 px-3"
+                    value={url?.replace("http://", "").replace("https://", "")}
+                    onClick={(e) => e.currentTarget.select()}
+                    onBlur={(e) => e.currentTarget.setSelectionRange(0, 0)}
+                    readOnly
+                />
+                {url?.includes("/#/chat/") && (
+                    <button
+                        type="button"
+                        className="text-blue-600 flex items-center gap-1.5 py-2 px-3"
+                        onClick={copyUrl}
+                    >
+                        <CopyIcon className="hidden sm:inline" size={12} />
+                        <span>
+                            Copy URL{" "}
+                            <span className="hidden sm:inline">
+                                to invite others
+                            </span>
+                        </span>
+                    </button>
+                )}
+            </div>
+            <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 dark:bg-stone-925">
+                <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem] dark:border-stone-900">
+                    <div className="h-full" ref={containerRef}>
+                        <iframe
+                            {...props}
+                            src={src}
+                            className="dark:bg-black w-full"
+                            {...dimensions}
+                            allowFullScreen
+                        />
+                    </div>
+                </div>
+            </div>
+        </>
     );
 }

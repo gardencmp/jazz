@@ -78,12 +78,6 @@
     }
 }
 
-@layer components {
-    .border {
-        @apply dark:border-stone-900;
-    }
-}
-
 pre.shiki {
     overflow: hidden;
 }
