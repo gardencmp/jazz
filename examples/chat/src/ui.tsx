@@ -1,6 +1,6 @@
 export function AppContainer(props: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-between w-screen h-screen bg-stone-50 dark:bg-black dark:text-white">
+    <div className="flex flex-col justify-between w-screen h-screen bg-stone-50 dark:bg-black dark:text-white">
       {props.children}
     </div>
   );
@@ -8,13 +8,13 @@ export function AppContainer(props: { children: React.ReactNode }) {
 
 export function TopBar(props: { children: React.ReactNode }) {
   return (
-    <div className="mb-5 p-3 bg-white w-full flex justify-end gap-1 text-sm border-b">{props.children}</div>
+    <div className="p-3 bg-white w-full flex justify-end gap-1 text-sm border-b">{props.children}</div>
   );
 }
 
-export function ChatContainer(props: { children: React.ReactNode }) {
+export function ChatBody(props: { children: React.ReactNode }) {
   return (
-    <div className="w-full max-w-xl h-full flex flex-col items-stretch">
+    <div className="flex-1 overflow-y-auto">
       {props.children}
     </div>
   );
@@ -29,7 +29,7 @@ export function BubbleContainer(props: {
   fromMe: boolean | undefined;
 }) {
   const align = props.fromMe ? "items-end" : "items-start";
-  return <div className={`${align} flex flex-col p-3`}>{props.children}</div>;
+  return <div className={`${align} flex flex-col m-2`}>{props.children}</div>;
 }
 
 export function BubbleBody(props: { children: React.ReactNode }) {
