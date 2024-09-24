@@ -29,7 +29,7 @@ export function HeroHeader({
     pt?: boolean;
 }) {
     return (
-        <hgroup className={clsx(pt && "md:pt-20", "mb-10")}>
+        <hgroup className={clsx(pt && "pt-12 md:pt-20", "mb-10")}>
             <H1>{title}</H1>
             <H1Sub>{slogan}</H1Sub>
         </hgroup>

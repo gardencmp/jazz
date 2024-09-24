@@ -8,7 +8,6 @@ export function HairlineBleedGrid({ children }: { children: React.ReactNode }) {
                 "mb-10",
                 "items-stretch",
                 "gap-[1px]",
-                "-mx-4 md:-mx-6",
                 "rounded-xl",
                 "overflow-hidden",
                 "bg-stone-50 dark:bg-stone-950",

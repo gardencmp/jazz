@@ -132,7 +132,7 @@ pre.twoslash data-lsp::before {
     position: absolute;
     transform: translate(0, 1.2rem);
     max-width: 30rem;
-    @apply text-xs px-1.5 py-1 rounded border border-stone-200 dark:border-stone-800 shadow-lg overflow-hidden whitespace-pre-wrap text-stone-700 bg-stone-50 dark:text-stone-200 dark:bg-stone-950;
+    @apply text-xs px-1.5 py-1 rounded border border-stone-200 dark:border-stone-900 shadow-lg overflow-hidden whitespace-pre-wrap text-stone-700 bg-stone-50 dark:text-stone-200 dark:bg-stone-950;
     text-align: left;
     z-index: 100;
     opacity: 0;
