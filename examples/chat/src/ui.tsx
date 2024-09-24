@@ -8,7 +8,7 @@ export function AppContainer(props: { children: React.ReactNode }) {
 
 export function TopBar(props: { children: React.ReactNode }) {
   return (
-    <div className="p-3 bg-white w-full flex justify-end gap-1 text-sm border-b">{props.children}</div>
+    <div className="p-3 bg-white w-full flex justify-end gap-1 text-xs border-b">{props.children}</div>
   );
 }
 
@@ -34,7 +34,7 @@ export function BubbleContainer(props: {
 
 export function BubbleBody(props: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl text-sm bg-white dark:bg-stone-700 dark:text-white py-2 px-4">
+    <div className="rounded-2xl text-sm bg-white dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
       {props.children}
     </div>
   );

@@ -141,13 +141,11 @@ export default function Home() {
                                 result
                             </p>
                         </div>
-                        <div className="p-12 flex-1 bg-stone-100 flex items-stretch justify-center">
-                            <ResponsiveIframe
-                                src="https://chat.jazz.tools"
-                                localSrc="http://localhost:5173"
-                                className="border rounded-lg overflow-hidden shadow-2xl"
-                            />
-                        </div>
+                        <ResponsiveIframe
+                            src="https://chat.jazz.tools"
+                            localSrc="http://localhost:5173"
+                            className=""
+                        />
                     </div>
                 </div>
             </div>
