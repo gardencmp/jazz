@@ -84,8 +84,8 @@ export function ResponsiveIframe(
                     </div>
                 </div>
             )}
-            <div className="p-12 flex-1 bg-stone-100 flex items-stretch justify-center">
-                <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem]">
+            <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 lg:p-12">
+                <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
                     <div className="h-full" ref={containerRef}>
                         <iframe
                             {...props}

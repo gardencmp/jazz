@@ -21,7 +21,7 @@ export function ChatBody(props: { children: React.ReactNode }) {
 }
 
 export function EmptyChatMessage() {
-  return <div className="h-full text-base text-stone-500 flex items-center justify-center md:text-xl">Start a conversation below.</div>;
+  return <div className="h-full text-base text-stone-500 flex items-center justify-center px-3 md:text-xl">Start a conversation below.</div>;
 }
 
 export function BubbleContainer(props: {
