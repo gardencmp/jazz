@@ -54,10 +54,7 @@ export function ResponsiveIframe(
 
     return (
         <div
-            className={
-                "w-full h-full flex flex-col items-stretch border shadow-sm dark:border-stone-800 " +
-                props.className
-            }
+          className={`${props.className} w-[20rem]`}
         >
             {/*<div className="rounded-t-sm bg-white border-b dark:border-stone-800 dark:bg-stone-900 py-1.5 px-10 flex">*/}
             {/*    <input*/}
@@ -68,7 +65,10 @@ export function ResponsiveIframe(
             {/*        readOnly*/}
             {/*    />*/}
             {/*</div>*/}
-            <div className="flex-grow" ref={containerRef}>
+            <div
+              className="h-full"
+              ref={containerRef}>
+
                 <iframe
                     {...props}
                     src={src}

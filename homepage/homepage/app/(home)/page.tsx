@@ -110,7 +110,7 @@ export default function Home() {
                     slogan="A chat app in 174 lines of code."
                 />
 
-                <GappedGrid className="mt-0">
+                <div className="grid grid-cols-2 divide-x border rounded-sm overflow-hidden shadow-sm">
                     <CodeExampleTabs
                         tabs={[
                             {
@@ -134,14 +134,22 @@ export default function Home() {
                                 content: <Ui_tsx />,
                             },
                         ]}
-                        className="col-span-full md:col-span-4"
                     />
-                    <ResponsiveIframe
-                        src="https://chat.jazz.tools"
-                        localSrc="http://localhost:5173"
-                        className="order-first col-span-full lg:col-span-2 rounded-sm overflow-hidden min-h-[50vh] lg:order-last"
-                    />
-                </GappedGrid>
+                    <div className="order-first bg-white lg:order-last flex flex-col">
+                        <div className="flex border-b overflow-x-auto overflow-y-hidden dark:border-stone-800 dark:bg-stone-900">
+                            <p className="flex items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 bg-white text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
+                                result
+                            </p>
+                        </div>
+                        <div className="p-12 flex-1 bg-stone-100 flex items-stretch justify-center">
+                            <ResponsiveIframe
+                                src="https://chat.jazz.tools"
+                                localSrc="http://localhost:5173"
+                                className="border rounded-lg overflow-hidden shadow-2xl"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div>

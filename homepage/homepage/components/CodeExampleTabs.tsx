@@ -22,8 +22,8 @@ export function CodeExampleTabs({
     return (
         <div
             className={clsx(
-                "shadow-sm bg-white border rounded-sm overflow-hidden h-[40rem] max-h-[80vh] flex flex-col",
-                "dark:bg-stone-925 dark:border-stone-800",
+                "bg-white h-[40rem] max-h-[80vh] flex flex-col",
+                "dark:bg-stone-925",
                 className,
             )}
         >
