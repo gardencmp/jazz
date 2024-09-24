@@ -128,7 +128,7 @@ export async function NavPackage({
                         open={category.title !== "Other"}
                         className="group ml-1.5 border-l dark:border-stone-900"
                     >
-                        <summary className="pl-[13px] py-1 block cursor-pointer flex gap-2 items-center justify-between hover:text-stone-800 dark:hover:text-stone-200">
+                        <summary className="pl-[13px] py-1 cursor-pointer flex gap-2 items-center justify-between hover:text-stone-800 dark:hover:text-stone-200 [&::-webkit-details-marker]:hidden">
                             {category.title}
 
                             <ChevronRight className="w-4 h-4 text-stone-300 group-open:rotate-90 transition-transform dark:text-stone-800" />
