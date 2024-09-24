@@ -70,7 +70,7 @@ export function ResponsiveIframe(
     return (
         <>
             {inviteUrl && (
-                <div className="border-b dark:border-stone-800 dark:bg-stone-900 py-2 px-3">
+                <div className="border-b dark:border-stone-900 dark:bg-stone-900 py-2 px-3">
                     <div className="flex gap-3 text-xs items-center">
                         <p>
                             Invite friends to join the chat:{" "}
@@ -84,7 +84,7 @@ export function ResponsiveIframe(
                     </div>
                 </div>
             )}
-            <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 lg:p-12">
+            <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 lg:p-12 dark:bg-stone-925">
                 <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
                     <div className="h-full" ref={containerRef}>
                         <iframe
