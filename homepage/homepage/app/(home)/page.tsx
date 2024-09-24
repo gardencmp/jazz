@@ -110,7 +110,7 @@ export default function Home() {
                     slogan="A chat app in 174 lines of code."
                 />
 
-                <GappedGrid className="mt-0">
+                <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:border-stone-900 dark:divide-stone-900">
                     <CodeExampleTabs
                         tabs={[
                             {
@@ -134,14 +134,19 @@ export default function Home() {
                                 content: <Ui_tsx />,
                             },
                         ]}
-                        className="col-span-full md:col-span-4"
                     />
-                    <ResponsiveIframe
-                        src="https://chat.jazz.tools"
-                        localSrc="http://localhost:5173"
-                        className="order-first col-span-full lg:col-span-2 rounded-sm overflow-hidden min-h-[50vh] lg:order-last"
-                    />
-                </GappedGrid>
+                    <div className="border-b order-first md:order-last flex flex-col md:border-b-0">
+                        <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:border-stone-900 dark:bg-stone-900">
+                            <p className="flex items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
+                                result
+                            </p>
+                        </div>
+                        <ResponsiveIframe
+                            src="https://chat.jazz.tools"
+                            localSrc="http://localhost:5173"
+                        />
+                    </div>
+                </div>
             </div>
 
             <div>

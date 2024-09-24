@@ -9,8 +9,6 @@ export const { useAccount, useCoState } = Jazz;
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, state] = useDemoAuth();
 
-  console.log(state, auth)
-
   return (
     <>
       <Jazz.Provider

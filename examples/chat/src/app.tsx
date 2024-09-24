@@ -19,7 +19,7 @@ export function App() {
   return (
     <AppContainer>
       <TopBar>
-        {me?.profile?.name} · <button onClick={logOut}>Log out</button>
+        <p>{me?.profile?.name}</p> · <button onClick={logOut}>Log out</button>
       </TopBar>
       {useIframeHashRouter().route({
         "/": () => createChat() as never,
