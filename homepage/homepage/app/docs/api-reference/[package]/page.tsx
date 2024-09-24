@@ -24,11 +24,5 @@ export async function generateMetadata({ params }: Props) {
 
 export async function generateStaticParams() {
     // TODO: ideally we check which files exist in ../../typedoc
-    return [
-        "jazz-tools",
-        "jazz-react",
-        "jazz-nodejs",
-        "jazz-browser",
-        "jazz-browser-media-images",
-    ].map((pkg) => ({ package: pkg }));
+    return packages.map((pkg) => ({ package: pkg }));
 }

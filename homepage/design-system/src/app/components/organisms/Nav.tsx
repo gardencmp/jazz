@@ -104,7 +104,7 @@ export function Nav({
             <nav
                 className={clsx(
                     "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
-                    "bg-stone-50 dark:bg-stone-925 dark:text-white border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
+                    "bg-stone-50 dark:bg-stone-925 border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : "",
                 )}
             >
@@ -133,8 +133,8 @@ export function Nav({
                             ))}
                     </div>
 
-                    {pathname === "/docs" && (
-                        <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 dark:border-stone-900 overflow-x-auto prose-sm prose-ul:pl-1 prose-ul:ml-1 prose-li:my-2 prose-li:leading-tight prose-ul:list-['-']">
+                    {pathname.startsWith("/docs") && (
+                        <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 dark:border-stone-900 overflow-x-auto">
                             {docNav}
                         </div>
                     )}

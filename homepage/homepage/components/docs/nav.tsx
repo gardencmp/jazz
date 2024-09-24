@@ -1,10 +1,11 @@
 import { requestProject } from "./requestProject";
-import { PackageIcon } from "lucide-react";
+import { ChevronRight, PackageIcon} from "lucide-react";
 import { packages } from "@/lib/packages";
 import Link from "next/link";
 import { ReactNode } from "react";
+import { clsx } from "clsx";
 
-export function DocNav() {
+export function DocNav({ className }: { className?: string }) {
     const comingSoon = [
         "Groups & Permissions",
         "Auth, Accounts & Migrations",
@@ -12,75 +13,98 @@ export function DocNav() {
         "Backend Workers",
     ];
 
+    const covaluesItems = [
+        {
+            name: "Declaration",
+            href: "/docs#declaring-covalues",
+        },
+        {
+            name: "Reading",
+            href: "/docs#reading-covalues",
+        },
+        {
+            name: "Creation",
+            href: "/docs#creating-covalues",
+        },
+        {
+            name: "Editing & Subscription",
+            href: "/docs#editing-and-subscription",
+        },
+        {
+            name: "Persistence",
+            href: "/docs#persistence",
+        },
+        {
+            name: "Remote Sync",
+            href: "/docs#remote-sync",
+        },
+        {
+            name: "Simple Public Sharing",
+            href: "/docs#simple-public-sharing",
+        },
+    ];
+
     return (
-        <>
-            <p className="mt-0 font-medium">
-                <DocNavLink href="/docs">Guide</DocNavLink>
-            </p>
-            <ul>
-                <li>
-                    <DocNavLink href="/docs#guide-setup">
-                        Project Setup
-                    </DocNavLink>
-                </li>
-                <li>
-                    <DocNavLink href="/docs#intro-to-covalues">
-                        Intro to CoValues
-                    </DocNavLink>
-                    <ul>
-                        <li>
-                            <DocNavLink href="/docs#declaring-covalues">
-                                Declaration
-                            </DocNavLink>
+        <div className={clsx(className, "text-sm space-y-5 pr-3")}>
+            <div>
+                <DocNavHeader
+                    href="/docs"
+                >
+                    Guide
+                </DocNavHeader>
+                <ul>
+                    <li>
+                        <DocNavLink href="/docs#guide-setup">
+                            Project Setup
+                        </DocNavLink>
+                    </li>
+                    <li>
+                        <DocNavLink href="/docs#intro-to-covalues">
+                            Intro to CoValues
+                        </DocNavLink>
+                        <ul>
+                            {covaluesItems.map((item) => (
+                                <li key={item.name}>
+                                    <DocNavLink
+                                        className="pl-4"
+                                        href={item.href}
+                                    >
+                                        {item.name}
+                                    </DocNavLink>
+                                </li>
+                            ))}
+                        </ul>
+                    </li>
+                    <li>
+                        <DocNavLink href="/docs#refs-and-on-demand-subscribe">
+                            Refs & Auto-Subscribe
+                        </DocNavLink>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <DocNavHeader>Coming soon</DocNavHeader>
+                <ul>
+                    {comingSoon.map((item) => (
+                        <li className="py-1" key={item}>
+                            {item}
                         </li>
-                        <li>
-                            <DocNavLink href="/docs#reading-covalues">
-                                Reading
-                            </DocNavLink>
+                    ))}
+                </ul>
+            </div>
+
+            <div>
+                <DocNavHeader>API Reference</DocNavHeader>
+                <ul className="space-y-8">
+                    {packages.map((packageName) => (
+                        <li key={packageName}>
+                            <NavPackage package={packageName} />
                         </li>
-                        <li>
-                            <DocNavLink href="/docs#creating-covalues">
-                                Creation
-                            </DocNavLink>
-                        </li>
-                        <li>
-                            <DocNavLink href="/docs#editing-and-subscription">
-                                Editing & Subscription
-                            </DocNavLink>
-                        </li>
-                        <li>
-                            <DocNavLink href="/docs#persistence">
-                                Persistence
-                            </DocNavLink>
-                        </li>
-                        <li>
-                            <DocNavLink href="/docs#remote-sync">
-                                Remote Sync
-                            </DocNavLink>
-                        </li>
-                        <li>
-                            <DocNavLink href="/docs#simple-public-sharing">
-                                Simple Public Sharing
-                            </DocNavLink>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <DocNavLink href="/docs#refs-and-on-demand-subscribe">
-                        Refs & Auto-Subscribe
-                    </DocNavLink>
-                </li>
-            </ul>
-            Coming soon:
-            <ul>
-                {comingSoon.map((item) => (
-                    <li key={item}>{item}</li>
-                ))}
-            </ul>
-            {packages.map((packageName) => (
-                <NavPackage key={packageName} package={packageName} />
-            ))}
-        </>
+                    ))}
+                </ul>
+            </div>
+        </div>
     );
 }
 
@@ -93,38 +117,35 @@ export async function NavPackage({
 
     return (
         <>
-            <Link
-                href={`/docs/api-reference/${packageName}`}
-                className="text-sm mt-4 font-mono flex gap-1 items-center -mx-4 px-4 pt-4 border-t border-stone-200 dark:border-stone-900 "
-            >
-                {packageName}
+            <DocNavLink className="mb-1 flex gap-2 items-center" href={`/docs/api-reference/${packageName}`}>
                 <PackageIcon size={15} strokeWidth={1.5} />
-            </Link>
+                {packageName}
+            </DocNavLink>
             {project.categories?.map((category) => {
                 return (
                     <details
                         key={category.title}
                         open={category.title !== "Other"}
-                        className="[&:not([open])_summary]:after:content-['...']"
+                        className="group ml-1.5 border-l dark:border-stone-900"
                     >
-                        <summary className="block text-xs mt-2 mb-1 cursor-pointer">
+                        <summary className="pl-[13px] py-1 cursor-pointer flex gap-2 items-center justify-between hover:text-stone-800 dark:hover:text-stone-200 [&::-webkit-details-marker]:hidden">
                             {category.title}
+
+                            <ChevronRight className="w-4 h-4 text-stone-300 group-open:rotate-90 transition-transform dark:text-stone-800" />
                         </summary>
-                        <div className="flex gap-1 flex-wrap text-balance">
+                        <div className="pl-6">
                             {category.children.map(
                                 (child, i, children) =>
                                     (i == 0 ||
                                         child.name !==
                                             children[i - 1]!.name) && (
-                                        <>
-                                            <Link
-                                                key={child.id}
-                                                className="text-ellipsis overflow-hidden text-xs font-mono py-0.5 px-1.5 text-stone-800 dark:text-stone-200 bg-stone-200 dark:bg-stone-800 rounded opacity-70 hover:opacity-100"
-                                                href={`/docs/api-reference/${packageName}#${child.name}`}
-                                            >
-                                                {child.name}
-                                            </Link>
-                                        </>
+                                        <Link
+                                            key={child.id}
+                                            className="block py-0.5 text-ellipsis overflow-hidden font-mono hover:text-stone-800 dark:hover:text-stone-200"
+                                            href={`/docs/api-reference/${packageName}#${child.name}`}
+                                        >
+                                            {child.name}
+                                        </Link>
                                     ),
                             )}
                         </div>
@@ -138,20 +159,39 @@ export async function NavPackage({
 export function DocNavLink({
     href,
     children,
+    className = "",
 }: {
-    href?: string;
+    href: string;
     children: ReactNode;
+    className?: string;
 }) {
+    return (
+        <Link
+            href={href}
+            className={clsx(
+                className,
+                "py-1 hover:text-black dark:hover:text-stone-200 block hover:transition-colors",
+            )}
+        >
+            {children}
+        </Link>
+    );
+}
+
+function DocNavHeader({ href, children }: { href?: string; children: ReactNode }) {
+    const className = "block font-medium text-stone-900 py-1 dark:text-white";
+
     if (href) {
         return (
-            <Link
-                href={href}
-                className="hover:text-black dark:hover:text-white py-1 hover:transition-colors"
-            >
-                {children}
-            </Link>
+          <Link
+            className={className}
+            href={href}
+          >
+              {children}
+          </Link>
         );
     }
 
-    return <span className="py-1">{children}</span>;
+    return <p className={className}>{children}</p>;
+
 }
