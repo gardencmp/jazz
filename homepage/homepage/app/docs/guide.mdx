@@ -698,6 +698,8 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 We've seen briefly how we can use Groups to give everyone access to a Project,
 and how we can use `{ owner: me }` to make something private to the current user.
 
+<h3 id="groups-accounts-as-scopes">Groups / Accounts as Permission Scopes</h3>
+
 This gives us a hint of how permissions work in Jazz: **every CoValue has an owner,
 and the access rights on that CoValue are determined by its owner.**
 
@@ -707,7 +709,9 @@ and the access rights on that CoValue are determined by its owner.**
     - `"writer"`s can read and write to CoValues belonging to the Group.
     - `"admin"`s can read and write to CoValues belonging to the Group *and can add and remove other members from the Group itself.*
 
-Finally, there is an abstraction for creating *invitations to join a Group* (with a specific role) that you can use
+<h3 id="creating-invites">Creating Invites</h3>
+
+There is also an abstraction for creating *invitations to join a Group* (with a specific role) that you can use
 to add people without having to know their Account ID.
 
 Let's use these abstractions to build teams for a Project that we can invite people to.
@@ -803,7 +807,7 @@ export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// 
 }// old
 ```
 
-
+<h3 id="consuming-invites">Consuming Invites</h3>
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
 </div>

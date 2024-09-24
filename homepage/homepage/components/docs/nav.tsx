@@ -48,7 +48,22 @@ export function DocNav({ className }: { className?: string }) {
             name: "Precise Loading Depths",
             href: "/docs#loading-depth",
         },
-    ]
+    ];
+
+    const groupsItems = [
+        {
+            name: "Groups/Accounts as Scopes",
+            href: "/docs#groups-accounts-as-scopes",
+        },
+        {
+            name: "Creating Invites",
+            href: "/docs#creating-invites",
+        },
+        {
+            name: "Consuming Invites",
+            href: "/docs#consuming-invites",
+        },
+    ];
 
     return (
         <div className={clsx(className, "text-sm space-y-5 pr-3")}>
@@ -102,6 +117,18 @@ export function DocNav({ className }: { className?: string }) {
                         <DocNavLink href="/docs#groups-and-permissions">
                             Groups & Permissions
                         </DocNavLink>
+                        <ul>
+                            {groupsItems.map((item) => (
+                                <li key={item.name}>
+                                    <DocNavLink
+                                        className="pl-4"
+                                        href={item.href}
+                                    >
+                                        {item.name}
+                                    </DocNavLink>
+                                </li>
+                            ))}
+                        </ul>
                     </li>
                 </ul>
             </div>
