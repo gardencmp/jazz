@@ -54,57 +54,158 @@ import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import MeshIntro from "./meshIntro.mdx";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import clsx from "clsx";
+import Link from "next/link";
+
+const ArrowDoodle = ({ className }: { className?: string }) => (
+    <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        width="107"
+        height="85"
+        viewBox="0 0 107 85"
+        fill="none"
+    >
+        <path
+            d="M3.87338 33.7809C32.7867 45.4747 65.5543 47.9975 91.7667 37.4141"
+            stroke="#373432"
+            strokeWidth="6"
+            strokeLinecap="round"
+        />
+        <path
+            d="M74.1719 24.958C83.1201 33.0289 92.3253 37.1887 98.5899 34.6593"
+            stroke="#373432"
+            strokeWidth="6"
+            strokeLinecap="round"
+        />
+        <path
+            d="M87.2448 58.8003C88.3842 46.6564 92.3253 37.1887 98.5899 34.6593"
+            stroke="#373432"
+            strokeWidth="6"
+            strokeLinecap="round"
+        />
+    </svg>
+);
 
 export default function Home() {
     return (
-        <div className="space-y-16">
-            <HeroHeader
-                title="Instant sync."
-                slogan="A new way to build apps with distributed state."
-            />
+        <>
+            <div className="container py-16 md:py-24">
+                <h1 className="font-display text-stone-950 dark:text-white text-5xl lg:text-7xl mb-5 font-medium tracking-tighter">
+                    Instant sync.
+                </h1>
+                <p className="mb-8 text-3xl lg:text-4xl leading-snug tracking-tight dark:text-stone-500">
+                    A new way to build apps with distributed state.
+                </p>
 
-            <HairlineBleedGrid>
-                <LabelledFeatureIcon
-                    label="Cross-device sync"
-                    icon={MonitorSmartphoneIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Real-time multiplayer"
-                    icon={MousePointerSquareDashedIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Team/social features"
-                    icon={UsersIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Built-in permissions"
-                    icon={FileLock2Icon}
-                />
-                <LabelledFeatureIcon
-                    label="Cloud sync & storage"
-                    icon={UploadCloudIcon}
-                />
-                <LabelledFeatureIcon
-                    label="On-device storage"
-                    icon={HardDriveDownloadIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Instant UI updates"
-                    icon={GaugeIcon}
-                />
-                <LabelledFeatureIcon
-                    label="E2EE & signatures"
-                    icon={KeyRoundIcon}
-                />
+                <p className="mb-8 text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
+                    Jazz is an open-source framework that lets you{" "}
+                    <span className="font-semibold text-stone-900 dark:text-white">
+                        build apps around data that’s synced in real-time
+                        between devices and users
+                    </span>
+                    . It replaces 90% of what frontend + backend stacks do.
+                </p>
 
-                <div className="col-start-1 row-start-1 row-span-2 col-span-2 px-4 md:px-6 pb-4 text-base">
-                    <Prose>
-                        <Intro />
-                    </Prose>
+                <div className="flex gap-3">
+                    <Link
+                        href="/docs"
+                        className="md:text-lg text-white font-medium bg-blue py-2 px-3 md:px-8 md:py-3 rounded-md"
+                    >
+                        Read documentation
+                    </Link>
+                    <Link
+                        href="https://discord.gg/utDMjHYg42"
+                        className="md:text-lg text-stone-800 font-medium bg-stone-100 py-2 px-3 md:px-8 md:py-3 rounded-md dark:bg-stone-900 dark:text-white"
+                    >
+                        Join Discord
+                    </Link>
                 </div>
-            </HairlineBleedGrid>
+            </div>
 
-            <div>
+            <div className="py-16 bg-stone-100 dark:bg-stone-925 lg:py-32">
+                <div className="container grid gap-8 lg:gap-12">
+                    <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                        Your stack just lost its job.
+                    </h2>
+                    <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
+                        <div className="md:col-span-5 flex flex-col justify-between">
+                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                                <p>
+                                    Ever notice how every stack just{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        reinvents shared state between users and
+                                        machines
+                                    </span>
+                                    ?
+                                </p>
+                                <p>
+                                    And far from the simple client-server model,
+                                    you routinely tackle{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        a mess of moving parts
+                                    </span>
+                                    , tech choices and deployment questions.
+                                </p>
+                                <p>
+                                    And{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        your app’s code is all over the place.
+                                    </span>
+                                </p>
+                            </div>
+                            <img
+                                className="w-full mt-8 lg:mt-12"
+                                src="/before-jazz.png"
+                            />
+                        </div>
+
+                        <div className="hidden md:block relative pr-3 top-24">
+                            <ArrowDoodle className="w-full h-auto" />
+                        </div>
+
+                        <div className="md:col-span-5 flex flex-col justify-between">
+                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                                <p>
+                                    Jazz provides a single new abstraction to do
+                                    the whole job.
+                                </p>
+                                <p>
+                                    It turns the data flow around and gives you{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        mutable local state
+                                    </span>
+                                    , solving{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        sync
+                                    </span>
+                                    ,{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        concurrent editing
+                                    </span>{" "}
+                                    and{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        permissions
+                                    </span>{" "}
+                                    under the hood.
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        All that’s left?
+                                    </span>{" "}
+                                    What makes your app your app.
+                                </p>
+                            </div>
+                            <img
+                                className="w-full mt-8 lg:mt-12"
+                                src="/after-jazz.png"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="container py-3 mt-8 lg:py-6 lg:mt-20">
                 <SectionHeader
                     title="First impressions..."
                     slogan="A chat app in 174 lines of code."
@@ -149,7 +250,50 @@ export default function Home() {
                 </div>
             </div>
 
-            <div>
+            <div className="container py-3 lg:py-6">
+                <HairlineBleedGrid>
+                    <LabelledFeatureIcon
+                        label="Cross-device sync"
+                        icon={MonitorSmartphoneIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Real-time multiplayer"
+                        icon={MousePointerSquareDashedIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Team/social features"
+                        icon={UsersIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Built-in permissions"
+                        icon={FileLock2Icon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Cloud sync & storage"
+                        icon={UploadCloudIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="On-device storage"
+                        icon={HardDriveDownloadIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="Instant UI updates"
+                        icon={GaugeIcon}
+                    />
+                    <LabelledFeatureIcon
+                        label="E2EE & signatures"
+                        icon={KeyRoundIcon}
+                    />
+
+                    <div className="col-start-1 row-start-1 row-span-2 col-span-2 px-4 md:px-6 pb-4 text-base">
+                        <Prose>
+                            <Intro />
+                        </Prose>
+                    </div>
+                </HairlineBleedGrid>
+            </div>
+
+            <div className="container py-3 lg:py-6">
                 <SectionHeader
                     title="Collaborative Values"
                     slogan="Your new building blocks."
@@ -162,7 +306,7 @@ export default function Home() {
 
             <GappedGrid
                 title="Bread-and-butter datastructures"
-                className="grid-cols-2 lg:grid-cols-4"
+                className="container grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
                     <H3>
@@ -204,7 +348,7 @@ export default function Home() {
 
             <GappedGrid
                 title="First-class files & binary data"
-                className="grid-cols-2 lg:grid-cols-4"
+                className="container grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
                     <H3>
@@ -227,7 +371,7 @@ export default function Home() {
 
             <GappedGrid
                 title="Secure permissions, authorship & teams"
-                className="grid-cols-2 lg:grid-cols-4"
+                className="container grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
                     <H3>
@@ -247,7 +391,7 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <div>
+            <div className="container py-3 lg:py-6">
                 <SectionHeader
                     title="The Jazz Toolkit"
                     slogan="A high-level toolkit for building apps around CoValues."
@@ -259,7 +403,7 @@ export default function Home() {
                 </SmallProse>
             </div>
 
-            <GappedGrid>
+            <GappedGrid className="container py-3 lg:py-6">
                 <GridCard>
                     <SectionHeader
                         title="Auto-sub"
@@ -326,7 +470,7 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <div>
+            <div className="container py-3 lg:py-6">
                 <SectionHeader
                     title="Jazz Mesh"
                     slogan="Serverless sync & storage for Jazz apps"
@@ -344,7 +488,7 @@ export default function Home() {
                 </P>
             </div>
 
-            <div>
+            <div className="container py-3 lg:py-6">
                 <H3>Get Started</H3>
                 <UL>
                     <LI>
@@ -362,6 +506,6 @@ export default function Home() {
                     </LI>
                 </UL>
             </div>
-        </div>
+        </>
     );
 }

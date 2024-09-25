@@ -107,12 +107,12 @@ const config = {
                 },
                 screens: {
                     md: "960px",
-                    lg: "1280px",
+                    lg: "1180px",
                 },
             },
             screens: {
                 md: "960px",
-                lg: "1280px",
+                lg: "1180px",
             },
         },
     },

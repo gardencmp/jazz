@@ -1,5 +1,5 @@
 import { requestProject } from "./requestProject";
-import { ChevronRight, PackageIcon} from "lucide-react";
+import { ChevronRight, PackageIcon } from "lucide-react";
 import { packages } from "@/lib/packages";
 import Link from "next/link";
 import { ReactNode } from "react";
@@ -68,11 +68,7 @@ export function DocNav({ className }: { className?: string }) {
     return (
         <div className={clsx(className, "text-sm space-y-5 pr-3")}>
             <div>
-                <DocNavHeader
-                    href="/docs"
-                >
-                    Guide
-                </DocNavHeader>
+                <DocNavHeader href="/docs">Guide</DocNavHeader>
                 <ul>
                     <li>
                         <DocNavLink href="/docs#guide-setup">
@@ -167,7 +163,10 @@ export async function NavPackage({
 
     return (
         <>
-            <DocNavLink className="mb-1 flex gap-2 items-center" href={`/docs/api-reference/${packageName}`}>
+            <DocNavLink
+                className="mb-1 flex gap-2 items-center"
+                href={`/docs/api-reference/${packageName}`}
+            >
                 <PackageIcon size={15} strokeWidth={1.5} />
                 {packageName}
             </DocNavLink>
@@ -228,20 +227,22 @@ export function DocNavLink({
     );
 }
 
-function DocNavHeader({ href, children }: { href?: string; children: ReactNode }) {
+function DocNavHeader({
+    href,
+    children,
+}: {
+    href?: string;
+    children: ReactNode;
+}) {
     const className = "block font-medium text-stone-900 py-1 dark:text-white";
 
     if (href) {
         return (
-          <Link
-            className={className}
-            href={href}
-          >
-              {children}
-          </Link>
+            <Link className={className} href={href}>
+                {children}
+            </Link>
         );
     }
 
     return <p className={className}>{children}</p>;
-
 }

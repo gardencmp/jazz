@@ -58,7 +58,7 @@ export default function RootLayout({
                     commitMono.variable,
                     inter.className,
                     "flex flex-col items-center [&_*]:scroll-mt-[5rem]",
-                    "bg-stone-50 text-stone-700 dark:text-stone-400 dark:bg-stone-950",
+                    "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
                 <SpeedInsights />
@@ -70,9 +70,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <JazzNav />
-                    <main className="flex flex-col container w-full">
-                        {children}
-                    </main>
+                    <main className="flex flex-col w-full">{children}</main>
                     <JazzFooter />
                 </ThemeProvider>
             </body>
