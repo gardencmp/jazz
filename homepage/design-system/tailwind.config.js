@@ -1,6 +1,7 @@
 import harmonyPalette from "@evilmartians/harmony/tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindCSSAnimate from "tailwindcss-animate";
+const colors = require("tailwindcss/colors")
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -28,8 +29,12 @@ const config = {
                 "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
             },
             blue: {
-                ...harmonyPalette.blue,
+                ...colors.indigo,
+                "500": "#5870F1",
+                "600": "#3651E7",
                 "700": "#3313F7",
+                "800": "#2A12BE",
+                "900": "#12046A",
                 DEFAULT: "#3313F7",
             },
         },
