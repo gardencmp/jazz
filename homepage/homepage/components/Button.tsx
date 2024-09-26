@@ -19,18 +19,19 @@ export function Button(props: ButtonProps) {
     } = props;
 
     const sizeClasses = {
-        md: "py-1.5 px-3 rounded",
-        lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3 rounded-md",
+        md: "py-1.5 px-3",
+        lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3",
     };
 
     const variantClasses = {
-        primary: "bg-blue text-white font-medium bg-blue",
+        primary: "bg-blue text-white font-medium bg-blue hover:bg-blue-800",
         secondary:
-            "text-stone-800 font-medium bg-stone-100 dark:bg-stone-900 dark:text-white",
+            "text-stone-900 font-medium bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 dark:text-white",
     };
 
     const classNames = clsx(
         className,
+        "rounded-md transition-colors",
         sizeClasses[size],
         variantClasses[variant],
     );
