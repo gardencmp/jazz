@@ -82,25 +82,22 @@ export const DemoAuthBasicUI = ({
     return (
         <div
             style={{
-                width: "100vw",
-                height: "100vh",
+                minHeight: "100%",
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 justifyContent: "center",
+                width: "18rem",
+                padding: "1rem 0",
+                maxWidth: "calc(100vw - 2rem)",
+                gap: "2rem",
+                margin: "0 auto",
                 ...(darkMode ? { background: "#000" } : {}),
             }}
         >
             {state.state === "loading" ? (
                 <div>Loading...</div>
             ) : state.state === "ready" ? (
-                <div
-                    style={{
-                        width: "18rem",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2rem",
-                    }}
-                >
+                <>
                     <h1
                         style={{
                             color: darkMode ? "#fff" : "#000",
@@ -116,7 +113,6 @@ export const DemoAuthBasicUI = ({
                     ))}
                     <form
                         style={{
-                            width: "18rem",
                             display: "flex",
                             flexDirection: "column",
                             gap: "0.5rem",
@@ -154,31 +150,47 @@ export const DemoAuthBasicUI = ({
                             }}
                         />
                     </form>
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.5rem",
-                        }}
-                    >
-                        {state.existingUsers.map((user) => (
-                            <button
-                                key={user}
-                                onClick={() => state.logInAs(user)}
+                    {state.existingUsers.length > 0 && (
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "0.5rem",
+                            }}
+                        >
+                            <p
                                 style={{
-                                    background: darkMode ? "#222" : "#eee",
-                                    color: darkMode ? "#fff" : "#000",
-                                    padding: "13px 5px",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
+                                    color: darkMode ? "#e2e2e2" : "#000",
+                                    textAlign: "center",
+                                    paddingTop: "0.5rem",
+                                    borderTop: "1px solid",
+                                    borderColor: darkMode ? "#111" : "#e2e2e2",
                                 }}
                             >
-                                Log in as "{user}"
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                                Log in as
+                            </p>
+                            {state.existingUsers.map((user) => (
+                                <button
+                                    key={user}
+                                    onClick={() => state.logInAs(user)}
+                                    type="button"
+                                    aria-label={`Log in as ${user}`}
+                                    style={{
+                                        background: darkMode
+                                            ? "#0d0d0d"
+                                            : "#eee",
+                                        color: darkMode ? "#fff" : "#000",
+                                        padding: "0.5rem",
+                                        border: "none",
+                                        borderRadius: "6px",
+                                    }}
+                                >
+                                    {user}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </>
             ) : null}
         </div>
     );

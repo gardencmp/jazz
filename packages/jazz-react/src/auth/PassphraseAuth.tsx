@@ -3,8 +3,8 @@ import { BrowserPassphraseAuth } from "jazz-browser";
 import { generateMnemonic } from "@scure/bip39";
 import { cojsonInternals } from "cojson";
 
-export type PassphraseAuthState =
-    (| { state: "uninitialized" }
+export type PassphraseAuthState = (
+    | { state: "uninitialized" }
     | { state: "loading" }
     | {
           state: "ready";
@@ -12,7 +12,8 @@ export type PassphraseAuthState =
           signUp: (username: string, passphrase: string) => void;
           generateRandomPassphrase: () => string;
       }
-    | { state: "signedIn"; logOut: () => void }) & {
+    | { state: "signedIn"; logOut: () => void }
+) & {
     errors: string[];
 };
 
@@ -32,10 +33,7 @@ export function usePassphraseAuth({
     });
 
     const generateRandomPassphrase = () => {
-        return generateMnemonic(
-            wordlist,
-            cojsonInternals.secretSeedLength * 8,
-        );
+        return generateMnemonic(wordlist, cojsonInternals.secretSeedLength * 8);
     };
 
     const authMethod = useMemo(() => {
@@ -61,7 +59,10 @@ export function usePassphraseAuth({
                     });
                 },
                 onError(error) {
-                    setState((state) => ({ ...state, errors: [...state.errors, error.toString()] }));
+                    setState((state) => ({
+                        ...state,
+                        errors: [...state.errors, error.toString()],
+                    }));
                 },
             },
             wordlist,
