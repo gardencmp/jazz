@@ -56,6 +56,8 @@ import MeshIntro from "./meshIntro.mdx";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import clsx from "clsx";
 import Link from "next/link";
+import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
+import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -154,10 +156,11 @@ export default function Home() {
                                     </span>
                                 </p>
                             </div>
-                            <img
-                                className="w-full mt-8 lg:mt-12"
-                                src="/before-jazz.png"
-                            />
+                            <div className="w-full mt-8 lg:mt-12">
+                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                    <DiagramBeforeJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramBeforeJazz>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="hidden md:block relative pr-3 top-24">
@@ -196,10 +199,11 @@ export default function Home() {
                                     What makes your app your app.
                                 </p>
                             </div>
-                            <img
-                                className="w-full mt-8 lg:mt-12"
-                                src="/after-jazz.png"
-                            />
+                            <div className="w-full mt-8 lg:mt-12">
+                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                    <DiagramAfterJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramAfterJazz>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
