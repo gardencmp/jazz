@@ -71,19 +71,19 @@ const ArrowDoodle = ({ className }: { className?: string }) => (
     >
         <path
             d="M3.87338 33.7809C32.7867 45.4747 65.5543 47.9975 91.7667 37.4141"
-            stroke="#373432"
+            stroke="currentColor"
             strokeWidth="6"
             strokeLinecap="round"
         />
         <path
             d="M74.1719 24.958C83.1201 33.0289 92.3253 37.1887 98.5899 34.6593"
-            stroke="#373432"
+            stroke="currentColor"
             strokeWidth="6"
             strokeLinecap="round"
         />
         <path
             d="M87.2448 58.8003C88.3842 46.6564 92.3253 37.1887 98.5899 34.6593"
-            stroke="#373432"
+            stroke="currentColor"
             strokeWidth="6"
             strokeLinecap="round"
         />
@@ -163,7 +163,7 @@ export default function Home() {
                         </div>
 
                         <div className="hidden md:block relative pr-3 top-24">
-                            <ArrowDoodle className="w-full h-auto" />
+                            <ArrowDoodle className="w-full h-auto text-stone-300 dark:text-stone-800" />
                         </div>
 
                         <div className="md:col-span-5 flex flex-col justify-between">
