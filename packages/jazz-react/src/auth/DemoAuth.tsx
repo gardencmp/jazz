@@ -143,7 +143,7 @@ export const DemoAuthBasicUI = ({
                         />
                         <input
                             type="submit"
-                            value="Sign up as new account"
+                            value="Sign up"
                             style={{
                                 padding: "13px 5px",
                                 border: "none",

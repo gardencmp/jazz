@@ -9,7 +9,7 @@ export class LoginPage {
         this.page = page;
         this.usernameInput = page.getByRole("textbox");
         this.signupButton = page.getByRole("button", {
-            name: "Sign up as new account",
+            name: "Sign up",
         });
     }
 

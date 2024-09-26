@@ -163,7 +163,7 @@ export const PassphraseAuthBasicUI = (state: PassphraseAuthState) => {
                     />
                     <input
                         type="submit"
-                        value="Sign up as new account"
+                        value="Sign up"
                         style={{
                             background: "#000",
                             color: "#fff",
