@@ -492,22 +492,22 @@ export default function Home() {
             </div>
 
             <div className="container py-3 lg:py-6">
-                <H3>Get Started</H3>
-                <UL>
-                    <LI>
-                        <TextLink href="/docs" target="_blank">
-                            Read the docs
-                        </TextLink>
-                    </LI>
-                    <LI>
-                        <TextLink
+                <div className="flex flex-col justify-between gap-3">
+                    <h3 className="font-display text-stone-950 dark:text-white text-xl font-semibold tracking-tight lg:text-2xl">
+                        Get started
+                    </h3>
+                    <div className="flex gap-3">
+                        <Button href="/docs" variant="primary">
+                            Read documentation
+                        </Button>
+                        <Button
                             href="https://discord.gg/utDMjHYg42"
-                            target="_blank"
+                            variant="secondary"
                         >
-                            Join our Discord
-                        </TextLink>
-                    </LI>
-                </UL>
+                            Join Discord
+                        </Button>
+                    </div>
+                </div>
             </div>
         </>
     );

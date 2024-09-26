@@ -19,7 +19,7 @@ export function Button(props: ButtonProps) {
     } = props;
 
     const sizeClasses = {
-        md: "py-1.5 px-2 rounded",
+        md: "py-1.5 px-3 rounded",
         lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3 rounded-md",
     };
 
