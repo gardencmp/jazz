@@ -58,6 +58,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
+import { Button } from "@/components/Button";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -110,18 +111,16 @@ export default function Home() {
                 </p>
 
                 <div className="flex gap-3">
-                    <Link
-                        href="/docs"
-                        className="md:text-lg text-white font-medium bg-blue py-2 px-3 md:px-8 md:py-3 rounded-md"
-                    >
+                    <Button href="/docs" variant="primary" size="lg">
                         Read documentation
-                    </Link>
-                    <Link
+                    </Button>
+                    <Button
                         href="https://discord.gg/utDMjHYg42"
-                        className="md:text-lg text-stone-800 font-medium bg-stone-100 py-2 px-3 md:px-8 md:py-3 rounded-md dark:bg-stone-900 dark:text-white"
+                        variant="secondary"
+                        size="lg"
                     >
                         Join Discord
-                    </Link>
+                    </Button>
                 </div>
             </div>
 
