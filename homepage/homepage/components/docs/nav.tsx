@@ -141,6 +141,17 @@ export function DocNav({ className }: { className?: string }) {
             </div>
 
             <div>
+                <DocNavHeader>Resources</DocNavHeader>
+                <ul>
+                    <li>
+                        <DocNavLink href="/docs/resources/examples">
+                            Examples
+                        </DocNavLink>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
                 <DocNavHeader href="/docs/api-reference">
                     API Reference
                 </DocNavHeader>
