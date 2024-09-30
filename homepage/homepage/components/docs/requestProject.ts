@@ -1,4 +1,3 @@
-import { readFile } from "fs/promises";
 import { ProjectReflection, Deserializer, JSONOutput } from "typedoc";
 
 import JazzToolsDocs from "../../typedoc/jazz-tools.json";
