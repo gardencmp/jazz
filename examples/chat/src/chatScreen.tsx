@@ -5,7 +5,7 @@ import {
   BubbleBody,
   BubbleContainer,
   BubbleInfo,
-  ChatContainer,
+  ChatBody,
   ChatInput,
   EmptyChatMessage,
 } from "./ui.tsx";
@@ -14,18 +14,20 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
   const chat = useCoState(Chat, props.chatID, [{}]);
 
   return chat ? (
-    <ChatContainer>
-      {chat.length > 0 ? (
-        chat.map(msg => <ChatBubble msg={msg} key={msg.id} />)
-      ) : (
-        <EmptyChatMessage />
-      )}
+    <>
+      <ChatBody>
+        {chat.length > 0 ? (
+          chat.map(msg => <ChatBubble msg={msg} key={msg.id} />)
+        ) : (
+          <EmptyChatMessage />
+        )}
+      </ChatBody>
       <ChatInput
         onSubmit={text => {
           chat.push(Message.create({ text }, { owner: chat._owner }));
         }}
       />
-    </ChatContainer>
+    </>
   ) : (
     <div>Loading...</div>
   );

@@ -27,7 +27,13 @@ import {
     MousePointerSquareDashedIcon,
 } from "lucide-react";
 
-import { Main_tsx, Schema_ts, App_tsx, ChatScreen_tsx, Ui_tsx } from "@/codeSamples/examples/chat/src";
+import {
+    Main_tsx,
+    Schema_ts,
+    App_tsx,
+    ChatScreen_tsx,
+    Ui_tsx,
+} from "@/codeSamples/examples/chat/src";
 
 import Intro from "./intro.mdx";
 import CoValuesIntro from "./coValuesIntro.mdx";
@@ -51,7 +57,7 @@ import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 
 export default function Home() {
     return (
-        <>
+        <div className="space-y-16">
             <HeroHeader
                 title="Instant sync."
                 slogan="A new way to build apps with distributed state."
@@ -98,13 +104,13 @@ export default function Home() {
                 </div>
             </HairlineBleedGrid>
 
-            <div className="-mx-[calc(min(0,(100vw-95rem)/2))]">
+            <div>
                 <SectionHeader
                     title="First impressions..."
                     slogan="A chat app in 174 lines of code."
                 />
 
-                <GappedGrid className="mt-0 -mx-4 md:-mx-6">
+                <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:border-stone-900 dark:divide-stone-900">
                     <CodeExampleTabs
                         tabs={[
                             {
@@ -128,23 +134,31 @@ export default function Home() {
                                 content: <Ui_tsx />,
                             },
                         ]}
-                        className="col-span-full md:col-span-4"
                     />
-                    <ResponsiveIframe
-                        src="https://chat.jazz.tools"
-                        localSrc="http://localhost:5173"
-                        className="col-span-full lg:col-span-2 rounded-xl overflow-hidden min-h-[50vh]"
-                    />
-                </GappedGrid>
+                    <div className="border-b order-first md:order-last flex flex-col md:border-b-0">
+                        <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:border-stone-900 dark:bg-stone-900">
+                            <p className="flex items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
+                                result
+                            </p>
+                        </div>
+                        <ResponsiveIframe
+                            src="https://chat.jazz.tools"
+                            localSrc="http://localhost:5173"
+                        />
+                    </div>
+                </div>
             </div>
 
-            <SectionHeader
-                title="Collaborative Values"
-                slogan="Your new building blocks."
-            />
-            <Prose>
-                <CoValuesIntro />
-            </Prose>
+            <div>
+                <SectionHeader
+                    title="Collaborative Values"
+                    slogan="Your new building blocks."
+                />
+
+                <Prose>
+                    <CoValuesIntro />
+                </Prose>
+            </div>
 
             <GappedGrid
                 title="Bread-and-butter datastructures"
@@ -233,15 +247,17 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <SectionHeader
-                title="The Jazz Toolkit"
-                slogan="A high-level toolkit for building apps around CoValues."
-            />
+            <div>
+                <SectionHeader
+                    title="The Jazz Toolkit"
+                    slogan="A high-level toolkit for building apps around CoValues."
+                />
 
-            <Prose>Supported environments:</Prose>
-            <SmallProse>
-                <SupportedEnvironments />
-            </SmallProse>
+                <Prose>Supported environments:</Prose>
+                <SmallProse>
+                    <SupportedEnvironments />
+                </SmallProse>
+            </div>
 
             <GappedGrid>
                 <GridCard>
@@ -310,38 +326,42 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <SectionHeader
-                title="Jazz Mesh"
-                slogan="Serverless sync & storage for Jazz apps"
-            />
+            <div>
+                <SectionHeader
+                    title="Jazz Mesh"
+                    slogan="Serverless sync & storage for Jazz apps"
+                />
 
-            <Prose>
-                <MeshIntro />
-            </Prose>
+                <Prose>
+                    <MeshIntro />
+                </Prose>
 
-            <P>
-                {"->"}{" "}
-                <TextLink href="/mesh" target="_blank">
-                    Learn more about Jazz Mesh
-                </TextLink>
-            </P>
-
-            <H3>Get Started</H3>
-            <UL>
-                <LI>
-                    <TextLink href="/docs" target="_blank">
-                        Read the docs
+                <P>
+                    {"->"}{" "}
+                    <TextLink href="/mesh" target="_blank">
+                        Learn more about Jazz Mesh
                     </TextLink>
-                </LI>
-                <LI>
-                    <TextLink
-                        href="https://discord.gg/utDMjHYg42"
-                        target="_blank"
-                    >
-                        Join our Discord
-                    </TextLink>
-                </LI>
-            </UL>
-        </>
+                </P>
+            </div>
+
+            <div>
+                <H3>Get Started</H3>
+                <UL>
+                    <LI>
+                        <TextLink href="/docs" target="_blank">
+                            Read the docs
+                        </TextLink>
+                    </LI>
+                    <LI>
+                        <TextLink
+                            href="https://discord.gg/utDMjHYg42"
+                            target="_blank"
+                        >
+                            Join our Discord
+                        </TextLink>
+                    </LI>
+                </UL>
+            </div>
+        </div>
     );
 }

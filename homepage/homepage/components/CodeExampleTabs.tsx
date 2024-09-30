@@ -22,12 +22,12 @@ export function CodeExampleTabs({
     return (
         <div
             className={clsx(
-                "shadow-sm bg-white border rounded-sm overflow-hidden h-[40rem] max-h-[80vh] flex flex-col",
-                "dark:bg-stone-925 dark:border-stone-800",
+                "bg-white h-[40rem] max-h-[80vh] flex flex-col",
+                "dark:bg-stone-925",
                 className,
             )}
         >
-            <div className="flex border-b dark:border-stone-800 dark:bg-stone-900">
+            <div className="flex border-b overflow-x-auto overflow-y-hidden dark:border-stone-900 dark:bg-stone-900">
                 {tabs.map((tab, index) => (
                     <div key={index}>
                         <button
@@ -45,7 +45,9 @@ export function CodeExampleTabs({
                     </div>
                 ))}
             </div>
-            <div className="flex-1 overflow-y-auto">{tabs[activeTab].content}</div>
+            <div className="flex-1 overflow-y-auto">
+                {tabs[activeTab].content}
+            </div>
         </div>
     );
 }

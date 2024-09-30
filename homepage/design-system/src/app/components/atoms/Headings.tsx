@@ -1,10 +1,17 @@
 import clsx from "clsx";
 
-export function H1({ children }: { children: React.ReactNode }) {
+interface HeadingProps {
+    children: React.ReactNode;
+    className?: string;
+}
+
+export function H1({ children, className }: HeadingProps) {
     return (
         <h1
             className={clsx(
+                className,
                 "font-display",
+                "text-stone-950 dark:text-white",
                 "text-5xl lg:text-6xl",
                 "mb-3",
                 "font-medium",
@@ -16,11 +23,13 @@ export function H1({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function H2({ children }: { children: React.ReactNode }) {
+export function H2({ children, className }: HeadingProps) {
     return (
         <h2
             className={clsx(
+                className,
                 "font-display",
+                "text-stone-950 dark:text-white",
                 "text-2xl",
                 "mb-2",
                 "font-semibold",
@@ -32,11 +41,13 @@ export function H2({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function H3({ children }: { children: React.ReactNode }) {
+export function H3({ children, className }: HeadingProps) {
     return (
         <h3
             className={clsx(
+                className,
                 "font-display",
+                "text-stone-950 dark:text-white",
                 "text-xl",
                 "mb-2",
                 "font-semibold",
@@ -48,6 +59,6 @@ export function H3({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function H4({ children }: { children: React.ReactNode }) {
-    return <h4 className="text-bold">{children}</h4>;
+export function H4({ children, className }: HeadingProps) {
+    return <h4 className={clsx(className, "text-bold")}>{children}</h4>;
 }

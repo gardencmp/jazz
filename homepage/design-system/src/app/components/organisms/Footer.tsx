@@ -34,7 +34,7 @@ export function Footer({ logo, companyName, sections }: FooterProps) {
                 </div>
                 {sections.map((section, index) => (
                     <div key={index} className="flex flex-col gap-2 text-sm">
-                        <h1 className="font-medium">{section.title}</h1>
+                        <h2 className="font-medium">{section.title}</h2>
                         {section.links.map((link, linkIndex) => (
                             <FooterLink
                                 key={linkIndex}

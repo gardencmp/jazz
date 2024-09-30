@@ -1,6 +1,7 @@
 import harmonyPalette from "@evilmartians/harmony/tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindCSSAnimate from "tailwindcss-animate";
+const colors = require("tailwindcss/colors")
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -28,8 +29,12 @@ const config = {
                 "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
             },
             blue: {
-                ...harmonyPalette.blue,
+                ...colors.indigo,
+                "500": "#5870F1",
+                "600": "#3651E7",
                 "700": "#3313F7",
+                "800": "#2A12BE",
+                "900": "#12046A",
                 DEFAULT: "#3313F7",
             },
         },
@@ -93,22 +98,22 @@ const config = {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
             },
-        },
-        container: {
-            center: true,
-            padding: {
-                DEFAULT: "0.75rem",
-                sm: "1rem",
-                lg: "2rem",
+            container: {
+                center: true,
+                padding: {
+                    DEFAULT: "0.75rem",
+                    sm: "1rem",
+                    lg: "2rem",
+                },
+                screens: {
+                    md: "960px",
+                    lg: "1280px",
+                },
             },
             screens: {
                 md: "960px",
                 lg: "1280px",
             },
-        },
-        screens: {
-            md: "960px",
-            lg: "1280px",
         },
     },
     plugins: [tailwindCSSAnimate, typography()],

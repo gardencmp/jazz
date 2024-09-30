@@ -100,7 +100,7 @@ export default function App() {
                 }
                 variant="outline"
             >
-                Log Out
+                Log out
             </Button>
         </>
     );
