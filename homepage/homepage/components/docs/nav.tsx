@@ -145,7 +145,7 @@ export function DocNav({ className }: { className?: string }) {
                 <ul>
                     <li>
                         <DocNavLink href="/docs/resources/examples">
-                            Examples
+                            Example Apps
                         </DocNavLink>
                     </li>
                 </ul>
