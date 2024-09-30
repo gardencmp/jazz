@@ -1,12 +1,8 @@
-import 'fake-indexeddb/auto'; // Polyfill for IndexedDB
+import "fake-indexeddb/auto"; // Polyfill for IndexedDB
 
 import { expect, test } from "vitest";
-import {
-    ControlledAgent,
-    LocalNode,
-    WasmCrypto,
-} from "cojson";
-import { IDBStorage } from "./index.js";
+import { ControlledAgent, LocalNode, WasmCrypto } from "cojson";
+import { IDBStorage } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
