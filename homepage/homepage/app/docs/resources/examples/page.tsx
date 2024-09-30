@@ -23,7 +23,7 @@ export default function Page() {
     ];
     return (
         <>
-            <h1>Examples</h1>
+            <h1>Example Apps</h1>
             <ul>
                 {examples.map(({ name, slug }) => (
                     <li key={name}>
