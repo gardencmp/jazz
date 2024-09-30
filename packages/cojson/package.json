@@ -29,8 +29,8 @@
     },
     "scripts": {
         "dev": "tsc --watch --sourceMap --outDir dist",
-        "test": "vitest --run",
-        "test-watch": "vitest",
+        "test": "vitest --run --root ../../ --project cojson",
+        "test:watch": "vitest --watch --root ../../ --project cojson",
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",

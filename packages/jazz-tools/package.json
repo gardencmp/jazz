@@ -11,8 +11,8 @@
         "fast-check": "^3.17.2"
     },
     "scripts": {
-        "test": "vitest --run",
-        "test-watch": "vitest",
+        "test": "vitest --run --root ../../ --project jazz-tools",
+        "test:watch": "vitest --watch --root ../../ --project jazz-tools",
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
