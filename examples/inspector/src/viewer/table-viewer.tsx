@@ -1,5 +1,5 @@
 import { CoID, LocalNode, RawCoValue } from "cojson";
-import { JsonObject } from "cojson/src/jsonValue";
+import { JsonObject } from "cojson/src/jsonValue.ts";
 import { PageInfo } from "./types";
 import { useMemo, useState } from "react";
 import { ValueRenderer } from "./value-renderer";

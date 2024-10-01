@@ -1,3 +1,5 @@
+import { PureJSCrypto } from "./crypto/PureJSCrypto.js";
+
 import {
     CoValueCore,
     type CoValueUniqueness,
@@ -16,8 +18,6 @@ import {
     StreamingHash,
     CryptoProvider,
 } from "./crypto/crypto.js";
-import { WasmCrypto } from "./crypto/WasmCrypto.js";
-import { PureJSCrypto } from "./crypto/PureJSCrypto.js";
 import { connectedPeers, Channel } from "./streamUtils.js";
 import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import type { Role } from "./permissions.js";
@@ -115,11 +115,10 @@ export {
     AgentSecret,
     InviteSecret,
     CryptoProvider,
-    WasmCrypto,
-    PureJSCrypto,
     SyncMessage,
     isRawCoID,
     LSMStorage,
+    PureJSCrypto,
 };
 
 export type {
@@ -131,7 +130,7 @@ export type {
     OutgoingSyncQueue,
     DisconnectedError,
     PingTimeoutError,
-    CoValueUniqueness
+    CoValueUniqueness,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

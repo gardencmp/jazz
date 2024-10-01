@@ -1,16 +1,21 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+    ],
     "module": "esnext",
-    "target": "ES2020",
+    "target": "ESNext",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
     "strict": true,
     "skipLibCheck": true,
-    "jsx": "react",
+    "jsx": "react-native",
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
+    "declaration": true,
   },
-  "include": ["./src/**/*"],
+  "include": [
+    "./src/**/*"
+  ],
 }

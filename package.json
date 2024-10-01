@@ -29,7 +29,8 @@
         "changeset-version": "changeset version",
         "monorepo-linting": "npx sherif@1.0.0",
         "monorepo-linting:fix": "npx sherif@1.0.0 --fix",
-        "release": "pnpm changeset publish && git push --follow-tags"
+        "release": "pnpm changeset publish && git push --follow-tags",
+        "clean": "rm -rf ./packages/*/dist && rm -rf ./packages/*/node_modules && rm -rf ./examples/*/node_modules && rm -rf ./examples/*/dist"
     },
     "lint-staged": {},
     "version": "0.0.0",

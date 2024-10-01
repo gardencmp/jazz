@@ -169,3 +169,4 @@ dist
 .pnp.\*
 
 .DS_Store
+.expo

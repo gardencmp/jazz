@@ -102,7 +102,9 @@ export type JazzContextWithAgent = {
     logOut: () => void;
 };
 
-export type JazzContext<Acc extends Account> = JazzContextWithAccount<Acc> | JazzContextWithAgent;
+export type JazzContext<Acc extends Account> =
+    | JazzContextWithAccount<Acc>
+    | JazzContextWithAgent;
 
 export async function createJazzContext<Acc extends Account>({
     AccountSchema,
@@ -117,14 +119,10 @@ export async function createJazzContext({
 }: BaseContextParams): Promise<JazzContextWithAgent>;
 export async function createJazzContext<Acc extends Account>(
     options: ContextParamsWithAuth<Acc> | BaseContextParams,
-): Promise<
-JazzContext<Acc>
->
+): Promise<JazzContext<Acc>>;
 export async function createJazzContext<Acc extends Account>(
     options: ContextParamsWithAuth<Acc> | BaseContextParams,
-): Promise<
-JazzContext<Acc>
-> {
+): Promise<JazzContext<Acc>> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
         if (!("auth" in options)) {
@@ -137,8 +135,13 @@ JazzContext<Acc>
         const { auth, sessionProvider, peersToLoadFrom, crypto } = options;
         const AccountSchema =
             options.AccountSchema ?? (Account as unknown as AccountClass<Acc>);
-
-        const authResult = await auth.start(crypto);
+        let authResult: AuthResult;
+        try {
+            authResult = await auth.start(crypto);
+        } catch (e) {
+            console.error("error", e);
+            throw e;
+        }
 
         if (authResult.type === "existing") {
             try {
@@ -215,7 +218,6 @@ JazzContext<Acc>
                 });
 
                 authResult.onSuccess();
-
                 return {
                     account,
                     done: () => {

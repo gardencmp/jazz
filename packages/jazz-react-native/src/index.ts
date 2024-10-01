@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
     CoValue,
     ID,
@@ -7,19 +9,21 @@ import {
     InviteSecret,
     Account,
     CoValueClass,
-    WasmCrypto,
     CryptoProvider,
     AuthMethod,
     createJazzContext,
     AnonymousJazzAgent,
 } from "jazz-tools";
-import { RawAccountID, LSMStorage } from "cojson";
-import { OPFSFilesystem } from "./OPFSFilesystem.js";
-import { IDBStorage } from "cojson-storage-indexeddb";
+
+import { PureJSCrypto } from "jazz-tools/native";
+import { RawAccountID } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-export { BrowserDemoAuth } from "./auth/DemoAuth.js";
-export { BrowserPasskeyAuth } from "./auth/PasskeyAuth.js";
-export { BrowserPassphraseAuth } from "./auth/PassphraseAuth.js";
+import { MMKV } from "react-native-mmkv";
+// import NetInfo from "@react-native-community/netinfo";
+
+export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
+
+const storage = new MMKV();
 
 /** @category Context Creation */
 export type BrowserContext<Acc extends Account> = {
@@ -50,64 +54,46 @@ export type BaseBrowserContextOptions = {
 };
 
 /** @category Context Creation */
-export async function createJazzBrowserContext<Acc extends Account>(
+export async function createJazzRNContext<Acc extends Account>(
     options: BrowserContextOptions<Acc>,
 ): Promise<BrowserContext<Acc>>;
-export async function createJazzBrowserContext(
+export async function createJazzRNContext(
     options: BaseBrowserContextOptions,
 ): Promise<BrowserGuestContext>;
-export async function createJazzBrowserContext<Acc extends Account>(
+export async function createJazzRNContext<Acc extends Account>(
     options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
 ): Promise<BrowserContext<Acc> | BrowserGuestContext>;
-export async function createJazzBrowserContext<Acc extends Account>(
+export async function createJazzRNContext<Acc extends Account>(
     options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
 ): Promise<BrowserContext<Acc> | BrowserGuestContext> {
-    const crypto = options.crypto || (await WasmCrypto.create());
-
     const firstWsPeer = createWebSocketPeer({
         websocket: new WebSocket(options.peer),
         id: options.peer + "@" + new Date().toISOString(),
         role: "server",
+        expectPings: true,
     });
     let shouldTryToReconnect = true;
 
     let currentReconnectionTimeout = options.reconnectionTimeout || 500;
 
-    function onOnline() {
-        console.log("Online, resetting reconnection timeout");
-        currentReconnectionTimeout = options.reconnectionTimeout || 500;
-    }
-
-    window.addEventListener("online", onOnline);
+    // const unsubscribeNetworkChange = NetInfo.addEventListener((state) => {
+    //     if (state.isConnected) {
+    //         currentReconnectionTimeout = options.reconnectionTimeout || 500;
+    //     }
+    // });
 
     const context =
         "auth" in options
             ? await createJazzContext({
                   AccountSchema: options.AccountSchema,
                   auth: options.auth,
-                  crypto: await WasmCrypto.create(),
-                  peersToLoadFrom: [
-                      options.storage === "singleTabOPFS"
-                          ? await LSMStorage.asPeer({
-                                fs: new OPFSFilesystem(crypto),
-                                // trace: true,
-                            })
-                          : await IDBStorage.asPeer(),
-                      firstWsPeer,
-                  ],
+                  crypto: await PureJSCrypto.create(),
+                  peersToLoadFrom: [firstWsPeer],
                   sessionProvider: provideBroswerLockSession,
               })
             : await createJazzContext({
-                  crypto: await WasmCrypto.create(),
-                  peersToLoadFrom: [
-                      options.storage === "singleTabOPFS"
-                          ? await LSMStorage.asPeer({
-                                fs: new OPFSFilesystem(crypto),
-                                // trace: true,
-                            })
-                          : await IDBStorage.asPeer(),
-                      firstWsPeer,
-                  ],
+                  crypto: await PureJSCrypto.create(),
+                  peersToLoadFrom: [firstWsPeer],
               });
 
     const node =
@@ -136,16 +122,15 @@ export async function createJazzBrowserContext<Acc extends Account>(
                 );
                 await new Promise<void>((resolve) => {
                     setTimeout(resolve, currentReconnectionTimeout);
-                    window.addEventListener(
-                        "online",
-                        () => {
-                            console.log(
-                                "Online, trying to reconnect immediately",
-                            );
-                            resolve();
-                        },
-                        { once: true },
-                    );
+                    resolve();
+                    // const _unsubscribeNetworkChange = NetInfo.addEventListener(
+                    //     (state) => {
+                    //         if (state.isConnected) {
+                    //             resolve();
+                    //             _unsubscribeNetworkChange();
+                    //         }
+                    //     },
+                    // );
                 });
 
                 node.syncManager.addPeer(
@@ -166,7 +151,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
               me: context.account,
               done: () => {
                   shouldTryToReconnect = false;
-                  window.removeEventListener("online", onOnline);
+                  //   unsubscribeNetworkChange?.();
                   context.done();
               },
               logOut: () => {
@@ -177,7 +162,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
               guest: context.agent,
               done: () => {
                   shouldTryToReconnect = false;
-                  window.removeEventListener("online", onOnline);
+                  //   unsubscribeNetworkChange?.();
                   context.done();
               },
               logOut: () => {
@@ -195,65 +180,27 @@ export function provideBroswerLockSession(
     accountID: ID<Account> | AgentID,
     crypto: CryptoProvider,
 ) {
-    let sessionDone!: () => void;
-    const donePromise = new Promise<void>((resolve) => {
-        sessionDone = resolve;
-    });
+    const sessionDone = () => {};
 
-    let resolveSession: (sessionID: SessionID) => void;
-    const sessionPromise = new Promise<SessionID>((resolve) => {
-        resolveSession = resolve;
-    });
+    const sessionID =
+        (storage.getString(accountID) as SessionID) ||
+        crypto.newRandomSessionID(accountID as RawAccountID | AgentID);
+    storage.set(accountID, sessionID);
 
-    void (async function () {
-        for (let idx = 0; idx < 100; idx++) {
-            // To work better around StrictMode
-            for (let retry = 0; retry < 2; retry++) {
-                // console.debug("Trying to get lock", accountID + "_" + idx);
-                const sessionFinishedOrNoLock = await navigator.locks.request(
-                    accountID + "_" + idx,
-                    { ifAvailable: true },
-                    async (lock) => {
-                        if (!lock) return "noLock";
-
-                        const sessionID =
-                            localStorage[accountID + "_" + idx] ||
-                            crypto.newRandomSessionID(
-                                accountID as RawAccountID | AgentID,
-                            );
-                        localStorage[accountID + "_" + idx] = sessionID;
-
-                        // console.debug(
-                        //     "Got lock",
-                        //     accountID + "_" + idx,
-                        //     sessionID
-                        // );
-
-                        resolveSession(sessionID);
-
-                        await donePromise;
-                        console.log(
-                            "Done with lock",
-                            accountID + "_" + idx,
-                            sessionID,
-                        );
-                        return "sessionFinished";
-                    },
-                );
-
-                if (sessionFinishedOrNoLock === "sessionFinished") {
-                    return;
-                }
-            }
-        }
-        throw new Error("Couldn't get lock on session after 100x2 tries");
-    })();
-
-    return sessionPromise.then((sessionID) => ({
+    return Promise.resolve({
         sessionID,
         sessionDone,
-    }));
+    });
 }
+
+const window = {
+    location: {
+        href: "#",
+    },
+    history: {
+        replaceState: (a: any, b: any, c: any) => {},
+    },
+};
 
 /** @category Invite Links */
 export function createInviteLink<C extends CoValue>(
@@ -360,3 +307,8 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
         }
     });
 }
+
+/////////
+
+export * from "./provider.js";
+export * from "./auth/auth.js";

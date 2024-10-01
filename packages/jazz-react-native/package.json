@@ -2,18 +2,35 @@
     "name": "jazz-react-native",
     "version": "0.8.0",
     "type": "module",
-    "main": "dist/index.js",
-    "types": "src/index.ts",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "react-native": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "react-native": "./dist/index.js",
+            "default": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
     "license": "MIT",
     "dependencies": {
         "@scure/bip39": "^1.3.0",
-        "cojson": "workspace:0.8.0",
-        "cojson-storage-indexeddb": "workspace:0.8.0",
-        "cojson-transport-ws": "workspace:0.8.0",
-        "jazz-tools": "workspace:0.8.0",
-        "typescript": "^5.3.3"
+        "cojson": "workspace:*",
+        "jazz-tools": "workspace:*",
+        "typescript": "^5.3.3",
+        "cojson-transport-ws": "workspace:*"
+    },
+    "peerDependencies": {
+        "react-native": "0.74.2",
+        "react-native-mmkv": "3.0.1"
+    },
+    "devDependencies": {
+        "react-native": "0.74.2",
+        "react-native-mmkv": "3.0.1"
     },
     "scripts": {
+        "dev": "tsc --watch --sourceMap --outDir dist",
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",

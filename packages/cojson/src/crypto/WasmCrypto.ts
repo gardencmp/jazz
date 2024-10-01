@@ -64,6 +64,10 @@ export class WasmCrypto extends CryptoProvider<Uint8Array> {
         return this.blake3Instance.init().save();
     }
 
+    cloneBlake3State(state: Uint8Array): Uint8Array {
+        return this.blake3Instance.load(state).save();
+    }
+
     blake3HashOnce(data: Uint8Array) {
         return this.blake3Instance.init().update(data).digest("binary");
     }

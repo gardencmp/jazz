@@ -5,7 +5,7 @@ import {
     AccountClass,
     fixedCredentialsAuth,
     randomSessionProvider,
-} from "jazz-tools/src/internal";
+} from "jazz-tools/src/internal.js";
 import { WebSocket } from "ws";
 
 /** @category Context Creation */

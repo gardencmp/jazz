@@ -1,8 +1,8 @@
-import { KeySecret } from "../crypto/crypto.js";
+import { KeySecret, StreamingHash } from "../crypto/crypto.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { PureJSCrypto } from "../crypto/PureJSCrypto.js";
 import { describe, test, expect } from "vitest";
-import { SessionID } from "../index.js";
+import { SessionID } from "../ids.js";
 
 describe.each([
     { impl: await WasmCrypto.create(), name: "Wasm" },
@@ -179,5 +179,27 @@ describe.each([
                 wrongNOnceMaterial,
             ),
         ).toThrow();
+    });
+
+    test("StreamingHash clone", () => {
+        const originalHash = new StreamingHash(impl);
+        originalHash.update({ foo: "bar" });
+
+        const clonedHash = originalHash.clone();
+
+        // Update the original hash
+        originalHash.update({ baz: "qux" });
+
+        // Update the cloned hash differently
+        clonedHash.update({ quux: "corge" });
+
+        // The digests should be different
+        expect(originalHash.digest()).not.toEqual(clonedHash.digest());
+
+        // The cloned hash should match a new hash with the same updates
+        const newHash = new StreamingHash(impl);
+        newHash.update({ foo: "bar" });
+        newHash.update({ quux: "corge" });
+        expect(clonedHash.digest()).toEqual(newHash.digest());
     });
 });

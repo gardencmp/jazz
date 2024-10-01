@@ -65,7 +65,10 @@ export class Group extends CoValueBase implements CoValue {
     declare root: CoMap | null;
     declare [MembersSym]: Account | null;
 
-    get _refs() {
+    get _refs(): {
+        profile: Ref<Profile> | undefined;
+        root: Ref<CoMap> | undefined;
+    } {
         const profileID = this._raw.get("profile") as unknown as
             | ID<NonNullable<this["profile"]>>
             | undefined;

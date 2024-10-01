@@ -1,5 +1,5 @@
 import { expect, describe, test, expectTypeOf } from "vitest";
-import { connectedPeers } from "cojson/src/streamUtils.js";
+import { connectedPeers } from "cojson/src/streamUtils.ts";
 import {
     Account,
     Encoders,
@@ -10,7 +10,7 @@ import {
     cojsonInternals,
     createJazzContext,
     fixedCredentialsAuth,
-} from "../index.js";
+} from "../index.web.js";
 import { Group, randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
@@ -888,13 +888,15 @@ describe("Creating and finding unique CoMaps", async () => {
             owner: me,
         });
 
-        const alice = TestMap.create({
-            name: "Alice",
-            _height: 100,
-            birthday: new Date("1990-01-01"),
-            color: "red",
-
-        }, { owner: group, unique: { name: "Alice" } });
+        const alice = TestMap.create(
+            {
+                name: "Alice",
+                _height: 100,
+                birthday: new Date("1990-01-01"),
+                color: "red",
+            },
+            { owner: group, unique: { name: "Alice" } },
+        );
 
         const foundAlice = TestMap.findUnique({ name: "Alice" }, group.id, me);
 

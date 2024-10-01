@@ -1,5 +1,5 @@
 import { CoID, LocalNode, RawCoValue } from "cojson";
-import { JsonObject } from "cojson/src/jsonValue";
+import { JsonObject } from "cojson/src/jsonValue.ts";
 import { CoMapPreview, ValueRenderer } from "./value-renderer";
 import clsx from "clsx";
 import { PageInfo, isCoId } from "./types";

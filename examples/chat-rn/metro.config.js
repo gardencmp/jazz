@@ -16,6 +16,8 @@ config.resolver.nodeModulesPaths = [
     path.resolve(projectRoot, "node_modules"),
     path.resolve(workspaceRoot, "node_modules"),
 ];
+config.resolver.sourceExts = ["js", "json", "ts", "tsx"];
+config.resolver.unstable_enablePackageExports = true;
 
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
