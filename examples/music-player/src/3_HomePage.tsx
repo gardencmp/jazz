@@ -19,10 +19,8 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
      */
     const { me } = useAccount({
         root: {
-            rootPlaylist: {
-                tracks: [{}],
-            },
-            playlists: [{}],
+            rootPlaylist: {},
+            playlists: [],
         },
     });
 
@@ -52,7 +50,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const params = useParams<{ playlistId: ID<Playlist> }>();
     const playlistId = params.playlistId ?? me?.root._refs.rootPlaylist.id;
     const playlist = useCoState(Playlist, playlistId, {
-        tracks: [{}],
+        tracks: [],
     });
 
     const isRootPlaylist = !params.playlistId;
@@ -122,13 +120,13 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                             (track) =>
                                 track && (
                                     <MusicTrackRow
-                                        track={track}
+                                        trackId={track.id}
                                         key={track.id}
                                         isLoading={
                                             mediaPlayer.loading === track.id
                                         }
                                         isPlaying={
-                                            mediaPlayer.activeTrack?.id ===
+                                            mediaPlayer.activeTrackId ===
                                                 track.id && isActivePlaylist && isPlaying
                                         }
                                         onClick={() => {

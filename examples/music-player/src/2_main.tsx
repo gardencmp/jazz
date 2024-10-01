@@ -33,7 +33,6 @@ function Main() {
 
     useUploadExampleData();
 
-
     const router = createHashRouter([
         {
             path: "/",

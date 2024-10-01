@@ -1,10 +1,11 @@
 import { MediaPlayer } from "@/5_useMediaPlayer";
 import { usePlayState } from "@/lib/audio/usePlayState";
 import { Waveform } from "./Waveform";
-import { useAccount } from "@/2_main";
+import { useAccount, useCoState } from "@/2_main";
 import { useMediaEndListener } from "@/lib/audio/useMediaEndListener";
 import { useKeyboardListener } from "@/lib/useKeyboardListener";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { MusicTrack } from "@/1_schema";
 
 export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const playState = usePlayState();
@@ -23,9 +24,13 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
         playState.toggle();
     });
 
-    if (!mediaPlayer.activeTrack) return null;
+    const activeTrack = useCoState(MusicTrack, mediaPlayer.activeTrackId, {
+        waveform: {}
+    });
 
-    const activeTrackTitle = mediaPlayer.activeTrack.title;
+    if (!activeTrack) return null;
+
+    const activeTrackTitle = activeTrack.title;
 
     return (
         <footer className="flex items-center justify-between p-4 gap-4 bg-white border-t border-gray-200 fixed bottom-0 left-0 right-0 w-full">
@@ -56,7 +61,7 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                 </div>
             </div>
             <div className=" sm:hidden md:flex flex-col flex-shrink-1 items-center w-[75%]"> 
-                <Waveform track={mediaPlayer.activeTrack} height={30} />
+                <Waveform track={activeTrack} height={30} />
             </div>
             <div className="flex flex-col items-end  gap-1 text-right min-w-fit w-[25%]">
                 <h4 className="font-medium text-blue-800">
