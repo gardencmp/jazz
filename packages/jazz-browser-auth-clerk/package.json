@@ -1,6 +1,6 @@
 {
     "name": "jazz-browser-auth-clerk",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "type": "module",
     "main": "dist/index.js",
     "types": "src/index.ts",
@@ -11,8 +11,8 @@
     },
     "dependencies": {
         "cojson": "workspace:0.8.0",
-        "jazz-browser": "workspace:0.8.1",
-        "jazz-tools": "workspace:0.8.1"
+        "jazz-browser": "workspace:0.8.2",
+        "jazz-tools": "workspace:0.8.2"
     },
     "scripts": {
         "lint": "eslint . --ext ts,tsx",
