@@ -5,12 +5,12 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
     useDemoAuth,
     DemoAuthBasicUI,
-    createJazzReactApp,
+    createJazzRNApp,
 } from "jazz-react-native";
 import ChatScreen from "./chat";
 
 const Stack = createNativeStackNavigator();
-const Jazz = createJazzReactApp();
+const Jazz = createJazzRNApp();
 
 export const { useAccount, useCoState } = Jazz;
 

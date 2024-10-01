@@ -296,9 +296,6 @@ importers:
       '@azure/core-asynciterator-polyfill':
         specifier: ^1.0.2
         version: 1.0.2
-      '@react-native-community/netinfo':
-        specifier: 11.3.1
-        version: 11.3.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))
       '@react-navigation/native':
         specifier: ^6.1.18
         version: 6.1.18(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0)
@@ -338,9 +335,6 @@ importers:
       react-native:
         specifier: ~0.74.5
         version: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0)
-      react-native-blob-util:
-        specifier: ^0.19.11
-        version: 0.19.11(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0)
       react-native-mmkv:
         specifier: 3.0.1
         version: 3.0.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0)
@@ -350,9 +344,6 @@ importers:
       react-native-screens:
         specifier: 3.31.1
         version: 3.31.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0)
-      react-native-url-polyfill:
-        specifier: ^2.0.0
-        version: 2.0.0(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))
       text-encoding:
         specifier: ^0.7.0
         version: 0.7.0
@@ -2810,11 +2801,6 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@react-native-community/netinfo@11.3.1':
-    resolution: {integrity: sha512-UBnJxyV0b7i9Moa97Av+HKho1ByzX0DtbJXzUQS5E3xhQs6P2D/Os0iw3ouy7joY1TVd6uIhplPbr7l1SJNaNQ==}
-    peerDependencies:
-      react-native: '>=0.59'
-
   '@react-native/assets-registry@0.74.84':
     resolution: {integrity: sha512-dzUhwyaX04QosWZ8zyaaNB/WYZIdeDN1lcpfQbqiOhZJShRH+FLTDVONE/dqlMQrP+EO7lDqF0RrlIt9lnOCQQ==}
     engines: {node: '>=18'}
@@ -3761,9 +3747,6 @@ packages:
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
-
-  base-64@0.1.0:
-    resolution: {integrity: sha512-Y5gU45svrR5tI2Vt/X9GPd3L0HNIKzGu202EjxrXMpuc2V2CiKgemAbUUsqYmZJvPtCXoUKjNZwBJzsNScUbXA==}
 
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
@@ -6734,12 +6717,6 @@ packages:
   react-is@18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
 
-  react-native-blob-util@0.19.11:
-    resolution: {integrity: sha512-lxaeDzFLYffR6lbRiOce0oTYO6pE3/PyT8Sa7qiz8B+IT9oe4G85SlVCdl5F9xMJh/Zer2onBLw7u+B1AS+GFA==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-
   react-native-mmkv@3.0.1:
     resolution: {integrity: sha512-fYieKicBJcn/+nKZQ28eD/QTHO10aWVnUtTDwOTzt5dCEjLV0P3mMSw0e/58W6QNrr0HESQSf9zA3yOgCoSqMQ==}
     peerDependencies:
@@ -6756,11 +6733,6 @@ packages:
     resolution: {integrity: sha512-8fRW362pfZ9y4rS8KY5P3DFScrmwo/vu1RrRMMx0PNHbeC9TLq0Kw1ubD83591yz64gLNHFLTVkTJmWeWCXKtQ==}
     peerDependencies:
       react: '*'
-      react-native: '*'
-
-  react-native-url-polyfill@2.0.0:
-    resolution: {integrity: sha512-My330Do7/DvKnEvwQc0WdcBnFPploYKp9CYlefDXzIdEaA+PAhDYllkvGeEroEzvc4Kzzj2O4yVdz8v6fjRvhA==}
-    peerDependencies:
       react-native: '*'
 
   react-native@0.74.2:
@@ -10542,10 +10514,6 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@react-native-community/netinfo@11.3.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))':
-    dependencies:
-      react-native: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0)
-
   '@react-native/assets-registry@0.74.84': {}
 
   '@react-native/assets-registry@0.74.87': {}
@@ -11743,8 +11711,6 @@ snapshots:
       - supports-color
 
   balanced-match@1.0.2: {}
-
-  base-64@0.1.0: {}
 
   base64-js@1.5.1: {}
 
@@ -14955,13 +14921,6 @@ snapshots:
 
   react-is@18.2.0: {}
 
-  react-native-blob-util@0.19.11(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0):
-    dependencies:
-      base-64: 0.1.0
-      glob: 10.4.5
-      react: 18.2.0
-      react-native: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0)
-
   react-native-mmkv@3.0.1(react-native@0.74.2(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0):
     dependencies:
       react: 18.2.0
@@ -14983,11 +14942,6 @@ snapshots:
       react-freeze: 1.0.4(react@18.2.0)
       react-native: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0)
       warn-once: 0.1.1
-
-  react-native-url-polyfill@2.0.0(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0)):
-    dependencies:
-      react-native: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0)
-      whatwg-url-without-unicode: 8.0.0-3
 
   react-native@0.74.2(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.2.0):
     dependencies:

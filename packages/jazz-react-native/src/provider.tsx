@@ -20,7 +20,7 @@ import {
 } from "./index.js";
 
 /** @category Context & Hooks */
-export function createJazzReactApp<Acc extends Account>({
+export function createJazzRNApp<Acc extends Account>({
     AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
     AccountSchema?: AccountClass<Acc>;
