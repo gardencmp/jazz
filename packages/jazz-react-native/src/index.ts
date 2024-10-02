@@ -19,7 +19,7 @@ import { PureJSCrypto } from "jazz-tools/native";
 import { RawAccountID } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { MMKV } from "react-native-mmkv";
-// import NetInfo from "@react-native-community/netinfo";
+import NetInfo from "@react-native-community/netinfo";
 
 export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 
@@ -76,11 +76,11 @@ export async function createJazzRNContext<Acc extends Account>(
 
     let currentReconnectionTimeout = options.reconnectionTimeout || 500;
 
-    // const unsubscribeNetworkChange = NetInfo.addEventListener((state) => {
-    //     if (state.isConnected) {
-    //         currentReconnectionTimeout = options.reconnectionTimeout || 500;
-    //     }
-    // });
+    const unsubscribeNetworkChange = NetInfo.addEventListener((state) => {
+        if (state.isConnected) {
+            currentReconnectionTimeout = options.reconnectionTimeout || 500;
+        }
+    });
 
     const context =
         "auth" in options
@@ -122,15 +122,14 @@ export async function createJazzRNContext<Acc extends Account>(
                 );
                 await new Promise<void>((resolve) => {
                     setTimeout(resolve, currentReconnectionTimeout);
-                    resolve();
-                    // const _unsubscribeNetworkChange = NetInfo.addEventListener(
-                    //     (state) => {
-                    //         if (state.isConnected) {
-                    //             resolve();
-                    //             _unsubscribeNetworkChange();
-                    //         }
-                    //     },
-                    // );
+                    const _unsubscribeNetworkChange = NetInfo.addEventListener(
+                        (state) => {
+                            if (state.isConnected) {
+                                resolve();
+                                _unsubscribeNetworkChange();
+                            }
+                        },
+                    );
                 });
 
                 node.syncManager.addPeer(
@@ -151,7 +150,7 @@ export async function createJazzRNContext<Acc extends Account>(
               me: context.account,
               done: () => {
                   shouldTryToReconnect = false;
-                  //   unsubscribeNetworkChange?.();
+                  unsubscribeNetworkChange?.();
                   context.done();
               },
               logOut: () => {
@@ -162,7 +161,7 @@ export async function createJazzRNContext<Acc extends Account>(
               guest: context.agent,
               done: () => {
                   shouldTryToReconnect = false;
-                  //   unsubscribeNetworkChange?.();
+                  unsubscribeNetworkChange?.();
                   context.done();
               },
               logOut: () => {

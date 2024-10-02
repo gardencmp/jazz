@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@azure/core-asynciterator-polyfill": "^1.0.2",
+        "@react-native-community/netinfo": "^11.4.1",
         "@react-navigation/native": "^6.1.18",
         "@react-navigation/native-stack": "^6.11.0",
         "expo": "~51.0.34",
