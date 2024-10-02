@@ -1,5 +1,6 @@
 pre.shiki {
     overflow: hidden;
+    height: 100%;
 }
 pre.shiki:hover .dim {
     opacity: 1;
@@ -78,7 +79,7 @@ pre.twoslash data-lsp:hover::before {
 }
 
 pre .code-container {
-    @apply overflow-auto p-2 pl-0 bg-white dark:bg-stone-925 rounded-b-xl text-xs dark:border-stone-900;
+    @apply overflow-auto p-2 pl-0 bg-white dark:bg-stone-925 rounded-b-xl text-xs h-full dark:border-stone-900;
 }
 /* The try button */
 pre .code-container > a {
