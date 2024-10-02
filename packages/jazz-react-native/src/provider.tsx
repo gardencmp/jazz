@@ -17,17 +17,23 @@ import {
     BrowserGuestContext,
     consumeInviteLinkFromWindowLocation,
     createJazzRNContext,
+    NativeStorageContext,
+    NativeStorage,
 } from "./index.js";
 
 /** @category Context & Hooks */
 export function createJazzRNApp<Acc extends Account>({
+    nativeStorage,
     AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
+    nativeStorage: NativeStorage;
     AccountSchema?: AccountClass<Acc>;
-} = {}): JazzReactApp<Acc> {
+}): JazzReactApp<Acc> {
     const JazzContext = React.createContext<
         BrowserContext<Acc> | BrowserGuestContext | undefined
     >(undefined);
+
+    NativeStorageContext.getInstance().initialize(nativeStorage);
 
     function Provider({
         children,

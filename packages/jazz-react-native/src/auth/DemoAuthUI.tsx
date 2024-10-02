@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -44,10 +44,13 @@ export function useDemoAuth({
         errors: [],
     });
 
-    const authMethod = useMemo(() => {
-        return new RNDemoAuth(
+    const [authMethod, setAuthMethod] = useState<RNDemoAuth | null>(null);
+
+    const authMethodPromise = useMemo(() => {
+        return RNDemoAuth.init(
             {
-                onReady: ({ signUp, existingUsers, logInAs }) => {
+                onReady: async ({ signUp, getExistingUsers, logInAs }) => {
+                    const existingUsers = await getExistingUsers();
                     setState({
                         state: "ready",
                         signUp,
@@ -68,6 +71,15 @@ export function useDemoAuth({
             },
             seedAccounts,
         );
+    }, [seedAccounts]);
+
+    useEffect(() => {
+        async function init() {
+            const auth = await authMethodPromise;
+            setAuthMethod(auth);
+        }
+        if (authMethod) return;
+        void init();
     }, [seedAccounts]);
 
     return [authMethod, state] as const;

@@ -1,9 +1,6 @@
 import { AgentSecret } from "cojson";
 import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
-import { MMKV } from "react-native-mmkv";
-
-const storage = new MMKV();
-// storage.clearAll();
+import NativeStorageContext, { NativeStorage } from "../native-storage.js";
 
 type StorageData = {
     accountID: ID<Account>;
@@ -16,7 +13,7 @@ export namespace RNDemoAuth {
     export interface Driver {
         onReady: (next: {
             signUp: (username: string) => Promise<void>;
-            existingUsers: string[];
+            getExistingUsers: () => Promise<string[]>;
             logInAs: (existingUser: string) => Promise<void>;
         }) => void;
         onSignedIn: (next: { logOut: () => void }) => void;
@@ -27,9 +24,13 @@ export namespace RNDemoAuth {
 const localStorageKey = "demo-auth-logged-in-secret";
 
 export class RNDemoAuth implements AuthMethod {
-    private promise!: (value: AuthResult | PromiseLike<AuthResult>) => void;
-    constructor(
-        public driver: RNDemoAuth.Driver,
+    private constructor(
+        private driver: RNDemoAuth.Driver,
+        private storage: NativeStorage,
+    ) {}
+
+    public static async init(
+        driver: RNDemoAuth.Driver,
         seedAccounts?: {
             [name: string]: {
                 accountID: ID<Account>;
@@ -37,38 +38,40 @@ export class RNDemoAuth implements AuthMethod {
             };
         },
     ) {
+        const storage = NativeStorageContext.getInstance().getStorage();
         for (const [name, credentials] of Object.entries(seedAccounts || {})) {
             const storageData = JSON.stringify(
                 credentials satisfies StorageData,
             );
             if (
                 !(
-                    storage
-                        .getString("demo-auth-existing-users")
-                        ?.split(",") as string[] | undefined
+                    (await storage.get("demo-auth-existing-users"))?.split(
+                        ",",
+                    ) as string[] | undefined
                 )?.includes(name)
             ) {
-                const existingUsers = storage.getString(
+                const existingUsers = await storage.get(
                     "demo-auth-existing-users",
                 );
                 if (existingUsers) {
-                    storage.set(
+                    await storage.set(
                         "demo-auth-existing-users",
                         existingUsers + "," + name,
                     );
                 } else {
-                    storage.set("demo-auth-existing-users", name);
+                    await storage.set("demo-auth-existing-users", name);
                 }
             }
-            storage.set("demo-auth-existing-users-" + name, storageData);
+            await storage.set("demo-auth-existing-users-" + name, storageData);
         }
+        return new RNDemoAuth(driver, storage);
     }
 
     async start() {
         try {
-            if (storage.getString(localStorageKey)) {
+            if (await this.storage.get(localStorageKey)) {
                 const localStorageData = JSON.parse(
-                    storage.getString(localStorageKey) ?? "{}",
+                    (await this.storage.get(localStorageKey)) ?? "{}",
                 ) as StorageData;
 
                 const accountID = localStorageData.accountID as ID<Account>;
@@ -83,8 +86,8 @@ export class RNDemoAuth implements AuthMethod {
                     onError: (error: string | Error) => {
                         this.driver.onError(error);
                     },
-                    logOut: () => {
-                        void storage.delete(localStorageKey);
+                    logOut: async () => {
+                        void (await this.storage.delete(localStorageKey));
                     },
                 } satisfies AuthResult;
             } else {
@@ -104,16 +107,20 @@ export class RNDemoAuth implements AuthMethod {
                                         accountSecret: credentials.secret,
                                     } satisfies StorageData);
 
-                                    storage.set(localStorageKey, storageData);
-                                    storage.set(
+                                    await this.storage.set(
+                                        localStorageKey,
+                                        storageData,
+                                    );
+                                    await this.storage.set(
                                         "demo-auth-existing-users-" + username,
                                         storageData,
                                     );
 
-                                    const existingUsers = storage.getString(
-                                        "demo-auth-existing-users",
-                                    );
-                                    storage.set(
+                                    const existingUsers =
+                                        await this.storage.get(
+                                            "demo-auth-existing-users",
+                                        );
+                                    await this.storage.set(
                                         "demo-auth-existing-users",
                                         existingUsers
                                             ? existingUsers + "," + username
@@ -128,23 +135,30 @@ export class RNDemoAuth implements AuthMethod {
                                     console.error("onError", error.cause);
                                     this.driver.onError(error);
                                 },
-                                logOut: () => {
-                                    void storage.delete(localStorageKey);
+                                logOut: async () => {
+                                    void (await this.storage.delete(
+                                        localStorageKey,
+                                    ));
                                 },
                             });
                         },
-                        existingUsers:
-                            storage
-                                .getString("demo-auth-existing-users")
-                                ?.split(",") ?? [],
+                        getExistingUsers: async () => {
+                            return (
+                                (
+                                    await this.storage.get(
+                                        "demo-auth-existing-users",
+                                    )
+                                )?.split(",") ?? []
+                            );
+                        },
                         logInAs: async (existingUser) => {
                             const storageData = JSON.parse(
-                                storage.getString(
+                                (await this.storage.get(
                                     "demo-auth-existing-users-" + existingUser,
-                                ) ?? "{}",
+                                )) ?? "{}",
                             ) as StorageData;
 
-                            storage.set(
+                            await this.storage.set(
                                 localStorageKey,
                                 JSON.stringify(storageData),
                             );
@@ -161,8 +175,10 @@ export class RNDemoAuth implements AuthMethod {
                                 onError: (error: string | Error) => {
                                     this.driver.onError(error);
                                 },
-                                logOut: () => {
-                                    void storage.delete(localStorageKey);
+                                logOut: async () => {
+                                    void (await this.storage.delete(
+                                        localStorageKey,
+                                    ));
                                 },
                             });
                         },
@@ -176,6 +192,7 @@ export class RNDemoAuth implements AuthMethod {
     }
 }
 
-function logOut() {
-    void storage.delete(localStorageKey);
+async function logOut() {
+    const storage = NativeStorageContext.getInstance().getStorage();
+    void (await storage.delete(localStorageKey));
 }

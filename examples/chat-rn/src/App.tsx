@@ -1,6 +1,7 @@
-import React, { StrictMode } from "react";
+import React, { StrictMode, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { RNDemoAuth } from "jazz-react-native";
 
 import {
     useDemoAuth,
@@ -8,14 +9,21 @@ import {
     createJazzRNApp,
 } from "jazz-react-native";
 import ChatScreen from "./chat";
+import { MMKVStorage } from "./mmkv-storage";
+
+const nativeStorage = new MMKVStorage();
 
 const Stack = createNativeStackNavigator();
-const Jazz = createJazzRNApp();
+const Jazz = createJazzRNApp({ nativeStorage });
 
 export const { useAccount, useCoState } = Jazz;
 
 function App() {
     const [auth, state] = useDemoAuth();
+
+    if (!auth) {
+        return null;
+    }
 
     return (
         <StrictMode>

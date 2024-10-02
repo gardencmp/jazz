@@ -23,7 +23,7 @@ import NetInfo from "@react-native-community/netinfo";
 
 export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 
-const storage = new MMKV();
+import { NativeStorageContext } from "./native-storage.js";
 
 /** @category Context Creation */
 export type BrowserContext<Acc extends Account> = {
@@ -89,7 +89,7 @@ export async function createJazzRNContext<Acc extends Account>(
                   auth: options.auth,
                   crypto: await PureJSCrypto.create(),
                   peersToLoadFrom: [firstWsPeer],
-                  sessionProvider: provideBroswerLockSession,
+                  sessionProvider: provideLockSession,
               })
             : await createJazzContext({
                   crypto: await PureJSCrypto.create(),
@@ -175,16 +175,18 @@ export type SessionProvider = (
     accountID: ID<Account> | AgentID,
 ) => Promise<SessionID>;
 
-export function provideBroswerLockSession(
+export async function provideLockSession(
     accountID: ID<Account> | AgentID,
     crypto: CryptoProvider,
 ) {
     const sessionDone = () => {};
 
+    const storage = NativeStorageContext.getInstance().getStorage();
+
     const sessionID =
-        (storage.getString(accountID) as SessionID) ||
+        ((await storage.get(accountID)) as SessionID) ||
         crypto.newRandomSessionID(accountID as RawAccountID | AgentID);
-    storage.set(accountID, sessionID);
+    await storage.set(accountID, sessionID);
 
     return Promise.resolve({
         sessionID,
@@ -311,3 +313,4 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
 
 export * from "./provider.js";
 export * from "./auth/auth.js";
+export * from "./native-storage.js";
