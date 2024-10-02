@@ -43,6 +43,10 @@ const config = {
                 display: ["var(--font-manrope)"],
                 mono: ["var(--font-commit-mono)"],
             },
+            fontSize: {
+
+                '2xs': ['0.75rem', { lineHeight: '1.25rem' }],
+            },
             // shadcn-ui
             colors: {
                 border: "hsl(var(--border))",

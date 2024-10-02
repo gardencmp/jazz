@@ -144,16 +144,14 @@ export function Nav({
                             .filter((item) => !("icon" in item))
                             .slice(0, 3)
                             .map((item, i) => (
-                                <>
-                                    <NavLink
-                                        key={i}
-                                        href={item.href}
-                                        onClick={() => setMenuOpen(false)}
-                                        newTab={item.newTab}
-                                    >
-                                        {item.title}
-                                    </NavLink>
-                                </>
+                                <NavLink
+                                    key={i}
+                                    href={item.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    newTab={item.newTab}
+                                >
+                                    {item.title}
+                                </NavLink>
                             ))}
                     </div>
 

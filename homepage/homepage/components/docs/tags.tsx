@@ -123,8 +123,8 @@ export function PropDecl({
                     <DocComment>{doc || "⚠️ undocumented"}</DocComment>
                 </div>
                 {example && (
-                    <div className="ml-4 lg:ml-0 lg:mt-0 flex-[1] relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
-                        <div className="opacity-30 text-xs -mb-4">Example:</div>
+                    <div className="ml-4 lg:ml-0 lg:mt-0 flex-[1] relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 md:mt-0 text-xs">
+                        <div className="text-xs -mb-4">Example:</div>
                         {example}
                     </div>
                 )}
@@ -181,8 +181,8 @@ export function FnDecl({
                     <DocComment>{doc || "⚠️ undocumented"}</DocComment>
                 </div>
                 {example && (
-                    <div className="flex-[1] relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs opacity-60 group-hover:opacity-100">
-                        <div className="opacity-30 text-xs -mb-4">Example:</div>
+                    <div className="flex-[1] relative w-full overflow-x-scroll col-span-2 pl-4 md:pl-0 mt-6 md:mt-0 text-xs">
+                        <div className="text-xs -mb-4">Example:</div>
                         {example}
                     </div>
                 )}
