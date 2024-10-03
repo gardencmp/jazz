@@ -1,6 +1,9 @@
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { JazzLogo } from "@/components/logos";
 import { ComingSoonBadge } from 'gcmp-design-system/src/app/components/atoms/ComingSoonBadge'
+import { Step, Steps } from '@/components/Steps'
+
+
 
 <div className="not-prose">
 <HeroHeader
@@ -23,6 +26,15 @@ Plus, if you get stuck or you have questions, [ask us on Discord](https://discor
 and we'll know exactly where you're at.
 
 <h2 id="guide-setup">Project Setup</h2>
+
+<Steps>
+  <Step>
+    Create a project called "circular" from a generic Vite starter template:
+  </Step>
+  <Step>
+    Install `jazz-tools` and `jazz-react`
+  </Step>
+</Steps>
 
 1. Create a project called "circular" from a generic Vite starter template:
 
