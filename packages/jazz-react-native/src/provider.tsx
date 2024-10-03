@@ -15,11 +15,12 @@ import {
 import {
     BrowserContext,
     BrowserGuestContext,
-    consumeInviteLinkFromWindowLocation,
     createJazzRNContext,
     NativeStorageContext,
     NativeStorage,
+    parseInviteLink,
 } from "./index.js";
+import { Linking } from "react-native";
 
 /** @category Context & Hooks */
 export function createJazzRNApp<Acc extends Account>({
@@ -208,20 +209,37 @@ export function createJazzRNApp<Acc extends Account>({
         }
 
         useEffect(() => {
-            if (!context) return;
+            const handleDeepLink = ({ url }: { url: string }) => {
+                const result = parseInviteLink<V>(url);
+                if (result && result.valueHint === forValueHint) {
+                    context.me
+                        .acceptInvite(
+                            result.valueID,
+                            result.inviteSecret,
+                            invitedObjectSchema,
+                        )
+                        .then(() => {
+                            onAccept(result.valueID);
+                        })
+                        .catch((e) => {
+                            console.error("Failed to accept invite", e);
+                        });
+                }
+            };
 
-            const result = consumeInviteLinkFromWindowLocation({
-                as: context.me,
-                invitedObjectSchema,
-                forValueHint,
+            const linkingListener = Linking.addEventListener(
+                "url",
+                handleDeepLink,
+            );
+
+            void Linking.getInitialURL().then((url) => {
+                if (url) handleDeepLink({ url });
             });
 
-            result
-                .then((result) => result && onAccept(result?.valueID))
-                .catch((e) => {
-                    console.error("Failed to accept invite", e);
-                });
-        }, [onAccept]);
+            return () => {
+                linkingListener.remove();
+            };
+        }, [context, onAccept, invitedObjectSchema, forValueHint]);
     }
 
     return {
