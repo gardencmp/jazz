@@ -13,7 +13,7 @@ import { Group } from "jazz-tools";
 import { Chat, Message } from "./schema";
 import { useAccount, useCoState } from "./App";
 
-export default function ChatScreenx() {
+export default function ChatScreen() {
     const { me, logOut } = useAccount();
     const [chat, setChat] = useState<Chat>();
     const [message, setMessage] = useState("");

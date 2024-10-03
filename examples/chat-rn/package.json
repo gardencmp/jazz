@@ -17,6 +17,7 @@
         "expo-build-properties": "~0.12.5",
         "expo-constants": "~16.0.2",
         "expo-crypto": "~13.0.2",
+        "expo-dev-client": "~4.0.27",
         "expo-linking": "~6.3.1",
         "expo-status-bar": "~1.12.1",
         "jazz-react-native": "workspace:*",
