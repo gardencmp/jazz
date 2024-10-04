@@ -81,13 +81,13 @@ export function Nav({
                     {mainLogo}
                 </NavLinkLogo>
                 <button
-                    className="flex p-3 rounded-xl items-center"
+                    className="flex gap-2 p-3 rounded-xl items-center"
                     onMouseDown={() => {
                         setMenuOpen((o) => !o);
                         setSearchOpen(false);
                     }}
                 >
-                    <MenuIcon className="mr-2" />
+                    <MenuIcon />
                     <BreadCrumb items={items} />
                 </button>
             </div>
@@ -198,7 +198,7 @@ export function Nav({
                         <SearchIcon className="" />
                     </button> */}
                     <button
-                        className="flex p-3 rounded-xl items-center"
+                        className="flex gap-2 p-3 rounded-xl items-center"
                         onMouseDown={() => {
                             setMenuOpen((o) => !o);
                             setSearchOpen(false);
@@ -208,7 +208,7 @@ export function Nav({
                             <XIcon />
                         ) : (
                             <>
-                                <MenuIcon className="mr-2" />
+                                <MenuIcon />
                                 <BreadCrumb items={items} />
                             </>
                         )}
