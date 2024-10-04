@@ -16,7 +16,7 @@ export function TopBar(props: { children: React.ReactNode }) {
 
 export function ChatBody(props: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto" role="application">
       {props.children}
     </div>
   );
@@ -31,7 +31,7 @@ export function BubbleContainer(props: {
   fromMe: boolean | undefined;
 }) {
   const align = props.fromMe ? "items-end" : "items-start";
-  return <div className={`${align} flex flex-col m-2`}>{props.children}</div>;
+  return <div className={`${align} flex flex-col m-2`} role="row">{props.children}</div>;
 }
 
 export function BubbleBody(props: { children: React.ReactNode }) {
