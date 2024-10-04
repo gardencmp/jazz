@@ -25,10 +25,12 @@ export async function Highlight({
     children,
     hide,
     lang = "typescript",
+    className = "",
 }: {
     children: string;
     hide?: number[];
     lang?: string;
+    className?: string;
 }) {
     const lines = (await highlighter).codeToThemedTokens(
         children,
@@ -37,7 +39,7 @@ export async function Highlight({
     );
 
     return (
-        <code>
+        <code className={className}>
             {lines
                 .filter((_, i) => !hide?.includes(i))
                 .map((line, i, all) => (
