@@ -175,7 +175,10 @@ function RenderClassOrInterface({
                 </div>
             )}
             {classOrInterface.categories?.map((category) => (
-                <div key={category.title}>
+                <div
+                    className="flex flex-col divide-y divide-stone-200 dark:divide-stone-900"
+                    key={category.title}
+                >
                     <PropCategory
                         name={category.title}
                         description={renderSummary(
@@ -222,7 +225,7 @@ function renderSummary(commentSummary: CommentDisplayPart[] | undefined) {
                 {part.tag} {part.text}
             </code>
         ) : part.text.startsWith("```") ? (
-            <pre key={idx} className="text-xs mt-4">
+            <pre key={idx} className="text-xs sm:text-sm">
                 <code>
                     <Highlight>
                         {part.text.split("\n").slice(1, -1).join("\n")}
