@@ -7,7 +7,9 @@ export class ChatPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.messageInput = page.getByPlaceholder("Type a message and press Enter");
+    this.messageInput = page.getByRole("textbox", {
+        name: "Type a message and press Enter"
+    });
     this.logoutButton = page.getByRole("button", {
       name: "Log out",
     });
