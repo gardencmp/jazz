@@ -13,6 +13,7 @@
         "@react-native-community/netinfo": "^11.4.1",
         "@react-navigation/native": "^6.1.18",
         "@react-navigation/native-stack": "^6.11.0",
+        "clsx": "^2.0.0",
         "expo": "~51.0.34",
         "expo-build-properties": "~0.12.5",
         "expo-constants": "~16.0.2",

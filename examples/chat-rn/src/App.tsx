@@ -7,19 +7,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as Linking from "expo-linking";
 import HandleInviteScreen from "./invite";
 
-import {
-    useDemoAuth,
-    DemoAuthBasicUI,
-    createJazzRNApp,
-} from "jazz-react-native";
+import { useDemoAuth, DemoAuthBasicUI } from "jazz-react-native";
 import ChatScreen from "./chat";
-import { MMKVStorage } from "./mmkv-storage";
+import { Jazz } from "./jazz";
 
-const nativeStorage = new MMKVStorage();
 const Stack = createNativeStackNavigator();
-
-const Jazz = createJazzRNApp({ nativeStorage });
-export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 const prefix = Linking.createURL("/");
 
@@ -65,6 +57,8 @@ function App() {
                 <NavigationContainer linking={linking} ref={navigationRef}>
                     <Stack.Navigator initialRouteName={initialRoute}>
                         <Stack.Screen
+                        <Stack.Screen
+                            options={{ title: "Jazz Chat" }}
                             name="ChatScreen"
                             component={ChatScreen}
                         />
@@ -75,7 +69,9 @@ function App() {
                     </Stack.Navigator>
                 </NavigationContainer>
             </Jazz.Provider>
-            <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+            {state.state !== "signedIn" ? (
+                <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+            ) : null}
         </StrictMode>
     );
 }

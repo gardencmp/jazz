@@ -1,5 +1,5 @@
 import React, { Text } from "react-native";
-import { useAcceptInvite } from "./App";
+import { useAcceptInvite } from "./jazz";
 import { Chat } from "./schema";
 
 type ChatScreenParams = {
