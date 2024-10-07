@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import { CoMap, co } from "../index.js";
+import { CoMap, co } from "../index.web.js";
 import { co as valueWithCoMarker } from "../internal.js";
 
 describe("co.json TypeScript validation", () => {
