@@ -16,7 +16,7 @@ import {
     DeeplyLoaded,
     DepthsIn,
     ID,
-    subscribeToCoValue,
+    createCoValueObservable,
 } from "jazz-tools";
 
 /** @category Context & Hooks */
@@ -60,11 +60,14 @@ export function createJazzReactApp<Acc extends Account>({
                           storage,
                       },
             ).then((context) => {
-                setCtx({...context, logOut: () => {
-                    context.logOut();
-                    setCtx(undefined);
-                    setSessionCount(sessionCount + 1);
-                }});
+                setCtx({
+                    ...context,
+                    logOut: () => {
+                        context.logOut();
+                        setCtx(undefined);
+                        setSessionCount(sessionCount + 1);
+                    },
+                });
                 return context.done;
             });
 
@@ -149,30 +152,38 @@ export function createJazzReactApp<Acc extends Account>({
         id: ID<V> | undefined,
         depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
     ): DeeplyLoaded<V, D> | undefined {
-        const [state, setState] = useState<{
-            value: DeeplyLoaded<V, D> | undefined;
-        }>({ value: undefined });
         const context = React.useContext(JazzContext);
 
         if (!context) {
             throw new Error("useCoState must be used within a JazzProvider");
         }
 
-        useEffect(() => {
-            if (!id) return;
+        const [observable] = React.useState(() => createCoValueObservable());
 
-            return subscribeToCoValue(
-                Schema,
-                id,
-                "me" in context ? context.me : context.guest,
-                depth,
-                (value) => {
-                    setState({ value });
+        const value = React.useSyncExternalStore<
+            DeeplyLoaded<V, D> | undefined
+        >(
+            React.useCallback(
+                (callback) => {
+                    if (!id) return () => {};
+
+                    const agent = "me" in context ? context.me : context.guest;
+
+                    return observable.subscribe(
+                        Schema,
+                        id,
+                        agent,
+                        depth,
+                        callback,
+                    );
                 },
-            );
-        }, [Schema, id, context]);
+                [Schema, id, context],
+            ),
+            () => observable.getCurrentValue(),
+            () => observable.getCurrentValue(),
+        );
 
-        return state.value;
+        return value;
     }
 
     function useAcceptInvite<V extends CoValue>({
