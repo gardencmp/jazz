@@ -13,7 +13,7 @@ export type CoJsonArray<T> = CoJsonValue<T>[] | readonly CoJsonValue<T>[];
 
 /**
  * Since we are forcing Typescript to elaborate the indexes from the given type passing
- * non-object values to CoJsonObjectWithIndex will return empty o
+ * non-object values to CoJsonObjectWithIndex will return an empty object
  * E.g. 
  *   CoJsonObjectWithIndex<() => void> --> {}
  *   CoJsonObjectWithIndex<RegExp> --> {}
