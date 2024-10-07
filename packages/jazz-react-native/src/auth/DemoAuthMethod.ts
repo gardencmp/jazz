@@ -107,24 +107,45 @@ export class RNDemoAuth implements AuthMethod {
                                         accountSecret: credentials.secret,
                                     } satisfies StorageData);
 
+                                    // Retrieve the list of existing users
+                                    const existingUsers =
+                                        await this.storage.get(
+                                            "demo-auth-existing-users",
+                                        );
+                                    const existingUsernames = existingUsers
+                                        ? existingUsers.split(",")
+                                        : [];
+
+                                    // Determine if the username already exists and generate a unique username
+                                    let uniqueUsername = username;
+                                    let counter = 1;
+                                    while (
+                                        existingUsernames.includes(
+                                            uniqueUsername,
+                                        )
+                                    ) {
+                                        counter++;
+                                        uniqueUsername = `${username}-${counter}`;
+                                    }
+
+                                    // Save credentials using the unique username
                                     await this.storage.set(
                                         localStorageKey,
                                         storageData,
                                     );
                                     await this.storage.set(
-                                        "demo-auth-existing-users-" + username,
+                                        "demo-auth-existing-users-" +
+                                            uniqueUsername,
                                         storageData,
                                     );
 
-                                    const existingUsers =
-                                        await this.storage.get(
-                                            "demo-auth-existing-users",
-                                        );
+                                    // Update the list of existing users
+                                    const updatedUsers = existingUsers
+                                        ? `${existingUsers},${uniqueUsername}`
+                                        : uniqueUsername;
                                     await this.storage.set(
                                         "demo-auth-existing-users",
-                                        existingUsers
-                                            ? existingUsers + "," + username
-                                            : username,
+                                        updatedUsers,
                                     );
                                 },
                                 onSuccess: () => {
