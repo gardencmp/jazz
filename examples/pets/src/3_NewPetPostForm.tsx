@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ChangeEvent, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import { createImage } from "jazz-browser-media-images";
