@@ -45,10 +45,10 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       react:
         specifier: ^18.2.0
@@ -79,6 +79,61 @@ importers:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@22.5.1)(terser@5.33.0)
 
+  e2e/CoValues:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../../packages/cojson
+      hash-slash:
+        specifier: workspace:*
+        version: link:../../packages/hash-slash
+      is-ci:
+        specifier: ^3.0.1
+        version: 3.0.1
+      jazz-react:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      react-router:
+        specifier: ^6.16.0
+        version: 6.21.0(react@18.2.0)
+      react-router-dom:
+        specifier: ^6.16.0
+        version: 6.21.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.46.1
+        version: 1.46.1
+      '@types/node':
+        specifier: ^22.5.1
+        version: 22.5.1
+      '@types/react':
+        specifier: ^18.2.19
+        version: 18.2.45
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.18
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.3.2
+        version: 3.5.0(vite@5.0.10(@types/node@22.5.1))
+      jstat:
+        specifier: ^1.9.6
+        version: 1.9.6
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vite:
+        specifier: ^5.0.10
+        version: 5.0.10(@types/node@22.5.1)
+
   examples/chat:
     dependencies:
       '@radix-ui/react-checkbox':
@@ -103,10 +158,10 @@ importers:
         specifier: workspace:0.2.0
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -209,13 +264,13 @@ importers:
         specifier: workspace:0.2.0
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -503,10 +558,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       react:
         specifier: ^18.2.0
@@ -570,10 +625,10 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       react:
         specifier: ^18.2.0
@@ -649,13 +704,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -760,10 +815,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -972,7 +1027,7 @@ importers:
         specifier: workspace:0.8.0
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -984,10 +1039,10 @@ importers:
         specifier: workspace:0.8.0
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
     devDependencies:
       typescript:
@@ -1003,10 +1058,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
@@ -1028,7 +1083,7 @@ importers:
         specifier: workspace:0.8.0
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1050,10 +1105,10 @@ importers:
         specifier: workspace:0.8.0
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1075,13 +1130,13 @@ importers:
         specifier: workspace:0.8.0
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-react
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
       react:
         specifier: ^18.2.0
@@ -1158,7 +1213,7 @@ importers:
         specifier: ^3.6.5
         version: 3.6.5
       jazz-tools:
-        specifier: workspace:0.8.1
+        specifier: workspace:0.8.2
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -5680,8 +5735,8 @@ packages:
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
 
-  jsonfile@6.1.0:
-    resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
+  jstat@1.9.6:
+    resolution: {integrity: sha512-rPBkJbK2TnA8pzs93QcDDPlKcrtZWuuCo2dVR0TFLOJSxhqfWOVCSp8aV3/oSbn+4uY4yw1URtLpHQedtmXfug==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -13944,11 +13999,7 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
-  jsonfile@6.1.0:
-    dependencies:
-      universalify: 2.0.1
-    optionalDependencies:
-      graceful-fs: 4.2.11
+  jstat@1.9.6: {}
 
   keyv@4.5.4:
     dependencies:

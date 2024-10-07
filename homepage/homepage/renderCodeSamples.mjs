@@ -93,7 +93,7 @@ await rm("./codeSamples", { recursive: true, force: true });
                     const component = `export function ${
                         path.basename(filename).slice(0, 1).toUpperCase() +
                         path.basename(filename).slice(1).replace(".", "_")
-                    }() {\n\treturn <div className="not-prose" dangerouslySetInnerHTML={{__html: \`${html
+                    }() {\n\treturn <div className="not-prose h-full" dangerouslySetInnerHTML={{__html: \`${html
                         .replace(/`/g, "\\`")
                         .replace(/\$/g, "\\$")}\`\n\t}}/>;\n}`;
 

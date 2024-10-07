@@ -62,13 +62,7 @@ export class SubscriptionScope<Root extends CoValue> {
     }
 
     scheduleUpdate() {
-        if (!this.scheduledUpdate) {
-            this.scheduledUpdate = true;
-            queueMicrotask(() => {
-                this.scheduledUpdate = false;
-                this.onUpdate(this.rootEntry.value);
-            });
-        }
+        this.onUpdate(this.rootEntry.value);
     }
 
     onRefAccessedOrSet(

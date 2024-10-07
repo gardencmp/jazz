@@ -1,5 +1,11 @@
 # jazz-tools
 
+## 0.8.2
+
+### Patch Changes
+
+-   a075f90: Fixed cursor reset when interacting with text inputs
+
 ## 0.8.1
 
 ### Patch Changes
