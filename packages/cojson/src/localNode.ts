@@ -21,10 +21,11 @@ import {
     ControlledAgent,
     RawAccountID,
     RawProfile,
+    RawProfile as Profile,
     RawAccountMigration,
     InvalidAccountAgentIDError,
 } from "./coValues/account.js";
-import { Profile, RawCoValue } from "./index.js";
+import { RawCoValue } from "./coValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { err, ok, okAsync, Result, ResultAsync } from "neverthrow";
 
@@ -180,66 +181,71 @@ export class LocalNode {
         crypto: CryptoProvider;
         migration?: RawAccountMigration<Meta>;
     }): Promise<LocalNode> {
-        const loadingNode = new LocalNode(
-            new ControlledAgent(accountSecret, crypto),
-            crypto.newRandomSessionID(accountID),
-            crypto,
-        );
-
-        for (const peer of peersToLoadFrom) {
-            loadingNode.syncManager.addPeer(peer);
-        }
-
-        const accountPromise = loadingNode.load(accountID);
-
-        const account = await accountPromise;
-
-        if (account === "unavailable") {
-            throw new Error("Account unavailable from all peers");
-        }
-
-        const controlledAccount = new RawControlledAccount(
-            account.core,
-            accountSecret,
-        );
-
-        // since this is all synchronous, we can just swap out nodes for the SyncManager
-        const node = loadingNode.testWithDifferentAccount(
-            controlledAccount,
-            sessionID || crypto.newRandomSessionID(accountID),
-        );
-        node.syncManager = loadingNode.syncManager;
-        node.syncManager.local = node;
-
-        controlledAccount.core.node = node;
-        node.coValues[accountID] = {
-            state: "loaded",
-            coValue: controlledAccount.core,
-        };
-        controlledAccount.core._cachedContent = undefined;
-
-        const profileID = account.get("profile");
-        if (!profileID) {
-            throw new Error("Account has no profile");
-        }
-        const profile = await node.load(profileID);
-
-        if (profile === "unavailable") {
-            throw new Error("Profile unavailable from all peers");
-        }
-
-        if (migration) {
-            await migration(
-                controlledAccount as RawControlledAccount<Meta>,
-                node,
+        try {
+            const loadingNode = new LocalNode(
+                new ControlledAgent(accountSecret, crypto),
+                crypto.newRandomSessionID(accountID),
+                crypto,
             );
-            node.account = new RawControlledAccount(
-                controlledAccount.core,
-                controlledAccount.agentSecret,
-            );
-        }
 
-        return node;
+            for (const peer of peersToLoadFrom) {
+                loadingNode.syncManager.addPeer(peer);
+            }
+
+            const accountPromise = loadingNode.load(accountID);
+
+            const account = await accountPromise;
+
+            if (account === "unavailable") {
+                throw new Error("Account unavailable from all peers");
+            }
+
+            const controlledAccount = new RawControlledAccount(
+                account.core,
+                accountSecret,
+            );
+
+            // since this is all synchronous, we can just swap out nodes for the SyncManager
+            const node = loadingNode.testWithDifferentAccount(
+                controlledAccount,
+                sessionID || crypto.newRandomSessionID(accountID),
+            );
+            node.syncManager = loadingNode.syncManager;
+            node.syncManager.local = node;
+
+            controlledAccount.core.node = node;
+            node.coValues[accountID] = {
+                state: "loaded",
+                coValue: controlledAccount.core,
+            };
+            controlledAccount.core._cachedContent = undefined;
+
+            const profileID = account.get("profile");
+            if (!profileID) {
+                throw new Error("Account has no profile");
+            }
+            const profile = await node.load(profileID);
+
+            if (profile === "unavailable") {
+                throw new Error("Profile unavailable from all peers");
+            }
+
+            if (migration) {
+                await migration(
+                    controlledAccount as RawControlledAccount<Meta>,
+                    node,
+                );
+                node.account = new RawControlledAccount(
+                    controlledAccount.core,
+                    controlledAccount.agentSecret,
+                );
+            }
+
+            return node;
+        } catch (e) {
+            console.error("Error withLoadedAccount", e);
+            throw e;
+        }
     }
 
     /** @internal */
@@ -606,12 +612,14 @@ export class LocalNode {
     /**
      * @deprecated use Account.createGroup() instead
      */
-    createGroup(uniqueness: CoValueUniqueness = this.crypto.createdNowUnique()): RawGroup {
+    createGroup(
+        uniqueness: CoValueUniqueness = this.crypto.createdNowUnique(),
+    ): RawGroup {
         const groupCoValue = this.createCoValue({
             type: "comap",
             ruleset: { type: "group", initialAdmin: this.account.id },
             meta: null,
-            ...uniqueness
+            ...uniqueness,
         });
 
         const group = expectGroup(groupCoValue.getCurrentContent());

@@ -1,4 +1,8 @@
-import { CoValueCore, CoValueHeader, CoValueUniqueness } from "../coValueCore.js";
+import {
+    CoValueCore,
+    CoValueHeader,
+    CoValueUniqueness,
+} from "../coValueCore.js";
 import { CoID, RawCoValue } from "../coValue.js";
 import {
     AgentSecret,
@@ -11,9 +15,9 @@ import {
 import { AgentID } from "../ids.js";
 import { RawCoMap } from "./coMap.js";
 import { RawGroup, InviteSecret } from "./group.js";
-import { LocalNode } from "../index.js";
 import { JsonObject } from "../jsonValue.js";
 import { err, ok, Result } from "neverthrow";
+import { LocalNode } from "../localNode.js";
 
 export function accountHeaderForInitialAgentSecret(
     agentSecret: AgentSecret,
@@ -92,7 +96,9 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
      * Creates a new group (with the current account as the group's first admin).
      * @category 1. High-level
      */
-    createGroup(uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()) {
+    createGroup(
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
+    ) {
         return this.core.node.createGroup(uniqueness);
     }
 

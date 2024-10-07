@@ -8,7 +8,7 @@ import {
     OutgoingSyncQueue,
     Peer,
 } from "../sync.js";
-import { CoID, RawCoValue } from "../index.js";
+import { CoID, RawCoValue } from "../coValue.js";
 import { connectedPeers } from "../streamUtils.js";
 import {
     chunkToKnownState,

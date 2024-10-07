@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
@@ -25,8 +26,9 @@ import { useUploadExampleData } from "./lib/useUploadExampleData";
  *
  * `<Jazz.Provider/>` also runs our account migration
  */
+
 const Jazz = createJazzReactApp({
-    AccountSchema: MusicaAccount
+    AccountSchema: MusicaAccount,
 });
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
@@ -101,7 +103,10 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 
     return (
         <>
-            <Jazz.Provider auth={auth} peer="wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io">
+            <Jazz.Provider
+                auth={auth}
+                peer="wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io"
+            >
                 {children}
             </Jazz.Provider>
             <DemoAuthBasicUI appName="Jazz Music Player" state={state} />

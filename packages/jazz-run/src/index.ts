@@ -11,7 +11,8 @@ import {
     createJazzContext,
     isControlledAccount,
 } from "jazz-tools";
-import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools";
+import { fixedCredentialsAuth } from "jazz-tools";
+import { randomSessionProvider } from "jazz-tools/src/internal.js";
 import { startSync } from "./startSync.js";
 
 const jazzTools = Command.make("jazz-tools");
@@ -72,7 +73,7 @@ const accountCreate = Command.make(
                     }),
                     sessionProvider: randomSessionProvider,
                     peersToLoadFrom: [peer2],
-                    crypto
+                    crypto,
                 }),
             );
 

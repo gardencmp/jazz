@@ -1,5 +1,5 @@
 import { RawCoID, SessionID } from "../ids.js";
-import { MAX_RECOMMENDED_TX_SIZE } from "../index.js";
+import { MAX_RECOMMENDED_TX_SIZE } from "../coValueCore.js";
 import { getPriorityFromHeader } from "../priority.js";
 import { CoValueKnownState, NewContentMessage } from "../sync.js";
 import { CoValueChunk } from "./index.js";

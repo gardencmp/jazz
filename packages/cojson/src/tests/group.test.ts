@@ -1,13 +1,11 @@
 import { expect, test } from "vitest";
-import {
-    LocalNode,
-    RawCoMap,
-    RawCoList,
-    RawCoStream,
-    RawBinaryCoStream,
-    WasmCrypto,
-} from "../index.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
+import { LocalNode } from "../localNode.js";
+import { RawCoList } from "../coValues/coList.js";
+import { RawCoMap } from "../coValues/coMap.js";
+import { RawCoStream } from "../coValues/coStream.js";
+import { RawBinaryCoStream } from "../coValues/coStream.js";
 
 const Crypto = await WasmCrypto.create();
 

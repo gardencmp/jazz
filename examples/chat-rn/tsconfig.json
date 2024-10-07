@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "bundler"
+  },
+  "exclude": [
+    "src/tests"
+  ]
+}

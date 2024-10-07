@@ -43,7 +43,10 @@ export type CoValueHeader = {
     meta: JsonObject | null;
 } & CoValueUniqueness;
 
-export type CoValueUniqueness = {uniqueness: JsonValue, createdAt?: `2${string}` | null}
+export type CoValueUniqueness = {
+    uniqueness: JsonValue;
+    createdAt?: `2${string}` | null;
+};
 
 export function idforHeader(
     header: CoValueHeader,
