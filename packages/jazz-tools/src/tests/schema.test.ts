@@ -123,4 +123,44 @@ describe("co.json TypeScript validation", () => {
                 data2?: valueWithCoMarker<InvalidType> | null;
             }>();
     });
+
+    it("should not accept functions", async () => {
+        class InvalidFunctionMap extends CoMap {
+            // @ts-expect-error Should not be considered valid
+            data = co.json<() => void>();
+        }
+
+        expectTypeOf(InvalidFunctionMap.create<InvalidFunctionMap>)
+            .parameter(0)
+            .toEqualTypeOf<{
+                data: valueWithCoMarker<() => void>;
+            }>();
+    });
+
+    it("should not accept RegExp", async () => {
+        class InvalidFunctionMap extends CoMap {
+            // @ts-expect-error Should not be considered valid
+            data = co.json<RegExp>();
+        }
+
+        expectTypeOf(InvalidFunctionMap.create<InvalidFunctionMap>)
+            .parameter(0)
+            .toEqualTypeOf<{
+                data: valueWithCoMarker<RegExp>;
+            }>();
+    });
+
+    it("should accept strings and numbers", async () => {
+        class InvalidFunctionMap extends CoMap {
+            str = co.json<string>();
+            num = co.json<number>();
+        }
+
+        expectTypeOf(InvalidFunctionMap.create<InvalidFunctionMap>)
+            .parameter(0)
+            .toEqualTypeOf<{
+                str: valueWithCoMarker<string>;
+                num: valueWithCoMarker<number>;
+            }>();
+    });
 });
