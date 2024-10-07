@@ -6,6 +6,14 @@ import {
     CoValueFromRaw,
 } from "../internal.js";
 
+/** @category Schema definition */
+export const Encoders = {
+    Date: {
+        encode: (value: Date) => value.toISOString(),
+        decode: (value: JsonValue) => new Date(value as string),
+    },
+};
+
 export type CoMarker = { readonly __co: unique symbol };
 /** @category Schema definition */
 export type co<T> = T | (T & CoMarker);
@@ -38,6 +46,9 @@ const optional = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null | undefined>,
+    Date: {
+        [SchemaInit]: { encoded: Encoders.Date } satisfies Schema,
+    } as unknown as co<Date | undefined>,
     literal<T extends (string | number | boolean)[]>(
         ..._lit: T
     ): co<T[number] | undefined> {
@@ -60,6 +71,9 @@ export const co = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null>,
+    Date: {
+        [SchemaInit]: { encoded: Encoders.Date } satisfies Schema,
+    } as unknown as co<Date>,
     literal<T extends (string | number | boolean)[]>(
         ..._lit: T
     ): co<T[number]> {
@@ -164,11 +178,3 @@ export type OptionalEncoder<V> =
       };
 
 import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
-
-/** @category Schema definition */
-export const Encoders = {
-    Date: {
-        encode: (value: Date) => value.toISOString(),
-        decode: (value: JsonValue) => new Date(value as string),
-    },
-};
