@@ -622,8 +622,6 @@ importers:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@22.5.1)(terser@5.33.0)
 
-  examples/musicPlayer: {}
-
   examples/password-manager:
     dependencies:
       jazz-react:
@@ -1001,8 +999,6 @@ importers:
       '@types/ws':
         specifier: ^8.5.5
         version: 8.5.10
-
-  packages/coverage: {}
 
   packages/hash-slash:
     devDependencies:

@@ -1,50 +1,57 @@
 # jazz-password-manager
 
+## 0.0.5
+
+### Patch Changes
+
+-   jazz-react@0.8.3
+-   jazz-tools@0.8.3
+
 ## 0.0.4
 
 ### Patch Changes
 
-- Updated dependencies [a075f90]
-  - jazz-tools@0.8.2
-  - jazz-react@0.8.2
+-   Updated dependencies [a075f90]
+    -   jazz-tools@0.8.2
+    -   jazz-react@0.8.2
 
 ## 0.0.3
 
 ### Patch Changes
 
-- Updated dependencies
-  - jazz-tools@0.8.1
-  - jazz-react@0.8.1
+-   Updated dependencies
+    -   jazz-tools@0.8.1
+    -   jazz-react@0.8.1
 
 ## 0.0.2
 
 ### Patch Changes
 
-- Updated dependencies [ad40b88]
-- Updated dependencies [23369dc]
-- Updated dependencies [c2b62a0]
-- Updated dependencies [1a979b6]
-- Updated dependencies [bcec3be]
-- Updated dependencies [6ce2051]
-  - jazz-tools@0.8.0
-  - jazz-react@0.8.0
+-   Updated dependencies [ad40b88]
+-   Updated dependencies [23369dc]
+-   Updated dependencies [c2b62a0]
+-   Updated dependencies [1a979b6]
+-   Updated dependencies [bcec3be]
+-   Updated dependencies [6ce2051]
+    -   jazz-tools@0.8.0
+    -   jazz-react@0.8.0
 
 ## 0.0.2-guest-auth.0
 
 ### Patch Changes
 
-- Updated dependencies
-  - jazz-react@0.7.35-guest-auth.6
-  - jazz-tools@0.7.35-guest-auth.6
+-   Updated dependencies
+    -   jazz-react@0.7.35-guest-auth.6
+    -   jazz-tools@0.7.35-guest-auth.6
 
 ## 0.0.1
 
 ### Patch Changes
 
-- Updated dependencies [49a8b54]
-- Updated dependencies [6f80282]
-- Updated dependencies [35bbcd9]
-- Updated dependencies [cac2ec9]
-- Updated dependencies [f350e90]
-  - jazz-tools@0.7.35
-  - jazz-react@0.7.35
+-   Updated dependencies [49a8b54]
+-   Updated dependencies [6f80282]
+-   Updated dependencies [35bbcd9]
+-   Updated dependencies [cac2ec9]
+-   Updated dependencies [f350e90]
+    -   jazz-tools@0.7.35
+    -   jazz-react@0.7.35
