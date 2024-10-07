@@ -18,7 +18,7 @@ describe("co.json TypeScript validation", () => {
     });
 
     it("should accept nested serializable types", async () => {
-        interface NestedInterface {
+        type NestedType = {
             outer: {
                 inner: {
                     value: string;
@@ -27,13 +27,30 @@ describe("co.json TypeScript validation", () => {
         }
 
         class ValidNestedMap extends CoMap {
-            data = co.json<NestedInterface>();
+            data = co.json<NestedType>();
         }
 
         expectTypeOf(ValidNestedMap.create<ValidNestedMap>)
             .parameter(0)
             .toEqualTypeOf<{
-                data: valueWithCoMarker<NestedInterface>;
+                data: valueWithCoMarker<NestedType>;
+            }>();
+    });
+
+    it("should accept types with optional attributes", async () => {
+        type TypeWithOptional = {
+            value: string;
+            optional?: string | null;
+        }
+
+        class ValidMap extends CoMap {
+            data = co.json<TypeWithOptional>();
+        }
+
+        expectTypeOf(ValidMap.create<ValidMap>)
+            .parameter(0)
+            .toEqualTypeOf<{
+                data: valueWithCoMarker<TypeWithOptional>;
             }>();
     });
 

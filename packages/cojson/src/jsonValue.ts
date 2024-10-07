@@ -8,7 +8,7 @@ export type JsonObject = { [key: string]: JsonValue | undefined };
 type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 type ExcludeEmpty<T> = T extends AtLeastOne<T> ? T : never; 
 
-export type CoJsonValue<T> = JsonAtom | CoJsonObjectWithIndex<T> | CoJsonArray<T> | RawCoID;
+export type CoJsonValue<T> = JsonAtom | CoJsonObjectWithIndex<T> | CoJsonArray<T> | JsonObject | JsonArray | RawCoID;
 export type CoJsonArray<T> = CoJsonValue<T>[] | readonly CoJsonValue<T>[];
 
 /**
