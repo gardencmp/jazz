@@ -20,4 +20,12 @@ export type CoJsonArray<T> = CoJsonValue<T>[] | readonly CoJsonValue<T>[];
  * 
  * Applying the ExcludeEmpty type here to make sure we don't accept functions or non-serializable values
  */
-export type CoJsonObjectWithIndex<T> = ExcludeEmpty<{ [K in keyof T & string]: JsonValue | undefined }>;
+export type CoJsonObjectWithIndex<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue1L<T[K]> | undefined }>;
+
+/**
+ * Manually handling the nested interface types to not get into infinite recursion issues.
+ */
+export type CoJsonValue1L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue2L<T[K]> | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
+export type CoJsonValue2L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue3L<T[K]> | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
+export type CoJsonValue3L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue4L<T[K]> | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
+export type CoJsonValue4L<T> = ExcludeEmpty<{ [K in keyof T & string]: JsonValue | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;

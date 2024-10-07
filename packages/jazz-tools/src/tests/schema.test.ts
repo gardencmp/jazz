@@ -37,6 +37,28 @@ describe("co.json TypeScript validation", () => {
             }>();
     });
 
+    it("should accept nested serializable interfaces", async () => {
+        interface InnerInterface {
+            value: string;
+        }
+
+        interface NestedInterface {
+            outer: {
+                inner: InnerInterface;
+            };
+        }
+
+        class ValidNestedMap extends CoMap {
+            data = co.json<NestedInterface>();
+        }
+
+        expectTypeOf(ValidNestedMap.create<ValidNestedMap>)
+            .parameter(0)
+            .toEqualTypeOf<{
+                data: valueWithCoMarker<NestedInterface>;
+            }>();
+    });
+
     it("should accept arrays of serializable types", async () => {
         interface ArrayInterface {
             numbers: number[];
