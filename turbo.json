@@ -7,9 +7,12 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["build"]
     },
-    "test": {},
+    "test": {
+      "dependsOn": ["build"]
+    },
     "lint": {},
     "type-check": {}
   }
