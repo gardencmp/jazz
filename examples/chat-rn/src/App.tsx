@@ -57,7 +57,6 @@ function App() {
                 <NavigationContainer linking={linking} ref={navigationRef}>
                     <Stack.Navigator initialRouteName={initialRoute}>
                         <Stack.Screen
-                        <Stack.Screen
                             options={{ title: "Jazz Chat" }}
                             name="ChatScreen"
                             component={ChatScreen}
