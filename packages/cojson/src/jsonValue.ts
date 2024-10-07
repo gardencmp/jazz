@@ -8,7 +8,7 @@ export type JsonObject = { [key: string]: JsonValue | undefined };
 type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 type ExcludeEmpty<T> = T extends AtLeastOne<T> ? T : never; 
 
-export type CoJsonValue<T> = JsonAtom | CoJsonObjectWithIndex<T> | CoJsonArray<T> | JsonObject | JsonArray | RawCoID;
+export type CoJsonValue<T> = JsonValue | CoJsonObjectWithIndex<T> | CoJsonArray<T>;
 export type CoJsonArray<T> = CoJsonValue<T>[] | readonly CoJsonValue<T>[];
 
 /**
@@ -25,7 +25,7 @@ export type CoJsonObjectWithIndex<T> = ExcludeEmpty<{ [K in keyof T & string]: C
 /**
  * Manually handling the nested interface types to not get into infinite recursion issues.
  */
-export type CoJsonValue1L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue2L<T[K]> | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
-export type CoJsonValue2L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue3L<T[K]> | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
-export type CoJsonValue3L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue4L<T[K]> | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
-export type CoJsonValue4L<T> = ExcludeEmpty<{ [K in keyof T & string]: JsonValue | undefined }> | JsonAtom | JsonArray | JsonObject | RawCoID;
+export type CoJsonValue1L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue2L<T[K]> | undefined }> | JsonValue;
+export type CoJsonValue2L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue3L<T[K]> | undefined }> | JsonValue;
+export type CoJsonValue3L<T> = ExcludeEmpty<{ [K in keyof T & string]: CoJsonValue4L<T[K]> | undefined }> | JsonValue;
+export type CoJsonValue4L<T> = ExcludeEmpty<{ [K in keyof T & string]: JsonValue | undefined }> | JsonValue;
