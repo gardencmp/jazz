@@ -39,7 +39,7 @@ importers:
         specifier: workspace:0.8.3
         version: link:../../packages/cojson
       hash-slash:
-        specifier: workspace:0.2.0
+        specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       is-ci:
         specifier: ^3.0.1
@@ -155,7 +155,7 @@ importers:
         specifier: workspace:0.8.3
         version: link:../../packages/cojson
       hash-slash:
-        specifier: workspace:0.2.0
+        specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
         specifier: workspace:0.8.3
@@ -261,7 +261,7 @@ importers:
         specifier: workspace:0.8.3
         version: link:../../packages/cojson
       hash-slash:
-        specifier: workspace:0.2.0
+        specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
         specifier: workspace:0.8.3
@@ -473,7 +473,7 @@ importers:
         specifier: workspace:0.8.3
         version: link:../../packages/cojson-transport-ws
       hash-slash:
-        specifier: workspace:0.2.0
+        specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       lucide-react:
         specifier: ^0.274.0

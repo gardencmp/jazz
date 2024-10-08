@@ -126,7 +126,7 @@ export const PasskeyAuthBasicUI = ({ state }: { state: PasskeyAuthState }) => {
                     />
                     <input
                         type="submit"
-                        value="Sign up as new account"
+                        value="Sign up"
                         style={{
                             background: "#000",
                             color: "#fff",

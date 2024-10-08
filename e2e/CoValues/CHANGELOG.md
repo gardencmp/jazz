@@ -1,5 +1,12 @@
 # @jazz-e2e/covalues
 
+## 0.0.84
+
+### Patch Changes
+
+-   Updated dependencies
+    -   hash-slash@0.2.1
+
 ## 0.0.83
 
 ### Patch Changes

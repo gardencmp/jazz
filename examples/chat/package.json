@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.85",
+  "version": "0.0.86",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,7 +21,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cojson": "workspace:0.8.3",
-    "hash-slash": "workspace:0.2.0",
+    "hash-slash": "workspace:0.2.1",
     "jazz-react": "workspace:0.8.3",
     "jazz-tools": "workspace:0.8.3",
     "lucide-react": "^0.274.0",

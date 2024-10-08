@@ -3,6 +3,8 @@ import {
     CodeExampleTabsProps,
 } from "@/components/CodeExampleTabs";
 
+import { CodeGroup as CodeGroupClient } from "@/components/CodeGroup";
+
 export function MultiplayerIcon({
     color,
     strokeWidth,
@@ -42,4 +44,8 @@ export function ResponsiveIframe(
 
 export function CodeExampleTabs(props: CodeExampleTabsProps) {
     return <CodeExampleTabsClient {...props} />;
+}
+
+export function CodeGroup(props: { children: React.ReactNode }) {
+    return <CodeGroupClient {...props}></CodeGroupClient>;
 }
