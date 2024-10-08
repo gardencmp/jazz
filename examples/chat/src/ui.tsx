@@ -1,6 +1,6 @@
 export function AppContainer(props: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col justify-between w-screen h-screen bg-stone-50 dark:bg-black dark:text-white">
+    <div className="flex flex-col justify-between w-screen h-screen bg-stone-50 pb-12 sm:pb-0 dark:bg-black dark:text-white">
       {props.children}
     </div>
   );
