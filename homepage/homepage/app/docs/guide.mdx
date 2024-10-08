@@ -1,5 +1,6 @@
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { JazzLogo } from "@/components/logos";
+import { CodeGroup } from "@/components/forMdx";
 import { ComingSoonBadge } from 'gcmp-design-system/src/app/components/atoms/ComingSoonBadge'
 
 <div className="not-prose">
@@ -26,6 +27,7 @@ and we'll know exactly where you're at.
 
 1. Create a project called "circular" from a generic Vite starter template:
 
+<CodeGroup>
     {/* prettier-ignore */}
     ```bash
     npx degit gardencmp/vite-ts-react-tailwind circular
@@ -33,6 +35,7 @@ and we'll know exactly where you're at.
     npm install
     npm run dev
     ```
+</CodeGroup>
 
     You should now have an empty app running, typically at [localhost:5173](http://localhost:5173).<br/>
 
@@ -44,14 +47,17 @@ and we'll know exactly where you're at.
 
     <small>(in a new terminal window):</small>
 
+<CodeGroup>
     {/* prettier-ignore */}
     ```bash
     cd circular
     npm install jazz-tools jazz-react
     ```
+</CodeGroup>
 
 3. Modify `src/main.tsx` to set up a Jazz context:
 
+<CodeGroup>
     {/* prettier-ignore */}
     ```tsx
     import React from "react"; // old
@@ -93,6 +99,7 @@ and we'll know exactly where you're at.
         </React.StrictMode>// old
     ); // old
     ```
+</CodeGroup>
 
 This sets Jazz up, extracts app-specific hooks for later, and wraps our app in the provider.
 
@@ -119,6 +126,7 @@ Let's start by defining a schema for our most central entity in Circular: an **I
 
 Create a new file `src/schema.ts` and add the following:
 
+<CodeGroup>
 ```ts
 import { CoMap, co } from "jazz-tools";
 
@@ -129,6 +137,7 @@ export class Issue extends CoMap {
     status? = co.literal("backlog", "in progress", "done");
 }
 ```
+</CodeGroup>
 
 {/* TODO: explain what's happening */}
 
@@ -138,6 +147,7 @@ CoValues are designed to be read like simple local JSON state. Let's see how we 
 
 Create a new file `src/components/Issue.tsx` and add the following:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { Issue } from "../schema";
@@ -153,6 +163,7 @@ export function IssueComponent({ issue }: { issue: Issue }) {
     );
 }
 ```
+</CodeGroup>
 
 Simple enough!
 
@@ -162,6 +173,7 @@ To actually see an Issue, we have to create one. This is where things start to g
 
 Let's modify `src/App.tsx` to prepare for creating an Issue and then rendering it:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react";
@@ -180,9 +192,11 @@ function App() {// old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 Now, finally, let's implement creating an issue:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
@@ -216,6 +230,7 @@ function App() {// old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 🏁 Now you should be able to create a new issue by clicking the button and then see it rendered!
 
@@ -255,6 +270,7 @@ This is exactly what the `useCoState` hook is for!
 
 Let's modify `src/App.tsx`:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
@@ -291,9 +307,11 @@ function App() { // old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 And now for the exciting part! Let's make `src/components/Issue.tsx` an editing component.
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { Issue } from "../schema"; // old
@@ -327,6 +345,7 @@ export function IssueComponent({ issue }: { issue: Issue }) { // old
     ); // old
 } // old
 ```
+</CodeGroup>
 
 <div className="text-xs uppercase text-stone-400 dark:text-stone-600 tracking-wider -mb-3">
     Preview
@@ -368,25 +387,31 @@ This works because CoValues
 
     1.  Directly on an instance:
 
+  <CodeGroup size="sm">
         ```ts
         const unsub = issue.subscribe([], (updatedIssue) => console.log(updatedIssue));
         ```
+  </CodeGroup>
 
     2.  If you only have an ID (this will load the issue if needed):
 
+  <CodeGroup size="sm">
         ```ts
         const unsub = Issue.subscribe(issueID, me, [], (updatedIssue) => {
             console.log(updatedIssue);
         });
         ```
+  </CodeGroup>
 
     3.  If you're in a React component, to re-render reactively:
+
         `tsx
         const issue = useCoState(Issue, issueID);
         `
 
-            By the way, `useCoState` is basically just an optimized version of
 
+            By the way, `useCoState` is basically just an optimized version of
+  <CodeGroup size="sm">
             ```ts
             function useCoState<V extends CoValue>(Schema: CoValueClass<V>, id?: ID<V>): V | undefined {
                 const { me } = useAccount();
@@ -397,6 +422,7 @@ This works because CoValues
                 return value;
             }
             ```
+  </CodeGroup>
 
 </aside>
 
@@ -410,6 +436,7 @@ Actually, all the Issue CoValues we've created so far **have already been automa
 
 So let's store the ID in window URL state and make sure our useState is in sync with that.
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
@@ -449,6 +476,7 @@ function App() { // old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 🏁 Now you should be able to create an issue, edit it, reload the page, and still see the same issue.
 
@@ -469,6 +497,7 @@ We'll learn more about access control in "Groups & Permissions", but for now let
 
 All we have to do is create a new group to own each new issue and add "everyone" as a "writer":
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
@@ -511,6 +540,7 @@ function App() { // old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 🏁 Now you should be able to open the Issue (with its unique URL) on another device or browser, or send it to a friend and you should be able to **edit it together in realtime!**
 
@@ -524,17 +554,20 @@ Let's extend our two data model to include "Projects" which have a list of tasks
 
 Using plain objects, you would probably type a Project like this:
 
+<CodeGroup>
 ```ts
 type Project = {
     name: string;
     issues: Issue[];
 };
 ```
+</CodeGroup>
 
 In order to create this more complex structure in a fully collaborative way, we're going to need _references_ that allow us to nest or link CoValues.
 
 Add the following to `src/schema.ts`:
 
+<CodeGroup>
 ```ts
 import { CoMap, CoList, co } from "jazz-tools";
 // old
@@ -552,11 +585,13 @@ export class Project extends CoMap {
     issues = co.ref(ListOfIssues);
 }
 ```
+</CodeGroup>
 
 Now let's change things up a bit in terms of components as well.
 
 First, we'll change `App.tsx` to create and render `Project`s instead of `Issue`s. (We'll move the `useCoState` into the `ProjectComponent` we'll create in a second).
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
@@ -597,11 +632,13 @@ function App() { // old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 Now we'll actually create the `ProjectComponent` that renders a `Project` and its `Issue`s.
 
 Create a new file `src/components/Project.tsx` and add the following:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { ID } from "jazz-tools";
@@ -636,6 +673,7 @@ export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {
     );
 }
 ```
+</CodeGroup>
 
 🏁 Now you should be able to create a project, add issues to it, share it, and edit it collaboratively!
 
@@ -651,6 +689,7 @@ The load-and-subscribe-on-access is a convenient way to have your rendering driv
 
 But you can also take more precise control over loading by defining a minimum-depth to load in `useCoState`:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { ID } from "jazz-tools";// old
@@ -685,6 +724,7 @@ export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// 
     );// old
 }// old
 ```
+</CodeGroup>
 
 The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and load each item in `issues` shallowly". (Since an `Issue` doesn't have any further references, "shallowly" actually means all its properties will be available).
 
@@ -718,6 +758,7 @@ Let's use these abstractions to build teams for a Project that we can invite peo
 
 Turns out, we're already mostly there! First, let's remove making the Project public:
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { useState } from "react"; // old
@@ -756,9 +797,11 @@ function App() { // old
 // old
 export default App; // old
 ```
+</CodeGroup>
 
 Now, inside ProjectComponent, let's add a button to invite guests (read-only) or members (read-write) to the Project.
 
+<CodeGroup>
 {/* prettier-ignore */}
 ```tsx
 import { ID } from "jazz-tools"; // old
@@ -806,6 +849,7 @@ export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// 
     );// old
 }// old
 ```
+</CodeGroup>
 
 <h3 id="consuming-invites">Consuming Invites</h3>
 <div className="text-amber-500 mt-52">
