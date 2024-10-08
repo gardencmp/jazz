@@ -17,19 +17,19 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
     <>
       <ChatBody>
         {chat.length > 0 ? (
-          chat.map(msg => <ChatBubble msg={msg} key={msg.id} />)
+          chat.map(msg => <ChatBubble msg={msg} key={msg.id}/>)
         ) : (
-          <EmptyChatMessage />
+          <EmptyChatMessage/>
         )}
       </ChatBody>
       <ChatInput
         onSubmit={text => {
-          chat.push(Message.create({ text }, { owner: chat._owner }));
+          chat.push(Message.create({text}, {owner: chat._owner}));
         }}
       />
     </>
   ) : (
-    <div>Loading...</div>
+    <div className="flex-1 flex justify-center items-center">Loading...</div>
   );
 }
 
