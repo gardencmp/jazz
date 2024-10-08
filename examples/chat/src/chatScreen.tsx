@@ -9,22 +9,35 @@ import {
   ChatInput,
   EmptyChatMessage,
 } from "./ui.tsx";
+import { useState } from "react";
 
 export function ChatScreen(props: { chatID: ID<Chat> }) {
   const chat = useCoState(Chat, props.chatID, [{}]);
+  const [showNLastMessages, setShowNLastMessages] = useState(30);
 
   return chat ? (
     <>
       <ChatBody>
         {chat.length > 0 ? (
-          chat.map(msg => <ChatBubble msg={msg} key={msg.id}/>)
+          chat
+            .slice(-showNLastMessages)
+            .reverse() // this plus flex-col-reverse on ChatBody gives us scroll-to-bottom behavior
+            .map(msg => <ChatBubble msg={msg} key={msg.id} />)
         ) : (
-          <EmptyChatMessage/>
+          <EmptyChatMessage />
+        )}
+        {chat.length > showNLastMessages && (
+          <button
+            className="px-4 py-1 block mx-auto my-2 border rounded"
+            onClick={() => setShowNLastMessages(showNLastMessages + 10)}
+          >
+            Show more
+          </button>
         )}
       </ChatBody>
       <ChatInput
         onSubmit={text => {
-          chat.push(Message.create({text}, {owner: chat._owner}));
+          chat.push(Message.create({ text }, { owner: chat._owner }));
         }}
       />
     </>
