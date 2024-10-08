@@ -9,7 +9,7 @@ export class LoginPage {
         this.page = page;
         this.usernameInput = page.getByRole("textbox");
         this.signupButton = page.getByRole("button", {
-            name: "Sign up as new account",
+            name: "Sign up",
         });
     }
 
@@ -25,7 +25,7 @@ export class LoginPage {
     async loginAs(value: string) {
         await this.page
             .getByRole("button", {
-                name: `Log in as "${value}"`,
+                name: value,
             })
             .click();
     }
