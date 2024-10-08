@@ -2,7 +2,8 @@ import { JsonValue } from "../jsonValue.js";
 import { base58 } from "@scure/base";
 import { AgentID, RawCoID, TransactionID } from "../ids.js";
 import { Stringified, parseJSON, stableStringify } from "../jsonStringify.js";
-import { RawAccountID, SessionID } from "../index.js";
+import { RawAccountID } from "../coValues/account.js";
+import { SessionID } from "../ids.js";
 
 export type SignerSecret = `signerSecret_z${string}`;
 export type SignerID = `signer_z${string}`;
@@ -103,6 +104,7 @@ export abstract class CryptoProvider<Blake3State = any> {
     }
 
     abstract emptyBlake3State(): Blake3State;
+    abstract cloneBlake3State(state: Blake3State): Blake3State;
     abstract blake3HashOnce(data: Uint8Array): Uint8Array;
     abstract blake3HashOnceWithContext(
         data: Uint8Array,
@@ -323,7 +325,10 @@ export class StreamingHash {
     }
 
     clone(): StreamingHash {
-        return new StreamingHash(this.crypto, new Uint8Array(this.state));
+        return new StreamingHash(
+            this.crypto,
+            this.crypto.cloneBlake3State(this.state),
+        );
     }
 }
 

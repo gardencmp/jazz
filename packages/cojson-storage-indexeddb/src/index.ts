@@ -92,7 +92,12 @@ export class IDBStorage {
         const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
             localNodeName,
             "storage",
-            { peer1role: "client", peer2role: "server", trace, crashOnClose: true },
+            {
+                peer1role: "client",
+                peer2role: "server",
+                trace,
+                crashOnClose: true,
+            },
         );
 
         await IDBStorage.open(
@@ -309,7 +314,9 @@ export class IDBStorage {
                                     ? undefined
                                     : coValueRow?.header,
                                 new: {},
-                                priority: cojsonInternals.getPriorityFromHeader(coValueRow?.header),
+                                priority: cojsonInternals.getPriorityFromHeader(
+                                    coValueRow?.header,
+                                ),
                             },
                         ];
 

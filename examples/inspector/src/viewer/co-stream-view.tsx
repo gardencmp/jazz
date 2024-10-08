@@ -5,16 +5,16 @@ import {
     RawCoStream,
     RawCoValue,
 } from "cojson";
-import { JsonObject, JsonValue } from "cojson/src/jsonValue";
+import { JsonObject, JsonValue } from "cojson/src/jsonValue.ts";
 import { PageInfo } from "./types";
-import { base64URLtoBytes } from "cojson/src/base64url";
+import { base64URLtoBytes } from "cojson/src/base64url.ts";
 import { useEffect, useState } from "react";
 import { ArrowDownToLine } from "lucide-react";
 import {
     BinaryStreamItem,
     BinaryStreamStart,
     CoStreamItem,
-} from "cojson/src/coValues/coStream";
+} from "cojson/src/coValues/coStream.ts";
 import { AccountOrGroupPreview } from "./value-renderer";
 
 // typeguard for BinaryStreamStart

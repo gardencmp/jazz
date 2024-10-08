@@ -35,7 +35,7 @@ import {
     Ui_tsx,
 } from "@/codeSamples/examples/chat/src";
 
-import Intro from "./intro.mdx";
+import HardThingsIntro from "./hardThings.mdx";
 import CoValuesIntro from "./coValuesIntro.mdx";
 import CoMapDescription from "./coValueDescriptions/coMapDescription.mdx";
 import CoListDescription from "./coValueDescriptions/coListDescription.mdx";
@@ -54,57 +54,298 @@ import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import MeshIntro from "./meshIntro.mdx";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import clsx from "clsx";
+import Link from "next/link";
+import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
+import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
+import { Button } from "@/components/Button";
+
+const ArrowDoodle = ({ className }: { className?: string }) => (
+    <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        width="107"
+        height="85"
+        viewBox="0 0 107 85"
+        fill="none"
+    >
+        <path
+            d="M3.87338 33.7809C32.7867 45.4747 65.5543 47.9975 91.7667 37.4141"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeLinecap="round"
+        />
+        <path
+            d="M74.1719 24.958C83.1201 33.0289 92.3253 37.1887 98.5899 34.6593"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeLinecap="round"
+        />
+        <path
+            d="M87.2448 58.8003C88.3842 46.6564 92.3253 37.1887 98.5899 34.6593"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeLinecap="round"
+        />
+    </svg>
+);
 
 export default function Home() {
     return (
-        <div className="space-y-16">
-            <HeroHeader
-                title="Instant sync."
-                slogan="A new way to build apps with distributed state."
-            />
+        <>
+            <div className="container py-16 md:py-24">
+                <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl mb-5 font-medium tracking-tighter text-balance">
+                    Build your next&nbsp;app with sync.
+                </h1>
 
-            <HairlineBleedGrid>
-                <LabelledFeatureIcon
-                    label="Cross-device sync"
-                    icon={MonitorSmartphoneIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Real-time multiplayer"
-                    icon={MousePointerSquareDashedIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Team/social features"
-                    icon={UsersIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Built-in permissions"
-                    icon={FileLock2Icon}
-                />
-                <LabelledFeatureIcon
-                    label="Cloud sync & storage"
-                    icon={UploadCloudIcon}
-                />
-                <LabelledFeatureIcon
-                    label="On-device storage"
-                    icon={HardDriveDownloadIcon}
-                />
-                <LabelledFeatureIcon
-                    label="Instant UI updates"
-                    icon={GaugeIcon}
-                />
-                <LabelledFeatureIcon
-                    label="E2EE & signatures"
-                    icon={KeyRoundIcon}
-                />
+                <p className="mb-8 text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
+                    Jazz is an open-source framework for building local-first
+                    apps, removing 90% of the backend and infrastructure
+                    complexity. Get real-time sync, storage, auth, permissions,
+                    instant UI updates, file uploads, and more &mdash; all on
+                    day one.
+                </p>
+            </div>
 
-                <div className="col-start-1 row-start-1 row-span-2 col-span-2 px-4 md:px-6 pb-4 text-base">
-                    <Prose>
-                        <Intro />
-                    </Prose>
+            <div className="py-16 bg-stone-100 dark:bg-stone-925 lg:py-32">
+                <div className="container grid gap-8 lg:gap-12">
+                    <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                        Hard things are easy now.
+                    </h2>
+                    <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
+                        <div className="md:col-span-5 flex flex-col justify-between">
+                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                                <p>
+                                    Ever notice how every stack just{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        reinvents shared state between users and
+                                        machines
+                                    </span>
+                                    ?
+                                </p>
+                                <p>
+                                    And far from the simple client-server model,
+                                    you routinely tackle{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        a mess of moving parts
+                                    </span>
+                                    , tech choices and deployment questions.
+                                </p>
+                                <p>
+                                    And{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        your app’s code is all over the place.
+                                    </span>
+                                </p>
+                            </div>
+                            <div className="w-full mt-8 lg:mt-12">
+                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                    <DiagramBeforeJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramBeforeJazz>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="hidden md:block relative pr-3 top-24">
+                            <ArrowDoodle className="w-full h-auto text-stone-300 dark:text-stone-800" />
+                        </div>
+
+                        <div className="md:col-span-5 flex flex-col justify-between">
+                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                                <p>
+                                    Jazz provides a single new abstraction to do
+                                    the whole job.
+                                </p>
+                                <p>
+                                    It turns the data flow around and gives you{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        mutable local state
+                                    </span>
+                                    , solving{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        sync
+                                    </span>
+                                    ,{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        concurrent editing
+                                    </span>{" "}
+                                    and{" "}
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        permissions
+                                    </span>{" "}
+                                    under the hood.
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-stone-900 dark:text-white">
+                                        All that’s left?
+                                    </span>{" "}
+                                    What makes your app your app.
+                                </p>
+                            </div>
+                            <div className="w-full mt-8 lg:mt-12">
+                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                    <DiagramAfterJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramAfterJazz>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </HairlineBleedGrid>
+            </div>
 
-            <div>
+            <div className="container py-3 lg:py-6">
+                <Prose>
+                    <HardThingsIntro />
+                </Prose>
+                <HairlineBleedGrid>
+                    <LabelledFeatureIcon
+                        label="Local-first on-device storage"
+                        icon={HardDriveDownloadIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Jazz persists all data you access or create
+                                    locally, so your users can keep using your
+                                    app offline or on sketchy connections.
+                                </P>
+                                <P>
+                                    When you’re back online, the local changes
+                                    are synced to the server.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Cross-device sync"
+                        icon={MonitorSmartphoneIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Build your app around what looks like simple
+                                    local state (that you mutate directly in
+                                    your frontend).
+                                </P>
+                                <P>
+                                    Log in as the same user on a second device
+                                    and everything is already just there, always
+                                    in sync.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Real-time multiplayer"
+                        icon={MousePointerSquareDashedIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Like sync between devices, if you share
+                                    state with other users it’s automatically
+                                    real-time multiplayer.
+                                </P>
+                                <P>
+                                    Use the same primitives to quickly build
+                                    cursors and other kinds of user presence UI.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Accounts, teams & social features"
+                        icon={UsersIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Accounts and Groups (Teams) are first class
+                                    entities that you can create and reference
+                                    locally in the client.
+                                </P>
+                                <P>
+                                    Building whole apps becomes as easy as
+                                    building the UI for them.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Built-in permissions"
+                        icon={FileLock2Icon}
+                        explanation={
+                            <>
+                                <P>
+                                    Every piece of data in Jazz has role-based
+                                    permissions, which you can define locally
+                                    when you create new objects.
+                                </P>
+                                <P>
+                                    Because pieces of data with different
+                                    permissions can still reference each other,
+                                    you can create very granular and expressive
+                                    permission structures.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Data & blob storage"
+                        icon={UploadCloudIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    You can use Jazz for both structured data as
+                                    well as binary streams or blobs, all of
+                                    which you can reference and load the same
+                                    way.
+                                </P>
+                                <P>
+                                    The syncing & persistence infrastructure
+                                    (Jazz Mesh or self-hosted) becomes both your
+                                    cloud database and blob storage.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Instant UI updates"
+                        icon={GaugeIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Because all data is mutated locally, you get
+                                    instant updates in all parts of your UI
+                                    subscribed to the updated data.
+                                </P>
+                                <P>
+                                    Remote changes are quick as well, because
+                                    only missing edits have to be exchanged.
+                                    Plus, with Jazz Mesh, you get
+                                    geographically-close caching.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="E2EE & signatures"
+                        icon={KeyRoundIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    All data in Jazz is end-to-end encrypted and
+                                    cryptographically signed by default, so you
+                                    know it can’t be tampered with and you don’t
+                                    have to trust the syncing & persistence
+                                    infrastructure.
+                                </P>
+                                <P>
+                                    You can still create server workers, but
+                                    like other users, their account has to be
+                                    given explicit permissions to access data.
+                                </P>
+                            </>
+                        }
+                    />
+                </HairlineBleedGrid>
+            </div>
+
+            <div className="container py-3 mt-8 lg:py-6 lg:mt-20">
                 <SectionHeader
                     title="First impressions..."
                     slogan="A chat app in 174 lines of code."
@@ -137,7 +378,7 @@ export default function Home() {
                     />
                     <div className="border-b order-first md:order-last flex flex-col md:border-b-0">
                         <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:border-stone-900 dark:bg-stone-900">
-                            <p className="flex items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
+                            <p className="items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
                                 result
                             </p>
                         </div>
@@ -149,7 +390,7 @@ export default function Home() {
                 </div>
             </div>
 
-            <div>
+            <div className="container py-3 lg:py-6">
                 <SectionHeader
                     title="Collaborative Values"
                     slogan="Your new building blocks."
@@ -162,7 +403,7 @@ export default function Home() {
 
             <GappedGrid
                 title="Bread-and-butter datastructures"
-                className="grid-cols-2 lg:grid-cols-4"
+                className="container grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
                     <H3>
@@ -204,7 +445,7 @@ export default function Home() {
 
             <GappedGrid
                 title="First-class files & binary data"
-                className="grid-cols-2 lg:grid-cols-4"
+                className="container grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
                     <H3>
@@ -227,7 +468,7 @@ export default function Home() {
 
             <GappedGrid
                 title="Secure permissions, authorship & teams"
-                className="grid-cols-2 lg:grid-cols-4"
+                className="container grid-cols-2 lg:grid-cols-4"
             >
                 <GridCard>
                     <H3>
@@ -247,7 +488,7 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <div>
+            <div className="container py-3 lg:py-6">
                 <SectionHeader
                     title="The Jazz Toolkit"
                     slogan="A high-level toolkit for building apps around CoValues."
@@ -259,7 +500,7 @@ export default function Home() {
                 </SmallProse>
             </div>
 
-            <GappedGrid>
+            <GappedGrid className="container py-3 lg:py-6">
                 <GridCard>
                     <SectionHeader
                         title="Auto-sub"
@@ -326,7 +567,7 @@ export default function Home() {
                 </GridCard>
             </GappedGrid>
 
-            <div>
+            <div className="container py-3 lg:py-6">
                 <SectionHeader
                     title="Jazz Mesh"
                     slogan="Serverless sync & storage for Jazz apps"
@@ -344,24 +585,24 @@ export default function Home() {
                 </P>
             </div>
 
-            <div>
-                <H3>Get Started</H3>
-                <UL>
-                    <LI>
-                        <TextLink href="/docs" target="_blank">
-                            Read the docs
-                        </TextLink>
-                    </LI>
-                    <LI>
-                        <TextLink
+            <div className="container py-3 lg:py-6">
+                <div className="flex flex-col justify-between gap-3">
+                    <h3 className="font-display text-stone-950 dark:text-white text-xl font-semibold tracking-tight lg:text-2xl">
+                        Get started
+                    </h3>
+                    <div className="flex gap-3">
+                        <Button href="/docs" variant="primary">
+                            Read documentation
+                        </Button>
+                        <Button
                             href="https://discord.gg/utDMjHYg42"
-                            target="_blank"
+                            variant="secondary"
                         >
-                            Join our Discord
-                        </TextLink>
-                    </LI>
-                </UL>
+                            Join Discord
+                        </Button>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

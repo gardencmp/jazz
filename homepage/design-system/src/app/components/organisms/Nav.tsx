@@ -38,7 +38,7 @@ export function Nav({
                 className={[
                     clsx(
                         "hidden md:flex sticky left-0 right-0 top-0 max-sm:bottom-0 w-full justify-center",
-                        "bg-stone-50 dark:bg-stone-950 border-b max-sm:border-t border-stone-50 dark:border-b-stone-950",
+                        "bg-white dark:bg-stone-950 border-b max-sm:border-t border-stone-50 dark:border-b-stone-950",
                         "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
                         "z-50",
                         menuOpen ? "h-[100dvh]" : "h-16"
@@ -144,16 +144,14 @@ export function Nav({
                             .filter((item) => !("icon" in item))
                             .slice(0, 3)
                             .map((item, i) => (
-                                <>
-                                    <NavLink
-                                        key={i}
-                                        href={item.href}
-                                        onClick={() => setMenuOpen(false)}
-                                        newTab={item.newTab}
-                                    >
-                                        {item.title}
-                                    </NavLink>
-                                </>
+                                <NavLink
+                                    key={i}
+                                    href={item.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    newTab={item.newTab}
+                                >
+                                    {item.title}
+                                </NavLink>
                             ))}
                     </div>
 

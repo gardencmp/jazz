@@ -167,7 +167,6 @@ export function FnDecl({
                     {<Highlight>{signature + ":"}</Highlight>}{" "}
                     <Highlight>{returnType}</Highlight>
                 </div>
-
                 <div className="pl-4 text-xs flex flex-col gap-2">
                     {typeParams.length > 0 && (
                         <div>

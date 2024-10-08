@@ -1,5 +1,22 @@
 # jazz-example-chat
 
+## 0.0.86
+
+### Patch Changes
+
+- Parent-frame friendlier naviation
+- Updated dependencies
+  - hash-slash@0.2.1
+
+## 0.0.85
+
+### Patch Changes
+
+- Updated dependencies
+  - cojson@0.8.3
+  - jazz-react@0.8.3
+  - jazz-tools@0.8.3
+
 ## 0.0.84
 
 ### Patch Changes
