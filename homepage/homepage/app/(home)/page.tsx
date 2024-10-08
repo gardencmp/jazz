@@ -105,19 +105,6 @@ export default function Home() {
                     instant UI updates, file uploads, and more &mdash; all on
                     day one.
                 </p>
-
-                <div className="flex gap-3">
-                    <Button href="/docs" variant="primary" size="lg">
-                        Read documentation
-                    </Button>
-                    <Button
-                        href="https://discord.gg/utDMjHYg42"
-                        variant="secondary"
-                        size="lg"
-                    >
-                        Join Discord
-                    </Button>
-                </div>
             </div>
 
             <div className="py-16 bg-stone-100 dark:bg-stone-925 lg:py-32">
