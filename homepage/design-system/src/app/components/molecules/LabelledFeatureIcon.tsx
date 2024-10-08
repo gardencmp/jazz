@@ -13,18 +13,18 @@ export function LabelledFeatureIcon({
     return (
         <div
             className={clsx(
-                "col-span-2 p-4 flex flex-col items-center justify-center gap-2",
+                "p-4 flex flex-col gap-3",
                 "not-prose text-base",
                 "border border-stone-200 dark:border-stone-900 rounded-xl"
             )}
         >
-            <div className="text-stone-500 mr-2">
-                <Icon strokeWidth={1} strokeLinecap="butt" size={40} />
+            <div>
+                <Icon  className="text-stone-500" strokeWidth={1} strokeLinecap="butt" size={40} />
             </div>
-            <div className="text-sm text-stone-700 md:text-base dark:text-stone-300">
+            <div className="text-stone-900 font-medium md:text-base dark:text-stone-100">
                 {label}
             </div>
-            <div className="text-xs text-stone-700 md:text-sm dark:text-stone-300">
+            <div className="leading-relaxed space-y-3 text-sm">
                 {explanation}
             </div>
         </div>
