@@ -98,7 +98,7 @@ export default function Home() {
                     Build your next&nbsp;app with sync.
                 </h1>
 
-                <p className="mb-8 text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
+                <p className="text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
                     Jazz is an open-source framework for building local-first
                     apps, removing 90% of the backend and infrastructure
                     complexity. Get real-time sync, storage, auth, permissions,
