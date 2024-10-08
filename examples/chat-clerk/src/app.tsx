@@ -13,7 +13,7 @@ export function App() {
     const group = Group.create({ owner: me });
     group.addMember("everyone", "writer");
     const chat = Chat.create([], { owner: group });
-    location.hash = "/chat/" + chat.id;
+    history.replaceState({}, "", "/#/chat/" + chat.id);
   };
 
   return (
