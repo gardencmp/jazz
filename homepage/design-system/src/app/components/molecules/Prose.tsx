@@ -5,7 +5,6 @@ export function Prose(props: { children: ReactNode; className?: string }) {
     return (
         <div
             className={clsx(
-                "mb-4",
                 "max-w-4xl prose-stone dark:prose-invert",
                 "prose-headings:font-display",
                 "lg:prose-h1:text-5xl prose-h1:font-medium prose-h1:tracking-tight",
