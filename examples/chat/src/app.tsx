@@ -14,6 +14,7 @@ export function App() {
     group.addMember("everyone", "writer");
     const chat = Chat.create([], { owner: group });
     history.replaceState({}, "", "/#/chat/" + chat.id);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
   };
 
   return (
