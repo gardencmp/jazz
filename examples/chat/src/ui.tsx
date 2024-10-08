@@ -1,6 +1,6 @@
 export function AppContainer(props: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col justify-between w-screen h-screen bg-stone-50 pb-12 sm:pb-0 dark:bg-black dark:text-white">
+    <div className="flex flex-col justify-between w-screen h-screen bg-stone-50 dark:bg-black dark:text-white">
       {props.children}
     </div>
   );
@@ -36,7 +36,7 @@ export function BubbleContainer(props: {
 
 export function BubbleBody(props: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl text-sm line-clamp-10 text-ellipsis bg-white dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
+    <div className="rounded-2xl text-sm line-clamp-10 text-ellipsis bg-white max-w-full whitespace-pre-wrap dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
       {props.children}
     </div>
   );
