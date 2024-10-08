@@ -16,7 +16,7 @@ export class BatchedOutgoingMessages {
             clearTimeout(this.timeout);
         }
 
-        if (messages.length > MAX_OUTGOING_MESSAGES_CHUNK_SIZE) {
+        if (messages.length >= MAX_OUTGOING_MESSAGES_CHUNK_SIZE) {
             this.sendMessagesInBulk();
         } else {
             this.timeout = setTimeout(() => {

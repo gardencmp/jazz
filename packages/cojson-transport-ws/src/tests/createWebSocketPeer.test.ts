@@ -88,11 +88,12 @@ describe("createWebSocketPeer", () => {
         };
         const promise = peer.outgoing.push(testMessage);
 
-        await new Promise<void>(queueMicrotask);
+        await waitFor(() => {
+            expect(mockWebSocket.send).toHaveBeenCalledWith(
+                JSON.stringify(testMessage),
+            );
+        });
 
-        expect(mockWebSocket.send).toHaveBeenCalledWith(
-            JSON.stringify(testMessage),
-        );
         await expect(promise).resolves.toBeUndefined();
     });
 
@@ -119,15 +120,12 @@ describe("createWebSocketPeer", () => {
         void peer.outgoing.push(message1);
         void peer.outgoing.push(message2);
 
-        await new Promise<void>(queueMicrotask);
+        await waitFor(() => {
+            expect(mockWebSocket.send).toHaveBeenCalled();
+        });
 
-        expect(mockWebSocket.send).toHaveBeenNthCalledWith(
-            1,
-            JSON.stringify(message1),
-        );
-        expect(mockWebSocket.send).not.toHaveBeenNthCalledWith(
-            2,
-            JSON.stringify(message2),
+        expect(mockWebSocket.send).toHaveBeenCalledWith(
+            [message1, message2].map((msg) => JSON.stringify(msg)).join("\n"),
         );
     });
 
@@ -152,18 +150,15 @@ describe("createWebSocketPeer", () => {
             priority: 1,
         };
 
-        void peer.outgoing.push(message1);
+        Array.from({ length: 10 }).forEach(() => {
+            void peer.outgoing.push(message1);
+        });
         void peer.outgoing.push(message2);
 
-        await new Promise<void>(queueMicrotask);
+        await vi.advanceTimersByTimeAsync(100);
 
-        expect(mockWebSocket.send).toHaveBeenNthCalledWith(
-            1,
-            JSON.stringify(message1),
-        );
-        expect(mockWebSocket.send).not.toHaveBeenNthCalledWith(
-            2,
-            JSON.stringify(message2),
+        expect(mockWebSocket.send).toHaveBeenCalledWith(
+            Array.from({ length: 10 }, () => message1).map((msg) => JSON.stringify(msg)).join("\n"),
         );
 
         mockWebSocket.bufferedAmount = 0;
@@ -186,3 +181,31 @@ describe("createWebSocketPeer", () => {
         expect(mockWebSocket.close).toHaveBeenCalled();
     });
 });
+
+function waitFor(callback: () => boolean | void) {
+    return new Promise<void>((resolve, reject) => {
+        const checkPassed = () => {
+            try {
+                return { ok: callback(), error: null };
+            } catch (error) {
+                return { ok: false, error };
+            }
+        };
+
+        let retries = 0;
+
+        const interval = setInterval(() => {
+            const { ok, error } = checkPassed();
+
+            if (ok !== false) {
+                clearInterval(interval);
+                resolve();
+            }
+
+            if (++retries > 10) {
+                clearInterval(interval);
+                reject(error);
+            }
+        }, 100);
+    });
+}
