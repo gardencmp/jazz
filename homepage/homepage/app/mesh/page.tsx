@@ -26,7 +26,7 @@ export default function Mesh() {
     return (
         <div className="container space-y-16">
             <HeroHeader
-                title="Sync & Storage Mesh"
+                title="Jazz Mesh"
                 slogan="The first Collaboration Delivery Network."
             />
 
