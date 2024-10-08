@@ -4,17 +4,9 @@ import {
     BUFFER_LIMIT_POLLING_INTERVAL,
     createWebSocketPeer,
 } from "../index.js";
-import { AnyWebSocket, PingMsg } from "../types.js";
+import { AnyWebSocket } from "../types.js";
 import { SyncMessage } from "cojson";
 import { Channel } from "cojson/src/streamUtils.ts";
-
-const g: typeof globalThis & {
-    jazzPings?: {
-        received: number;
-        sent: number;
-        dc: string;
-    }[];
-} = globalThis;
 
 function setup() {
     const listeners = new Map<string, (event: MessageEvent) => void>();
@@ -46,30 +38,6 @@ describe("createWebSocketPeer", () => {
         expect(peer).toHaveProperty("outgoing");
         expect(peer).toHaveProperty("role", "client");
         expect(peer).toHaveProperty("crashOnClose", false);
-    });
-
-    test("should handle ping messages", async () => {
-        const { listeners } = setup();
-
-        const pingMessage: PingMsg = {
-            type: "ping",
-            time: Date.now(),
-            dc: "test-dc",
-        };
-        const messageEvent = new MessageEvent("message", {
-            data: JSON.stringify(pingMessage),
-        });
-
-        const messageHandler = listeners.get("message");
-
-        messageHandler?.(messageEvent);
-
-        // Check if the ping was recorded in the global jazzPings array
-        expect(g.jazzPings?.length).toBeGreaterThan(0);
-        expect(g.jazzPings?.at(-1)).toMatchObject({
-            sent: pingMessage.time,
-            dc: pingMessage.dc,
-        });
     });
 
     test("should handle disconnection", async () => {

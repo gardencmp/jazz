@@ -5,15 +5,8 @@ import {
     SyncMessage,
     cojsonInternals,
 } from "cojson";
-import { AnyWebSocket, PingMsg } from "./types.js";
-
- const g: typeof globalThis & {
-    jazzPings?: {
-        received: number;
-        sent: number;
-        dc: string;
-    }[];
-} = globalThis;
+import { AnyWebSocket } from "./types.js";
+import { BatchedOutgoingMessages } from "./BatchedOutgoingMessages.js";
 
 export const BUFFER_LIMIT = 100_000;
 export const BUFFER_LIMIT_POLLING_INTERVAL = 10;
@@ -23,11 +16,13 @@ export function createWebSocketPeer({
     websocket,
     role,
     expectPings = true,
+    batchingByDefault = true,
 }: {
     id: string;
     websocket: AnyWebSocket;
     role: Peer["role"];
     expectPings?: boolean;
+    batchingByDefault?: boolean;
 }): Peer {
     const incoming = new cojsonInternals.Channel<
         SyncMessage | DisconnectedError | PingTimeoutError
@@ -43,26 +38,20 @@ export function createWebSocketPeer({
 
     let pingTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    websocket.addEventListener("message", function handleIncomingMsg(event) {
-        const msg = JSON.parse(event.data as string);
-        pingTimeout && clearTimeout(pingTimeout);
+    let supportsBatching = batchingByDefault;
 
-        if (msg?.type === "ping") {
-            const ping = msg as PingMsg;
-            g.jazzPings ||= [];
-            g.jazzPings.push({
-                received: Date.now(),
-                sent: ping.time,
-                dc: ping.dc,
-            });
+    websocket.addEventListener("message", function handleIncomingMsg(event) {
+        let messagesChunk = (event.data as string).split("\n").map((msg) => JSON.parse(msg));
+
+        if (!Array.isArray(messagesChunk)) {
+            messagesChunk = [messagesChunk];
         } else {
-            incoming
-                .push(msg)
-                .catch((e) =>
-                    console.error("Error while pushing incoming msg", e),
-                );
+            // If the messages are coming in chunks, we can assume that the other peer supports batching
+            supportsBatching = true;
         }
+
         if (expectPings) {
+            pingTimeout && clearTimeout(pingTimeout);
             pingTimeout = setTimeout(() => {
                 incoming
                     .push("PingTimeout")
@@ -70,6 +59,16 @@ export function createWebSocketPeer({
                         console.error("Error while pushing ping timeout", e),
                     );
             }, 10_000);
+        }
+
+        for (const msg of messagesChunk) {
+            if (msg?.type !== "ping") {
+                incoming
+                    .push(msg)
+                    .catch((e) =>
+                        console.error("Error while pushing incoming msg", e),
+                    );
+            }
         }
     });
 
@@ -81,20 +80,35 @@ export function createWebSocketPeer({
         }
     });
 
+    const outgoingMessages = new BatchedOutgoingMessages((messages) => {
+        if (websocket.readyState === 1) {
+            websocket.send(messages.map((msg) => JSON.stringify(msg)).join("\n"));
+        }
+    });
+
     async function pushMessage(msg: SyncMessage) {
         if (websocket.readyState !== 1) {
             await websocketOpen;
         }
 
-        while (websocket.bufferedAmount > BUFFER_LIMIT && websocket.readyState === 1) {
-            await new Promise<void>((resolve) => setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL));
+        while (
+            websocket.bufferedAmount > BUFFER_LIMIT &&
+            websocket.readyState === 1
+        ) {
+            await new Promise<void>((resolve) =>
+                setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL),
+            );
         }
 
         if (websocket.readyState !== 1) {
             return;
         }
 
-        websocket.send(JSON.stringify(msg));
+        if (!supportsBatching) {
+            websocket.send(JSON.stringify(msg));
+        } else {
+            outgoingMessages.push(msg);
+        }
     }
 
     return {
@@ -104,6 +118,8 @@ export function createWebSocketPeer({
             push: pushMessage,
             close() {
                 console.log("Trying to close", id, websocket.readyState);
+                outgoingMessages.close();
+
                 if (websocket.readyState === 0) {
                     websocket.addEventListener(
                         "open",

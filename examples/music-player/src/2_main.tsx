@@ -62,12 +62,15 @@ function Main() {
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
     const [auth, state] = useDemoAuth();
 
+    const peer =
+        (new URL(window.location.href).searchParams.get(
+            "peer",
+        ) as `ws://${string}`) ??
+        "wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io";
+
     return (
         <>
-            <Jazz.Provider
-                auth={auth}
-                peer="wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io"
-            >
+            <Jazz.Provider auth={auth} peer={peer}>
                 {children}
             </Jazz.Provider>
             <DemoAuthBasicUI appName="Jazz Music Player" state={state} />

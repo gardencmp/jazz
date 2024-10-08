@@ -62,6 +62,7 @@ const accountCreate = Command.make(
                 id: "upstream2",
                 websocket: new WebSocket(peerAddr),
                 role: "server",
+                batching: false,
             });
 
             yield* Effect.promise(async () =>
