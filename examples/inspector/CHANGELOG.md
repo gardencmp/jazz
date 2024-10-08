@@ -1,5 +1,12 @@
 # jazz-example-inspector
 
+## 0.0.62
+
+### Patch Changes
+
+-   Updated dependencies
+    -   hash-slash@0.2.1
+
 ## 0.0.61
 
 ### Patch Changes
