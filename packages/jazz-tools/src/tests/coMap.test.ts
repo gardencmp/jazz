@@ -18,7 +18,7 @@ const Crypto = await WasmCrypto.create();
 class TestMap extends CoMap {
     color = co.string;
     _height = co.number;
-    birthday = co.encoded(Encoders.Date);
+    birthday = co.Date;
     name? = co.string;
     nullable = co.optional.encoded<string | undefined>({
         encode: (value: string | undefined) => value || null,
