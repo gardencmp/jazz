@@ -94,20 +94,16 @@ export default function Home() {
     return (
         <>
             <div className="container py-16 md:py-24">
-                <h1 className="font-display text-stone-950 dark:text-white text-5xl lg:text-7xl mb-5 font-medium tracking-tighter">
-                    Instant sync.
+                <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl mb-5 font-medium tracking-tighter text-balance">
+                    Build your next&nbsp;app with sync.
                 </h1>
-                <p className="mb-8 text-3xl lg:text-4xl leading-snug tracking-tight dark:text-stone-500">
-                    A new way to build apps with distributed state.
-                </p>
 
                 <p className="mb-8 text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
-                    Jazz is an open-source framework that lets you{" "}
-                    <span className="font-semibold text-stone-900 dark:text-white">
-                        build apps around data that’s synced in real-time
-                        between devices and users
-                    </span>
-                    . It replaces 90% of what frontend + backend stacks do.
+                    Jazz is an open-source framework for building local-first
+                    apps, removing 90% of the backend and infrastructure
+                    complexity. Get real-time sync, storage, auth, permissions,
+                    instant UI updates, file uploads, and more &mdash; all on
+                    day one.
                 </p>
 
                 <div className="flex gap-3">
@@ -127,7 +123,7 @@ export default function Home() {
             <div className="py-16 bg-stone-100 dark:bg-stone-925 lg:py-32">
                 <div className="container grid gap-8 lg:gap-12">
                     <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
-                        Your stack just lost its job.
+                        Hard things are easy now.
                     </h2>
                     <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
                         <div className="md:col-span-5 flex flex-col justify-between">
@@ -208,6 +204,160 @@ export default function Home() {
                 </div>
             </div>
 
+            <div className="container py-3 lg:py-6">
+                <Prose>
+                    <HardThingsIntro />
+                </Prose>
+                <HairlineBleedGrid>
+                    <LabelledFeatureIcon
+                        label="Local-first on-device storage"
+                        icon={HardDriveDownloadIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Jazz persists all data you access or create
+                                    locally, so your users can keep using your
+                                    app offline or on sketchy connections.
+                                </P>
+                                <P>
+                                    When you’re back online, the local changes
+                                    are synced to the server.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Cross-device sync"
+                        icon={MonitorSmartphoneIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Build your app around what looks like simple
+                                    local state (that you mutate directly in
+                                    your frontend).
+                                </P>
+                                <P>
+                                    Log in as the same user on a second device
+                                    and everything is already just there, always
+                                    in sync.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Real-time multiplayer"
+                        icon={MousePointerSquareDashedIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Like sync between devices, if you share
+                                    state with other users it’s automatically
+                                    real-time multiplayer.
+                                </P>
+                                <P>
+                                    Use the same primitives to quickly build
+                                    cursors and other kinds of user presence UI.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Accounts, teams & social features"
+                        icon={UsersIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Accounts and Groups (Teams) are first class
+                                    entities that you can create and reference
+                                    locally in the client.
+                                </P>
+                                <P>
+                                    Building whole apps becomes as easy as
+                                    building the UI for them.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Built-in permissions"
+                        icon={FileLock2Icon}
+                        explanation={
+                            <>
+                                <P>
+                                    Every piece of data in Jazz has role-based
+                                    permissions, which you can define locally
+                                    when you create new objects.
+                                </P>
+                                <P>
+                                    Because pieces of data with different
+                                    permissions can still reference each other,
+                                    you can create very granular and expressive
+                                    permission structures.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Data & blob storage"
+                        icon={UploadCloudIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    You can use Jazz for both structured data as
+                                    well as binary streams or blobs, all of
+                                    which you can reference and load the same
+                                    way.
+                                </P>
+                                <P>
+                                    The syncing & persistence infrastructure
+                                    (Jazz Mesh or self-hosted) becomes both your
+                                    cloud database and blob storage.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="Instant UI updates"
+                        icon={GaugeIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    Because all data is mutated locally, you get
+                                    instant updates in all parts of your UI
+                                    subscribed to the updated data.
+                                </P>
+                                <P>
+                                    Remote changes are quick as well, because
+                                    only missing edits have to be exchanged.
+                                    Plus, with Jazz Mesh, you get
+                                    geographically-close caching.
+                                </P>
+                            </>
+                        }
+                    />
+                    <LabelledFeatureIcon
+                        label="E2EE & signatures"
+                        icon={KeyRoundIcon}
+                        explanation={
+                            <>
+                                <P>
+                                    All data in Jazz is end-to-end encrypted and
+                                    cryptographically signed by default, so you
+                                    know it can’t be tampered with and you don’t
+                                    have to trust the syncing & persistence
+                                    infrastructure.
+                                </P>
+                                <P>
+                                    You can still create server workers, but
+                                    like other users, their account has to be
+                                    given explicit permissions to access data.
+                                </P>
+                            </>
+                        }
+                    />
+                </HairlineBleedGrid>
+            </div>
+
             <div className="container py-3 mt-8 lg:py-6 lg:mt-20">
                 <SectionHeader
                     title="First impressions..."
@@ -251,151 +401,6 @@ export default function Home() {
                         />
                     </div>
                 </div>
-            </div>
-
-            <div className="container py-3 lg:py-6">
-                <Prose>
-                    <HardThingsIntro />
-                </Prose>
-                <HairlineBleedGrid>
-                    <LabelledFeatureIcon
-                        label="Cross-device sync"
-                        icon={MonitorSmartphoneIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    Build your app around what looks like simple local state (that you mutate directly from your UI).
-                                </P>
-                                <P>
-                                    Log in as the same user on a second device
-                                    and everything is already just there, always
-                                    in sync.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="Real-time multiplayer"
-                        icon={MousePointerSquareDashedIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    Like sync between devices, if share state
-                                    with other users it’s automatically
-                                    real-time multiplayer.
-                                </P>
-                                <P>
-                                    Plus you can use the same primitives to
-                                    quickly build cursors and other kinds of
-                                    user presence UI.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="Accounts, teams & social features"
-                        icon={UsersIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    In Jazz, Accounts and Groups (Teams) are
-                                    first class entities that you can create and
-                                    reference locally in the client.
-                                </P>
-                                <P>
-                                    Building whole apps becomes as easy as
-                                    building the UI for them.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="Built-in permissions"
-                        icon={FileLock2Icon}
-                        explanation={
-                            <>
-                                <P>
-                                    Every piece of data in Jazz (CoValues)
-                                    belong to a Group, whose member’s roles
-                                    determine what they can do with the data.
-                                </P>
-                                <P>
-                                    CoValues belonging to different groups still
-                                    can reference each other, letting you create
-                                    very granular and expressive permissions
-                                    structures.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="Hybrid data & blob storage"
-                        icon={UploadCloudIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    You can use Jazz for both structured data as
-                                    well as binary streams or blobs, all of
-                                    which you can reference and granularly load
-                                    the same way.
-                                </P>
-                                <P>
-                                    The syncing & persistence infrastructure
-                                    (Jazz Mesh or self-hosted) becomes both your
-                                    cloud database and blob storage.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="Local-first on-device storage"
-                        icon={HardDriveDownloadIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    Jazz persists all data you access or create
-                                    locally, which means that your users can
-                                    keep using your app offline or on sketchy
-                                    connections.
-                                </P>
-                                <P>
-                                    When you’re back online, the local
-                                    changes are synced to the server.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="Instant UI updates"
-                        icon={GaugeIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    Because all data is mutated locally, you get instant updates in all parts of your UI subscribed the updated data.
-                                </P>
-                                <P>
-                                    Remote changes are quick as well, because only missing edits have to be exchanged. Plus, with Jazz Mesh, you get geographically-close caching.
-                                </P>
-                            </>
-                        }
-                    />
-                    <LabelledFeatureIcon
-                        label="E2EE & signatures"
-                        icon={KeyRoundIcon}
-                        explanation={
-                            <>
-                                <P>
-                                    All data in Jazz is end-to-end encrypted and cryptographically
-                                    signed by default, so you know it can’t be
-                                    tampered with and you don’t have to trust the syncing & persistence infrastructure.
-                                </P>
-                                <P>
-                                    You can still create server workers, but like other users, their account has to be given explicit permissions to access data.
-                                </P>
-                            </>
-                        }
-                    />
-                </HairlineBleedGrid>
             </div>
 
             <div className="container py-3 lg:py-6">
