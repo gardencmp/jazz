@@ -70,7 +70,7 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       lineClamp: {
-        20: '20',
+        10: '10',
       },
     },
   },
