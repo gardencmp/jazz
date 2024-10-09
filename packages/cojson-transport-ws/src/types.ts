@@ -9,7 +9,6 @@ export interface PingMsg {
     type: "ping";
     time: number;
     dc: string;
-    v?: number;
 }
 
 export interface AnyWebSocket {
