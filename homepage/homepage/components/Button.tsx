@@ -20,7 +20,7 @@ export function Button(props: ButtonProps) {
 
     const sizeClasses = {
         md: "py-2 px-3",
-        lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3",
+        lg: "md:text-lg  py-2 px-3 md:px-6 md:py-3",
     };
 
     const variantClasses = {
