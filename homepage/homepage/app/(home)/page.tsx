@@ -533,6 +533,18 @@ export default function Home() {
               </div>
 
               <div>
+                  <p className="uppercase tracking-wide ">Supported environments</p>
+                  <H2>Jazz works with your favorite stack</H2>
+
+                  <div className="grid grid-cols-4 gap-8">
+                      <div className="border p-3 min-h-24">Browser (react, vanilla js)</div>
+                      <div className="border p-3 min-h-24">react native <ComingSoonBadge/></div>
+                      <div className="border p-3 min-h-24">nodejs <ComingSoonBadge/></div>
+                      <div className="border p-3 min-h-24">swift, kotlin, rust <ComingSoonBadge/></div>
+                  </div>
+              </div>
+
+              <div>
                   <SectionHeader
                     title="Collaborative Values"
                     slogan="Your new building blocks."
@@ -630,29 +642,7 @@ export default function Home() {
                   </GridCard>
               </GappedGrid>
 
-              <div>
-                  <SectionHeader
-                    title="The Jazz Toolkit"
-                    slogan="A high-level toolkit for building apps around CoValues."
-                  />
-
-                  <Prose>Supported environments:</Prose>
-                  <SmallProse>
-                      <SupportedEnvironments/>
-                  </SmallProse>
-              </div>
-
               <GappedGrid>
-                  <GridCard>
-                      <SectionHeader
-                        title="Auto-sub"
-                        slogan="Let your UI drive data-syncing."
-                      />
-                      <SmallProse>
-                          <AutoSubDescription/>
-                      </SmallProse>
-                  </GridCard>
-
                   <GridCard>
                       <SectionHeader
                         title="Cursors & carets"
@@ -680,21 +670,6 @@ export default function Home() {
                       />
                       <SmallProse>
                           <TwoWaySyncDescription/>
-                      </SmallProse>
-                  </GridCard>
-
-                  <GridCard>
-                      <SectionHeader
-                        title="File upload & download"
-                        slogan={
-                            <>
-                                Just use{" "}
-                                <CodeRef>{`<input type='file'/>`}</CodeRef>.
-                            </>
-                        }
-                      />
-                      <SmallProse>
-                          <FileUploadDownloadDescription/>
                       </SmallProse>
                   </GridCard>
 
