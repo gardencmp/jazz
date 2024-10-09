@@ -3,16 +3,22 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createHashRouter } from "react-router-dom";
 import "./index.css";
 
-import {
-    createJazzReactApp,
-    DemoAuthBasicUI,
-    useDemoAuth,
-} from "jazz-react";
+import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
 
-import { Button, ThemeProvider, TitleAndLogo } from "./basicComponents/index.ts";
+import {
+    Button,
+    ThemeProvider,
+    TitleAndLogo,
+} from "./basicComponents/index.ts";
 import { NewPetPostForm } from "./3_NewPetPostForm.tsx";
 import { RatePetPostUI } from "./4_RatePetPostUI.tsx";
 import { PetAccount, PetPost } from "./1_schema.ts";
+
+const peer =
+    (new URL(window.location.href).searchParams.get(
+        "peer",
+    ) as `ws://${string}`) ??
+    "wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io";
 
 /** Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
@@ -34,7 +40,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
         <>
             <Jazz.Provider
                 auth={auth}
-                peer="wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io"
+                peer={peer}
             >
                 {children}
             </Jazz.Provider>

@@ -9,6 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write './src/**/*.{ts,tsx}'",
     "preview": "vite preview",
+    "sync": "jazz-run sync",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },
@@ -49,6 +50,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "is-ci": "^3.0.1",
+    "jazz-run": "workspace:0.8.3",
     "postcss": "^8.4.27",
     "tailwindcss": "3.3.2",
     "typescript": "^5.3.3",
