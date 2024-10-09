@@ -266,8 +266,18 @@ export default function Home() {
                   <div className="border rounded p-3 col-span-2">
                       <span
                         className="bg-blue text-white rounded-full w-5 h-5 inline-flex items-center justify-center">1</span>
-                      <p>create a schema</p>
-                      <code>code sample</code>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <p>Create a schema using CoValues, which:</p>
+                              <ul className="list-disc pl-4">
+                                  <li>can be read & edited like simple local JSON state</li>
+                                  <li>can be created anywhere, are automatically synced & persisted</li>
+                                  <li>always keep full edit history & author metadata</li>
+                                  <li>automatically resolve most conflicts</li>
+                              </ul>
+                          </div>
+                          <code className="bg-stone-100">code sample</code>
+                      </div>
                   </div>
 
                   <div className="border rounded p-3 ">
@@ -350,20 +360,19 @@ export default function Home() {
                       <HardThingsIntro/>
                   </Prose>
 
+
                   <HairlineBleedGrid>
                       <LabelledFeatureIcon
-                        label="Local-first on-device storage"
+                        label="Local-first storage"
                         icon={HardDriveDownloadIcon}
                         explanation={
                             <>
                                 <p>
-                                    Jazz persists all data you access or
-                                    create locally, so your users can keep
-                                    using your app offline or on sketchy
-                                    connections.
+                                    All data you load or create is persisted
+                                    locally, so your users can work offline.
                                 </p>
                                 <p>
-                                    When you’re back online, the local
+                                    When you’re back online, your local
                                     changes are synced to the server.
                                 </p>
                             </>
@@ -375,14 +384,12 @@ export default function Home() {
                         explanation={
                             <>
                                 <p>
-                                    Build your app around what looks like
-                                    simple local state (that you mutate
-                                    directly in your frontend).
+                                    Build your app around mutable local
+                                    state attached to an account.
                                 </p>
                                 <p>
-                                    Log in as the same user on a second
-                                    device and everything is already just
-                                    there, always in sync.
+                                    Every device with the same account will
+                                    always have everything in sync.
                                 </p>
                             </>
                         }
@@ -393,31 +400,28 @@ export default function Home() {
                         explanation={
                             <>
                                 <p>
-                                    Like sync between devices, if you share
-                                    state with other users it’s
-                                    automatically real-time multiplayer.
+                                    Share state with other users and get
+                                    automatic real-time multiplayer.
                                 </p>
                                 <p>
                                     Use the same primitives to quickly build
-                                    cursors and other kinds of user presence
-                                    UI.
+                                    user presence UI, like cursors.
                                 </p>
                             </>
                         }
                       />
                       <LabelledFeatureIcon
-                        label="Accounts, teams & social features"
+                        label="Teams & social features"
                         icon={UsersIcon}
                         explanation={
                             <>
                                 <p>
-                                    Accounts and Groups (Teams) are first
-                                    class entities that you can create and
-                                    reference locally in the client.
+                                    Groups of accounts are first class
+                                    entities that you can create anywhere.
                                 </p>
                                 <p>
-                                    Building whole apps becomes as easy as
-                                    building the UI for them.
+                                    Building multi-user apps becomes as easy
+                                    as building the UI for them.
                                 </p>
                             </>
                         }
@@ -428,16 +432,12 @@ export default function Home() {
                         explanation={
                             <>
                                 <p>
-                                    Every piece of data in Jazz has
-                                    role-based permissions, which you can
-                                    define locally when you create new
-                                    objects.
+                                    Control access to data with role-based
+                                    permissions, easily defined locally.
                                 </p>
                                 <p>
-                                    Because pieces of data with different
-                                    permissions can still reference each
-                                    other, you can create very granular and
-                                    expressive permission structures.
+                                    Reference data across permission scopes
+                                    for granular access control.
                                 </p>
                             </>
                         }
@@ -448,21 +448,17 @@ export default function Home() {
                         explanation={
                             <>
                                 <p>
-                                    You can use Jazz for both structured
-                                    data as well as binary streams or blobs,
-                                    all of which you can reference and load
-                                    the same way.
+                                    Create & handle structured data and
+                                    binary streams/blobs the same way.
                                 </p>
                                 <p>
-                                    The syncing & persistence infrastructure
-                                    (
                                     <Link
                                       className="underline"
                                       href="/mesh"
                                     >
                                         Jazz Mesh
                                     </Link>{" "}
-                                    or self-hosted) becomes both your cloud
+                                    or your own server become both cloud
                                     database and blob storage.
                                 </p>
                             </>
@@ -474,15 +470,12 @@ export default function Home() {
                         explanation={
                             <>
                                 <p>
-                                    Because all data is mutated locally, you
-                                    get instant updates in all parts of your
-                                    UI subscribed to the updated data.
+                                    Get instant updates throughout your UI
+                                    every time you locally mutate data.
                                 </p>
                                 <p>
-                                    Remote changes are quick as well,
-                                    because only missing edits have to be
-                                    exchanged. Plus, with Jazz Mesh, you get
-                                    geographically-close caching.
+                                    Remote changes are synced and applied
+                                    with minimal latency.
                                 </p>
                             </>
                         }
@@ -493,17 +486,12 @@ export default function Home() {
                         explanation={
                             <>
                                 <p>
-                                    All data in Jazz is end-to-end encrypted
-                                    and cryptographically signed by default,
-                                    so you know it can’t be tampered with
-                                    and you don’t have to trust the syncing
-                                    & persistence infrastructure.
+                                    All data is end-to-end encrypted and
+                                    cryptographically signed by default.
                                 </p>
                                 <p>
-                                    You can still create server workers, but
-                                    like other users, their account has to
-                                    be given explicit permissions to access
-                                    data.
+                                    So it can’t be tampered with and Jazz
+                                    Mesh only sees encrypted data.
                                 </p>
                             </>
                         }
@@ -511,6 +499,15 @@ export default function Home() {
                       <LabelledFeatureIcon
                         label="Authentication"
                         icon={KeyRoundIcon}
+                        explanation={
+                            <>
+                                <p>Plug and play different kinds of auth.</p>
+                                <ul className="list-disc pl-4">
+                                    <li>DemoAuth (for quick multi-user demos)</li>
+                                    <li>WebAuthN (TouchID/FaceID)</li>
+                                </ul>
+                            </>
+                        }
                       />
                   </HairlineBleedGrid>
               </div>
@@ -533,7 +530,7 @@ export default function Home() {
               </div>
 
               <div>
-                  <p className="uppercase tracking-wide ">Supported environments</p>
+                  <p className="uppercase tracking-wide font-medium text-sm">Supported environments</p>
                   <H2>Jazz works with your favorite stack</H2>
 
                   <div className="grid grid-cols-4 gap-8">
@@ -544,19 +541,10 @@ export default function Home() {
                   </div>
               </div>
 
-              <div>
-                  <SectionHeader
-                    title="Collaborative Values"
-                    slogan="Your new building blocks."
-                  />
-
-                  <Prose>
-                      <CoValuesIntro/>
-                  </Prose>
-              </div>
 
               <GappedGrid
                 title="Bread-and-butter datastructures"
+                description="Collaborative values"
                 className="grid-cols-2 lg:grid-cols-4"
               >
                   <GridCard>
@@ -642,7 +630,9 @@ export default function Home() {
                   </GridCard>
               </GappedGrid>
 
+
               <GappedGrid>
+                  <H2 className="col-span-full ">COMING SOON</H2>
                   <GridCard>
                       <SectionHeader
                         title="Cursors & carets"
@@ -682,6 +672,17 @@ export default function Home() {
                           <VideoPresenceCallsDescription/>
                       </SmallProse>
                   </GridCard>
+
+                  <div className="col-span-4 bg-stone-100 rounded p-4 space-y-4">
+                      <H2>Do you need any features that we haven&apos;t implemented yet?</H2>
+                      <div className="leading-relaxed text-lg space-y-2">
+                          <p>Become an early adopter, and help us shape the future of Jazz while building your app.</p>
+                          <p>We care about your feedback, and want to make sure you succeed.</p>
+                      </div>
+                      <div>
+                          <Button href="#" variant="primary">Let&apos;s talk on Discord</Button>
+                      </div>
+                  </div>
               </GappedGrid>
 
               <div>

@@ -5,11 +5,13 @@ import { H2 } from "../../components/atoms/Headings";
 export function GappedGrid({
     children,
     className,
-    title
+    title,
+    description
 }: {
     children: ReactNode;
     className?: string;
     title?: string;
+    description?: string;
 }) {
     return (
         <div
@@ -19,6 +21,7 @@ export function GappedGrid({
                 className
             )}
         >
+            {description && <p className="uppercase tracking-wide font-medium text-sm">{description}</p>}
             {title && <H2 className="col-span-full">{title}</H2>}
             {children}
         </div>

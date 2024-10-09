@@ -24,9 +24,9 @@ export function LabelledFeatureIcon({
             <div className="text-stone-900 font-medium md:text-base dark:text-stone-100">
                 {label}
             </div>
-            {/*<div className="leading-relaxed space-y-3 text-sm">*/}
-            {/*    {explanation}*/}
-            {/*</div>*/}
+            <div className="leading-relaxed space-y-3 text-sm">
+                {explanation}
+            </div>
         </div>
     );
 }
