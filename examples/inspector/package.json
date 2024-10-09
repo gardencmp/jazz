@@ -1,7 +1,7 @@
 {
   "name": "jazz-inspector",
   "private": true,
-  "version": "0.0.62",
+  "version": "0.0.63",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,8 +15,8 @@
     "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "cojson": "workspace:0.8.3",
-    "cojson-transport-ws": "workspace:0.8.3",
+    "cojson": "workspace:0.8.5",
+    "cojson-transport-ws": "workspace:0.8.5",
     "hash-slash": "workspace:0.2.1",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",

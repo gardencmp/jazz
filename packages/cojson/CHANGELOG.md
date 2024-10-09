@@ -1,5 +1,12 @@
 # cojson
 
+## 0.8.5
+
+### Patch Changes
+
+-   c3f4e6b: Fix order of exports fields in package.json
+-   d9152ed: Allow interface types as generic argument in co.json
+
 ## 0.8.3
 
 ### Patch Changes
