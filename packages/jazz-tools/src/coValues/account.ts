@@ -80,7 +80,10 @@ export class Account extends CoValueBase implements CoValue {
     declare profile: Profile | null;
     declare root: CoMap | null;
 
-    get _refs() {
+    get _refs(): {
+        profile: RefIfCoValue<Profile> | undefined;
+        root: RefIfCoValue<CoMap> | undefined;
+    } {
         const profileID = this._raw.get("profile") as unknown as
             | ID<NonNullable<this["profile"]>>
             | undefined;

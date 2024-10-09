@@ -10,14 +10,14 @@ Start by checking out `jazz`
 
 ```bash
 git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/musicPlayer
+cd jazz/examples/music-player
 pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/musicPlayer # or any other directory
-tar -xf /tmp/jazz-example-musicPlayer-* --strip-components 1 -C ~/jazz-examples/musicPlayer
-cd ~/jazz-examples/musicPlayer
+mkdir -p ~/jazz-examples/music-player # or any other directory
+tar -xf /tmp/jazz-example-music-player-* --strip-components 1 -C ~/jazz-examples/music-player
+cd ~/jazz-examples/music-player
 ```
 
-This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
+This ensures you have the example app without git history and independent of the Jazz multi-package monorepo.
 
 Install dependencies:
 

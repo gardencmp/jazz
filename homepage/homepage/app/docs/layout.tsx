@@ -13,7 +13,7 @@ export default function DocsLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="relative grid grid-cols-12 gap-x-8 py-8">
+        <div className="container relative grid grid-cols-12 gap-x-8 py-8">
             <DocNav
                 className={cn(
                     "md:col-span-4 lg:col-span-3",

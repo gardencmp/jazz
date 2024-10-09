@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.3
+
+### Patch Changes
+
+-   Experimental support for React Native
+
 ## 0.8.0
 
 ### Patch Changes

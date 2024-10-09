@@ -45,7 +45,7 @@ function highlightPlugin() {
             let lineNo = -1;
 
             node.type = "html";
-            node.value = `<pre><code class="not-prose py-2 flex flex-col leading-relaxed">${lines
+            node.value = `<code class="not-prose py-2 flex flex-col leading-relaxed">${lines
                 .map((line) => {
                     const isSubduedLine = line.some((token) =>
                         token.content.includes("// old"),
@@ -67,7 +67,7 @@ function highlightPlugin() {
                         "</span>"
                     );
                 })
-                .join("\n")}</code></pre>`;
+                .join("\n")}</code>`;
             node.children = [];
             return SKIP;
         }

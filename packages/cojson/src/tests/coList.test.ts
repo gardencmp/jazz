@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import { expectList } from "../coValue.js";
-import { WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
 const Crypto = await WasmCrypto.create();
 

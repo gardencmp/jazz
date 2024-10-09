@@ -1,6 +1,6 @@
 const Crypto = await WasmCrypto.create();
 import { expect, describe, test, expectTypeOf } from "vitest";
-import { connectedPeers } from "cojson/src/streamUtils.js";
+import { connectedPeers } from "cojson/src/streamUtils.ts";
 import {
     Account,
     CoList,
@@ -14,7 +14,7 @@ import {
     ID,
     createJazzContext,
     fixedCredentialsAuth,
-} from "../index.js";
+} from "../index.web.js";
 import { randomSessionProvider } from "../internal.js";
 
 class TestMap extends CoMap {

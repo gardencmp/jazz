@@ -6,7 +6,7 @@ import {
 } from "../index.js";
 import { AnyWebSocket, PingMsg } from "../types.js";
 import { SyncMessage } from "cojson";
-import { Channel } from "cojson/src/streamUtils";
+import { Channel } from "cojson/src/streamUtils.ts";
 
 const g: typeof globalThis & {
     jazzPings?: {

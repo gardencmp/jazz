@@ -12,6 +12,7 @@
             "jazz-browser-auth-clerk",
             "jazz-react-auth-clerk",
             "jazz-react",
+            "jazz-react-native",
             "jazz-nodejs",
             "jazz-run",
             "cojson-transport-ws",

@@ -8,10 +8,13 @@ export function BreadCrumb({
     items: { title: string; href: string }[];
 }) {
     const pathName = usePathname();
+    const title = items.find((item) => item.href === pathName)?.title;
+
+    if (!title) return null;
 
     return (
-        <span className="text-sm font-bold">
-            {items.find((item) => item.href === pathName)?.title}
+        <span className="text-sm font-semibold">
+            {title}
         </span>
     );
 }

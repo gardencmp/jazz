@@ -1,7 +1,7 @@
 {
   "name": "jazz-inspector",
   "private": true,
-  "version": "0.0.60",
+  "version": "0.0.62",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,9 +15,9 @@
     "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "cojson": "workspace:0.8.0",
-    "cojson-transport-ws": "workspace:0.8.0",
-    "hash-slash": "workspace:0.2.0",
+    "cojson": "workspace:0.8.3",
+    "cojson-transport-ws": "workspace:0.8.3",
+    "hash-slash": "workspace:0.2.1",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
@@ -41,7 +41,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "postcss": "^8.4.27",
-    "tailwindcss": "^3.3.3",
+    "tailwindcss": "3.3.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.10"
   }

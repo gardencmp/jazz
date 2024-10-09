@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import { useAccount } from "../2_main";
 import { uploadMusicTracks } from "@/4_actions";
@@ -5,7 +6,7 @@ import { MusicaAccount } from "@/1_schema";
 
 export function useUploadExampleData() {
     const { me } = useAccount({
-        root: {}
+        root: {},
     });
 
     const shouldUploadOnboardingData = me?.root?.exampleDataLoaded === false;
@@ -18,7 +19,7 @@ export function useUploadExampleData() {
                 me.root.exampleDataLoaded = true;
             });
         }
-    }, [shouldUploadOnboardingData])
+    }, [shouldUploadOnboardingData]);
 }
 
 async function uploadOnboardingData(me: MusicaAccount) {

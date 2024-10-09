@@ -16,7 +16,7 @@ export function TopBar(props: { children: React.ReactNode }) {
 
 export function ChatBody(props: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto flex flex-col-reverse">
       {props.children}
     </div>
   );
@@ -36,7 +36,7 @@ export function BubbleContainer(props: {
 
 export function BubbleBody(props: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl text-sm bg-white dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
+    <div className="rounded-2xl text-sm line-clamp-10 text-ellipsis bg-white max-w-full whitespace-pre-wrap dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
       {props.children}
     </div>
   );
@@ -56,6 +56,7 @@ export function ChatInput(props: { onSubmit: (text: string) => void }) {
       <input
         className="rounded-full py-2 px-4 text-sm border block w-full dark:bg-black dark:text-white dark:border-stone-700"
         placeholder="Type a message and press Enter"
+        maxLength={2048}
         onKeyDown={({ key, currentTarget: input }) => {
           if (key !== "Enter" || !input.value) return;
           props.onSubmit(input.value);
