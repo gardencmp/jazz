@@ -780,7 +780,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.3
+        specifier: workspace:0.8.4
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
