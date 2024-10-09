@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :focus {
+    @apply outline-none;
+  }
+
+  :focus-visible {
+    @apply ring-2 ring-purple-600/75 dark:ring-2 dark:ring-white/75;
+  }
+}

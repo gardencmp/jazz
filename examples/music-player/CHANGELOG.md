@@ -1,5 +1,14 @@
 # jazz-example-musicplayer
 
+## 0.0.7
+
+### Patch Changes
+
+-   Updated dependencies [c3f4e6b]
+-   Updated dependencies [d9152ed]
+    -   jazz-tools@0.8.5
+    -   jazz-react@0.8.5
+
 ## 0.0.6
 
 ### Patch Changes
