@@ -1,12 +1,11 @@
 import { Redirect, Stack } from "expo-router";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "../../src/auth-context";
 
 export default function UnAuthenticatedLayout() {
-    const { isSignedIn } = useAuth();
+    const { isAuthenticated } = useAuth();
 
-    if (isSignedIn) {
-        // return <Redirect href={"/chat"} />;
-        return <Redirect href={"/"} />;
+    if (isAuthenticated) {
+        return <Redirect href={"/chat"} />;
     }
 
     return (

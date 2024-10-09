@@ -1,7 +1,6 @@
 import * as React from "react";
-import { TextInput, Button, View, Text, TouchableOpacity } from "react-native";
+import { TextInput, View, Text, TouchableOpacity } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
-import { clsx } from "clsx"; // Use clsx for conditional classes if needed
 import { useNavigation } from "@react-navigation/native";
 
 export default function SignUpPage() {
@@ -12,12 +11,12 @@ export default function SignUpPage() {
     const [pendingVerification, setPendingVerification] = React.useState(false);
     const [code, setCode] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState("");
-    const navigation = useNavigation(); // Initialize navigation
+    const navigation = useNavigation();
 
     const onSignUpPress = async () => {
         if (!isLoaded) return;
 
-        setErrorMessage(""); // Clear any existing error messages
+        setErrorMessage("");
 
         try {
             await signUp.create({
@@ -56,7 +55,6 @@ export default function SignUpPage() {
 
             if (completeSignUp.status === "complete") {
                 await setActive({ session: completeSignUp.createdSessionId });
-                // navigation.navigate("ChatScreen");
             } else {
                 console.error(JSON.stringify(completeSignUp, null, 2));
                 setErrorMessage("Failed to verify. Please check your code.");

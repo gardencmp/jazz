@@ -3,6 +3,7 @@ const { getDefaultConfig } = require("expo/metro-config");
 const { FileStore } = require("metro-cache");
 const path = require("path");
 
+// eslint-disable-next-line no-undef
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
 

@@ -20,11 +20,10 @@ import * as Clipboard from "expo-clipboard";
 
 export default function Conversation() {
     const { chatId } = useLocalSearchParams();
-    const { me, logOut } = useAccount();
+    const { me } = useAccount();
     const [chat, setChat] = useState<Chat>();
     const [message, setMessage] = useState("");
     const loadedChat = useCoState(Chat, chat?.id, [{}]);
-    const [isLoading, setIsLoading] = useState(false);
     const navigation = useNavigation();
 
     useEffect(() => {

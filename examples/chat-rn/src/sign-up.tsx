@@ -56,6 +56,7 @@ export function SignUpPage() {
 
             if (completeSignUp.status === "complete") {
                 await setActive({ session: completeSignUp.createdSessionId });
+                // @ts-ignore
                 navigation.navigate("ChatScreen");
             } else {
                 console.error(JSON.stringify(completeSignUp, null, 2));

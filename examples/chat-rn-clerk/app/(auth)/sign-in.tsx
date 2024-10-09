@@ -1,5 +1,5 @@
 import { useSignIn } from "@clerk/clerk-expo";
-import { Text, TextInput, Button, View, TouchableOpacity } from "react-native";
+import { Text, TextInput, View, TouchableOpacity } from "react-native";
 import React from "react";
 import { Link } from "expo-router";
 
