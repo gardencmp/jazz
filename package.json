@@ -22,8 +22,9 @@
         "dev": "turbo dev",
         "build": "turbo build && cd homepage/homepage && pnpm run build",
         "lint": "turbo lint && cd homepage/homepage && pnpm run lint",
-        "test": "vitest --coverage.enabled=false",
-        "test:coverage": "vitest --ui --coverage --watch",
+        "test": "vitest",
+        "test:ci": "vitest --coverage.enabled=true",
+        "test:coverage": "vitest --ui --coverage.enabled=true",
         "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
         "changeset": "changeset",
         "changeset-version": "changeset version",
@@ -41,7 +42,7 @@
                 "expo-modules-*",
                 "typescript"
             ]
-},
+        },
         "overrides": {
             "react": "18.3.1",
             "react-dom": "18.3.1"

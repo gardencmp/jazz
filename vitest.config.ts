@@ -5,7 +5,7 @@ export default defineConfig({
     root: "./",
     test: {
         coverage: {
-            enabled: true,
+            enabled: false,
             provider: "istanbul",
             include: ["packages/*/src/**/*.ts"],
             exclude: ["packages/*/src/tests"],
@@ -20,7 +20,6 @@ export default defineConfig({
             },
         },
         include: ["packages/*/tests/**/*.test.ts"],
-        watch: false,
         watchExclude: ["**/node_modules/**", "**/dist/**"],
         maxConcurrency: 5,
     },
