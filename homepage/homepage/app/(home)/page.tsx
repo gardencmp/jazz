@@ -3,7 +3,6 @@ import {
     Prose,
     SmallProse,
 } from "gcmp-design-system/src/app/components/molecules/Prose";
-import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
@@ -11,10 +10,6 @@ import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molec
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
-import { UL } from "gcmp-design-system/src/app/components/molecules/List";
-import { LI } from "gcmp-design-system/src/app/components/atoms/ListItem";
-import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
-import { TextLink } from "gcmp-design-system/src/app/components/atoms/TextLink";
 
 import {
     UploadCloudIcon,
@@ -35,7 +30,6 @@ import {
     Ui_tsx,
 } from "@/codeSamples/examples/chat/src";
 
-import HardThingsIntro from "./hardThings.mdx";
 import CoValuesIntro from "./coValuesIntro.mdx";
 import CoMapDescription from "./coValueDescriptions/coMapDescription.mdx";
 import CoListDescription from "./coValueDescriptions/coListDescription.mdx";
@@ -54,7 +48,6 @@ import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import MeshIntro from "./meshIntro.mdx";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
-import clsx from "clsx";
 import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
@@ -193,25 +186,24 @@ export default function Home() {
 
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
                 <div className="flex flex-col gap-4 md:gap-6">
-                    <Prose>
-                        <HardThingsIntro />
-                    </Prose>
+                    <SectionHeader
+                        title="Everything you need to ship top-tier apps quickly."
+                        slogan="Features that used to take months to build now work out-of-the-box."
+                    />
 
                     <HairlineBleedGrid>
                         <LabelledFeatureIcon
-                            label="Local-first on-device storage"
+                            label="Local-first storage"
                             icon={HardDriveDownloadIcon}
                             explanation={
                                 <>
                                     <p>
-                                        Jazz persists all data you access or
-                                        create locally, so your users can keep
-                                        using your app offline or on sketchy
-                                        connections.
+                                        All data you load or create is persisted
+                                        locally, so your users can work offline.
                                     </p>
                                     <p>
-                                        When you’re back online, the local
-                                        changes are synced to the server.
+                                        Even on sketchy connections, local
+                                        changes are continuously synced out.
                                     </p>
                                 </>
                             }
@@ -222,14 +214,12 @@ export default function Home() {
                             explanation={
                                 <>
                                     <p>
-                                        Build your app around what looks like
-                                        simple local state (that you mutate
-                                        directly in your frontend).
+                                        Build your app around mutable local
+                                        state attached to an account.
                                     </p>
                                     <p>
-                                        Log in as the same user on a second
-                                        device and everything is already just
-                                        there, always in sync.
+                                        Every device with the same account will
+                                        always have everything in sync.
                                     </p>
                                 </>
                             }
@@ -240,31 +230,28 @@ export default function Home() {
                             explanation={
                                 <>
                                     <p>
-                                        Like sync between devices, if you share
-                                        state with other users it’s
-                                        automatically real-time multiplayer.
+                                        Share state with other users and get
+                                        automatic real-time multiplayer.
                                     </p>
                                     <p>
                                         Use the same primitives to quickly build
-                                        cursors and other kinds of user presence
-                                        UI.
+                                        user presence UI, like cursors.
                                     </p>
                                 </>
                             }
                         />
                         <LabelledFeatureIcon
-                            label="Accounts, teams & social features"
+                            label="Teams & social features"
                             icon={UsersIcon}
                             explanation={
                                 <>
                                     <p>
-                                        Accounts and Groups (Teams) are first
-                                        class entities that you can create and
-                                        reference locally in the client.
+                                        Groups of accounts are first class
+                                        entities that you can create anywhere.
                                     </p>
                                     <p>
-                                        Building whole apps becomes as easy as
-                                        building the UI for them.
+                                        Building multi-user apps becomes as easy
+                                        as building the UI for them.
                                     </p>
                                 </>
                             }
@@ -275,16 +262,12 @@ export default function Home() {
                             explanation={
                                 <>
                                     <p>
-                                        Every piece of data in Jazz has
-                                        role-based permissions, which you can
-                                        define locally when you create new
-                                        objects.
+                                        Control access to data with role-based
+                                        permissions, easily defined locally.
                                     </p>
                                     <p>
-                                        Because pieces of data with different
-                                        permissions can still reference each
-                                        other, you can create very granular and
-                                        expressive permission structures.
+                                        Reference data across permission scopes
+                                        for granular access control.
                                     </p>
                                 </>
                             }
@@ -295,21 +278,17 @@ export default function Home() {
                             explanation={
                                 <>
                                     <p>
-                                        You can use Jazz for both structured
-                                        data as well as binary streams or blobs,
-                                        all of which you can reference and load
-                                        the same way.
+                                        Create & handle structured data and
+                                        binary streams/blobs the same way.
                                     </p>
                                     <p>
-                                        The syncing & persistence infrastructure
-                                        (
                                         <Link
                                             className="underline"
                                             href="/mesh"
                                         >
                                             Jazz Mesh
                                         </Link>{" "}
-                                        or self-hosted) becomes both your cloud
+                                        or your own server become both cloud
                                         database and blob storage.
                                     </p>
                                 </>
@@ -321,15 +300,12 @@ export default function Home() {
                             explanation={
                                 <>
                                     <p>
-                                        Because all data is mutated locally, you
-                                        get instant updates in all parts of your
-                                        UI subscribed to the updated data.
+                                        Get instant updates throughout your UI
+                                        every time you locally mutate data.
                                     </p>
                                     <p>
-                                        Remote changes are quick as well,
-                                        because only missing edits have to be
-                                        exchanged. Plus, with Jazz Mesh, you get
-                                        geographically-close caching.
+                                        Remote changes are synced and applied
+                                        with minimal latency.
                                     </p>
                                 </>
                             }
@@ -340,17 +316,12 @@ export default function Home() {
                             explanation={
                                 <>
                                     <p>
-                                        All data in Jazz is end-to-end encrypted
-                                        and cryptographically signed by default,
-                                        so you know it can’t be tampered with
-                                        and you don’t have to trust the syncing
-                                        & persistence infrastructure.
+                                        All data is end-to-end encrypted and
+                                        cryptographically signed by default.
                                     </p>
                                     <p>
-                                        You can still create server workers, but
-                                        like other users, their account has to
-                                        be given explicit permissions to access
-                                        data.
+                                        So it can’t be tampered with and Jazz
+                                        Mesh only sees encrypted data.
                                     </p>
                                 </>
                             }
