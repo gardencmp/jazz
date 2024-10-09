@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 export function AppContainer(props: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col justify-between w-screen h-screen bg-stone-50 dark:bg-black dark:text-white">
@@ -16,7 +18,7 @@ export function TopBar(props: { children: React.ReactNode }) {
 
 export function ChatBody(props: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col-reverse">
+    <div className="flex-1 overflow-y-auto flex flex-col-reverse" role="application">
       {props.children}
     </div>
   );
@@ -31,7 +33,7 @@ export function BubbleContainer(props: {
   fromMe: boolean | undefined;
 }) {
   const align = props.fromMe ? "items-end" : "items-start";
-  return <div className={`${align} flex flex-col m-2`}>{props.children}</div>;
+  return <div className={`${align} flex flex-col m-2`} role="row">{props.children}</div>;
 }
 
 export function BubbleBody(props: { children: React.ReactNode }) {
@@ -51,9 +53,13 @@ export function BubbleInfo(props: { by: string | undefined; madeAt: Date }) {
 }
 
 export function ChatInput(props: { onSubmit: (text: string) => void }) {
+  const inputId = useId();
+
   return (
     <div className="p-3 bg-white border-t shadow-2xl mt-auto dark:bg-transparent dark:border-stone-800">
+      <label className="sr-only" htmlFor={inputId}>Type a message and press Enter</label>
       <input
+        id={inputId}
         className="rounded-full py-2 px-4 text-sm border block w-full dark:bg-black dark:text-white dark:border-stone-700"
         placeholder="Type a message and press Enter"
         maxLength={2048}

@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "echo 'chat example is codegolfed'",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix",
@@ -36,6 +38,7 @@
     "uniqolor": "^1.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.46.1",
     "@types/qrcode": "^1.5.1",
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.7",
@@ -46,6 +49,7 @@
     "eslint": "^8.46.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "is-ci": "^3.0.1",
     "postcss": "^8.4.27",
     "tailwindcss": "3.3.2",
     "typescript": "^5.3.3",
