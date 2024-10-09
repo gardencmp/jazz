@@ -14,14 +14,14 @@
         },
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "com.jazz.chatrn"
+            "bundleIdentifier": "com.jazz.chatrnclerk"
         },
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.jazz.chatrn"
+            "package": "com.jazz.chatrnclerk"
         },
         "plugins": [
             [
@@ -38,9 +38,8 @@
         ],
         "extra": {
             "eas": {
-                "projectId": "e0e61872-1906-4c84-b9d8-9be77355cad0"
+                "projectId": "ca3d46e5-a10a-47ec-9d77-3b841e1c62d4"
             }
-        },
-        "owner": "paxx"
+        }
     }
 }
