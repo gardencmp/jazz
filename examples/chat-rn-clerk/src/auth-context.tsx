@@ -40,7 +40,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         <AuthContext.Provider
             value={{ isAuthenticated, isLoading: !isClerkLoaded || !auth }}
         >
-            {state.errors.length > 0 &&
+            {state?.errors?.length > 0 &&
                 state.errors.map((error) => (
                     <View key={error}>
                         <Text style={{ color: "red" }}>{error}</Text>

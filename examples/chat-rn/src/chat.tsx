@@ -17,27 +17,15 @@ import * as Clipboard from "expo-clipboard";
 import { Chat, Message } from "./schema";
 import { useAccount, useCoState } from "./jazz";
 
-export default function ChatScreen({
-    navigation,
-    setAuthenticated,
-}: {
-    navigation: any;
-    setAuthenticated: any;
-}) {
+export default function ChatScreen({ navigation }: { navigation: any }) {
     const { me, logOut } = useAccount();
     const [chat, setChat] = useState<Chat>();
     const [message, setMessage] = useState("");
     const loadedChat = useCoState(Chat, chat?.id, [{}]);
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleLogOut = () => {
-        logOut();
-        setAuthenticated(false);
-    };
 
     useEffect(() => {
         navigation.setOptions({
-            headerRight: () => <Button onPress={handleLogOut} title="Logout" />,
+            headerRight: () => <Button onPress={logOut} title="Logout" />,
             headerLeft: () =>
                 chat ? (
                     <Button
