@@ -4,7 +4,7 @@ export function HairlineBleedGrid({ children }: { children: React.ReactNode }) {
     return (
         <div
             className={clsx(
-                "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4",
+                "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3",
                 "items-stretch",
                 "gap-px",
                 "rounded-xl",

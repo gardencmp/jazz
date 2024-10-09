@@ -128,7 +128,7 @@ export default function Home() {
                           </div>
                       </div>
                       <div className="space-y-2">
-                          <p className="text-lg font-medium text-stone-900">Local-first on-device storage</p>
+                          <p className="text-lg font-medium text-stone-900">Local-first storage</p>
                           <p className="text-sm leading-relaxed">
                               Mutate data as local state, and get an app with instant UI updates
                               that works smoothly offline, then later syncs to the server.
@@ -160,7 +160,8 @@ export default function Home() {
                       <div className="space-y-2">
                           <p className="text-lg font-medium text-stone-900">Built-in permissions</p>
                           <p className="text-sm leading-relaxed">
-                              Every piece of data has role-based permissions. [Add another sentence.]
+                              Every piece of data is assigned role-based permissions on creation,
+                              allowing you to easily build team and social features.
                           </p>
                       </div>
                   </div>
@@ -295,7 +296,7 @@ export default function Home() {
               </div>
           </div>
 
-          <div>
+          <div className="container">
               <SectionHeader
                 title="First impressions..."
                 slogan="A chat app in 174 lines of code."
@@ -506,6 +507,10 @@ export default function Home() {
                                 </p>
                             </>
                         }
+                      />
+                      <LabelledFeatureIcon
+                        label="Authentication"
+                        icon={KeyRoundIcon}
                       />
                   </HairlineBleedGrid>
               </div>
