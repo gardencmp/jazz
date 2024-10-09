@@ -385,6 +385,51 @@ describe("createWebSocketPeer", () => {
                     .join("\n"),
             );
         });
+
+        test("should not start batching outgoing messages when reiceving non-batched message", async () => {
+            const { peer, mockWebSocket, listeners } = setup({
+                batchingByDefault: false,
+            });
+
+            const message1: SyncMessage = {
+                action: "known",
+                id: "co_ztest",
+                header: false,
+                sessions: {},
+            };
+
+            const messageHandler = listeners.get("message");
+
+            messageHandler?.(
+                new MessageEvent("message", {
+                    data: JSON.stringify(message1),
+                }),
+            );
+
+
+            const message2: SyncMessage = {
+                action: "content",
+                id: "co_zlow",
+                new: {},
+                priority: 1,
+            };
+
+            void peer.outgoing.push(message1);
+            void peer.outgoing.push(message2);
+
+            await waitFor(() => {
+                expect(mockWebSocket.send).toHaveBeenCalled();
+            });
+
+            expect(mockWebSocket.send).toHaveBeenNthCalledWith(
+                1,
+                JSON.stringify(message1),
+            );
+            expect(mockWebSocket.send).toHaveBeenNthCalledWith(
+                2,
+                JSON.stringify(message2),
+            );
+        });
     });
 });
 
