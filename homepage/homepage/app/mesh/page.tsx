@@ -26,15 +26,12 @@ export default function Mesh() {
     return (
         <div className="container space-y-16">
             <HeroHeader
-                title="Sync & Storage Mesh"
-                slogan="The first Collaboration Delivery Network."
+                title="Jazz Mesh"
+                slogan="Real-time sync and storage infrastructure that scales up to millions of users."
             />
 
             <div>
                 <P>
-                    Real-time sync and storage infrastructure that scales up to
-                    millions of users.
-                    <br />
                     Pricing that scales down to zero.
                 </P>
                 <GappedGrid>

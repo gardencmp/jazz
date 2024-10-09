@@ -3,7 +3,7 @@
     "bin": "./dist/index.js",
     "type": "module",
     "license": "MIT",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "scripts": {
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",

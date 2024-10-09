@@ -5,14 +5,7 @@ import clsx from "clsx";
 function H1Sub({ children }: { children: React.ReactNode }) {
     return (
         <p
-            className={clsx(
-                "text-3xl lg:text-4xl",
-                "leading-snug",
-                "tracking-tight",
-                "mb-5",
-                "max-w-4xl",
-                "text-stone-700 dark:text-stone-500"
-            )}
+            className="text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl"
         >
             {children}
         </p>
