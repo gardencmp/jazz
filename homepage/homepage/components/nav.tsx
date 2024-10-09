@@ -15,6 +15,10 @@ export function JazzNav() {
                     href: "/docs",
                 },
                 {
+                    title: "Showcase",
+                    href: "/showcase",
+                },
+                {
                     title: "Blog",
                     href: "https://gcmp.io/news",
                     firstOnRight: true,
