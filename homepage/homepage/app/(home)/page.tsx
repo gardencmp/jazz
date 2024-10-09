@@ -98,7 +98,7 @@ export default function Home() {
                     Build your next&nbsp;app with sync.
                 </h1>
 
-                <p className="mb-8 text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
+                <p className="text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
                     Jazz is an open-source framework for building local-first
                     apps, removing 90% of the backend and infrastructure
                     complexity. Get real-time sync, storage, auth, permissions,
@@ -191,7 +191,7 @@ export default function Home() {
                 </div>
             </div>
 
-            <div className="container flex flex-col gap-8 py-8 lg:gap-12 lg:py-16">
+            <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
                 <div className="flex flex-col gap-4 md:gap-6">
                     <Prose>
                         <HardThingsIntro />
@@ -405,6 +405,23 @@ export default function Home() {
 
                 <div>
                     <SectionHeader
+                        title="Jazz Mesh"
+                        slogan="Serverless sync & storage for Jazz apps"
+                    />
+
+                    <Prose>
+                        <MeshIntro />
+                    </Prose>
+
+                    <div className="mt-8">
+                        <Button href="/mesh" variant="secondary">
+                            Learn more about Jazz Mesh {"->"}
+                        </Button>
+                    </div>
+                </div>
+
+                <div>
+                    <SectionHeader
                         title="Collaborative Values"
                         slogan="Your new building blocks."
                     />
@@ -501,7 +518,7 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <div className="py-3 lg:py-6">
+                <div>
                     <SectionHeader
                         title="The Jazz Toolkit"
                         slogan="A high-level toolkit for building apps around CoValues."
@@ -513,7 +530,7 @@ export default function Home() {
                     </SmallProse>
                 </div>
 
-                <GappedGrid className="py-3 lg:py-6">
+                <GappedGrid>
                     <GridCard>
                         <SectionHeader
                             title="Auto-sub"
@@ -580,25 +597,7 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <div className="py-3 lg:py-6">
-                    <SectionHeader
-                        title="Jazz Mesh"
-                        slogan="Serverless sync & storage for Jazz apps"
-                    />
-
-                    <Prose>
-                        <MeshIntro />
-                    </Prose>
-
-                    <P>
-                        {"->"}{" "}
-                        <TextLink href="/mesh" target="_blank">
-                            Learn more about Jazz Mesh
-                        </TextLink>
-                    </P>
-                </div>
-
-                <div className="py-3 lg:py-6">
+                <div>
                     <div className="flex flex-col justify-between gap-3">
                         <h3 className="font-display text-stone-950 dark:text-white text-xl font-semibold tracking-tight lg:text-2xl">
                             Get started
