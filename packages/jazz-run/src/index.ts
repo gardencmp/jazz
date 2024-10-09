@@ -11,8 +11,7 @@ import {
     createJazzContext,
     isControlledAccount,
 } from "jazz-tools";
-import { fixedCredentialsAuth } from "jazz-tools";
-import { randomSessionProvider } from "jazz-tools/src/internal.js";
+import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools";
 import { startSync } from "./startSync.js";
 
 const jazzTools = Command.make("jazz-tools");
