@@ -5,7 +5,7 @@ import {
     SyncMessage,
     cojsonInternals,
 } from "cojson";
-import { AnyWebSocket } from "./types.js";
+import { AnyWebSocket, PingMsg } from "./types.js";
 import { BatchedOutgoingMessages } from "./BatchedOutgoingMessages.js";
 
 export const BUFFER_LIMIT = 100_000;
@@ -43,9 +43,16 @@ export function createWebSocketPeer({
     let supportsBatching = batchingByDefault;
 
     websocket.addEventListener("message", function handleIncomingMsg(event) {
-        const messagesChunk = (event.data as string)
-            .split("\n")
-            .map((msg) => JSON.parse(msg));
+        let messagesChunk: PingMsg[] | SyncMessage[];
+
+        try {
+            messagesChunk = (event.data as string)
+                .split("\n")
+                .map((msg) => JSON.parse(msg));
+        } catch (e) {
+            console.error("Error while parsing incoming message", e);
+            return;
+        }
 
         if (messagesChunk.length > 1) {
             // If more than one message is received, the other peer supports batching
@@ -64,13 +71,13 @@ export function createWebSocketPeer({
         }
 
         for (const msg of messagesChunk) {
-            if (msg?.type === "ping") continue;
-
-            incoming
-                .push(msg)
-                .catch((e) =>
-                    console.error("Error while pushing incoming msg", e),
-                );
+            if (msg && "action" in msg) {
+                incoming
+                    .push(msg)
+                    .catch((e) =>
+                        console.error("Error while pushing incoming msg", e),
+                    );
+            }
         }
     });
 
@@ -95,8 +102,13 @@ export function createWebSocketPeer({
             await websocketOpen;
         }
 
-        while (websocket.bufferedAmount > BUFFER_LIMIT && websocket.readyState === 1) {
-            await new Promise<void>((resolve) => setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL));
+        while (
+            websocket.bufferedAmount > BUFFER_LIMIT &&
+            websocket.readyState === 1
+        ) {
+            await new Promise<void>((resolve) =>
+                setTimeout(resolve, BUFFER_LIMIT_POLLING_INTERVAL),
+            );
         }
 
         if (websocket.readyState !== 1) {

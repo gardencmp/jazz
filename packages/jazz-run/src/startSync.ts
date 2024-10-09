@@ -109,7 +109,7 @@ export const startSync = Command.make(
             });
 
             server.on("upgrade", function upgrade(req, socket, head) {
-                if (req.url === "/") {
+                if (req.url !== "/health") {
                     wss.handleUpgrade(req, socket, head, function done(ws) {
                         wss.emit("connection", ws, req);
                     });
