@@ -202,8 +202,8 @@ export default function Home() {
                                         locally, so your users can work offline.
                                     </p>
                                     <p>
-                                        Even on sketchy connections, local
-                                        changes are continuously synced out.
+                                        When you’re back online, your local
+                                        changes are synced to the server.
                                     </p>
                                 </>
                             }
