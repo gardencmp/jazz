@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { Slot } from "expo-router";
 import { tokenCache } from "../cache";
-import { AuthProvider } from "../src/auth-context";
+import { JazzAndAuth } from "../src/auth-context";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,9 +34,9 @@ export default function RootLayout() {
     return (
         <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
             <ClerkLoaded>
-                <AuthProvider>
+                <JazzAndAuth>
                     <Slot />
-                </AuthProvider>
+                </JazzAndAuth>
             </ClerkLoaded>
         </ClerkProvider>
     );

@@ -22,7 +22,7 @@ export function useAuth() {
     return useContext(AuthContext);
 }
 
-export function AuthProvider({ children }: PropsWithChildren) {
+export function JazzAndAuth({ children }: PropsWithChildren) {
     const { isSignedIn, isLoaded: isClerkLoaded } = useUser();
     const clerk = useClerk();
     const [auth, state] = useJazzClerkAuth(clerk);
