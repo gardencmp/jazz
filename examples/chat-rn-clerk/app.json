@@ -1,0 +1,46 @@
+{
+    "expo": {
+        "name": "jazz-chat-rn-clerk",
+        "scheme": "jazz-chat-rn-clerk",
+        "slug": "jazz-chat-rn-clerk",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon.png",
+        "userInterfaceStyle": "light",
+        "splash": {
+            "image": "./assets/images/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.jazz.chatrn"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.jazz.chatrn"
+        },
+        "plugins": [
+            [
+                "expo-build-properties",
+                {
+                    "ios": {
+                        "newArchEnabled": true
+                    },
+                    "android": {
+                        "newArchEnabled": true
+                    }
+                }
+            ]
+        ],
+        "extra": {
+            "eas": {
+                "projectId": "e0e61872-1906-4c84-b9d8-9be77355cad0"
+            }
+        },
+        "owner": "paxx"
+    }
+}

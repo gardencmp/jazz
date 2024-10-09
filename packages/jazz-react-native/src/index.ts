@@ -155,6 +155,7 @@ export async function createJazzRNContext<Acc extends Account>(
                   context.done();
               },
               logOut: () => {
+                  console.log("logOut rncontext 1");
                   context.logOut();
               },
           }
@@ -166,6 +167,7 @@ export async function createJazzRNContext<Acc extends Account>(
                   context.done();
               },
               logOut: () => {
+                  console.log("logOut rncontext 2");
                   context.logOut();
               },
           };

@@ -2,24 +2,27 @@ import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 import { AgentSecret } from "cojson";
 
 export type MinimalClerkClient = {
-    user: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        unsafeMetadata: Record<string, any>;
-        fullName: string | null;
-        username: string | null;
-        id: string;
-        update: (args: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            unsafeMetadata: Record<string, any>;
-        }) => Promise<unknown>;
-    } | null | undefined;
+    user:
+        | {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              unsafeMetadata: Record<string, any>;
+              fullName: string | null;
+              username: string | null;
+              id: string;
+              update: (args: {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  unsafeMetadata: Record<string, any>;
+              }) => Promise<unknown>;
+          }
+        | null
+        | undefined;
     signOut: () => Promise<void>;
-}
+};
 
 export class BrowserClerkAuth implements AuthMethod {
     constructor(
         public driver: BrowserClerkAuth.Driver,
-        private readonly clerkClient: MinimalClerkClient
+        private readonly clerkClient: MinimalClerkClient,
     ) {}
 
     async start(): Promise<AuthResult> {
@@ -41,7 +44,12 @@ export class BrowserClerkAuth implements AuthMethod {
                         this.driver.onError(error);
                     },
                     logOut: () => {
-                        void this.clerkClient.signOut();
+                        console.log("signing out 1111");
+                        try {
+                            return this.clerkClient.signOut();
+                        } catch (e) {
+                            console.error("error signing out", e);
+                        }
                     },
                 };
             } else {
@@ -69,6 +77,7 @@ export class BrowserClerkAuth implements AuthMethod {
                         this.driver.onError(error);
                     },
                     logOut: () => {
+                        console.log("signing out 2");
                         void this.clerkClient.signOut();
                     },
                 };

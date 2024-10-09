@@ -87,6 +87,7 @@ export class RNDemoAuth implements AuthMethod {
                         this.driver.onError(error);
                     },
                     logOut: async () => {
+                        console.log("logOut demoauth 1");
                         void (await this.storage.delete(localStorageKey));
                     },
                 } satisfies AuthResult;
@@ -157,6 +158,7 @@ export class RNDemoAuth implements AuthMethod {
                                     this.driver.onError(error);
                                 },
                                 logOut: async () => {
+                                    console.log("logOut demoauth 2");
                                     void (await this.storage.delete(
                                         localStorageKey,
                                     ));
@@ -197,6 +199,7 @@ export class RNDemoAuth implements AuthMethod {
                                     this.driver.onError(error);
                                 },
                                 logOut: async () => {
+                                    console.log("logOut demoauth 3");
                                     void (await this.storage.delete(
                                         localStorageKey,
                                     ));
