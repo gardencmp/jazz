@@ -4,7 +4,11 @@ import {
     type CoValueClass,
     isCoValueClass,
     CoValueFromRaw,
+    SchemaInit,
+    ItemsSym,
+    MembersSym,
 } from "../internal.js";
+import { CoJsonValue } from "cojson/src/jsonValue.js";
 
 /** @category Schema definition */
 export const Encoders = {
@@ -26,7 +30,7 @@ export type UnCo<T> = T extends co<infer A> ? A : T;
 
 const optional = {
     ref: optionalRef,
-    json<T extends JsonValue>(): co<T | undefined> {
+    json<T extends CoJsonValue<T>>(): co<T | undefined> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
@@ -80,7 +84,7 @@ export const co = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
-    json<T extends JsonValue>(): co<T> {
+    json<T extends CoJsonValue<T>>(): co<T> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
@@ -169,12 +173,10 @@ export type SchemaFor<Field> = NonNullable<Field> extends CoValue
 export type Encoder<V> = {
     encode: (value: V) => JsonValue;
     decode: (value: JsonValue) => V;
-};
+}
 export type OptionalEncoder<V> =
     | Encoder<V>
     | {
           encode: (value: V | undefined) => JsonValue;
           decode: (value: JsonValue) => V | undefined;
       };
-
-import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";

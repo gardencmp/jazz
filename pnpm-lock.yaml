@@ -2956,7 +2956,7 @@ packages:
     resolution: {integrity: sha512-bUzP4Awlljx5RKEExw8WYtif8EuQni2glDaieYROKTnaxsu9kEIA515sXQgUDZU4Ob12VoL7+z70uO3qrlfXcQ==}
     peerDependencies:
       '@react-navigation/native': ^6.0.0
-      react: '*'
+      react: 18.3.1
       react-native: '*'
       react-native-safe-area-context: '>= 3.0.0'
 
