@@ -1,11 +1,8 @@
 /* istanbul ignore file -- @preserve */
 import { Command, Options } from "@effect/cli";
-import {
-    ControlledAgent,
-    LocalNode,
-    WasmCrypto,
-} from "cojson";
+import { ControlledAgent, LocalNode, WasmCrypto } from "cojson";
 import { WebSocketServer } from "ws";
+import { createServer } from "http";
 
 import { createWebSocketPeer } from "cojson-transport-ws";
 import { Effect } from "effect";
@@ -41,11 +38,15 @@ export const startSync = Command.make(
         return Effect.gen(function* () {
             const crypto = yield* Effect.promise(() => WasmCrypto.create());
 
-            const wss = new WebSocketServer({ port: parseInt(port) });
+            const server = createServer((req, res) => {
+                if (req.url === "/health") {
+                    res.writeHead(200);
+                    res.end("ok");
+                }
+            });
+            const wss = new WebSocketServer({ noServer: true });
 
-            console.log(
-                "COJSON sync server listening on port " + wss.options.port,
-            );
+            console.log("COJSON sync server listening on port " + port);
 
             const agentSecret = crypto.newRandomAgentSecret();
             const agentID = crypto.getAgentID(agentSecret);
@@ -105,6 +106,16 @@ export const startSync = Command.make(
                     console.error(`Error on connection ${clientId}:`, e),
                 );
             });
+
+            server.on("upgrade", function upgrade(req, socket, head) {
+                if (req.url === "/") {
+                    wss.handleUpgrade(req, socket, head, function done(ws) {
+                        wss.emit("connection", ws, req);
+                    });
+                }
+            });
+
+            server.listen(parseInt(port));
 
             // Keep the server up
             yield* Effect.never;

@@ -779,6 +779,9 @@ importers:
       is-ci:
         specifier: ^3.0.1
         version: 3.0.1
+      jazz-run:
+        specifier: workspace:0.8.3
+        version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
         version: 8.4.32
