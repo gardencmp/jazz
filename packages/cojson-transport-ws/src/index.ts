@@ -11,19 +11,21 @@ import { BatchedOutgoingMessages } from "./BatchedOutgoingMessages.js";
 export const BUFFER_LIMIT = 100_000;
 export const BUFFER_LIMIT_POLLING_INTERVAL = 10;
 
-export function createWebSocketPeer({
-    id,
-    websocket,
-    role,
-    expectPings = true,
-    batchingByDefault = true,
-}: {
+export type CreateWebSocketPeerOpts = {
     id: string;
     websocket: AnyWebSocket;
     role: Peer["role"];
     expectPings?: boolean;
     batchingByDefault?: boolean;
-}): Peer {
+};
+
+export function createWebSocketPeer({
+    id,
+    websocket,
+    role,
+    expectPings = true,
+    batchingByDefault = false, // Keeping this false until we release batching upgrade to the mesh
+}: CreateWebSocketPeerOpts): Peer {
     const incoming = new cojsonInternals.Channel<
         SyncMessage | DisconnectedError | PingTimeoutError
     >();
