@@ -1,6 +1,6 @@
 import { usePlayMedia } from "@/lib/audio/usePlayMedia";
 import { usePlayState } from "@/lib/audio/usePlayState";
-import { useAccount, useCoState } from "./2_main";
+import { useAccount } from "./2_main";
 import { MusicTrack, Playlist } from "@/1_schema";
 import { useRef, useState } from "react";
 import { getNextTrack, getPrevTrack } from "./lib/getters";
@@ -14,7 +14,7 @@ export function useMediaPlayer() {
 
     const [loading, setLoading] = useState<ID<MusicTrack> | null>(null);
 
-    const activeTrack = useCoState(MusicTrack, me?.root?._refs.activeTrack?.id);
+    const activeTrackId = me?.root?._refs.activeTrack?.id
 
     // Reference used to avoid out-of-order track loads
     const lastLoadedTrackId = useRef<ID<MusicTrack> | null>(null);
@@ -71,7 +71,7 @@ export function useMediaPlayer() {
         if (!me?.root) return;
 
         if (
-            activeTrack?.id === track.id &&
+            activeTrackId === track.id &&
             lastLoadedTrackId.current !== null
         ) {
             playState.toggle();
@@ -88,7 +88,7 @@ export function useMediaPlayer() {
     }
 
     return {
-        activeTrack,
+        activeTrackId,
         setActiveTrack,
         playNextTrack,
         playPrevTrack,

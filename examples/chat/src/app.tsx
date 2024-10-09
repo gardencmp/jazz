@@ -7,13 +7,14 @@ import { AppContainer, TopBar } from "./ui.tsx";
 
 export function App() {
   const { me, logOut } = useAccount();
+  const router = useIframeHashRouter();
 
   const createChat = () => {
     if (!me) return;
     const group = Group.create({ owner: me });
     group.addMember("everyone", "writer");
     const chat = Chat.create([], { owner: group });
-    location.hash = "/chat/" + chat.id;
+    router.navigate("/#/chat/" + chat.id);
   };
 
   return (
@@ -21,7 +22,7 @@ export function App() {
       <TopBar>
         <p>{me?.profile?.name}</p> · <button onClick={logOut}>Log out</button>
       </TopBar>
-      {useIframeHashRouter().route({
+      {router.route({
         "/": () => createChat() as never,
         "/chat/:id": id => <ChatScreen chatID={id as ID<Chat>} />,
       })}

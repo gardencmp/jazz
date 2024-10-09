@@ -1,5 +1,12 @@
 # @jazz-e2e/binarycostream
 
+## 0.0.85
+
+### Patch Changes
+
+-   Updated dependencies
+    -   hash-slash@0.2.1
+
 ## 0.0.84
 
 ### Patch Changes

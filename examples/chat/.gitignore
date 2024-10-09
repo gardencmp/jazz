@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 sync-db/
+
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

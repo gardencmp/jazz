@@ -30,7 +30,8 @@ export function useHashRouter(options?: { tellParentFrame?: boolean }) {
 
     return {
         navigate: (url: string) => {
-            location.hash = url;
+            history.replaceState({}, "", url);
+            window.dispatchEvent(new HashChangeEvent("hashchange"));
         },
         route: function (routes: {
             [route: `${string}` | `/${string}/:${string}`]: (

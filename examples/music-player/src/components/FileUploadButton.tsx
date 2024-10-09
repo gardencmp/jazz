@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Button } from "./ui/button";
 
 export function FileUploadButton(props: {
     onFileLoad: (files: FileList) => Promise<void>;
@@ -13,11 +14,11 @@ export function FileUploadButton(props: {
     }
 
     return (
-        <button className="bg-blue-300 hover:cursor-pointer flex items-center">
+        <Button>
             <label className="flex items-center  cursor-pointer p-2">
                 <input type="file" onChange={handleFileLoad} multiple hidden />
                 {props.children}
             </label>
-        </button>
+        </Button>
     );
 }

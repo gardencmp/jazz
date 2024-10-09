@@ -546,8 +546,19 @@ export class LocalNode {
             return ok(id);
         }
 
-        const coValue = this.expectCoValueLoaded(id, expectation);
-
+        let coValue: CoValueCore;
+        
+        try {
+            coValue = this.expectCoValueLoaded(id, expectation);
+        } catch (e) {
+            return err({
+                type: "ErrorLoadingCoValueCore",
+                expectation,
+                id,
+                error: e,
+            } satisfies LoadCoValueCoreError);
+        }
+    
         if (
             coValue.header.type !== "comap" ||
             coValue.header.ruleset.type !== "group" ||

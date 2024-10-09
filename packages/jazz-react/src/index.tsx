@@ -60,11 +60,14 @@ export function createJazzReactApp<Acc extends Account>({
                           storage,
                       },
             ).then((context) => {
-                setCtx({...context, logOut: () => {
-                    context.logOut();
-                    setCtx(undefined);
-                    setSessionCount(sessionCount + 1);
-                }});
+                setCtx({
+                    ...context,
+                    logOut: () => {
+                        context.logOut();
+                        setCtx(undefined);
+                        setSessionCount(sessionCount + 1);
+                    },
+                });
                 return context.done;
             });
 

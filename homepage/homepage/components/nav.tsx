@@ -9,7 +9,7 @@ export function JazzNav() {
             mainLogo={<JazzLogo className="w-24 -ml-2" />}
             items={[
                 { title: "Home", href: "/" },
-                { title: "Sync & Storage Mesh", href: "/mesh" },
+                { title: "Jazz Mesh", href: "/mesh" },
                 {
                     title: "Docs",
                     href: "/docs",
