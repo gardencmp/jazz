@@ -177,7 +177,6 @@ export async function createJazzContext<Acc extends Account>(
                             sessionDone();
                         },
                         logOut: () => {
-                            console.log("logOut context 1", authResult.logOut);
                             node.gracefulShutdown();
                             sessionDone();
                             authResult.logOut();

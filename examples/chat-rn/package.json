@@ -11,7 +11,6 @@
     },
     "dependencies": {
         "@azure/core-asynciterator-polyfill": "^1.0.2",
-        "@clerk/clerk-expo": "^2.2.21",
         "@react-native-community/netinfo": "^11.3.1",
         "@react-navigation/native": "^6.1.18",
         "@react-navigation/native-stack": "^6.11.0",
@@ -26,7 +25,6 @@
         "expo-linking": "~6.3.1",
         "expo-status-bar": "~1.12.1",
         "expo-web-browser": "~13.0.3",
-        "jazz-react-auth-clerk": "workspace:*",
         "jazz-react-native": "workspace:*",
         "jazz-tools": "workspace:*",
         "nativewind": "^2.0.11",

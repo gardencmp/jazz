@@ -44,7 +44,6 @@ export class BrowserClerkAuth implements AuthMethod {
                         this.driver.onError(error);
                     },
                     logOut: () => {
-                        console.log("signing out 1111");
                         try {
                             return this.clerkClient.signOut();
                         } catch (e) {
@@ -77,7 +76,6 @@ export class BrowserClerkAuth implements AuthMethod {
                         this.driver.onError(error);
                     },
                     logOut: () => {
-                        console.log("signing out 2");
                         void this.clerkClient.signOut();
                     },
                 };
