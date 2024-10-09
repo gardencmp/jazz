@@ -7,13 +7,13 @@
     "exports": {
         ".": {
             "react-native": "./dist/native/index.native.js",
-            "default": "./dist/web/index.web.js",
-            "types": "./src/index.web.ts"
+            "types": "./src/index.web.ts",
+            "default": "./dist/web/index.web.js"
         },
         "./native": {
             "react-native": "./dist/native/index.native.js",
-            "default": "./dist/native/index.native.js",
-            "types": "./src/index.native.ts"
+            "types": "./src/index.native.ts",
+            "default": "./dist/native/index.native.js"
         },
         "./src/*": "./src/*"
     },
