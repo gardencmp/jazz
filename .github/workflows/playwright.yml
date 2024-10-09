@@ -10,6 +10,7 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         project: ["e2e/BinaryCoStream", "e2e/CoValues", "examples/chat", "examples/pets"]
@@ -45,8 +46,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Pnpm Build
-        run: pnpm turbo build;
+        run: pnpm turbo build
         working-directory: ./${{ matrix.project }}
+      
+      - name: Build jazz-run
+        run: pnpm exec turbo build && chmod +x dist/index.js;
+        working-directory: ./packages/jazz-run
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps

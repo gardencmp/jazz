@@ -5,7 +5,7 @@ import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
 import { RawCoList } from "./coValues/coList.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawGroup } from "./coValues/group.js";
-import { RawAccount, Profile } from "./index.js";
+import { RawAccount, RawProfile as Profile } from "./coValues/account.js";
 
 export type CoID<T extends RawCoValue> = RawCoID & {
     readonly __type: T;

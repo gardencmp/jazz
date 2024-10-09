@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-pets",
   "private": true,
-  "version": "0.0.102",
+  "version": "0.0.103",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write './src/**/*.{ts,tsx}'",
     "preview": "vite preview",
+    "sync": "jazz-run sync",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },
@@ -22,9 +23,9 @@
     "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "jazz-browser-media-images": "workspace:0.8.2",
-    "jazz-react": "workspace:0.8.2",
-    "jazz-tools": "workspace:0.8.2",
+    "jazz-browser-media-images": "workspace:0.8.3",
+    "jazz-react": "workspace:0.8.3",
+    "jazz-tools": "workspace:0.8.3",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
@@ -49,8 +50,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "is-ci": "^3.0.1",
+    "jazz-run": "workspace:0.8.4",
     "postcss": "^8.4.27",
-    "tailwindcss": "^3.3.3",
+    "tailwindcss": "3.3.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.10",
     "vite-plugin-top-level-await": "^1.4.4"

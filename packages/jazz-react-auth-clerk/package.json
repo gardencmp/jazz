@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-auth-clerk",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",
@@ -10,10 +10,10 @@
     "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "dependencies": {
-    "cojson": "workspace:0.8.0",
-    "jazz-browser-auth-clerk": "workspace:0.8.2",
-    "jazz-react": "workspace:0.8.2",
-    "jazz-tools": "workspace:0.8.2"
+    "cojson": "workspace:0.8.3",
+    "jazz-browser-auth-clerk": "workspace:0.8.3",
+    "jazz-react": "workspace:0.8.3",
+    "jazz-tools": "workspace:0.8.3"
   },
   "peerDependencies": {
     "react": "^18.2.0"

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type {
     RawAccountID,
     AgentID,
@@ -155,7 +156,12 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
         }
     }
 
-    toJSON() {
+    toJSON(): {
+        id: string;
+        _type: "CoStream";
+        [key: string]: unknown;
+        in: { [key: string]: unknown };
+    } {
         const itemDescriptor = this._schema[ItemsSym] as Schema;
         const mapper =
             itemDescriptor === "json"
@@ -182,7 +188,12 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
         };
     }
 
-    [inspect]() {
+    [inspect](): {
+        id: string;
+        _type: "CoStream";
+        [key: string]: unknown;
+        in: { [key: string]: unknown };
+    } {
         return this.toJSON();
     }
 
@@ -323,7 +334,9 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
 
             Object.defineProperty(entry, "all", {
                 get: () => {
-                    const allRawEntries = target._raw.itemsBy(key as RawAccountID);
+                    const allRawEntries = target._raw.itemsBy(
+                        key as RawAccountID,
+                    );
                     return (function* () {
                         while (true) {
                             const rawEntry = allRawEntries.next();
@@ -543,6 +556,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
             return undefined;
         }
 
+        // @ts-ignore
         return new Blob(chunks.chunks, { type: chunks.mimeType });
     }
 
@@ -626,7 +640,15 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
         return stream;
     }
 
-    toJSON() {
+    toJSON(): {
+        id: string;
+        _type: "BinaryCoStream";
+        mimeType?: string;
+        totalSizeBytes?: number;
+        fileName?: string;
+        chunks?: Uint8Array[];
+        finished?: boolean;
+    } {
         return {
             id: this.id,
             _type: this._type,

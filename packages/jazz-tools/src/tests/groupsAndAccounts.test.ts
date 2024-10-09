@@ -1,5 +1,5 @@
 import { expect, describe, test } from "vitest";
-import { Account, CoMap, co, Group, WasmCrypto } from "../index.js";
+import { Account, CoMap, co, Group, WasmCrypto } from "../index.web.js";
 
 const Crypto = await WasmCrypto.create();
 

@@ -4,7 +4,19 @@ import {
     type CoValueClass,
     isCoValueClass,
     CoValueFromRaw,
+    SchemaInit,
+    ItemsSym,
+    MembersSym,
 } from "../internal.js";
+import { CoJsonValue } from "cojson/src/jsonValue.js";
+
+/** @category Schema definition */
+export const Encoders = {
+    Date: {
+        encode: (value: Date) => value.toISOString(),
+        decode: (value: JsonValue) => new Date(value as string),
+    },
+};
 
 export type CoMarker = { readonly __co: unique symbol };
 /** @category Schema definition */
@@ -18,7 +30,7 @@ export type UnCo<T> = T extends co<infer A> ? A : T;
 
 const optional = {
     ref: optionalRef,
-    json<T extends JsonValue>(): co<T | undefined> {
+    json<T extends CoJsonValue<T>>(): co<T | undefined> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
@@ -38,6 +50,9 @@ const optional = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null | undefined>,
+    Date: {
+        [SchemaInit]: { encoded: Encoders.Date } satisfies Schema,
+    } as unknown as co<Date | undefined>,
     literal<T extends (string | number | boolean)[]>(
         ..._lit: T
     ): co<T[number] | undefined> {
@@ -60,13 +75,16 @@ export const co = {
     null: {
         [SchemaInit]: "json" satisfies Schema,
     } as unknown as co<null>,
+    Date: {
+        [SchemaInit]: { encoded: Encoders.Date } satisfies Schema,
+    } as unknown as co<Date>,
     literal<T extends (string | number | boolean)[]>(
         ..._lit: T
     ): co<T[number]> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
-    json<T extends JsonValue>(): co<T> {
+    json<T extends CoJsonValue<T>>(): co<T> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { [SchemaInit]: "json" satisfies Schema } as any;
     },
@@ -155,20 +173,10 @@ export type SchemaFor<Field> = NonNullable<Field> extends CoValue
 export type Encoder<V> = {
     encode: (value: V) => JsonValue;
     decode: (value: JsonValue) => V;
-};
+}
 export type OptionalEncoder<V> =
     | Encoder<V>
     | {
           encode: (value: V | undefined) => JsonValue;
           decode: (value: JsonValue) => V | undefined;
       };
-
-import { SchemaInit, ItemsSym, MembersSym } from "./symbols.js";
-
-/** @category Schema definition */
-export const Encoders = {
-    Date: {
-        encode: (value: Date) => value.toISOString(),
-        decode: (value: JsonValue) => new Date(value as string),
-    },
-};

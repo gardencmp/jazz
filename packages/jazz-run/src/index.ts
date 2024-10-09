@@ -72,7 +72,7 @@ const accountCreate = Command.make(
                     }),
                     sessionProvider: randomSessionProvider,
                     peersToLoadFrom: [peer2],
-                    crypto
+                    crypto,
                 }),
             );
 

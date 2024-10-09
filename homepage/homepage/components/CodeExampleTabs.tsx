@@ -13,6 +13,8 @@ export interface CodeExampleTabsProps {
     className?: string;
 }
 
+// TODO: handle tabs in CodeGroup component
+
 export function CodeExampleTabs({
     tabs,
     className = "",

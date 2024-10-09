@@ -1,9 +1,10 @@
 import { expect, test, describe } from "vitest";
 import { expectStream } from "../coValue.js";
 import { RawBinaryCoStream } from "../coValues/coStream.js";
-import { MAX_RECOMMENDED_TX_SIZE, WasmCrypto } from "../index.js";
+import { MAX_RECOMMENDED_TX_SIZE } from "../coValueCore.js";
 import { LocalNode } from "../localNode.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
 const Crypto = await WasmCrypto.create();
 

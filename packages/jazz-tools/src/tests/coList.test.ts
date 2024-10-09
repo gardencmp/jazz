@@ -1,5 +1,5 @@
 import { expect, describe, test } from "vitest";
-import { connectedPeers } from "cojson/src/streamUtils.js";
+import { connectedPeers } from "cojson/src/streamUtils.ts";
 import {
     Account,
     CoList,
@@ -9,7 +9,7 @@ import {
     createJazzContext,
     isControlledAccount,
     fixedCredentialsAuth,
-} from "../index.js";
+} from "../index.web.js";
 import { randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();

@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 import { expectMap } from "../coValue.js";
-import { WasmCrypto } from "../index.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
 const Crypto = await WasmCrypto.create();
 

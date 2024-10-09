@@ -15,7 +15,7 @@ export function GappedGrid({
         <div
             className={clsx(
                 "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4",
-                "mb-10 items-stretch",
+                "items-stretch",
                 className
             )}
         >

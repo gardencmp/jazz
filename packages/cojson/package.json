@@ -1,11 +1,25 @@
 {
     "name": "cojson",
-    "module": "dist/index.js",
-    "main": "dist/index.js",
-    "types": "src/index.ts",
+    "module": "dist/web/index.web.js",
+    "main": "dist/web/index.web.js",
+    "types": "src/index.web.ts",
+    "react-native": "dist/native/index.native.js",
+    "exports": {
+        ".": {
+            "react-native": "./dist/native/index.native.js",
+            "default": "./dist/web/index.web.js",
+            "types": "./src/index.web.ts"
+        },
+        "./native": {
+            "react-native": "./dist/native/index.native.js",
+            "default": "./dist/native/index.native.js",
+            "types": "./src/index.native.ts"
+        },
+        "./src/*": "./src/*"
+    },
     "type": "module",
     "license": "MIT",
-    "version": "0.8.0",
+    "version": "0.8.3",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
@@ -28,12 +42,15 @@
         "queueueue": "^4.1.2"
     },
     "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist",
+        "dev": "tsc --watch --sourceMap --outDir dist/web -p tsconfig.web.json",
+        "dev:native": "tsc --watch --sourceMap --outDir dist/native -p tsconfig.native.json",
         "test": "vitest --run --root ../../ --project cojson",
         "test:watch": "vitest --watch --root ../../ --project cojson",
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+        "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
+        "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
+        "build": "npm run lint && rm -rf ./dist && pnpm run build:native && pnpm run build:web",
         "prepublishOnly": "npm run build"
     },
     "lint-staged": {
