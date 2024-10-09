@@ -2,13 +2,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { useMediaPlayer } from "./4_useMediaPlayer";
-import { HomePage } from "./5_HomePage";
-import { createNewPlaylist, uploadMusicTracks } from "./3_actions";
-import { PlaylistPage } from "./6_PlaylistPage";
-import { InvitePage } from "./7_InvitePage";
-import { Button } from "./basicComponents/Button";
-import { FileUploadButton } from "./basicComponents/FileUploadButton";
+import { Toaster } from "@/components/ui/toaster"
+import { useMediaPlayer } from "./5_useMediaPlayer";
+import { HomePage } from "./3_HomePage";
+import { InvitePage } from "./6_InvitePage";
 import { PlayerControls } from "./components/PlayerControls";
 import "./index.css";
 
@@ -38,31 +35,6 @@ function Main() {
 
     useUploadExampleData();
 
-    /**
-     * `me` represents the current user account, which will determine
-     *  access rights to CoValues. We get it from the top-level provider `<WithJazz/>`.
-     */
-    const { me } = useAccount();
-
-    async function handleFileLoad(files: FileList) {
-        if (!me) return;
-
-        /**
-         * Follow this function definition to see how we update
-         * values in Jazz and manage files!
-         */
-        /** Walkthrough: Continue with ./3_actions.ts */
-        await uploadMusicTracks(me, files);
-    }
-
-    async function handleCreatePlaylist() {
-        if (!me) return;
-
-        const playlist = await createNewPlaylist(me);
-
-        router.navigate(`/playlist/${playlist.id}`);
-    }
-
     const router = createHashRouter([
         {
             path: "/",
@@ -70,7 +42,7 @@ function Main() {
         },
         {
             path: "/playlist/:playlistId",
-            element: <PlaylistPage mediaPlayer={mediaPlayer} />,
+            element: <HomePage mediaPlayer={mediaPlayer} />,
         },
         {
             path: "/invite/*",
@@ -80,20 +52,9 @@ function Main() {
 
     return (
         <>
-            <div className="flex items-center bg-gray-300">
-                <img src="jazz-logo.png" className="px-3 h-[20px]" />
-                <div className="text-nowrap">Jazz music player</div>
-                <div className="flex w-full gap-1 justify-end">
-                    <FileUploadButton onFileLoad={handleFileLoad}>
-                        Add file
-                    </FileUploadButton>
-                    <Button onClick={handleCreatePlaylist}>
-                        Create new playlist
-                    </Button>
-                </div>
-            </div>
             <RouterProvider router={router} />
             <PlayerControls mediaPlayer={mediaPlayer} />
+            <Toaster />
         </>
     );
 }

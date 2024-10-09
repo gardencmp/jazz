@@ -92,6 +92,8 @@ export async function addTrackToPlaylist(
 ) {
     if (!account) return;
 
+    if (playlist.tracks?.some((t) => t?._refs.sourceTrack.id === track.id)) return;
+
     /**
      * Since musicTracks are created as private values (see uploadMusicTracks)
      * to make them shareable as part of the playlist we are cloning them
