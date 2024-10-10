@@ -10,6 +10,7 @@ export const products = [
         name: "Invoice Radar",
         imageUrl: "/invoice-radar.png",
         url: "https://invoiceradar.com",
-        description: "Automatically gather invoices from mail and cloud providers.",
+        description:
+            "Automatically gather invoices from mail and cloud providers.",
     },
 ];
