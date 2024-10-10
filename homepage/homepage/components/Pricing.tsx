@@ -1,12 +1,15 @@
 import { CircleCheckIcon } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
+import { clsx } from "clsx";
 
 export function ListItem({
     variant = "blue",
+    className = "",
     children,
 }: {
     variant?: "gray" | "blue";
+    className?: string;
     children: React.ReactNode;
 }) {
     const iconSize = 16;
@@ -27,7 +30,12 @@ export function ListItem({
     };
 
     return (
-        <li className="inline-flex items-center gap-2 text-stone-800 dark:text-stone-200 py-2">
+        <li
+            className={clsx(
+                "inline-flex items-center gap-2 text-stone-800 dark:text-stone-200 py-2",
+                className,
+            )}
+        >
             {iconVariants[variant]}
             {children}
         </li>
@@ -60,16 +68,13 @@ export function Pricing() {
                     <ListItem variant="gray">
                         <s className="text-stone-500">1 GB storage</s>
                     </ListItem>
+                    <ListItem className="font-medium">
+                        No enforced limits for public alpha
+                    </ListItem>
                 </ul>
-                <div className="md:mt-5 space-y-3">
-                    <p className="text-xs">
-                        Currently no enforced limits for public alpha.
-                    </p>
-
-                    <p className="text-xs">
-                        Use your email address as API key.
-                    </p>
-                </div>
+                <p className="md:mt-5 text-xs">
+                    Use your email address as API key.
+                </p>
             </div>
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-3xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925">
                 <div>
@@ -90,14 +95,14 @@ export function Pricing() {
                     <ListItem>Base-priority sync</ListItem>
                     <ListItem>Community support</ListItem>
                     <ListItem>1000 monthly active users</ListItem>
-                    <ListItem>500GB storage</ListItem>
+                    <ListItem>500 GB storage</ListItem>
                 </ul>
 
                 <p className="text-sm">Extra usage</p>
 
                 <ul className="flex flex-col divide-y text-sm lg:text-base dark:divide-stone-900">
-                    <ListItem>$9 per additional 1000 MAUs</ListItem>
-                    <ListItem>$9 per additional 500GB storage/mo</ListItem>
+                    <ListItem>$9 per add. 1000 monthly active users</ListItem>
+                    <ListItem>$9 per add. 500 GB storage/mo</ListItem>
                 </ul>
                 <p className="text-xs">
                     For companies with &lt;$200k in annual revenue or
@@ -119,7 +124,7 @@ export function Pricing() {
 
                 <ul className="flex flex-col divide-y text-sm lg:text-base dark:divide-stone-900">
                     <ListItem>High-priority sync</ListItem>
-                    <ListItem>White-glove support</ListItem>
+                    <ListItem>Dedicated integration & dev support</ListItem>
                     <ListItem>Unlimited monthly active users</ListItem>
                     <ListItem>Unlimited storage</ListItem>
                     <ListItem>SLAs, custom deployment, etc.</ListItem>
@@ -136,8 +141,8 @@ export function Pricing() {
                     Book intro call
                 </Button>
                 <p className="text-xs md:mt-3">
-                    Our team of devs and product specialists will get you going
-                    for free. Then we&apos;ll make a bespoke deal.
+                    Our team of devs & product experts will get you going for
+                    free. Then we&apos;ll make a deal just for you.
                 </p>
             </div>
         </div>

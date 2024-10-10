@@ -73,91 +73,6 @@ export default function Mesh() {
 
             <div className="container space-y-16">
                 <div>
-                    <SectionHeader title="Pricing" slogan="" />
-                    <GappedGrid>
-                        <GridCard>
-                            <H3>
-                                Mesh Free{" "}
-                                <div className="text-2xl float-right">$0</div>
-                            </H3>
-
-                            <UL>
-                                <LI>Best-effort sync</LI>
-                                <LI>Community support</LI>
-                                <LI>
-                                    <s>20 Monthly Active Users</s>
-                                </LI>
-                                <LI>
-                                    <s>1 GB storage</s>
-                                </LI>
-                            </UL>
-                            <div className="border-white bg-blue-50 border-4 rounded-lg px-4 -rotate-6 shadow">
-                                <p className="text-center my-4 font-bold">
-                                    Public Alpha
-                                </p>
-                                <UL>
-                                    <LI>Use your email address as API key</LI>
-                                    <LI>Currently no enforced limits</LI>
-                                </UL>
-                            </div>
-                        </GridCard>
-                        <GridCard>
-                            <H3>
-                                Mesh Indie <ComingSoonBadge />
-                                <div className="float-right">
-                                    <span className="text-2xl">$19</span>/mo
-                                </div>
-                            </H3>
-                            <UL>
-                                <LI>Base-priority sync</LI>
-                                <LI>Community support</LI>
-                                <LI>1000 Monthly Active Usersincluded</LI>
-                                <LI>500 GB storageincluded</LI>
-                            </UL>
-                            <P>Extra usage:</P>
-                            <LI>$9 per add. 1000 Monthly Active Users</LI>
-                            <LI>$9 per add. 500 GB storage/mo</LI>
-
-                            <p className="mt-4 text-sm">
-                                For companies with &lt;$200k in annual revenue
-                                or institutional funding.
-                            </p>
-                        </GridCard>
-                        <GridCard>
-                            <H3>
-                                Mesh Pro
-                                <div className="float-right">
-                                    from <span className="text-2xl">$500</span>
-                                    /mo
-                                </div>
-                            </H3>
-                            <UL>
-                                <LI>Highest-priority sync</LI>
-                                <LI>Dedicated integration & dev support</LI>
-                                <LI>Unlimited Monthly Active Users</LI>
-                                <LI>Unlimited storage</LI>
-                                <LI>SLAs, custom deployment, etc.</LI>
-                                <LI>
-                                    Offer <code>sync.yourdomain.com</code>
-                                </LI>
-                            </UL>
-                            <Button
-                                href="https://cal.com/anselm-io/mesh-pro-intro"
-                                size="lg"
-                                className="block text-center"
-                            >
-                                Book intro call
-                            </Button>
-                            <p className="mt-4 text-sm">
-                                Our team of devs & product experts will
-                                get you going for free. Then we&apos;ll make a
-                                 deal just for you.
-                            </p>
-                        </GridCard>
-                    </GappedGrid>
-                </div>
-
-                <div>
                     <SectionHeader
                         title="Global Footprint"
                         slogan="We're rapidly expanding our network of sync & storage nodes. This is our current best-effort coverage."
@@ -218,8 +133,6 @@ export default function Mesh() {
                             </UL>
                         </div>
                     </GappedGrid>
-
-
                 </div>
 
                 <div>
