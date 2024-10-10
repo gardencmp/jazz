@@ -99,6 +99,7 @@ export const startSync = Command.make(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         websocket: ws as any, // TODO: fix types
                         expectPings: false,
+                        batchingByDefault: false
                     }),
                 );
 
@@ -108,7 +109,7 @@ export const startSync = Command.make(
             });
 
             server.on("upgrade", function upgrade(req, socket, head) {
-                if (req.url === "/") {
+                if (req.url !== "/health") {
                     wss.handleUpgrade(req, socket, head, function done(ws) {
                         wss.emit("connection", ws, req);
                     });

@@ -1,7 +1,6 @@
-import { createJazzReactApp } from "jazz-react";
+import { createJazzReactApp, useDemoAuth } from "jazz-react";
 import { getValueId } from "./lib/searchParams";
-import { ephemeralCredentialsAuth } from "jazz-tools";
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 const key = getValueId()
   ? `downloader-e2e@jazz.tools`
@@ -14,10 +13,19 @@ const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
 
 export function AuthAndJazz({ children }: { children: React.ReactNode }) {
-  const [ephemeralAuth] = useState(ephemeralCredentialsAuth())
+  const [auth, state] = useDemoAuth();
+
+  const signedUp = useRef(false);
+
+  useEffect(() => {
+    if (state.state === "ready" && !signedUp.current) {
+      state.signUp('Mister X');
+      signedUp.current = true;
+    }
+  }, [state.state])
 
   return (
-    <Jazz.Provider auth={ephemeralAuth} peer={
+    <Jazz.Provider auth={auth} peer={
       localSync
         ? `ws://localhost:4200?key=${key}`
         : `wss://mesh.jazz.tools/?key=${key}`
