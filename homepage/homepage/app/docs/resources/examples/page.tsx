@@ -20,6 +20,10 @@ export default function Page() {
             name: "Password manager",
             slug: "password-manager",
         },
+        {
+            name: "Book shelf",
+            slug: "book-shelf",
+        },
     ];
     return (
         <>
