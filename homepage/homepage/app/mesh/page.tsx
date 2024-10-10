@@ -71,11 +71,17 @@ export default function Mesh() {
                         <UL>
                             <LI>Best-effort sync</LI>
                             <LI>Community support</LI>
-                            <LI><s>20 Monthly Active Users</s></LI>
-                            <LI><s>1 GB storage</s></LI>
+                            <LI>
+                                <s>20 Monthly Active Users</s>
+                            </LI>
+                            <LI>
+                                <s>1 GB storage</s>
+                            </LI>
                         </UL>
                         <div className="border-white bg-blue-50 border-4 rounded-lg px-4 -rotate-6 shadow">
-                            <p className="text-center my-4 font-bold">Public Alpha</p>
+                            <p className="text-center my-4 font-bold">
+                                Public Alpha
+                            </p>
                             <UL>
                                 <LI>Use your email address as API key</LI>
                                 <LI>Currently no enforced limits</LI>
@@ -92,38 +98,48 @@ export default function Mesh() {
                         <UL>
                             <LI>Base-priority sync</LI>
                             <LI>Community support</LI>
-                            <LI>1000 Monthly Active Users</LI>
-                            <LI>500 GB storage</LI>
+                            <LI>1000 Monthly Active Users included</LI>
+                            <LI>500 GB storage included</LI>
                         </UL>
                         <P>Extra usage:</P>
-                        <LI>$9 per additional 1000 MAUs</LI>
-                        <LI>$9 per additional 500 GB storage/mo</LI>
+                        <LI>$9 per add. 1000 Monthly Active Users</LI>
+                        <LI>$9 per add. 500 GB storage/mo</LI>
 
-                        <p className="mt-4 text-sm">For companies with &lt;$200k in annual revenue or institutional funding.</p>
+                        <p className="mt-4 text-sm">
+                            For companies with &lt;$200k in annual revenue or
+                            institutional funding.
+                        </p>
                     </GridCard>
                     <GridCard>
                         <H3>
                             Mesh Pro
                             <div className="float-right">
-                                from <span className="text-2xl">$1k</span>/mo
+                                from <span className="text-2xl">$500</span>/mo
                             </div>
                         </H3>
                         <UL>
-                            <LI>High-priority sync</LI>
-                            <LI>White-glove support</LI>
+                            <LI>Highest-priority sync</LI>
+                            <LI>
+                                Dedicated integration & dev support
+                            </LI>
                             <LI>Unlimited Monthly Active Users</LI>
                             <LI>Unlimited storage</LI>
                             <LI>SLAs, custom deployment, etc.</LI>
-                            <LI>Offer <code>sync.yourdomain.com</code></LI>
+                            <LI>
+                                Offer <code>sync.yourdomain.com</code>
+                            </LI>
                         </UL>
                         <Button
                             href="https://cal.com/anselm-io/mesh-pro-intro"
                             size="lg"
                             className="block text-center"
-                            >
-                                Book intro call
+                        >
+                            Book intro call
                         </Button>
-                        <p className="mt-4 text-sm">Our team of devs and product specialists will get you going for free. Then we&apos;ll make a bespoke deal.</p>
+                        <p className="mt-4 text-sm">
+                            Our team of devs & product experts will get
+                            you going for free. Then we&apos;ll make a deal just for you.
+                        </p>
                     </GridCard>
                 </GappedGrid>
             </div>
@@ -189,16 +205,6 @@ export default function Mesh() {
                         </UL>
                     </div>
                 </GappedGrid>
-
-                <H3>Enterprise</H3>
-                <P>
-                    Custom deployment in the cloud, your private cloud,
-                    on-premises or hybrids?
-                    <br />
-                    SLAs and dedicated support? White-glove integration
-                    services? Let&apos;s talk:{" "}
-                    <a href="mailto:hello@gcmp.io">hello@gcmp.io</a>
-                </P>
             </div>
 
             <div>
