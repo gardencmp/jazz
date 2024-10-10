@@ -5,6 +5,10 @@ export default function Page() {
             slug: "chat",
         },
         {
+            name: "Chat (with Clerk for auth)",
+            slug: "chat-clerk",
+        },
+        {
             name: "Music player",
             slug: "music-player",
         },
