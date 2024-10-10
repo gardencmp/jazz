@@ -568,20 +568,37 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <div>
-                    <div className="flex flex-col justify-between gap-3">
-                        <h3 className="font-display text-stone-950 dark:text-white text-xl font-semibold tracking-tight lg:text-2xl">
-                            Get started
+                <div className="border border-stone-200 dark:border-stone-900 rounded-xl shadow-sm p-4 md:py-16">
+                    <div className="flex flex-col lg:max-w-3xl md:text-center mx-auto justify-between gap-6">
+                        <p className="uppercase text-blue tracking-wide text-sm font-medium dark:text-stone-400">
+                            Become an early adopter
+                        </p>
+                        <h3 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                            We&apos;ll help you build your next app with Jazz
                         </h3>
-                        <div className="flex gap-3">
-                            <Button href="/docs" variant="primary">
-                                Read documentation
-                            </Button>
+                        <div className="space-y-2 md:text-balance leading-relaxed">
+                            <p>
+                                It&apos;s early days, but we work hard every day
+                                to make Jazz a great tool for our users.
+                            </p>
+                            <p>
+                                We want to hear about what you&apos;re building,
+                                so we can help you every step of the way. We&apos;ll
+                                prioritize features that you need to succeed.
+                            </p>
+                        </div>
+                        <div className="flex md:justify-center gap-3">
                             <Button
                                 href="https://discord.gg/utDMjHYg42"
-                                variant="secondary"
+                                variant="primary"
                             >
-                                Join Discord
+                                Let&apos;s talk on Discord
+                            </Button>
+                            <Button href="/docs" variant="secondary">
+                                Read <span className="sm:hidden">docs</span>{" "}
+                                <span className="hidden sm:inline">
+                                    documentation
+                                </span>
                             </Button>
                         </div>
                     </div>
