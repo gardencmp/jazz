@@ -1,6 +1,6 @@
 {
     "name": "jazz-react-native",
-    "version": "0.8.3",
+    "version": "0.8.5",
     "type": "module",
     "main": "./dist/index.js",
     "module": "./dist/index.js",
@@ -9,8 +9,8 @@
     "exports": {
         ".": {
             "react-native": "./dist/index.js",
-            "default": "./dist/index.js",
-            "types": "./dist/index.d.ts"
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         }
     },
     "license": "MIT",
