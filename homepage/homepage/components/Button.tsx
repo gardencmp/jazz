@@ -32,7 +32,7 @@ export function Button(props: ButtonProps) {
 
     const classNames = clsx(
         className,
-        "rounded-lg transition-colors",
+        "rounded-lg text-center transition-colors",
         sizeClasses[size],
         variantClasses[variant],
     );
