@@ -99,7 +99,7 @@ export const startSync = Command.make(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         websocket: ws as any, // TODO: fix types
                         expectPings: false,
-                        batchingByDefault: true
+                        batchingByDefault: false
                     }),
                 );
 

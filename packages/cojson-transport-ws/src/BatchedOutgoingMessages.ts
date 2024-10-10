@@ -1,24 +1,35 @@
 import { SyncMessage } from "cojson";
+import { addMessageToBacklog } from "./serialization.js";
 
-export const MAX_OUTGOING_MESSAGES_CHUNK_SIZE = 10;
+export const MAX_OUTGOING_MESSAGES_CHUNK_BYTES = 25_000;
 
 export class BatchedOutgoingMessages {
-    private messages: SyncMessage[] = [];
+    private backlog: string = '';
     private timeout: ReturnType<typeof setTimeout> | null = null;
 
-    constructor(private send: (messages: SyncMessage[]) => void) { }
+    constructor(private send: (messages: string) => void) { }
 
     push(msg: SyncMessage) {
-        const { messages } = this;
-        messages.push(msg);
+        const payload = addMessageToBacklog(this.backlog, msg);
 
         if (this.timeout) {
             clearTimeout(this.timeout);
         }
 
-        if (messages.length >= MAX_OUTGOING_MESSAGES_CHUNK_SIZE) {
+        const maxChunkSizeReached = payload.length >= MAX_OUTGOING_MESSAGES_CHUNK_BYTES;
+        const backlogExists = this.backlog.length > 0;
+
+        if (maxChunkSizeReached && backlogExists) {
+            this.sendMessagesInBulk();
+            this.backlog = addMessageToBacklog('', msg);
+            this.timeout = setTimeout(() => {
+                this.sendMessagesInBulk();
+            }, 0);
+        } else if (maxChunkSizeReached) {
+            this.backlog = payload;
             this.sendMessagesInBulk();
         } else {
+            this.backlog = payload;
             this.timeout = setTimeout(() => {
                 this.sendMessagesInBulk();
             }, 0);
@@ -26,8 +37,8 @@ export class BatchedOutgoingMessages {
     }
 
     sendMessagesInBulk() {
-        this.send(this.messages);
-        this.messages.length = 0;
+        this.send(this.backlog);
+        this.backlog = '';
     }
 
     close() {

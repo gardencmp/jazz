@@ -8,7 +8,7 @@ import {
 import { AnyWebSocket } from "../types.js";
 import { SyncMessage } from "cojson";
 import { Channel } from "cojson/src/streamUtils.ts";
-import { MAX_OUTGOING_MESSAGES_CHUNK_SIZE } from "../BatchedOutgoingMessages.js";
+import { MAX_OUTGOING_MESSAGES_CHUNK_BYTES } from "../BatchedOutgoingMessages.js";
 
 function setup(opts: Partial<CreateWebSocketPeerOpts> = {}) {
     const listeners = new Map<string, (event: MessageEvent) => void>();
@@ -31,6 +31,10 @@ function setup(opts: Partial<CreateWebSocketPeerOpts> = {}) {
     });
 
     return { mockWebSocket, peer, listeners };
+}
+
+function serializeMessages(messages: SyncMessage[]) {
+    return messages.map((msg) => JSON.stringify(msg)).join("\n");
 }
 
 describe("createWebSocketPeer", () => {
@@ -227,11 +231,13 @@ describe("createWebSocketPeer", () => {
                 priority: 1,
             };
 
-            Array.from({ length: MAX_OUTGOING_MESSAGES_CHUNK_SIZE }).forEach(
-                () => {
-                    void peer.outgoing.push(message1);
-                },
-            );
+            const stream: SyncMessage[] = [];
+
+            while (serializeMessages(stream.concat(message1)).length < MAX_OUTGOING_MESSAGES_CHUNK_BYTES) {
+                stream.push(message1);
+                void peer.outgoing.push(message1);
+            }
+
             void peer.outgoing.push(message2);
 
             await waitFor(() => {
@@ -239,12 +245,7 @@ describe("createWebSocketPeer", () => {
             });
 
             expect(mockWebSocket.send).toHaveBeenCalledWith(
-                Array.from(
-                    { length: MAX_OUTGOING_MESSAGES_CHUNK_SIZE },
-                    () => message1,
-                )
-                    .map((msg) => JSON.stringify(msg))
-                    .join("\n"),
+                serializeMessages(stream),
             );
 
             expect(mockWebSocket.send).toHaveBeenNthCalledWith(
@@ -274,19 +275,19 @@ describe("createWebSocketPeer", () => {
                 priority: 1,
             };
 
-            Array.from({ length: MAX_OUTGOING_MESSAGES_CHUNK_SIZE }).forEach(
-                () => {
-                    void peer.outgoing.push(message1);
-                },
-            );
+            const stream: SyncMessage[] = [];
+
+            while (serializeMessages(stream.concat(message1)).length < MAX_OUTGOING_MESSAGES_CHUNK_BYTES) {
+                stream.push(message1);
+                void peer.outgoing.push(message1);
+            }
+
             void peer.outgoing.push(message2);
 
             await vi.advanceTimersByTimeAsync(100);
 
             expect(mockWebSocket.send).toHaveBeenCalledWith(
-                Array.from({ length: 10 }, () => message1)
-                    .map((msg) => JSON.stringify(msg))
-                    .join("\n"),
+                serializeMessages(stream),
             );
 
             mockWebSocket.bufferedAmount = 0;
@@ -356,7 +357,7 @@ describe("createWebSocketPeer", () => {
             messageHandler?.(
                 new MessageEvent("message", {
                     data: Array.from(
-                        { length: MAX_OUTGOING_MESSAGES_CHUNK_SIZE },
+                        { length: 5 },
                         () => message1,
                     )
                         .map((msg) => JSON.stringify(msg))

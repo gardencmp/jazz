@@ -5,8 +5,9 @@ import {
     SyncMessage,
     cojsonInternals,
 } from "cojson";
-import { AnyWebSocket, PingMsg } from "./types.js";
+import { AnyWebSocket } from "./types.js";
 import { BatchedOutgoingMessages } from "./BatchedOutgoingMessages.js";
+import { deserializeMessages } from "./serialization.js";
 
 export const BUFFER_LIMIT = 100_000;
 export const BUFFER_LIMIT_POLLING_INTERVAL = 10;
@@ -43,18 +44,16 @@ export function createWebSocketPeer({
     let supportsBatching = batchingByDefault;
 
     websocket.addEventListener("message", function handleIncomingMsg(event) {
-        let messagesChunk: PingMsg[] | SyncMessage[];
+        const result = deserializeMessages(event.data as string);
 
-        try {
-            messagesChunk = (event.data as string)
-                .split("\n")
-                .map((msg) => JSON.parse(msg));
-        } catch (e) {
-            console.error("Error while parsing incoming message", e);
+        if (!result.ok) {
+            console.error("Error while deserializing messages", event.data, result.error);
             return;
         }
 
-        if (messagesChunk.length > 1) {
+        const { messages } = result;
+
+        if (!supportsBatching && messages.length > 1) {
             // If more than one message is received, the other peer supports batching
             supportsBatching = true;
         }
@@ -70,7 +69,7 @@ export function createWebSocketPeer({
             }, 10_000);
         }
 
-        for (const msg of messagesChunk) {
+        for (const msg of messages) {
             if (msg && "action" in msg) {
                 incoming
                     .push(msg)
@@ -92,7 +91,7 @@ export function createWebSocketPeer({
     const outgoingMessages = new BatchedOutgoingMessages((messages) => {
         if (websocket.readyState === 1) {
             websocket.send(
-                messages.map((msg) => JSON.stringify(msg)).join("\n"),
+                messages,
             );
         }
     });
@@ -129,7 +128,9 @@ export function createWebSocketPeer({
             push: pushMessage,
             close() {
                 console.log("Trying to close", id, websocket.readyState);
-                outgoingMessages.close();
+                if (supportsBatching) {
+                    outgoingMessages.close();
+                }
 
                 if (websocket.readyState === 0) {
                     websocket.addEventListener(
