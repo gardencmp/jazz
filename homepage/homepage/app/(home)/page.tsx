@@ -5,7 +5,7 @@ import {
 } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
-import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
+import { FeatureGrid } from "gcmp-design-system/src/app/components/molecules/FeatureGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
@@ -91,14 +91,157 @@ export default function Home() {
                     Build your next&nbsp;app with sync.
                 </h1>
 
-                <p className="text-lg text-pretty leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl">
-                    Jazz is an open-source framework for building local-first
-                    apps, removing 90% of the backend and infrastructure
-                    complexity. Get real-time sync, storage, auth, permissions,
-                    instant UI updates, file uploads, and more &mdash; all on
-                    day one.
+                <p className="text-lg leading-relaxed max-w-3xl dark:text-stone-200 md:text-xl text-balance">
+                    Jazz is an open-source framework for building local-first apps, removing 90% of the backend and
+                    infrastructure complexity.
                 </p>
+
+                <div className="flex flex-col gap-4 md:gap-6 mt-16">
+                    <SectionHeader
+                        title="Everything you need to ship top-tier apps quickly."
+                        slogan="Get features that used to take months to build on day one."
+                    />
+
+                    <FeatureGrid className="md:grid-cols-3 lg:grid-cols-4">
+                        <LabelledFeatureIcon
+                            label="Local-first data"
+                            icon={HardDriveDownloadIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        All data you load or create is persisted
+                                        locally, so your users can work offline.
+                                    </p>
+                                    {/* <p>
+                                        When you’re back online, your local
+                                        changes are synced to the server.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="Cross-device sync"
+                            icon={MonitorSmartphoneIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        Build your app around mutable local
+                                        state attached to an account.
+                                    </p>
+                                    {/* <p>
+                                        Every device with the same account will
+                                        always have everything in sync.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="Real-time multiplayer"
+                            icon={MousePointerSquareDashedIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        Share state with other users and get
+                                        automatic real-time multiplayer.
+                                    </p>
+                                    {/* <p>
+                                        Use the same primitives to quickly build
+                                        user presence UI, like cursors.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="Teams & social features"
+                            icon={UsersIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        Groups of accounts are first class
+                                        entities that you can create anywhere.
+                                    </p>
+                                    {/* <p>
+                                        Building multi-user apps becomes as easy
+                                        as building the UI for them.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="Built-in permissions"
+                            icon={FileLock2Icon}
+                            explanation={
+                                <>
+                                    <p>
+                                        Control access to data with role-based
+                                        permissions, easily defined locally.
+                                    </p>
+                                    {/* <p>
+                                        Reference data across permission scopes
+                                        for granular access control.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="Data & blob storage"
+                            icon={UploadCloudIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        Create & handle structured data and
+                                        binary streams/blobs the same way.
+                                    </p>
+                                    {/* <p>
+                                        <Link
+                                            className="underline"
+                                            href="/mesh"
+                                        >
+                                            Jazz Mesh
+                                        </Link>{" "}
+                                        or your own server become both cloud
+                                        database and blob storage.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="Instant UI updates"
+                            icon={GaugeIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        Get instant updates throughout your UI
+                                        every time you locally mutate data.
+                                    </p>
+                                    {/* <p>
+                                        Remote changes are synced and applied
+                                        with minimal latency.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                        <LabelledFeatureIcon
+                            label="E2EE & signatures"
+                            icon={KeyRoundIcon}
+                            explanation={
+                                <>
+                                    <p>
+                                        All data is end-to-end encrypted and
+                                        cryptographically signed by default.
+                                    </p>
+                                    {/* <p>
+                                        So it can’t be tampered with and Jazz
+                                        Mesh only sees encrypted data.
+                                    </p> */}
+                                </>
+                            }
+                        />
+                    </FeatureGrid>
+                </div>
             </div>
+
+
 
             <div className="bg-stone-100 dark:bg-stone-925 py-8 lg:py-16">
                 <div className="container grid gap-8 lg:gap-12">
@@ -185,149 +328,7 @@ export default function Home() {
             </div>
 
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
-                <div className="flex flex-col gap-4 md:gap-6">
-                    <SectionHeader
-                        title="Everything you need to ship top-tier apps quickly."
-                        slogan="Features that used to take months to build now work out-of-the-box."
-                    />
 
-                    <HairlineBleedGrid>
-                        <LabelledFeatureIcon
-                            label="Local-first storage"
-                            icon={HardDriveDownloadIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        All data you load or create is persisted
-                                        locally, so your users can work offline.
-                                    </p>
-                                    <p>
-                                        When you’re back online, your local
-                                        changes are synced to the server.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Cross-device sync"
-                            icon={MonitorSmartphoneIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Build your app around mutable local
-                                        state attached to an account.
-                                    </p>
-                                    <p>
-                                        Every device with the same account will
-                                        always have everything in sync.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Real-time multiplayer"
-                            icon={MousePointerSquareDashedIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Share state with other users and get
-                                        automatic real-time multiplayer.
-                                    </p>
-                                    <p>
-                                        Use the same primitives to quickly build
-                                        user presence UI, like cursors.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Teams & social features"
-                            icon={UsersIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Groups of accounts are first class
-                                        entities that you can create anywhere.
-                                    </p>
-                                    <p>
-                                        Building multi-user apps becomes as easy
-                                        as building the UI for them.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Built-in permissions"
-                            icon={FileLock2Icon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Control access to data with role-based
-                                        permissions, easily defined locally.
-                                    </p>
-                                    <p>
-                                        Reference data across permission scopes
-                                        for granular access control.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Data & blob storage"
-                            icon={UploadCloudIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Create & handle structured data and
-                                        binary streams/blobs the same way.
-                                    </p>
-                                    <p>
-                                        <Link
-                                            className="underline"
-                                            href="/mesh"
-                                        >
-                                            Jazz Mesh
-                                        </Link>{" "}
-                                        or your own server become both cloud
-                                        database and blob storage.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Instant UI updates"
-                            icon={GaugeIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Get instant updates throughout your UI
-                                        every time you locally mutate data.
-                                    </p>
-                                    <p>
-                                        Remote changes are synced and applied
-                                        with minimal latency.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="E2EE & signatures"
-                            icon={KeyRoundIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        All data is end-to-end encrypted and
-                                        cryptographically signed by default.
-                                    </p>
-                                    <p>
-                                        So it can’t be tampered with and Jazz
-                                        Mesh only sees encrypted data.
-                                    </p>
-                                </>
-                            }
-                        />
-                    </HairlineBleedGrid>
-                </div>
 
                 <div>
                     <SectionHeader
@@ -402,7 +403,7 @@ export default function Home() {
                     </Prose>
                 </div>
 
-                <GappedGrid
+                <FeatureGrid
                     title="Bread-and-butter datastructures"
                     className="grid-cols-2 lg:grid-cols-4"
                 >
@@ -442,9 +443,9 @@ export default function Home() {
                             <CoStreamDescription />
                         </SmallProse>
                     </GridCard>
-                </GappedGrid>
+                </FeatureGrid>
 
-                <GappedGrid
+                <FeatureGrid
                     title="First-class files & binary data"
                     className="grid-cols-2 lg:grid-cols-4"
                 >
@@ -465,9 +466,9 @@ export default function Home() {
                             <ImageDefinitionDescription />
                         </SmallProse>
                     </GridCard>
-                </GappedGrid>
+                </FeatureGrid>
 
-                <GappedGrid
+                <FeatureGrid
                     title="Secure permissions, authorship & teams"
                     className="grid-cols-2 lg:grid-cols-4"
                 >
@@ -487,7 +488,7 @@ export default function Home() {
                             <AccountDescription />
                         </SmallProse>
                     </GridCard>
-                </GappedGrid>
+                </FeatureGrid>
 
                 <div>
                     <SectionHeader
@@ -501,7 +502,7 @@ export default function Home() {
                     </SmallProse>
                 </div>
 
-                <GappedGrid>
+                <FeatureGrid>
                     <GridCard>
                         <SectionHeader
                             title="Auto-sub"
@@ -566,7 +567,7 @@ export default function Home() {
                             <VideoPresenceCallsDescription />
                         </SmallProse>
                     </GridCard>
-                </GappedGrid>
+                </FeatureGrid>
 
                 <div>
                     <div className="flex flex-col justify-between gap-3">

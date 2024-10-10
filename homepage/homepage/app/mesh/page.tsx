@@ -1,6 +1,6 @@
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
+import { FeatureGrid } from "gcmp-design-system/src/app/components/molecules/FeatureGrid";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
@@ -37,7 +37,7 @@ export default function Mesh() {
                 <GappedGrid>
                     <GridCard>
                         <H3>Optimal mesh routing.</H3>
-
+FeatureGrid
                         <P>
                             Get ultra-low latency between any group of users
                             with our decentralized mesh interconnect.
@@ -62,12 +62,12 @@ export default function Mesh() {
                 </GappedGrid>
             </div>
 
-            <div>
+            <div>FeatureGrid
                 <SectionHeader title="Pricing" slogan="" />
                 <GappedGrid>
                     <GridCard>
                         <H3>
-                            Mesh Free{" "}
+                 FeatureGrid Mesh Free{" "}
                             <div className="text-2xl float-right">$0</div>
                         </H3>
 
@@ -119,7 +119,7 @@ export default function Mesh() {
                 </GappedGrid>
                 <H3>FAQ</H3>
                 <SmallProse>
-                    <PricingFAQ />
+                  FeatureGridFAQ />
                 </SmallProse>
             </div>
 
@@ -131,7 +131,7 @@ export default function Mesh() {
                 <GappedGrid>
                     <div className="text-sm">
                         <H4>Under 50ms RTT</H4>
-                        <UL>
+                 FeatureGrid>
                             <LI>Frankfurt</LI>
                             <LI>New York</LI>
                             <LI>Newark</LI>
@@ -186,7 +186,7 @@ export default function Mesh() {
                 </GappedGrid>
 
                 <H3>Enterprise</H3>
-                <P>
+                <PFeatureGrid
                     Custom deployment in the cloud, your private cloud,
                     on-premises or hybrids?
                     <br />
@@ -208,7 +208,7 @@ export default function Mesh() {
                 <GappedGrid>
                     <GridCard>
                         <Prose>
-                            <MeshPlusBackup />
+                 FeatureGrid <MeshPlusBackup />
                         </Prose>
                     </GridCard>
                     <GridCard>
@@ -224,5 +224,5 @@ export default function Mesh() {
                 </GappedGrid>
             </div>
         </div>
-    );
+    );FeatureGrid
 }
