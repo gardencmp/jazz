@@ -123,7 +123,7 @@ export default function Mesh() {
                             >
                                 Book intro call
                         </Button>
-                        <p className="mt-4 text-sm">Our team will get you going for free and then we&apos;ll figure out a deal based on your needs.</p>
+                        <p className="mt-4 text-sm">Our team of devs and product specialists will get you going for free. Then we&apos;ll make a bespoke deal.</p>
                     </GridCard>
                 </GappedGrid>
             </div>
