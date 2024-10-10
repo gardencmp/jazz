@@ -14,8 +14,7 @@ import {
 import MeshPlusBackup from "./meshPlusBackup.mdx";
 import MeshPlusDIY from "./meshPlusDIY.mdx";
 import CompletelyDIY from "./completelyDIY.mdx";
-
-import PricingFAQ from "./pricingFaq.mdx";
+import { Button } from "@/components/Button";
 
 export const metadata = {
     title: "jazz - Jazz Mesh",
@@ -71,54 +70,62 @@ export default function Mesh() {
 
                         <UL>
                             <LI>Best-effort sync</LI>
-                            <LI>3,000 sync-minutes/mo</LI>
-                            <LI>1 GB storage</LI>
+                            <LI>Community support</LI>
+                            <LI><s>20 Monthly Active Users</s></LI>
+                            <LI><s>1 GB storage</s></LI>
                         </UL>
+                        <div className="border-white bg-blue-50 border-4 rounded-lg px-4 -rotate-6 shadow">
+                            <p className="text-center my-4 font-bold">Public Alpha</p>
+                            <UL>
+                                <LI>Use your email address as API key</LI>
+                                <LI>Currently no enforced limits</LI>
+                            </UL>
+                        </div>
                     </GridCard>
                     <GridCard>
                         <H3>
-                            Mesh Starter <ComingSoonBadge />
+                            Mesh Indie <ComingSoonBadge />
                             <div className="float-right">
-                                <span className="text-2xl">$9</span>/mo
+                                <span className="text-2xl">$19</span>/mo
                             </div>
                         </H3>
                         <UL>
                             <LI>Base-priority sync</LI>
-                            <LI>6,000 sync-minutes/mo</LI>
-                            <LI>100 GB storage</LI>
+                            <LI>Community support</LI>
+                            <LI>1000 Monthly Active Users</LI>
+                            <LI>500 GB storage</LI>
                         </UL>
-                        <div className="text-xs">
-                            <P>Extra usage:</P>
-                            <LI>$9 per additional 6,000 sync-minutes</LI>
-                            <LI>$9 per additional 1TB storage/mo</LI>
-                        </div>
+                        <P>Extra usage:</P>
+                        <LI>$9 per additional 1000 MAUs</LI>
+                        <LI>$9 per additional 500 GB storage/mo</LI>
+
+                        <p className="mt-4 text-sm">For companies with &lt;$200k in annual revenue or institutional funding.</p>
                     </GridCard>
                     <GridCard>
                         <H3>
-                            Mesh Pro <ComingSoonBadge />
+                            Mesh Pro
                             <div className="float-right">
-                                <span className="text-2xl">$79</span>/mo
+                                from <span className="text-2xl">$1k</span>/mo
                             </div>
                         </H3>
                         <UL>
                             <LI>High-priority sync</LI>
-                            <LI>30,000 sync-minutes/mo</LI>
-                            <LI>1 TB storage</LI>
-                            <LI>Offer sync.yourdomain.com</LI>
+                            <LI>White-glove support</LI>
+                            <LI>Unlimited Monthly Active Users</LI>
+                            <LI>Unlimited storage</LI>
+                            <LI>SLAs, custom deployment, etc.</LI>
+                            <LI>Offer <code>sync.yourdomain.com</code></LI>
                         </UL>
-                        <div className="text-xs">
-                            <P>Extra usage:</P>
-                            <UL>
-                                <LI>$15 per additional 6,000 sync-minutes</LI>
-                                <LI>$15 per additional 1TB storage/mo</LI>
-                            </UL>
-                        </div>
+                        <Button
+                            href="https://cal.com/anselm-io/mesh-pro-intro"
+                            size="lg"
+                            className="block text-center"
+                            >
+                                Book intro call with CEO + devs
+                        </Button>
+                        <p className="mt-4 text-sm">Our team will get you going for free and then we&apos;ll figure out a deal based on your needs.</p>
                     </GridCard>
                 </GappedGrid>
-                <H3>FAQ</H3>
-                <SmallProse>
-                    <PricingFAQ />
-                </SmallProse>
             </div>
 
             <div>
