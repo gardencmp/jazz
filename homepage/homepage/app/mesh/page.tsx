@@ -121,7 +121,7 @@ export default function Mesh() {
                             size="lg"
                             className="block text-center"
                             >
-                                Book intro call with CEO + devs
+                                Book intro call
                         </Button>
                         <p className="mt-4 text-sm">Our team will get you going for free and then we&apos;ll figure out a deal based on your needs.</p>
                     </GridCard>
