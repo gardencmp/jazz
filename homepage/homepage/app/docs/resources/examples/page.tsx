@@ -5,6 +5,10 @@ export default function Page() {
             slug: "chat",
         },
         {
+            name: "Chat (with Clerk for auth)",
+            slug: "chat-clerk",
+        },
+        {
             name: "Music player",
             slug: "music-player",
         },
@@ -19,6 +23,10 @@ export default function Page() {
         {
             name: "Password manager",
             slug: "password-manager",
+        },
+        {
+            name: "Book shelf",
+            slug: "book-shelf",
         },
     ];
     return (
