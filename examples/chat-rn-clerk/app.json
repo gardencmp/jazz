@@ -1,27 +1,27 @@
 {
     "expo": {
-        "name": "jazz-chat-rn",
-        "scheme": "jazz-chat-rn",
-        "slug": "jazz-chat-rn",
+        "name": "jazz-chat-rn-clerk",
+        "scheme": "jazz-chat-rn-clerk",
+        "slug": "jazz-chat-rn-clerk",
         "version": "1.0.0",
         "orientation": "portrait",
-        "icon": "./assets/icon.png",
+        "icon": "./assets/images/icon.png",
         "userInterfaceStyle": "light",
         "splash": {
-            "image": "./assets/splash.png",
+            "image": "./assets/images/splash.png",
             "resizeMode": "contain",
             "backgroundColor": "#ffffff"
         },
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "com.jazz.chatrn"
+            "bundleIdentifier": "com.jazz.chatrnclerk"
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
+                "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.jazz.chatrn"
+            "package": "com.jazz.chatrnclerk"
         },
         "plugins": [
             [
@@ -38,9 +38,8 @@
         ],
         "extra": {
             "eas": {
-                "projectId": "e0e61872-1906-4c84-b9d8-9be77355cad0"
+                "projectId": "ca3d46e5-a10a-47ec-9d77-3b841e1c62d4"
             }
-        },
-        "owner": "paxx"
+        }
     }
 }

@@ -59,6 +59,7 @@ function App() {
                         <Stack.Screen
                             options={{ title: "Jazz Chat" }}
                             name="ChatScreen"
+                            // @ts-ignore
                             component={ChatScreen}
                         />
                         <Stack.Screen
