@@ -4,7 +4,6 @@ import {
     SmallProse,
 } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
@@ -39,7 +38,6 @@ import BinaryCoStreamDescription from "./coValueDescriptions/binaryCoStreamDescr
 import ImageDefinitionDescription from "./coValueDescriptions/imageDefinitionDescription.mdx";
 import GroupDescription from "./coValueDescriptions/groupDescription.mdx";
 import AccountDescription from "./coValueDescriptions/accountDescription.mdx";
-import SupportedEnvironments from "./supportedEnvironments.mdx";
 import AutoSubDescription from "./toolkit/autoSub.mdx";
 import CursorsAndCaretsDescription from "./toolkit/cursorsAndCarets.mdx";
 import AuthProvidersDescription from "./toolkit/authProviders.mdx";
@@ -52,6 +50,8 @@ import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { Button } from "@/components/Button";
+import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
+import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -489,17 +489,7 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <div>
-                    <SectionHeader
-                        title="The Jazz Toolkit"
-                        slogan="A high-level toolkit for building apps around CoValues."
-                    />
-
-                    <Prose>Supported environments:</Prose>
-                    <SmallProse>
-                        <SupportedEnvironments />
-                    </SmallProse>
-                </div>
+                <SupportedEnvironments />
 
                 <GappedGrid>
                     <GridCard>
@@ -583,8 +573,9 @@ export default function Home() {
                             </p>
                             <p>
                                 We want to hear about what you&apos;re building,
-                                so we can help you every step of the way. We&apos;ll
-                                prioritize features that you need to succeed.
+                                so we can help you every step of the way.
+                                We&apos;ll prioritize features that you need to
+                                succeed.
                             </p>
                         </div>
                         <div className="flex md:justify-center gap-3">
