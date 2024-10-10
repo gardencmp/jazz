@@ -4,16 +4,16 @@ import { products } from "@/lib/showcase";
 import Link from "next/link";
 
 export const metadata = {
-    title: "jazz - Showcase",
-    description: "A list of cool products built with Jazz.",
+    title: "jazz - Built with Jazz",
+    description: "Great apps by smart people.",
 };
 
 export default function Page() {
     return (
         <div className="container flex flex-col gap-6 pb-10 lg:pb-20">
             <HeroHeader
-                title="Cool products built with Jazz"
-                slogan="Find inspiration in what others have made."
+                title="Built with Jazz"
+                slogan="Great apps by smart people."
             />
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
