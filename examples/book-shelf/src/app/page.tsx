@@ -18,7 +18,7 @@ export default function Home() {
         <input
           type="text"
           className="w-full rounded border p-1"
-          value={`http://localhost:3000/user/${me?.id}`}
+          value={`${window.location.origin}/user/${me?.id}`}
           readOnly
         />
       </label>
