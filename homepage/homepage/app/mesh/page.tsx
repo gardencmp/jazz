@@ -31,9 +31,7 @@ export default function Mesh() {
             />
 
             <div>
-                <P>
-                    Pricing that scales down to zero.
-                </P>
+                <P>Pricing that scales down to zero.</P>
                 <GappedGrid>
                     <GridCard>
                         <H3>Optimal mesh routing.</H3>

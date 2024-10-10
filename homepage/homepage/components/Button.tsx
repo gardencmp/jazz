@@ -24,14 +24,15 @@ export function Button(props: ButtonProps) {
     };
 
     const variantClasses = {
-        primary: "bg-blue text-white font-medium bg-blue hover:bg-blue-800",
+        primary:
+            "bg-blue border-blue text-white font-medium bg-blue hover:bg-blue-800 hover:border-blue-800",
         secondary:
-            "text-stone-900 font-medium bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 dark:text-white",
+            "text-stone-900 border border-stone-200 font-medium hover:border-stone-300 dark:border-stone-900 dark:hover:border-stone-800 dark:text-white",
     };
 
     const classNames = clsx(
         className,
-        "rounded-md transition-colors",
+        "rounded-lg transition-colors",
         sizeClasses[size],
         variantClasses[variant],
     );
