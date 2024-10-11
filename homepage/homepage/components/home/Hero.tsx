@@ -40,7 +40,7 @@ export function Hero({
             <div className="pl-8 pt-16 -mr-4 flex items-center">
                 <Image
                     src="/code-samples.png"
-                    alt="Code samples"
+                    alt="Code samples for defining a schema for Jazz, pushing data, and subscribing to changes."
                     width={1100}
                     height={852}
                 />
