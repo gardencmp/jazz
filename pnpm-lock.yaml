@@ -528,6 +528,9 @@ importers:
       '@azure/core-asynciterator-polyfill':
         specifier: ^1.0.2
         version: 1.0.2
+      '@bam.tech/react-native-image-resizer':
+        specifier: ^3.0.10
+        version: 3.0.10(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)
       '@clerk/clerk-expo':
         specifier: ^2.2.21
         version: 2.2.21(@types/react@18.2.79)(expo-auth-session@5.5.2(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(expo-secure-store@13.0.2(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(expo-web-browser@13.0.3(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(react-dom@18.3.1(react@18.3.1))(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)
@@ -546,6 +549,9 @@ importers:
       base-64:
         specifier: ^1.0.0
         version: 1.0.0
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
@@ -567,6 +573,9 @@ importers:
       expo-dev-client:
         specifier: ~4.0.28
         version: 4.0.28(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
+      expo-file-system:
+        specifier: ^17.0.1
+        version: 17.0.1(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
       expo-font:
         specifier: ~12.0.4
         version: 12.0.10(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
@@ -597,6 +606,9 @@ importers:
       jazz-react-native:
         specifier: workspace:*
         version: link:../../packages/jazz-react-native
+      jazz-react-native-media-images:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react-native-media-images
       jazz-tools:
         specifier: workspace:*
         version: link:../../packages/jazz-tools
@@ -627,6 +639,9 @@ importers:
       react-native-polyfill-globals:
         specifier: ^3.1.0
         version: 3.1.0(base-64@1.0.0)(react-native-fetch-api@3.0.0)(react-native-get-random-values@1.11.0(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1)))(react-native-url-polyfill@2.0.0(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1)))(text-encoding@0.7.0)(web-streams-polyfill@3.2.1)
+      react-native-quick-base64:
+        specifier: ^2.1.2
+        version: 2.1.2(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)
       react-native-reanimated:
         specifier: ~3.10.1
         version: 3.10.1(@babel/core@7.25.2)(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)
@@ -1433,6 +1448,25 @@ importers:
       react-native-mmkv:
         specifier: 3.0.1
         version: 3.0.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)
+
+  packages/jazz-react-native-media-images:
+    dependencies:
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../jazz-tools
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.2
+    devDependencies:
+      '@bam.tech/react-native-image-resizer':
+        specifier: ^3.0.10
+        version: 3.0.10(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)
+      expo-file-system:
+        specifier: ^17.0.1
+        version: 17.0.1(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
+      react-native:
+        specifier: ~0.74.5
+        version: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1)
 
   packages/jazz-run:
     dependencies:
@@ -2288,6 +2322,13 @@ packages:
   '@babel/types@7.25.6':
     resolution: {integrity: sha512-/l42B1qxpG6RdfYf343Uw1vmDjeNhneUXtzhojE7pDgfpEypmRhI6j1kr17XCVv4Cgl9HdAiQY2x0GwKm7rWCw==}
     engines: {node: '>=6.9.0'}
+
+  '@bam.tech/react-native-image-resizer@3.0.10':
+    resolution: {integrity: sha512-IVIBRkgy8eq4g51RjAzh7zk8KpGhiQH6GqLC7SgAUJ0plh2bdqG2l8+D+Q/A0uFe85YutUmHyFioyDEsRGXaCQ==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: 18.3.1
+      react-native: '*'
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
@@ -8584,6 +8625,12 @@ packages:
       text-encoding: '*'
       web-streams-polyfill: '*'
 
+  react-native-quick-base64@2.1.2:
+    resolution: {integrity: sha512-xghaXpWdB0ji8OwYyo0fWezRroNxiNFCNFpGUIyE7+qc4gA/IGWnysIG5L0MbdoORv8FkTKUvfd6yCUN5R2VFA==}
+    peerDependencies:
+      react: 18.3.1
+      react-native: '*'
+
   react-native-reanimated@3.10.1:
     resolution: {integrity: sha512-sfxg6vYphrDc/g4jf/7iJ7NRi+26z2+BszPmvmk0Vnrz6FL7HYljJqTf531F1x6tFmsf+FEAmuCtTUIXFLVo9w==}
     peerDependencies:
@@ -11304,6 +11351,11 @@ snapshots:
       '@babel/helper-string-parser': 7.24.8
       '@babel/helper-validator-identifier': 7.24.7
       to-fast-properties: 2.0.0
+
+  '@bam.tech/react-native-image-resizer@3.0.10(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+      react-native: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1)
 
   '@bcoe/v8-coverage@0.2.3': {}
 
@@ -19059,6 +19111,12 @@ snapshots:
       react-native-url-polyfill: 2.0.0(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))
       text-encoding: 0.7.0
       web-streams-polyfill: 3.2.1
+
+  react-native-quick-base64@2.1.2(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1):
+    dependencies:
+      base64-js: 1.5.1
+      react: 18.3.1
+      react-native: 0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1)
 
   react-native-reanimated@3.10.1(@babel/core@7.25.2)(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1):
     dependencies:
