@@ -52,6 +52,7 @@ import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { Button } from "@/components/Button";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
+import { Hero } from "@/components/home/Hero";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -84,7 +85,6 @@ const ArrowDoodle = ({ className }: { className?: string }) => (
 );
 
 export default function Home() {
-
     const features = [
         {
             title: "Local-first",
@@ -92,13 +92,15 @@ export default function Home() {
             description: (
                 <>
                     <p>
-                        All data you load or create is persisted locally, so your users can work offline.
+                        All data you load or create is persisted locally, so
+                        your users can work offline.
                     </p>
                     <p>
-                        When you’re back online, your local changes are synced to the server.
+                        When you’re back online, your local changes are synced
+                        to the server.
                     </p>
                 </>
-            )
+            ),
         },
         {
             title: "Multiplayer",
@@ -106,33 +108,34 @@ export default function Home() {
             description: (
                 <>
                     <p>
-                        Share state with other users and get automatic real-time multiplayer.
+                        Share state with other users and get automatic real-time
+                        multiplayer.
                     </p>
                     <p>
-                        Use the same primitives to quickly build user presence UI, like cursors.
+                        Use the same primitives to quickly build user presence
+                        UI, like cursors.
                     </p>
                 </>
-            )
+            ),
         },
         {
             title: "File uploads",
             icon: UploadCloudIcon,
             description: (
-              <>
-                  <p>
-                      Create & handle structured data and binary streams/blobs the same way.
-                  </p>
-                  <p>
-                      <Link
-                        className="underline"
-                        href="/mesh"
-                      >
-                          Jazz Mesh
-                      </Link>{" "}
-                      or your own server become both cloud database and blob storage.
-                  </p>
-              </>
-            )
+                <>
+                    <p>
+                        Create & handle structured data and binary streams/blobs
+                        the same way.
+                    </p>
+                    <p>
+                        <Link className="underline" href="/mesh">
+                            Jazz Mesh
+                        </Link>{" "}
+                        or your own server become both cloud database and blob
+                        storage.
+                    </p>
+                </>
+            ),
         },
         {
             title: "Social features",
@@ -140,13 +143,15 @@ export default function Home() {
             description: (
                 <>
                     <p>
-                        Groups of accounts are first class entities that you can create anywhere.
+                        Groups of accounts are first class entities that you can
+                        create anywhere.
                     </p>
                     <p>
-                        Building multi-user apps becomes as easy as building the UI for them.
+                        Building multi-user apps becomes as easy as building the
+                        UI for them.
                     </p>
                 </>
-            )
+            ),
         },
         {
             title: "Permissions",
@@ -154,41 +159,47 @@ export default function Home() {
             description: (
                 <>
                     <p>
-                        Control access to data with role-based permissions, easily defined locally.
+                        Control access to data with role-based permissions,
+                        easily defined locally.
                     </p>
                     <p>
-                        Reference data across permission scopes for granular access control.
+                        Reference data across permission scopes for granular
+                        access control.
                     </p>
                 </>
-            )
+            ),
         },
         {
             title: "Sync",
             icon: MonitorSmartphoneIcon,
             description: (
-              <>
-                  <p>
-                      Build your app around mutable local state attached to an account.
-                  </p>
-                  <p>
-                      Every device with the same account will always have everything in sync.
-                  </p>
-              </>
-            )
+                <>
+                    <p>
+                        Build your app around mutable local state attached to an
+                        account.
+                    </p>
+                    <p>
+                        Every device with the same account will always have
+                        everything in sync.
+                    </p>
+                </>
+            ),
         },
         {
             title: "E2EE",
             icon: KeyRoundIcon,
             description: (
-              <>
-                  <p>
-                      All data is end-to-end encrypted and cryptographically signed by default.
-                  </p>
-                  <p>
-                      So it can’t be tampered with and Jazz Mesh only sees encrypted data.
-                  </p>
-              </>
-            )
+                <>
+                    <p>
+                        All data is end-to-end encrypted and cryptographically
+                        signed by default.
+                    </p>
+                    <p>
+                        So it can’t be tampered with and Jazz Mesh only sees
+                        encrypted data.
+                    </p>
+                </>
+            ),
         },
         {
             title: "Instant updates",
@@ -196,13 +207,15 @@ export default function Home() {
             description: (
                 <>
                     <p>
-                        Get instant updates throughout your UI every time you locally mutate data.
+                        Get instant updates throughout your UI every time you
+                        locally mutate data.
                     </p>
                     <p>
-                        Remote changes are synced and applied with minimal latency.
+                        Remote changes are synced and applied with minimal
+                        latency.
                     </p>
                 </>
-            )
+            ),
         },
         // {
         //     title: "Authentication",
@@ -218,36 +231,11 @@ export default function Home() {
         //       </>
         //     )
         // },
-    ]
+    ];
 
     return (
         <>
-            <div className="container grid grid-cols-2 gap-3 py-24">
-                <div>
-                    <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl mb-8 font-medium tracking-tighter text-balance">
-                        Build your next&nbsp;app with sync
-                    </h1>
-
-                    <p className="text-lg text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl mb-8">
-                        Jazz is an open-source framework for building local-first
-                        apps, removing 90% of the backend and infrastructure
-                        complexity.
-                    </p>
-
-                    <div className="grid grid-cols-4 gap-4">
-                        {features.map(({ title, icon: Icon}) => (
-                            <div key={title} className="flex text-sm gap-2 items-center">
-                                <span className="text-blue p-1.5 rounded-lg bg-blue-50">
-                                    <Icon size={16} />
-                                </span>
-                                <p>{title}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/*<div className="bg-stone-100 h-full w-full"/>*/}
-            </div>
+            <Hero features={features} />
 
             <div className="bg-stone-100 dark:bg-stone-925 py-8 lg:py-16">
                 <div className="container grid gap-8 lg:gap-12">
