@@ -17,10 +17,15 @@ function arrayBuffer(blob: Blob): Promise<ArrayBuffer> {
 }
 
 async function fileUriToBlob(uri: string): Promise<Blob> {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    blob.arrayBuffer = () => arrayBuffer(blob);
-    return blob;
+    try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        blob.arrayBuffer = () => arrayBuffer(blob);
+        return blob;
+    } catch (error) {
+        console.error("Failed to convert file URI to Blob:", error);
+        throw new Error("Failed to convert file URI to Blob");
+    }
 }
 
 async function convertFileContentsToBase64DataURI(
@@ -76,7 +81,10 @@ async function getImageDimensions(
         Image.getSize(
             uri,
             (width, height) => resolve({ width, height }),
-            (error) => reject(error),
+            (error) => {
+                console.error("Failed to get image dimensions:", error);
+                reject(new Error("Failed to get image dimensions"));
+            },
         );
     });
 }
@@ -89,105 +97,139 @@ export async function createImage(
         maxSize?: 256 | 1024 | 2048;
     },
 ): Promise<ImageDefinition> {
-    const { contentType } = base64DataURIToParts(base64ImageDataURI);
-    const format = contentTypeToFormat(contentType);
+    try {
+        const { contentType } = base64DataURIToParts(base64ImageDataURI);
+        const format = contentTypeToFormat(contentType);
 
-    const { width: originalWidth, height: originalHeight } =
-        await getImageDimensions(base64ImageDataURI);
+        let originalWidth, originalHeight;
+        try {
+            ({ width: originalWidth, height: originalHeight } =
+                await getImageDimensions(base64ImageDataURI));
+        } catch (error) {
+            console.error("Error getting image dimensions:", error);
+            throw new Error("Failed to get image dimensions");
+        }
 
-    const placeholderImage = await ImageResizer.createResizedImage(
-        base64ImageDataURI,
-        8,
-        8,
-        format,
-        100,
-        0,
-    );
+        let placeholderImage;
+        try {
+            placeholderImage = await ImageResizer.createResizedImage(
+                base64ImageDataURI,
+                8,
+                8,
+                format,
+                100,
+                0,
+            );
+        } catch (error) {
+            console.error("Error creating placeholder image:", error);
+            throw new Error("Failed to create placeholder image");
+        }
 
-    const placeholderDataURL = await convertFileContentsToBase64DataURI(
-        placeholderImage.uri,
-        contentType,
-    );
-
-    const imageDefinition = ImageDefinition.create(
-        {
-            originalSize: [originalWidth, originalHeight],
-            placeholderDataURL,
-        },
-        { owner: options.owner },
-    );
-
-    const addImageStream = async (
-        width: number,
-        height: number,
-        label: string,
-    ) => {
-        const resizedImage = await ImageResizer.createResizedImage(
-            base64ImageDataURI,
-            width,
-            height,
-            format,
-            80,
-            0,
+        const placeholderDataURL = await convertFileContentsToBase64DataURI(
+            placeholderImage.uri,
+            contentType,
         );
 
-        const binaryStream = await BinaryCoStream.createFromBlob(
-            await fileUriToBlob(resizedImage.uri),
+        if (!placeholderDataURL) {
+            throw new Error("Failed to create placeholder data URL");
+        }
+
+        const imageDefinition = ImageDefinition.create(
+            {
+                originalSize: [originalWidth, originalHeight],
+                placeholderDataURL,
+            },
             { owner: options.owner },
         );
 
-        // @ts-expect-error types
-        imageDefinition[label] = binaryStream;
-    };
+        const addImageStream = async (
+            width: number,
+            height: number,
+            label: string,
+        ) => {
+            try {
+                const resizedImage = await ImageResizer.createResizedImage(
+                    base64ImageDataURI,
+                    width,
+                    height,
+                    format,
+                    80,
+                    0,
+                );
 
-    if (originalWidth > 256 || originalHeight > 256) {
-        const width =
-            originalWidth > originalHeight
-                ? 256
-                : Math.round(256 * (originalWidth / originalHeight));
-        const height =
-            originalHeight > originalWidth
-                ? 256
-                : Math.round(256 * (originalHeight / originalWidth));
-        await addImageStream(width, height, `${width}x${height}`);
+                const binaryStream = await BinaryCoStream.createFromBlob(
+                    await fileUriToBlob(resizedImage.uri),
+                    { owner: options.owner },
+                );
+
+                // @ts-expect-error types
+                imageDefinition[label] = binaryStream;
+            } catch (error) {
+                console.error(`Error adding image stream for ${label}:`, error);
+                throw new Error(`Failed to add image stream for ${label}`);
+            }
+        };
+
+        if (originalWidth > 256 || originalHeight > 256) {
+            const width =
+                originalWidth > originalHeight
+                    ? 256
+                    : Math.round(256 * (originalWidth / originalHeight));
+            const height =
+                originalHeight > originalWidth
+                    ? 256
+                    : Math.round(256 * (originalHeight / originalWidth));
+            await addImageStream(width, height, `${width}x${height}`);
+        }
+
+        if (options.maxSize === 256) return imageDefinition;
+
+        if (originalWidth > 1024 || originalHeight > 1024) {
+            const width =
+                originalWidth > originalHeight
+                    ? 1024
+                    : Math.round(1024 * (originalWidth / originalHeight));
+            const height =
+                originalHeight > originalWidth
+                    ? 1024
+                    : Math.round(1024 * (originalHeight / originalWidth));
+            await addImageStream(width, height, `${width}x${height}`);
+        }
+
+        if (options.maxSize === 1024) return imageDefinition;
+
+        if (originalWidth > 2048 || originalHeight > 2048) {
+            const width =
+                originalWidth > originalHeight
+                    ? 2048
+                    : Math.round(2048 * (originalWidth / originalHeight));
+            const height =
+                originalHeight > originalWidth
+                    ? 2048
+                    : Math.round(2048 * (originalHeight / originalWidth));
+            await addImageStream(width, height, `${width}x${height}`);
+        }
+
+        if (options.maxSize === 2048) return imageDefinition;
+
+        if (options.maxSize === undefined || options.maxSize > 2048) {
+            try {
+                const originalBinaryStream =
+                    await BinaryCoStream.createFromBlob(
+                        await base64DataURIToBlob(base64ImageDataURI),
+                        { owner: options.owner },
+                    );
+                imageDefinition[`${originalWidth}x${originalHeight}`] =
+                    originalBinaryStream;
+            } catch (error) {
+                console.error("Error adding original image stream:", error);
+                throw new Error("Failed to add original image stream");
+            }
+        }
+
+        return imageDefinition;
+    } catch (error) {
+        console.error("Error in createImage:", error);
+        throw error;
     }
-
-    if (options.maxSize === 256) return imageDefinition;
-
-    if (originalWidth > 1024 || originalHeight > 1024) {
-        const width =
-            originalWidth > originalHeight
-                ? 1024
-                : Math.round(1024 * (originalWidth / originalHeight));
-        const height =
-            originalHeight > originalWidth
-                ? 1024
-                : Math.round(1024 * (originalHeight / originalWidth));
-        await addImageStream(width, height, `${width}x${height}`);
-    }
-
-    if (options.maxSize === 1024) return imageDefinition;
-
-    if (originalWidth > 2048 || originalHeight > 2048) {
-        const width =
-            originalWidth > originalHeight
-                ? 2048
-                : Math.round(2048 * (originalWidth / originalHeight));
-        const height =
-            originalHeight > originalWidth
-                ? 2048
-                : Math.round(2048 * (originalHeight / originalWidth));
-        await addImageStream(width, height, `${width}x${height}`);
-    }
-
-    if (options.maxSize === 2048) return imageDefinition;
-
-    const originalBinaryStream = await BinaryCoStream.createFromBlob(
-        await base64DataURIToBlob(base64ImageDataURI),
-        { owner: options.owner },
-    );
-    imageDefinition[`${originalWidth}x${originalHeight}`] =
-        originalBinaryStream;
-
-    return imageDefinition;
 }
