@@ -35,7 +35,6 @@ test("create a new post and share", async ({ page }) => {
     await loginPage.signup();
 
     await page.goto(invitation);
-    await page.reload();
 
     await postPage.expectPetName("Yoshi");
     await postPage.expectReactionSelectedByCurrentUser("😍", false);

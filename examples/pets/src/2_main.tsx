@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Link, RouterProvider, createHashRouter } from "react-router-dom";
+import { Link, RouterProvider, createHashRouter, useNavigate } from "react-router-dom";
 import "./index.css";
 
 import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
@@ -18,7 +18,7 @@ const peer =
     (new URL(window.location.href).searchParams.get(
         "peer",
     ) as `ws://${string}`) ??
-    "wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io";
+    "wss://mesh.jazz.tools/?key=pets-example-jazz@gcmp.io";
 
 /** Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
@@ -87,14 +87,9 @@ export default function App() {
         },
         {
             path: "/invite/*",
-            element: <p>Accepting invite...</p>,
+            element: <AcceptInvite />,
         },
     ]);
-
-    useAcceptInvite({
-        invitedObjectSchema: PetPost,
-        onAccept: (petPostID) => router.navigate("/pet/" + petPostID),
-    });
 
     return (
         <>
@@ -110,6 +105,16 @@ export default function App() {
             </Button>
         </>
     );
+}
+
+function AcceptInvite() {
+    const navigate = useNavigate();
+    useAcceptInvite({
+        invitedObjectSchema: PetPost,
+        onAccept: (petPostID) => navigate("/pet/" + petPostID),
+    });
+
+    return  <p>Accepting invite...</p>
 }
 
 export function PostOverview() {
