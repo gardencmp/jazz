@@ -8,6 +8,12 @@ export function Hero({
 }: {
     features: { title: string; icon: LucideIcon }[];
 }) {
+    const imageProps = {
+        alt: "Code samples for defining a schema for Jazz, pushing data, and subscribing to changes.",
+        width: 1100,
+        height: 852,
+    };
+
     return (
         <div className="container grid gap-5 lg:gap-0 md:grid-cols-2">
             <div className="flex flex-col gap-4 pt-10 md:pt-16 md:pb-16 lg:pb-0 lg:pt-28">
@@ -39,10 +45,14 @@ export function Hero({
 
             <div className="max-w-2xl mx-auto flex items-center sm:pt-16 lg:pl-8 lg:pt-18 md:ml-0 md:-mr-4">
                 <Image
+                    className="dark:hidden"
                     src="/code-samples.png"
-                    alt="Code samples for defining a schema for Jazz, pushing data, and subscribing to changes."
-                    width={1100}
-                    height={852}
+                    {...imageProps}
+                />
+                <Image
+                    className="hidden dark:block"
+                    src="/code-samples-dark.png"
+                    {...imageProps}
                 />
             </div>
         </div>
