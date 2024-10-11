@@ -1,6 +1,4 @@
 import { LucideIcon } from "lucide-react";
-import { CodeGroup } from "@/components/CodeGroup";
-import { clsx } from "clsx";
 import Image from "next/image";
 
 export function Hero({

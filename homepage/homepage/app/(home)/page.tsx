@@ -217,20 +217,6 @@ export default function Home() {
                 </>
             ),
         },
-        // {
-        //     title: "Authentication",
-        //     icon: GaugeIcon,
-        //     description: (
-        //       <>
-        //           <p>
-        //               Get instant updates throughout your UI every time you locally mutate data.
-        //           </p>
-        //           <p>
-        //               Remote changes are synced and applied with minimal latency.
-        //           </p>
-        //       </>
-        //     )
-        // },
     ];
 
     return (
@@ -329,140 +315,14 @@ export default function Home() {
                     />
 
                     <HairlineBleedGrid>
-                        <LabelledFeatureIcon
-                            label="Local-first storage"
-                            icon={HardDriveDownloadIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        All data you load or create is persisted
-                                        locally, so your users can work offline.
-                                    </p>
-                                    <p>
-                                        When you’re back online, your local
-                                        changes are synced to the server.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Cross-device sync"
-                            icon={MonitorSmartphoneIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Build your app around mutable local
-                                        state attached to an account.
-                                    </p>
-                                    <p>
-                                        Every device with the same account will
-                                        always have everything in sync.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Real-time multiplayer"
-                            icon={MousePointerSquareDashedIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Share state with other users and get
-                                        automatic real-time multiplayer.
-                                    </p>
-                                    <p>
-                                        Use the same primitives to quickly build
-                                        user presence UI, like cursors.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Teams & social features"
-                            icon={UsersIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Groups of accounts are first class
-                                        entities that you can create anywhere.
-                                    </p>
-                                    <p>
-                                        Building multi-user apps becomes as easy
-                                        as building the UI for them.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Built-in permissions"
-                            icon={FileLock2Icon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Control access to data with role-based
-                                        permissions, easily defined locally.
-                                    </p>
-                                    <p>
-                                        Reference data across permission scopes
-                                        for granular access control.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Data & blob storage"
-                            icon={UploadCloudIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Create & handle structured data and
-                                        binary streams/blobs the same way.
-                                    </p>
-                                    <p>
-                                        <Link
-                                            className="underline"
-                                            href="/mesh"
-                                        >
-                                            Jazz Mesh
-                                        </Link>{" "}
-                                        or your own server become both cloud
-                                        database and blob storage.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="Instant UI updates"
-                            icon={GaugeIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        Get instant updates throughout your UI
-                                        every time you locally mutate data.
-                                    </p>
-                                    <p>
-                                        Remote changes are synced and applied
-                                        with minimal latency.
-                                    </p>
-                                </>
-                            }
-                        />
-                        <LabelledFeatureIcon
-                            label="E2EE & signatures"
-                            icon={KeyRoundIcon}
-                            explanation={
-                                <>
-                                    <p>
-                                        All data is end-to-end encrypted and
-                                        cryptographically signed by default.
-                                    </p>
-                                    <p>
-                                        So it can’t be tampered with and Jazz
-                                        Mesh only sees encrypted data.
-                                    </p>
-                                </>
-                            }
-                        />
+                        {features.map(({ title, icon: Icon, description }) => (
+                            <LabelledFeatureIcon
+                                key={title}
+                                label={title}
+                                icon={Icon}
+                                explanation={description}
+                            />
+                        ))}
                     </HairlineBleedGrid>
                 </div>
 
