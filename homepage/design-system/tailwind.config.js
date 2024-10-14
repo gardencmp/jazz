@@ -107,7 +107,6 @@ const config = {
                 padding: {
                     DEFAULT: "0.75rem",
                     sm: "1rem",
-                    lg: "2rem",
                 },
                 screens: {
                     md: "960px",
@@ -118,6 +117,13 @@ const config = {
                 md: "960px",
                 lg: "1240px",
             },
+            typography: (theme) => ({
+                DEFAULT: {
+                    css: {
+                        maxWidth: null,
+                    }
+                }
+            })
         },
     },
     plugins: [tailwindCSSAnimate, typography()],

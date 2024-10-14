@@ -10,6 +10,10 @@ export const docNavigationItems = [
                 href: "/docs",
             },
             {
+                name: "Guide",
+                href: "/docs/guide",
+            },
+            {
                 // jazz mesh, setting api key, free plan, unlimited
                 name: "Sync and storage",
                 href: "/docs/sync-and-storage",
@@ -29,17 +33,17 @@ export const docNavigationItems = [
             {
                 name: "Defining",
                 href: "/docs/schema/defining",
-                items: [
-                    {
-                        // different types you can use (string, date, optiona/required fields, refs)
-                        name: "CoMap",
-                        href: "/comap",
-                    },
-                    {
-                        name: "CoList",
-                        href: "/colist",
-                    },
-                ],
+                // different types you can use (string, date, optional/required fields, refs)
+                // items: [
+                //     {
+                //         name: "CoMap",
+                //         href: "/comap",
+                //     },
+                //     {
+                //         name: "CoList",
+                //         href: "/colist",
+                //     },
+                // ],
             },
             {
                 name: "Creating",
@@ -73,91 +77,11 @@ export const docNavigationItems = [
         ],
     },
     {
-        name: "Guide",
-        href: "/docs/guide",
-        items: [
-            {
-                name: "Project Setup",
-                href: "/docs/guide#project-setup",
-            },
-            {
-                name: "Intro to CoValues",
-                href: "/docs/guide#intro-to-covalues",
-                items: [
-                    {
-                        name: "Declaration",
-                        href: "/docs/guide#declaring-covalues",
-                    },
-                    {
-                        name: "Reading",
-                        href: "/docs/guide#reading-covalues",
-                    },
-                    {
-                        name: "Creation",
-                        href: "/docs/guide#creating-covalues",
-                    },
-                    {
-                        name: "Editing & Subscription",
-                        href: "/docs/guide#editing-and-subscription",
-                    },
-                    {
-                        name: "Persistence",
-                        href: "/docs/guide#persistence",
-                    },
-                    {
-                        name: "Remote Sync",
-                        href: "/docs/guide#remote-sync",
-                    },
-                    {
-                        name: "Simple Public Sharing",
-                        href: "/docs/guide#simple-public-sharing",
-                    },
-                ],
-            },
-            {
-                name: "Refs & Auto-Subscribe",
-                href: "/docs/guide#refs-and-on-demand-subscribe",
-                items: [
-                    {
-                        name: "Precise Loading Depths",
-                        href: "/docs/guide#loading-depth",
-                    },
-                ],
-            },
-            {
-                name: "Groups & Permissions",
-                href: "/docs/guide#groups-and-permissions",
-                items: [
-                    {
-                        name: "Groups/Accounts as Scopes",
-                        href: "/docs/guide#groups-accounts-as-scopes",
-                    },
-                    {
-                        name: "Creating Invites",
-                        href: "/docs/guide#creating-invites",
-                    },
-                    {
-                        name: "Consuming Invites",
-                        href: "/docs/guide#consuming-invites",
-                    },
-                ],
-            },
-            // {
-            //     name: "Coming soon",
-            //     items: [
-            //         "Auth, Accounts & Migrations",
-            //         "Edit Metadata & Time Travel",
-            //         "Backend Workers",
-            //     ],
-            // },
-        ],
-    },
-    {
         name: "Resources",
         items: [
             {
                 name: "Example apps",
-                href: "/docs/resources/examples",
+                href: "/docs/examples",
             },
         ],
     },
