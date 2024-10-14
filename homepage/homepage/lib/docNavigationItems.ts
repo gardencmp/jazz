@@ -22,6 +22,57 @@ export const docNavigationItems = [
         ],
     },
     {
+        // introduction to covalues
+        name: "Schema",
+        href: "/docs/schema",
+        items: [
+            {
+                name: "Defining",
+                href: "/docs/schema/defining",
+                items: [
+                    {
+                        // different types you can use (string, date, optiona/required fields, refs)
+                        name: "CoMap",
+                        href: "/comap",
+                    },
+                    {
+                        name: "CoList",
+                        href: "/colist",
+                    },
+                ],
+            },
+            {
+                name: "Creating",
+                href: "/docs/schema/creating",
+            },
+            {
+                // loading depth
+                name: "Reading and subscribing",
+                href: "/docs/schema/reading",
+            },
+            {
+                name: "Updating",
+                href: "/docs/schema/updating",
+            },
+            {
+                name: "Deleting",
+                href: "/docs/schema/deleting",
+            },
+        ],
+    },
+    {
+        // setting up using clerk or demo auth?
+        name: "Authentication",
+        href: "/docs/authentication",
+        items: [
+            {
+                // profile, root, creating initial data
+                name: "Account",
+                href: "/docs/authentication/account",
+            },
+        ],
+    },
+    {
         name: "Guide",
         href: "/docs/guide",
         items: [
@@ -99,57 +150,6 @@ export const docNavigationItems = [
             //         "Backend Workers",
             //     ],
             // },
-        ],
-    },
-    {
-        // introduction to covalues
-        name: "Schema",
-        href: "/docs/schema",
-        items: [
-            {
-                name: "Defining",
-                href: "/docs/schema/defining",
-                items: [
-                    {
-                        // different types you can use (string, date, optiona/required fields, refs)
-                        name: "CoMap",
-                        href: "/comap",
-                    },
-                    {
-                        name: "CoList",
-                        href: "/colist",
-                    },
-                ],
-            },
-            {
-                name: "Creating",
-                href: "/docs/schema/creating",
-            },
-            {
-                // loading depth
-                name: "Reading and subscribing",
-                href: "/docs/schema/reading",
-            },
-            {
-                name: "Updating",
-                href: "/docs/schema/updating",
-            },
-            {
-                name: "Deleting",
-                href: "/docs/schema/deleting",
-            },
-        ],
-    },
-    {
-        // setting up using clerk or demo auth?
-        name: "Authentication",
-        href: "/docs/authentication",
-        items: [
-            {
-                // profile, root, creating initial data
-                name: "Account",
-                href: "/docs/authentication/account",
-            },
         ],
     },
     {
