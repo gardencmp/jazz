@@ -432,9 +432,9 @@ We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which w
 
 So far our Issue CoValues just looked like ephemeral local state. We'll now start exploring the first main feature that makes CoValues special: **automatic persistence.**
 
-Actually, all the Issue CoValues we've created so far **have already been automatically persisted** to the cloud and locally - but we loose track of their ID after a reload.
+Actually, all the Issue CoValues we've created so far **have already been automatically persisted** to the cloud and locally - but we lose track of their ID after a reload.
 
-So let's store the ID in window URL state and make sure our useState is in sync with that.
+So let's store the ID in the browser's URL and make sure our useState is in sync with that.
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -603,7 +603,7 @@ import { ID, Group } from "jazz-tools"
 function App() { // old
     const { me } = useAccount(); // old
     const [projectID, setProjectID] = useState<ID<Project> | undefined>(
-        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined,
+        (window.location.search?.replace("?project=", "") || undefined) as ID<Project> | undefined
     );
     // old
     const issue = useCoState(Issue, issueID); // *bin*
