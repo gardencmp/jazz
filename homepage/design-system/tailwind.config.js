@@ -110,20 +110,20 @@ const config = {
                 },
                 screens: {
                     md: "960px",
-                    lg: "1240px",
+                    lg: "1280px",
                 },
             },
             screens: {
                 md: "960px",
-                lg: "1240px",
+                lg: "1280px",
             },
-            typography: (theme) => ({
+            typography: {
                 DEFAULT: {
                     css: {
                         maxWidth: null,
                     }
                 }
-            })
+            }
         },
     },
     plugins: [tailwindCSSAnimate, typography()],
