@@ -18,13 +18,12 @@ import {
 import { PureJSCrypto } from "jazz-tools/native";
 import { RawAccountID } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { MMKV } from "react-native-mmkv";
 import NetInfo from "@react-native-community/netinfo";
 import * as Linking from "expo-linking";
 
 export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 
-import { NativeStorageContext } from "./native-storage.js";
+import { KvStoreContext } from "./storage/kv-store-context.js";
 
 /** @category Context Creation */
 export type BrowserContext<Acc extends Account> = {
@@ -182,12 +181,12 @@ export async function provideLockSession(
 ) {
     const sessionDone = () => {};
 
-    const storage = NativeStorageContext.getInstance().getStorage();
+    const kvStore = KvStoreContext.getInstance().getStorage();
 
     const sessionID =
-        ((await storage.get(accountID)) as SessionID) ||
+        ((await kvStore.get(accountID)) as SessionID) ||
         crypto.newRandomSessionID(accountID as RawAccountID | AgentID);
-    await storage.set(accountID, sessionID);
+    await kvStore.set(accountID, sessionID);
 
     return Promise.resolve({
         sessionID,
@@ -272,4 +271,4 @@ export function parseInviteLink<C extends CoValue>(
 
 export * from "./provider.js";
 export * from "./auth/auth.js";
-export * from "./native-storage.js";
+export * from "./storage/kv-store-context.js";

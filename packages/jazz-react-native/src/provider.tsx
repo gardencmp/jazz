@@ -16,25 +16,26 @@ import {
     BrowserContext,
     BrowserGuestContext,
     createJazzRNContext,
-    NativeStorageContext,
-    NativeStorage,
+    KvStoreContext,
     parseInviteLink,
 } from "./index.js";
 import { Linking } from "react-native";
+import { ExpoSecureStoreAdapter } from "./storage/expo-secure-store-adapter.js";
 
 /** @category Context & Hooks */
 export function createJazzRNApp<Acc extends Account>({
-    nativeStorage,
+    kvStore = new ExpoSecureStoreAdapter(),
     AccountSchema = Account as unknown as AccountClass<Acc>,
-}: {
-    nativeStorage: NativeStorage;
-    AccountSchema?: AccountClass<Acc>;
-}): JazzReactApp<Acc> {
+} = {}): JazzReactApp<Acc> {
     const JazzContext = React.createContext<
         BrowserContext<Acc> | BrowserGuestContext | undefined
     >(undefined);
 
-    NativeStorageContext.getInstance().initialize(nativeStorage);
+    if (!kvStore) {
+        throw new Error("kvStore is required");
+    }
+
+    KvStoreContext.getInstance().initialize(kvStore);
 
     function Provider({
         children,
