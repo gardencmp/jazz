@@ -1,6 +1,6 @@
 import { AgentSecret } from "cojson";
 import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
-import NativeStorageContext, { NativeStorage } from "../native-storage.js";
+import { KvStore, KvStoreContext } from "../storage/kv-store-context.js";
 
 type StorageData = {
     accountID: ID<Account>;
@@ -26,7 +26,7 @@ const localStorageKey = "demo-auth-logged-in-secret";
 export class RNDemoAuth implements AuthMethod {
     private constructor(
         private driver: RNDemoAuth.Driver,
-        private storage: NativeStorage,
+        private kvStore: KvStore,
     ) {}
 
     public static async init(
@@ -38,40 +38,40 @@ export class RNDemoAuth implements AuthMethod {
             };
         },
     ) {
-        const storage = NativeStorageContext.getInstance().getStorage();
+        const kvStore = KvStoreContext.getInstance().getStorage();
         for (const [name, credentials] of Object.entries(seedAccounts || {})) {
             const storageData = JSON.stringify(
                 credentials satisfies StorageData,
             );
             if (
                 !(
-                    (await storage.get("demo-auth-existing-users"))?.split(
+                    (await kvStore.get("demo-auth-existing-users"))?.split(
                         ",",
                     ) as string[] | undefined
                 )?.includes(name)
             ) {
-                const existingUsers = await storage.get(
+                const existingUsers = await kvStore.get(
                     "demo-auth-existing-users",
                 );
                 if (existingUsers) {
-                    await storage.set(
+                    await kvStore.set(
                         "demo-auth-existing-users",
                         existingUsers + "," + name,
                     );
                 } else {
-                    await storage.set("demo-auth-existing-users", name);
+                    await kvStore.set("demo-auth-existing-users", name);
                 }
             }
-            await storage.set("demo-auth-existing-users-" + name, storageData);
+            await kvStore.set("demo-auth-existing-users-" + name, storageData);
         }
-        return new RNDemoAuth(driver, storage);
+        return new RNDemoAuth(driver, kvStore);
     }
 
     async start() {
         try {
-            if (await this.storage.get(localStorageKey)) {
+            if (await this.kvStore.get(localStorageKey)) {
                 const localStorageData = JSON.parse(
-                    (await this.storage.get(localStorageKey)) ?? "{}",
+                    (await this.kvStore.get(localStorageKey)) ?? "{}",
                 ) as StorageData;
 
                 const accountID = localStorageData.accountID as ID<Account>;
@@ -87,7 +87,7 @@ export class RNDemoAuth implements AuthMethod {
                         this.driver.onError(error);
                     },
                     logOut: async () => {
-                        void (await this.storage.delete(localStorageKey));
+                        void (await this.kvStore.delete(localStorageKey));
                     },
                 } satisfies AuthResult;
             } else {
@@ -109,7 +109,7 @@ export class RNDemoAuth implements AuthMethod {
 
                                     // Retrieve the list of existing users
                                     const existingUsers =
-                                        await this.storage.get(
+                                        await this.kvStore.get(
                                             "demo-auth-existing-users",
                                         );
                                     const existingUsernames = existingUsers
@@ -129,11 +129,11 @@ export class RNDemoAuth implements AuthMethod {
                                     }
 
                                     // Save credentials using the unique username
-                                    await this.storage.set(
+                                    await this.kvStore.set(
                                         localStorageKey,
                                         storageData,
                                     );
-                                    await this.storage.set(
+                                    await this.kvStore.set(
                                         "demo-auth-existing-users-" +
                                             uniqueUsername,
                                         storageData,
@@ -143,7 +143,7 @@ export class RNDemoAuth implements AuthMethod {
                                     const updatedUsers = existingUsers
                                         ? `${existingUsers},${uniqueUsername}`
                                         : uniqueUsername;
-                                    await this.storage.set(
+                                    await this.kvStore.set(
                                         "demo-auth-existing-users",
                                         updatedUsers,
                                     );
@@ -157,7 +157,7 @@ export class RNDemoAuth implements AuthMethod {
                                     this.driver.onError(error);
                                 },
                                 logOut: async () => {
-                                    void (await this.storage.delete(
+                                    void (await this.kvStore.delete(
                                         localStorageKey,
                                     ));
                                 },
@@ -166,7 +166,7 @@ export class RNDemoAuth implements AuthMethod {
                         getExistingUsers: async () => {
                             return (
                                 (
-                                    await this.storage.get(
+                                    await this.kvStore.get(
                                         "demo-auth-existing-users",
                                     )
                                 )?.split(",") ?? []
@@ -174,12 +174,12 @@ export class RNDemoAuth implements AuthMethod {
                         },
                         logInAs: async (existingUser) => {
                             const storageData = JSON.parse(
-                                (await this.storage.get(
+                                (await this.kvStore.get(
                                     "demo-auth-existing-users-" + existingUser,
                                 )) ?? "{}",
                             ) as StorageData;
 
-                            await this.storage.set(
+                            await this.kvStore.set(
                                 localStorageKey,
                                 JSON.stringify(storageData),
                             );
@@ -197,7 +197,7 @@ export class RNDemoAuth implements AuthMethod {
                                     this.driver.onError(error);
                                 },
                                 logOut: async () => {
-                                    void (await this.storage.delete(
+                                    void (await this.kvStore.delete(
                                         localStorageKey,
                                     ));
                                 },
@@ -214,6 +214,6 @@ export class RNDemoAuth implements AuthMethod {
 }
 
 async function logOut() {
-    const storage = NativeStorageContext.getInstance().getStorage();
-    void (await storage.delete(localStorageKey));
+    const kvStore = KvStoreContext.getInstance().getStorage();
+    void (await kvStore.delete(localStorageKey));
 }

@@ -1,45 +1,46 @@
 {
-    "expo": {
-        "name": "jazz-chat-rn-clerk",
-        "scheme": "jazz-chat-rn-clerk",
-        "slug": "jazz-chat-rn-clerk",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/icon.png",
-        "userInterfaceStyle": "light",
-        "splash": {
-            "image": "./assets/images/splash.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "ios": {
-            "supportsTablet": true,
-            "bundleIdentifier": "com.jazz.chatrnclerk"
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            },
-            "package": "com.jazz.chatrnclerk"
-        },
-        "plugins": [
-            [
-                "expo-build-properties",
-                {
-                    "ios": {
-                        "newArchEnabled": true
-                    },
-                    "android": {
-                        "newArchEnabled": true
-                    }
-                }
-            ]
-        ],
-        "extra": {
-            "eas": {
-                "projectId": "ca3d46e5-a10a-47ec-9d77-3b841e1c62d4"
-            }
+  "expo": {
+    "name": "jazz-chat-rn-clerk",
+    "scheme": "jazz-chat-rn-clerk",
+    "slug": "jazz-chat-rn-clerk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jazz.chatrnclerk"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.jazz.chatrnclerk"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "newArchEnabled": true
+          },
+          "android": {
+            "newArchEnabled": true
+          }
         }
+      ],
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ca3d46e5-a10a-47ec-9d77-3b841e1c62d4"
+      }
     }
+  }
 }
