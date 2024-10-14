@@ -4,6 +4,8 @@ import { HomePage } from "./pages/HomePage";
 import { NewPostPage } from "./pages/NewPostPage";
 import { PostPage } from "./pages/PostPage";
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 test("create a new post and share", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
@@ -18,7 +20,7 @@ test("create a new post and share", async ({ page }) => {
     const newPostPage = new NewPostPage(page);
 
     await newPostPage.fillPetName("Yoshi");
-    await newPostPage.uploadFile("./public/jazz-logo.png");
+    await newPostPage.uploadFile("./public/jazz-logo-low-res.jpg");
     await newPostPage.submit();
 
     const postPage = new PostPage(page);
@@ -26,6 +28,8 @@ test("create a new post and share", async ({ page }) => {
     await postPage.expectPetName("Yoshi");
 
     const invitation = await postPage.getShareLink();
+
+    await sleep(1000);
 
     await postPage.logout();
 
@@ -35,7 +39,6 @@ test("create a new post and share", async ({ page }) => {
     await loginPage.signup();
 
     await page.goto(invitation);
-    await page.reload();
 
     await postPage.expectPetName("Yoshi");
     await postPage.expectReactionSelectedByCurrentUser("😍", false);
