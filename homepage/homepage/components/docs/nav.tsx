@@ -4,66 +4,50 @@ import { packages } from "@/lib/packages";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { clsx } from "clsx";
+import { docNavigationItems } from "@/lib/docNavigationItems";
 
 export function DocNav({ className }: { className?: string }) {
-    const comingSoon = [
-        "Auth, Accounts & Migrations",
-        "Edit Metadata & Time Travel",
-        "Backend Workers",
-    ];
+    return (
+        <div className={clsx(className, "text-sm space-y-5 pr-3")}>
+            {docNavigationItems.map(({ name, href, items }) => (
+                <div key={name}>
+                    <DocNavHeader href={href}>{name}</DocNavHeader>
+                    {items &&
+                        items.map(({ name, href, items }) => (
+                            <ul key={name}>
+                                <li>
+                                    <DocNavLink href={href}>{name}</DocNavLink>
+                                </li>
+                                {items?.length > 0 && (
+                                    <ul className="pl-4">
+                                        {items.map(({ name, href }) => (
+                                            <li key={href}>
+                                                <DocNavLink href={href}>
+                                                    {name}
+                                                </DocNavLink>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </ul>
+                        ))}
+                </div>
+            ))}
 
-    const covaluesItems = [
-        {
-            name: "Declaration",
-            href: "/docs#declaring-covalues",
-        },
-        {
-            name: "Reading",
-            href: "/docs#reading-covalues",
-        },
-        {
-            name: "Creation",
-            href: "/docs#creating-covalues",
-        },
-        {
-            name: "Editing & Subscription",
-            href: "/docs#editing-and-subscription",
-        },
-        {
-            name: "Persistence",
-            href: "/docs#persistence",
-        },
-        {
-            name: "Remote Sync",
-            href: "/docs#remote-sync",
-        },
-        {
-            name: "Simple Public Sharing",
-            href: "/docs#simple-public-sharing",
-        },
-    ];
-
-    const refsItems = [
-        {
-            name: "Precise Loading Depths",
-            href: "/docs#loading-depth",
-        },
-    ];
-
-    const groupsItems = [
-        {
-            name: "Groups/Accounts as Scopes",
-            href: "/docs#groups-accounts-as-scopes",
-        },
-        {
-            name: "Creating Invites",
-            href: "/docs#creating-invites",
-        },
-        {
-            name: "Consuming Invites",
-            href: "/docs#consuming-invites",
-        },
-    ];
+            <div>
+                <DocNavHeader href="/docs/api-reference">
+                    API Reference
+                </DocNavHeader>
+                <ul className="space-y-8">
+                    {packages.map(({ name }) => (
+                        <li key={name}>
+                            <NavPackage package={name} />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
 
     return (
         <div className={clsx(className, "text-sm space-y-5 pr-3")}>
@@ -223,21 +207,27 @@ export function DocNavLink({
     children,
     className = "",
 }: {
-    href: string;
+    href?: string;
     children: ReactNode;
     className?: string;
 }) {
-    return (
-        <Link
-            href={href}
-            className={clsx(
-                className,
-                "py-1 hover:text-black dark:hover:text-stone-200 block hover:transition-colors",
-            )}
-        >
-            {children}
-        </Link>
-    );
+    const classes = clsx(className, "py-1 block hover:transition-colors");
+
+    if (href) {
+        return (
+            <Link
+                href={href}
+                className={clsx(
+                    classes,
+                    "hover:text-black dark:hover:text-stone-200 hover:transition-colors",
+                )}
+            >
+                {children}
+            </Link>
+        );
+    }
+
+    return <p className={classes}>{children}</p>;
 }
 
 function DocNavHeader({
