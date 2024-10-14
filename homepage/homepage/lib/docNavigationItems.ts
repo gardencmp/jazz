@@ -7,7 +7,7 @@ export const docNavigationItems = [
             {
                 // what is jazz, supported environments, where to start (guide, examples, project setup)
                 name: "Introduction",
-                href: "/docs/introduction",
+                href: "/docs",
             },
             {
                 // jazz mesh, setting api key, free plan, unlimited
