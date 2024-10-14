@@ -1,5 +1,12 @@
 # jazz-browser-media-images
 
+## 0.8.6
+
+### Patch Changes
+
+-   jazz-browser-auth-clerk@0.8.6
+-   jazz-react@0.8.6
+
 ## 0.8.5
 
 ### Patch Changes

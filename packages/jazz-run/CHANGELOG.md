@@ -1,5 +1,13 @@
 # jazz-run
 
+## 0.8.6
+
+### Patch Changes
+
+-   5542fdb: Added batching to the WebSocket messsages
+-   Updated dependencies [5542fdb]
+    -   cojson-transport-ws@0.8.6
+
 ## 0.8.5
 
 ### Patch Changes

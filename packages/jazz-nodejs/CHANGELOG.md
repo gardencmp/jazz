@@ -1,5 +1,12 @@
 # jazz-autosub
 
+## 0.8.6
+
+### Patch Changes
+
+-   Updated dependencies [5542fdb]
+    -   cojson-transport-ws@0.8.6
+
 ## 0.8.5
 
 ### Patch Changes

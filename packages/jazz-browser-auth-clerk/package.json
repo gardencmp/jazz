@@ -1,6 +1,6 @@
 {
     "name": "jazz-browser-auth-clerk",
-    "version": "0.8.5",
+    "version": "0.8.6",
     "type": "module",
     "main": "dist/index.js",
     "types": "src/index.ts",
@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "cojson": "workspace:0.8.5",
-        "jazz-browser": "workspace:0.8.5",
+        "jazz-browser": "workspace:0.8.6",
         "jazz-tools": "workspace:0.8.5"
     },
     "scripts": {

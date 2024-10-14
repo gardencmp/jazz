@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.8.6
+
+### Patch Changes
+
+-   5542fdb: Added batching to the WebSocket messsages
+
 ## 0.8.5
 
 ### Patch Changes

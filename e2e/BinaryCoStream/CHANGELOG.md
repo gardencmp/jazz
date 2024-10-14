@@ -1,5 +1,11 @@
 # @jazz-e2e/binarycostream
 
+## 0.0.87
+
+### Patch Changes
+
+-   jazz-react@0.8.6
+
 ## 0.0.86
 
 ### Patch Changes

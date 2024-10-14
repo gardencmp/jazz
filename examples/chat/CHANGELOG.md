@@ -1,5 +1,11 @@
 # jazz-example-chat
 
+## 0.0.88
+
+### Patch Changes
+
+- jazz-react@0.8.6
+
 ## 0.0.87
 
 ### Patch Changes
