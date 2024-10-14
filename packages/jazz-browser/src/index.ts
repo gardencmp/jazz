@@ -95,7 +95,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
                           : await IDBStorage.asPeer(),
                       firstWsPeer,
                   ],
-                  sessionProvider: provideBroswerLockSession,
+                  sessionProvider: provideBrowserLockSession,
               })
             : await createJazzContext({
                   crypto: await WasmCrypto.create(),
@@ -191,7 +191,7 @@ export type SessionProvider = (
     accountID: ID<Account> | AgentID,
 ) => Promise<SessionID>;
 
-export function provideBroswerLockSession(
+export function provideBrowserLockSession(
     accountID: ID<Account> | AgentID,
     crypto: CryptoProvider,
 ) {
