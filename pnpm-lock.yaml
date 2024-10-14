@@ -1270,8 +1270,6 @@ importers:
         specifier: ^8.5.5
         version: 8.5.10
 
-  packages/coverage: {}
-
   packages/hash-slash:
     devDependencies:
       '@types/react':
