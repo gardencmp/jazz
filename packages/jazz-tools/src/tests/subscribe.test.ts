@@ -11,7 +11,7 @@ import {
     isControlledAccount,
     createJazzContext,
     fixedCredentialsAuth,
-} from "../index.js";
+} from "../index.web.js";
 import {
     BinaryCoStream,
     Group,

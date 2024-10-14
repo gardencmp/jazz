@@ -38,6 +38,7 @@
         "@vitejs/plugin-react-swc": "^3.3.2",
         "autoprefixer": "^10.4.14",
         "eslint": "^8.46.0",
+        "eslint-plugin-react-compiler": "0.0.0-experimental-fa06e2c-20241014",
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-react-refresh": "^0.4.3",
         "postcss": "^8.4.27",

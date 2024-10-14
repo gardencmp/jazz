@@ -10,7 +10,7 @@ import { MoreHorizontal } from "lucide-react";
 import { ChangeEvent } from "react";
 import { Button } from "./ui/button";
 import { useAccount, useCoState } from "@/2_main";
-import { addTrackToPlaylist } from "@/4_actions";
+import { addTrackToPlaylist, updateMusicTrackTitle } from "@/4_actions";
 import { ID } from "jazz-tools";
 
 export function MusicTrackRow({
@@ -30,7 +30,8 @@ export function MusicTrackRow({
 
     function handleTrackTitleChange(evt: ChangeEvent<HTMLInputElement>) {
         if (!track) return;
-        track.title = evt.target.value;
+    
+        updateMusicTrackTitle(track, evt.target.value);
     }
 
     const { me } = useAccount({
