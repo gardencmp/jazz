@@ -22,10 +22,10 @@
         "typescript": "^5.3.3"
     },
     "peerDependencies": {
-        "@react-native-community/netinfo": "^11.4.1",
-        "expo-linking": "~6.3.1",
-        "react-native": "0.74.2",
-        "react-native-mmkv": "3.0.1"
+        "@react-native-community/netinfo": "*",
+        "expo-linking": "*",
+        "react-native": "*",
+        "react-native-mmkv": "*"
     },
     "devDependencies": {
         "@react-native-community/netinfo": "^11.3.1",
