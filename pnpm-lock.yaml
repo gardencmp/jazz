@@ -76,6 +76,9 @@ importers:
       '@vitejs/plugin-react-swc':
         specifier: ^3.3.2
         version: 3.5.0(@swc/helpers@0.5.5)(vite@5.0.10(@types/node@22.5.1)(terser@5.33.0))
+      jstat:
+        specifier: ^1.9.6
+        version: 1.9.6
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -3294,7 +3297,7 @@ packages:
   '@radix-ui/react-compose-refs@1.1.0':
     resolution: {integrity: sha512-b4inOtiaOnYf9KWyO3jAeeCG6FeyfY6ldiEPanbUjWd+xIk5wZeHa8yVwmrJ2vderhu/BQvzCrJI0lHd+wIiqw==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.2.32
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -3378,8 +3381,8 @@ packages:
   '@radix-ui/react-focus-scope@1.1.0':
     resolution: {integrity: sha512-200UD8zylvEyL8Bx+z76RJnASR2gRMuxlgFCPAe/Q/679a/r0eK3MBVYMb7vZODZcffZBdob1EGnky78xmVvcA==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.2.32
+      '@types/react-dom': ^18.2.14
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3391,7 +3394,7 @@ packages:
   '@radix-ui/react-id@1.1.0':
     resolution: {integrity: sha512-EJUrI8yYh7WOjNOqpoJaf1jlFIH2LvtgAl+YcFqNCa+4hj64ZXmPkAKOFs/ukjz3byN6bdb/AVUqHkI8/uWWMA==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.2.32
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -3413,8 +3416,8 @@ packages:
   '@radix-ui/react-popper@1.2.0':
     resolution: {integrity: sha512-ZnRMshKF43aBxVWPWvbj21+7TQCvhuULWJ4gNIKYpRlQt5xGRhLx66tMp8pya2UkGHTSlhpXwmjqltDYHhw7Vg==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.2.32
+      '@types/react-dom': ^18.2.14
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3491,8 +3494,8 @@ packages:
   '@radix-ui/react-primitive@2.0.0':
     resolution: {integrity: sha512-ZSpFm0/uHa8zTvKBDjLFWLo8dkr4MBsiDLz0g3gMUwqgLHz9rTaRRGYDgvZPtBJgYCBKXkS9fzmoySgr8CO6Cw==}
     peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
+      '@types/react': ^18.2.32
+      '@types/react-dom': ^18.2.14
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
