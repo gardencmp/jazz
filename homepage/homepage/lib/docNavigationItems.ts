@@ -10,8 +10,9 @@ export const docNavigationItems = [
                 href: "/docs/introduction",
             },
             {
-                name: "Deployment",
-                href: "/mesh",
+                // jazz mesh, setting api key, free plan, unlimited
+                name: "Sync and storage",
+                href: "/docs/sync-and-storage",
             },
             {
                 // installation guide for react, react native
@@ -22,71 +23,71 @@ export const docNavigationItems = [
     },
     {
         name: "Guide",
-        href: "/guide",
+        href: "/docs/guide",
         items: [
             {
                 name: "Project Setup",
-                href: "#setup",
+                href: "/docs/guide#project-setup",
             },
             {
                 name: "Intro to CoValues",
-                href: "/docs#intro-to-covalues",
+                href: "/docs/guide#intro-to-covalues",
                 items: [
                     {
                         name: "Declaration",
-                        href: "/guide#declaring-covalues",
+                        href: "/docs/guide#declaring-covalues",
                     },
                     {
                         name: "Reading",
-                        href: "/guide#reading-covalues",
+                        href: "/docs/guide#reading-covalues",
                     },
                     {
                         name: "Creation",
-                        href: "/guide#creating-covalues",
+                        href: "/docs/guide#creating-covalues",
                     },
                     {
                         name: "Editing & Subscription",
-                        href: "/guide#editing-and-subscription",
+                        href: "/docs/guide#editing-and-subscription",
                     },
                     {
                         name: "Persistence",
-                        href: "/guide#persistence",
+                        href: "/docs/guide#persistence",
                     },
                     {
                         name: "Remote Sync",
-                        href: "/guide#remote-sync",
+                        href: "/docs/guide#remote-sync",
                     },
                     {
                         name: "Simple Public Sharing",
-                        href: "/guide#simple-public-sharing",
+                        href: "/docs/guide#simple-public-sharing",
                     },
                 ],
             },
             {
                 name: "Refs & Auto-Subscribe",
-                href: "/guide#refs-and-on-demand-subscribe",
+                href: "/docs/guide#refs-and-on-demand-subscribe",
                 items: [
                     {
                         name: "Precise Loading Depths",
-                        href: "/guide#loading-depth",
+                        href: "/docs/guide#loading-depth",
                     },
                 ],
             },
             {
                 name: "Groups & Permissions",
-                href: "/guide#groups-and-permissions",
+                href: "/docs/guide#groups-and-permissions",
                 items: [
                     {
                         name: "Groups/Accounts as Scopes",
-                        href: "/guide#groups-accounts-as-scopes",
+                        href: "/docs/guide#groups-accounts-as-scopes",
                     },
                     {
                         name: "Creating Invites",
-                        href: "/guide#creating-invites",
+                        href: "/docs/guide#creating-invites",
                     },
                     {
                         name: "Consuming Invites",
-                        href: "/guide#consuming-invites",
+                        href: "/docs/guide#consuming-invites",
                     },
                 ],
             },
