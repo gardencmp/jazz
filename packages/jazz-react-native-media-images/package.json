@@ -15,9 +15,9 @@
         "react-native": "~0.74.5"
     },
     "peerDependencies": {
-        "@bam.tech/react-native-image-resizer": "^3.0.10",
-        "expo-file-system": "^17.0.1",
-        "react-native": "~0.74.5"
+        "@bam.tech/react-native-image-resizer": "*",
+        "expo-file-system": "*",
+        "react-native": "*"
     },
     "scripts": {
         "lint": "eslint . --ext ts,tsx",
