@@ -196,8 +196,8 @@ You can optionally pass a custom `kvStore` and `AccountSchema` to `createJazzRNA
 
 Refer to the Jazz + React Native demo projects for implementing authentication:
 
-- [DemoAuth Example](examples/chat-rn)
-- [ClerkAuth Example](examples/chat-rn-clerk)
+- [DemoAuth Example](https://github.com/gardencmp/jazz/tree/main/examples/chat-rn)
+- [ClerkAuth Example](https://github.com/gardencmp/jazz/tree/main/examples/chat-rn-clerk)
 
 In the demos, you'll find details on:
 
@@ -208,7 +208,7 @@ In the demos, you'll find details on:
 
 ### 🖼️ Working with Images
 
-To work with images in Jazz, import the `createImage` function from `jazz-react-native-media-images`.
+To work with images in Jazz, import the `createImage` function from [`jazz-react-native-media-images`](https://github.com/gardencmp/jazz/tree/main/packages/jazz-react-native-media-images).
 
 ```js
 import { createImage } from "jazz-react-native-media-images";
