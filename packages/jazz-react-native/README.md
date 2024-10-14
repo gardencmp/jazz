@@ -221,8 +221,9 @@ const image = await createImage(base64ImageDataURI, {
 });
 
 someCovalue.image = image;
+```
 
-For a complete implementation, please refer to [this](examples/pets/src/3_NewPetPostForm.tsx) demo.
+For a complete implementation, please refer to [this](https://github.com/gardencmp/jazz/blob/main/examples/pets/src/3_NewPetPostForm.tsx) demo.
 
 ### 📱 Running Your App
 
