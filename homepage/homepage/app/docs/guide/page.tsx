@@ -1,7 +1,7 @@
 import Guide from "../guide.mdx";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import {clsx} from "clsx";
+import { clsx } from "clsx";
 
 export default function Page() {
     const navItems = [
@@ -73,10 +73,12 @@ export default function Page() {
         },
     ];
     return (
-        <div className={clsx(
-          "col-span-12 md:col-span-8 lg:col-span-10",
-          "lg:grid lg:grid-cols-10"
-        )}>
+        <div
+            className={clsx(
+                "col-span-12 md:col-span-8 lg:col-span-10",
+                "lg:grid lg:grid-cols-10",
+            )}
+        >
             <Prose className="col-span-full lg:col-span-8">
                 <Guide />
             </Prose>
