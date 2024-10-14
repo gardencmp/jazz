@@ -16,7 +16,7 @@ export default function DocsLayout({
         <div className="container relative grid grid-cols-12 gap-x-8 py-8">
             <DocNav
                 className={cn(
-                    "md:col-span-4 lg:col-span-3",
+                    "pr-3 md:col-span-4 lg:col-span-3",
                     "sticky align-start top-[4.75rem] h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden",
                     "hidden md:block",
                 )}

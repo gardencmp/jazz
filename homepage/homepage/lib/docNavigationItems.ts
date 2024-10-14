@@ -151,4 +151,13 @@ export const docNavigationItems = [
             },
         ],
     },
+    {
+        name: "Resources",
+        items: [
+            {
+                name: "Example apps",
+                href: "/docs/resources/examples",
+            },
+        ],
+    },
 ];
