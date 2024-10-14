@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
@@ -8,7 +8,7 @@
   "dependencies": {
     "@types/image-blob-reduce": "^4.1.1",
     "image-blob-reduce": "^4.1.0",
-    "jazz-browser": "workspace:0.8.6",
+    "jazz-browser": "workspace:0.8.7",
     "jazz-tools": "workspace:0.8.5",
     "pica": "^9.0.1",
     "typescript": "^5.3.3"

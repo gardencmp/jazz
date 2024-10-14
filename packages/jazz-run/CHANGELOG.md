@@ -1,5 +1,12 @@
 # jazz-run
 
+## 0.8.7
+
+### Patch Changes
+
+-   Updated dependencies [e82cf3d]
+    -   cojson-transport-ws@0.8.7
+
 ## 0.8.6
 
 ### Patch Changes

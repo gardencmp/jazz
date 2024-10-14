@@ -1,5 +1,12 @@
 # jazz-example-chat
 
+## 0.0.87
+
+### Patch Changes
+
+- jazz-react@0.8.7
+- jazz-react-auth-clerk@0.8.7
+
 ## 0.0.86
 
 ### Patch Changes

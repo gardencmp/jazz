@@ -1,5 +1,13 @@
 # jazz-browser
 
+## 0.8.7
+
+### Patch Changes
+
+-   32b05b6: weaker peer dependencies
+-   Updated dependencies [e82cf3d]
+    -   cojson-transport-ws@0.8.7
+
 ## 0.8.6
 
 ### Patch Changes

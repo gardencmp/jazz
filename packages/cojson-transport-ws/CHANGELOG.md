@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.8.7
+
+### Patch Changes
+
+-   e82cf3d: Enable WebSocket batching on client peers
+
 ## 0.8.6
 
 ### Patch Changes

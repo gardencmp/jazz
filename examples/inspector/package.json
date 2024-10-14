@@ -1,7 +1,7 @@
 {
   "name": "jazz-inspector",
   "private": true,
-  "version": "0.0.64",
+  "version": "0.0.65",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cojson": "workspace:0.8.5",
-    "cojson-transport-ws": "workspace:0.8.6",
+    "cojson-transport-ws": "workspace:0.8.7",
     "hash-slash": "workspace:0.2.1",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",

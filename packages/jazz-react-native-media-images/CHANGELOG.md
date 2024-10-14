@@ -1,5 +1,11 @@
 # jazz-browser-media-images
 
+## 0.8.6
+
+### Patch Changes
+
+-   32b05b6: weaker peer dependencies
+
 ## 0.8.5
 
 ### Patch Changes
