@@ -25,7 +25,7 @@ export function createWebSocketPeer({
     websocket,
     role,
     expectPings = true,
-    batchingByDefault = false, // Keeping this false until we release batching upgrade to the mesh
+    batchingByDefault = true,
 }: CreateWebSocketPeerOpts): Peer {
     const incoming = new cojsonInternals.Channel<
         SyncMessage | DisconnectedError | PingTimeoutError
