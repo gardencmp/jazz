@@ -44,7 +44,7 @@ import AuthProvidersDescription from "./toolkit/authProviders.mdx";
 import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
-import MeshIntro from "./meshIntro.mdx";
+import CloudIntro from "./cloudIntro.mdx";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
@@ -284,9 +284,9 @@ export default function Home() {
                                     <p>
                                         <Link
                                             className="underline"
-                                            href="/mesh"
+                                            href="/cloud"
                                         >
-                                            Jazz Mesh
+                                            Jazz Cloud
                                         </Link>{" "}
                                         or your own server become both cloud
                                         database and blob storage.
@@ -320,8 +320,8 @@ export default function Home() {
                                         cryptographically signed by default.
                                     </p>
                                     <p>
-                                        So it can’t be tampered with and Jazz
-                                        Mesh only sees encrypted data.
+                                        So it can't be tampered with and Jazz
+                                        Cloud only sees encrypted data.
                                     </p>
                                 </>
                             }
@@ -376,17 +376,17 @@ export default function Home() {
 
                 <div>
                     <SectionHeader
-                        title="Jazz Mesh"
+                        title="Jazz Cloud"
                         slogan="Serverless sync & storage for Jazz apps"
                     />
 
                     <Prose>
-                        <MeshIntro />
+                        <CloudIntro />
                     </Prose>
 
                     <div className="mt-8">
-                        <Button href="/mesh" variant="secondary">
-                            Learn more about Jazz Mesh {"->"}
+                        <Button href="/cloud" variant="secondary">
+                            Learn more about Jazz Cloud {"->"}
                         </Button>
                     </div>
                 </div>
