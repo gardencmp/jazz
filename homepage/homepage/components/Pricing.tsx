@@ -1,5 +1,6 @@
 import {
     CircleCheckIcon,
+    LucideBuilding2,
     LucideCheck,
     LucideCloudDownload,
     LucideCrown,
@@ -334,7 +335,7 @@ export function Pricing() {
                         Enterprise needs
                     </h4>
                     <ul className="flex flex-col divide-y text-sm lg:text-base dark:divide-stone-900">
-                        <ListItem>SLAs, on-prem & certifications</ListItem>
+                        <ListItem icon={LucideBuilding2}>SLAs, on-prem & certifications</ListItem>
                     </ul>
                 </div>
 
