@@ -49,7 +49,7 @@ export function JazzAndAuth({ children }: PropsWithChildren) {
             {auth ? (
                 <Jazz.Provider
                     auth={auth}
-                    peer="wss://mesh.jazz.tools/?key=chat-rn-clerk-example-jazz@gcmp.io"
+                    peer="wss://cloud.jazz.tools/?key=chat-rn-clerk-example-jazz@gcmp.io"
                     storage={undefined}
                 >
                     {children}

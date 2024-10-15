@@ -12,7 +12,7 @@ import { WebSocket } from "ws";
 export async function startWorker<Acc extends Account>({
     accountID = process.env.JAZZ_WORKER_ACCOUNT,
     accountSecret = process.env.JAZZ_WORKER_SECRET,
-    syncServer: peer = "wss://sync.jazz.tools",
+    syncServer: peer = "wss://cloud.jazz.tools",
     AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
     accountID?: string;

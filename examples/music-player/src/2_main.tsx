@@ -66,7 +66,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
         (new URL(window.location.href).searchParams.get(
             "peer",
         ) as `ws://${string}`) ??
-        "wss://mesh.jazz.tools/?key=music-player-example-jazz@gcmp.io";
+        "wss://cloud.jazz.tools/?key=music-player-example-jazz@gcmp.io";
 
     return (
         <>

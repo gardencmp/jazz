@@ -61,8 +61,8 @@ export default function CoJsonViewerApp() {
 
         WasmCrypto.create().then(async (crypto) => {
             const wsPeer = createWebSocketPeer({
-                id: "mesh",
-                websocket: new WebSocket("wss://mesh.jazz.tools"),
+                id: "cloud",
+                websocket: new WebSocket("wss://cloud.jazz.tools"),
                 role: "server",
             });
             const node = await LocalNode.withLoadedAccount({
