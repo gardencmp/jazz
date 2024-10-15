@@ -11,22 +11,22 @@ import {
     Prose,
     SmallProse,
 } from "gcmp-design-system/src/app/components/molecules/Prose";
-import MeshPlusBackup from "./meshPlusBackup.mdx";
-import MeshPlusDIY from "./meshPlusDIY.mdx";
+import CloudPlusBackup from "./cloudPlusBackup.mdx";
+import CloudPlusDIY from "./cloudPlusDIY.mdx";
 import CompletelyDIY from "./completelyDIY.mdx";
 
 import PricingFAQ from "./pricingFaq.mdx";
 
 export const metadata = {
-    title: "jazz - Jazz Mesh",
+    title: "jazz - Jazz Cloud",
     description: "Serverless sync & storage for Jazz apps.",
 };
 
-export default function Mesh() {
+export default function Cloud() {
     return (
         <div className="container space-y-16">
             <HeroHeader
-                title="Jazz Mesh"
+                title="Jazz Cloud"
                 slogan="Real-time sync and storage infrastructure that scales up to millions of users."
             />
 
@@ -34,11 +34,11 @@ export default function Mesh() {
                 <P>Pricing that scales down to zero.</P>
                 <GappedGrid>
                     <GridCard>
-                        <H3>Optimal mesh routing.</H3>
+                        <H3>Optimal cloud routing.</H3>
 
                         <P>
                             Get ultra-low latency between any group of users
-                            with our decentralized mesh interconnect.
+                            with our decentralized cloud interconnect.
                         </P>
                     </GridCard>
                     <GridCard>
@@ -65,7 +65,7 @@ export default function Mesh() {
                 <GappedGrid>
                     <GridCard>
                         <H3>
-                            Mesh Free{" "}
+                            Cloud Free{" "}
                             <div className="text-2xl float-right">$0</div>
                         </H3>
 
@@ -77,7 +77,7 @@ export default function Mesh() {
                     </GridCard>
                     <GridCard>
                         <H3>
-                            Mesh Starter <ComingSoonBadge />
+                            Cloud Starter <ComingSoonBadge />
                             <div className="float-right">
                                 <span className="text-2xl">$9</span>/mo
                             </div>
@@ -95,7 +95,7 @@ export default function Mesh() {
                     </GridCard>
                     <GridCard>
                         <H3>
-                            Mesh Pro <ComingSoonBadge />
+                            Cloud Pro <ComingSoonBadge />
                             <div className="float-right">
                                 <span className="text-2xl">$79</span>/mo
                             </div>
@@ -197,7 +197,7 @@ export default function Mesh() {
             <div>
                 <SectionHeader
                     title="Custom Deployment Scenarios"
-                    slogan="You can rely on Jazz Mesh. But you don't have to."
+                    slogan="You can rely on Jazz Cloud. But you don't have to."
                 />
                 <P>
                     Because Jazz is open-source, you can optionally run your own
@@ -206,12 +206,12 @@ export default function Mesh() {
                 <GappedGrid>
                     <GridCard>
                         <Prose>
-                            <MeshPlusBackup />
+                            <CloudPlusBackup />
                         </Prose>
                     </GridCard>
                     <GridCard>
                         <Prose>
-                            <MeshPlusDIY />
+                            <CloudPlusDIY />
                         </Prose>
                     </GridCard>
                     <GridCard>
