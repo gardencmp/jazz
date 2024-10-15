@@ -32,7 +32,6 @@ export default function Mesh() {
                 slogan="Real-time sync and storage infrastructure that scales up to millions of users."
             />
             <div className="container">
-                <P>Pricing that scales down to zero.</P>
                 <GappedGrid>
                     <GridCard>
                         <H3>Optimal mesh routing.</H3>
