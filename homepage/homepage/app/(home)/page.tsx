@@ -320,7 +320,7 @@ export default function Home() {
                                         cryptographically signed by default.
                                     </p>
                                     <p>
-                                        So it can't be tampered with and Jazz
+                                        So it can&apos;t be tampered with and Jazz
                                         Cloud only sees encrypted data.
                                     </p>
                                 </>
