@@ -5,7 +5,7 @@ import { usePlayState } from "./lib/audio/usePlayState";
 import { SidePanel } from "./components/SidePanel";
 import { FileUploadButton } from "./components/FileUploadButton";
 import { Button } from "./components/ui/button";
-import { createNewPlaylist, uploadMusicTracks } from "./4_actions";
+import { createNewPlaylist, updatePlaylistTitle, uploadMusicTracks } from "./4_actions";
 import { useNavigate, useParams } from "react-router";
 import { ID } from "jazz-tools";
 import { Playlist } from "./1_schema";
@@ -62,7 +62,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     ) => {
         if (!playlist) return;
 
-        playlist.title = evt.target.value;
+        updatePlaylistTitle(playlist, evt.target.value);
     };
 
     const handlePlaylistShareClick = async () => {

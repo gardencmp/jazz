@@ -213,6 +213,40 @@ export function subscribeToCoValue<V extends CoValue, Depth>(
     };
 }
 
+export function createCoValueObservable<V extends CoValue, Depth>() {
+    let currentValue: DeeplyLoaded<V, Depth> | undefined = undefined;
+
+    function subscribe(
+        cls: CoValueClass<V>,
+        id: ID<V>,
+        as: Account | AnonymousJazzAgent,
+        depth: Depth & DepthsIn<V>,
+        listener: () => void,
+        onUnavailable?: () => void,
+    ) {
+        const unsubscribe = subscribeToCoValue(
+            cls,
+            id,
+            as,
+            depth,
+            (value) => {
+                currentValue = value;
+                listener();
+            },
+            onUnavailable,
+        );
+
+        return unsubscribe
+    }
+
+    const observable = {
+        getCurrentValue: () => currentValue,
+        subscribe,
+    };
+
+    return observable;
+}
+
 export function subscribeToExistingCoValue<V extends CoValue, Depth>(
     existing: V,
     depth: Depth & DepthsIn<V>,

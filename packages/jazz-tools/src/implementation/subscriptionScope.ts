@@ -26,10 +26,10 @@ export class SubscriptionScope<Root extends CoValue> {
     >();
     rootEntry: {
         state: "loaded";
-        value: Root;
+        value: RawCoValue;
         rawUnsub: () => void;
     };
-    onUpdate: (newRoot: Root) => void;
+    scheduleUpdate: () => void;
     scheduledUpdate: boolean = false;
     cachedValues: { [id: ID<CoValue>]: CoValue } = {};
     parents: { [id: ID<CoValue>]: Set<ID<CoValue>> } = {};
@@ -41,7 +41,7 @@ export class SubscriptionScope<Root extends CoValue> {
     ) {
         this.rootEntry = {
             state: "loaded" as const,
-            value: root,
+            value: root._raw,
             rawUnsub: () => {}, // placeholder
         };
         this.entries.set(root.id, this.rootEntry);
@@ -49,20 +49,19 @@ export class SubscriptionScope<Root extends CoValue> {
         subscriptionsScopes.set(root, this);
 
         this.subscriber = root._loadedAs;
-        this.onUpdate = onUpdate;
+        this.scheduleUpdate = () => {
+            const value = rootSchema.fromRaw(this.rootEntry.value) as Root;
+            subscriptionsScopes.set(value, this);
+            onUpdate(value);
+        };
+
         this.rootEntry.rawUnsub = root._raw.core.subscribe(
             (rawUpdate: RawCoValue | undefined) => {
                 if (!rawUpdate) return;
-                this.rootEntry.value = rootSchema.fromRaw(rawUpdate) as Root;
-                // console.log("root update", this.rootEntry.value.toJSON());
-                subscriptionsScopes.set(this.rootEntry.value, this);
+                this.rootEntry.value = rawUpdate;
                 this.scheduleUpdate();
             },
         );
-    }
-
-    scheduleUpdate() {
-        this.onUpdate(this.rootEntry.value);
     }
 
     onRefAccessedOrSet(
