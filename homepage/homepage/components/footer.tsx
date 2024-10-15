@@ -11,7 +11,7 @@ export function JazzFooter() {
                     title: "Resources",
                     links: [
                         { href: "/", label: "Toolkit" },
-                        { href: "/mesh", label: "Jazz Mesh" },
+                        { href: "/cloud", label: "Jazz Cloud" },
                         { href: "/docs", label: "Docs" },
                     ],
                 },
