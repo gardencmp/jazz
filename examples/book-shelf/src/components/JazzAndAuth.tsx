@@ -17,7 +17,7 @@ export function JazzAndAuth({ children }: { children: React.ReactNode }) {
       <Jazz.Provider
         auth={auth}
         // replace `you@example.com` with your email as a temporary API key
-        peer="wss://mesh.jazz.tools/?key=you@example.com"
+        peer="wss://cloud.jazz.tools/?key=you@example.com"
       >
         {children}
       </Jazz.Provider>
