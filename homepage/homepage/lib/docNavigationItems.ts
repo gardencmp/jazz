@@ -1,4 +1,4 @@
-export const docNavigationItems = [
+const newDocNavigationItems = [
     {
         // welcome to jazz
         name: "Getting started",
@@ -33,17 +33,6 @@ export const docNavigationItems = [
             {
                 name: "Defining",
                 href: "/docs/schema/defining",
-                // different types you can use (string, date, optional/required fields, refs)
-                // items: [
-                //     {
-                //         name: "CoMap",
-                //         href: "/comap",
-                //     },
-                //     {
-                //         name: "CoList",
-                //         href: "/colist",
-                //     },
-                // ],
             },
             {
                 name: "Creating",
@@ -73,6 +62,29 @@ export const docNavigationItems = [
                 // profile, root, creating initial data
                 name: "Account",
                 href: "/docs/authentication/account",
+            },
+        ],
+    },
+    {
+        name: "Resources",
+        items: [
+            {
+                name: "Example apps",
+                href: "/docs/examples",
+            },
+        ],
+    },
+];
+
+export const docNavigationItems = [
+    {
+        // welcome to jazz
+        name: "Getting started",
+        href: "/docs/guide",
+        items: [
+            {
+                name: "Guide",
+                href: "/docs/guide",
             },
         ],
     },
