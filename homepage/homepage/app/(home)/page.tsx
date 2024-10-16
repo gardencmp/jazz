@@ -223,7 +223,7 @@ export default function Home() {
         <>
             <Hero features={features} />
 
-            <div className="bg-stone-100 dark:bg-stone-925 py-8 lg:py-16">
+            <div className="bg-stone-100 border-y dark:bg-stone-925 py-8 lg:py-16 dark:border-stone-900">
                 <div className="container grid gap-8 lg:gap-12">
                     <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
                         Hard things are easy now.
