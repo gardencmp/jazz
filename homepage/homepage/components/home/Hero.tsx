@@ -23,9 +23,9 @@ function Code({
                 "rounded border border-stone-200 dark:border-stone-900",
             )}
         >
-            <div className="text-xs flex justify-between py-2 px-3 border-b border-stone-200 dark:border-stone-900">
-                <span className="text-stone-900 dark:text-white">{title}</span>
-                <span>{fileName}</span>
+            <div className="flex justify-between items-baseline py-2 px-3 border-b border-stone-200 dark:border-stone-900">
+                <span className="text-sm font-handwritten text-stone-900 dark:text-white">{title}</span>
+                <span className="text-xs ">{fileName}</span>
             </div>
             <pre className="text-xs">{children}</pre>
         </div>
