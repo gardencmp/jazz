@@ -16,96 +16,102 @@ export const docNavigationItems = [
         ],
     },
     {
-        name: "Building your app",
+        name: "Project Setup",
+        href: "/docs/project-setup",
         items: [
             {
-                // installation guide for react, react native
-                name: "Project setup",
-                href: "/docs/project-setup",
-            },
-            { name: "Authentication", href: "" },
-            {
-                name: "Schema",
-                href: "",
-                items: [
-                    {
-                        name: "Defining",
-                        href: "/docs/schema/defining",
-                    },
-                    {
-                        name: "Creating",
-                        href: "/docs/schema/creating",
-                    },
-                    {
-                        // loading depth
-                        name: "Reading and subscribing",
-                        href: "/docs/schema/reading",
-                    },
-                    {
-                        name: "Updating",
-                        href: "/docs/schema/updating",
-                    },
-                    {
-                        name: "Deleting",
-                        href: "/docs/schema/deleting",
-                    },
-                ],
-            },
-            { name: "Simple Public Sharing", href: "" },
-            { name: "Groups & Permissions", href: "" },
-            {
                 // jazz mesh, setting api key, free plan, unlimited
-                name: "Sync & Storage",
+                name: "Sync and storage",
                 href: "/docs/sync-and-storage",
+            },
+            {
+                name: "React / Next.js / React Native",
+                href: "/docs/project-setup/react",
+            },
+            {
+                name: "Node.JS / Server Workers",
+                href: "/docs/project-setup/react-native",
             },
         ],
     },
-    // {
-    //     // introduction to covalues
-    //     name: "Schema",
-    //     href: "/docs/schema",
-    //     items: [
-    //         {
-    //             name: "Defining",
-    //             href: "/docs/schema/defining",
-    //         },
-    //         {
-    //             name: "Creating",
-    //             href: "/docs/schema/creating",
-    //         },
-    //         {
-    //             // loading depth
-    //             name: "Reading and subscribing",
-    //             href: "/docs/schema/reading",
-    //         },
-    //         {
-    //             name: "Updating",
-    //             href: "/docs/schema/updating",
-    //         },
-    //         {
-    //             name: "Deleting",
-    //             href: "/docs/schema/deleting",
-    //         },
-    //     ],
-    // },
-    // {
-    //     // setting up using clerk or demo auth?
-    //     name: "Authentication",
-    //     href: "/docs/authentication",
-    //     items: [
-    //         {
-    //             // profile, root, creating initial data
-    //             name: "Account",
-    //             href: "/docs/authentication/account",
-    //         },
-    //     ],
-    // },
+    {
+        name: "Defining Schemas",
+        href: "/docs/schemas",
+        items: [
+            {
+                name: "CoValues",
+                href: "/docs/schemas/covalues",
+            },
+            {
+                name: "Accounts & Migrations",
+                href: "/docs/schemas/accounts",
+            },
+        ],
+    },
+    {
+        name: "Using CoValues",
+        href: "/docs/covalues",
+        items: [
+            {
+                name: "Creation & Ownership",
+                href: "/docs/covalues/creation",
+            },
+            {
+                name: "Subscribing & Deep Loading",
+                href: "/docs/covalues/reading",
+            },
+            {
+                name: "Updating & Deleting",
+                href: "/docs/covalues/updating",
+            },
+            {
+                name: "Metadata & Time-travel",
+                href: "/docs/covalues/metadata",
+            },
+        ],
+    },
+    {
+        name: "Groups, Permissions & Sharing",
+        href: "/docs/permissions",
+        items: [
+            {
+                name: "Groups as Permission Scopes",
+                href: "/docs/groups/intro",
+            },
+            {
+                name: "Public Sharing & Invites",
+                href: "/docs/groups/sharing",
+            },
+            {
+                name: "Group Inheritance",
+                href: "/docs/groups/inheritance",
+            },
+        ],
+    },
+    {
+        name: "Authentication",
+        href: "/docs/authentication",
+        items: [
+            {
+                name: "Auth Methods Overview",
+                href: "/docs/authentication/auth-methods",
+            },
+            {
+                name: "Writing Your Own",
+                href: "/docs/authentication/writing-your-own",
+            },
+        ],
+    },
     {
         name: "Resources",
         items: [
             {
                 name: "Example apps",
                 href: "/docs/examples",
+            },
+            {
+                name: "Jazz under the hood",
+                href: "/docs/jazz-under-the-hood",
             },
         ],
     },
