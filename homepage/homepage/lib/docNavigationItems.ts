@@ -121,8 +121,12 @@ export const docNavigationItemsOld = [
     {
         // welcome to jazz
         name: "Getting started",
-        href: "/docs/guide",
+        href: "/docs",
         items: [
+            {
+                name: "Introduction",
+                href: "/docs",
+            },
             {
                 name: "Guide",
                 href: "/docs/guide",
