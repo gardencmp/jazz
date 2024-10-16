@@ -1,5 +1,36 @@
 import { LucideIcon } from "lucide-react";
 import Image from "next/image";
+import CodeStepOne from "./CodeStepOne.mdx";
+import CodeStepTwo from "./CodeStepTwo.mdx";
+import CodeStepThree from "./CodeStepThree.mdx";
+import { clsx } from "clsx";
+
+function Code({
+    children,
+    className,
+    fileName,
+    title,
+}: {
+    children: React.ReactNode;
+    className?: string;
+    fileName?: string;
+    title?: string;
+}) {
+    return (
+        <div
+            className={clsx(
+                className,
+                "rounded border border-stone-200 dark:border-stone-900",
+            )}
+        >
+            <div className="text-xs flex justify-between py-2 px-3 border-b border-stone-200 dark:border-stone-900">
+                <span className="text-stone-900 dark:text-white">{title}</span>
+                <span>{fileName}</span>
+            </div>
+            <pre className="text-xs">{children}</pre>
+        </div>
+    );
+}
 
 export function Hero({
     features,
@@ -13,8 +44,8 @@ export function Hero({
     };
 
     return (
-        <div className="container grid gap-5 lg:gap-0 md:grid-cols-2">
-            <div className="flex flex-col gap-4 pt-10 md:pt-16 md:pb-16 lg:pb-0 lg:pt-28">
+        <div className="container grid gap-x-5 gap-y-10 py-12 lg:gap-0 lg:grid-cols-2">
+            <div className="flex flex-col justify-center gap-4">
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
                     Build your next app
                     <br /> with sync
@@ -26,7 +57,7 @@ export function Hero({
                     complexity.
                 </p>
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
                     {features.map(({ title, icon: Icon }) => (
                         <div
                             key={title}
@@ -41,17 +72,30 @@ export function Hero({
                 </div>
             </div>
 
-            <div className="max-w-2xl mx-auto flex items-center sm:pt-16 lg:pl-8 lg:pt-18 md:ml-0 md:-mr-4">
-                <Image
-                    className="dark:hidden"
-                    src="/code-samples.png"
-                    {...imageProps}
-                />
-                <Image
-                    className="hidden dark:block"
-                    src="/code-samples-dark.png"
-                    {...imageProps}
-                />
+            <div className="max-w-2xl mx-auto md:ml-auto">
+                <div className="grid sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-2 gap-4">
+                    <Code title="Step 1" fileName="schema.ts">
+                        <CodeStepOne />
+                    </Code>
+                    <Code title="Step 2" fileName="sendMessage.ts">
+                        <CodeStepTwo />
+                    </Code>
+                    <div className="sm:row-span-2 flex items-center">
+                        <Code title="Step 3" className="w-full" fileName="ChatScreen.tsx">
+                            <CodeStepThree />
+                        </Code>
+                    </div>
+                </div>
+                {/*<Image*/}
+                {/*    className="dark:hidden"*/}
+                {/*    src="/code-samples.png"*/}
+                {/*    {...imageProps}*/}
+                {/*/>*/}
+                {/*<Image*/}
+                {/*    className="hidden dark:block"*/}
+                {/*    src="/code-samples-dark.png"*/}
+                {/*    {...imageProps}*/}
+                {/*/>*/}
             </div>
         </div>
     );

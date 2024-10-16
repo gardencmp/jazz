@@ -1,0 +1,13 @@
+```
+const ChatScreen = (id) => {
+  const chat = useCoState(Chat, id)
+
+  return (
+    <>
+      chat.messages.map(msg => (
+        <p>{msg.text}</p>
+      ))
+    </>
+  )
+)
+```
