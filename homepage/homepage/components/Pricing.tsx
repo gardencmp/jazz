@@ -109,9 +109,7 @@ export function Pricing() {
                     </h4>
                     <ul className="flex flex-col divide-y text-sm lg:text-base dark:divide-stone-900">
                         <ListItem icon={LucideCheck}>Real-time sync</ListItem>
-                        <ListItem icon={LucideDatabase}>
-                            Cloud storage
-                        </ListItem>
+                        <ListItem icon={LucideDatabase}>Cloud storage</ListItem>
                     </ul>
                 </div>
 
@@ -181,7 +179,9 @@ export function Pricing() {
                         Cloud features
                     </h4>
                     <ul className="flex flex-col divide-y text-sm lg:text-base dark:divide-stone-900">
-                        <ListItem icon={LucideZap}>Priority real-time sync</ListItem>
+                        <ListItem icon={LucideZap}>
+                            Priority real-time sync
+                        </ListItem>
                         <ListItem icon={LucideDatabaseZap}>
                             SSD cloud storage & daily backups
                         </ListItem>
@@ -297,7 +297,9 @@ export function Pricing() {
                         Enterprise needs
                     </h4>
                     <ul className="flex flex-col divide-y text-sm lg:text-base dark:divide-stone-900">
-                        <ListItem icon={LucideBuilding2}>SLAs, on-prem & certifications</ListItem>
+                        <ListItem icon={LucideBuilding2}>
+                            SLAs, on-prem & certifications
+                        </ListItem>
                     </ul>
                 </div>
 
