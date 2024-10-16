@@ -47,21 +47,35 @@ function highlightPlugin() {
             node.type = "html";
             node.value = `<code class="not-prose py-2 flex flex-col leading-relaxed">${lines
                 .map((line) => {
+                    let lineClassName = ''
+
                     const isSubduedLine = line.some((token) =>
                         token.content.includes("// old"),
                     );
                     const isBinnedLine = line.some((token) =>
                         token.content.includes("// *bin*"),
                     );
+                    const isHighlighted = line.some((token) =>
+                      token.content.includes("// *highlight*"),
+                    );
                     if (!isBinnedLine) {
                         lineNo++;
                     }
+                    
+                    if (isBinnedLine) {
+                        lineClassName = 'bg-red-100 dark:bg-red-800'
+                    } else if (isHighlighted) {
+                        lineClassName = 'my-0.5 bg-blue-100 text-blue dark:bg-stone-900 dark:text-blue-300'
+                    }
+                    
                     return (
-                        `<span class="block px-3 ${isBinnedLine ? 'bg-red-100 dark:bg-red-800' : ''}" style="${isBinnedLine ? "user-select: none" : ""}">` +
+                        `<span class="block px-3 min-h-[1em] ${lineClassName}" style="${isBinnedLine ? "user-select: none" : ""}">` +
                         line
                             .map(
-                                (token) =>
-                                    `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`,
+                                (token) => {
+                                  let color = isHighlighted ? 'currentColor' : token.color
+                                  return  `<span style="color: ${color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", "").replace("// *highlight*", ""))}</span>`
+                                }
                             )
                             .join("") +
                         "</span>"

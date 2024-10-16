@@ -1,5 +1,4 @@
 import { LucideIcon } from "lucide-react";
-import Image from "next/image";
 import CodeStepOne from "./CodeStepOne.mdx";
 import CodeStepTwo from "./CodeStepTwo.mdx";
 import CodeStepThree from "./CodeStepThree.mdx";
@@ -52,7 +51,7 @@ function Code({
         <div
             className={clsx(
                 className,
-                "rounded bg-white border border-stone-200 dark:bg-stone-925 dark:border-stone-900",
+                "rounded-lg bg-white shadow-2xl shadow-stone-800/10 border border-stone-200 dark:bg-stone-925 dark:border-stone-900",
             )}
         >
             <div className="flex justify-between items-baseline py-2 px-3 border-b border-stone-200 dark:border-stone-900">
@@ -78,7 +77,7 @@ export function Hero({
     };
 
     return (
-        <div className="container grid gap-x-5 gap-y-10 py-12 lg:gap-0 lg:grid-cols-2">
+        <div className="container grid gap-x-8 gap-y-10 py-12 lg:gap-0 lg:grid-cols-2">
             <div className="flex flex-col justify-center gap-4">
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
                     Build your next app
@@ -106,24 +105,24 @@ export function Hero({
                 </div>
             </div>
 
-            <div className="max-w-2xl mx-auto md:ml-auto">
-                <div className="grid sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-2 gap-4">
+            <div className="max-w-2xl mx-auto lg:max-w-none lg:w-full lg:flex lg:justify-end">
+                <div className="grid sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-2 gap-8 lg:gap-4">
                     <Code title="Step 1" fileName="schema.ts">
                         <CodeStepOne />
                     </Code>
                     <Code title="Step 2" fileName="sendMessage.ts">
                         <CodeStepTwo />
                     </Code>
-                    <div className="pb-16 sm:pb-0 sm:row-span-2 relative">
+                    <div className="pb-20 sm:pb-0 sm:row-span-2 relative">
                         <Code
                             title="Step 3"
-                            className="w-full sm:mt-8"
+                            className="w-full sm:mt-16"
                             fileName="ChatScreen.tsx"
                         >
                             <CodeStepThree />
                         </Code>
 
-                        <div className="absolute -bottom-4 sm:bottom-0 right-10 sm:right-8 font-handwritten text-stone-900 dark:text-white">
+                        <div className="absolute -bottom-4 sm:bottom-8 right-10 sm:right-8 font-handwritten text-stone-900 dark:text-white">
                             <ArrowUp className="ml-12" />
                             <p className="mt-3">
                                 Instant sync & UI updates <br /> across devices
@@ -132,16 +131,6 @@ export function Hero({
                         </div>
                     </div>
                 </div>
-                {/*<Image*/}
-                {/*    className="dark:hidden"*/}
-                {/*    src="/code-samples.png"*/}
-                {/*    {...imageProps}*/}
-                {/*/>*/}
-                {/*<Image*/}
-                {/*    className="hidden dark:block"*/}
-                {/*    src="/code-samples-dark.png"*/}
-                {/*    {...imageProps}*/}
-                {/*/>*/}
             </div>
         </div>
     );
