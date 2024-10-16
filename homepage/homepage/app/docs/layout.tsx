@@ -3,7 +3,7 @@ import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
-    title: "jazz - Docs",
+    title: "Docs",
     description: "Jazz Guide & Docs.",
 };
 

@@ -19,7 +19,7 @@ import { Button } from "@/components/Button";
 import { Pricing } from "@/components/Pricing";
 
 export const metadata = {
-    title: "jazz - Jazz Mesh",
+    title: "Jazz Mesh",
     description: "Serverless sync & storage for Jazz apps.",
 };
 
