@@ -7,7 +7,7 @@ export function FakeGetStartedButton() {
         <Button
             onClick={() => {
                 alert(
-                    "During the public alpha, please use your email address as the API key, as shown in the docs!"
+                    "During the public alpha, please use your email address as the API key, as shown in the docs!",
                 );
                 window.location.pathname = "/docs";
             }}

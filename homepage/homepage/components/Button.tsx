@@ -16,7 +16,7 @@ export function Button(props: ButtonProps) {
         size = "md",
         variant = "primary",
         href,
-        disabled
+        disabled,
     } = props;
 
     const sizeClasses = {
@@ -28,7 +28,7 @@ export function Button(props: ButtonProps) {
         primary:
             "bg-blue border-blue text-white font-medium bg-blue hover:bg-blue-800 hover:border-blue-800",
         secondary:
-            "bg-stone-200 dark:bg-stone-800 text-stone-900 border border-stone-200 dark:border-stone-800 font-medium hover:bg-stone-300 hover:border-stone-300 hover:dark:bg-stone-900 dark:hover:border-stone-900 dark:text-white",
+            "text-stone-900 border border-stone-200 dark:border-stone-800 font-medium hover:border-stone-300 hover:dark:border-stone-700 dark:text-white",
     };
 
     const classNames = clsx(
@@ -36,7 +36,7 @@ export function Button(props: ButtonProps) {
         "rounded-lg text-center transition-colors",
         sizeClasses[size],
         variantClasses[variant],
-        disabled && "opacity-50 cursor-not-allowed"
+        disabled && "opacity-50 cursor-not-allowed pointer-events-none",
     );
 
     if (href) {
@@ -48,10 +48,7 @@ export function Button(props: ButtonProps) {
     }
 
     return (
-        <button
-            className={classNames}
-            {...props}
-        >
+        <button className={classNames} {...props}>
             {children}
         </button>
     );
