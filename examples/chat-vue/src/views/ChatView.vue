@@ -49,11 +49,11 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const chat = useCoState(Chat, props.chatId, [{}]).value;
+    const chat = useCoState(Chat, props.chatId, [{}]);
     const showNLastMessages = ref(30);
 
     const displayedMessages = computed(() => {
-      return chat?.slice(-showNLastMessages.value).reverse();
+      return chat?.value?.slice(-showNLastMessages.value).reverse();
     });
 
     function showMoreMessages() {
@@ -61,7 +61,7 @@ export default defineComponent({
     }
 
     function handleSubmit(text: string) {
-      chat?.push(Message.create({ text }, { owner: chat._owner }));
+      chat?.value?.push(Message.create({ text }, { owner: chat.value._owner }));
     }
 
     return {

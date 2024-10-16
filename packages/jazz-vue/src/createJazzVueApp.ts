@@ -12,8 +12,9 @@ import {
     ComputedRef,
     Ref,
     PropType,
-    markRaw,
     toRaw,
+    shallowRef,
+    ShallowRef,
 } from "vue";
 import {
     createJazzBrowserContext,
@@ -181,7 +182,7 @@ export function createJazzVueApp<Acc extends Account>({
                           toRaw((context.value as BrowserContext<Acc>).me)
                         : me.value;
 
-                return value ? markRaw(value) : value;
+                return value ? toRaw(value) : value;
             }),
             logOut: context.value.logOut,
         };
@@ -238,7 +239,8 @@ export function createJazzVueApp<Acc extends Account>({
         id: ID<V> | undefined,
         depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
     ): Ref<DeeplyLoaded<V, D> | undefined> {
-        const state = ref<DeeplyLoaded<V, D> | undefined>(undefined);
+        const state: ShallowRef<DeeplyLoaded<V, D> | undefined> =
+            shallowRef(undefined);
         const context = useJazzContext();
 
         if (!context.value) {
