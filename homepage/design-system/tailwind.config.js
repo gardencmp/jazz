@@ -107,16 +107,15 @@ const config = {
                 padding: {
                     DEFAULT: "0.75rem",
                     sm: "1rem",
-                    lg: "2rem",
                 },
                 screens: {
                     md: "960px",
-                    lg: "1240px",
+                    lg: "1276px",
                 },
             },
             screens: {
                 md: "960px",
-                lg: "1240px",
+                lg: "1276px",
             },
         },
     },
