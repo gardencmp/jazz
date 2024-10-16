@@ -123,9 +123,9 @@ export function Pricing() {
                     </ul>
                 </div>
 
-                <p className="text-sm">No credit card required.</p>
-
                 <FakeGetStartedButton />
+
+                <p className="text-sm">No credit card required.</p>
             </div>
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925">
                 <div>
@@ -203,14 +203,14 @@ export function Pricing() {
                     </ul>
                 </div>
 
+                <Button size="md" variant="secondary" disabled>
+                    Coming Soon
+                </Button>
+
                 <p className="text-sm">
                     We&apos;ve designed this tier to be affordable but also
                     self-sustaining, so you can rely on it long-term.
                 </p>
-
-                <Button size="md" variant="secondary" disabled>
-                    Coming Soon
-                </Button>
             </div>
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925 pb-6">
                 <h3 className="flex justify-between items-center font-semibold text-stone-900 text-xl dark:text-white">
@@ -295,17 +295,17 @@ export function Pricing() {
                     </ul>
                 </div>
 
-                <p className="text-sm">
-                    Our team of devs & product experts will get you going for
-                    free. Then we&apos;ll make a deal just for you.
-                </p>
-
                 <Button
                     href="https://cal.com/anselm-io/mesh-pro-intro"
                     size="md"
                 >
                     Book intro call
                 </Button>
+
+                <p className="text-sm">
+                    Our team of devs & product experts will get you going for
+                    free. Then we&apos;ll make a deal just for you.
+                </p>
             </div>
         </div>
     );
