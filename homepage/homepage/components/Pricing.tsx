@@ -63,7 +63,7 @@ export function Pricing() {
         <div className="flex flex-col sm:max-w-lg mx-auto md:max-w-none md:flex-row md:items-start gap-4">
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925">
                 <h3 className="flex justify-between items-center font-semibold text-stone-900 text-xl dark:text-white">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         <StarterTierLogo />
                         Starter
                     </div>
@@ -133,7 +133,7 @@ export function Pricing() {
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925">
                 <div>
                     <h3 className="flex justify-between items-center font-semibold text-stone-900 text-xl dark:text-white">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                             <IndieTierLogo />
                             Indie
                         </div>
@@ -221,7 +221,7 @@ export function Pricing() {
             </div>
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925 pb-6">
                 <h3 className="flex justify-between items-center font-semibold text-stone-900 text-xl dark:text-white">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         <ProTierLogo />
                         Pro
                     </div>
