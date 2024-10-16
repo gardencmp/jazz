@@ -34,7 +34,7 @@ export default function Mesh() {
             <div className="container">
                 <GappedGrid>
                     <GridCard>
-                        <H3>Optimal mesh routing.</H3>
+                        <H3>Optimal mesh routing</H3>
 
                         <P>
                             Get ultra-low latency between any group of users
@@ -42,7 +42,7 @@ export default function Mesh() {
                         </P>
                     </GridCard>
                     <GridCard>
-                        <H3>Smart caching.</H3>
+                        <H3>Smart caching</H3>
 
                         <P>
                             Give users instant load times, with their latest
@@ -50,7 +50,7 @@ export default function Mesh() {
                         </P>
                     </GridCard>
                     <GridCard>
-                        <H3>Blob storage & media streaming.</H3>
+                        <H3>Blob storage & media streaming</H3>
 
                         <P>
                             Store files and media streams as idiomatic
@@ -74,7 +74,7 @@ export default function Mesh() {
                 <div>
                     <SectionHeader
                         title="Global Footprint"
-                        slogan="We're rapidly expanding our network of sync & storage nodes. This is our current best-effort coverage."
+                        slogan="We're rapidly expanding our network of sync & storage nodes. This is our current coverage."
                     />
                     <GappedGrid>
                         <div className="text-sm">
