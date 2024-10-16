@@ -9,6 +9,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { JazzNav } from "@/components/nav";
 import { JazzFooter } from "@/components/footer";
+import Head from "next/head";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -40,9 +41,35 @@ const commitMono = localFont({
     display: "swap",
 });
 
+const metaTags = {
+    title: "jazz - Build your next app with sync",
+    description:
+        "Jazz is an open-source framework for building local-first apps, removing 90% of the backend and infrastructure complexity.",
+    url: "https://jazz.tools",
+};
+
 export const metadata: Metadata = {
-    title: "jazz - Instant sync",
-    description: "Go beyond request/response - ship modern apps with sync.",
+    // metadataBase is a convenience option to set a base URL prefix for metadata fields that require a fully qualified URL.
+    metadataBase: new URL(metaTags.url),
+    title: {
+        template: "%s | jazz",
+        default: metaTags.title,
+    },
+    applicationName: "jazz",
+    description: metaTags.description,
+    openGraph: {
+        title: metaTags.title,
+        description: metaTags.description,
+        url: metaTags.url,
+        siteName: "jazz",
+        images: [
+            {
+                url: "/social-image.png",
+                width: 1200,
+                height: 630,
+            },
+        ],
+    },
 };
 
 export default function RootLayout({
