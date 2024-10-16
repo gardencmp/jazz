@@ -5,9 +5,9 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "buildx": "run-p type-check \"build-only {@}\" --",
+        "build-type-check": "run-p type-check \"build-only {@}\" --",
         "preview": "vite preview",
-        "build-only": "vite build",
+        "build": "vite build",
         "type-check": "vue-tsc --build --force",
         "lint": "eslint . --fix",
         "format": "prettier --write src/"
