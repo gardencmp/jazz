@@ -1,5 +1,11 @@
 # jazz-autosub
 
+## 0.8.9
+
+### Patch Changes
+
+-   a251aaa: Fix internal imports in jazz-nodejs
+
 ## 0.8.7
 
 ### Patch Changes
