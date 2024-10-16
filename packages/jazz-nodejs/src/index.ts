@@ -1,11 +1,13 @@
 import { AgentSecret, Peer, WasmCrypto } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { Account, createJazzContext, ID } from "jazz-tools";
 import {
+    Account,
+    createJazzContext,
+    ID,
     AccountClass,
     fixedCredentialsAuth,
     randomSessionProvider,
-} from "jazz-tools/src/internal.js";
+} from "jazz-tools";
 import { WebSocket } from "ws";
 
 /** @category Context Creation */
