@@ -51,6 +51,7 @@ export const docNavigationItems = [
                     },
                 ],
             },
+            { name: "Simple Public Sharing", href: "" },
             { name: "Groups & Permissions", href: "" },
             {
                 // jazz mesh, setting api key, free plan, unlimited
