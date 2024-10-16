@@ -1,4 +1,4 @@
-const newDocNavigationItems = [
+export const docNavigationItems = [
     {
         // welcome to jazz
         name: "Getting started",
@@ -76,7 +76,7 @@ const newDocNavigationItems = [
     },
 ];
 
-export const docNavigationItems = [
+export const docNavigationItemsOld = [
     {
         // welcome to jazz
         name: "Getting started",
