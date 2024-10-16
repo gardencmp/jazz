@@ -204,7 +204,7 @@ export function Pricing() {
                 </div>
 
                 <Button size="md" variant="secondary" disabled>
-                    Coming Soon
+                    Coming soon
                 </Button>
 
                 <p className="text-sm">
