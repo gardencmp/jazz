@@ -78,8 +78,7 @@ export function Pricing() {
                 </h3>
 
                 <p className="text-sm">
-                    For experiments and brand new projects. Start for free with
-                    no fuss. Go dazzle those first users!
+                    Everything you need for brand new projects.
                 </p>
 
                 <div>
@@ -124,9 +123,9 @@ export function Pricing() {
                     </ul>
                 </div>
 
-                <FakeGetStartedButton />
-
                 <p className="text-sm">No credit card required.</p>
+
+                <FakeGetStartedButton />
             </div>
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925">
                 <div>
@@ -147,8 +146,7 @@ export function Pricing() {
                 </div>
 
                 <p className="text-sm">
-                    Growing? Self-serve our proven real-time infra at
-                    predictable costs and keep focusing on your app.
+                    Get robust real-time infra at predictable costs.
                 </p>
 
                 <div>
@@ -205,19 +203,14 @@ export function Pricing() {
                     </ul>
                 </div>
 
-                <Button
-                    href="https://cal.com/anselm-io/mesh-pro-intro"
-                    size="lg"
-                    variant="secondary"
-                    disabled
-                >
-                    Coming Soon
-                </Button>
-
                 <p className="text-sm">
                     We&apos;ve designed this tier to be affordable but also
                     self-sustaining, so you can rely on it long-term.
                 </p>
+
+                <Button size="md" variant="secondary" disabled>
+                    Coming Soon
+                </Button>
             </div>
             <div className="md:flex-1 flex flex-col gap-3 overflow-hidden rounded-xl p-6 shadow-lg shadow-gray-900/5 bg-white dark:bg-stone-925 pb-6">
                 <h3 className="flex justify-between items-center font-semibold text-stone-900 text-xl dark:text-white">
@@ -237,8 +230,7 @@ export function Pricing() {
                 </h3>
 
                 <p className="text-sm">
-                    Wildly successful, just raised or big enterprise? Get our
-                    best infra and move quickly with our help.
+                    Get our best infra and move quickly with our help.
                 </p>
 
                 <div>
@@ -303,17 +295,17 @@ export function Pricing() {
                     </ul>
                 </div>
 
-                <Button
-                    href="https://cal.com/anselm-io/mesh-pro-intro"
-                    size="lg"
-                >
-                    Book intro call
-                </Button>
-
                 <p className="text-sm">
                     Our team of devs & product experts will get you going for
                     free. Then we&apos;ll make a deal just for you.
                 </p>
+
+                <Button
+                    href="https://cal.com/anselm-io/mesh-pro-intro"
+                    size="md"
+                >
+                    Book intro call
+                </Button>
             </div>
         </div>
     );

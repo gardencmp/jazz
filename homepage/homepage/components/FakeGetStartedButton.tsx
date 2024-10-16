@@ -11,8 +11,8 @@ export function FakeGetStartedButton() {
                 );
                 window.location.pathname = "/docs";
             }}
-            size="lg"
-            variant="secondary"
+            size="md"
+            variant="primary"
         >
             Get started
         </Button>
