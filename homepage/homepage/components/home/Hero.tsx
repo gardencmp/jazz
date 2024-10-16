@@ -77,7 +77,7 @@ export function Hero({
     };
 
     return (
-        <div className="container grid gap-x-8 gap-y-10 py-12 lg:gap-0 lg:grid-cols-2">
+        <div className="container grid gap-x-8 gap-y-10 py-12 lg:py-16 lg:gap-0 lg:grid-cols-2">
             <div className="flex flex-col justify-center gap-4">
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
                     Build your next app
