@@ -10,6 +10,6 @@ export async function subscribe(email: string) {
     return resend.contacts.create({
         email,
         unsubscribed: false,
-        audienceId: process.env.RESEND_AUDIENCE_ID,
+        audienceId: process.env.RESEND_AUDIENCE_ID || "",
     });
 }
