@@ -22,7 +22,7 @@ const team: Array<TeamMember> = [
         github: "@aeplay",
     },
     {
-        name: "Andrei ___",
+        name: "Andrei Popa",
         titles: ["Full-Stack Dev", "Infra"],
         image: "andrei.jpeg",
         location: "___, Romania ",
@@ -70,25 +70,25 @@ function SocialLink({
     );
 }
 
-export function Person({ person }: { person: TeamMember }) {
+function Person({ person }: { person: TeamMember }) {
     return (
         <div className="flex gap-5">
             <img
                 src={`/team/${person.image}`}
                 className="size-12 rounded-full shadow-sm"
             />
-            <div className="flex flex-col">
-                <h3 className="text-lg font-semibold leading-8 tracking-tight text-gray-900">
+            <div className="flex flex-col gap-2.5">
+                <h3 className="text-lg leading-none font-semibold tracking-tight text-stone-900 dark:text-white">
                     {person.name}
                 </h3>
-                <p className="text-sm leading-6 text-gray-600">
+                <p className="text-sm leading-none text-gray-600 dark:text-stone-400">
                     {person.titles.join(", ")}
                 </p>
-                <p className="text-sm leading-6 text-gray-600">
+                <p className="text-sm leading-none text-gray-600 dark:text-stone-400">
                     {person.location}
                 </p>
 
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-1">
                     {person.x && (
                         <SocialLink
                             link={`https://x.com/${person.x}`}
