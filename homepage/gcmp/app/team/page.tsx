@@ -5,6 +5,10 @@ import { SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 
+export const metadata = {
+    title: "Team",
+};
+
 export default function TeamPage() {
     return (
         <div className="container">

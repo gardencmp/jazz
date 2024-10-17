@@ -3,12 +3,18 @@ import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/Hero
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { NewsletterForm } from "@/components/NewsletterForm";
 
+export const metadata = {
+    title: "Blog",
+};
+
 export default function NewsPage() {
     return (
         <div className="container">
             <HeroHeader title="Blog" slogan="" />
             <Prose>
                 <p>Wow! You caught us a bit early.</p>
+
+                <p>You can subscribe to our newsletter below.</p>
 
                 <NewsletterForm />
 
