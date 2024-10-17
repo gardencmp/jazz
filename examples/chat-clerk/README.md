@@ -1,6 +1,6 @@
 # Jazz Chat Example (with Clerk auth)
 
-<!-- Live version: [https://chat-clerk.jazz.tools](https://chat-clerk.jazz.tools) -->
+Live version: [https://chat-clerk-demo.jazz.tools](https://chat-clerk-demo.jazz.tools)
 
 ## Installing & running the example locally
 
