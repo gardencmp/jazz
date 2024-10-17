@@ -1,7 +1,7 @@
-import { JazzLogo } from "./logos";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
 import { SiDiscord, SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
 import { DocNav } from "./docs/nav";
+import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 
 export function JazzNav() {
     return (

@@ -1,5 +1,5 @@
 import { Footer } from "gcmp-design-system/src/app/components/organisms/Footer";
-import { GcmpLogo } from "./logos";
+import { GcmpLogo } from "gcmp-design-system/src/app/components/atoms/logos/GcmpLogo";
 
 export function JazzFooter() {
     return (

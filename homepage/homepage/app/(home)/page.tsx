@@ -195,8 +195,8 @@ export default function Home() {
                         signed by default.
                     </p>
                     <p>
-                        So it can&apos;t be tampered with and Jazz Cloud only sees
-                        encrypted data.
+                        So it can&apos;t be tampered with and Jazz Cloud only
+                        sees encrypted data.
                     </p>
                 </>
             ),
