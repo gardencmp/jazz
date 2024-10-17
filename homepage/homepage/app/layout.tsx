@@ -2,14 +2,13 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeProvider";
 
-import { Inter, Manrope } from "next/font/google";
+import { Inter, Manrope, Sriracha } from "next/font/google";
 import localFont from "next/font/local";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { JazzNav } from "@/components/nav";
 import { JazzFooter } from "@/components/footer";
-import Head from "next/head";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -21,6 +20,13 @@ const manrope = Manrope({
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
+    display: "swap",
+});
+
+const sriracha = Sriracha({
+    weight: "400",
+    subsets: ["latin"],
+    variable: "--font-sriracha",
     display: "swap",
 });
 
@@ -84,6 +90,7 @@ export default function RootLayout({
                     manrope.variable,
                     commitMono.variable,
                     inter.className,
+                    sriracha.variable,
                     "flex flex-col items-center [&_*]:scroll-mt-[5rem]",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
