@@ -2,8 +2,8 @@ import { H1, H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { MailIcon } from "lucide-react";
 import Link from "next/link";
 import { SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
-import {SectionHeader} from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import {HeroHeader} from "gcmp-design-system/src/app/components/molecules/HeroHeader";
+import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
+import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 
 export default function TeamPage() {
     return (

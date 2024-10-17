@@ -9,7 +9,7 @@ import { TilescapeLogo } from "@/components/TilescapeLogo";
 
 function ComingSoon({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex items-center justify-center gap-2 rounded-full bg-stone-200 py-1 px-3 text-stone-800 text-sm">
+        <div className="flex items-center justify-center gap-2 rounded-full bg-stone-200 py-1 px-3 text-stone-800 text-sm dark:text-stone-300 dark:bg-stone-800">
             {children}
         </div>
     );
