@@ -296,7 +296,7 @@ export function Pricing() {
                 </div>
 
                 <Button
-                    href="https://cal.com/anselm-io/mesh-pro-intro"
+                    href="https://cal.com/anselm-io/cloud-pro-intro"
                     size="md"
                 >
                     Book intro call

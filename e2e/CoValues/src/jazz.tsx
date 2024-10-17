@@ -17,7 +17,7 @@ export function AuthAndJazz({ children }: { children: React.ReactNode }) {
     <Jazz.Provider auth={ephemeralAuth} peer={
       localSync
         ? `ws://localhost:4200?key=${key}`
-        : `wss://mesh.jazz.tools/?key=${key}`
+        : `wss://cloud.jazz.tools/?key=${key}`
     }>
       {children}
     </Jazz.Provider>

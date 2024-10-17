@@ -2,7 +2,6 @@ import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/Hero
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
-import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
 import {
     H2,
@@ -12,33 +11,32 @@ import {
 import { LI } from "gcmp-design-system/src/app/components/atoms/ListItem";
 import { UL } from "gcmp-design-system/src/app/components/molecules/List";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import MeshPlusBackup from "./meshPlusBackup.mdx";
-import MeshPlusDIY from "./meshPlusDIY.mdx";
+import CloudPlusBackup from "./cloudPlusBackup.mdx";
+import CloudPlusDIY from "./cloudPlusDIY.mdx";
 import CompletelyDIY from "./completelyDIY.mdx";
-import { Button } from "@/components/Button";
 import { Pricing } from "@/components/Pricing";
 
 export const metadata = {
-    title: "Jazz Mesh",
+    title: "Jazz Cloud",
     description: "Serverless sync & storage for Jazz apps.",
 };
 
-export default function Mesh() {
+export default function Cloud() {
     return (
         <div className="space-y-16">
             <HeroHeader
                 className="container"
-                title="Jazz Mesh"
+                title="Jazz Cloud"
                 slogan="Real-time sync and storage infrastructure that scales up to millions of users."
             />
             <div className="container">
                 <GappedGrid>
                     <GridCard>
-                        <H3>Optimal mesh routing</H3>
+                        <H3>Optimal cloud routing.</H3>
 
                         <P>
                             Get ultra-low latency between any group of users
-                            with our decentralized mesh interconnect.
+                            with our decentralized cloud interconnect.
                         </P>
                     </GridCard>
                     <GridCard>
@@ -137,7 +135,7 @@ export default function Mesh() {
                 <div>
                     <SectionHeader
                         title="Custom Deployment Scenarios"
-                        slogan="You can rely on Jazz Mesh. But you don't have to."
+                        slogan="You can rely on Jazz Cloud. But you don't have to."
                     />
                     <P>
                         Because Jazz is open-source, you can optionally run your
@@ -146,12 +144,12 @@ export default function Mesh() {
                     <GappedGrid>
                         <GridCard>
                             <Prose>
-                                <MeshPlusBackup />
+                                <CloudPlusBackup />
                             </Prose>
                         </GridCard>
                         <GridCard>
                             <Prose>
-                                <MeshPlusDIY />
+                                <CloudPlusDIY />
                             </Prose>
                         </GridCard>
                         <GridCard>
