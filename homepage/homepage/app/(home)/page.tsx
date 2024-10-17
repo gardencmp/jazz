@@ -9,6 +9,7 @@ import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molec
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
+import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 
 import {
     UploadCloudIcon,
@@ -49,7 +50,6 @@ import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
-import { Button } from "@/components/Button";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { Hero } from "@/components/home/Hero";
@@ -195,8 +195,8 @@ export default function Home() {
                         signed by default.
                     </p>
                     <p>
-                        So it can&apos;t be tampered with and Jazz Cloud only sees
-                        encrypted data.
+                        So it can&apos;t be tampered with and Jazz Cloud only
+                        sees encrypted data.
                     </p>
                 </>
             ),

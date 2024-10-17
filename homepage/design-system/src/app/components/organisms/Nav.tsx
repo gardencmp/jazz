@@ -11,6 +11,7 @@ export function Nav({
     mainLogo,
     items,
     docNav,
+    cta
 }: {
     mainLogo: ReactNode;
     items: {
@@ -20,7 +21,8 @@ export function Nav({
         firstOnRight?: boolean;
         newTab?: boolean;
     }[];
-    docNav: ReactNode;
+    docNav?: ReactNode;
+    cta?: ReactNode;
 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -74,6 +76,8 @@ export function Nav({
                             </NavLink>
                         ),
                     )}
+
+                    {cta}
                 </div>
             </nav>
             <div className="md:hidden px-4 flex items-center self-stretch dark:text-white">
@@ -133,7 +137,7 @@ export function Nav({
                             ))}
                     </div>
 
-                    {pathname.startsWith("/docs") && (
+                    {pathname.startsWith("/docs") && docNav && (
                         <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 dark:border-stone-900 overflow-x-auto">
                             {docNav}
                         </div>

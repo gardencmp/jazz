@@ -17,7 +17,7 @@ import {
     LucideUsers,
     LucideZap,
 } from "lucide-react";
-import { Button } from "@/components/Button";
+import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { FakeGetStartedButton } from "./FakeGetStartedButton";
 import { clsx } from "clsx";
 import { StarterTierLogo, IndieTierLogo, ProTierLogo } from "./TierLogos";
