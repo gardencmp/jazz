@@ -1,5 +1,7 @@
 # Jazz Book Shelf Example
 
+Live version: [https://books-demo.jazz.tools](https://books-demo.jazz.tools)
+
 ## Installing & running the example locally
 
 (this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
