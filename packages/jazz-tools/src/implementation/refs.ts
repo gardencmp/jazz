@@ -48,16 +48,13 @@ export class Ref<out V extends CoValue> {
         }
     }
 
-    private async loadHelper(options?: {
-        onProgress: (p: number) => void;
-    }): Promise<V | "unavailable"> {
+    private async loadHelper(): Promise<V | "unavailable"> {
         const node =
             "node" in this.controlledAccount
                 ? this.controlledAccount.node
                 : this.controlledAccount._raw.core.node;
         const raw = await node.load(
             this.id as unknown as CoID<RawCoValue>,
-            options?.onProgress,
         );
         if (raw === "unavailable") {
             return "unavailable";
@@ -66,10 +63,8 @@ export class Ref<out V extends CoValue> {
         }
     }
 
-    async load(options?: {
-        onProgress: (p: number) => void;
-    }): Promise<V | undefined> {
-        const result = await this.loadHelper(options);
+    async load(): Promise<V | undefined> {
+        const result = await this.loadHelper();
         if (result === "unavailable") {
             return undefined;
         } else {
