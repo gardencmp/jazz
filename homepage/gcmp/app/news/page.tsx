@@ -1,8 +1,11 @@
-import { H1 } from "gcmp-design-system/src/app/components/atoms/Headings";
-import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
 import Link from "next/link";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
+import { NewsletterForm } from "@/components/NewsletterForm";
+
+export const metadata = {
+    title: "Blog",
+};
 
 export default function NewsPage() {
     return (
@@ -10,6 +13,11 @@ export default function NewsPage() {
             <HeroHeader title="Blog" slogan="" />
             <Prose>
                 <p>Wow! You caught us a bit early.</p>
+
+                <p>You can subscribe to our newsletter below.</p>
+
+                <NewsletterForm />
+
                 <p>
                     Follow us on{" "}
                     <Link href="https://x.com/gcmp_io">@gcmp.io</Link> or{" "}

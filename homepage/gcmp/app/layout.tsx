@@ -1,9 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeProvider";
-
 import { Inter, Manrope } from "next/font/google";
-
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { GcmpNav } from "@/components/Nav";
@@ -25,7 +23,7 @@ const metaTags = {
     title: "garden computing",
     description:
         "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
-    url: "https://gcmp.io/",
+    url: "https://gcmp.io",
 };
 
 export const metadata: Metadata = {
@@ -42,13 +40,13 @@ export const metadata: Metadata = {
         description: metaTags.description,
         url: metaTags.url,
         siteName: "garden computing",
-        // images: [
-        //     {
-        //         url: "/social-image.png",
-        //         width: 1200,
-        //         height: 630,
-        //     },
-        // ],
+        images: [
+            {
+                url: "/social-image.png",
+                width: 1200,
+                height: 630,
+            },
+        ],
     },
 };
 
