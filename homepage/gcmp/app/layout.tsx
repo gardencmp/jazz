@@ -62,7 +62,7 @@ export default function RootLayout({
                 className={[
                     manrope.variable,
                     inter.className,
-                    "flex flex-col items-center [&_*]:scroll-mt-[5rem]",
+                    "flex min-h-screen flex-col gap-16 items-center",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
@@ -74,7 +74,10 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <main className="flex flex-col w-full">{children}</main>
+                    <main className="flex flex-1 flex-col w-full">{children}</main>
+                    <footer className="py-8 md:py-16 text-sm">
+                        <p>©2024 Garden Computing, Inc.</p>
+                    </footer>
                 </ThemeProvider>
             </body>
         </html>
