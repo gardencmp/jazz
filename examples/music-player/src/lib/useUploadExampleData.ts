@@ -1,3 +1,4 @@
+// eslint-disable-next-line react-compiler/react-compiler
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import { useAccount } from "../2_main";
