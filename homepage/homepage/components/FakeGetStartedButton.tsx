@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "./Button";
+import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 
 export function FakeGetStartedButton() {
     return (
