@@ -6,6 +6,7 @@ import { Inter, Manrope } from "next/font/google";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
+import { GcmpNav } from "@/components/Nav";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -62,7 +63,7 @@ export default function RootLayout({
                 className={[
                     manrope.variable,
                     inter.className,
-                    "flex min-h-screen flex-col gap-16 items-center",
+                    "flex min-h-screen flex-col items-center",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
@@ -74,7 +75,10 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <main className="flex flex-1 flex-col w-full">{children}</main>
+                    <GcmpNav />
+                    <main className="flex flex-1 flex-col w-full">
+                        {children}
+                    </main>
                     <footer className="py-8 md:py-16 text-sm">
                         <p>©2024 Garden Computing, Inc.</p>
                     </footer>
