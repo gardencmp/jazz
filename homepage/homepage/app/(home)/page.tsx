@@ -128,8 +128,8 @@ export default function Home() {
                         the same way.
                     </p>
                     <p>
-                        <Link className="underline" href="/mesh">
-                            Jazz Mesh
+                        <Link className="underline" href="/cloud">
+                            Jazz Cloud
                         </Link>{" "}
                         or your own server become both cloud database and blob
                         storage.
@@ -195,7 +195,7 @@ export default function Home() {
                         signed by default.
                     </p>
                     <p>
-                        So it can’t be tampered with and Jazz Mesh only sees
+                        So it can&apos;t be tampered with and Jazz Cloud only sees
                         encrypted data.
                     </p>
                 </>
