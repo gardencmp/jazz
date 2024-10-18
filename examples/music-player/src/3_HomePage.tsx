@@ -5,12 +5,14 @@ import { usePlayState } from "./lib/audio/usePlayState";
 import { SidePanel } from "./components/SidePanel";
 import { FileUploadButton } from "./components/FileUploadButton";
 import { Button } from "./components/ui/button";
-import { createNewPlaylist, updatePlaylistTitle, uploadMusicTracks } from "./4_actions";
+import { createNewPlaylist, uploadMusicTracks } from "./4_actions";
 import { useNavigate, useParams } from "react-router";
 import { ID } from "jazz-tools";
 import { Playlist } from "./1_schema";
 import { createInviteLink } from "jazz-react";
 import { useToast } from "@/hooks/use-toast"
+import { PlaylistTitleInput } from "./components/PlaylistTitleInput";
+import { LogoutButton } from "./components/LogoutButton";
 
 export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     /**
@@ -57,14 +59,6 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const isPlaylistOwner = playlist?._owner.myRole() === "admin";
     const isActivePlaylist = playlistId === me?.root.activePlaylist?.id;
 
-    const handlePlaylistTitleChange = (
-        evt: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        if (!playlist) return;
-
-        updatePlaylistTitle(playlist, evt.target.value);
-    };
-
     const handlePlaylistShareClick = async () => {
         if (!isPlaylistOwner) return;
 
@@ -88,12 +82,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                                 All tracks
                             </h1>
                         ) : (
-                            <input
-                                value={playlist?.title ?? ""}
-                                onChange={handlePlaylistTitleChange}
-                                className="text-2xl font-bold text-blue-800 bg-transparent"
-                                disabled={!isPlaylistOwner}
-                            />
+                            <PlaylistTitleInput playlistId={playlistId} />
                         )}
                         <div className="flex items-center space-x-4">
                             {isRootPlaylist && (
@@ -104,7 +93,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                                         Add file
                                     </FileUploadButton>
                                     <Button onClick={handleCreatePlaylist}>
-                                        Create new playlist
+                                        New playlist
                                     </Button>
                                 </>
                             )}
@@ -113,6 +102,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                                     Share playlist
                                 </Button>
                             )}
+                            <LogoutButton />
                         </div>
                     </div>
                     <ul className="flex flex-col">
