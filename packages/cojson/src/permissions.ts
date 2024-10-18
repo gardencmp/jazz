@@ -66,7 +66,8 @@ export function determineValidTransactions(
                         }
 
                         const transactorRoleAtTxTime =
-                            groupAtTime.roleOfInternal(effectiveTransactor)?.role ||
+                            groupAtTime.roleOfInternal(effectiveTransactor)
+                                ?.role ||
                             groupAtTime.roleOfInternal(EVERYONE)?.role;
 
                         return (
@@ -167,7 +168,10 @@ function determineValidTransactionsForGroup(
         const change = changes[0] as
             | MapOpPayload<RawAccountID | AgentID | Everyone, Role>
             | MapOpPayload<"readKey", JsonValue>
-            | MapOpPayload<"profile", CoID<RawProfile>>;
+            | MapOpPayload<"profile", CoID<RawProfile>>
+            | MapOpPayload<`parent_${CoID<RawGroup>}`, CoID<RawGroup>>
+            | MapOpPayload<`child_${CoID<RawGroup>}`, CoID<RawGroup>>;
+
         if (changes.length !== 1) {
             console.warn("Group transaction must have exactly one change");
             continue;
@@ -210,6 +214,20 @@ function determineValidTransactionsForGroup(
 
             // TODO: check validity of agents who the key is revealed to?
 
+            validTransactions.push({ txID: { sessionID, txIndex }, tx });
+            continue;
+        } else if (isParentExtension(change.key)) {
+            if (memberState[transactor] !== "admin") {
+                console.warn("Only admins can set parent extensions");
+                continue;
+            }
+            validTransactions.push({ txID: { sessionID, txIndex }, tx });
+            continue;
+        } else if (isChildExtension(change.key)) {
+            if (memberState[transactor] !== "admin") {
+                console.warn("Only admins can set child extensions");
+                continue;
+            }
             validTransactions.push({ txID: { sessionID, txIndex }, tx });
             continue;
         }
@@ -324,4 +342,12 @@ export function isKeyForAccountField(
             (co.includes("_for_sealer") || co.includes("_for_co"))) ||
         co.includes("_for_everyone")
     );
+}
+
+function isParentExtension(key: string): key is `parent_${CoID<RawGroup>}` {
+    return key.startsWith("parent_");
+}
+
+function isChildExtension(key: string): key is `child_${CoID<RawGroup>}` {
+    return key.startsWith("child_");
 }

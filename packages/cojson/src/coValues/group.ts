@@ -25,6 +25,8 @@ export type GroupShape = {
         KeySecret,
         { encryptedID: KeyID; encryptingID: KeyID }
     >;
+    [parent: `parent_${CoID<RawGroup>}`]: "extend";
+    [child: `child_${CoID<RawGroup>}`]: "extend";
 };
 
 /** A `Group` is a scope for permissions of its members (`"reader" | "writer" | "admin"`), applying to objects owned by that group.

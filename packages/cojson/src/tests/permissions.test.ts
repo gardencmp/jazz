@@ -1773,3 +1773,173 @@ test("Can give write permissions to 'everyone' (high-level)", async () => {
     childContent2.set("foo", "bar2", "private");
     expect(childContent2.get("foo")).toEqual("bar2");
 });
+
+test("Admins can set parent extensions", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+    expect(group.get(`parent_${parentGroup.id}`)).toEqual("extend");
+});
+
+test("Writers, readers and invitees can not set parent extensions", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    const writer = node.createAccount();
+    const reader = node.createAccount();
+    const adminInvite = node.createAccount();
+    const writerInvite = node.createAccount();
+    const readerInvite = node.createAccount();
+
+    group.addMember(writer, "writer");
+    group.addMember(reader, "reader");
+    group.addMember(adminInvite, "adminInvite");
+    group.addMember(writerInvite, "writerInvite");
+    group.addMember(readerInvite, "readerInvite");
+
+    const groupAsWriter = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                writer,
+                Crypto.newRandomSessionID(writer.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsWriter.set(`parent_${parentGroup.id}`, "extend", "trusting");
+    expect(groupAsWriter.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+    const groupAsReader = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                reader,
+                Crypto.newRandomSessionID(reader.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsReader.set(`parent_${parentGroup.id}`, "extend", "trusting");
+    expect(groupAsReader.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+    const groupAsAdminInvite = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                adminInvite,
+                Crypto.newRandomSessionID(adminInvite.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsAdminInvite.set(`parent_${parentGroup.id}`, "extend", "trusting");
+    expect(groupAsAdminInvite.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+    const groupAsWriterInvite = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                writerInvite,
+                Crypto.newRandomSessionID(writerInvite.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsWriterInvite.set(`parent_${parentGroup.id}`, "extend", "trusting");
+    expect(groupAsWriterInvite.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+    const groupAsReaderInvite = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                readerInvite,
+                Crypto.newRandomSessionID(readerInvite.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsReaderInvite.set(`parent_${parentGroup.id}`, "extend", "trusting");
+    expect(groupAsReaderInvite.get(`parent_${parentGroup.id}`)).toBeUndefined();
+});
+
+test("Admins can set child extensions", () => {
+    const {group, node} = newGroupHighLevel();
+    const childGroup = node.createGroup();
+
+    group.set(`child_${childGroup.id}`, "extend", "trusting");
+    expect(group.get(`child_${childGroup.id}`)).toEqual("extend");
+});
+
+test("Writers, readers and invitees can not set child extensions", () => {
+    const {group, node} = newGroupHighLevel();
+    const childGroup = node.createGroup();
+
+    const writer = node.createAccount();
+    const reader = node.createAccount();
+    const adminInvite = node.createAccount();
+    const writerInvite = node.createAccount();
+    const readerInvite = node.createAccount();
+
+    group.addMember(writer, "writer");
+    group.addMember(reader, "reader");
+    group.addMember(adminInvite, "adminInvite");
+    group.addMember(writerInvite, "writerInvite");
+    group.addMember(readerInvite, "readerInvite");
+
+    const groupAsWriter = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                writer,
+                Crypto.newRandomSessionID(writer.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsWriter.set(`child_${childGroup.id}`, "extend", "trusting");
+    expect(groupAsWriter.get(`child_${childGroup.id}`)).toBeUndefined();
+
+    const groupAsReader = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                reader,
+                Crypto.newRandomSessionID(reader.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsReader.set(`child_${childGroup.id}`, "extend", "trusting");
+    expect(groupAsReader.get(`child_${childGroup.id}`)).toBeUndefined();
+
+    const groupAsAdminInvite = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                adminInvite,
+                Crypto.newRandomSessionID(adminInvite.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsAdminInvite.set(`child_${childGroup.id}`, "extend", "trusting");
+    expect(groupAsAdminInvite.get(`child_${childGroup.id}`)).toBeUndefined();
+
+    const groupAsWriterInvite = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                writerInvite,
+                Crypto.newRandomSessionID(writerInvite.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsWriterInvite.set(`child_${childGroup.id}`, "extend", "trusting");
+    expect(groupAsWriterInvite.get(`child_${childGroup.id}`)).toBeUndefined();
+
+    const groupAsReaderInvite = expectGroup(
+        group.core
+            .testWithDifferentAccount(
+                readerInvite,
+                Crypto.newRandomSessionID(readerInvite.currentAgentID()._unsafeUnwrap()),
+            )
+            .getCurrentContent(),
+    );
+
+    groupAsReaderInvite.set(`child_${childGroup.id}`, "extend", "trusting");
+    expect(groupAsReaderInvite.get(`child_${childGroup.id}`)).toBeUndefined();
+});
