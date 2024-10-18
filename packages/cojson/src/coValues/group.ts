@@ -57,12 +57,16 @@ export class RawGroup<
      * @category 1. Role reading
      */
     roleOf(accountID: RawAccountID): Role | undefined {
-        return this.roleOfInternal(accountID);
+        return this.roleOfInternal(accountID)?.role;
     }
 
     /** @internal */
-    roleOfInternal(accountID: RawAccountID | AgentID): Role | undefined {
-        return this.get(accountID);
+    roleOfInternal(accountID: RawAccountID | AgentID | typeof EVERYONE): {role: Role, via: CoID<RawGroup> | undefined} | undefined {
+        const value = this.get(accountID);
+        if (!value || value === "revoked") {
+            return undefined;
+        }
+        return { role: value, via: undefined };
     }
 
     /**
@@ -71,7 +75,7 @@ export class RawGroup<
      * @category 1. Role reading
      */
     myRole(): Role | undefined {
-        return this.roleOfInternal(this.core.node.account.id);
+        return this.roleOfInternal(this.core.node.account.id)?.role;
     }
 
     /**

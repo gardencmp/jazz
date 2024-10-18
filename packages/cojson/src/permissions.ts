@@ -66,8 +66,8 @@ export function determineValidTransactions(
                         }
 
                         const transactorRoleAtTxTime =
-                            groupAtTime.get(effectiveTransactor) ||
-                            groupAtTime.get(EVERYONE);
+                            groupAtTime.roleOfInternal(effectiveTransactor)?.role ||
+                            groupAtTime.roleOfInternal(EVERYONE)?.role;
 
                         return (
                             transactorRoleAtTxTime === "admin" ||
