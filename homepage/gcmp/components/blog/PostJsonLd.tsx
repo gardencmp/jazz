@@ -1,21 +1,31 @@
-import { Post } from "@/interfaces/blogPost";
-
-export function PostJsonLd({ post }: { post: Post }) {
+export function PostJsonLd({
+    title,
+    image,
+    author,
+    datePublished,
+    description,
+}: {
+    title: string;
+    image: string;
+    author: string;
+    datePublished: string;
+    description: string;
+}) {
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "Article",
-        headline: post.title,
-        image: post.coverImage,
+        headline: title,
+        image,
         author: {
             "@type": "Person",
-            name: post.author.name,
+            name: author,
         },
         publisher: {
             "@type": "Organization",
             name: "Garden Computing",
         },
-        datePublished: post.date,
-        description: post.excerpt,
+        datePublished,
+        description,
     };
 
     return (

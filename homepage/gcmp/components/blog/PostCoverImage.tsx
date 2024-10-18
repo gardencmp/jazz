@@ -1,22 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { clsx } from "clsx";
-import { Post } from "@/interfaces/blogPost";
 
 const PostCoverImage = ({
-    post,
-    className = "",
-    linkToPost,
+    src,
+    title,
+    slug,
+    alt = "",
+    className,
 }: {
-    post: Post;
+    src: string;
+    title: string;
+    slug?: string;
+    alt?: string;
     className?: string;
-    linkToPost?: boolean;
 }) => {
-    const { title, coverImage, slug } = post;
     const image = (
         <Image
-            alt=""
-            src={coverImage}
+            alt={alt}
+            src={src}
             className={clsx(className, "w-full")}
             width={1300}
             height={630}
@@ -24,7 +26,7 @@ const PostCoverImage = ({
     );
     return (
         <div className={className}>
-            {linkToPost ? (
+            {slug ? (
                 <Link
                     className={className}
                     href={`/news/${slug}`}

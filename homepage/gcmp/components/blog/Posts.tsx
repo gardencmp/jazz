@@ -7,23 +7,25 @@ export function Posts() {
     return (
         <div className="grid grid-cols-3 gap-8">
             {posts.map((post) => (
-                <div className="flex flex-col gap-2" key={post.slug}>
+                <div className="flex flex-col gap-2" key={post.meta.slug}>
                     <PostCoverImage
-                        post={post}
-                        linkToPost
+                        src={post.meta.coverImage}
+                        title={post.meta.title}
+                        slug={post.meta.slug}
                         className="mb-1.5 rounded-lg"
                     />
                     <Link
-                        href={`/news/${post.slug}`}
+                        href={`/news/${post.meta.slug}`}
                         className="text-lg font-medium text-display text-stone-900 dark:text-white"
                     >
-                        {post.title}
+                        {post.meta.title}
                     </Link>
                     <p className="line-clamp-3 leading-relaxed text-ellipsis text-sm text-stone-900 dark:text-stone-400">
-                        {post.excerpt}
+                        {post.meta.excerpt}
                     </p>
                     <div className="flex text-sm items-center">
-                        {post.author.name} • <FormattedDate date={post.date} />
+                        {post.meta.author.name} •{" "}
+                        <FormattedDate date={post.meta.date} />
                     </div>
                 </div>
             ))}

@@ -15,11 +15,18 @@ export default async function Post({ params }: Params) {
         return notFound();
     }
 
-    const { title, coverImage, date, author } = post;
+    const { title, coverImage, date, author, excerpt } = post.meta;
+    const content = post.default({});
 
     return (
         <>
-            <PostJsonLd post={post} />
+            <PostJsonLd
+                title={title}
+                image={coverImage}
+                author={author.name}
+                datePublished={date}
+                description={excerpt}
+            />
             <article className="container max-w-3xl flex flex-col gap-8 py-8 lg:py-16 lg:gap-12">
                 <div className="flex flex-col gap-2">
                     <H1>{title}</H1>
@@ -28,9 +35,9 @@ export default async function Post({ params }: Params) {
                         <Image
                             width={100}
                             height={100}
-                            src={author.picture}
+                            src={author.image}
                             className="size-12 rounded-full"
-                            alt={author.name}
+                            alt=""
                         />
                         <div>
                             <p className="text-stone-900 dark:text-white">
@@ -43,9 +50,9 @@ export default async function Post({ params }: Params) {
                     </div>
                 </div>
 
-                <PostCoverImage post={post} />
+                <PostCoverImage src={coverImage} title={title} />
 
-                <Prose>{post.content}</Prose>
+                <Prose>{content}</Prose>
             </article>
         </>
     );
@@ -64,7 +71,7 @@ export function generateMetadata({ params }: Params): Metadata {
         return notFound();
     }
 
-    const { title, excerpt, coverImage } = post;
+    const { title, excerpt, coverImage } = post.meta;
 
     return {
         title,
@@ -78,6 +85,6 @@ export function generateMetadata({ params }: Params): Metadata {
 
 export async function generateStaticParams() {
     return posts.map((post) => ({
-        slug: post.slug,
+        slug: post.meta.slug,
     }));
 }
