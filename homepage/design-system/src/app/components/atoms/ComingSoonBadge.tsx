@@ -10,7 +10,7 @@ export function ComingSoonBadge({ when = "soon" }: { when?: string }) {
                 "text-[0.6rem]",
                 "px-1 py-0.5",
                 "rounded-xl",
-                "align-text-top"
+                "align-text-top",
             )}
         >
             Coming&nbsp;{when}

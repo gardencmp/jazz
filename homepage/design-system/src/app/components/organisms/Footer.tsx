@@ -74,7 +74,7 @@ function FooterLink({
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
-                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none"
+                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
             )}
             onClick={onClick}
             target={newTab ? "_blank" : undefined}

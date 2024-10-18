@@ -5,7 +5,7 @@ import { H2 } from "../../components/atoms/Headings";
 export function GappedGrid({
     children,
     className,
-    title
+    title,
 }: {
     children: ReactNode;
     className?: string;
@@ -16,7 +16,7 @@ export function GappedGrid({
             className={clsx(
                 "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4",
                 "items-stretch",
-                className
+                className,
             )}
         >
             {title && <H2 className="col-span-full">{title}</H2>}

@@ -11,7 +11,7 @@ export function Nav({
     mainLogo,
     items,
     docNav,
-    cta
+    cta,
 }: {
     mainLogo: ReactNode;
     items: {
@@ -43,8 +43,8 @@ export function Nav({
                         "bg-white dark:bg-stone-950 border-b max-sm:border-t border-stone-200 dark:border-stone-900",
                         "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
                         "z-50",
-                        menuOpen ? "h-[100dvh]" : "h-16"
-                    )
+                        menuOpen ? "h-[100dvh]" : "h-16",
+                    ),
                 ].join(" ")}
             >
                 <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
@@ -113,7 +113,10 @@ export function Nav({
                 )}
             >
                 <div
-                    className={clsx(menuOpen ? "block" : "hidden", " px-2 pb-2")}
+                    className={clsx(
+                        menuOpen ? "block" : "hidden",
+                        " px-2 pb-2",
+                    )}
                 >
                     <div className="flex items-center w-full border-b border-stone-100 dark:border-stone-900">
                         <NavLinkLogo
