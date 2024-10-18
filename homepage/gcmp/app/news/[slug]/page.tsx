@@ -1,14 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAllPosts, getPostBySlug } from "@/lib/posts";
+import { getPostBySlug, posts } from "@/lib/posts";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import { PostHeader } from "@/components/blog/PostHeader";
-import Avatar from "@/components/Avatar";
 import { H1 } from "gcmp-design-system/src/app/components/atoms/Headings";
-import DateFormatter from "@/components/DateFormatter";
 import PostCoverImage from "@/components/blog/PostCoverImage";
-import { formatDate } from "@/lib/date";
 import Image from "next/image";
+import { FormattedDate } from "@/components/FormattedDate";
 
 export default async function Post({ params }: Params) {
     const post = getPostBySlug(params.slug);
@@ -18,7 +15,6 @@ export default async function Post({ params }: Params) {
     }
 
     const { title, coverImage, date, author } = post;
-    const formattedDate = formatDate(date);
 
     return (
         <article className="container max-w-3xl flex flex-col gap-8 py-8 lg:py-16 lg:gap-12">
@@ -38,13 +34,13 @@ export default async function Post({ params }: Params) {
                             {author.name}
                         </p>
                         <p className="text-sm text-stone-600 dark:text-stone-400">
-                            {formattedDate}
+                            <FormattedDate date={date} />
                         </p>
                     </div>
                 </div>
             </div>
 
-            <PostCoverImage title={title} src={coverImage} />
+            <PostCoverImage post={post} />
 
             <Prose>{post.content}</Prose>
         </article>
@@ -76,8 +72,6 @@ export function generateMetadata({ params }: Params): Metadata {
 }
 
 export async function generateStaticParams() {
-    const posts = getAllPosts();
-
     return posts.map((post) => ({
         slug: post.slug,
     }));

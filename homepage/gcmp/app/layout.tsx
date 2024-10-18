@@ -39,11 +39,12 @@ const commitMono = localFont({
     display: "swap",
 });
 
+
 const metaTags = {
-    title: "jazz - Build your next app with sync",
+    title: "garden computing",
     description:
-        "Jazz is an open-source framework for building local-first apps, removing 90% of the backend and infrastructure complexity.",
-    url: "https://jazz.tools",
+      "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
+    url: "https://gcmp.io",
 };
 
 export const metadata: Metadata = {
