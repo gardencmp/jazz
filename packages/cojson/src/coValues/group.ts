@@ -9,6 +9,7 @@ import { RawAccount, RawAccountID, ControlledAccountOrAgent } from "./account.js
 import { Role } from "../permissions.js";
 import { base58 } from "@scure/base";
 import { CoValueUniqueness } from "../coValueCore.js";
+import { expectGroup } from "../typeUtils/expectGroup.js";
 
 export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
@@ -63,12 +64,53 @@ export class RawGroup<
     }
 
     /** @internal */
-    roleOfInternal(accountID: RawAccountID | AgentID | typeof EVERYONE): {role: Role, via: CoID<RawGroup> | undefined} | undefined {
-        const value = this.get(accountID);
-        if (!value || value === "revoked") {
+    roleOfInternal(
+        accountID: RawAccountID | AgentID | typeof EVERYONE,
+    ): { role: Role; via: CoID<RawGroup> | undefined } | undefined {
+        const roleHere = this.get(accountID);
+        if (roleHere === "revoked") {
             return undefined;
         }
-        return { role: value, via: undefined };
+
+        let roleInfo:
+            | {
+                  role: Exclude<Role, "revoked">;
+                  via: CoID<RawGroup> | undefined;
+              }
+            | undefined = roleHere && { role: roleHere, via: undefined };
+
+        const parentGroups = this.getParentGroups();
+
+        for (const parentGroup of parentGroups) {
+            const roleInParent = parentGroup.roleOfInternal(accountID);
+
+            if (
+                roleInParent &&
+                roleInParent.role !== "revoked" &&
+                isMorePermissiveAndShouldInherit(
+                    roleInParent.role,
+                    roleInfo?.role,
+                )
+            ) {
+                roleInfo = { role: roleInParent.role, via: parentGroup.id };
+            }
+        }
+
+        return roleInfo;
+    }
+
+    getParentGroups(): RawGroup[] {
+        return (
+            this.keys().filter((key) =>
+                key.startsWith("parent_"),
+            ) as `parent_${CoID<RawGroup>}`[]
+        ).map((parentKey) => {
+            const parent = this.core.node.expectCoValueLoaded(
+                parentKey.slice("parent_".length) as CoID<RawGroup>,
+                "Expected parent group to be loaded",
+            );
+            return expectGroup(parent.getCurrentContent());
+        });
     }
 
     /**
@@ -181,10 +223,12 @@ export class RawGroup<
         const newReadKey = this.core.crypto.newRandomKeySecret();
 
         for (const readerID of currentlyPermittedReaders) {
-            const reader = this.core.node.resolveAccountAgent(
-                readerID,
-                "Expected to know currently permitted reader",
-            )._unsafeUnwrap({ withStackTrace: true });
+            const reader = this.core.node
+                .resolveAccountAgent(
+                    readerID,
+                    "Expected to know currently permitted reader",
+                )
+                ._unsafeUnwrap({ withStackTrace: true });
 
             this.set(
                 `${newReadKey.id}_for_${readerID}`,
@@ -262,7 +306,7 @@ export class RawGroup<
         init?: M["_shape"],
         meta?: M["headerMeta"],
         initPrivacy: "trusting" | "private" = "private",
-        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
     ): M {
         const map = this.core.node
             .createCoValue({
@@ -272,7 +316,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...uniqueness
+                ...uniqueness,
             })
             .getCurrentContent() as M;
 
@@ -295,7 +339,7 @@ export class RawGroup<
         init?: L["_item"][],
         meta?: L["headerMeta"],
         initPrivacy: "trusting" | "private" = "private",
-        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
     ): L {
         const list = this.core.node
             .createCoValue({
@@ -305,7 +349,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...uniqueness
+                ...uniqueness,
             })
             .getCurrentContent() as L;
 
@@ -319,7 +363,10 @@ export class RawGroup<
     }
 
     /** @category 3. Value creation */
-    createStream<C extends RawCoStream>(meta?: C["headerMeta"], uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()): C {
+    createStream<C extends RawCoStream>(
+        meta?: C["headerMeta"],
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
+    ): C {
         return this.core.node
             .createCoValue({
                 type: "costream",
@@ -328,7 +375,7 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta || null,
-                ...uniqueness
+                ...uniqueness,
             })
             .getCurrentContent() as C;
     }
@@ -336,7 +383,7 @@ export class RawGroup<
     /** @category 3. Value creation */
     createBinaryStream<C extends RawBinaryCoStream>(
         meta: C["headerMeta"] = { type: "binary" },
-        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique()
+        uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
     ): C {
         return this.core.node
             .createCoValue({
@@ -346,10 +393,31 @@ export class RawGroup<
                     group: this.id,
                 },
                 meta: meta,
-                ...uniqueness
+                ...uniqueness,
             })
             .getCurrentContent() as C;
     }
+}
+
+function isMorePermissiveAndShouldInherit(roleInParent: Role, roleInChild: Exclude<Role, "revoked"> | undefined) {
+    // invites should never be inherited
+    if (roleInParent === "adminInvite" || roleInParent === "writerInvite" || roleInParent === "readerInvite") {
+        return false;
+    }
+
+    if (roleInParent === "admin") {
+        return !roleInChild || roleInChild !== "admin";
+    }
+
+    if (roleInParent === "writer") {
+        return !roleInChild || roleInChild === "reader";
+    }
+
+    if (roleInParent === "reader") {
+        return !roleInChild;
+    }
+
+    return false;
 }
 
 export type InviteSecret = `inviteSecret_z${string}`;

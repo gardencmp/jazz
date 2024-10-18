@@ -1943,3 +1943,39 @@ test("Writers, readers and invitees can not set child extensions", () => {
     groupAsReaderInvite.set(`child_${childGroup.id}`, "extend", "trusting");
     expect(groupAsReaderInvite.get(`child_${childGroup.id}`)).toBeUndefined();
 });
+
+test("Member roles are inherited by child groups (except invites)", () => {
+    const {group, node, admin} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+    const writer = node.createAccount();
+    const reader = node.createAccount();
+    const adminInvite = node.createAccount();
+    const writerInvite = node.createAccount();
+    const readerInvite = node.createAccount();
+
+    parentGroup.addMember(writer, "writer");
+    parentGroup.addMember(reader, "reader");
+    parentGroup.addMember(adminInvite, "adminInvite");
+    parentGroup.addMember(writerInvite, "writerInvite");
+    parentGroup.addMember(readerInvite, "readerInvite");
+
+    expect(group.roleOfInternal(admin.id)).toEqual({role: "admin", via: undefined});
+
+    expect(group.roleOfInternal(writer.id)).toEqual({role: "writer", via: parentGroup.id});
+    expect(group.roleOf(writer.id)).toEqual("writer");
+
+    expect(group.roleOfInternal(reader.id)).toEqual({role: "reader", via: parentGroup.id});
+    expect(group.roleOf(reader.id)).toEqual("reader");
+
+    expect(group.roleOfInternal(adminInvite.id)).toEqual(undefined);
+    expect(group.roleOf(adminInvite.id)).toEqual(undefined);
+
+    expect(group.roleOfInternal(writerInvite.id)).toEqual(undefined);
+    expect(group.roleOf(writerInvite.id)).toEqual(undefined);
+
+    expect(group.roleOfInternal(readerInvite.id)).toEqual(undefined);
+    expect(group.roleOf(readerInvite.id)).toEqual(undefined);
+});
