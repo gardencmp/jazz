@@ -5,6 +5,7 @@ import { useState } from "react";
 import { subscribe } from "@/app/actions/resend";
 import { ErrorResponse } from "resend";
 import { CheckIcon } from "lucide-react";
+import { Input } from "gcmp-design-system/src/app/components/molecules/Input";
 
 export function NewsletterForm() {
     const [email, setEmail] = useState("");
@@ -37,11 +38,12 @@ export function NewsletterForm() {
     }
 
     return (
-        <form action="" onSubmit={submit} className="flex gap-x-4 max-w-md">
-            <label htmlFor="email-address" className="sr-only">
-                Email address
-            </label>
-            <input
+        <form
+            action=""
+            onSubmit={submit}
+            className="flex gap-x-4 w-120 max-w-xl"
+        >
+            <Input
                 id="email-address"
                 name="email"
                 type="email"
@@ -50,7 +52,8 @@ export function NewsletterForm() {
                 required
                 placeholder="Enter your email"
                 autoComplete="email"
-                className="min-w-0 flex-auto rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="flex-1 label:sr-only"
+                label="Email address"
             />
             <Button type="submit" variant="secondary">
                 Subscribe

@@ -2,6 +2,7 @@ import harmonyPalette from "@evilmartians/harmony/tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindCSSAnimate from "tailwindcss-animate";
 const colors = require("tailwindcss/colors")
+const plugin = require("tailwindcss/plugin")
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -120,6 +121,10 @@ const config = {
             },
         },
     },
-    plugins: [tailwindCSSAnimate, typography()],
+    plugins: [
+        tailwindCSSAnimate,
+        typography(),
+        plugin(({ addVariant }) => addVariant("label", "& :is(label)")),
+    ],
 };
 export default config;
