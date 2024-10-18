@@ -39,11 +39,10 @@ const commitMono = localFont({
     display: "swap",
 });
 
-
 const metaTags = {
     title: "garden computing",
     description:
-      "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
+        "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
     url: "https://gcmp.io",
 };
 

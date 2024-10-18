@@ -6,6 +6,7 @@ import { H1 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import PostCoverImage from "@/components/blog/PostCoverImage";
 import Image from "next/image";
 import { FormattedDate } from "@/components/FormattedDate";
+import { PostJsonLd } from "@/components/blog/PostJsonLd";
 
 export default async function Post({ params }: Params) {
     const post = getPostBySlug(params.slug);
@@ -17,33 +18,36 @@ export default async function Post({ params }: Params) {
     const { title, coverImage, date, author } = post;
 
     return (
-        <article className="container max-w-3xl flex flex-col gap-8 py-8 lg:py-16 lg:gap-12">
-            <div className="flex flex-col gap-2">
-                <H1>{title}</H1>
+        <>
+            <PostJsonLd post={post} />
+            <article className="container max-w-3xl flex flex-col gap-8 py-8 lg:py-16 lg:gap-12">
+                <div className="flex flex-col gap-2">
+                    <H1>{title}</H1>
 
-                <div className="flex items-center gap-3">
-                    <Image
-                        width={100}
-                        height={100}
-                        src={author.picture}
-                        className="size-12 rounded-full"
-                        alt={author.name}
-                    />
-                    <div>
-                        <p className="text-stone-900 dark:text-white">
-                            {author.name}
-                        </p>
-                        <p className="text-sm text-stone-600 dark:text-stone-400">
-                            <FormattedDate date={date} />
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <Image
+                            width={100}
+                            height={100}
+                            src={author.picture}
+                            className="size-12 rounded-full"
+                            alt={author.name}
+                        />
+                        <div>
+                            <p className="text-stone-900 dark:text-white">
+                                {author.name}
+                            </p>
+                            <p className="text-sm text-stone-600 dark:text-stone-400">
+                                <FormattedDate date={date} />
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <PostCoverImage post={post} />
+                <PostCoverImage post={post} />
 
-            <Prose>{post.content}</Prose>
-        </article>
+                <Prose>{post.content}</Prose>
+            </article>
+        </>
     );
 }
 
@@ -60,13 +64,14 @@ export function generateMetadata({ params }: Params): Metadata {
         return notFound();
     }
 
-    const title = `${post.title}`;
+    const { title, excerpt, coverImage } = post;
 
     return {
         title,
+        description: excerpt,
         openGraph: {
             title,
-            images: [post.coverImage],
+            images: [coverImage],
         },
     };
 }
