@@ -7,11 +7,11 @@ import {
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import { ChangeEvent, useState } from "react";
 import { Button } from "./ui/button";
 import { useAccount, useCoState } from "@/2_main";
-import { addTrackToPlaylist, updateMusicTrackTitle } from "@/4_actions";
+import { addTrackToPlaylist } from "@/4_actions";
 import { ID } from "jazz-tools";
+import { MusicTrackTitleInput } from "./MusicTrackTitleInput";
 
 export function MusicTrackRow({
     trackId,
@@ -27,12 +27,6 @@ export function MusicTrackRow({
     showAddToPlaylist: boolean;
 }) {
     const track = useCoState(MusicTrack, trackId);
-    const [isEditing, setIsEditing] = useState(false);
-    const [localTrackTitle, setLocalTrackTitle] = useState("");
-
-    function handleTrackTitleChange(evt: ChangeEvent<HTMLInputElement>) {
-        setLocalTrackTitle(evt.target.value);
-    }
 
     const { me } = useAccount({
         root: {
@@ -51,19 +45,6 @@ export function MusicTrackRow({
         if (!track) return;
         addTrackToPlaylist(playlist, track, me);
     }
-
-    function handleFoucsIn() {
-        setIsEditing(true);
-        setLocalTrackTitle(track?.title ?? "");
-    }
-
-    function handleFocusOut() {
-        setIsEditing(false);
-        setLocalTrackTitle("");
-        track && updateMusicTrackTitle(track, localTrackTitle);
-    }
-
-    const inputValue = isEditing ? localTrackTitle : track?.title ?? "";
 
     return (
         <li
@@ -88,23 +69,7 @@ export function MusicTrackRow({
                     "▶️"
                 )}
             </button>
-            <div
-                className="relative flex-grow"
-                onClick={(evt) => evt.stopPropagation()}
-            >
-                <input
-                    className="absolute w-full h-full left-0 bg-transparent px-1"
-                    value={inputValue}
-                    onChange={handleTrackTitleChange}
-                    spellCheck="false"
-                    onFocus={handleFoucsIn}
-                    onBlur={handleFocusOut}
-                    aria-label={`Edit track title: ${track?.title}`}
-                />
-                <span className="opacity-0 px-1 w-fit pointer-events-none whitespace-pre">
-                    {inputValue}
-                </span>
-            </div>
+            <MusicTrackTitleInput trackId={trackId} />
             <div onClick={(evt) => evt.stopPropagation()}>
                 {showAddToPlaylist && (
                     <DropdownMenu>
