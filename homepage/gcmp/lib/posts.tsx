@@ -11,13 +11,13 @@ const authors = {
 
 const posts: Array<Post> = [
     {
-        title: "Lorem Ipsum",
+        title: "Introducing Jazz",
         author: authors.anselm,
         slug: "test",
         coverImage: "/social-image.png",
         date: new Date(),
         excerpt:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida vel urna sit amet lacinia. Morbi euismod mi ac lacus feugiat, vel sollicitudin urna faucibus. ",
+            "Jazz is a framework for local-first data/permissions. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida vel urna sit amet lacinia. Morbi euismod mi ac lacus feugiat, vel sollicitudin urna faucibus. ",
         content: <Test />,
     },
 ];

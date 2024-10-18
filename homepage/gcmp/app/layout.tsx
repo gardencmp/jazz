@@ -1,7 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeProvider";
+
 import { Inter, Manrope } from "next/font/google";
+import localFont from "next/font/local";
+
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { GcmpNav } from "@/components/Nav";
@@ -19,11 +22,28 @@ const inter = Inter({
     display: "swap",
 });
 
+const commitMono = localFont({
+    src: [
+        {
+            path: "../../design-system/fonts/CommitMono-Regular.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../../design-system/fonts/CommitMono-Regular.woff",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-commit-mono",
+    display: "swap",
+});
+
 const metaTags = {
-    title: "garden computing",
+    title: "jazz - Build your next app with sync",
     description:
-        "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
-    url: "https://gcmp.io",
+        "Jazz is an open-source framework for building local-first apps, removing 90% of the backend and infrastructure complexity.",
+    url: "https://jazz.tools",
 };
 
 export const metadata: Metadata = {
@@ -60,8 +80,9 @@ export default function RootLayout({
             <body
                 className={[
                     manrope.variable,
+                    commitMono.variable,
                     inter.className,
-                    "flex min-h-screen flex-col items-center",
+                    "flex flex-col items-center",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
