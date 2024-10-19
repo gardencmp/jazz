@@ -761,8 +761,8 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     expect(groupTellKnownStateMsg).toMatchObject(groupStateEx(group));
 
     expect(
-        node2.syncManager.peers["test1"]!.optimisticKnownStates[group.core.id],
-    ).toBeDefined();
+        node2.syncManager.peers["test1"]!.knownStates.has(group.core.id),
+    ).toBe(true);
 
     // await inTx1.push(adminTellKnownStateMsg);
     await inTx1.push(groupTellKnownStateMsg);

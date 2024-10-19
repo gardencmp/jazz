@@ -1,16 +1,21 @@
 import { RawCoID } from "./ids.js";
+import { PeerKnownStates } from "./PeerKnownStates.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import {
     PriorityBasedMessageQueue,
     QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
-import { CoValueKnownState, Peer, SyncMessage } from "./sync.js";
+import {
+    Peer,
+    SyncMessage,
+} from "./sync.js";
 
 export class PeerState {
     constructor(private peer: Peer) {}
 
-    readonly optimisticKnownStates: { [id: RawCoID]: CoValueKnownState } = {};
+    public knownStates = new PeerKnownStates();
     readonly toldKnownState: Set<RawCoID> = new Set();
+
     get id() {
         return this.peer.id;
     }
@@ -43,7 +48,6 @@ export class PeerState {
         }
 
         this.processing = true;
-
 
         let entry: QueueEntry | undefined;
         while ((entry = this.queue.pull())) {

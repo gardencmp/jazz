@@ -1,15 +1,6 @@
 import { CoValueCore } from "./coValueCore.js";
 import { PeerID } from "./sync.js";
-
-function createResolvablePromise<T>() {
-    let resolve!: (value: T) => void;
-
-    const promise = new Promise<T>((res) => {
-        resolve = res;
-    });
-
-    return { promise, resolve };
-}
+import { createResolvablePromise } from "./utils.js";
 
 class CoValueUnknownState {
     type = "unknown" as const;
