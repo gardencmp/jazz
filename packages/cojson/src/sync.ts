@@ -195,8 +195,8 @@ export class SyncManager {
             await this.subscribeToIncludingDependencies(id, peer);
         }
 
-        if (!peer.knownStates.hasBeenSent(id)) {
-            peer.knownStates.trackSent(id);
+        if (!peer.toldKnownState.has(id)) {
+            peer.toldKnownState.add(id);
             this.trySendToPeer(peer, {
                 action: "load",
                 ...coValue.knownState(),
@@ -225,7 +225,7 @@ export class SyncManager {
                 ),
         );
 
-        if (!peer.knownStates.hasBeenSent(id)) {
+        if (!peer.toldKnownState.has(id)) {
             this.trySendToPeer(peer, {
                 action: "known",
                 asDependencyOf,
@@ -234,7 +234,7 @@ export class SyncManager {
                 console.error("Error sending known state", e);
             });
 
-            peer.knownStates.trackSent(id);
+            peer.toldKnownState.add(id);
         }
     }
 
@@ -249,15 +249,12 @@ export class SyncManager {
                 ),
         );
 
-        const maybeKnownState = peer.knownStates.get(id);
-
         const newContentPieces = coValue.newContentSince(
-            maybeKnownState?.get(),
+            peer.knownStates.get(id),
         );
 
         if (newContentPieces) {
-            const knownState = peer.knownStates.get(id, true);
-            const optimisticKnownStateBefore = knownState.get();
+            const optimisticKnownStateBefore = peer.knownStates.get(id);
 
             const sendPieces = async () => {
                 let lastYield = performance.now();
@@ -284,11 +281,19 @@ export class SyncManager {
 
             sendPieces().catch((e) => {
                 console.error("Error sending new content piece, retrying", e);
-                knownState.set(optimisticKnownStateBefore);
+                peer.knownStates.dispatch({
+                    type: "SET",
+                    id,
+                    value: optimisticKnownStateBefore ?? emptyKnownState(id),
+                });
                 return this.sendNewContentIncludingDependencies(id, peer);
             });
 
-            knownState.combineWith(coValue.knownState());
+            peer.knownStates.dispatch({
+                type: "COMBINE_WITH",
+                id,
+                value: coValue.knownState(),
+            });
         }
     }
 
@@ -304,7 +309,10 @@ export class SyncManager {
                     // console.log("subscribing to after peer added", id, peer.id)
                     await this.subscribeToIncludingDependencies(id, peerState);
 
-                    peerState.knownStates.setAsEmpty(id);
+                    peerState.knownStates.dispatch({
+                        type: "SET_AS_EMPTY",
+                        id,
+                    });
                 }
             };
             void initialSync();
@@ -368,7 +376,12 @@ export class SyncManager {
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
-        peer.knownStates.set(msg.id, knownStateIn(msg));
+        peer.knownStates.dispatch({
+            type: "SET",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
+
         let entry = this.local.coValues[msg.id];
 
         if (!entry) {
@@ -418,8 +431,12 @@ export class SyncManager {
             const loaded = await entry.state.ready;
 
             if (loaded === "unavailable") {
-                peer.knownStates.set(msg.id, knownStateIn(msg));
-                peer.knownStates.trackSent(msg.id);
+                peer.knownStates.dispatch({
+                    type: "SET",
+                    id: msg.id,
+                    value: knownStateIn(msg),
+                });
+                peer.toldKnownState.add(msg.id);
 
                 this.trySendToPeer(peer, {
                     action: "known",
@@ -441,9 +458,11 @@ export class SyncManager {
     async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
         let entry = this.local.coValues[msg.id];
 
-        const knownState = peer.knownStates.get(msg.id, true);
-
-        knownState.combineWith(knownStateIn(msg));
+        peer.knownStates.dispatch({
+            type: "COMBINE_WITH",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
 
         if (!entry) {
             if (msg.asDependencyOf) {
@@ -470,7 +489,7 @@ export class SyncManager {
         }
 
         if (entry.state.type === "unknown") {
-            const availableOnPeer = knownState.get().header;
+            const availableOnPeer = peer.knownStates.get(msg.id)?.header;
 
             if (!availableOnPeer) {
                 entry.dispatch({
@@ -496,15 +515,6 @@ export class SyncManager {
             return;
         }
 
-        const peerKnownState = peer.knownStates.get(msg.id);
-
-        if (!peerKnownState) {
-            console.error(
-                "Expected optimisticKnownState to be set for coValue we receive new content for",
-            );
-            return;
-        }
-
         let coValue: CoValueCore;
 
         if (entry.state.type === "unknown") {
@@ -513,7 +523,11 @@ export class SyncManager {
                 return;
             }
 
-            peerKnownState.updateHeader(true);
+            peer.knownStates.dispatch({
+                type: "UPDATE_HEADER",
+                id: msg.id,
+                header: true,
+            });
 
             coValue = new CoValueCore(msg.header, this.local);
 
@@ -579,14 +593,6 @@ export class SyncManager {
                 );
             }
 
-            // const theirTotalnTxs = Object.values(
-            //     peer.optimisticKnownStates[msg.id]?.sessions || {},
-            // ).reduce((sum, nTxs) => sum + nTxs, 0);
-            // const ourTotalnTxs = [...coValue.sessionLogs.values()].reduce(
-            //     (sum, session) => sum + session.transactions.length,
-            //     0,
-            // );
-
             if (result.isErr()) {
                 console.error(
                     "Failed to add transactions from",
@@ -602,11 +608,14 @@ export class SyncManager {
                 continue;
             }
 
-            peerKnownState.updateSessionCounter(
-                sessionID,
-                newContentForSession.after +
+            peer.knownStates.dispatch({
+                type: "UPDATE_SESSION_COUNTER",
+                id: msg.id,
+                sessionId: sessionID,
+                value:
+                    newContentForSession.after +
                     newContentForSession.newTransactions.length,
-            );
+            });
         }
 
         await this.syncCoValue(coValue);
@@ -623,7 +632,11 @@ export class SyncManager {
     }
 
     async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
-        peer.knownStates.set(msg.id, knownStateIn(msg));
+        peer.knownStates.dispatch({
+            type: "SET",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
 
         return this.sendNewContentIncludingDependencies(msg.id, peer);
     }
