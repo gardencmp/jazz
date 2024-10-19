@@ -27,8 +27,6 @@ describe("PeerState", () => {
         expect(peerState.priority).toBe(1);
         expect(peerState.crashOnClose).toBe(false);
         expect(peerState.closed).toBe(false);
-        expect(peerState.optimisticKnownStates).toEqual({});
-        expect(peerState.toldKnownState).toEqual(new Set());
     });
 
     test("should push outgoing message to peer", async () => {

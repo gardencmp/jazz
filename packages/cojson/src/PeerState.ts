@@ -1,16 +1,94 @@
-import { RawCoID } from "./ids.js";
+import { RawCoID, SessionID } from "./ids.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import {
     PriorityBasedMessageQueue,
     QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
-import { CoValueKnownState, Peer, SyncMessage } from "./sync.js";
+import { combinedKnownStates, CoValueKnownState, emptyKnownState, Peer, SyncMessage } from "./sync.js";
+
+
+class PeerCoValueKnownState {
+    constructor(public value: CoValueKnownState) {}
+
+    get() {
+        return this.value;
+    }
+
+    updateHeader(header: boolean) {
+        this.value.header = header;
+    }
+
+    combineWith(value: CoValueKnownState) {
+        this.value = combinedKnownStates(this.value, value);
+    }
+
+    set(value: CoValueKnownState) {
+        this.value = value;
+    }
+
+    updateSessionCounter(sessionId: SessionID, value: number) {
+        const currentValue = this.value.sessions[sessionId] || 0;
+        this.value.sessions[sessionId] = Math.max(currentValue, value);
+    }
+}
+
+class PeerKnownStates {
+    private coValues = new Map<RawCoID, PeerCoValueKnownState>();
+    private sent = new Set<RawCoID>();
+
+    constructor() {}
+
+    get(id: RawCoID, createIfMissing: true): PeerCoValueKnownState;
+    get(id: RawCoID, createIfMissing?: false): PeerCoValueKnownState | undefined;
+    get(id: RawCoID, createIfMissing = false) {
+        const entry = this.coValues.get(id);
+
+        if (createIfMissing && !entry) {
+            return this.setAsEmpty(id);
+        }
+
+        return entry;
+    }
+
+    has(id: RawCoID) {
+        return this.coValues.has(id);
+    }
+
+    set(id: RawCoID, value: CoValueKnownState) {
+        const previousEntry = this.get(id);
+
+        if (previousEntry) {
+            previousEntry.set(value);
+            return previousEntry;
+        }
+
+        const knownState = new PeerCoValueKnownState(value);
+
+        this.coValues.set(id, knownState);
+
+        return knownState;
+    }
+
+    setAsEmpty(id: RawCoID) {
+        return this.set(id, emptyKnownState(id));
+    }
+
+    hasBeenSent(id: RawCoID) {
+        return this.sent.has(id);
+    }
+
+    trackSent(id: RawCoID) {
+        this.sent.add(id);
+    }
+}
 
 export class PeerState {
     constructor(private peer: Peer) {}
 
-    readonly optimisticKnownStates: { [id: RawCoID]: CoValueKnownState } = {};
-    readonly toldKnownState: Set<RawCoID> = new Set();
+    public knownStates = new PeerKnownStates();
+
+    // readonly optimisticKnownStates: { [id: RawCoID]: CoValueKnownState } = {};
+    // readonly toldKnownState: Set<RawCoID> = new Set();
     get id() {
         return this.peer.id;
     }
