@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { NewsletterForm } from "@/components/NewsletterForm";
+import { Posts } from "@/components/blog/Posts";
 
 export const metadata = {
     title: "Blog",
@@ -33,6 +34,8 @@ export default function NewsPage() {
                     !
                 </p>
             </Prose>
+
+            <Posts />
         </div>
     );
 }
