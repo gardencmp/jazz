@@ -47,7 +47,7 @@ import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
-import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
@@ -226,13 +226,13 @@ export default function Home() {
             <Hero features={features} />
 
             <div className="bg-stone-100 border-y dark:bg-stone-925 py-8 lg:py-16 dark:border-stone-900">
-                <div className="container grid gap-8 lg:gap-12">
-                    <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                <div className="container grid gap-4 lg:gap-8">
+                    <H2 className="md:text-center">
                         Hard things are easy now.
-                    </h2>
+                    </H2>
                     <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
                         <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                            <div className="text-pretty leading-relaxed max-w-2xl space-y-2 md:text-lg md:space-y-4 md:leading-relaxed">
                                 <p>
                                     Ever notice how every stack just{" "}
                                     <span className="font-semibold text-stone-900 dark:text-white">
@@ -263,12 +263,12 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="hidden md:block relative pr-3 top-24">
+                        <div className="hidden md:block relative pr-3 top-16">
                             <ArrowDoodle className="w-full h-auto text-stone-300 dark:text-stone-800" />
                         </div>
 
                         <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                            <div className="text-pretty leading-relaxed max-w-2xl space-y-2 md:text-lg md:space-y-4 md:leading-relaxed">
                                 <p>
                                     Jazz provides a single new abstraction to do
                                     the whole job.
@@ -339,9 +339,9 @@ export default function Home() {
                     <blockquote className="mt-6 font-medium leading-8 text-stone-900 sm:text-lg">
                         <p>
                             “You don&apos;t have to think about deploying a
-                            database, SQL schemas, relations, and writing queries…
-                            Basically, if you know TypeScript, you know Jazz, and can ship
-                            an app. It&apos;s just so nice!”
+                            database, SQL schemas, relations, and writing
+                            queries… Basically, if you know TypeScript, you know
+                            Jazz, and can ship an app. It&apos;s just so nice!”
                         </p>
                     </blockquote>
                     <figcaption className="mt-6 flex items-center gap-x-6">
