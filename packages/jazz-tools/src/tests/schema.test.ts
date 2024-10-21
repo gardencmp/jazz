@@ -24,7 +24,7 @@ describe("co.json TypeScript validation", () => {
                     value: string;
                 };
             };
-        }
+        };
 
         class ValidNestedMap extends CoMap {
             data = co.json<NestedType>();
@@ -41,7 +41,7 @@ describe("co.json TypeScript validation", () => {
         type TypeWithOptional = {
             value: string;
             optional?: string | null;
-        }
+        };
 
         class ValidMap extends CoMap {
             data = co.json<TypeWithOptional>();

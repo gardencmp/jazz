@@ -5,12 +5,16 @@ import { usePlayState } from "./lib/audio/usePlayState";
 import { SidePanel } from "./components/SidePanel";
 import { FileUploadButton } from "./components/FileUploadButton";
 import { Button } from "./components/ui/button";
-import { createNewPlaylist, updatePlaylistTitle, uploadMusicTracks } from "./4_actions";
+import {
+    createNewPlaylist,
+    updatePlaylistTitle,
+    uploadMusicTracks,
+} from "./4_actions";
 import { useNavigate, useParams } from "react-router";
 import { ID } from "jazz-tools";
 import { Playlist } from "./1_schema";
 import { createInviteLink } from "jazz-react";
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
 
 export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     /**
@@ -27,7 +31,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     const navigate = useNavigate();
     const playState = usePlayState();
     const isPlaying = playState.value === "play";
-    const { toast } = useToast()
+    const { toast } = useToast();
 
     async function handleFileLoad(files: FileList) {
         if (!me) return;
@@ -127,10 +131,15 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                                         }
                                         isPlaying={
                                             mediaPlayer.activeTrackId ===
-                                                track.id && isActivePlaylist && isPlaying
+                                                track.id &&
+                                            isActivePlaylist &&
+                                            isPlaying
                                         }
                                         onClick={() => {
-                                            mediaPlayer.setActiveTrack(track, playlist);
+                                            mediaPlayer.setActiveTrack(
+                                                track,
+                                                playlist,
+                                            );
                                         }}
                                         showAddToPlaylist={isRootPlaylist}
                                     />

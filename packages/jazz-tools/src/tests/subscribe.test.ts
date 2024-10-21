@@ -170,18 +170,20 @@ describe("subscribeToCoValue", () => {
         const { me, meOnSecondPeer } = await setupAccount();
 
         const chatRoom = createChatRoom(me, "General");
-        const message = createMessage(me, "Hello Luigi, are you ready to save the princess?");
+        const message = createMessage(
+            me,
+            "Hello Luigi, are you ready to save the princess?",
+        );
         chatRoom.messages?.push(message);
 
-        const updateFn = vi.fn()
+        const updateFn = vi.fn();
 
         const unsubscribe = subscribeToCoValue(
             ChatRoom,
             chatRoom.id,
             meOnSecondPeer,
             {
-                messages: [{
-                }],
+                messages: [{}],
             },
             updateFn,
         );
@@ -200,30 +202,37 @@ describe("subscribeToCoValue", () => {
         await waitFor(() => {
             expect(updateFn).toHaveBeenCalled();
         });
-        
+
         const lastValue = updateFn.mock.lastCall[0];
-        expect(lastValue?.messages?.[0]?.text).toBe("Nevermind, she was gone to the supermarket");
+        expect(lastValue?.messages?.[0]?.text).toBe(
+            "Nevermind, she was gone to the supermarket",
+        );
     });
 
     it("should handle the updates as immutable changes", async () => {
         const { me, meOnSecondPeer } = await setupAccount();
 
         const chatRoom = createChatRoom(me, "General");
-        const message = createMessage(me, "Hello Luigi, are you ready to save the princess?");
+        const message = createMessage(
+            me,
+            "Hello Luigi, are you ready to save the princess?",
+        );
         const message2 = createMessage(me, "Let's go!");
         chatRoom.messages?.push(message);
         chatRoom.messages?.push(message2);
 
-        const updateFn = vi.fn()
+        const updateFn = vi.fn();
 
         const unsubscribe = subscribeToCoValue(
             ChatRoom,
             chatRoom.id,
             meOnSecondPeer,
             {
-                messages: [{
-                    reactions: [],
-                }],
+                messages: [
+                    {
+                        reactions: [],
+                    },
+                ],
             },
             updateFn,
         );
@@ -249,12 +258,14 @@ describe("subscribeToCoValue", () => {
         await waitFor(() => {
             expect(updateFn).toHaveBeenCalled();
         });
-        
+
         const lastValue = updateFn.mock.lastCall[0];
         expect(lastValue).not.toBe(initialValue);
         expect(lastValue.messages).not.toBe(initialMessagesList);
         expect(lastValue.messages[0]).not.toBe(initialMessage1);
-        expect(lastValue.messages[0].reactions).not.toBe(initialMessageReactions);
+        expect(lastValue.messages[0].reactions).not.toBe(
+            initialMessageReactions,
+        );
 
         // This shouldn't change
         expect(lastValue.messages[1]).toBe(initialMessage2);
@@ -270,21 +281,26 @@ describe("subscribeToCoValue", () => {
         const { me, meOnSecondPeer } = await setupAccount();
 
         const chatRoom = createChatRoom(me, "General");
-        const message = createMessage(me, "Hello Luigi, are you ready to save the princess?");
+        const message = createMessage(
+            me,
+            "Hello Luigi, are you ready to save the princess?",
+        );
         const message2 = createMessage(me, "Let's go!");
         chatRoom.messages?.push(message);
         chatRoom.messages?.push(message2);
 
-        const updateFn = vi.fn()
+        const updateFn = vi.fn();
 
         const unsubscribe = subscribeToCoValue(
             ChatRoom,
             chatRoom.id,
             meOnSecondPeer,
             {
-                messages: [{
-                    reactions: [],
-                }],
+                messages: [
+                    {
+                        reactions: [],
+                    },
+                ],
             },
             updateFn,
         );
@@ -306,18 +322,17 @@ describe("subscribeToCoValue", () => {
         await waitFor(() => {
             expect(updateFn).toHaveBeenCalled();
         });
-        
+
         const lastValue = updateFn.mock.lastCall[0];
         expect(lastValue).not.toBe(initialValue);
         expect(lastValue.name).toBe("Me and Luigi");
         expect(initialValue.name).toBe("General");
-        
+
         expect(lastValue.messages).toBe(initialValue.messages);
         expect(lastValue.messages[0]).toBe(initialValue.messages[0]);
         expect(lastValue.messages[1]).toBe(initialValue.messages[1]);
     });
 });
-
 
 function waitFor(callback: () => boolean | void) {
     return new Promise<void>((resolve, reject) => {

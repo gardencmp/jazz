@@ -1,10 +1,5 @@
 import { AgentSecret, cojsonInternals, CryptoProvider } from "cojson";
-import {
-    Account,
-    AuthMethod,
-    AuthResult,
-    ID,
-} from "jazz-tools";
+import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 import * as bip39 from "@scure/bip39";
 
 type LocalStorageData = {

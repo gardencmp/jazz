@@ -30,7 +30,7 @@ export function MusicTrackRow({
 
     function handleTrackTitleChange(evt: ChangeEvent<HTMLInputElement>) {
         if (!track) return;
-    
+
         updateMusicTrackTitle(track, evt.target.value);
     }
 

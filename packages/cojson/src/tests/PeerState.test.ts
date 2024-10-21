@@ -33,7 +33,12 @@ describe("PeerState", () => {
 
     test("should push outgoing message to peer", async () => {
         const { mockPeer, peerState } = setup();
-        const message: SyncMessage = { action: "load", id: "co_ztest-id", header: false, sessions: {} };
+        const message: SyncMessage = {
+            action: "load",
+            id: "co_ztest-id",
+            header: false,
+            sessions: {},
+        };
         await peerState.pushOutgoingMessage(message);
         expect(mockPeer.outgoing.push).toHaveBeenCalledWith(message);
     });
@@ -54,21 +59,46 @@ describe("PeerState", () => {
 
     test("should perform graceful shutdown", () => {
         const { mockPeer, peerState } = setup();
-        const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+        const consoleSpy = vi
+            .spyOn(console, "debug")
+            .mockImplementation(() => {});
         peerState.gracefulShutdown();
         expect(mockPeer.outgoing.close).toHaveBeenCalled();
         expect(peerState.closed).toBe(true);
-        expect(consoleSpy).toHaveBeenCalledWith("Gracefully closing", "test-peer");
+        expect(consoleSpy).toHaveBeenCalledWith(
+            "Gracefully closing",
+            "test-peer",
+        );
         consoleSpy.mockRestore();
     });
 
     test("should schedule outgoing messages based on their priority", async () => {
         const { peerState } = setup();
 
-        const loadMessage: SyncMessage = { action: "load", id: "co_zhigh", header: false, sessions: {} };
-        const contentMessageHigh: SyncMessage = { action: "content", id: "co_zhigh", new: {}, priority: CO_VALUE_PRIORITY.HIGH };
-        const contentMessageMid: SyncMessage = { action: "content", id: "co_zmid", new: {}, priority: CO_VALUE_PRIORITY.MEDIUM };
-        const contentMessageLow: SyncMessage = { action: "content", id: "co_zlow", new: {}, priority: CO_VALUE_PRIORITY.LOW };
+        const loadMessage: SyncMessage = {
+            action: "load",
+            id: "co_zhigh",
+            header: false,
+            sessions: {},
+        };
+        const contentMessageHigh: SyncMessage = {
+            action: "content",
+            id: "co_zhigh",
+            new: {},
+            priority: CO_VALUE_PRIORITY.HIGH,
+        };
+        const contentMessageMid: SyncMessage = {
+            action: "content",
+            id: "co_zmid",
+            new: {},
+            priority: CO_VALUE_PRIORITY.MEDIUM,
+        };
+        const contentMessageLow: SyncMessage = {
+            action: "content",
+            id: "co_zlow",
+            new: {},
+            priority: CO_VALUE_PRIORITY.LOW,
+        };
 
         const promises = [
             peerState.pushOutgoingMessage(contentMessageLow),
@@ -81,12 +111,24 @@ describe("PeerState", () => {
 
         // The first message is pushed directly, the other three are queued because are waiting
         // for the first push to be completed.
-        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(1, contentMessageLow); 
+        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(
+            1,
+            contentMessageLow,
+        );
 
         // Load message are managed as high priority messages and having the same priority as the content message
         // they follow the push order.
-        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(2, contentMessageHigh);
-        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(3, loadMessage);
-        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(4, contentMessageMid);
+        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(
+            2,
+            contentMessageHigh,
+        );
+        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(
+            3,
+            loadMessage,
+        );
+        expect(peerState["peer"].outgoing.push).toHaveBeenNthCalledWith(
+            4,
+            contentMessageMid,
+        );
     });
 });

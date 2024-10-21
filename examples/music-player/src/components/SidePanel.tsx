@@ -10,9 +10,7 @@ export function SidePanel() {
         },
     });
 
-    function handleAllTracksClick(
-        evt: React.MouseEvent<HTMLAnchorElement>,
-    ) {
+    function handleAllTracksClick(evt: React.MouseEvent<HTMLAnchorElement>) {
         evt.preventDefault();
         navigate(`/`);
     }

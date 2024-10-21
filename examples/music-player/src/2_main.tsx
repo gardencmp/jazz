@@ -2,7 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import { useMediaPlayer } from "./5_useMediaPlayer";
 import { HomePage } from "./3_HomePage";
 import { InvitePage } from "./6_InvitePage";

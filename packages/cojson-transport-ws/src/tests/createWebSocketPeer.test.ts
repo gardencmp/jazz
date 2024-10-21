@@ -132,12 +132,14 @@ describe("createWebSocketPeer", () => {
             expect(mockWebSocket.send).toHaveBeenCalled();
         });
 
-        expect(mockWebSocket.send).toHaveBeenCalledWith(JSON.stringify(message1));
+        expect(mockWebSocket.send).toHaveBeenCalledWith(
+            JSON.stringify(message1),
+        );
 
         mockWebSocket.send.mockClear();
         void peer.outgoing.push(message2);
 
-        await new Promise<void>((resolve) => setTimeout(resolve, 100))
+        await new Promise<void>((resolve) => setTimeout(resolve, 100));
 
         expect(mockWebSocket.send).not.toHaveBeenCalled();
     });
@@ -233,7 +235,10 @@ describe("createWebSocketPeer", () => {
 
             const stream: SyncMessage[] = [];
 
-            while (serializeMessages(stream.concat(message1)).length < MAX_OUTGOING_MESSAGES_CHUNK_BYTES) {
+            while (
+                serializeMessages(stream.concat(message1)).length <
+                MAX_OUTGOING_MESSAGES_CHUNK_BYTES
+            ) {
                 stream.push(message1);
                 void peer.outgoing.push(message1);
             }
@@ -277,7 +282,10 @@ describe("createWebSocketPeer", () => {
 
             const stream: SyncMessage[] = [];
 
-            while (serializeMessages(stream.concat(message1)).length < MAX_OUTGOING_MESSAGES_CHUNK_BYTES) {
+            while (
+                serializeMessages(stream.concat(message1)).length <
+                MAX_OUTGOING_MESSAGES_CHUNK_BYTES
+            ) {
                 stream.push(message1);
                 void peer.outgoing.push(message1);
             }
@@ -356,15 +364,11 @@ describe("createWebSocketPeer", () => {
 
             messageHandler?.(
                 new MessageEvent("message", {
-                    data: Array.from(
-                        { length: 5 },
-                        () => message1,
-                    )
+                    data: Array.from({ length: 5 }, () => message1)
                         .map((msg) => JSON.stringify(msg))
                         .join("\n"),
                 }),
             );
-
 
             const message2: SyncMessage = {
                 action: "content",
@@ -406,7 +410,6 @@ describe("createWebSocketPeer", () => {
                     data: JSON.stringify(message1),
                 }),
             );
-
 
             const message2: SyncMessage = {
                 action: "content",

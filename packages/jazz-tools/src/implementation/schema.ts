@@ -173,7 +173,7 @@ export type SchemaFor<Field> = NonNullable<Field> extends CoValue
 export type Encoder<V> = {
     encode: (value: V) => JsonValue;
     decode: (value: JsonValue) => V;
-}
+};
 export type OptionalEncoder<V> =
     | Encoder<V>
     | {

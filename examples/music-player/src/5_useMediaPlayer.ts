@@ -15,7 +15,7 @@ export function useMediaPlayer() {
 
     const [loading, setLoading] = useState<ID<MusicTrack> | null>(null);
 
-    const activeTrackId = me?.root?._refs.activeTrack?.id
+    const activeTrackId = me?.root?._refs.activeTrack?.id;
 
     // Reference used to avoid out-of-order track loads
     const lastLoadedTrackId = useRef<ID<MusicTrack> | null>(null);
@@ -71,10 +71,7 @@ export function useMediaPlayer() {
     async function setActiveTrack(track: MusicTrack, playlist?: Playlist) {
         if (!me?.root) return;
 
-        if (
-            activeTrackId === track.id &&
-            lastLoadedTrackId.current !== null
-        ) {
+        if (activeTrackId === track.id && lastLoadedTrackId.current !== null) {
             playState.toggle();
             return;
         }

@@ -6,7 +6,11 @@ import {
 } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactApp, PasskeyAuthBasicUI, usePasskeyAuth } from "jazz-react";
+import {
+    createJazzReactApp,
+    PasskeyAuthBasicUI,
+    usePasskeyAuth,
+} from "jazz-react";
 
 import {
     Button,
@@ -62,8 +66,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <App />
                 </JazzAndAuth>
             </div>
-        </ThemeProvider>,
-    </React.StrictMode>
+        </ThemeProvider>
+        ,
+    </React.StrictMode>,
 );
 
 /**
@@ -105,9 +110,7 @@ export default function App() {
             <RouterProvider router={router} />
 
             <Button
-                onClick={() =>
-                    router.navigate("/").then(logOut)
-                }
+                onClick={() => router.navigate("/").then(logOut)}
                 variant="outline"
             >
                 Log out

@@ -94,7 +94,12 @@ export class SQLiteStorage {
         const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
             localNodeName,
             "storage",
-            { peer1role: "client", peer2role: "server", trace, crashOnClose: true },
+            {
+                peer1role: "client",
+                peer2role: "server",
+                trace,
+                crashOnClose: true,
+            },
         );
 
         await SQLiteStorage.open(
@@ -427,7 +432,9 @@ export class SQLiteStorage {
                                         ),
                                     )
                                     .filter(
-                                        (accountID): accountID is RawAccountID =>
+                                        (
+                                            accountID,
+                                        ): accountID is RawAccountID =>
                                             cojsonInternals.isAccountID(
                                                 accountID,
                                             ) && accountID !== theirKnown.id,
