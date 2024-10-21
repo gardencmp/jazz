@@ -77,11 +77,10 @@ export function Hero({
     };
 
     return (
-        <div className="container grid gap-x-8 gap-y-10 py-12 lg:py-16 lg:gap-0 lg:grid-cols-2">
-            <div className="flex flex-col justify-center gap-4">
+        <div className="container grid gap-x-8 gap-y-10 py-12 lg:py-24 lg:gap-0 lg:grid-cols-3">
+            <div className="flex flex-col justify-center gap-4 lg:col-span-3 lg:gap-8">
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
-                    Build your next app
-                    <br /> with sync
+                    Build your next app with sync
                 </h1>
 
                 <p className="text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
@@ -90,7 +89,7 @@ export function Hero({
                     complexity.
                 </p>
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 max-w-3xl sm:grid-cols-4 sm:gap-4">
                     {features.map(({ title, icon: Icon }) => (
                         <div
                             key={title}
@@ -102,34 +101,6 @@ export function Hero({
                             <p>{title}</p>
                         </div>
                     ))}
-                </div>
-            </div>
-
-            <div className="max-w-2xl mx-auto lg:max-w-none lg:w-full lg:flex lg:justify-end">
-                <div className="grid sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-2 gap-8 lg:gap-4">
-                    <Code title="Step 1" fileName="schema.ts">
-                        <CodeStepOne />
-                    </Code>
-                    <Code title="Step 2" fileName="sendMessage.ts">
-                        <CodeStepTwo />
-                    </Code>
-                    <div className="pb-20 sm:pb-0 sm:row-span-2 relative">
-                        <Code
-                            title="Step 3"
-                            className="w-full sm:mt-16"
-                            fileName="ChatScreen.tsx"
-                        >
-                            <CodeStepThree />
-                        </Code>
-
-                        <div className="absolute -bottom-4 sm:bottom-8 right-10 sm:right-8 font-handwritten text-stone-900 dark:text-white">
-                            <ArrowUp className="ml-12" />
-                            <p className="mt-3">
-                                Instant sync & UI updates <br /> across devices
-                                and users! 🎉
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
