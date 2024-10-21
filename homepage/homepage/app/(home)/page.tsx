@@ -20,6 +20,7 @@ import {
     HardDriveDownloadIcon,
     KeyRoundIcon,
     MousePointerSquareDashedIcon,
+    StarIcon,
 } from "lucide-react";
 
 import {
@@ -53,7 +54,7 @@ import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { Hero } from "@/components/home/Hero";
-import {HowItWorks} from "@/components/home/HowItWorks";
+import { HowItWorks } from "@/components/home/HowItWorks";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -309,7 +310,52 @@ export default function Home() {
             </div>
 
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
-                <HowItWorks/>
+                <HowItWorks />
+
+                <figure className="max-w-2xl">
+                    <p className="sr-only">5 out of 5 stars</p>
+                    <div className="flex gap-x-1 text-blue">
+                        <StarIcon
+                            aria-hidden="true"
+                            className="h-5 w-5 flex-none  fill-blue"
+                        />
+                        <StarIcon
+                            aria-hidden="true"
+                            className="h-5 w-5 flex-none  fill-blue"
+                        />
+                        <StarIcon
+                            aria-hidden="true"
+                            className="h-5 w-5 flex-none  fill-blue"
+                        />
+                        <StarIcon
+                            aria-hidden="true"
+                            className="h-5 w-5 flex-none  fill-blue"
+                        />
+                        <StarIcon
+                            aria-hidden="true"
+                            className="h-5 w-5 flex-none  fill-blue"
+                        />
+                    </div>
+                    <blockquote className="mt-6 font-medium leading-8 text-stone-900 sm:text-lg">
+                        <p>
+                            “You don&apos;t have to think about deploying a
+                            database, SQL schemas, relations, and writing queries…
+                            Basically, if you know TypeScript, you know Jazz, and can ship
+                            an app. It&apos;s just so nice!”
+                        </p>
+                    </blockquote>
+                    <figcaption className="mt-6 flex items-center gap-x-6">
+                        <div className="text-sm leading-6">
+                            <div className="font-semibold text-gray-900">
+                                Serious Adopter #4
+                            </div>
+                            <div className="mt-0.5 text-gray-600">
+                                Technical Founder
+                            </div>
+                        </div>
+                    </figcaption>
+                </figure>
+
                 <div className="flex flex-col gap-4 md:gap-6">
                     <SectionHeader
                         title="Everything you need to ship top-tier apps quickly."

@@ -77,11 +77,10 @@ export function Hero({
     };
 
     return (
-        <div className="container grid gap-x-8 gap-y-10 py-12 lg:py-16 lg:gap-0 lg:grid-cols-2">
-            <div className="flex flex-col justify-center gap-4">
+        <div className="container grid gap-x-8 gap-y-10 py-12 lg:py-24 lg:gap-0 lg:grid-cols-3">
+            <div className="flex flex-col justify-center gap-4 lg:col-span-3 lg:gap-8">
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
-                    Build your next app
-                    <br /> with sync
+                    Build your next app with sync
                 </h1>
 
                 <p className="text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
@@ -90,7 +89,7 @@ export function Hero({
                     complexity.
                 </p>
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+                <div className="grid grid-cols-2 gap-2 max-w-3xl sm:grid-cols-4 sm:gap-4">
                     {features.map(({ title, icon: Icon }) => (
                         <div
                             key={title}
