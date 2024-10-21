@@ -20,7 +20,6 @@ import {
     HardDriveDownloadIcon,
     KeyRoundIcon,
     MousePointerSquareDashedIcon,
-    StarIcon,
 } from "lucide-react";
 
 import {
@@ -313,35 +312,23 @@ export default function Home() {
                 <HowItWorks />
 
                 <figure className="max-w-2xl">
-                    <p className="sr-only">5 out of 5 stars</p>
-                    <div className="flex gap-x-1 text-blue">
-                        <StarIcon
-                            aria-hidden="true"
-                            className="h-5 w-5 flex-none  fill-blue"
-                        />
-                        <StarIcon
-                            aria-hidden="true"
-                            className="h-5 w-5 flex-none  fill-blue"
-                        />
-                        <StarIcon
-                            aria-hidden="true"
-                            className="h-5 w-5 flex-none  fill-blue"
-                        />
-                        <StarIcon
-                            aria-hidden="true"
-                            className="h-5 w-5 flex-none  fill-blue"
-                        />
-                        <StarIcon
-                            aria-hidden="true"
-                            className="h-5 w-5 flex-none  fill-blue"
-                        />
-                    </div>
+                    <svg
+                        className="size-8 text-blue"
+                        fill="currentColor"
+                        viewBox="0 0 32 32"
+                        aria-hidden="true"
+                    >
+                        <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z"></path>
+                    </svg>
                     <blockquote className="mt-6 font-medium leading-8 text-stone-900 sm:text-lg">
                         <p>
-                            “You don&apos;t have to think about deploying a
+                            You don&apos;t have to think about deploying a
                             database, SQL schemas, relations, and writing
-                            queries… Basically, if you know TypeScript, you know
-                            Jazz, and can ship an app. It&apos;s just so nice!”
+                            queries… Basically,{" "}
+                            <span className="whitespace-nowrap bg-blue-50 px-1">
+                                if you know TypeScript, you know Jazz
+                            </span>
+                            , and you can ship an app. It&apos;s just so nice!
                         </p>
                     </blockquote>
                     <figcaption className="mt-6 flex items-center gap-x-6">
@@ -434,17 +421,6 @@ export default function Home() {
                             Learn more about Jazz Cloud {"->"}
                         </Button>
                     </div>
-                </div>
-
-                <div>
-                    <SectionHeader
-                        title="Collaborative Values"
-                        slogan="Your new building blocks."
-                    />
-
-                    <Prose>
-                        <CoValuesIntro />
-                    </Prose>
                 </div>
 
                 <GappedGrid
