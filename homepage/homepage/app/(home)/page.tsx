@@ -6,6 +6,7 @@ import {
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
+import { Testimonial } from "gcmp-design-system/src/app/components/molecules/Testimonial";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
@@ -311,37 +312,16 @@ export default function Home() {
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
                 <HowItWorks />
 
-                <figure className="max-w-2xl">
-                    <svg
-                        className="size-8 text-blue"
-                        fill="currentColor"
-                        viewBox="0 0 32 32"
-                        aria-hidden="true"
-                    >
-                        <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z"></path>
-                    </svg>
-                    <blockquote className="mt-6 font-medium leading-8 text-stone-900 sm:text-lg">
-                        <p>
-                            You don&apos;t have to think about deploying a
-                            database, SQL schemas, relations, and writing
-                            queries… Basically,{" "}
-                            <span className="whitespace-nowrap bg-blue-50 px-1">
-                                if you know TypeScript, you know Jazz
-                            </span>
-                            , and you can ship an app. It&apos;s just so nice!
-                        </p>
-                    </blockquote>
-                    <figcaption className="mt-6 flex items-center gap-x-6">
-                        <div className="text-sm leading-6">
-                            <div className="font-semibold text-gray-900">
-                                Serious Adopter #4
-                            </div>
-                            <div className="mt-0.5 text-gray-600">
-                                Technical Founder
-                            </div>
-                        </div>
-                    </figcaption>
-                </figure>
+                <Testimonial name="Serious Adopter #4" role="Technical Founder">
+                    <p>
+                        You don&apos;t have to think about deploying a database,
+                        SQL schemas, relations, and writing queries… Basically,{" "}
+                        <span className="whitespace-nowrap bg-blue-50 px-1 dark:bg-transparent">
+                            if you know TypeScript, you know Jazz
+                        </span>
+                        , and you can ship an app. It&apos;s just so nice!
+                    </p>
+                </Testimonial>
 
                 <div className="flex flex-col gap-4 md:gap-6">
                     <SectionHeader
