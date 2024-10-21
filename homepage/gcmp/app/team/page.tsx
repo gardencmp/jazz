@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { GlobeIcon, LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
@@ -10,6 +10,7 @@ interface TeamMember {
     location: string;
     x?: string;
     github?: string;
+    website?: string;
 }
 
 const team: Array<TeamMember> = [
@@ -17,39 +18,46 @@ const team: Array<TeamMember> = [
         name: "Anselm Eickhoff",
         titles: ["Founder"],
         image: "anselm.jpg",
-        location: "London, UK ",
+        location: "Canterbury, UK ",
         x: "anselm_io",
-        github: "@aeplay",
+        github: "aeplay",
+        website: "https://aeplay.org",
     },
     {
         name: "Andrei Popa",
         titles: ["Full-Stack Dev", "Infra"],
         image: "andrei.jpeg",
-        location: "___, Romania ",
+        location: "Bucharest, Romania ",
+        x: "elitepax",
+        github: "pax-k",
     },
     {
         name: "Guido D'Orsi",
         titles: ["Frontend Dev", "React Performance"],
         image: "guido.jpeg",
-        location: "Rome, Italy ",
+        location: "Piano di Sorrento, Italy ",
+        github: "gdorsi",
     },
     {
         name: "Trisha Lim",
         titles: ["Frontend Dev", "Design", "Marketing"],
         image: "trisha.png",
         location: "Lisbon, Portugal ",
+        github: "trishalim",
+        website: "https://trishalim.com",
     },
     {
         name: "Benjamin Leveritt",
         titles: ["Full-Stack Dev"],
-        image: "benjamin.png",
-        location: "London, UK ",
+        image: "benjamin.jpg",
+        location: "Portsmouth, UK ",
+        github: "bensleveritt",
     },
     {
-        name: "Marina ___",
+        name: "Marina Orlova",
         titles: ["Full-Stack Dev"],
         image: "marina.png",
-        location: "___, Spain ",
+        location: "Tarragona, Spain ",
     },
 ];
 
@@ -72,10 +80,10 @@ function SocialLink({
 
 function Person({ person }: { person: TeamMember }) {
     return (
-        <div className="flex gap-5">
+        <div className="flex items-center gap-5">
             <img
                 src={`/team/${person.image}`}
-                className="size-12 rounded-full shadow-sm"
+                className="size-24 rounded-md shadow-sm"
             />
             <div className="flex flex-col gap-2.5">
                 <h3 className="text-lg leading-none font-semibold tracking-tight text-stone-900 dark:text-white">
@@ -88,7 +96,14 @@ function Person({ person }: { person: TeamMember }) {
                     {person.location}
                 </p>
 
-                <div className="flex gap-2 mt-1">
+                <div className="flex gap-2 mt-0.5">
+                    {person.website && (
+                        <SocialLink
+                            link={person.website}
+                            icon={GlobeIcon}
+                            label="Website"
+                        />
+                    )}
                     {person.x && (
                         <SocialLink
                             link={`https://x.com/${person.x}`}
@@ -112,9 +127,9 @@ function Person({ person }: { person: TeamMember }) {
 export default function TeamPage() {
     return (
         <div className="container">
-            <HeroHeader title="Team" slogan="" />
+            <HeroHeader title="Meet the team" slogan="" />
 
-            <div className="grid grid-cols-3 gap-10">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
                 {team.map((person) => (
                     <Person key={person.name} person={person} />
                 ))}
