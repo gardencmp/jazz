@@ -53,6 +53,7 @@ import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { Hero } from "@/components/home/Hero";
+import {HowItWorks} from "@/components/home/HowItWorks";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -308,6 +309,7 @@ export default function Home() {
             </div>
 
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
+                <HowItWorks/>
                 <div className="flex flex-col gap-4 md:gap-6">
                     <SectionHeader
                         title="Everything you need to ship top-tier apps quickly."

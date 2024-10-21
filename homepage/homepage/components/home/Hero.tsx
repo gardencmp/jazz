@@ -104,34 +104,6 @@ export function Hero({
                     ))}
                 </div>
             </div>
-
-            <div className="max-w-2xl mx-auto lg:max-w-none lg:w-full lg:flex lg:justify-end">
-                <div className="grid sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-2 gap-8 lg:gap-4">
-                    <Code title="Step 1" fileName="schema.ts">
-                        <CodeStepOne />
-                    </Code>
-                    <Code title="Step 2" fileName="sendMessage.ts">
-                        <CodeStepTwo />
-                    </Code>
-                    <div className="pb-20 sm:pb-0 sm:row-span-2 relative">
-                        <Code
-                            title="Step 3"
-                            className="w-full sm:mt-16"
-                            fileName="ChatScreen.tsx"
-                        >
-                            <CodeStepThree />
-                        </Code>
-
-                        <div className="absolute -bottom-4 sm:bottom-8 right-10 sm:right-8 font-handwritten text-stone-900 dark:text-white">
-                            <ArrowUp className="ml-12" />
-                            <p className="mt-3">
-                                Instant sync & UI updates <br /> across devices
-                                and users! 🎉
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
