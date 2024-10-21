@@ -21,11 +21,11 @@ We welcome all ideas! If you have suggestions, feel free to open an issue marked
 
 1. **Fork the repository** and create your feature branch (see [GitHub's guide on forking a repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo) if you're unfamiliar with the process):
 
-2. **Make your changes**, ensuring that you follow our coding standards.
+2. **Make your changes**, ensuring that you follow our coding standards (`pnpm format` (prettier) and `pnpm lint` (eslint) will automatically let you know there are issues).
 
-3. **Commit your changes** with a descriptive commit message:
+3. **Commit your changes** with a descriptive commit message.
 
-4. **Push to your fork** and submit a pull request:
+4. **Push to your fork** and submit a pull request.
 
 5. **Describe your pull request**, explaining the problem it solves or the enhancement it adds.
 
@@ -58,7 +58,7 @@ Please write tests for any new features or bug fixes. We use Vitest for unit tes
 ### 7. Communication
 
 - If you're unsure about anything, feel free to ask questions by opening a discussion, reaching out via issues, or on our [Discord](https://discord.gg/utDMjHYg42).
-- Be respectful and constructive—this is a welcoming community for everyone.
+- Be respectful and constructive, this is a welcoming community for everyone.
 - Please be mindful of GitHub’s [Community Guidelines](https://docs.github.com/en/site-policy/github-terms/github-community-guidelines), which include being kind, avoiding disruptive behavior, and respecting others.
 
 ## Code of Conduct
