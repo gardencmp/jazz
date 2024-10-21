@@ -257,7 +257,7 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                <div className="p-4 sm:p-16 rounded-xl bg-white shadow-sm dark:bg-stone-900">
                                     <DiagramBeforeJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramBeforeJazz>
                                 </div>
                             </div>
@@ -300,7 +300,7 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                <div className="p-4 sm:p-16 rounded-xl bg-white shadow-sm dark:bg-stone-900">
                                     <DiagramAfterJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramAfterJazz>
                                 </div>
                             </div>
