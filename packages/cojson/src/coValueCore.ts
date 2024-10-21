@@ -1,4 +1,4 @@
-import { AnyRawCoValue, RawCoValue } from "./coValue.js";
+import { AnyRawCoValue, CoID, RawCoValue } from "./coValue.js";
 import {
     Encrypted,
     Hash,
@@ -801,6 +801,41 @@ export class CoValueCore {
                         console.error(
                             `Encrypting ${encryptingKeyID} key didn't decrypt ${keyID}`,
                         );
+                    }
+                }
+            }
+
+            // try to find revelation to parent group read keys
+
+            for (const co of content.keys()) {
+                if (co.startsWith("parent_")) {
+                    const parentGroupID = co.slice("parent_".length) as CoID<RawGroup>;
+                    const parentGroup = this.node.expectCoValueLoaded(parentGroupID, "Expected parent group to be loaded");
+
+                    const parentKey = parentGroup.getCurrentReadKey();
+                    if (!parentKey.secret) {
+                        continue;
+                    }
+
+                    const revelationForParentKey = content.get(`${keyID}_for_${parentKey.id}`);
+
+                    if (revelationForParentKey) {
+                        const secret = parentGroup.crypto.decryptKeySecret(
+                            {
+                                encryptedID: keyID,
+                                encryptingID: parentKey.id,
+                                encrypted: revelationForParentKey,
+                            },
+                            parentKey.secret,
+                        );
+
+                        if (secret) {
+                            return secret as KeySecret;
+                        } else {
+                            console.error(
+                                `Encrypting parent ${parentKey.id} key didn't decrypt ${keyID}`,
+                            );
+                        }
                     }
                 }
             }
