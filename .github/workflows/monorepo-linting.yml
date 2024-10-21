@@ -19,3 +19,6 @@ jobs:
 
       - name: Run sherif
         run: npx sherif@1.0.0
+
+      - name: Run formatter
+        run: npx run format
