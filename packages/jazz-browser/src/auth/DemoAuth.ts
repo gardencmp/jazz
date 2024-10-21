@@ -55,11 +55,11 @@ export class BrowserDemoAuth implements AuthMethod {
                     this.driver.onSignedIn({ logOut });
                 },
                 onError: (error: string | Error) => {
-                    this.driver.onError(error)
+                    this.driver.onError(error);
                 },
                 logOut: () => {
                     delete localStorage[localStorageKey];
-                }
+                },
             } satisfies AuthResult;
         } else {
             return new Promise<AuthResult>((resolve) => {
@@ -96,11 +96,11 @@ export class BrowserDemoAuth implements AuthMethod {
                                 this.driver.onSignedIn({ logOut });
                             },
                             onError: (error: string | Error) => {
-                                this.driver.onError(error)
+                                this.driver.onError(error);
                             },
                             logOut: () => {
                                 delete localStorage[localStorageKey];
-                            }
+                            },
                         });
                     },
                     existingUsers:
@@ -126,11 +126,11 @@ export class BrowserDemoAuth implements AuthMethod {
                                 this.driver.onSignedIn({ logOut });
                             },
                             onError: (error: string | Error) => {
-                                this.driver.onError(error)
+                                this.driver.onError(error);
                             },
                             logOut: () => {
                                 delete localStorage[localStorageKey];
-                            }
+                            },
                         });
                     },
                 });

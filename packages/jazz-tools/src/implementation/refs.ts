@@ -53,9 +53,7 @@ export class Ref<out V extends CoValue> {
             "node" in this.controlledAccount
                 ? this.controlledAccount.node
                 : this.controlledAccount._raw.core.node;
-        const raw = await node.load(
-            this.id as unknown as CoID<RawCoValue>,
-        );
+        const raw = await node.load(this.id as unknown as CoID<RawCoValue>);
         if (raw === "unavailable") {
             return "unavailable";
         } else {

@@ -1,6 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Link, RouterProvider, createHashRouter, useNavigate } from "react-router-dom";
+import {
+    Link,
+    RouterProvider,
+    createHashRouter,
+    useNavigate,
+} from "react-router-dom";
 import "./index.css";
 
 import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
@@ -38,10 +43,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 
     return (
         <>
-            <Jazz.Provider
-                auth={auth}
-                peer={peer}
-            >
+            <Jazz.Provider auth={auth} peer={peer}>
                 {children}
             </Jazz.Provider>
             <DemoAuthBasicUI appName={appName} state={authState} />
@@ -96,9 +98,7 @@ export default function App() {
             <RouterProvider router={router} />
 
             <Button
-                onClick={() =>
-                    router.navigate("/").then(() => logOut())
-                }
+                onClick={() => router.navigate("/").then(() => logOut())}
                 variant="outline"
             >
                 Log out
@@ -114,7 +114,7 @@ function AcceptInvite() {
         onAccept: (petPostID) => navigate("/pet/" + petPostID),
     });
 
-    return  <p>Accepting invite...</p>
+    return <p>Accepting invite...</p>;
 }
 
 export function PostOverview() {

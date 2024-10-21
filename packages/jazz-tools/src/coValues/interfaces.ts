@@ -236,7 +236,7 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
             onUnavailable,
         );
 
-        return unsubscribe
+        return unsubscribe;
     }
 
     const observable = {

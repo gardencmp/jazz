@@ -47,7 +47,11 @@ export function createWebSocketPeer({
         const result = deserializeMessages(event.data as string);
 
         if (!result.ok) {
-            console.error("Error while deserializing messages", event.data, result.error);
+            console.error(
+                "Error while deserializing messages",
+                event.data,
+                result.error,
+            );
             return;
         }
 
@@ -90,9 +94,7 @@ export function createWebSocketPeer({
 
     const outgoingMessages = new BatchedOutgoingMessages((messages) => {
         if (websocket.readyState === 1) {
-            websocket.send(
-                messages,
-            );
+            websocket.send(messages);
         }
     });
 

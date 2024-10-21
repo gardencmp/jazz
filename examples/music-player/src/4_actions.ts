@@ -92,7 +92,8 @@ export async function addTrackToPlaylist(
 ) {
     if (!account) return;
 
-    if (playlist.tracks?.some((t) => t?._refs.sourceTrack.id === track.id)) return;
+    if (playlist.tracks?.some((t) => t?._refs.sourceTrack.id === track.id))
+        return;
 
     /**
      * Since musicTracks are created as private values (see uploadMusicTracks)
@@ -137,7 +138,10 @@ export async function updateMusicTrackTitle(track: MusicTrack, title: string) {
     track.title = title;
 }
 
-export async function updateActivePlaylist(playlist: Playlist, me: MusicaAccount) {
+export async function updateActivePlaylist(
+    playlist: Playlist,
+    me: MusicaAccount,
+) {
     me.root!.activePlaylist = playlist ?? me.root!.rootPlaylist;
 }
 

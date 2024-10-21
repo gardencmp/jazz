@@ -8,11 +8,13 @@ export function addMessageToBacklog(backlog: string, message: SyncMessage) {
     return `${backlog}\n${JSON.stringify(message)}`;
 }
 
-export function deserializeMessages(messages: string)  {
+export function deserializeMessages(messages: string) {
     try {
         return {
             ok: true,
-            messages: messages.split("\n").map((msg) => JSON.parse(msg)) as SyncMessage[] | PingMsg[],
+            messages: messages.split("\n").map((msg) => JSON.parse(msg)) as
+                | SyncMessage[]
+                | PingMsg[],
         } as const;
     } catch (e) {
         console.error("Error while deserializing messages", e);

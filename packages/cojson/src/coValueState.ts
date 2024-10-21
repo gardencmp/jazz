@@ -13,7 +13,10 @@ function createResolvablePromise<T>() {
 
 class CoValueUnknownState {
     type = "unknown" as const;
-    private peers: Map<PeerID, ReturnType<typeof createResolvablePromise<"available" | "unavailable">>>;
+    private peers: Map<
+        PeerID,
+        ReturnType<typeof createResolvablePromise<"available" | "unavailable">>
+    >;
     private resolve: (value: "available" | "unavailable") => void;
 
     ready: Promise<"available" | "unavailable">;
@@ -22,10 +25,15 @@ class CoValueUnknownState {
         this.peers = new Map();
 
         for (const peerId of peersIds) {
-            this.peers.set(peerId, createResolvablePromise<"available" | "unavailable">());
+            this.peers.set(
+                peerId,
+                createResolvablePromise<"available" | "unavailable">(),
+            );
         }
 
-        const { resolve, promise } = createResolvablePromise<"available" | "unavailable">();
+        const { resolve, promise } = createResolvablePromise<
+            "available" | "unavailable"
+        >();
 
         this.ready = promise;
         this.resolve = resolve;
@@ -66,20 +74,22 @@ class CoValueUnknownState {
 class CoValueAvailableState {
     type = "available" as const;
 
-    constructor(public coValue: CoValueCore) { }
+    constructor(public coValue: CoValueCore) {}
 }
 
-type CoValueStateAction = {
-    type: "not-found";
-    peerId: PeerID;
-} | {
-    type: "found";
-    peerId: PeerID;
-    coValue: CoValueCore;
-};
+type CoValueStateAction =
+    | {
+          type: "not-found";
+          peerId: PeerID;
+      }
+    | {
+          type: "found";
+          peerId: PeerID;
+          coValue: CoValueCore;
+      };
 
 export class CoValueState {
-    constructor(public state: CoValueUnknownState | CoValueAvailableState) { }
+    constructor(public state: CoValueUnknownState | CoValueAvailableState) {}
 
     static Unknown(peersToWaitFor: Set<PeerID>) {
         return new CoValueState(new CoValueUnknownState(peersToWaitFor));

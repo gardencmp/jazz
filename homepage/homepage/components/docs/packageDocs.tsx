@@ -76,7 +76,9 @@ function RenderPackageChild({
                 <div key={i} id={child.name} className="not-prose mt-4">
                     {
                         <Highlight hide={[0, 2]}>
-                            {`function \n${printSimpleSignature(child, signature) + ":"}\n {}`}
+                            {`function \n${
+                                printSimpleSignature(child, signature) + ":"
+                            }\n {}`}
                         </Highlight>
                     }{" "}
                     <span className="opacity-75 text-xs pl-1">
@@ -123,9 +125,9 @@ function RenderTypeAlias({
                 <Highlight>{`type ${child.name}`}</Highlight>
             </h3>
             <p className="not-prose text-sm ml-4">
-                <Highlight>{`type ${child.name}${typeParameters?.length && `<${typeParameters?.join(", ")}>`} = ${printType(
-                    child.type,
-                )}`}</Highlight>
+                <Highlight>{`type ${child.name}${
+                    typeParameters?.length && `<${typeParameters?.join(", ")}>`
+                } = ${printType(child.type)}`}</Highlight>
             </p>
             <div className="ml-4 mt-2 flex-[3]">
                 <DocComment>

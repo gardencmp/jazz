@@ -55,7 +55,7 @@ test("Can create account with one node, and then load it on another", async () =
         trace: true,
         peer1role: "server",
         peer2role: "client",
-    })
+    });
 
     console.log("After connected peers");
 

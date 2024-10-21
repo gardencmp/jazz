@@ -25,7 +25,7 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
     });
 
     const activeTrack = useCoState(MusicTrack, mediaPlayer.activeTrackId, {
-        waveform: {}
+        waveform: {},
     });
 
     if (!activeTrack) return null;
@@ -60,14 +60,16 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                     </button>
                 </div>
             </div>
-            <div className=" sm:hidden md:flex flex-col flex-shrink-1 items-center w-[75%]"> 
+            <div className=" sm:hidden md:flex flex-col flex-shrink-1 items-center w-[75%]">
                 <Waveform track={activeTrack} height={30} />
             </div>
             <div className="flex flex-col items-end  gap-1 text-right min-w-fit w-[25%]">
                 <h4 className="font-medium text-blue-800">
                     {activeTrackTitle}
                 </h4>
-                <p className="text-sm text-gray-600">{activePlaylist?.title || "All tracks"}</p>
+                <p className="text-sm text-gray-600">
+                    {activePlaylist?.title || "All tracks"}
+                </p>
             </div>
         </footer>
     );

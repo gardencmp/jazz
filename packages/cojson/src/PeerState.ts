@@ -44,7 +44,6 @@ export class PeerState {
 
         this.processing = true;
 
-
         let entry: QueueEntry | undefined;
         while ((entry = this.queue.pull())) {
             // Awaiting the push to send one message at a time
