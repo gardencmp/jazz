@@ -55,17 +55,12 @@ function highlightPlugin() {
                     const isBinnedLine = line.some((token) =>
                         token.content.includes("// *bin*"),
                     );
-                    const isHighlighted = line.some((token) =>
-                      token.content.includes("// *highlight*"),
-                    );
                     if (!isBinnedLine) {
                         lineNo++;
                     }
                     
                     if (isBinnedLine) {
                         lineClassName = 'bg-red-100 dark:bg-red-800'
-                    } else if (isHighlighted) {
-                        lineClassName = 'my-0.5 bg-blue-50 text-blue dark:bg-stone-900 dark:text-blue-300'
                     }
                     
                     return (
@@ -73,8 +68,7 @@ function highlightPlugin() {
                         line
                             .map(
                                 (token) => {
-                                  let color = isHighlighted ? 'currentColor' : token.color
-                                  return  `<span style="color: ${color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", "").replace("// *highlight*", ""))}</span>`
+                                  return  `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`
                                 }
                             )
                             .join("") +

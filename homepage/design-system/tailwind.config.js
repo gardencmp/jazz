@@ -43,7 +43,6 @@ const config = {
             fontFamily: {
                 display: ["var(--font-manrope)"],
                 mono: ["var(--font-commit-mono)"],
-                handwritten: ["var(--font-sriracha)"],
             },
             fontSize: {
 

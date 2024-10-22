@@ -6,6 +6,7 @@ import {
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
+import { Testimonial } from "gcmp-design-system/src/app/components/molecules/Testimonial";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
@@ -46,13 +47,14 @@ import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
-import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { Hero } from "@/components/home/Hero";
+import { HowItWorks } from "@/components/home/HowItWorks";
 
 const ArrowDoodle = ({ className }: { className?: string }) => (
     <svg
@@ -224,13 +226,13 @@ export default function Home() {
             <Hero features={features} />
 
             <div className="bg-stone-100 border-y dark:bg-stone-925 py-8 lg:py-16 dark:border-stone-900">
-                <div className="container grid gap-8 lg:gap-12">
-                    <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                <div className="container grid gap-4 lg:gap-8">
+                    <H2 className="md:text-center">
                         Hard things are easy now.
-                    </h2>
+                    </H2>
                     <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
                         <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                            <div className="text-pretty leading-relaxed max-w-2xl space-y-2 md:text-lg md:space-y-4 md:leading-relaxed">
                                 <p>
                                     Ever notice how every stack just{" "}
                                     <span className="font-semibold text-stone-900 dark:text-white">
@@ -255,18 +257,18 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                <div className="p-4 sm:p-16 rounded-xl bg-white shadow-sm dark:bg-stone-900">
                                     <DiagramBeforeJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramBeforeJazz>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="hidden md:block relative pr-3 top-24">
+                        <div className="hidden md:block relative pr-3 top-16">
                             <ArrowDoodle className="w-full h-auto text-stone-300 dark:text-stone-800" />
                         </div>
 
                         <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
+                            <div className="text-pretty leading-relaxed max-w-2xl space-y-2 md:text-lg md:space-y-4 md:leading-relaxed">
                                 <p>
                                     Jazz provides a single new abstraction to do
                                     the whole job.
@@ -298,7 +300,7 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
+                                <div className="p-4 sm:p-16 rounded-xl bg-white shadow-sm dark:bg-stone-900">
                                     <DiagramAfterJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramAfterJazz>
                                 </div>
                             </div>
@@ -308,6 +310,19 @@ export default function Home() {
             </div>
 
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
+                <HowItWorks />
+
+                <Testimonial name="Serious Adopter #4" role="Technical Founder">
+                    <p>
+                        You don&apos;t have to think about deploying a database,
+                        SQL schemas, relations, and writing queries… Basically,{" "}
+                        <span className="whitespace-nowrap bg-blue-50 px-1 dark:bg-transparent">
+                            if you know TypeScript, you know Jazz
+                        </span>
+                        , and you can ship an app. It&apos;s just so nice!
+                    </p>
+                </Testimonial>
+
                 <div className="flex flex-col gap-4 md:gap-6">
                     <SectionHeader
                         title="Everything you need to ship top-tier apps quickly."
@@ -386,17 +401,6 @@ export default function Home() {
                             Learn more about Jazz Cloud {"->"}
                         </Button>
                     </div>
-                </div>
-
-                <div>
-                    <SectionHeader
-                        title="Collaborative Values"
-                        slogan="Your new building blocks."
-                    />
-
-                    <Prose>
-                        <CoValuesIntro />
-                    </Prose>
                 </div>
 
                 <GappedGrid
