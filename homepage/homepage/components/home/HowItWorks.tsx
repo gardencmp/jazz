@@ -1,6 +1,6 @@
-import CodeStepOne from "./CodeStepOne.mdx";
-import CodeStepTwo from "./CodeStepTwo.mdx";
-import CodeStepThree from "./CodeStepThree.mdx";
+import CodeStepSchema from "./CodeStepSchema.mdx";
+import CodeStepAction from "./CodeStepAction.mdx";
+import CodeStepRender from "./CodeStepRender.mdx";
 import CodeStepCloud from "./CodeStepCloud.mdx";
 import { clsx } from "clsx";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
@@ -19,18 +19,19 @@ function Code({
         <div
             className={clsx(
                 className,
-                "w-[480px] relative -right-2 max-w-full overflow-x-auto ml-auto rounded-tl-lg overflow-hidden",
+                "w-full h-full max-w-[480px] relative -right-2 -bottom-1 max-w-full overflow-x-auto ml-auto overflow-hidden",
                 "shadow-xl shadow-blue/20 ",
-                "border border-stone-200 dark:border-stone-900",
-                "rounded-t-md flex-1 bg-white ring ring-4 ring-stone-400/20 dark:bg-stone-925",
+                "rounded-tl-lg border border-stone-200",
+                "flex-1 bg-white ring ring-4 ring-stone-400/20",
+                "dark:bg-stone-925 dark:border-stone-900",
             )}
         >
             <div className="flex px-4 border-b border-stone-200 dark:border-stone-900">
-                <span className="text-sm border-b border-blue py-2">
+                <span className="text-xs lg:text-sm border-b border-blue py-2">
                     {fileName}
                 </span>
             </div>
-            <pre className="text-sm p-1">{children}</pre>
+            <pre className="text-xs lg:text-sm p-1 pb-2">{children}</pre>
         </div>
     );
 }
@@ -50,19 +51,28 @@ function Step({
         <div
             className={clsx(
                 className,
-                "rounded-lg overflow-hidden shadow-sm flex flex-col gap-6 bg-white border border-stone-200",
-                "pt-4 lg:pt-6",
-                "dark:bg-stone-925 dark:border-stone-900",
+                "rounded-lg overflow-hidden shadow-sm flex flex-col gap-6 border border-stone-200",
+                "pt-4 sm:pt-6",
+                "dark:border-stone-900",
                 "col-span-2 lg:col-span-3",
             )}
         >
-            <div className="flex gap-3 px-4 lg:px-6">
-                <p className="font-semibold inline-flex items-center justify-center text-center bg-blue-50 size-8 rounded-full text-blue font-mono">
+            <div className="flex gap-3 px-4 sm:px-6">
+                <p
+                    className={clsx(
+                        "bg-blue-50 size-6 rounded-full text-blue text-sm font-semibold font-mono",
+                        "inline-flex items-center justify-center text-center shrink-0",
+                      "dark:bg-blue dark:text-white"
+                    )}
+                >
+                    <span className="sr-only">Step</span>
                     {step}
                 </p>
-                <p className="max-w-md mt-1.5">{description}</p>
+                <p className="max-w-md">{description}</p>
             </div>
-            {children}
+            <div className="flex-1 pl-4 sm:pl-12">
+                {children}
+            </div>
         </div>
     );
 }
@@ -89,12 +99,12 @@ export function HowItWorks() {
                     description="Define your schema using Collaborative Values &mdash; your new building blocks."
                 >
                     <Code fileName="schema.ts">
-                        <CodeStepOne />
+                        <CodeStepSchema />
                     </Code>
                 </Step>
                 <Step
                     step={2}
-                    description="Connect to sync and storage infrastructure (Jazz Cloud or self-hosted) using your email address as an API key."
+                    description="Connect to sync and storage infrastructure — Jazz Cloud or self-hosted."
                 >
                     <Code fileName="main.tsx">
                         <CodeStepCloud />
@@ -105,7 +115,7 @@ export function HowItWorks() {
                     description="Create a Collaborative Value, and it will be synced and persisted automatically."
                 >
                     <Code fileName="sendMessage.ts">
-                        <CodeStepTwo />
+                        <CodeStepAction />
                     </Code>
                 </Step>
                 <Step
@@ -113,7 +123,7 @@ export function HowItWorks() {
                     description="Read your data like simple local state. Get instant sync and UI updates across all devices and users. 🎉"
                 >
                     <Code fileName="ChatScreen.tsx">
-                        <CodeStepThree />
+                        <CodeStepRender />
                     </Code>
                 </Step>
             </GappedGrid>
