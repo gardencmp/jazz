@@ -263,6 +263,8 @@ export class SyncManager {
             await this.subscribeToIncludingDependencies(id, peer);
         }
 
+        peer.knownStates.triggerUpdate(id);
+
         if (!peer.toldKnownState.has(id)) {
             peer.toldKnownState.add(id);
             this.trySendToPeer(peer, {

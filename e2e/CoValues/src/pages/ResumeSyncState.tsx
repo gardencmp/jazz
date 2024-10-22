@@ -17,6 +17,14 @@ export function ResumeSyncState() {
     const { me } = useAccount();
 
     useEffect(() => {
+        if (id) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("id", id);
+            history.pushState({}, "", url.toString());
+        }
+    }, [id])
+
+    useEffect(() => {
         if (!me || id) return;
 
         const group = Group.create({ owner: me });

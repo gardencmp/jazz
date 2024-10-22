@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { setTimeout } from "node:timers/promises";
 
 test.describe("ResumeSyncState", () => {
-  test.skip("should resume the sync even after a page reload", async ({ page, browser }) => {
+  test("should resume the sync even after a page reload", async ({ page, browser }) => {
     const context = page.context();
 
     await page.goto("/resume-sync?signUp=SuperMario");

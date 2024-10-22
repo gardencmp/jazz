@@ -83,10 +83,14 @@ export class PeerKnownStates {
                 break;
         }
 
-        this.trigger(action.id, this.coValues.get(action.id));
+        this.triggerUpdate(action.id);
     }
 
     listeners = new Set<(id: RawCoID, knownState: CoValueKnownState | undefined) => void>();
+
+    triggerUpdate(id: RawCoID) {
+        this.trigger(id, this.coValues.get(id) ?? emptyKnownState(id));
+    }
 
     private trigger(id: RawCoID, knownState: CoValueKnownState | undefined) {
         for (const listener of this.listeners) {
