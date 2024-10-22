@@ -25,6 +25,7 @@ type PeerKnownStateActions = {
     id: RawCoID;
     value: CoValueKnownState;
 };
+
 export class PeerKnownStates {
     private coValues = new Map<RawCoID, CoValueKnownState>();
 

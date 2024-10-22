@@ -223,11 +223,48 @@ export class LocalNode {
             if (!profileID) {
                 throw new Error("Account has no profile");
             }
+
+            const serverPeers = node.syncManager
+                .peersInPriorityOrder()
+                .filter((peer) => peer.role === "server");
+
+            const storagePeers = node.syncManager
+                .peersInPriorityOrder()
+                .filter((peer) => peer.role === "storage");
+
+            for (const peer of serverPeers) {
+                // TODO: Shoutdown function?
+                peer.knownStates.subscribe((id, knownState) => {
+                    if (knownState === undefined) {
+                        return;
+                    }
+
+                    const entry = node.coValues[id];
+
+                    if (entry?.state.type === "available") {
+                        const coValue = entry.state.coValue;
+                        const fullySynced =
+                            !coValue.newContentSince(knownState);
+
+                        for (const storagePeer of storagePeers) {
+                            void storagePeer.pushOutgoingMessage({
+                                action: "persistSyncState",
+                                payload: knownState,
+                                fullySynced,
+                                peerId: peer.id,
+                                id,
+                            });
+                        }
+                    }
+                });
+            }
+
             const profile = await node.load(profileID);
 
             if (profile === "unavailable") {
                 throw new Error("Profile unavailable from all peers");
             }
+
 
             if (migration) {
                 await migration(
@@ -238,6 +275,10 @@ export class LocalNode {
                     controlledAccount.core,
                     controlledAccount.agentSecret,
                 );
+            }
+
+            for (const peer of serverPeers) {
+                void node.syncManager.requestSyncStateHydration(peer.id);
             }
 
             return node;
@@ -281,7 +322,10 @@ export class LocalNode {
         if (!entry) {
             const peersToWaitFor = new Set(
                 Object.values(this.syncManager.peers)
-                    .filter((peer) => peer.role === "server")
+                    .filter(
+                        (peer) =>
+                            peer.role === "server" || peer.role === "storage",
+                    )
                     .map((peer) => peer.id),
             );
             if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);

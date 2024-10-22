@@ -26,7 +26,10 @@ export type SyncMessage =
     | LoadMessage
     | KnownStateMessage
     | NewContentMessage
-    | DoneMessage;
+    | DoneMessage
+    | PersistSyncStateMessage
+    | RequestSyncStateHydrationMessage
+    | HydrateSyncStateMessage;
 
 export type LoadMessage = {
     action: "load";
@@ -58,6 +61,25 @@ export type DoneMessage = {
     id: RawCoID;
 };
 
+export type PersistSyncStateMessage = {
+    action: "persistSyncState";
+    id: RawCoID;
+    payload: CoValueKnownState;
+    fullySynced: boolean;
+    peerId: PeerID;
+};
+
+export type RequestSyncStateHydrationMessage = {
+    action: "requestSyncStateHydration";
+    peerId: PeerID;
+};
+
+export type HydrateSyncStateMessage = {
+    action: "hydrateSyncState";
+    knownStates: CoValueKnownState[];
+    peerId: PeerID;
+};
+
 export type PeerID = string;
 
 export type DisconnectedError = "Disconnected";
@@ -76,7 +98,7 @@ export interface Peer {
     id: PeerID;
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
-    role: "peer" | "server" | "client";
+    role: "peer" | "server" | "client" | "storage";
     priority?: number;
     crashOnClose: boolean;
 }
@@ -126,7 +148,7 @@ export class SyncManager {
 
     async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
         const eligiblePeers = this.peersInPriorityOrder().filter(
-            (peer) => peer.id !== forPeer && peer.role === "server",
+            (peer) => peer.id !== forPeer && (peer.role === "server" || peer.role === "storage"),
         );
 
         const coValueEntry = this.local.coValues[id];
@@ -142,6 +164,19 @@ export class SyncManager {
             if (coValueEntry?.state.type === "unknown") {
                 await coValueEntry.state.waitForPeer(peer.id);
             }
+        }
+    }
+
+    async requestSyncStateHydration(peerId: PeerID) {
+        const peers = this.peersInPriorityOrder().filter(
+            (peer) => peer.id !== peerId && (peer.role === "storage"),
+        );
+
+        for (const peer of peers) {
+            await peer.pushOutgoingMessage({
+                action: "requestSyncStateHydration",
+                peerId,
+            });
         }
     }
 
@@ -161,12 +196,45 @@ export class SyncManager {
                 return await this.handleNewContent(msg, peer);
             case "done":
                 return await this.handleUnsubscribe(msg);
+            case "hydrateSyncState":
+                return await this.handleHydrateSyncState(msg);
+            case "persistSyncState":
+            case "requestSyncStateHydration":
+                return;
             default:
                 throw new Error(
                     `Unknown message type ${
                         (msg as { action: "string" }).action
                     }`,
                 );
+        }
+    }
+
+    async handleHydrateSyncState(msg: HydrateSyncStateMessage) {
+        const peer = this.peers[msg.peerId];
+
+        if (!peer) {
+            throw new Error(`Unknown peer ${msg.peerId}`);
+        }
+
+        const unknownKnownStates = new Set<RawCoID>();
+
+        for (const knownState of msg.knownStates) {
+            if (peer.knownStates.has(knownState.id)) {
+                continue;
+            }
+
+            unknownKnownStates.add(knownState.id);
+
+            peer.knownStates.dispatch({
+                type: "SET",
+                id: knownState.id,
+                value: knownState,
+            });
+        }
+
+        for (const id of unknownKnownStates) {
+            await this.sendNewContentIncludingDependencies(id, peer);
         }
     }
 
@@ -301,7 +369,7 @@ export class SyncManager {
         const peerState = new PeerState(peer);
         this.peers[peer.id] = peerState;
 
-        if (peer.role === "server") {
+        if (peer.role === "server" || peer.role === "storage") {
             const initialSync = async () => {
                 for (const id of Object.keys(
                     this.local.coValues,
@@ -390,7 +458,7 @@ export class SyncManager {
             // special case: we should be able to solve this much more neatly
             // with an explicit state machine in the future
             const eligiblePeers = this.peersInPriorityOrder().filter(
-                (other) => other.id !== peer.id && other.role === "server",
+                (other) => other.id !== peer.id && (other.role === "server" || other.role === "storage"),
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
@@ -684,7 +752,7 @@ export class SyncManager {
                     coValue.id,
                     peer,
                 );
-            } else if (peer.role === "server") {
+            } else if (peer.role === "server" || peer.role === "storage") {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,
