@@ -153,6 +153,41 @@ export class LocalNode {
             }
         }
 
+        // Abstract this in a function call
+        const serverPeers = nodeWithAccount.syncManager
+            .peersInPriorityOrder()
+            .filter((peer) => peer.role === "server");
+
+        const storagePeers = nodeWithAccount.syncManager
+            .peersInPriorityOrder()
+            .filter((peer) => peer.role === "storage");
+
+        for (const peer of serverPeers) {
+            // TODO: Shoutdown function?
+            peer.knownStates.subscribe((id, knownState) => {
+                if (knownState === undefined) {
+                    return;
+                }
+
+                const entry = nodeWithAccount.coValues[id];
+
+                if (entry?.state.type === "available") {
+                    const coValue = entry.state.coValue;
+                    const fullySynced = !coValue.newContentSince(knownState);
+
+                    for (const storagePeer of storagePeers) {
+                        void storagePeer.pushOutgoingMessage({
+                            action: "persistSyncState",
+                            payload: knownState,
+                            fullySynced,
+                            peerId: peer.id,
+                            id,
+                        });
+                    }
+                }
+            });
+        }
+
         syncAllCoValuesAfterCreateAccount();
 
         setTimeout(syncAllCoValuesAfterCreateAccount, 500);
@@ -264,7 +299,6 @@ export class LocalNode {
             if (profile === "unavailable") {
                 throw new Error("Profile unavailable from all peers");
             }
-
 
             if (migration) {
                 await migration(

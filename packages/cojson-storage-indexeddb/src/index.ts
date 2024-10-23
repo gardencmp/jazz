@@ -690,7 +690,7 @@ export class IDBStorage {
         void this.toLocalNode.push({
             action: "hydrateSyncState",
             peerId: msg.peerId,
-            knownStates: result.filter((row) => !row.fullySynced).map((row) => row.payload),
+            knownStates: result.map((row) => row.payload),
         });
     }
 

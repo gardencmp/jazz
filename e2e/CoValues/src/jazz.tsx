@@ -11,10 +11,7 @@ export const { useAccount, useCoState } = Jazz;
 
 function getUserInfo() {
     const url = new URL(window.location.href);
-    return {
-        signUp: url.searchParams.get("signUp") ?? "Mister X",
-        logInAs: url.searchParams.get("logInAs"),
-    };
+    return url.searchParams.get("userName") ?? "Mister X";
 }
 
 export function AuthAndJazz({ children }: { children: React.ReactNode }) {
@@ -24,12 +21,12 @@ export function AuthAndJazz({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (state.state === "ready" && !signedUp.current) {
-            const { signUp, logInAs } = getUserInfo();
-            
-            if (logInAs) {
-                state.logInAs(logInAs);
+            const userName = getUserInfo();
+
+            if (state.existingUsers.includes(userName)) {
+                state.logInAs(userName)
             } else {
-                state.signUp(signUp);
+                state.signUp(userName)
             }
 
             signedUp.current = true;

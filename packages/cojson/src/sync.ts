@@ -225,17 +225,15 @@ export class SyncManager {
             }
 
             unknownKnownStates.add(knownState.id);
-
-            peer.knownStates.dispatch({
-                type: "SET",
-                id: knownState.id,
-                value: knownState,
-            });
         }
 
-        for (const id of unknownKnownStates) {
-            await this.sendNewContentIncludingDependencies(id, peer);
-        }
+        // Without a timeout the app won't start
+        // find a better way to schedule this
+        setTimeout(() => {
+            for (const id of unknownKnownStates) {
+                void this.local.loadCoValueCore(id)
+            }
+        }, 500)
     }
 
     async subscribeToIncludingDependencies(id: RawCoID, peer: PeerState) {
@@ -262,8 +260,6 @@ export class SyncManager {
         for (const id of coValue.getDependedOnCoValues()) {
             await this.subscribeToIncludingDependencies(id, peer);
         }
-
-        peer.knownStates.triggerUpdate(id);
 
         if (!peer.toldKnownState.has(id)) {
             peer.toldKnownState.add(id);
@@ -305,6 +301,14 @@ export class SyncManager {
             });
 
             peer.toldKnownState.add(id);
+        }
+    }
+
+     triggerSyncStateChangeToServerPeers(id: RawCoID) {
+        for (const peer of Object.values(this.peers)) {
+            if (peer.role === 'server') {
+                peer.knownStates.triggerUpdate(id)
+            }
         }
     }
 
@@ -436,8 +440,10 @@ export class SyncManager {
                 }
             })
             .finally(() => {
-                peer.outgoing.close();
-                delete this.peers[peer.id];
+                const state = this.peers[peer.id];
+
+                state?.gracefulShutdown();
+                // delete this.peers[peer.id];
             });
     }
 
@@ -739,6 +745,8 @@ export class SyncManager {
     async actuallySyncCoValue(coValue: CoValueCore) {
         // let blockingSince = performance.now();
         for (const peer of this.peersInPriorityOrder()) {
+            if (peer.closed) continue;
+
             // if (performance.now() - blockingSince > 5) {
             //     await new Promise<void>((resolve) => {
             //         setTimeout(resolve, 0);
@@ -762,6 +770,8 @@ export class SyncManager {
                 );
             }
         }
+
+        this.triggerSyncStateChangeToServerPeers(coValue.id)
     }
 
     gracefulShutdown() {

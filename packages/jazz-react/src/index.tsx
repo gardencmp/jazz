@@ -46,8 +46,19 @@ export function createJazzReactApp<Acc extends Account>({
 
         const [sessionCount, setSessionCount] = useState(0);
 
+        const effectExecuted = React.useRef(false);
+        effectExecuted.current = false;
+
         useEffect(() => {
-            const promiseWithDoneCallback = createJazzBrowserContext<Acc>(
+            // Prevents the effect running twice in dev mode
+            if (effectExecuted.current) return;
+            effectExecuted.current = true;
+
+            if (ctx) {
+                ctx.done();
+            }
+
+            void createJazzBrowserContext<Acc>(
                 auth === "guest"
                     ? {
                           peer,
@@ -55,7 +66,7 @@ export function createJazzReactApp<Acc extends Account>({
                       }
                     : {
                           AccountSchema,
-                          auth: auth,
+                          auth,
                           peer,
                           storage,
                       },
@@ -64,16 +75,12 @@ export function createJazzReactApp<Acc extends Account>({
                     ...context,
                     logOut: () => {
                         context.logOut();
+                        context.done();
                         setCtx(undefined);
                         setSessionCount(sessionCount + 1);
                     },
                 });
-                return context.done;
             });
-
-            return () => {
-                void promiseWithDoneCallback.then((done) => done());
-            };
         }, [AccountSchema, auth, peer, storage, sessionCount]);
 
         return (
