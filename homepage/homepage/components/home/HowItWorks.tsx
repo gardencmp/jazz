@@ -62,7 +62,7 @@ function Step({
                     className={clsx(
                         "bg-blue-50 size-6 rounded-full text-blue text-sm font-semibold font-mono",
                         "inline-flex items-center justify-center text-center shrink-0",
-                      "dark:bg-blue dark:text-white"
+                        "dark:bg-blue dark:text-white",
                     )}
                 >
                     <span className="sr-only">Step</span>
@@ -70,9 +70,7 @@ function Step({
                 </p>
                 <p className="max-w-md">{description}</p>
             </div>
-            <div className="flex-1 pl-4 sm:pl-12">
-                {children}
-            </div>
+            <div className="flex-1 pl-4 sm:pl-12">{children}</div>
         </div>
     );
 }
