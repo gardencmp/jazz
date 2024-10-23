@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import Link from "next/link";
 
 export function Hero({
     features,
@@ -6,7 +7,7 @@ export function Hero({
     features: { title: string; icon: LucideIcon }[];
 }) {
     return (
-        <div className="container grid gap-x-8 gap-y-10 py-12 lg:py-24 lg:gap-0 lg:grid-cols-3">
+        <div className="container grid gap-x-8 gap-y-10 py-12 md:py-16 lg:py-24 lg:gap-0 lg:grid-cols-3">
             <div className="flex flex-col justify-center gap-4 lg:col-span-3 lg:gap-8">
                 <p className="uppercase text-blue tracking-wide text-sm font-medium dark:text-stone-400">
                     Local-first development toolkit
@@ -20,7 +21,7 @@ export function Hero({
                         Jazz is a framework for building local-first apps
                         &mdash; an architecture that lets apps like Figma and Linear play in a league of their own.
                     </p>
-                    <p>Open source. Easily self-host or use Jazz Cloud.</p>
+                    <p>Open source. Self-host or use <Link href="/cloud">Jazz Cloud</Link> for zero-config magic.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 max-w-3xl sm:grid-cols-4 sm:gap-4">
