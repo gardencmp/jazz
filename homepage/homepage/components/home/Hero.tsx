@@ -13,7 +13,7 @@ export function Hero({
                     Local-first development toolkit
                 </p>
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
-                    Ship top-tier apps, with less code.
+                    Ship top-tier apps at high tempo.
                 </h1>
 
                 <div className="space-y-2 text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
