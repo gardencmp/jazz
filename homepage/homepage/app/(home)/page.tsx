@@ -21,6 +21,7 @@ import {
     HardDriveDownloadIcon,
     KeyRoundIcon,
     MousePointerSquareDashedIcon,
+    UserIcon,
 } from "lucide-react";
 
 import {
@@ -42,7 +43,6 @@ import GroupDescription from "./coValueDescriptions/groupDescription.mdx";
 import AccountDescription from "./coValueDescriptions/accountDescription.mdx";
 import AutoSubDescription from "./toolkit/autoSub.mdx";
 import CursorsAndCaretsDescription from "./toolkit/cursorsAndCarets.mdx";
-import AuthProvidersDescription from "./toolkit/authProviders.mdx";
 import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
@@ -52,7 +52,6 @@ import Link from "next/link";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
-import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { Hero } from "@/components/home/Hero";
 import { HowItWorks } from "@/components/home/HowItWorks";
 
@@ -87,23 +86,24 @@ const ArrowDoodle = ({ className }: { className?: string }) => (
 );
 
 export default function Home() {
+    const localFirst = {
+        title: "Local-first",
+        icon: HardDriveDownloadIcon,
+        description: (
+            <>
+                <p>
+                    All data you load or create is persisted locally, so your
+                    users can work offline.
+                </p>
+                <p>
+                    When you’re back online, your local changes are synced to
+                    the server.
+                </p>
+            </>
+        ),
+    };
+
     const features = [
-        {
-            title: "Local-first",
-            icon: HardDriveDownloadIcon,
-            description: (
-                <>
-                    <p>
-                        All data you load or create is persisted locally, so
-                        your users can work offline.
-                    </p>
-                    <p>
-                        When you’re back online, your local changes are synced
-                        to the server.
-                    </p>
-                </>
-            ),
-        },
         {
             title: "Multiplayer",
             icon: MousePointerSquareDashedIcon,
@@ -172,7 +172,7 @@ export default function Home() {
             ),
         },
         {
-            title: "Sync",
+            title: "Real-time sync",
             icon: MonitorSmartphoneIcon,
             description: (
                 <>
@@ -188,7 +188,7 @@ export default function Home() {
             ),
         },
         {
-            title: "E2EE",
+            title: "E2E encryption",
             icon: KeyRoundIcon,
             description: (
                 <>
@@ -216,6 +216,23 @@ export default function Home() {
                         Remote changes are synced and applied with minimal
                         latency.
                     </p>
+                </>
+            ),
+        },
+        {
+            title: "Authentication",
+            icon: UserIcon,
+            description: (
+                <>
+                    <p>Plug and play different kinds of auth.</p>
+                    <ul className="pl-4 list-disc">
+                        <li>DemoAuth (for quick multi-user demos)</li>
+                        <li>WebAuthN (TouchID/FaceID)</li>
+                        <li>Clerk</li>
+                        <li>
+                            Auth0, Okta, NextAuth <ComingSoonBadge />
+                        </li>
+                    </ul>
                 </>
             ),
         },
@@ -329,16 +346,19 @@ export default function Home() {
                         slogan="Features that used to take months to build now work out-of-the-box."
                     />
 
-                    <HairlineBleedGrid>
-                        {features.map(({ title, icon: Icon, description }) => (
-                            <LabelledFeatureIcon
-                                key={title}
-                                label={title}
-                                icon={Icon}
-                                explanation={description}
-                            />
-                        ))}
-                    </HairlineBleedGrid>
+                    <GappedGrid>
+                        {[localFirst, ...features].map(
+                            ({ title, icon: Icon, description }) => (
+                                <LabelledFeatureIcon
+                                    className="col-span-2"
+                                    key={title}
+                                    label={title}
+                                    icon={Icon}
+                                    explanation={description}
+                                />
+                            ),
+                        )}
+                    </GappedGrid>
                 </div>
 
                 <div>
@@ -515,16 +535,6 @@ export default function Home() {
 
                     <GridCard>
                         <SectionHeader
-                            title="Auth Providers"
-                            slogan="Plug and play different kinds of auth."
-                        />
-                        <SmallProse>
-                            <AuthProvidersDescription />
-                        </SmallProse>
-                    </GridCard>
-
-                    <GridCard>
-                        <SectionHeader
                             title="Two-way sync to your DB"
                             slogan="Add Jazz to an existing app."
                         />
@@ -561,7 +571,7 @@ export default function Home() {
 
                 <div className="border border-stone-200 dark:border-stone-900 rounded-xl shadow-sm p-4 md:py-16">
                     <div className="flex flex-col lg:max-w-3xl md:text-center mx-auto justify-between gap-6">
-                        <p className="uppercase text-blue tracking-wide text-sm font-medium dark:text-stone-400">
+                        <p className="uppercase text-blue tracking-widest text-sm font-medium dark:text-stone-400">
                             Become an early adopter
                         </p>
                         <h3 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
