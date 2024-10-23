@@ -15,22 +15,18 @@ export function Hero({
                     Ship top-tier apps, with less code.
                 </h1>
 
-                <div
-                  className="space-y-2 text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
+                <div className="space-y-2 text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
                     <p>
-                        Jazz is a framework for building local-first apps &mdash; an architecture embraced
-                        by industry leaders today like Linear and Figma.
+                        Jazz is a framework for building local-first apps
+                        &mdash; an architecture that lets apps like Figma and Linear play in a league of their own.
                     </p>
-                    <p>
-                        {" "}
-                        Fully open source. Host with Jazz Cloud or self-host.
-                    </p>
+                    <p>Open source. Easily self-host or use Jazz Cloud.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 max-w-3xl sm:grid-cols-4 sm:gap-4">
-                    {features.map(({title, icon: Icon}) => (
-                      <div
-                        key={title}
+                    {features.map(({ title, icon: Icon }) => (
+                        <div
+                            key={title}
                             className="flex text-xs sm:text-sm gap-2 items-center"
                         >
                             <span className="text-blue p-1.5 rounded-lg bg-blue-50 dark:text-stone-200 dark:bg-stone-900">
