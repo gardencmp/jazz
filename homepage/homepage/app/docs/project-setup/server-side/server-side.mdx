@@ -55,11 +55,11 @@ const { worker } = await startWorker({
 
 ## Using CoValues instead of Requests
 
-Just like traditional backend functions, you can use Server Workers to do useful stuff (computations, calls to third-party APIs etc.) and put the results back into CoValues, which clients automatically get notified about.
+Just like traditional backend functions, you can use Server Workers to do useful stuff (computations, calls to third-party APIs etc.) and put the results back into CoValues, which subscribed clients automatically get notified about.
 
 What's less clear is how you can trigger this work to happen.
 
-- One option is to define traditional API handlers that use the Jazz Worker internally. This is helpful if you need to mutate Jazz state in response to HTTP requests such as for webhooks or non-Jazz API clients
+- One option is to define traditional HTTP API handlers that use the Jazz Worker internally. This is helpful if you need to mutate Jazz state in response to HTTP requests such as for webhooks or non-Jazz API clients
 - The other option is to have the Jazz Worker subscribe to CoValues which they will then collaborate on with clients.
     - A common pattern is to implement a state machine represented by a CoValue, where the client will do some state transitions (such as `draft -> ready`), which the worker will notice and then do some work in response, feeding the result back in a further state transition (such as `ready -> success & data`, or `ready -> failure & error details`).
     - This way, client and worker don't have to explicitly know about each other or communicate directly, but can rely on Jazz as a communication mechanism - with computation progressing in a distributed manner wherever and whenever possible.
