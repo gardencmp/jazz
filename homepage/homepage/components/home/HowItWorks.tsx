@@ -19,7 +19,7 @@ function Code({
         <div
             className={clsx(
                 className,
-                "w-full h-full max-w-[480px] relative -right-2 -bottom-1 max-w-full overflow-x-auto ml-auto overflow-hidden",
+                "w-full h-full relative -right-2 -bottom-1 max-w-full lg:max-w-[480px] overflow-x-auto ml-auto overflow-hidden",
                 "shadow-xl shadow-blue/20 ",
                 "rounded-tl-lg border border-stone-200",
                 "flex-1 bg-white ring ring-4 ring-stone-400/20",
