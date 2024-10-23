@@ -1,0 +1,65 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Node.JS / Server Workers
+
+The main detail to understand when using Jazz server-side is that Server Workers have Jazz `Accounts`, just like normal users do.
+
+This lets you share CoValues with Server Workers, having precise access control by adding the Worker to `Groups` with specific roles just like you would with other users.
+
+## Generating Credentials
+
+Server Workers typically have static credentials, consisting of a public Account ID and a private Account Secret.
+
+To generate new credentials for a Server Worker, you can run:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```sh
+npx jazz-run account create --name "My Server Worker"
+```
+</CodeGroup>
+
+The name will be put in the public profile of the Server Worker's `Account`, which can be helpful when inspecting metadata of CoValue edits that the Server Worker has done.
+
+## Storing & Providing Credentials
+
+Server Worker credentials are typically stored and provided as environmental variables.
+
+**Take extra care with the Account Secret &mdash; handle it like any other secret environment variable such as a DB password.**
+
+## Starting a Server Worker
+
+You can use `startWorker` from `jazz-nodejs` to start a Server Worker. Similarly to setting up a client-side Jazz context, it:
+
+- takes a custom `AccountSchema` if you have one (for example, because the worker needs to store information in it's private account root)
+- takes a URL for a sync & storage server
+
+`startWorker` expects credentials in the `JAZZ_WORKER_ACCOUNT` and `JAZZ_WORKER_SECRET` environment variables by default (as printed by `npx account create ...`), but you can also pass them manually as `accountID` and `accountSecret` parameters if you get them from elsewhere.
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+import { startWorker } from 'jazz-nodejs';
+
+const { worker } = await startWorker({
+    AccountSchema: MyWorkerAccount,
+    syncServer: 'wss://cloud.jazz.tools/?key=you@example.com',
+});
+```
+</CodeGroup>
+
+`worker` acts like `me` (as returned by `useAccount` on the client) - you can use it to:
+
+- load/subscribe to CoValues: `MyCoValue.subscribe(id, worker, {...})`
+- create CoValues & Groups `const val = MyCoValue.create({...}, { owner: worker })`
+
+## Using CoValues instead of Requests
+
+Just like traditional backend functions, you can use Server Workers to do useful stuff (computations, calls to third-party APIs etc.) and put the results back into CoValues, which clients automatically get notified about.
+
+What's less clear is how you can trigger this work to happen.
+
+- One option is to define traditional API handlers that use the Jazz Worker internally. This is helpful if you need to mutate Jazz state in response to HTTP requests such as for webhooks or non-Jazz API clients
+- The other option is to have the Jazz Worker subscribe to CoValues which they will then collaborate on with clients.
+    - A common pattern is to implement a state machine represented by a CoValue, where the client will do some state transitions (such as `draft -> ready`), which the worker will notice and then do some work in response, feeding the result back in a further state transition (such as `ready -> success & data`, or `ready -> failure & error details`).
+    - This way, client and worker don't have to explicitly know about each other or communicate directly, but can rely on Jazz as a communication mechanism - with computation progressing in a distributed manner wherever and whenever possible.
