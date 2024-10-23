@@ -66,7 +66,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
 
     const firstWsPeer = createWebSocketPeer({
         websocket: new WebSocket(options.peer),
-        id: options.peer + "@" + new Date().toISOString(),
+        id: options.peer,
         role: "server",
     });
     let shouldTryToReconnect = true;
@@ -92,7 +92,9 @@ export async function createJazzBrowserContext<Acc extends Account>(
                                 fs: new OPFSFilesystem(crypto),
                                 // trace: true,
                             })
-                          : await IDBStorage.asPeer(),
+                          : await IDBStorage.asPeer({
+                            persistSyncStateOf: firstWsPeer.id,
+                          }),
                       firstWsPeer,
                   ],
                   sessionProvider: provideBrowserLockSession,

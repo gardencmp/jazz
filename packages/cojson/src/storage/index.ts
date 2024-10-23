@@ -79,7 +79,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
 
                     if (msg.action === "content") {
                         await this.handleNewContent(msg);
-                    } else {
+                    } else if (msg.action === 'load' || msg.action === 'known') {
                         await this.sendNewContent(msg.id, msg, undefined);
                     }
                 } catch (e) {

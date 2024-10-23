@@ -85,7 +85,13 @@ export class IDBStorage {
         {
             trace,
             localNodeName = "local",
-        }: { trace?: boolean; localNodeName?: string } | undefined = {
+        }:
+            | {
+                  trace?: boolean;
+                  localNodeName?: string;
+                  persistSyncStateOf?: Peer["id"];
+              }
+            | undefined = {
             localNodeName: "local",
         },
     ): Promise<Peer> {
@@ -94,7 +100,7 @@ export class IDBStorage {
             "storage",
             {
                 peer1role: "client",
-                peer2role: "server",
+                peer2role: "storage",
                 trace,
                 crashOnClose: true,
             },
@@ -113,7 +119,7 @@ export class IDBStorage {
         toLocalNode: OutgoingSyncQueue,
     ) {
         const dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-            const request = indexedDB.open("jazz-storage", 4);
+            const request = indexedDB.open("jazz-storage", 5);
             request.onerror = () => {
                 reject(request.error);
             };
@@ -155,6 +161,15 @@ export class IDBStorage {
                         keyPath: ["ses", "idx"],
                     });
                 }
+                if (ev.oldVersion <= 5) {
+                    const syncState = db.createObjectStore("syncState", {
+                        keyPath: ["id"],
+                    });
+
+                    syncState.createIndex("syncStateByPeerId", "peerId", {
+                        multiEntry: true,
+                    });
+                }
             };
         });
 
@@ -175,6 +190,12 @@ export class IDBStorage {
             case "done":
                 await this.handleDone(msg);
                 break;
+            case "persistSyncState":
+                await this.handlePersistSyncState(msg);
+                break;
+            case "requestSyncStateHydration":
+                await this.handleRequestSyncStateHydration(msg);
+                break;
         }
     }
 
@@ -187,6 +208,7 @@ export class IDBStorage {
                   sessions: IDBObjectStore;
                   transactions: IDBObjectStore;
                   signatureAfter: IDBObjectStore;
+                  syncState: IDBObjectStore;
               };
               startedAt: number;
               pendingRequests: ((txEntry: {
@@ -195,6 +217,7 @@ export class IDBStorage {
                       sessions: IDBObjectStore;
                       transactions: IDBObjectStore;
                       signatureAfter: IDBObjectStore;
+                      syncState: IDBObjectStore;
                   };
               }) => void)[];
           }
@@ -207,6 +230,7 @@ export class IDBStorage {
             sessions: IDBObjectStore;
             transactions: IDBObjectStore;
             signatureAfter: IDBObjectStore;
+            syncState: IDBObjectStore;
         }) => IDBRequest,
     ): SyncPromise<T> {
         return new SyncPromise((resolve, reject) => {
@@ -220,6 +244,7 @@ export class IDBStorage {
                     sessions: IDBObjectStore;
                     transactions: IDBObjectStore;
                     signatureAfter: IDBObjectStore;
+                    syncState: IDBObjectStore;
                 };
             }) => {
                 const request = handler(stores);
@@ -247,7 +272,13 @@ export class IDBStorage {
 
             if (!txEntry || performance.now() - txEntry.startedAt > 20) {
                 const tx = this.db.transaction(
-                    ["coValues", "sessions", "transactions", "signatureAfter"],
+                    [
+                        "coValues",
+                        "sessions",
+                        "transactions",
+                        "signatureAfter",
+                        "syncState",
+                    ],
                     "readwrite",
                 );
                 txEntry = {
@@ -258,6 +289,7 @@ export class IDBStorage {
                         sessions: tx.objectStore("sessions"),
                         transactions: tx.objectStore("transactions"),
                         signatureAfter: tx.objectStore("signatureAfter"),
+                        syncState: tx.objectStore("syncState"),
                     },
                     startedAt: performance.now(),
                     pendingRequests: [],
@@ -638,6 +670,29 @@ export class IDBStorage {
     }
 
     handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
+
+    handlePersistSyncState(msg: CojsonInternalTypes.PersistSyncStateMessage) {
+        return this.makeRequest(({ syncState }) =>
+            syncState.put({
+                id: `${msg.peerId}-${msg.id}`,
+                peerId: msg.peerId,
+                payload: msg.payload,
+                fullySynced: msg.fullySynced,
+            }),
+        );
+    }
+
+    async handleRequestSyncStateHydration(msg: CojsonInternalTypes.RequestSyncStateHydrationMessage) {
+        const result = await this.makeRequest<{ payload: CojsonInternalTypes.CoValueKnownState, fullySynced: boolean }[]>(({ syncState }) =>
+            syncState.index("syncStateByPeerId").getAll(msg.peerId),
+        );
+
+        void this.toLocalNode.push({
+            action: "hydrateSyncState",
+            peerId: msg.peerId,
+            knownStates: result.map((row) => row.payload),
+        });
+    }
 
     // inTransaction(mode: "readwrite" | "readonly"): {
     //     coValues: IDBObjectStore;
