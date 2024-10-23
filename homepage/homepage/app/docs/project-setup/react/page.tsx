@@ -1,32 +1,34 @@
-import SyncAndStorage from "./sync-and-storage.mdx"
+import ReactGuide from "./react.mdx"
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { clsx } from "clsx";
 
 const navItems = [
     {
-        name: "Using Jazz Cloud",
-        href: "/docs/sync-and-storage#using-jazz-cloud",
+        name: "React",
+        href: "/docs/project-setup/react#react",
+    },
+    {
+        name: "Next.JS",
+        href: "/docs/project-setup/react#next",
         items: [
             {
-                name: "Free Public Alpha",
-                href: "/docs/sync-and-storage#free-public-alpha",
+                name: "Client-side only",
+                href: "/docs/project-setup/react#next-csr",
+            },
+            {
+                name: "SSR use 🧪",
+                href: "/docs/project-setup/react#next-ssr",
+            },
+            {
+                name: "SSR + client-side 🧪",
+                href: "/docs/project-setup/react#next-ssr-plus-csr",
             },
         ]
     },
     {
-        name: "Running your own sync server",
-        href: "/docs/sync-and-storage#running-your-own",
-        items: [
-            {
-                name: "Command line options",
-                href: "/docs/sync-and-storage#command-line-options",
-            },
-            {
-                name: "Source code",
-                href: "/docs/sync-and-storage#source-code",
-            },
-        ]
+        name: "React Native",
+        href: "/docs/project-setup/react#react-native"
     }
 ]
 
@@ -40,7 +42,7 @@ export default function Page() {
             )}
         >
             <Prose className="overflow-x-hidden lg:flex-1">
-                <SyncAndStorage />
+                <ReactGuide />
             </Prose>
             <TableOfContents className="w-48 shrink-0" items={navItems} />
         </div>

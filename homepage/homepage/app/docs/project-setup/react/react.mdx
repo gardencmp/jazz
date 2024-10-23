@@ -1,0 +1,161 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# React
+
+Currently, the recommended pattern to set up a React app with Jazz is to create a separate file (for example, called `jazz.tsx`) in which:
+
+1. You create a new Jazz React app context, extracting and exporting Jazz hooks.
+
+    <CodeGroup>
+    {/* prettier-ignore */}
+    ```tsx
+    import { createJazzReactApp } from "jazz-react";
+
+    const Jazz = createJazzReactApp();
+    export const { useAccount, useCoState } = Jazz;
+    ```
+    </CodeGroup>
+
+    - You extract hooks here so they can be aware of a custom `AccountSchema` for your app once you start using one (see [Accounts & Migrations](/docs/schemas/accounts-and-migrations)).
+
+        This way, accounts returned by the hooks will be correctly typed throughout your app. Simply import them from `jazz.tsx` wherever you need them.
+
+        <CodeGroup>
+        {/* prettier-ignore */}
+        ```tsx
+        import { createJazzReactApp } from "jazz-react"; // old
+
+        const Jazz = createJazzReactApp({ AccountSchema: MyAppAccount });
+        export const { useAccount, useCoState } = Jazz; // old
+        ```
+        </CodeGroup>
+
+2. You define a context providing component (typically called `JazzAndAuth`) that uses
+
+    - the context provider of the Jazz React app context you just created
+
+    - the hooks and default/custom UI of one of the [Auth Methods](/docs/auth/auth-methods).
+
+    This is also where you specify the sync & storage server to connect to (see [Sync and storage](/docs/sync-and-storage)).
+
+    <CodeGroup>
+    {/* prettier-ignore */}
+    ```tsx
+    import { createJazzReactApp } from "jazz-react";// old
+
+    const Jazz = createJazzReactApp();// old
+    export const { useAccount, useCoState } = Jazz;// old
+
+    import { PasskeyAuthBasicUI, usePasskeyAuth } from "jazz-react";
+
+    function JazzAndAuth({ children }: { children: React.ReactNode }) {
+        const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
+
+        return (
+            <>
+                <Jazz.Provider
+                    auth={passkeyAuth}
+                    peer="wss://mesh.jazz.tools/?key=you@example.com"
+                >
+                    {children}
+                </Jazz.Provider>
+                <PasskeyAuthBasicUI state={passKeyState} />
+            </>
+        );
+    }
+    ```
+    </CodeGroup>
+
+With `JazzAndAuth` defined, you can wrap your app in it and then use the extracted and exported hooks within your App.
+
+<CodeGroup>
+{/* prettier-ignore */}
+```tsx
+ReactDOM.createRoot(document.getElementById("root")!).render( // old
+    <React.StrictMode> // old
+        <JazzAndAuth>
+            <App />
+        </JazzAndAuth>
+    </React.StrictMode>// old
+);//old
+```
+</CodeGroup>
+
+
+# Next.JS
+
+## Client-side only
+
+The easiest way to use Jazz with Next.JS is to only use it on the client side. You can ensure this by:
+
+- marking the `jazz.tsx` file as `"use client"`
+
+    <CodeGroup>
+    {/* prettier-ignore */}
+    ```tsx
+    "use client"
+    import { createJazzReactApp } from "jazz-react";// old
+
+    const Jazz = createJazzReactApp();// old
+    export const { useAccount, useCoState } = Jazz;// old
+
+    import { PasskeyAuthBasicUI, usePasskeyAuth } from "jazz-react";// old
+
+    function JazzAndAuth({ children }: { children: React.ReactNode }) {// old
+        const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });// old
+
+        return (// old
+            <>// old
+                <Jazz.Provider// old
+                    auth={passkeyAuth}// old
+                    peer="wss://mesh.jazz.tools/?key=you@example.com"// old
+                >// old
+                    {children}// old
+                </Jazz.Provider>// old
+                <PasskeyAuthBasicUI state={passKeyState} />// old
+            </>// old
+        );// old
+    }// old
+    ```
+    </CodeGroup>
+
+- marking any file with components where you use Jazz hooks (such as `useAccount` or `useCoState`) as `"use client"`
+
+## SSR use (experimental)
+
+Pure SSR use of Jazz is basically just using jazz-nodejs (see [Node.JS / Server Workers](docs/server-side)) inside Server Components.
+
+Instead of using hooks as you would on the client, you await promises returned by `CoValue.load(...)` inside your Server Components.
+
+TODO: code example
+
+This should work well for cases like rendering publicly-readable information, since the worker account will be able to load them.
+
+In the future, it will be possible to use trusted auth methods (such as Clerk, Auth0, etc.) that let you act as the same Jazz user both on the client and on the server, letting you use SSR even for data private to that user.
+
+## SSR + client-side (experimental)
+
+You can combine the two approaches by creating
+
+1. A pure "rendering" component that renders an already-loaded CoValue (in JSON-ified form)
+
+    TODO: code example
+
+2. A "hydrating" component (with `"use client"`) that
+
+    - expects a pre-loaded CoValue as a prop (in JSON-ified form)
+    - uses one of the client-side Jazz hooks (such as `useAccount` or `useCoState`) to subscribe to that same CoValue
+    - passing the client-side subscribed state to the "rendering" component, with the pre-loaded CoValue as a fallback until the client receives the first subscribed state
+
+    TODO: code example
+
+3. A "pre-loading" Server Component that
+
+    - pre-loads the CoValue by awaiting it's `load(...)` method (as described above)
+    - renders the "hydrating" component, passing the pre-loaded CoValue as a prop
+
+    TODO: code example
+
+# React Native
+
+TODO

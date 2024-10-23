@@ -1,4 +1,4 @@
-import Guide from "../guide.mdx";
+import Guide from "./guide.mdx";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { clsx } from "clsx";
