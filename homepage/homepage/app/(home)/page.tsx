@@ -172,7 +172,7 @@ export default function Home() {
             ),
         },
         {
-            title: "Sync",
+            title: "Real-time sync",
             icon: MonitorSmartphoneIcon,
             description: (
                 <>
