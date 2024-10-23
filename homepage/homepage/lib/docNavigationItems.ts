@@ -30,7 +30,7 @@ export const docNavigationItems = [
             },
             {
                 name: "Node.JS / Server Workers",
-                href: "/docs/project-setup/react-native",
+                href: "/docs/project-setup/server-side",
             },
         ],
     },
