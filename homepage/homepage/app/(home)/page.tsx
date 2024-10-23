@@ -188,7 +188,7 @@ export default function Home() {
             ),
         },
         {
-            title: "E2EE",
+            title: "E2E encryption",
             icon: KeyRoundIcon,
             description: (
                 <>
