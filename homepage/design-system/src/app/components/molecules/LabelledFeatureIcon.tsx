@@ -5,14 +5,17 @@ export function LabelledFeatureIcon({
     label,
     icon: Icon,
     explanation,
+    className,
 }: {
     label: string;
     icon: LucideIcon;
     explanation: React.ReactNode;
+    className?: string;
 }) {
     return (
         <div
             className={clsx(
+              className,
                 "p-4 flex flex-col gap-3",
                 "not-prose text-base",
                 "border border-stone-200 dark:border-stone-900 rounded-xl",
