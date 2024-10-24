@@ -27,7 +27,7 @@ function Code({
             )}
         >
             <div className="flex px-4 border-b border-stone-200 dark:border-stone-900">
-                <span className="text-xs lg:text-sm border-b border-blue py-2">
+                <span className="text-xs lg:text-sm border-b border-blue py-2 dark:border-blue-400">
                     {fileName}
                 </span>
             </div>
