@@ -1660,7 +1660,7 @@ export function DiagramAfterJazz(props: SVGProps<SVGSVGElement>) {
             />
             <LightMode
                 {...props}
-                className={clsx(props.className, "dark:hidden")}
+                className={clsx(props.className, "p-2 dark:hidden")}
             />
         </>
     );
