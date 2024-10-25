@@ -38,6 +38,8 @@ const config = {
                 "900": "#12046A",
                 DEFAULT: "#3313F7",
             },
+            green: colors.green,
+            red: colors.red,
         },
         extend: {
             fontFamily: {

@@ -32,7 +32,6 @@ import {
     Ui_tsx,
 } from "@/codeSamples/examples/chat/src";
 
-import CoValuesIntro from "./coValuesIntro.mdx";
 import CoMapDescription from "./coValueDescriptions/coMapDescription.mdx";
 import CoListDescription from "./coValueDescriptions/coListDescription.mdx";
 import CoPlainTextDescription from "./coValueDescriptions/coPlainTextDescription.mdx";
@@ -47,43 +46,12 @@ import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
-import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
-import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
-import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { Hero } from "@/components/home/Hero";
 import { HowItWorks } from "@/components/home/HowItWorks";
-
-const ArrowDoodle = ({ className }: { className?: string }) => (
-    <svg
-        className={className}
-        xmlns="http://www.w3.org/2000/svg"
-        width="107"
-        height="85"
-        viewBox="0 0 107 85"
-        fill="none"
-    >
-        <path
-            d="M3.87338 33.7809C32.7867 45.4747 65.5543 47.9975 91.7667 37.4141"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-        />
-        <path
-            d="M74.1719 24.958C83.1201 33.0289 92.3253 37.1887 98.5899 34.6593"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-        />
-        <path
-            d="M87.2448 58.8003C88.3842 46.6564 92.3253 37.1887 98.5899 34.6593"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-        />
-    </svg>
-);
+import BeforeAfterJazz from "@/components/home/BeforeAfterJazz";
 
 export default function Home() {
     const localFirst = {
@@ -242,89 +210,7 @@ export default function Home() {
         <>
             <Hero features={features} />
 
-            <div className="bg-stone-100 border-y dark:bg-stone-925 py-8 lg:py-16 dark:border-stone-900">
-                <div className="container grid gap-4 lg:gap-8">
-                    <H2 className="md:text-center">
-                        Hard things are easy now.
-                    </H2>
-                    <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
-                        <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed max-w-2xl space-y-2 md:text-lg md:space-y-4 md:leading-relaxed">
-                                <p>
-                                    Ever notice how every stack just{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        reinvents shared state between users and
-                                        machines
-                                    </span>
-                                    ?
-                                </p>
-                                <p>
-                                    And far from the simple client-server model,
-                                    you routinely tackle{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        a mess of moving parts
-                                    </span>
-                                    , tech choices and deployment questions.
-                                </p>
-                                <p>
-                                    And{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        your app’s code is all over the place.
-                                    </span>
-                                </p>
-                            </div>
-                            <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-16 rounded-xl bg-white shadow-sm dark:bg-stone-900">
-                                    <DiagramBeforeJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramBeforeJazz>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="hidden md:block relative pr-3 top-16">
-                            <ArrowDoodle className="w-full h-auto text-stone-300 dark:text-stone-800" />
-                        </div>
-
-                        <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed max-w-2xl space-y-2 md:text-lg md:space-y-4 md:leading-relaxed">
-                                <p>
-                                    Jazz provides a single new abstraction to do
-                                    the whole job.
-                                </p>
-                                <p>
-                                    It turns the data flow around and gives you{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        mutable local state
-                                    </span>
-                                    , solving{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        sync
-                                    </span>
-                                    ,{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        concurrent editing
-                                    </span>{" "}
-                                    and{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        permissions
-                                    </span>{" "}
-                                    under the hood.
-                                </p>
-                                <p>
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        All that’s left?
-                                    </span>{" "}
-                                    What makes your app your app.
-                                </p>
-                            </div>
-                            <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-16 rounded-xl bg-white shadow-sm dark:bg-stone-900">
-                                    <DiagramAfterJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramAfterJazz>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <BeforeAfterJazz />
 
             <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
                 <HowItWorks />

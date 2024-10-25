@@ -35,7 +35,7 @@ export function Hero({
                             key={title}
                             className="flex text-xs sm:text-sm gap-2 items-center"
                         >
-                            <span className="text-blue p-1.5 rounded-lg bg-blue-50 dark:text-stone-200 dark:bg-stone-900">
+                            <span className="text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-400 dark:bg-stone-900">
                                 <Icon size={16} />
                             </span>
                             <p>{title}</p>
