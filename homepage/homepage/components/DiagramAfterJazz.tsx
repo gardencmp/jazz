@@ -1090,7 +1090,7 @@ function LightMode(props: SVGProps<SVGSVGElement>) {
 export function DiagramAfterJazz({ className }: { className?: string }) {
     return (
         <div className={className}>
-            <div className="-mx-8">
+            <div className="-mx-4 md:-mx-8">
                 <DarkMode className="w-full hidden dark:block" />
                 <LightMode className="w-full block dark:hidden" />
             </div>
