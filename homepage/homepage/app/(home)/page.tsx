@@ -216,8 +216,8 @@ export default function Home() {
             <div className="container grid gap-4 lg:gap-8">
                 <H2 className="md:text-center">Hard things are easy now.</H2>
 
-                <div className="grid sm:grid-cols-2 lg:max-w-4xl mx-auto gap-4">
-                    <div className="flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:gap-5 dark:bg-stone-925">
+                <div className="grid sm:grid-cols-2 lg:max-w-5xl mx-auto gap-4">
+                    <div className="flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:pb-2 md:gap-5 dark:bg-stone-925">
                         <span className="text-red-600 bg-red-100 inline-flex items-center justify-center size-10 rounded-full dark:bg-stone-900 dark:text-red-500">
                             <TriangleAlertIcon size={24} />
                         </span>
@@ -234,15 +234,16 @@ export default function Home() {
                             </p>
                             <p>And your app’s code is all over the place.</p>
                         </div>
-                        <div className="relative">
+                        <div className="relative flex items-center flex-1">
                             <div className="w-20 h-full bg-gradient-to-r from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
                             <div className="h-20 w-full bg-gradient-to-b from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
                             <div className="h-20 w-full bg-gradient-to-t from-stone-50 to-transparent absolute bottom-0 left-0 z-10 dark:from-stone-925"></div>
                             <div className="w-20 h-full bg-gradient-to-l from-stone-50 to-transparent absolute top-0 right-0 z-10 dark:from-stone-925"></div>
-                            <DiagramBeforeJazz className="w-full h-auto max-w-sm" />
+
+                            <DiagramBeforeJazz className="w-full h-auto max-w-md" />
                         </div>
                     </div>
-                    <div className="flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:gap-5 dark:bg-stone-925">
+                    <div className="flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:pb-2 md:gap-5 dark:bg-stone-925">
                         <span className="text-green-500 bg-green-100 inline-flex items-center justify-center size-10 rounded-full dark:bg-stone-900 dark:text-green-500">
                             <CheckIcon size={24} />
                         </span>
@@ -278,7 +279,7 @@ export default function Home() {
                             </p>
                         </div>
                         <div className="flex items-center flex-1">
-                            <DiagramAfterJazz className="w-full h-auto max-w-sm" />
+                            <DiagramAfterJazz className="w-full h-auto max-w-md" />
                         </div>
                     </div>
                 </div>
