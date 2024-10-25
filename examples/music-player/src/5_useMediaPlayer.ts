@@ -5,6 +5,7 @@ import { MusicTrack, Playlist } from "@/1_schema";
 import { useRef, useState } from "react";
 import { getNextTrack, getPrevTrack } from "./lib/getters";
 import { BinaryCoStream, ID } from "jazz-tools";
+import { updateActivePlaylist, updateActiveTrack } from "./4_actions";
 
 export function useMediaPlayer() {
     const { me } = useAccount();
@@ -39,7 +40,7 @@ export function useMediaPlayer() {
             return;
         }
 
-        me.root.activeTrack = track;
+        updateActiveTrack(track, me);
 
         await playMedia(file);
 
@@ -52,7 +53,7 @@ export function useMediaPlayer() {
         const track = await getNextTrack(me);
 
         if (track) {
-            me.root.activeTrack = track;
+            updateActiveTrack(track, me);
             await loadTrack(track);
         }
     }
@@ -78,7 +79,7 @@ export function useMediaPlayer() {
             return;
         }
 
-        me.root.activePlaylist = playlist ?? me.root.rootPlaylist;
+        updateActivePlaylist(playlist!, me);
 
         await loadTrack(track);
 

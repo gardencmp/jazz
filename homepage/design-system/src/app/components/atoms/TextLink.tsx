@@ -21,7 +21,7 @@ export function TextLink({
                 "text-stone-800 dark:text-stone-200",
                 "hover:text-black dark:hover:text-white",
                 "decoration-stone-300 dark:decoration-stone-700",
-                "hover:decoration-stone-800 dark:hover:decoration-stone-200"
+                "hover:decoration-stone-800 dark:hover:decoration-stone-200",
             )}
         >
             {children}

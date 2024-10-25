@@ -1,18 +1,20 @@
 import { AgentSecret, Peer, WasmCrypto } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { Account, createJazzContext, ID } from "jazz-tools";
 import {
+    Account,
+    createJazzContext,
+    ID,
     AccountClass,
     fixedCredentialsAuth,
     randomSessionProvider,
-} from "jazz-tools/src/internal.js";
+} from "jazz-tools";
 import { WebSocket } from "ws";
 
 /** @category Context Creation */
 export async function startWorker<Acc extends Account>({
     accountID = process.env.JAZZ_WORKER_ACCOUNT,
     accountSecret = process.env.JAZZ_WORKER_SECRET,
-    syncServer: peer = "wss://sync.jazz.tools",
+    syncServer: peer = "wss://cloud.jazz.tools",
     AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
     accountID?: string;

@@ -1,7 +1,8 @@
 import { Signature } from "./crypto/crypto.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
-import { LocalNode, newLoadingState } from "./localNode.js";
+import { LocalNode } from "./localNode.js";
+import { CoValueState } from "./coValueState.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { PeerState } from "./PeerState.js";
 import { CoValuePriority } from "./priority.js";
@@ -131,8 +132,9 @@ export class SyncManager {
             (peer) => peer.id !== forPeer && peer.role === "server",
         );
 
+        const coValueEntry = this.local.coValues[id];
+
         for (const peer of eligiblePeers) {
-            // console.log("loading", id, "from", peer.id);
             await peer.pushOutgoingMessage({
                 action: "load",
                 id: id,
@@ -140,44 +142,9 @@ export class SyncManager {
                 sessions: {},
             });
 
-            const coValueEntry = this.local.coValues[id];
-            if (coValueEntry?.state !== "loading") {
-                continue;
+            if (coValueEntry?.state.type === "unknown") {
+                await coValueEntry.state.waitForPeer(peer.id);
             }
-            const firstStateEntry = coValueEntry.firstPeerState[peer.id];
-            if (firstStateEntry?.type !== "waiting") {
-                throw new Error("Expected firstPeerState to be waiting " + id);
-            }
-            await new Promise<void>((resolve) => {
-                // const timeout = setTimeout(() => {
-                //     if (this.local.coValues[id]?.state === "loading") {
-                //         console.warn(
-                //             "Timeout waiting for peer to load",
-                //             id,
-                //             "from",
-                //             peer.id,
-                //             "and it hasn't loaded from other peers yet"
-                //         );
-                //     }
-                //     resolve();
-                // }, 1000);
-                firstStateEntry.done
-                    .then(() => {
-                        // clearTimeout(timeout);
-                        resolve();
-                    })
-                    .catch((e) => {
-                        // clearTimeout(timeout);
-                        console.error(
-                            "Error waiting for peer to load",
-                            id,
-                            "from",
-                            peer.id,
-                            e,
-                        );
-                        resolve();
-                    });
-            });
         }
     }
 
@@ -213,7 +180,7 @@ export class SyncManager {
             throw new Error("Expected coValue entry on subscribe");
         }
 
-        if (entry.state === "loading") {
+        if (entry.state.type === "unknown") {
             this.trySendToPeer(peer, {
                 action: "load",
                 id,
@@ -225,7 +192,7 @@ export class SyncManager {
             return;
         }
 
-        const coValue = entry.coValue;
+        const coValue = entry.state.coValue;
 
         for (const id of coValue.getDependedOnCoValues()) {
             await this.subscribeToIncludingDependencies(id, peer);
@@ -274,10 +241,7 @@ export class SyncManager {
         }
     }
 
-    async sendNewContentIncludingDependencies(
-        id: RawCoID,
-        peer: PeerState,
-    ) {
+    async sendNewContentIncludingDependencies(id: RawCoID, peer: PeerState) {
         const coValue = this.local.expectCoValueLoaded(id);
 
         await Promise.all(
@@ -425,7 +389,7 @@ export class SyncManager {
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
-                    this.local.coValues[msg.id] = newLoadingState(
+                    this.local.coValues[msg.id] = CoValueState.Unknown(
                         new Set([peer.id]),
                     );
                     this.trySendToPeer(peer, {
@@ -452,15 +416,15 @@ export class SyncManager {
             entry = this.local.coValues[msg.id]!;
         }
 
-        if (entry.state === "loading") {
+        if (entry.state.type === "unknown") {
             // console.debug(
             //     "Waiting for loaded",
             //     msg.id,
             //     "after message from",
             //     peer.id,
             // );
-            const loaded = await entry.done;
-            // console.log("Loaded", msg.id, loaded);
+            const loaded = await entry.state.ready;
+
             if (loaded === "unavailable") {
                 peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
                 peer.toldKnownState.add(msg.id);
@@ -514,31 +478,17 @@ export class SyncManager {
             }
         }
 
-        if (entry.state === "loading") {
+        if (entry.state.type === "unknown") {
             const availableOnPeer = peer.optimisticKnownStates[msg.id]?.header;
-            const firstPeerStateEntry = entry.firstPeerState[peer.id];
-            if (firstPeerStateEntry?.type === "waiting") {
-                firstPeerStateEntry.resolve();
+
+            if (!availableOnPeer) {
+                entry.dispatch({
+                    type: "not-found",
+                    peerId: peer.id,
+                });
             }
-            entry.firstPeerState[peer.id] = availableOnPeer
-                ? { type: "available" }
-                : { type: "unavailable" };
-            // console.log(
-            //     "Marking",
-            //     msg.id,
-            //     "as",
-            //     entry.firstPeerState[peer.id]?.type,
-            //     "from",
-            //     peer.id
-            // );
-            if (
-                Object.values(entry.firstPeerState).every(
-                    (s) => s.type === "unavailable",
-                )
-            ) {
-                entry.resolve("unavailable");
-            }
-            return [];
+
+            return;
         }
 
         await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
@@ -546,7 +496,7 @@ export class SyncManager {
     }
 
     async handleNewContent(msg: NewContentMessage, peer: PeerState) {
-        let entry = this.local.coValues[msg.id];
+        const entry = this.local.coValues[msg.id];
 
         if (!entry) {
             console.error(
@@ -554,8 +504,6 @@ export class SyncManager {
             );
             return;
         }
-
-        let resolveAfterDone: ((coValue: CoValueCore) => void) | undefined;
 
         const peerOptimisticKnownState = peer.optimisticKnownStates[msg.id];
 
@@ -566,34 +514,26 @@ export class SyncManager {
             return;
         }
 
-        if (entry.state === "loading") {
+        let coValue: CoValueCore;
+
+        if (entry.state.type === "unknown") {
             if (!msg.header) {
                 console.error("Expected header to be sent in first message");
                 return;
             }
 
-            const firstPeerStateEntry = entry.firstPeerState[peer.id];
-            if (firstPeerStateEntry?.type === "waiting") {
-                firstPeerStateEntry.resolve();
-                entry.firstPeerState[peer.id] = { type: "available" };
-            }
-
             peerOptimisticKnownState.header = true;
 
-            const coValue = new CoValueCore(msg.header, this.local);
+            coValue = new CoValueCore(msg.header, this.local);
 
-            resolveAfterDone = entry.resolve;
-
-            entry = {
-                state: "loaded",
-                coValue: coValue,
-                onProgress: entry.onProgress,
-            };
-
-            this.local.coValues[msg.id] = entry;
+            entry.dispatch({
+                type: "found",
+                coValue,
+                peerId: peer.id,
+            });
+        } else {
+            coValue = entry.state.coValue;
         }
-
-        const coValue = entry.coValue;
 
         let invalidStateAssumed = false;
 
@@ -648,15 +588,13 @@ export class SyncManager {
                 );
             }
 
-            const theirTotalnTxs = Object.values(
-                peer.optimisticKnownStates[msg.id]?.sessions || {},
-            ).reduce((sum, nTxs) => sum + nTxs, 0);
-            const ourTotalnTxs = [...coValue.sessionLogs.values()].reduce(
-                (sum, session) => sum + session.transactions.length,
-                0,
-            );
-
-            entry.onProgress?.(ourTotalnTxs / theirTotalnTxs);
+            // const theirTotalnTxs = Object.values(
+            //     peer.optimisticKnownStates[msg.id]?.sessions || {},
+            // ).reduce((sum, nTxs) => sum + nTxs, 0);
+            // const ourTotalnTxs = [...coValue.sessionLogs.values()].reduce(
+            //     (sum, session) => sum + session.transactions.length,
+            //     0,
+            // );
 
             if (result.isErr()) {
                 console.error(
@@ -678,10 +616,6 @@ export class SyncManager {
                 newContentForSession.after +
                     newContentForSession.newTransactions.length,
             );
-        }
-
-        if (resolveAfterDone) {
-            resolveAfterDone(coValue);
         }
 
         await this.syncCoValue(coValue);

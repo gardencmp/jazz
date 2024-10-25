@@ -1,4 +1,4 @@
-import { Group } from "jazz-tools";
+import { Group, ID } from "jazz-tools";
 import {
   Folder,
   PasswordItem,
@@ -8,6 +8,7 @@ import {
 import { CoMapInit } from "jazz-tools";
 import { createInviteLink } from "jazz-react";
 import { PasswordItemFormValues } from "./types";
+import { waitForCoValue } from "./lib/waitForCoValue";
 
 export const saveItem = (item: CoMapInit<PasswordItem>): PasswordItem => {
   const passwordItem = PasswordItem.create(item, {
@@ -54,3 +55,24 @@ export const shareFolder = (
   }
   return undefined;
 };
+
+export async function addSharedFolder(
+  sharedFolderId: ID<Folder>,
+  me: PasswordManagerAccount) {
+  const [sharedFolder, account] = await Promise.all([
+    await waitForCoValue(Folder, sharedFolderId, me, Boolean, {}),
+    await waitForCoValue(PasswordManagerAccount, me.id, me, Boolean, {
+      root: {
+        folders: [],
+      },
+    }),
+  ]);
+
+  if (!account.root?.folders) return;
+
+  const found = account.root.folders.some((f) => f?.id === sharedFolder.id);
+
+  if (!found) {
+    account.root.folders.push(sharedFolder);
+  }
+}

@@ -5,9 +5,13 @@ import Table from "./components/table";
 import NewItemModal from "./components/new-item-modal";
 import InviteModal from "./components/invite-modal";
 
-import { saveItem, deleteItem, createFolder, updateItem } from "./4_actions";
+import { saveItem, deleteItem, createFolder, updateItem, addSharedFolder } from "./4_actions";
 import { Alert, AlertDescription } from "./components/alert";
-import { Folder, FolderList, PasswordItem } from "./1_schema";
+import {
+  Folder,
+  FolderList,
+  PasswordItem,
+} from "./1_schema";
 import { useAccount, useCoState } from "./2_main";
 import { CoMapInit, Group, ID } from "jazz-tools";
 import { useNavigate, useParams } from "react-router-dom";
@@ -17,20 +21,19 @@ const VaultPage: React.FC = () => {
   const { me, logOut } = useAccount();
   const sharedFolderId = useParams<{ sharedFolderId: ID<Folder> }>()
     .sharedFolderId;
-  const sharedFolder = useCoState(Folder, sharedFolderId);
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!sharedFolderId || !sharedFolder || !me.root?.folders) return;
-    const existsIndex = me.root?.folders.findIndex(
-      (f) => f?.id === sharedFolder.id
-    );
-    if (existsIndex > -1) {
-      me.root?.folders?.splice(existsIndex, 1);
-    }
-    me.root?.folders?.push(sharedFolder);
-    navigate("/vault");
-  }, [sharedFolder, me.root?.folders, sharedFolderId, navigate]);
+    if (!sharedFolderId) return;
+
+    addSharedFolder(sharedFolderId, me).then(() => {
+      navigate("/vault");
+    });
+
+    // We want to trigger this only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const items = me.root?.folders?.flatMap(
     (folder) =>

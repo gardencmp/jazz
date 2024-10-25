@@ -128,3 +128,19 @@ export async function addTrackToPlaylist(
 
     playlist.tracks?.push(trackClone);
 }
+
+export async function updatePlaylistTitle(playlist: Playlist, title: string) {
+    playlist.title = title;
+}
+
+export async function updateMusicTrackTitle(track: MusicTrack, title: string) {
+    track.title = title;
+}
+
+export async function updateActivePlaylist(playlist: Playlist, me: MusicaAccount) {
+    me.root!.activePlaylist = playlist ?? me.root!.rootPlaylist;
+}
+
+export async function updateActiveTrack(track: MusicTrack, me: MusicaAccount) {
+    me.root!.activeTrack = track;
+}

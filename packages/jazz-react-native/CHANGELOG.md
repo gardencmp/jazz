@@ -1,5 +1,11 @@
 # jazz-browser
 
+## 0.8.8
+
+### Patch Changes
+
+-   b7639cf: feat(react-native): replaced react-native-mmkv with expo-secure-store and initialize it by default as kvStore in createJazzRNApp() (BREAKING)
+
 ## 0.8.7
 
 ### Patch Changes

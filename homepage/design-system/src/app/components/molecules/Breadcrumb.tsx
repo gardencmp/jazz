@@ -12,9 +12,5 @@ export function BreadCrumb({
 
     if (!title) return null;
 
-    return (
-        <span className="text-sm font-semibold">
-            {title}
-        </span>
-    );
+    return <span className="text-sm font-semibold">{title}</span>;
 }

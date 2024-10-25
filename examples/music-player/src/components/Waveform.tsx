@@ -53,6 +53,7 @@ export function Waveform(props: { track: MusicTrack; height: number }) {
                     style={{
                         height: height * value,
                     }}
+                    aria-label={`Seek to ${(i / barCount) * duration} seconds`}
                 />
             ))}
         </div>

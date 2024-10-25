@@ -39,12 +39,14 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                     <button
                         onClick={mediaPlayer.playPrevTrack}
                         className="text-blue-600 hover:text-blue-800"
+                        aria-label="Previous track"
                     >
                         <SkipBack size={20} />
                     </button>
                     <button
                         onClick={playState.toggle}
                         className="w-[42px] h-[42px] flex items-center justify-center bg-blue-600 rounded-full text-white hover:bg-blue-700"
+                        aria-label={isPlaying ? "Pause active track" : "Play active track"}
                     >
                         {isPlaying ? (
                             <Pause size={24} fill="currentColor" />
@@ -55,6 +57,7 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
                     <button
                         onClick={mediaPlayer.playNextTrack}
                         className="text-blue-600 hover:text-blue-800"
+                        aria-label="Next track"
                     >
                         <SkipForward size={20} />
                     </button>

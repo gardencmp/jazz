@@ -1,7 +1,7 @@
 import { DocNav } from "@/components/docs/nav";
 
 export const metadata = {
-    title: "jazz - Docs",
+    title: "Docs",
     description: "Jazz Guide & Docs.",
 };
 

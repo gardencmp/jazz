@@ -19,7 +19,7 @@ const jazzTools = Command.make("jazz-tools");
 const name = Options.text("name").pipe(Options.withAlias("n"));
 const peer = Options.text("peer")
     .pipe(Options.withAlias("p"))
-    .pipe(Options.withDefault("wss://mesh.jazz.tools"));
+    .pipe(Options.withDefault("wss://cloud.jazz.tools"));
 const accountCreate = Command.make(
     "create",
     { name, peer },

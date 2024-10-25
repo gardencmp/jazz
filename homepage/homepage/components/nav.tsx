@@ -1,7 +1,7 @@
-import { JazzLogo } from "./logos";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
 import { SiDiscord, SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
 import { DocNav } from "./docs/nav";
+import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 
 export function JazzNav() {
     return (
@@ -9,7 +9,7 @@ export function JazzNav() {
             mainLogo={<JazzLogo className="w-24 -ml-2" />}
             items={[
                 { title: "Home", href: "/" },
-                { title: "Jazz Mesh", href: "/mesh" },
+                { title: "Jazz Cloud", href: "/cloud" },
                 {
                     title: "Docs",
                     href: "/docs/guide",
