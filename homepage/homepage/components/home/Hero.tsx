@@ -13,14 +13,15 @@ export function Hero({
                     Local-first development toolkit
                 </p>
                 <h1 className="font-display text-stone-950 dark:text-white text-4xl md:text-5xl lg:text-6xl font-medium tracking-tighter">
-                    Ship top-tier apps at high tempo.
+                    <span className="inline-block">Ship top-tier apps</span>{" "}
+                    <span className="inline-block">at high tempo.</span>
                 </h1>
 
                 <div className="space-y-2 text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
                     <p>
                         Jazz is a framework for building local-first apps
-                        &mdash; an architecture that lets apps like Figma and
-                        Linear play in a league of their own.
+                        &mdash;&nbsp;an&nbsp;architecture that lets companies like Figma
+                        and Linear play in a league of their own.
                     </p>
                     <p>
                         Open source. Self-host or use{" "}

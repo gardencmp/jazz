@@ -219,7 +219,7 @@ export default function Home() {
                     <p>
                         You don&apos;t have to think about deploying a database,
                         SQL schemas, relations, and writing queries… Basically,{" "}
-                        <span className="whitespace-nowrap bg-blue-50 px-1 dark:bg-transparent">
+                        <span className="bg-blue-50 px-1 dark:bg-transparent">
                             if you know TypeScript, you know Jazz
                         </span>
                         , and you can ship an app. It&apos;s just so nice!
