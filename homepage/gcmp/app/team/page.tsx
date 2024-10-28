@@ -1,6 +1,11 @@
 import { GlobeIcon, LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
+import {
+    SiGithub,
+    SiGitlab,
+    SiLinkedin,
+    SiX,
+} from "@icons-pack/react-simple-icons";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 
 interface TeamMember {
@@ -10,7 +15,9 @@ interface TeamMember {
     location: string;
     x?: string;
     github?: string;
+    gitlab?: string;
     website?: string;
+    linkedin?: string;
 }
 
 const team: Array<TeamMember> = [
@@ -57,6 +64,10 @@ const team: Array<TeamMember> = [
         name: "Marina Orlova",
         titles: ["Full-Stack Dev"],
         location: "Tarragona, Spain ",
+        gitlab: "marinaorlova",
+        linkedin: "marina-orlova-52a34394",
+        // github: "marinoska",
+        image: "marina.jpeg",
     },
 ];
 
@@ -78,8 +89,7 @@ function SocialLink({
 }
 
 function Person({ person }: { person: TeamMember }) {
-    const imageClassName =
-        "size-24 shadow rounded-md bg-stone-100 sm:size-28 ";
+    const imageClassName = "size-24 shadow rounded-md bg-stone-100 sm:size-28 ";
     return (
         <div className="flex items-center gap-5">
             {person.image ? (
@@ -124,6 +134,20 @@ function Person({ person }: { person: TeamMember }) {
                             link={`https://x.com/${person.x}`}
                             icon={SiX}
                             label="X profile"
+                        />
+                    )}
+                    {person.gitlab && (
+                        <SocialLink
+                            link={`https://gitlab.com/${person.gitlab}`}
+                            icon={SiGitlab}
+                            label="Gitlab profile"
+                        />
+                    )}
+                    {person.linkedin && (
+                        <SocialLink
+                            link={`https://www.linkedin.com/in/${person.linkedin}`}
+                            icon={SiLinkedin}
+                            label="Linkedin profile"
                         />
                     )}
                     {person.github && (
