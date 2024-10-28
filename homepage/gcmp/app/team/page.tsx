@@ -6,7 +6,7 @@ import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/Hero
 interface TeamMember {
     name: string;
     titles: string[];
-    image: string;
+    image?: string;
     location: string;
     x?: string;
     github?: string;
@@ -56,7 +56,6 @@ const team: Array<TeamMember> = [
     {
         name: "Marina Orlova",
         titles: ["Full-Stack Dev"],
-        image: "marina.png",
         location: "Tarragona, Spain ",
     },
 ];
@@ -79,12 +78,28 @@ function SocialLink({
 }
 
 function Person({ person }: { person: TeamMember }) {
+    const imageClassName =
+        "size-24 shadow rounded-md bg-stone-100 sm:size-28 ";
     return (
         <div className="flex items-center gap-5">
-            <img
-                src={`/team/${person.image}`}
-                className="size-24 rounded-md shadow-sm"
-            />
+            {person.image ? (
+                <img src={`/team/${person.image}`} className={imageClassName} />
+            ) : (
+                <span className={imageClassName}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-full pt-5 h-full text-stone-300 dark:text-stone-700"
+                        width="1em"
+                        height="1em"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M4 22a8 8 0 1 1 16 0zm8-9c-3.315 0-6-2.685-6-6s2.685-6 6-6s6 2.685 6 6s-2.685 6-6 6"
+                        />
+                    </svg>
+                </span>
+            )}
             <div className="flex flex-col gap-2.5">
                 <h3 className="text-lg leading-none font-semibold tracking-tight text-stone-900 dark:text-white">
                     {person.name}
@@ -129,7 +144,7 @@ export default function TeamPage() {
         <div className="container">
             <HeroHeader title="Meet the team" slogan="" />
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
                 {team.map((person) => (
                     <Person key={person.name} person={person} />
                 ))}
