@@ -2,15 +2,20 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { AuthAndJazz } from "./jazz";
 import { TestInput } from "./pages/TestInput";
-import { RouterProvider, createHashRouter } from "react-router-dom";
+import { ResumeSyncState } from "./pages/ResumeSyncState";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
-      path: "/",
+      path: "/test-input",
       element: <TestInput />,
   },
   {
-      path: "/test-input",
+      path: "/resume-sync",
+      element: <ResumeSyncState />,
+  },
+  {
+      path: "/",
       element: <TestInput />,
   },
 ]);
