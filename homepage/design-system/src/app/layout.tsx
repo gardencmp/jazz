@@ -51,6 +51,7 @@ export default function RootLayout({
                     commitMono.variable,
                     inter.className,
                     "h-full",
+                    "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
                 {children}

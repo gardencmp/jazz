@@ -130,21 +130,27 @@ const config = {
             typography: (theme) => ({
                 DEFAULT: {
                     css: {
-                        "--tw-prose-body": stonePalette[800],
+                        "--tw-prose-body": stonePalette[700],
                         "--tw-prose-headings": stonePalette[900],
-                        "--tw-prose-headings-font-family": theme("fontFamily.display"),
+                        "--tw-prose-bold": theme("colors.stone.900"),
+                        "--tw-prose-invert-bold": theme("colors.white"),
+                        "--tw-prose-invert-body": stonePalette[400],
+                        "--tw-prose-invert-headings": theme("colors.white"),
+                        "--tw-prose-code": stonePalette[900],
+                        "--tw-prose-invert-code": stonePalette[50],
+                        "--tw-prose-links": theme("colors.blue.DEFAULT"),
+                        "--tw-prose-invert-links": theme("colors.blue.500"),
+                        maxWidth: theme("screens.4xl"),
                         strong: {
                             color: stonePalette[900],
                             fontWeight: theme("fontWeight.medium"),
                         },
                         a: {
-                            color: theme("colors.blue.DEFAULT"),
-                            textDecoration: "none",
                             fontWeight: theme("fontWeight.normal"),
+                            textUnderlineOffset: "4px",
                         },
                         "a:hover": {
-                            textDecoration: "underline",
-                            textDecorationColor: theme("colors.blue.200"),
+                            textDecoration: "none",
                         },
                         h1: {
                             fontFamily: theme("fontFamily.display"),
@@ -169,7 +175,19 @@ const config = {
                             letterSpacing: theme("letterSpacing.widest"),
                             fontWeight: theme("fontWeight.medium"),
                             fontSize: theme("fontSize.sm"),
-                        }
+                        },
+                        'code::before': {
+                            content: 'none',
+                        },
+                        'code::after': {
+                            content: 'none',
+                        },
+                        code: {
+                            backgroundColor: stonePalette[100],
+                            padding: "0.15rem 0.25rem",
+                            borderRadius: "2px",
+                            whiteSpace: "nowrap",
+                        },
                     }
                 },
             }),

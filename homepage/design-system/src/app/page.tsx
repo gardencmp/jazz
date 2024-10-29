@@ -1,3 +1,5 @@
+import { Prose } from "@components/molecules/Prose";
+
 export default function Home() {
     return (
         <main className="container flex flex-col gap-8 py-8 lg:py-16">
@@ -10,31 +12,31 @@ export default function Home() {
             <div className="grid gap-4">
                 <div>
                     Heading 1
-                    <div className="prose p-3 border">
+                    <Prose className="p-3 border">
                         <h1>Ship top-tier apps at high tempo</h1>
-                    </div>
+                    </Prose>
                 </div>
                 <div>
                     Heading 2
-                    <div className="prose p-3 border">
+                    <Prose className="p-3 border">
                         <h2>Ship top-tier apps at high tempo</h2>
-                    </div>
+                    </Prose>
                 </div>
                 <div>
                     Heading 3
-                    <div className="prose p-3 border">
+                    <Prose className="p-3 border">
                         <h3>Ship top-tier apps at high tempo</h3>
-                    </div>
+                    </Prose>
                 </div>
                 <div>
                     Heading 4
-                    <div className="prose p-3 border">
+                    <Prose className="p-3 border">
                         <h4>Ship top-tier apps at high tempo</h4>
-                    </div>
+                    </Prose>
                 </div>
                 <div>
                     Paragraph
-                    <div className="prose p-3 border">
+                    <Prose className="p-3 border">
                         <p>
                             <strong>
                                 Jazz is a framework for building local-first
@@ -48,14 +50,21 @@ export default function Home() {
                             Open source. Self-host or use Jazz Cloud for
                             zero-config magic.
                         </p>
-                    </div>
+                    </Prose>
                 </div>
 
                 <div>
                     Link
-                    <div className="prose p-3 border">
+                    <Prose className="p-3 border">
                         This is a <a href="https://jazz.tools">link</a>
-                    </div>
+                    </Prose>
+                </div>
+
+                <div>
+                    Code
+                    <Prose className="p-3 border">
+                        This is a one-line <code>piece of code</code>
+                    </Prose>
                 </div>
             </div>
         </main>
