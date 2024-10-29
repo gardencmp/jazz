@@ -78,8 +78,6 @@ export function Nav({
                         ),
                     )}
 
-                    <ThemeToggle />
-
                     {cta}
                 </div>
             </nav>
@@ -93,6 +91,7 @@ export function Nav({
                         setMenuOpen((o) => !o);
                         setSearchOpen(false);
                     }}
+                    aria-label="Open menu"
                 >
                     <MenuIcon />
                     <BreadCrumb items={items} />
@@ -182,7 +181,7 @@ export function Nav({
                             ))}
                     </div>
                 </div>
-                <div className="flex items-center self-stretch justify-end">
+                <div className="flex items-center self-stretch justify-between">
                     {/* <input
                         type="text"
                         className={clsx(
@@ -205,12 +204,16 @@ export function Nav({
                     >
                         <SearchIcon className="" />
                     </button> */}
+                    {(menuOpen || searchOpen) && (
+                        <ThemeToggle className="p-3" />
+                    )}
                     <button
                         className="flex gap-2 p-3 rounded-xl items-center"
                         onMouseDown={() => {
                             setMenuOpen((o) => !o);
                             setSearchOpen(false);
                         }}
+                        aria-label="Close menu"
                     >
                         {menuOpen || searchOpen ? (
                             <XIcon />

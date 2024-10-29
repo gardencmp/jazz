@@ -19,15 +19,21 @@ export function ThemeToggle({ className }: { className?: string }) {
             type="button"
             className={clsx(
                 className,
-                "px-2 lg:px-3 py-3 transition-opacity hover:transition-none opacity-60 hover:opacity-100 text-black dark:text-white",
+                "transition-opacity hover:transition-none opacity-60 hover:opacity-100 text-black dark:text-white",
             )}
             aria-label={
                 mounted ? `Switch to ${otherTheme} theme` : "Toggle theme"
             }
             onClick={() => setTheme(otherTheme)}
         >
-            <MoonIcon className="h-5 w-5 stroke-zinc-900 dark:hidden" />
-            <SunIcon className="hidden h-5 w-5 stroke-white dark:block" />
+            <MoonIcon
+                size={20}
+                className="h-5 w-5 stroke-zinc-900 dark:hidden"
+            />
+            <SunIcon
+                size={20}
+                className="hidden h-5 w-5 stroke-white dark:block"
+            />
         </button>
     );
 }
