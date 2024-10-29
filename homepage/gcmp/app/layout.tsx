@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/themeProvider";
+import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
 
 import { Inter, Manrope } from "next/font/google";
 import localFont from "next/font/local";
