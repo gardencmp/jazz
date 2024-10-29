@@ -7,7 +7,6 @@ export function Prose(props: { children: ReactNode; className?: string }) {
             className={clsx(
                 props.className,
                 "prose dark:prose-invert",
-                "prose-strong:dark:text-white",
                 "prose-code:dark:bg-stone-900",
             )}
         >

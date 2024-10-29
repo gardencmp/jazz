@@ -142,7 +142,11 @@ const config = {
                         "--tw-prose-invert-links": theme("colors.blue.500"),
                         maxWidth: theme("screens.4xl"),
                         strong: {
-                            color: stonePalette[900],
+                            color: "var(--tw-prose-bold)",
+                            fontWeight: theme("fontWeight.medium"),
+                        },
+                        b: {
+                            color: "var(--tw-prose-bold)",
                             fontWeight: theme("fontWeight.medium"),
                         },
                         a: {
