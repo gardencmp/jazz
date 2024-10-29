@@ -210,6 +210,12 @@ const config = {
         tailwindCSSAnimate,
         typography(),
         plugin(({ addVariant }) => addVariant("label", "& :is(label)")),
+        plugin(({ addUtilities }) => addUtilities({
+            ".text-reset, .text-reset:hover, .text-reset:focus": {
+                color: "inherit",
+                textDecoration: "none",
+            },
+        }))
     ],
 };
 export default config;

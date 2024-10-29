@@ -26,8 +26,10 @@ export function Hero({
                     </p>
                     <p>
                         Open source. Self-host or use{" "}
-                        <Link href="/cloud">Jazz Cloud</Link> for zero-config
-                        magic.
+                        <Link className="text-reset" href="/cloud">
+                            Jazz Cloud
+                        </Link>{" "}
+                        for zero-config magic.
                     </p>
                 </Prose>
 
