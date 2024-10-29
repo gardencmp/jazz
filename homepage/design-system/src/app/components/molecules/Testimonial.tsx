@@ -22,8 +22,12 @@ export function Testimonial({
             </blockquote>
             <figcaption className="mt-6 flex items-center gap-x-6">
                 <div className="text-sm leading-6 sm:text-base">
-                    <div className="font-semibold text-stone-900 dark:text-white">{name}</div>
-                    <div className="mt-0.5 text-stone-600 dark:text-stone-500">{role}</div>
+                    <div className="font-semibold text-stone-900 dark:text-white">
+                        {name}
+                    </div>
+                    <div className="mt-0.5 text-stone-600 dark:text-stone-500">
+                        {role}
+                    </div>
                 </div>
             </figcaption>
         </figure>

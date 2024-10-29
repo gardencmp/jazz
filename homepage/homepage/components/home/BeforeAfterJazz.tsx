@@ -2,6 +2,7 @@ import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { MoveDownIcon, MoveRightIcon } from "lucide-react";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
+import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
 export default function BeforeAfterJazz() {
     return (
@@ -10,16 +11,16 @@ export default function BeforeAfterJazz() {
 
             <div className="grid md:grid-cols-7 max-md:max-w-lg lg:max-w-8xl mx-auto gap-4 justify-items-stretch">
                 <div className="col-span-3 flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:gap-5 dark:bg-stone-925">
-                    <div className="leading-relaxed space-y-2">
+                    <Prose>
                         <p>
                             The sad truth:
                             <br />
-                            <span className="font-medium text-stone-900 dark:text-white">
+                            <strong>
                                 Every stack reinvents how users and machines
                                 share state.
-                            </span>
+                            </strong>
                         </p>
-                    </div>
+                    </Prose>
                     <div className="relative flex items-center flex-1">
                         <div className="w-20 h-full bg-gradient-to-r from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
                         <div className="h-20 w-full bg-gradient-to-b from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
@@ -28,21 +29,20 @@ export default function BeforeAfterJazz() {
 
                         <DiagramBeforeJazz className="mx-auto w-full h-auto max-w-md" />
                     </div>
-                    <div className="leading-relaxed space-y-2">
+                    <Prose>
                         <p>
                             For each new app you tackle a{" "}
-
-                                <span className="font-medium text-stone-900 dark:text-white">mess of moving parts, tech choices &amp; deployment woes.</span>{" "}
-                                Your code? <span className="font-medium text-stone-900 dark:text-white">
-                                All over the place.
-                            </span>
+                            <strong>
+                                mess of moving parts, tech choices &amp;
+                                deployment woes.
+                            </strong>{" "}
+                            Your code? <strong>All over the place.</strong>
                         </p>
                         <p>
-                            <span className="font-medium text-stone-900 dark:text-white">
-                                It’s holding you back
-                            </span>{" "} from shipping <span className="font-medium text-stone-900 dark:text-white">what your app could be.</span>
+                            <strong>It’s holding you back</strong> from shipping{" "}
+                            <strong>what your app could be.</strong>
                         </p>
-                    </div>
+                    </Prose>
                 </div>
                 <div className="col-span-3 md:col-span-1 flex items-center justify-center">
                     <MoveRightIcon
@@ -55,41 +55,35 @@ export default function BeforeAfterJazz() {
                     />
                 </div>
                 <div className="col-span-3 flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:gap-5 dark:bg-stone-925">
-                    <div className="leading-relaxed space-y-2">
+                    <Prose>
                         <p>
                             The good news:
                             <br />
-                            <span className="font-medium text-stone-900 dark:text-white">
+                            <strong>
                                 There’s a single new abstraction that does the
                                 whole job.
-                            </span>
+                            </strong>
                         </p>
-                    </div>
+                    </Prose>
                     <div className="flex items-center flex-1">
                         <DiagramAfterJazz className="mx-auto w-full h-auto max-w-md" />
                     </div>
-                    <div className="leading-relaxed space-y-2">
+                    <Prose>
                         <p>
-                            Jazz gives you{" "}
-                            <span className="font-medium text-stone-900 dark:text-white">
-                                mutable local state
-                            </span>{" "}
-                            that’s{" "}
-                            <span className="font-medium text-stone-900 dark:text-white">
-                                instantly synced.
-                            </span>{" "}
-                            Including binary blobs. {" "}
-                            <span className="font-medium text-stone-900 dark:text-white">
-                            With users &amp; permissions built-in.
-                            </span>
+                            Jazz gives you <strong>mutable local state</strong>{" "}
+                            that’s <strong>instantly synced.</strong> Including
+                            binary blobs.{" "}
+                            <strong>
+                                With users &amp; permissions built-in.
+                            </strong>
                         </p>
                         <p>
                             All that’s left is{" "}
-                            <span className="font-medium text-stone-900 dark:text-white">
+                            <strong>
                                 building the UX that makes your app special.
-                            </span>
+                            </strong>
                         </p>
-                    </div>
+                    </Prose>
                 </div>
             </div>
         </div>

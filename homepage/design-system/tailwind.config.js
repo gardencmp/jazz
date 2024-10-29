@@ -4,6 +4,28 @@ import tailwindCSSAnimate from "tailwindcss-animate";
 const colors = require("tailwindcss/colors")
 const plugin = require("tailwindcss/plugin")
 
+const stonePalette = {
+    "50": "oklch(0.988281 0.002 75)",
+    "75": "oklch(0.980563 0.002 75)",
+    "100": "oklch(0.964844 0.002 75)",
+    "200": "oklch(0.917969 0.002 75)",
+    "300": "oklch(0.853516 0.002 75)",
+    "400": "oklch(0.789063 0.002 75)",
+    "500": "oklch(0.726563 0.002 75)",
+    "600": "oklch(0.613281 0.002 75)",
+    "700": "oklch(0.523438 0.002 75)",
+    "800": "oklch(0.412109 0.002 75)",
+    "900": "oklch(0.302734 0.002 75)",
+    "925": "oklch(0.220000 0.002 75)",
+    "950": "oklch(0.193359 0.002 75)",
+}
+
+const stonePaletteWithAlpha = {...stonePalette};
+
+Object.keys(stonePalette).forEach(key => {
+    stonePaletteWithAlpha[key] = stonePaletteWithAlpha[key].replace(")", "/ <alpha-value>)")
+})
+
 /** @type {import('tailwindcss').Config} */
 const config = {
     content: [
@@ -14,21 +36,7 @@ const config = {
     theme: {
         colors: {
             ...harmonyPalette,
-            stone: {
-                "50": "oklch(0.988281 0.002 75 / <alpha-value>)",
-                "75": "oklch(0.980563 0.002 75 / <alpha-value>)",
-                "100": "oklch(0.964844 0.002 75 / <alpha-value>)",
-                "200": "oklch(0.917969 0.002 75 / <alpha-value>)",
-                "300": "oklch(0.853516 0.002 75 / <alpha-value>)",
-                "400": "oklch(0.789063 0.002 75 / <alpha-value>)",
-                "500": "oklch(0.726563 0.002 75 / <alpha-value>)",
-                "600": "oklch(0.613281 0.002 75 / <alpha-value>)",
-                "700": "oklch(0.523438 0.002 75 / <alpha-value>)",
-                "800": "oklch(0.412109 0.002 75 / <alpha-value>)",
-                "900": "oklch(0.302734 0.002 75 / <alpha-value>)",
-                "925": "oklch(0.220000 0.002 75 / <alpha-value>)",
-                "950": "oklch(0.193359 0.002 75 / <alpha-value>)",
-            },
+            stone: stonePaletteWithAlpha,
             blue: {
                 ...colors.indigo,
                 "500": "#5870F1",
@@ -47,7 +55,6 @@ const config = {
                 mono: ["var(--font-commit-mono)"],
             },
             fontSize: {
-
                 '2xs': ['0.75rem', { lineHeight: '1.25rem' }],
             },
             // shadcn-ui
@@ -120,12 +127,95 @@ const config = {
                 md: "960px",
                 lg: "1276px",
             },
+            typography: (theme) => ({
+                DEFAULT: {
+                    css: {
+                        "--tw-prose-body": stonePalette[700],
+                        "--tw-prose-headings": stonePalette[900],
+                        "--tw-prose-bold": theme("colors.stone.900"),
+                        "--tw-prose-invert-bold": theme("colors.white"),
+                        "--tw-prose-invert-body": stonePalette[400],
+                        "--tw-prose-invert-headings": theme("colors.white"),
+                        "--tw-prose-code": stonePalette[900],
+                        "--tw-prose-invert-code": stonePalette[50],
+                        "--tw-prose-links": theme("colors.blue.DEFAULT"),
+                        "--tw-prose-invert-links": theme("colors.blue.500"),
+                        maxWidth: theme("screens.4xl"),
+                        strong: {
+                            color: "var(--tw-prose-bold)",
+                            fontWeight: theme("fontWeight.medium"),
+                        },
+                        b: {
+                            color: "var(--tw-prose-bold)",
+                            fontWeight: theme("fontWeight.medium"),
+                        },
+                        a: {
+                            fontWeight: theme("fontWeight.normal"),
+                            textUnderlineOffset: "4px",
+                        },
+                        h1: {
+                            fontFamily: theme("fontFamily.display"),
+                            letterSpacing: theme("letterSpacing.tight"),
+                            fontWeight: theme("fontWeight.semibold"),
+                            fontSize: theme("fontSize.4xl"),
+                        },
+                        h2: {
+                            fontFamily: theme("fontFamily.display"),
+                            letterSpacing: theme("letterSpacing.tight"),
+                            fontWeight: theme("fontWeight.semibold"),
+                            fontSize: theme("fontSize.3xl"),
+                        },
+                        h3: {
+                            fontFamily: theme("fontFamily.display"),
+                            letterSpacing: theme("letterSpacing.tight"),
+                            fontWeight: theme("fontWeight.semibold"),
+                            fontSize: theme("fontSize.2xl"),
+                        },
+                        h4: {
+                            textTransform: "uppercase",
+                            letterSpacing: theme("letterSpacing.widest"),
+                            fontWeight: theme("fontWeight.medium"),
+                            fontSize: theme("fontSize.sm"),
+                        },
+                        'code::before': {
+                            content: 'none',
+                        },
+                        'code::after': {
+                            content: 'none',
+                        },
+                        code: {
+                            backgroundColor: stonePalette[100],
+                            padding: "0.15rem 0.25rem",
+                            borderRadius: "2px",
+                            whiteSpace: "nowrap",
+                        },
+                        p: {
+                            marginBottom: theme("spacing.3"),
+                            marginTop: theme("spacing.3"),
+                        }
+                    }
+                },
+                xl: {
+                    css: {
+                        p: {
+                            marginBottom: theme("spacing.3"),
+                            marginTop: theme("spacing.3"),
+                        }
+                    },
+                }
+            }),
         },
     },
     plugins: [
         tailwindCSSAnimate,
         typography(),
         plugin(({ addVariant }) => addVariant("label", "& :is(label)")),
+        plugin(({ addUtilities }) => addUtilities({
+            ".text-reset, .text-reset:hover, .text-reset:focus": {
+                color: "inherit",
+                textDecoration: "none",
+            },
+        }))
     ],
 };
 export default config;
