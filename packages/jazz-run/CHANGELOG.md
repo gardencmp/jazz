@@ -1,5 +1,11 @@
 # jazz-run
 
+## 0.8.10
+
+### Patch Changes
+
+-   a818462: Temporary fix for account create
+
 ## 0.8.7
 
 ### Patch Changes
