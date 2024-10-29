@@ -7,12 +7,14 @@ import { createWebSocketPeer } from "cojson-transport-ws";
 import { WebSocket } from "ws";
 import {
     Account,
+    Peer,
     WasmCrypto,
     createJazzContext,
     isControlledAccount,
 } from "jazz-tools";
 import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools";
 import { startSync } from "./startSync.js";
+import { CoValueCore } from "cojson";
 
 const jazzTools = Command.make("jazz-tools");
 
@@ -44,20 +46,23 @@ const accountCreate = Command.make(
                 throw new Error("account is not a controlled account");
             }
 
+            const accountCoValue = account._raw.core;
+            const accountProfileCoValue = account.profile!._raw.core;
+            const syncManager = account._raw.core.node.syncManager;
+
             yield* Effect.promise(() =>
-                account._raw.core.node.syncManager.syncCoValue(
-                    account._raw.core,
-                ),
+                syncManager.syncCoValue(accountCoValue),
             );
             yield* Effect.promise(() =>
-                account._raw.core.node.syncManager.syncCoValue(
-                    account.profile!._raw.core,
-                ),
+                syncManager.syncCoValue(accountProfileCoValue),
             );
 
-            // TODO: remove this once we have a better way to wait for the sync
-            yield* Effect.sleep(2000);
+            yield* Effect.promise(() => Promise.all([
+                waitForSync(account, peer, accountCoValue),
+                waitForSync(account, peer, accountProfileCoValue),
+            ]));
 
+            // Spawn a second peer to double check that the account is fully synced
             const peer2 = createWebSocketPeer({
                 id: "upstream2",
                 websocket: new WebSocket(peerAddr),
@@ -99,3 +104,39 @@ Effect.suspend(() => cli(process.argv)).pipe(
     Effect.provide(NodeContext.layer),
     NodeRuntime.runMain,
 );
+
+function waitForSync(account: Account, peer: Peer, coValue: CoValueCore) {
+    const syncManager = account._raw.core.node.syncManager;
+    const peerState = syncManager.peers[peer.id];
+
+    return new Promise((resolve) => {
+        const unsubscribe = peerState?.optimisticKnownStates.subscribe((id, peerKnownState) => {
+            if (id !== coValue.id) return;
+
+            const knownState = coValue.knownState();
+
+            const synced = isEqualSession(knownState.sessions, peerKnownState.sessions);
+            if (synced) {
+                resolve(true);
+                unsubscribe?.();
+            }
+        });
+    });
+}
+
+function isEqualSession(a: Record<string, number>, b: Record<string, number>) {
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
+
+    for (const sessionId of keysA) {
+        if (a[sessionId] !== b[sessionId]) {
+            return false;
+        }
+    }
+
+    return true;
+}
