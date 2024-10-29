@@ -13,7 +13,7 @@ export function Prose({
     const sizeClassName = {
         sm: "prose-sm",
         md: "",
-        lg: "prose-xl dark:text-stone-200",
+        lg: "prose-xl",
     }[size];
 
     return (
