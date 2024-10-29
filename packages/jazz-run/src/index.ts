@@ -56,7 +56,7 @@ const accountCreate = Command.make(
             );
 
             // TODO: remove this once we have a better way to wait for the sync
-            yield* Effect.sleep(500);
+            yield* Effect.sleep(2000);
 
             const peer2 = createWebSocketPeer({
                 id: "upstream2",
