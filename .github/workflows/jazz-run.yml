@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Jazz Run Tests
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 1
     runs-on: ubuntu-latest
     continue-on-error: true
 
@@ -47,6 +46,6 @@ jobs:
         working-directory: ./packages/jazz-run
 
       - name: Run create account
-        run: ./dist/index.js create account --name "Jazz Run CI test"
+        run: ./dist/index.js account create --name "Jazz Run CI test"
         working-directory: ./packages/jazz-run
   
