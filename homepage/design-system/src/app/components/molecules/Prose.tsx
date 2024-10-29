@@ -1,16 +1,32 @@
 import clsx from "clsx";
 import { ReactNode } from "react";
 
-export function Prose(props: { children: ReactNode; className?: string }) {
+export function Prose({
+    children,
+    className,
+    size = "md",
+}: {
+    children: ReactNode;
+    className?: string;
+    size?: "sm" | "md" | "lg";
+}) {
+    const sizeClassName = {
+        sm: "prose-sm",
+        md: "",
+        lg: "prose-xl dark:text-stone-200",
+    }[size];
+
     return (
         <div
             className={clsx(
-                props.className,
-                "prose dark:prose-invert",
+                className,
+                "prose",
+                sizeClassName,
+                "dark:prose-invert",
                 "prose-code:dark:bg-stone-900",
             )}
         >
-            {props.children}
+            {children}
         </div>
     );
 }

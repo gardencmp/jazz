@@ -153,9 +153,6 @@ const config = {
                             fontWeight: theme("fontWeight.normal"),
                             textUnderlineOffset: "4px",
                         },
-                        "a:hover": {
-                            textDecoration: "none",
-                        },
                         h1: {
                             fontFamily: theme("fontFamily.display"),
                             letterSpacing: theme("letterSpacing.tight"),
@@ -198,6 +195,14 @@ const config = {
                         }
                     }
                 },
+                xl: {
+                    css: {
+                        p: {
+                            marginBottom: theme("spacing.3"),
+                            marginTop: theme("spacing.3"),
+                        }
+                    },
+                }
             }),
         },
     },

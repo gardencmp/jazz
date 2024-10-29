@@ -1,8 +1,5 @@
 import { CodeExampleTabs, ResponsiveIframe } from "@/components/forMdx";
-import {
-    Prose,
-    SmallProse,
-} from "gcmp-design-system/src/app/components/molecules/Prose";
+import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
@@ -317,18 +314,18 @@ export default function Home() {
                         <H3>
                             <CodeRef>CoMap</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoMapDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
                         <H3>
                             <CodeRef>CoList</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoListDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
@@ -336,18 +333,18 @@ export default function Home() {
                             <CodeRef>CoPlainText</CodeRef> &{" "}
                             <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoPlainTextDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
                         <H3>
                             <CodeRef>CoStream</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoStreamDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
@@ -359,18 +356,18 @@ export default function Home() {
                         <H3>
                             <CodeRef>BinaryCoStream</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <BinaryCoStreamDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
                         <H3>
                             <CodeRef>ImageDefinition</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <ImageDefinitionDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
@@ -382,17 +379,17 @@ export default function Home() {
                         <H3>
                             <CodeRef>Group</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <GroupDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                     <GridCard>
                         <H3>
                             <CodeRef>Account</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <AccountDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
@@ -404,9 +401,9 @@ export default function Home() {
                             title="Auto-sub"
                             slogan="Let your UI drive data-syncing."
                         />
-                        <SmallProse>
+                        <Prose size="sm">
                             <AutoSubDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
@@ -414,9 +411,9 @@ export default function Home() {
                             title="Cursors & carets"
                             slogan="Ready-made spatial presence."
                         />
-                        <SmallProse>
+                        <Prose size="sm">
                             <CursorsAndCaretsDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
@@ -424,9 +421,9 @@ export default function Home() {
                             title="Two-way sync to your DB"
                             slogan="Add Jazz to an existing app."
                         />
-                        <SmallProse>
+                        <Prose size="sm">
                             <TwoWaySyncDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
@@ -439,9 +436,9 @@ export default function Home() {
                                 </>
                             }
                         />
-                        <SmallProse>
+                        <Prose size="sm">
                             <FileUploadDownloadDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
@@ -449,9 +446,9 @@ export default function Home() {
                             title="Video presence & calls"
                             slogan="Stream and record audio & video."
                         />
-                        <SmallProse>
+                        <Prose size="sm">
                             <VideoPresenceCallsDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
