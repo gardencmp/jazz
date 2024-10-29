@@ -77,13 +77,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html lang="en" className="h-full">
             <body
                 className={[
                     manrope.variable,
                     commitMono.variable,
                     inter.className,
-                    "flex flex-col items-center",
+                    "h-full flex flex-col items-center",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
