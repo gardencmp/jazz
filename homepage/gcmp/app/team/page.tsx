@@ -1,6 +1,7 @@
 import { GlobeIcon, LucideIcon } from "lucide-react";
 import Link from "next/link";
 import {
+    SiBluesky,
     SiGithub,
     SiGitlab,
     SiLinkedin,
@@ -18,6 +19,7 @@ interface TeamMember {
     gitlab?: string;
     website?: string;
     linkedin?: string;
+    bluesky?: string;
 }
 
 const team: Array<TeamMember> = [
@@ -28,7 +30,8 @@ const team: Array<TeamMember> = [
         location: "Canterbury, UK ",
         x: "anselm_io",
         github: "aeplay",
-        website: "https://aeplay.org",
+        website: "http://anselm.io",
+        bluesky: "anselm-io",
     },
     {
         name: "Andrei Popa",
@@ -134,6 +137,13 @@ function Person({ person }: { person: TeamMember }) {
                             link={`https://x.com/${person.x}`}
                             icon={SiX}
                             label="X profile"
+                        />
+                    )}
+                    {person.bluesky && (
+                        <SocialLink
+                            link={`https://bsky.app/profile/${person.bluesky}.bsky.social`}
+                            icon={SiBluesky}
+                            label="Bluesky profile"
                         />
                     )}
                     {person.gitlab && (
