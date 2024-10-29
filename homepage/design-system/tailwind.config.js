@@ -127,7 +127,7 @@ const config = {
                     css: {
                         "--tw-prose-body": stonePalette[700],
                         "--tw-prose-headings": stonePalette[900],
-                        "--tw-prose-bold": theme("colors.stone.900"),
+                        "--tw-prose-bold": stonePalette[900],
                         "--tw-prose-invert-bold": theme("colors.white"),
                         "--tw-prose-invert-body": stonePalette[400],
                         "--tw-prose-invert-headings": theme("colors.white"),
