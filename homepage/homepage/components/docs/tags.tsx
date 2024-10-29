@@ -12,9 +12,7 @@ export function Example({ children }: { children: ReactNode }) {
     return (
         <div className="flex-1">
             <div className="border bg-white dark:bg-stone-900 rounded shadow-sm">
-                <div className="py-1 px-2  border-b text-xs">
-                    Example
-                </div>
+                <div className="py-1 px-2  border-b text-xs">Example</div>
                 <div className="py-1 px-2 overflow-x-auto">{children}</div>
             </div>
         </div>

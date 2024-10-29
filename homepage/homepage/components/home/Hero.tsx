@@ -18,7 +18,10 @@ export function Hero({
                     <span className="inline-block">at high tempo.</span>
                 </h1>
 
-                <Prose size="lg" className="text-pretty max-w-2xl dark:text-stone-200">
+                <Prose
+                    size="lg"
+                    className="text-pretty max-w-2xl dark:text-stone-200"
+                >
                     <p>
                         Jazz is a framework for building local-first apps
                         &mdash;&nbsp;an&nbsp;architecture that lets companies
