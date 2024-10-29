@@ -41,7 +41,7 @@ const commitMono = localFont({
 });
 
 const metaTags = {
-    title: "jazz - Build your next app with sync",
+    title: "Jazz - Build local-first apps",
     description:
         "Jazz is an open-source framework for building local-first apps, removing 90% of the backend and infrastructure complexity.",
     url: "https://jazz.tools",
@@ -51,16 +51,16 @@ export const metadata: Metadata = {
     // metadataBase is a convenience option to set a base URL prefix for metadata fields that require a fully qualified URL.
     metadataBase: new URL(metaTags.url),
     title: {
-        template: "%s | jazz",
+        template: "%s | Jazz",
         default: metaTags.title,
     },
-    applicationName: "jazz",
+    applicationName: "Jazz",
     description: metaTags.description,
     openGraph: {
         title: metaTags.title,
         description: metaTags.description,
         url: metaTags.url,
-        siteName: "jazz",
+        siteName: "Jazz",
         images: [
             {
                 url: "/social-image.png",
