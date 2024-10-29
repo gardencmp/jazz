@@ -15,7 +15,7 @@ export function Input(props: Props) {
     const inputClassName = clsx(
         "w-full rounded-md border px-3.5 py-2 shadow-sm",
         "font-medium text-stone-900",
-        "dark:border-stone-900 dark:text-white",
+        "dark:text-white",
     );
 
     const containerClassName = clsx("grid gap-1", className);

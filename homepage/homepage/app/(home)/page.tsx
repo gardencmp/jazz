@@ -250,7 +250,7 @@ export default function Home() {
                         slogan="A chat app in 174 lines of code."
                     />
 
-                    <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:border-stone-900 dark:divide-stone-900">
+                    <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:divide-stone-900">
                         <CodeExampleTabs
                             tabs={[
                                 {
@@ -276,7 +276,7 @@ export default function Home() {
                             ]}
                         />
                         <div className="border-b order-first md:order-last flex flex-col md:border-b-0">
-                            <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:border-stone-900 dark:bg-stone-900">
+                            <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:bg-stone-900">
                                 <p className="items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
                                     result
                                 </p>
@@ -452,7 +452,7 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <div className="border border-stone-200 dark:border-stone-900 rounded-xl shadow-sm p-4 md:py-16">
+                <div className="border rounded-xl shadow-sm p-4 md:py-16">
                     <div className="flex flex-col lg:max-w-3xl md:text-center mx-auto justify-between gap-6">
                         <p className="uppercase text-blue tracking-widest text-sm font-medium dark:text-stone-400">
                             Become an early adopter

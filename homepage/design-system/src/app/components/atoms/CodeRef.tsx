@@ -11,7 +11,6 @@ export function CodeRef({ children }: { children: React.ReactNode }) {
                 "border",
                 "text-stone-800 dark:text-stone-200",
                 "bg-stone-100 dark:bg-stone-800",
-                "border-stone-200 dark:border-stone-900",
             )}
         >
             {children}

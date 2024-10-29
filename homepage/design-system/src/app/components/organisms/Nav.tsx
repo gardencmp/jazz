@@ -40,7 +40,7 @@ export function Nav({
                 className={[
                     clsx(
                         "hidden md:flex sticky left-0 right-0 top-0 max-sm:bottom-0 w-full justify-center",
-                        "bg-white dark:bg-stone-950 border-b max-sm:border-t border-stone-200 dark:border-stone-900",
+                        "bg-white dark:bg-stone-950 border-b max-sm:border-t",
                         "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
                         "z-50",
                         menuOpen ? "h-[100dvh]" : "h-16",
@@ -108,7 +108,7 @@ export function Nav({
             <nav
                 className={clsx(
                     "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
-                    "bg-stone-50 dark:bg-stone-925 border border-stone-100 dark:border-stone-900 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
+                    "bg-stone-50 dark:bg-stone-925 border border-stone-100 dark:outline dark:outline-1 dark:outline-black/60 rounded-lg shadow-lg",
                     menuOpen || searchOpen ? "left-4" : "",
                 )}
             >
@@ -118,7 +118,7 @@ export function Nav({
                         " px-2 pb-2",
                     )}
                 >
-                    <div className="flex items-center w-full border-b border-stone-100 dark:border-stone-900">
+                    <div className="flex items-center w-full border-b border-stone-100">
                         <NavLinkLogo
                             prominent
                             href="/"
@@ -141,7 +141,7 @@ export function Nav({
                     </div>
 
                     {pathname.startsWith("/docs") && docNav && (
-                        <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 dark:border-stone-900 overflow-x-auto">
+                        <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 overflow-x-auto">
                             {docNav}
                         </div>
                     )}
@@ -162,7 +162,7 @@ export function Nav({
                             ))}
                     </div>
 
-                    <div className="flex gap-4 justify-end border-b border-stone-100 dark:border-stone-900">
+                    <div className="flex gap-4 justify-end border-b border-stone-100">
                         {items
                             .filter((item) => !("icon" in item))
                             .slice(3)
@@ -184,7 +184,7 @@ export function Nav({
                         type="text"
                         className={clsx(
                             menuOpen || searchOpen ? "" : "hidden",
-                            "ml-2 border border-stone-200 dark:border-stone-900 px-2 py-1 rounded w-full"
+                            "ml-2 border px-2 py-1 rounded w-full"
                         )}
                         placeholder="Search docs..."
                         ref={searchRef}
