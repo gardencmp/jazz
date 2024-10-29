@@ -215,6 +215,20 @@ const config = {
                 color: "inherit",
                 textDecoration: "none",
             },
+        })),
+        plugin(({ addBase }) => addBase({
+            ":root": {
+                "--gcmp-border-color": stonePalette[200],
+                "--gcmp-invert-border-color": stonePalette[900],
+            },
+            "*": {
+                borderColor: "var(--gcmp-border-color)",
+            },
+            "@media (prefers-color-scheme: dark)": {
+                "*": {
+                    borderColor: "var(--gcmp-invert-border-color)",
+                }
+            },
         }))
     ],
 };
