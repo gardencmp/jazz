@@ -53,7 +53,7 @@ pre.twoslash data-lsp::before {
     position: absolute;
     transform: translate(0, 1.2rem);
     max-width: 30rem;
-    @apply text-xs px-1.5 py-1 rounded border border-stone-200 dark:border-stone-900 shadow-lg overflow-hidden whitespace-pre-wrap text-stone-700 bg-stone-50 dark:text-stone-200 dark:bg-stone-950;
+    @apply text-xs px-1.5 py-1 rounded border shadow-lg overflow-hidden whitespace-pre-wrap text-stone-700 bg-stone-50 dark:text-stone-200 dark:bg-stone-950;
     text-align: left;
     z-index: 100;
     opacity: 0;
@@ -79,7 +79,7 @@ pre.twoslash data-lsp:hover::before {
 }
 
 pre .code-container {
-    @apply overflow-auto p-2 pl-0 bg-white dark:bg-stone-925 rounded-b-xl text-xs h-full dark:border-stone-900;
+    @apply overflow-auto p-2 pl-0 bg-white dark:bg-stone-925 rounded-b-xl text-xs h-full;
 }
 /* The try button */
 pre .code-container > a {

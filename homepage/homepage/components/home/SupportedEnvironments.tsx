@@ -69,7 +69,7 @@ export function SupportedEnvironments() {
                     {supported.map((tech) => (
                         <div
                             key={tech.name}
-                            className="flex items-center gap-2 lg:py-3 lg:px-4 lg:shadow-sm rounded-lg lg:border border-stone-200 dark:border-stone-900"
+                            className="flex items-center gap-2 lg:py-3 lg:px-4 lg:shadow-sm rounded-lg lg:border"
                         >
                             <span className="text-2xl">{tech.icon}</span>
                             <div className="text-center font-medium text-stone-900 dark:text-white">

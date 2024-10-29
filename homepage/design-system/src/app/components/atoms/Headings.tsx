@@ -48,7 +48,7 @@ export function H3({ children, className }: HeadingProps) {
                 className,
                 "font-display",
                 "text-stone-950 dark:text-white",
-                "text-xl",
+                "text-xl md:text-2xl",
                 "mb-2",
                 "font-semibold",
                 "tracking-tight",

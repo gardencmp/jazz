@@ -29,7 +29,7 @@ export function CodeExampleTabs({
                 className,
             )}
         >
-            <div className="flex border-b overflow-x-auto overflow-y-hidden dark:border-stone-900 dark:bg-stone-900">
+            <div className="flex border-b overflow-x-auto overflow-y-hidden dark:bg-stone-900">
                 {tabs.map((tab, index) => (
                     <div key={index}>
                         <button

@@ -43,12 +43,13 @@ import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
-import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import {H2, H3} from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { Hero } from "@/components/home/Hero";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import BeforeAfterJazz from "@/components/home/BeforeAfterJazz";
+import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
 
 export default function Home() {
     const localFirst = {
@@ -250,7 +251,7 @@ export default function Home() {
                         slogan="A chat app in 174 lines of code."
                     />
 
-                    <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:border-stone-900 dark:divide-stone-900">
+                    <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:divide-stone-900">
                         <CodeExampleTabs
                             tabs={[
                                 {
@@ -276,7 +277,7 @@ export default function Home() {
                             ]}
                         />
                         <div className="border-b order-first md:order-last flex flex-col md:border-b-0">
-                            <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:border-stone-900 dark:bg-stone-900">
+                            <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:bg-stone-900">
                                 <p className="items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
                                     result
                                 </p>
@@ -395,71 +396,65 @@ export default function Home() {
 
                 <SupportedEnvironments />
 
+                <h2 className="sr-only">More features</h2>
+
                 <GappedGrid>
                     <GridCard>
-                        <SectionHeader
-                            title="Auto-sub"
-                            slogan="Let your UI drive data-syncing."
-                        />
+                        <H3>Auto-sub</H3>
+                        <P className="text-lg">
+                            Let your UI drive data-syncing.
+                        </P>
                         <Prose size="sm">
                             <AutoSubDescription />
                         </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="Cursors & carets"
-                            slogan="Ready-made spatial presence."
-                        />
+                        <H3>Cursors & carets</H3>
+                        <P className="text-lg">Ready-made spatial presence.</P>
                         <Prose size="sm">
                             <CursorsAndCaretsDescription />
                         </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="Two-way sync to your DB"
-                            slogan="Add Jazz to an existing app."
-                        />
+                        <H3>Two-way sync to your DB</H3>
+                        <P className="text-lg">Add Jazz to an existing app.</P>
                         <Prose size="sm">
                             <TwoWaySyncDescription />
                         </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="File upload & download"
-                            slogan={
-                                <>
-                                    Just use{" "}
-                                    <CodeRef>{`<input type='file'/>`}</CodeRef>.
-                                </>
-                            }
-                        />
+                        <H3>File upload & download</H3>
+                        <P className="text-lg">
+                            Just use <CodeRef>{`<input type='file'/>`}</CodeRef>
+                            .
+                        </P>
                         <Prose size="sm">
                             <FileUploadDownloadDescription />
                         </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="Video presence & calls"
-                            slogan="Stream and record audio & video."
-                        />
+                        <H3>Video presence & calls</H3>
+                        <P className="text-lg">
+                            Stream and record audio & video.
+                        </P>
                         <Prose size="sm">
                             <VideoPresenceCallsDescription />
                         </Prose>
                     </GridCard>
                 </GappedGrid>
 
-                <div className="border border-stone-200 dark:border-stone-900 rounded-xl shadow-sm p-4 md:py-16">
-                    <div className="flex flex-col lg:max-w-3xl md:text-center mx-auto justify-between gap-6">
+                <div className="border rounded-xl shadow-sm p-4 md:py-16">
+                    <div className="lg:max-w-3xl md:text-center mx-auto space-y-6">
                         <p className="uppercase text-blue tracking-widest text-sm font-medium dark:text-stone-400">
                             Become an early adopter
                         </p>
-                        <h3 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                        <H2>
                             We&apos;ll help you build your next app with Jazz
-                        </h3>
+                        </H2>
                         <Prose className="md:text-balance mx-auto">
                             <p>
                                 It&apos;s early days, but we work hard every day

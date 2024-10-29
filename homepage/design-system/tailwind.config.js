@@ -93,11 +93,6 @@ const config = {
                     foreground: "hsl(var(--card-foreground))",
                 },
             },
-            borderRadius: {
-                lg: "var(--radius)",
-                md: "calc(var(--radius) - 2px)",
-                sm: "calc(var(--radius) - 4px)",
-            },
             keyframes: {
                 "accordion-down": {
                     from: { height: "0" },
@@ -132,7 +127,7 @@ const config = {
                     css: {
                         "--tw-prose-body": stonePalette[700],
                         "--tw-prose-headings": stonePalette[900],
-                        "--tw-prose-bold": theme("colors.stone.900"),
+                        "--tw-prose-bold": stonePalette[900],
                         "--tw-prose-invert-bold": theme("colors.white"),
                         "--tw-prose-invert-body": stonePalette[400],
                         "--tw-prose-invert-headings": theme("colors.white"),
@@ -214,6 +209,20 @@ const config = {
             ".text-reset, .text-reset:hover, .text-reset:focus": {
                 color: "inherit",
                 textDecoration: "none",
+            },
+        })),
+        plugin(({ addBase }) => addBase({
+            ":root": {
+                "--gcmp-border-color": stonePalette[200],
+                "--gcmp-invert-border-color": stonePalette[900],
+            },
+            "*": {
+                borderColor: "var(--gcmp-border-color)",
+            },
+            "@media (prefers-color-scheme: dark)": {
+                "*": {
+                    borderColor: "var(--gcmp-invert-border-color)",
+                }
             },
         }))
     ],

@@ -61,7 +61,7 @@ export function ResponsiveIframe(
 
     return (
         <>
-            <div className="bg-white flex gap-3 border-b dark:border-stone-900 text-xs dark:bg-stone-925">
+            <div className="bg-white flex gap-3 border-b text-xs dark:bg-stone-925">
                 <input
                     className="flex-1 font-mono bg-transparent overflow-hidden text-ellipsis py-2 px-3"
                     value={url?.replace("http://", "").replace("https://", "")}
@@ -86,7 +86,7 @@ export function ResponsiveIframe(
                 )}
             </div>
             <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 dark:bg-stone-925">
-                <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem] dark:border-stone-900">
+                <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
                     <div className="h-full" ref={containerRef}>
                         <iframe
                             {...props}
