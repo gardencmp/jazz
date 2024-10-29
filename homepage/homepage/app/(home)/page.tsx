@@ -463,7 +463,7 @@ export default function Home() {
                         <h3 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
                             We&apos;ll help you build your next app with Jazz
                         </h3>
-                        <div className="space-y-2 md:text-balance leading-relaxed">
+                        <Prose className="md:text-balance mx-auto">
                             <p>
                                 It&apos;s early days, but we work hard every day
                                 to make Jazz a great tool for our users.
@@ -474,7 +474,7 @@ export default function Home() {
                                 We&apos;ll prioritize features that you need to
                                 succeed.
                             </p>
-                        </div>
+                        </Prose>
                         <div className="flex md:justify-center gap-3">
                             <Button
                                 href="https://discord.gg/utDMjHYg42"

@@ -188,6 +188,10 @@ const config = {
                             borderRadius: "2px",
                             whiteSpace: "nowrap",
                         },
+                        p: {
+                            marginBottom: theme("spacing.3"),
+                            marginTop: theme("spacing.3"),
+                        }
                     }
                 },
             }),

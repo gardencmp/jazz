@@ -20,8 +20,8 @@ export function Hero({
                 <div className="space-y-2 text-pretty md:leading-relaxed text-stone-700 max-w-2xl dark:text-stone-200 md:text-xl">
                     <p>
                         Jazz is a framework for building local-first apps
-                        &mdash;&nbsp;an&nbsp;architecture that lets companies like Figma
-                        and Linear play in a league of their own.
+                        &mdash;&nbsp;an&nbsp;architecture that lets companies
+                        like Figma and Linear play in a league of their own.
                     </p>
                     <p>
                         Open source. Self-host or use{" "}
