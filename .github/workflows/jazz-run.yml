@@ -1,0 +1,51 @@
+name: Jazz Run Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build jazz-run
+        run: pnpm exec turbo build && chmod +x dist/index.js;
+        working-directory: ./packages/jazz-run
+
+      - name: Run create account
+        run: ./dist/index.js account create --name "Jazz Run CI test"
+        working-directory: ./packages/jazz-run
+  

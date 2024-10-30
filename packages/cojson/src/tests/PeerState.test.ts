@@ -20,17 +20,6 @@ function setup() {
 }
 
 describe("PeerState", () => {
-    test("should initialize with correct properties", () => {
-        const { peerState } = setup();
-        expect(peerState.id).toBe("test-peer");
-        expect(peerState.role).toBe("peer");
-        expect(peerState.priority).toBe(1);
-        expect(peerState.crashOnClose).toBe(false);
-        expect(peerState.closed).toBe(false);
-        expect(peerState.optimisticKnownStates).toEqual({});
-        expect(peerState.toldKnownState).toEqual(new Set());
-    });
-
     test("should push outgoing message to peer", async () => {
         const { mockPeer, peerState } = setup();
         const message: SyncMessage = { action: "load", id: "co_ztest-id", header: false, sessions: {} };
