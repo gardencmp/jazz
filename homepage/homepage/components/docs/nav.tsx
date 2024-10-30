@@ -2,172 +2,41 @@ import { requestProject } from "./requestProject";
 import { ChevronRight, PackageIcon } from "lucide-react";
 import { packages } from "@/lib/packages";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { docNavigationItems } from "@/lib/docNavigationItems";
+import { SideNavItem } from "@/components/SideNavItem";
+import { SideNavHeader } from "@/components/SideNavHeader";
+import { SideNav } from "@/components/SideNav";
 import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function DocNav({ className }: { className?: string }) {
-    const comingSoon = [
-        "Auth, Accounts & Migrations",
-        "Edit Metadata & Time Travel",
-        "Backend Workers",
-    ];
-
-    const covaluesItems = [
-        {
-            name: "Declaration",
-            href: "/docs#declaring-covalues",
-        },
-        {
-            name: "Reading",
-            href: "/docs#reading-covalues",
-        },
-        {
-            name: "Creation",
-            href: "/docs#creating-covalues",
-        },
-        {
-            name: "Editing & Subscription",
-            href: "/docs#editing-and-subscription",
-        },
-        {
-            name: "Persistence",
-            href: "/docs#persistence",
-        },
-        {
-            name: "Remote Sync",
-            href: "/docs#remote-sync",
-        },
-        {
-            name: "Simple Public Sharing",
-            href: "/docs#simple-public-sharing",
-        },
-    ];
-
-    const refsItems = [
-        {
-            name: "Precise Loading Depths",
-            href: "/docs#loading-depth",
-        },
-    ];
-
-    const groupsItems = [
-        {
-            name: "Groups/Accounts as Scopes",
-            href: "/docs#groups-accounts-as-scopes",
-        },
-        {
-            name: "Creating Invites",
-            href: "/docs#creating-invites",
-        },
-        {
-            name: "Consuming Invites",
-            href: "/docs#consuming-invites",
-        },
-    ];
-
     return (
-        <div className={clsx(className, "text-sm space-y-5 pr-3")}>
+        <SideNav
+            items={docNavigationItems}
+            className={clsx(twMerge(
+                "pr-3 md:col-span-4 lg:col-span-3",
+                "sticky align-start top-[4.75rem] h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden",
+                "hidden md:block",
+                className
+            ))}
+        >
             <div>
-                <DocNavHeader href="/docs">Guide</DocNavHeader>
-                <ul>
-                    <li>
-                        <DocNavLink href="/docs#guide-setup">
-                            Project Setup
-                        </DocNavLink>
-                    </li>
-                    <li>
-                        <DocNavLink href="/docs#intro-to-covalues">
-                            Intro to CoValues
-                        </DocNavLink>
-                        <ul>
-                            {covaluesItems.map((item) => (
-                                <li key={item.name}>
-                                    <DocNavLink
-                                        className="pl-4"
-                                        href={item.href}
-                                    >
-                                        {item.name}
-                                    </DocNavLink>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                    <li>
-                        <DocNavLink href="/docs#refs-and-on-demand-subscribe">
-                            Refs & Auto-Subscribe
-                        </DocNavLink>
-                        <ul>
-                            {refsItems.map((item) => (
-                                <li key={item.name}>
-                                    <DocNavLink
-                                        className="pl-4"
-                                        href={item.href}
-                                    >
-                                        {item.name}
-                                    </DocNavLink>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                    <li>
-                        <DocNavLink href="/docs#groups-and-permissions">
-                            Groups & Permissions
-                        </DocNavLink>
-                        <ul>
-                            {groupsItems.map((item) => (
-                                <li key={item.name}>
-                                    <DocNavLink
-                                        className="pl-4"
-                                        href={item.href}
-                                    >
-                                        {item.name}
-                                    </DocNavLink>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-
-            <div>
-                <DocNavHeader>Coming soon</DocNavHeader>
-                <ul>
-                    {comingSoon.map((item) => (
-                        <li className="py-1" key={item}>
-                            {item}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            <div>
-                <DocNavHeader>Resources</DocNavHeader>
-                <ul>
-                    <li>
-                        <DocNavLink href="/docs/resources/examples">
-                            Example Apps
-                        </DocNavLink>
-                    </li>
-                </ul>
-            </div>
-
-            <div>
-                <DocNavHeader href="/docs/api-reference">
+                <SideNavHeader href="/docs/api-reference">
                     API Reference
-                </DocNavHeader>
+                </SideNavHeader>
                 <ul className="space-y-8">
                     {packages.map(({ name }) => (
                         <li key={name}>
-                            <NavPackage package={name} />
+                            <PackageNavItem package={name} />
                         </li>
                     ))}
                 </ul>
             </div>
-        </div>
+        </SideNav>
     );
 }
 
-export async function NavPackage({
+export async function PackageNavItem({
     package: packageName,
 }: {
     package: string;
@@ -176,13 +45,13 @@ export async function NavPackage({
 
     return (
         <>
-            <DocNavLink
+            <SideNavItem
                 className="mb-1 flex gap-2 items-center"
                 href={`/docs/api-reference/${packageName}`}
             >
                 <PackageIcon size={15} strokeWidth={1.5} />
                 {packageName}
-            </DocNavLink>
+            </SideNavItem>
             {project.categories?.map((category) => {
                 return (
                     <details
@@ -216,46 +85,4 @@ export async function NavPackage({
             })}
         </>
     );
-}
-
-export function DocNavLink({
-    href,
-    children,
-    className = "",
-}: {
-    href: string;
-    children: ReactNode;
-    className?: string;
-}) {
-    return (
-        <Link
-            href={href}
-            className={clsx(
-                className,
-                "py-1 hover:text-black dark:hover:text-stone-200 block hover:transition-colors",
-            )}
-        >
-            {children}
-        </Link>
-    );
-}
-
-function DocNavHeader({
-    href,
-    children,
-}: {
-    href?: string;
-    children: ReactNode;
-}) {
-    const className = "block font-medium text-stone-900 py-1 dark:text-white";
-
-    if (href) {
-        return (
-            <Link className={className} href={href}>
-                {children}
-            </Link>
-        );
-    }
-
-    return <p className={className}>{children}</p>;
 }
