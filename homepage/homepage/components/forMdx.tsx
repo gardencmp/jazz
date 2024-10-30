@@ -9,7 +9,7 @@ import { IframeHTMLAttributes } from "react";
 import { ResponsiveIframe as ResponsiveIframeClient } from "./ResponsiveIframe";
 
 export function ResponsiveIframe(
-    props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
+    props: IframeHTMLAttributes<HTMLIFrameElement> & { localsrc: string },
 ) {
     return <ResponsiveIframeClient {...props} />;
 }

@@ -4,7 +4,7 @@ import { useLayoutEffect, useState, useRef, IframeHTMLAttributes } from "react";
 import { CopyIcon } from "lucide-react";
 
 export function ResponsiveIframe(
-    props: IframeHTMLAttributes<HTMLIFrameElement> & { localSrc: string },
+    props: IframeHTMLAttributes<HTMLIFrameElement> & { localsrc: string },
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -43,15 +43,15 @@ export function ResponsiveIframe(
     useLayoutEffect(() => {
         setSrc(
             window.location.hostname === "localhost"
-                ? props.localSrc
+                ? props.localsrc
                 : props.src,
         );
         setUrl(
             window.location.hostname === "localhost"
-                ? props.localSrc
+                ? props.localsrc
                 : props.src,
         );
-    }, [props.src, props.localSrc]);
+    }, [props.src, props.localsrc]);
 
     const copyUrl = () => {
         if (url) {
