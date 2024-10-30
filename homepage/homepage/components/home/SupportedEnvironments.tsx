@@ -60,7 +60,7 @@ export function SupportedEnvironments() {
     ];
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        <div className="container grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             <h2 className="font-semibold tracking-tight font-display text-2xl text-stone-900 lg:text-balance sm:text-4xl dark:text-white">
                 Jazz works with your favorite stack
             </h2>

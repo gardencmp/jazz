@@ -42,7 +42,6 @@ import CursorsAndCaretsDescription from "./toolkit/cursorsAndCarets.mdx";
 import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
-import CloudIntro from "./cloudIntro.mdx";
 import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
@@ -50,6 +49,7 @@ import { Hero } from "@/components/home/Hero";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import BeforeAfterJazz from "@/components/home/BeforeAfterJazz";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
+import { JazzCloud } from "@/components/home/JazzCloud";
 
 export default function Home() {
     const localFirst = {
@@ -210,21 +210,27 @@ export default function Home() {
 
             <BeforeAfterJazz />
 
-            <div className="container flex flex-col gap-12 py-12 lg:gap-20 lg:py-20">
+            <div className="flex flex-col gap-12 py-12 lg:gap-20 lg:py-20">
                 <HowItWorks />
 
-                <Testimonial name="Serious Adopter #4" role="Technical Founder">
-                    <p>
-                        You don&apos;t have to think about deploying a database,
-                        SQL schemas, relations, and writing queries… Basically,{" "}
-                        <span className="bg-blue-50 px-1 dark:bg-transparent">
-                            if you know TypeScript, you know Jazz
-                        </span>
-                        , and you can ship an app. It&apos;s just so nice!
-                    </p>
-                </Testimonial>
+                <div className="container">
+                    <Testimonial
+                        name="Serious Adopter #4"
+                        role="Technical Founder"
+                    >
+                        <p>
+                            You don&apos;t have to think about deploying a
+                            database, SQL schemas, relations, and writing
+                            queries… Basically,{" "}
+                            <span className="bg-blue-50 px-1 dark:bg-transparent">
+                                if you know TypeScript, you know Jazz
+                            </span>
+                            , and you can ship an app. It&apos;s just so nice!
+                        </p>
+                    </Testimonial>
+                </div>
 
-                <div className="flex flex-col gap-4 md:gap-6">
+                <div className="flex flex-col gap-4 md:gap-6 container ">
                     <SectionHeader
                         title="Everything you need to ship top-tier apps quickly."
                         slogan="Features that used to take months to build now work out-of-the-box."
@@ -245,7 +251,9 @@ export default function Home() {
                     </GappedGrid>
                 </div>
 
-                <div>
+                <JazzCloud />
+
+                <div className="container">
                     <SectionHeader
                         title="First impressions..."
                         slogan="A chat app in 174 lines of code."
@@ -290,26 +298,9 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div>
-                    <SectionHeader
-                        title="Jazz Cloud"
-                        slogan="Serverless sync & storage for Jazz apps"
-                    />
-
-                    <Prose>
-                        <CloudIntro />
-                    </Prose>
-
-                    <div className="mt-8">
-                        <Button href="/cloud" variant="secondary">
-                            Learn more about Jazz Cloud {"->"}
-                        </Button>
-                    </div>
-                </div>
-
                 <GappedGrid
                     title="Bread-and-butter datastructures"
-                    className="grid-cols-2 lg:grid-cols-4"
+                    className="container grid-cols-2 lg:grid-cols-4"
                 >
                     <GridCard>
                         <H3>
@@ -351,7 +342,7 @@ export default function Home() {
 
                 <GappedGrid
                     title="First-class files & binary data"
-                    className="grid-cols-2 lg:grid-cols-4"
+                    className="container grid-cols-2 lg:grid-cols-4"
                 >
                     <GridCard>
                         <H3>
@@ -374,7 +365,7 @@ export default function Home() {
 
                 <GappedGrid
                     title="Secure permissions, authorship & teams"
-                    className="grid-cols-2 lg:grid-cols-4"
+                    className="container grid-cols-2 lg:grid-cols-4"
                 >
                     <GridCard>
                         <H3>
@@ -398,7 +389,7 @@ export default function Home() {
 
                 <h2 className="sr-only">More features</h2>
 
-                <GappedGrid>
+                <GappedGrid className="container">
                     <GridCard>
                         <H3>Auto-sub</H3>
                         <P className="text-lg">
@@ -447,7 +438,7 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <div className="border rounded-xl shadow-sm p-4 md:py-16">
+                <div className="container border rounded-xl shadow-sm p-4 md:py-16">
                     <div className="lg:max-w-3xl md:text-center mx-auto space-y-6">
                         <p className="uppercase text-blue tracking-widest text-sm font-medium dark:text-stone-400">
                             Become an early adopter
