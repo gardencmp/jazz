@@ -1,7 +1,7 @@
 {
     "name": "jazz-example-music-player",
     "private": true,
-    "version": "0.0.9",
+    "version": "0.0.10",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -22,8 +22,8 @@
         "@radix-ui/react-toast": "^1.1.4",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
-        "jazz-react": "workspace:0.8.7",
-        "jazz-tools": "workspace:0.8.5",
+        "jazz-react": "workspace:0.8.11",
+        "jazz-tools": "workspace:0.8.11",
         "lucide-react": "^0.274.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

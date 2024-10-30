@@ -19,7 +19,7 @@
     },
     "type": "module",
     "license": "MIT",
-    "version": "0.8.5",
+    "version": "0.8.11",
     "devDependencies": {
         "@types/jest": "^29.5.3",
         "@typescript-eslint/eslint-plugin": "^6.2.1",
