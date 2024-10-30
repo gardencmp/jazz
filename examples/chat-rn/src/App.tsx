@@ -51,7 +51,7 @@ function App() {
         <StrictMode>
             <Jazz.Provider
                 auth={auth}
-                peer="wss://mesh.jazz.tools/?key=chat-rn-example-jazz@gcmp.io"
+                peer="wss://cloud.jazz.tools/?key=chat-rn-example-jazz@gcmp.io"
                 storage={undefined}
             >
                 <NavigationContainer linking={linking} ref={navigationRef}>

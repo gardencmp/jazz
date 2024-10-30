@@ -6,6 +6,7 @@ import React from "react";
 interface SideNavItem {
     name: string;
     href?: string;
+    done?: number;
     items?: SideNavItem[];
 }
 export function SideNav({
@@ -23,11 +24,24 @@ export function SideNav({
                 <div key={name}>
                     <SideNavHeader href={href}>{name}</SideNavHeader>
                     {items &&
-                        items.map(({ name, href, items }) => (
+                        items.map(({ name, href, items, done }) => (
                             <ul key={name}>
                                 <li>
-                                    <SideNavItem href={href}>
-                                        {name}
+                                    <SideNavItem href={done === 0 ? undefined : href}>
+                                        <span
+                                            className={
+                                                done === 0 ? "opacity-50" : ""
+                                            }
+                                        >
+                                            {name}
+                                        </span>{" "}
+                                        {done === undefined ? (
+                                            ""
+                                        ) : (
+                                            <span className="text-xs opacity-50">
+                                                ({done}%)
+                                            </span>
+                                        )}
                                     </SideNavItem>
                                 </li>
                                 {items && items?.length > 0 && (

@@ -4,7 +4,7 @@ import { products } from "@/lib/showcase";
 import Link from "next/link";
 
 export const metadata = {
-    title: "jazz - Built with Jazz",
+    title: "Built with Jazz",
     description: "Great apps by smart people.",
 };
 

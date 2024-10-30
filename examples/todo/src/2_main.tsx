@@ -44,7 +44,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
         <>
             <Jazz.Provider
                 auth={passkeyAuth}
-                peer="wss://mesh.jazz.tools/?key=todo-example-jazz@gcmp.io"
+                peer="wss://cloud.jazz.tools/?key=todo-example-jazz@gcmp.io"
             >
                 {children}
             </Jazz.Provider>

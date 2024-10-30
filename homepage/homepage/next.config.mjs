@@ -47,6 +47,8 @@ function highlightPlugin() {
             node.type = "html";
             node.value = `<code class="not-prose py-2 flex flex-col leading-relaxed">${lines
                 .map((line) => {
+                    let lineClassName = ''
+
                     const isSubduedLine = line.some((token) =>
                         token.content.includes("// old"),
                     );
@@ -56,12 +58,18 @@ function highlightPlugin() {
                     if (!isBinnedLine) {
                         lineNo++;
                     }
+                    
+                    if (isBinnedLine) {
+                        lineClassName = 'bg-red-100 dark:bg-red-800'
+                    }
+                    
                     return (
-                        `<span class="block px-3 ${isBinnedLine ? 'bg-red-100 dark:bg-red-800' : ''}" style="${isBinnedLine ? "user-select: none" : ""}">` +
+                        `<span class="block px-3 min-h-[1em] ${lineClassName}" style="${isBinnedLine ? "user-select: none" : ""}">` +
                         line
                             .map(
-                                (token) =>
-                                    `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`,
+                                (token) => {
+                                  return  `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`
+                                }
                             )
                             .join("") +
                         "</span>"

@@ -88,11 +88,11 @@ export default function Page() {
                     </CardHeading>
                     <CardBody>
                         Get help from our{" "}
-                        <Link href="https://discord.gg/utDMjHYg42">
+                        <Link href="https://discord.gg/utDMjHYg42" className="underline">
                             Discord
                         </Link>
                         , or open an issue on{" "}
-                        <Link href="https://github.com/gardencmp/jazz">
+                        <Link href="https://github.com/gardencmp/jazz" className="underline">
                             GitHub
                         </Link>
                         .

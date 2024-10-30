@@ -80,11 +80,11 @@ export function SupportedEnvironments() {
                 </div>
                 <div className="flex flex-col gap-3">
                     <p className="text-sm">Coming soon</p>
-                    <div className="flex gap-5">
+                    <div className="flex gap-x-5 gap-y-3 flex-wrap">
                         {comingSoon.map((tech) => (
                             <div
                                 key={tech.name}
-                                className="flex  items-center gap-2"
+                                className="flex items-center gap-2"
                             >
                                 <span className="text-xl">{tech.icon}</span>
                                 <div className="text-center text-sm text-stone-900 dark:text-white">

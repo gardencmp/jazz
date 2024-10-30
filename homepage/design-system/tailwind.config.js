@@ -2,6 +2,7 @@ import harmonyPalette from "@evilmartians/harmony/tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindCSSAnimate from "tailwindcss-animate";
 const colors = require("tailwindcss/colors")
+const plugin = require("tailwindcss/plugin")
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -37,6 +38,8 @@ const config = {
                 "900": "#12046A",
                 DEFAULT: "#3313F7",
             },
+            green: colors.green,
+            red: colors.red,
         },
         extend: {
             fontFamily: {
@@ -110,12 +113,12 @@ const config = {
                 },
                 screens: {
                     md: "960px",
-                    lg: "1280px",
+                    lg: "1276px",
                 },
             },
             screens: {
                 md: "960px",
-                lg: "1280px",
+                lg: "1276px",
             },
             typography: {
                 DEFAULT: {
@@ -126,6 +129,10 @@ const config = {
             }
         },
     },
-    plugins: [tailwindCSSAnimate, typography()],
+    plugins: [
+        tailwindCSSAnimate,
+        typography(),
+        plugin(({ addVariant }) => addVariant("label", "& :is(label)")),
+    ],
 };
 export default config;

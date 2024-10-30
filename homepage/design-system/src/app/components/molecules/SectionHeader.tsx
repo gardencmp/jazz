@@ -10,7 +10,7 @@ function H2Sub({ children }: { children: React.ReactNode }) {
                 "leading-snug",
                 "tracking-tight",
                 "max-w-4xl",
-                "text-stone-700 dark:text-stone-500"
+                "text-stone-700 dark:text-stone-500",
             )}
         >
             {children}

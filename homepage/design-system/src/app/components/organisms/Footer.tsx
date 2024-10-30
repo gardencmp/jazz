@@ -22,7 +22,7 @@ type FooterProps = {
 
 export function Footer({ logo, companyName, sections }: FooterProps) {
     return (
-        <footer className="flex z-10 mt-10 min-h-[15rem] bg-stone-100 dark:bg-stone-900 text-stone-600 dark:text-stone-400 w-full justify-center">
+        <footer className="flex z-10 mt-10 min-h-[15rem] border-t bg-stone-100 dark:bg-stone-925 text-stone-600 dark:text-stone-400 w-full justify-center  dark:border-stone-900">
             <div className="p-8 container w-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-8 max-sm:mb-12">
                 <div className="col-span-full md:col-span-1 sm:row-start-4 md:row-start-auto lg:col-span-2 md:row-span-2 md:flex-1 flex flex-row md:flex-col max-sm:mt-4 justify-between max-sm:items-start gap-2 text-sm min-w-[10rem]">
                     {logo}
@@ -74,7 +74,7 @@ function FooterLink({
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
-                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none"
+                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
             )}
             onClick={onClick}
             target={newTab ? "_blank" : undefined}

@@ -11,6 +11,7 @@ export function Nav({
     mainLogo,
     items,
     docNav,
+    cta,
 }: {
     mainLogo: ReactNode;
     items: {
@@ -20,7 +21,8 @@ export function Nav({
         firstOnRight?: boolean;
         newTab?: boolean;
     }[];
-    docNav: ReactNode;
+    docNav?: ReactNode;
+    cta?: ReactNode;
 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -38,11 +40,11 @@ export function Nav({
                 className={[
                     clsx(
                         "hidden md:flex sticky left-0 right-0 top-0 max-sm:bottom-0 w-full justify-center",
-                        "bg-white dark:bg-stone-950 border-b max-sm:border-t border-stone-50 dark:border-b-stone-950",
+                        "bg-white dark:bg-stone-950 border-b max-sm:border-t border-stone-200 dark:border-stone-900",
                         "max-h-none overflow-hidden transition[max-height] duration-300 ease-in-out",
                         "z-50",
-                        menuOpen ? "h-[100dvh]" : "h-16"
-                    )
+                        menuOpen ? "h-[100dvh]" : "h-16",
+                    ),
                 ].join(" ")}
             >
                 <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
@@ -74,6 +76,8 @@ export function Nav({
                             </NavLink>
                         ),
                     )}
+
+                    {cta}
                 </div>
             </nav>
             <div className="md:hidden px-4 flex items-center self-stretch dark:text-white">
@@ -109,7 +113,10 @@ export function Nav({
                 )}
             >
                 <div
-                    className={clsx(menuOpen ? "block" : "hidden", " px-2 pb-2")}
+                    className={clsx(
+                        menuOpen ? "block" : "hidden",
+                        " px-2 pb-2",
+                    )}
                 >
                     <div className="flex items-center w-full border-b border-stone-100 dark:border-stone-900">
                         <NavLinkLogo
@@ -133,7 +140,7 @@ export function Nav({
                             ))}
                     </div>
 
-                    {pathname.startsWith("/docs") && (
+                    {pathname.startsWith("/docs") && docNav && (
                         <div className="max-h-[calc(100dvh-15rem)] p-4 border-b border-stone-100 dark:border-stone-900 overflow-x-auto">
                             {docNav}
                         </div>

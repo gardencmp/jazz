@@ -19,7 +19,8 @@ export function SideNavItem({
                 href={href}
                 className={clsx(
                     classes,
-                    "hover:text-black dark:hover:text-stone-200 hover:transition-colors",
+                    href &&
+                        "hover:text-black dark:hover:text-stone-200 transition-colors hover:transition-none",
                 )}
             >
                 {children}

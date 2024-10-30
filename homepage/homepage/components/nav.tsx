@@ -1,7 +1,7 @@
-import { JazzLogo } from "./logos";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
 import { SiDiscord, SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
 import { DocNav } from "./docs/nav";
+import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 
 export function JazzNav() {
     return (
@@ -9,10 +9,10 @@ export function JazzNav() {
             mainLogo={<JazzLogo className="w-24 -ml-2" />}
             items={[
                 { title: "Home", href: "/" },
-                { title: "Jazz Mesh", href: "/mesh" },
+                { title: "Jazz Cloud", href: "/cloud" },
                 {
                     title: "Docs",
-                    href: "/docs/guide",
+                    href: "/docs",
                 },
                 {
                     title: "Built with Jazz",
@@ -27,11 +27,6 @@ export function JazzNav() {
                 {
                     title: "Releases",
                     href: "https://github.com/gardencmp/jazz/releases",
-                    newTab: true,
-                },
-                {
-                    title: "Roadmap",
-                    href: "https://github.com/orgs/gardencmp/projects/4/views/3",
                     newTab: true,
                 },
                 {
@@ -53,7 +48,7 @@ export function JazzNav() {
                     icon: <SiTwitter className="w-5" />,
                 },
             ]}
-            docNav={<DocNav />}
+            docNav={<DocNav className="block h-auto"/>}
         />
     );
 }

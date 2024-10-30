@@ -14,7 +14,7 @@ job "example-bookShelf$BRANCH_SUFFIX" {
     constraint {
       attribute = "${node.class}"
       operator  = "="
-      value     = "mesh"
+      value     = "cloud"
     }
 
     spread {
