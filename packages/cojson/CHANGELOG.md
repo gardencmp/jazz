@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.11
+
+### Patch Changes
+
+-   1ed4ab5: Make the peer known states subscribable
+
 ## 0.8.5
 
 ### Patch Changes

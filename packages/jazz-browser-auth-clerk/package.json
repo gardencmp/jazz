@@ -1,6 +1,6 @@
 {
     "name": "jazz-browser-auth-clerk",
-    "version": "0.8.7",
+    "version": "0.8.11",
     "type": "module",
     "main": "dist/index.js",
     "types": "src/index.ts",
@@ -10,9 +10,9 @@
         "*.{js,jsx,mdx,json}": "prettier --write"
     },
     "dependencies": {
-        "cojson": "workspace:0.8.5",
-        "jazz-browser": "workspace:0.8.7",
-        "jazz-tools": "workspace:0.8.5"
+        "cojson": "workspace:0.8.11",
+        "jazz-browser": "workspace:0.8.11",
+        "jazz-tools": "workspace:0.8.11"
     },
     "scripts": {
         "lint": "eslint . --ext ts,tsx",
