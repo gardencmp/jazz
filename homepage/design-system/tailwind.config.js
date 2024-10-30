@@ -219,10 +219,8 @@ const config = {
             "*": {
                 borderColor: "var(--gcmp-border-color)",
             },
-            "@media (prefers-color-scheme: dark)": {
-                "*": {
-                    borderColor: "var(--gcmp-invert-border-color)",
-                }
+            ".dark *": {
+                borderColor: "var(--gcmp-invert-border-color)",
             },
         }))
     ],
