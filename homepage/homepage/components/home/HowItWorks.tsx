@@ -53,7 +53,6 @@ function Step({
                 className,
                 "rounded-lg overflow-hidden shadow-sm flex flex-col gap-6 border",
                 "pt-4 sm:pt-6",
-                "dark:border-stone-900",
                 "col-span-2 lg:col-span-3",
             )}
         >

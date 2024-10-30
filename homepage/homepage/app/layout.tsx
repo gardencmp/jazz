@@ -1,6 +1,5 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/themeProvider";
 
 import { Inter, Manrope } from "next/font/google";
 import localFont from "next/font/local";
@@ -9,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { JazzNav } from "@/components/nav";
 import { JazzFooter } from "@/components/footer";
+import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -77,13 +77,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html lang="en" className="h-full" suppressHydrationWarning>
             <body
                 className={[
                     manrope.variable,
                     commitMono.variable,
                     inter.className,
-                    "flex flex-col items-center [&_*]:scroll-mt-[5rem]",
+                    "h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >

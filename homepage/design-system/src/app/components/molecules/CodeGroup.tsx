@@ -86,7 +86,7 @@ export function CodeGroup({
         <div className="group relative">
             <pre
                 className={clsx(
-                    "border p-0 bg-stone-50 dark:bg-stone-900 dark:border-stone-800",
+                    "border p-0 bg-stone-50 dark:bg-stone-900",
                     "text-black dark:text-white",
                 )}
                 ref={textRef}

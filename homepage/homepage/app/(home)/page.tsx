@@ -43,7 +43,7 @@ import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
-import {H2, H3} from "gcmp-design-system/src/app/components/atoms/Headings";
+import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
 import { Hero } from "@/components/home/Hero";
@@ -284,7 +284,7 @@ export default function Home() {
                             </div>
                             <ResponsiveIframe
                                 src="https://chat.jazz.tools"
-                                localSrc="http://localhost:5173"
+                                localsrc="http://localhost:5173"
                             />
                         </div>
                     </div>
