@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     BrowserContext,
     BrowserGuestContext,
@@ -46,34 +46,74 @@ export function createJazzReactApp<Acc extends Account>({
 
         const [sessionCount, setSessionCount] = useState(0);
 
+        const effectExecuted = useRef(false);
+        effectExecuted.current = false;
+
         useEffect(() => {
-            const promiseWithDoneCallback = createJazzBrowserContext<Acc>(
-                auth === "guest"
-                    ? {
-                          peer,
-                          storage,
-                      }
-                    : {
-                          AccountSchema,
-                          auth: auth,
-                          peer,
-                          storage,
-                      },
-            ).then((context) => {
+            // Avoid double execution of the effect in development mode for easier debugging.
+            if (process.env.NODE_ENV === "development") {
+                if (effectExecuted.current) {
+                    return;
+                }
+                effectExecuted.current = true;
+
+                // In development mode we don't return a cleanup function because otherwise
+                // the double effect execution would mark the context as done immediately.
+                //
+                // So we mark it as done in the subsequent execution.
+                const previousContext = ctx;
+
+                if (previousContext) {
+                    previousContext.done();
+                }
+            }
+
+            async function createContext() {
+                const currentContext = await createJazzBrowserContext<Acc>(
+                    auth === "guest"
+                        ? {
+                              peer,
+                              storage,
+                          }
+                        : {
+                              AccountSchema,
+                              auth,
+                              peer,
+                              storage,
+                          },
+                );
+
+                const logOut = () => {
+                    currentContext.logOut();
+                    setCtx(undefined);
+                    setSessionCount(sessionCount + 1);
+
+                    if (process.env.NODE_ENV === "development") {
+                        // In development mode we don't return a cleanup function
+                        // so we mark the context as done here.
+                        currentContext.done();
+                    }
+                };
+
                 setCtx({
-                    ...context,
-                    logOut: () => {
-                        context.logOut();
-                        setCtx(undefined);
-                        setSessionCount(sessionCount + 1);
-                    },
+                    ...currentContext,
+                    logOut,
                 });
-                return context.done;
-            });
+
+                return currentContext;
+            }
+
+            const promise = createContext();
+
+            // In development mode we don't return a cleanup function because otherwise
+            // the double effect execution would mark the context as done immediately.
+            if (process.env.NODE_ENV === "development") {
+                return;
+            }
 
             return () => {
-                void promiseWithDoneCallback.then((done) => done());
-            };
+                void promise.then((context) => context.done());
+            }
         }, [AccountSchema, auth, peer, storage, sessionCount]);
 
         return (
