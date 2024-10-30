@@ -50,6 +50,9 @@ import { Hero } from "@/components/home/Hero";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import BeforeAfterJazz from "@/components/home/BeforeAfterJazz";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
+import { WhyLocalFirst } from "@/components/home/WhyLocalFirst";
+import {CollaborationFeatures} from "@/components/home/CollaborationFeatures";
+import {FeaturesSection} from "@/components/home/FeaturesSection";
 
 export default function Home() {
     const localFirst = {
@@ -69,23 +72,46 @@ export default function Home() {
         ),
     };
 
-    const features = [
+
+    const localFirstFeatures = [
+        {
+            title: "Instant updates",
+            icon: GaugeIcon,
+            description: (
+              <>
+                  <p>
+                      Since you&apos;re working with local state,
+                      your UI updates instantly. No spinners and API calls.
+                  </p>
+              </>
+            ),
+        },
+        {
+            title: "Real-time sync",
+            icon: MonitorSmartphoneIcon,
+            description: (
+              <>
+                  <p>
+                      Every device with the same account will always have everything in sync.
+                  </p>
+              </>
+            ),
+        },
         {
             title: "Multiplayer",
             icon: MousePointerSquareDashedIcon,
             description: (
-                <>
-                    <p>
-                        Share state with other users and get automatic real-time
-                        multiplayer.
-                    </p>
-                    <p>
-                        Use the same primitives to quickly build user presence
-                        UI, like cursors.
-                    </p>
-                </>
+              <>
+                  <p>
+                      Share state with other users, and get automatic real-time
+                      multiplayer.
+                  </p>
+              </>
             ),
         },
+    ];
+
+    const features = [
         {
             title: "File uploads",
             icon: UploadCloudIcon,
@@ -138,22 +164,6 @@ export default function Home() {
             ),
         },
         {
-            title: "Real-time sync",
-            icon: MonitorSmartphoneIcon,
-            description: (
-                <>
-                    <p>
-                        Build your app around mutable local state attached to an
-                        account.
-                    </p>
-                    <p>
-                        Every device with the same account will always have
-                        everything in sync.
-                    </p>
-                </>
-            ),
-        },
-        {
             title: "E2E encryption",
             icon: KeyRoundIcon,
             description: (
@@ -165,22 +175,6 @@ export default function Home() {
                     <p>
                         So it can&apos;t be tampered with and Jazz Cloud only
                         sees encrypted data.
-                    </p>
-                </>
-            ),
-        },
-        {
-            title: "Instant updates",
-            icon: GaugeIcon,
-            description: (
-                <>
-                    <p>
-                        Get instant updates throughout your UI every time you
-                        locally mutate data.
-                    </p>
-                    <p>
-                        Remote changes are synced and applied with minimal
-                        latency.
                     </p>
                 </>
             ),
@@ -206,7 +200,7 @@ export default function Home() {
 
     return (
         <>
-            <Hero features={features} />
+            <Hero features={[...localFirstFeatures, ...features]} />
 
             <BeforeAfterJazz />
 
@@ -224,26 +218,11 @@ export default function Home() {
                     </p>
                 </Testimonial>
 
-                <div className="flex flex-col gap-4 md:gap-6">
-                    <SectionHeader
-                        title="Everything you need to ship top-tier apps quickly."
-                        slogan="Features that used to take months to build now work out-of-the-box."
-                    />
+                <WhyLocalFirst />
 
-                    <GappedGrid>
-                        {[localFirst, ...features].map(
-                            ({ title, icon: Icon, description }) => (
-                                <LabelledFeatureIcon
-                                    className="col-span-2"
-                                    key={title}
-                                    label={title}
-                                    icon={Icon}
-                                    explanation={description}
-                                />
-                            ),
-                        )}
-                    </GappedGrid>
-                </div>
+                <CollaborationFeatures/>
+
+                <FeaturesSection/>
 
                 <div>
                     <SectionHeader

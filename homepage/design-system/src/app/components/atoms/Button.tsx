@@ -33,7 +33,7 @@ export function Button(props: ButtonProps) {
 
     const classNames = clsx(
         className,
-        "rounded-lg text-center transition-colors",
+        "inline-block rounded-lg text-center transition-colors",
         sizeClasses[size],
         variantClasses[variant],
         disabled && "opacity-50 cursor-not-allowed pointer-events-none",
