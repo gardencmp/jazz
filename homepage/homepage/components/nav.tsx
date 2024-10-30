@@ -53,7 +53,7 @@ export function JazzNav() {
                     icon: <SiTwitter className="w-5" />,
                 },
             ]}
-            docNav={<DocNav />}
+            docNav={<DocNav className="block h-auto"/>}
         />
     );
 }

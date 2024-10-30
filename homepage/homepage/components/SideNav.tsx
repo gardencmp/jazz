@@ -27,7 +27,7 @@ export function SideNav({
                         items.map(({ name, href, items, done }) => (
                             <ul key={name}>
                                 <li>
-                                    <SideNavItem href={href}>
+                                    <SideNavItem href={done === 0 ? undefined : href}>
                                         <span
                                             className={
                                                 done === 0 ? "opacity-50" : ""

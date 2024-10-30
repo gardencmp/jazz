@@ -2,7 +2,6 @@ export const docNavigationItems = [
     {
         // welcome to jazz
         name: "Getting started",
-        href: "/docs",
         items: [
             {
                 // what is jazz, supported environments, where to start (guide, examples, project setup)
@@ -19,7 +18,6 @@ export const docNavigationItems = [
     },
     {
         name: "Project Setup",
-        href: "/docs/project-setup",
         items: [
             {
                 // jazz mesh, setting api key, free plan, unlimited
@@ -41,7 +39,6 @@ export const docNavigationItems = [
     },
     {
         name: "Defining Schemas",
-        href: "/docs/schemas",
         items: [
             {
                 name: "CoValues",
@@ -57,7 +54,6 @@ export const docNavigationItems = [
     },
     {
         name: "Using CoValues",
-        href: "/docs/covalues",
         items: [
             {
                 name: "Creation & Ownership",
@@ -83,7 +79,6 @@ export const docNavigationItems = [
     },
     {
         name: "Groups, Permissions & Sharing",
-        href: "/docs/permissions",
         items: [
             {
                 name: "Groups as Permission Scopes",
@@ -104,7 +99,6 @@ export const docNavigationItems = [
     },
     {
         name: "Authentication",
-        href: "/docs/authentication",
         items: [
             {
                 name: "Auth Methods Overview",
