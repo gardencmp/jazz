@@ -284,7 +284,7 @@ export default function Home() {
                             </div>
                             <ResponsiveIframe
                                 src="https://chat.jazz.tools"
-                                localSrc="http://localhost:5173"
+                                localsrc="http://localhost:5173"
                             />
                         </div>
                     </div>
