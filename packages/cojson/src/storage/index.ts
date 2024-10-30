@@ -560,7 +560,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
             "storage",
             {
                 peer1role: "client",
-                peer2role: "server",
+                peer2role: "storage",
                 trace,
                 crashOnClose: true,
             },

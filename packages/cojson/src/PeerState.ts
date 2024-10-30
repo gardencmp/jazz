@@ -29,6 +29,10 @@ export class PeerState {
         return this.peer.crashOnClose;
     }
 
+    isServerOrStoragePeer() {
+        return this.peer.role === "server" || this.peer.role === "storage";
+    }
+
     /**
      * We set as default priority HIGH to handle all the messages without a
      * priority property as HIGH priority.

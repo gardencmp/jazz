@@ -94,7 +94,7 @@ export class IDBStorage {
             "storage",
             {
                 peer1role: "client",
-                peer2role: "server",
+                peer2role: "storage",
                 trace,
                 crashOnClose: true,
             },
