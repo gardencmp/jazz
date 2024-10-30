@@ -12,7 +12,7 @@ export function JazzNav() {
                 { title: "Jazz Cloud", href: "/cloud" },
                 {
                     title: "Docs",
-                    href: "/docs/guide",
+                    href: "/docs",
                 },
                 {
                     title: "Built with Jazz",

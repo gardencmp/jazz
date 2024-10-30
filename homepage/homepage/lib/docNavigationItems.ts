@@ -7,7 +7,7 @@ export const docNavigationItems = [
                 // what is jazz, supported environments, where to start (guide, examples, project setup)
                 name: "Introduction",
                 href: "/docs",
-                done: 0,
+                done: 100,
             },
             {
                 name: "Guide",
