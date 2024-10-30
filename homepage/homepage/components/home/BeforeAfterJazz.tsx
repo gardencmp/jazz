@@ -1,33 +1,51 @@
-import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
-import { MoveDownIcon, MoveRightIcon } from "lucide-react";
+import {
+    ArrowDownIcon,
+    ArrowRightIcon,
+} from "lucide-react";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
+import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
 export default function BeforeAfterJazz() {
     return (
         <div className="container grid gap-4 lg:gap-8">
-            <H2 className="text-center">Hard things are easy now.</H2>
+            <SectionHeader
+                className="sm:text-center sm:mx-auto"
+                title="Hard things are easy now."
+                slogan=""
+            />
 
-            <div className="grid md:grid-cols-7 max-md:max-w-lg lg:max-w-8xl mx-auto gap-4 justify-items-stretch">
-                <div className="col-span-3 flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:gap-5 dark:bg-stone-925">
+            <div className="grid sm:grid-cols-2 border rounded-lg shadow-sm md:rounded-xl overflow-hidden dark:border-stone-900">
+                <div className="flex flex-col bg-stone-50 relative gap-3 p-4 pb-8 md:p-8 md:gap-5 border-b sm:border-b-0 sm:border-r dark:bg-transparent dark:border-stone-900">
+                    <span className="hidden absolute top-0 -right-4 md:-right-6 sm:flex items-center h-full">
+                        <span className="p-1 md:p-3 bg-stone-200 rounded-full dark:bg-stone-900 dark:text-white">
+                            <ArrowRightIcon size={24} />
+                        </span>
+                    </span>
+                    <span className="sm:hidden w-full absolute -bottom-6 flex justify-center left-0">
+                        <span className="p-3 bg-stone-200 rounded-full dark:bg-stone-900 dark:text-white">
+                            <ArrowDownIcon size={24} />
+                        </span>
+                    </span>
                     <Prose>
+                        <p className="font-display text-lg md:text-xl font-semibold text-stone-900 dark:text-white">
+                            The sad truth is...
+                        </p>
                         <p>
-                            The sad truth:
-                            <br />
-                            <strong>
-                                Every stack reinvents how users and machines
-                                share state.
-                            </strong>
+                          <strong>
+                            Every stack reinvents how users and machines
+                            share state.
+                          </strong>
                         </p>
                     </Prose>
                     <div className="relative flex items-center flex-1">
-                        <div className="w-20 h-full bg-gradient-to-r from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
-                        <div className="h-20 w-full bg-gradient-to-b from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
-                        <div className="h-20 w-full bg-gradient-to-t from-stone-50 to-transparent absolute bottom-0 left-0 z-10 dark:from-stone-925"></div>
-                        <div className="w-20 h-full bg-gradient-to-l from-stone-50 to-transparent absolute top-0 right-0 z-10 dark:from-stone-925"></div>
+                        <div className="w-20 h-full bg-gradient-to-r from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-950"></div>
+                        <div className="h-20 w-full bg-gradient-to-b from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-950"></div>
+                        <div className="h-20 w-full bg-gradient-to-t from-stone-50 to-transparent absolute bottom-0 left-0 z-10 dark:from-stone-950"></div>
+                        <div className="w-20 h-full bg-gradient-to-l from-stone-50 to-transparent absolute top-0 right-0 z-10 dark:from-stone-950"></div>
 
-                        <DiagramBeforeJazz className="mx-auto w-full h-auto max-w-md" />
+                        <DiagramBeforeJazz className="mx-auto w-full h-auto max-w-sm" />
                     </div>
                     <Prose>
                         <p>
@@ -44,21 +62,12 @@ export default function BeforeAfterJazz() {
                         </p>
                     </Prose>
                 </div>
-                <div className="col-span-3 md:col-span-1 flex items-center justify-center">
-                    <MoveRightIcon
-                        size={32}
-                        className="hidden md:block text-stone-300 dark:text-stone-700"
-                    />
-                    <MoveDownIcon
-                        size={32}
-                        className="block md:hidden text-stone-300 dark:text-stone-700"
-                    />
-                </div>
-                <div className="col-span-3 flex flex-col gap-3 bg-stone-50 p-4 rounded-2xl md:p-8 md:gap-5 dark:bg-stone-925">
+                <div className="flex flex-col gap-3 p-4 pt-8 md:p-8 md:gap-5">
                     <Prose>
+                        <p className="font-display text-lg md:text-xl font-semibold text-stone-900 dark:text-white">
+                            The good news is...
+                        </p>
                         <p>
-                            The good news:
-                            <br />
                             <strong>
                                 There’s a single new abstraction that does the
                                 whole job.
@@ -66,7 +75,7 @@ export default function BeforeAfterJazz() {
                         </p>
                     </Prose>
                     <div className="flex items-center flex-1">
-                        <DiagramAfterJazz className="mx-auto w-full h-auto max-w-md" />
+                        <DiagramAfterJazz className="mx-auto w-full h-auto max-w-sm" />
                     </div>
                     <Prose>
                         <p>
