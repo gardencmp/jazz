@@ -1,3 +1,5 @@
-export function P({ children }: { children: React.ReactNode }) {
-    return <p className="mb-4">{children}</p>;
+import clsx from "clsx";
+
+export function P({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <p className={clsx(className, "mb-4")}>{children}</p>;
 }

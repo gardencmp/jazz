@@ -57,7 +57,7 @@ export async function PackageNavItem({
                     <details
                         key={category.title}
                         open={category.title !== "Other"}
-                        className="group ml-1.5 border-l dark:border-stone-900"
+                        className="group ml-1.5 border-l"
                     >
                         <summary className="pl-[13px] py-1 cursor-pointer flex gap-2 items-center justify-between hover:text-stone-800 dark:hover:text-stone-200 [&::-webkit-details-marker]:hidden">
                             {category.title}

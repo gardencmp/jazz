@@ -84,7 +84,15 @@ export function CodeGroup({
 
     return (
         <div className="group relative">
-            <pre ref={textRef}>{children}</pre>
+            <pre
+                className={clsx(
+                    "border p-0 bg-stone-50 dark:bg-stone-900",
+                    "text-black dark:text-white",
+                )}
+                ref={textRef}
+            >
+                {children}
+            </pre>
 
             {code ? <CopyButton size={size} code={code} /> : <></>}
         </div>

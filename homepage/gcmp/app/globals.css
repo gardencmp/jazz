@@ -65,10 +65,6 @@
         --ring: 24 5.7% 82.9%;
     }
 
-    * {
-        @apply border-border;
-    }
-
     .overlay-close {
         @apply bg-black;
     }

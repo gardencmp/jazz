@@ -21,12 +21,12 @@ function Code({
                 className,
                 "w-full h-full relative -right-2 -bottom-1 max-w-full lg:max-w-[480px] overflow-x-auto ml-auto overflow-hidden",
                 "shadow-xl shadow-blue/20 ",
-                "rounded-tl-lg border border-stone-200",
+                "rounded-tl-lg border",
                 "flex-1 bg-white ring ring-4 ring-stone-400/20",
-                "dark:bg-stone-925 dark:border-stone-900",
+                "dark:bg-stone-925",
             )}
         >
-            <div className="flex px-4 border-b border-stone-200 dark:border-stone-900">
+            <div className="flex px-4 border-b">
                 <span className="text-xs lg:text-sm border-b border-blue py-2 dark:border-blue-400">
                     {fileName}
                 </span>
@@ -51,9 +51,8 @@ function Step({
         <div
             className={clsx(
                 className,
-                "rounded-lg overflow-hidden shadow-sm flex flex-col gap-6 border border-stone-200",
+                "rounded-lg overflow-hidden shadow-sm flex flex-col gap-6 border",
                 "pt-4 sm:pt-6",
-                "dark:border-stone-900",
                 "col-span-2 lg:col-span-3",
             )}
         >

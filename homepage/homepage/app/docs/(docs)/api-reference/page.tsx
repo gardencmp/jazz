@@ -63,7 +63,7 @@ export default function Page() {
                         href={`/docs/api-reference/${name}`}
                         key={name}
                     >
-                        <Card className="border border-stone-200 dark:border-stone-900 shadow-sm">
+                        <Card className="border shadow-sm">
                             <PackageIcon
                                 size={25}
                                 strokeWidth={1.5}

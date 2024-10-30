@@ -28,7 +28,7 @@ export function Button(props: ButtonProps) {
         primary:
             "bg-blue border-blue text-white font-medium bg-blue hover:bg-blue-800 hover:border-blue-800",
         secondary:
-            "text-stone-900 border border-stone-200 dark:border-stone-800 font-medium hover:border-stone-300 hover:dark:border-stone-700 dark:text-white",
+            "text-stone-900 border font-medium hover:border-stone-300 hover:dark:border-stone-700 dark:text-white",
     };
 
     const classNames = clsx(
