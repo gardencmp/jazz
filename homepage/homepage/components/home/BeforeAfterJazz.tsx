@@ -1,7 +1,4 @@
-import {
-    ArrowDownIcon,
-    ArrowRightIcon,
-} from "lucide-react";
+import { ArrowDownIcon, ArrowRightIcon } from "lucide-react";
 import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
 import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
@@ -33,10 +30,10 @@ export default function BeforeAfterJazz() {
                             The sad truth is...
                         </p>
                         <p>
-                          <strong>
-                            Every stack reinvents how users and machines
-                            share state.
-                          </strong>
+                            <strong>
+                                Every stack reinvents how users and machines
+                                share state.
+                            </strong>
                         </p>
                     </Prose>
                     <div className="relative flex items-center flex-1">

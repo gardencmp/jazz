@@ -2,10 +2,17 @@ import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { CheckIcon } from "lucide-react";
 import Link from "next/link";
+import { clsx } from "clsx";
 
 export function JazzCloud() {
     return (
-        <div className="border-b bg-gradient-to-t from-blue-50/80 via-blue-50/50 via-30% to-blue-50/0 pt-6 pb-16 lg:pt-10 lg:pb-24">
+        <div
+            className={clsx([
+                "border-b pt-6 pb-16 lg:pt-10 lg:pb-24",
+                "bg-gradient-to-t from-blue-50/80 via-blue-50/50 via-30% to-blue-50/0",
+                "dark:from-blue-600/10 dark:via-20% dark:via-blue-600/5 dark:to-transparent",
+            ])}
+        >
             <div className="container grid gap-6">
                 <h2 className="font-display text-stone-900 dark:text-white text-3xl md:text-4xl lg:text-5xl font-medium tracking-tighter">
                     Jazz Cloud
@@ -31,7 +38,7 @@ export function JazzCloud() {
                             key={feature}
                             className="flex items-center gap-2 text-stone-800 dark:text-stone-200"
                         >
-                            <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-stone-900">
+                            <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-white/10">
                                 <CheckIcon size={16} />
                             </span>
                             {feature}
