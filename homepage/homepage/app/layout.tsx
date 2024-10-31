@@ -83,7 +83,7 @@ export default function RootLayout({
                     manrope.variable,
                     commitMono.variable,
                     inter.className,
-                    "h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
+                    "min-h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
@@ -96,7 +96,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <JazzNav />
-                    <main className="flex flex-col w-full">{children}</main>
+                    <main className="flex-1 w-full">{children}</main>
                     <JazzFooter />
                 </ThemeProvider>
             </body>

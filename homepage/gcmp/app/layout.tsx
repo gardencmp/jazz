@@ -83,7 +83,7 @@ export default function RootLayout({
                     manrope.variable,
                     commitMono.variable,
                     inter.className,
-                    "h-full flex flex-col items-center",
+                    "min-h-full flex flex-col items-center",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
@@ -96,7 +96,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <GcmpNav />
-                    <main className="flex flex-1 flex-col w-full">
+                    <main className="flex-1 w-full">
                         {children}
                     </main>
                     <footer className="py-8 md:py-16 text-sm flex justify-between gap-3 w-full container">
