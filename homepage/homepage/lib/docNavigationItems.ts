@@ -12,7 +12,7 @@ export const docNavigationItems = [
             {
                 name: "Guide",
                 href: "/docs/guide",
-                done: 50
+                done: 50,
             },
         ],
     },
@@ -43,12 +43,12 @@ export const docNavigationItems = [
             {
                 name: "CoValues",
                 href: "/docs/schemas/covalues",
-                done: 20
+                done: 20,
             },
             {
                 name: "Accounts & Migrations",
                 href: "/docs/schemas/accounts",
-                done: 0
+                done: 0,
             },
         ],
     },
@@ -58,22 +58,22 @@ export const docNavigationItems = [
             {
                 name: "Creation & Ownership",
                 href: "/docs/covalues/creation",
-                done: 0
+                done: 0,
             },
             {
                 name: "Subscribing & Deep Loading",
                 href: "/docs/covalues/reading",
-                done: 0
+                done: 0,
             },
             {
                 name: "Updating & Deleting",
                 href: "/docs/covalues/updating",
-                done: 0
+                done: 0,
             },
             {
                 name: "Metadata & Time-travel",
                 href: "/docs/covalues/metadata",
-                done: 0
+                done: 0,
             },
         ],
     },
@@ -83,17 +83,17 @@ export const docNavigationItems = [
             {
                 name: "Groups as Permission Scopes",
                 href: "/docs/groups/intro",
-                done: 0
+                done: 0,
             },
             {
                 name: "Public Sharing & Invites",
                 href: "/docs/groups/sharing",
-                done: 0
+                done: 0,
             },
             {
                 name: "Group Inheritance",
                 href: "/docs/groups/inheritance",
-                done: 0
+                done: 0,
             },
         ],
     },
@@ -103,12 +103,12 @@ export const docNavigationItems = [
             {
                 name: "Auth Methods Overview",
                 href: "/docs/authentication/auth-methods",
-                done: 0
+                done: 0,
             },
             {
                 name: "Writing Your Own",
                 href: "/docs/authentication/writing-your-own",
-                done: 0
+                done: 0,
             },
         ],
     },
@@ -118,35 +118,12 @@ export const docNavigationItems = [
             {
                 name: "Example apps",
                 href: "/docs/examples",
-                done: 30
+                done: 30,
             },
             {
                 name: "Jazz under the hood",
                 href: "/docs/jazz-under-the-hood",
-                done: 0
-            },
-        ],
-    },
-];
-
-export const docNavigationItemsOld = [
-    {
-        // welcome to jazz
-        name: "Getting started",
-        href: "/docs/guide",
-        items: [
-            {
-                name: "Guide",
-                href: "/docs/guide",
-            },
-        ],
-    },
-    {
-        name: "Resources",
-        items: [
-            {
-                name: "Example apps",
-                href: "/docs/examples",
+                done: 0,
             },
         ],
     },
