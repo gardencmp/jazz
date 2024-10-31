@@ -11,7 +11,10 @@ export function SideNavItem({
     children: ReactNode;
     className?: string;
 }) {
-    const classes = clsx(className, "py-1 block hover:transition-colors");
+    const classes = clsx(
+        className,
+        "py-1 flex items-center hover:transition-colors",
+    );
 
     if (href) {
         return (
