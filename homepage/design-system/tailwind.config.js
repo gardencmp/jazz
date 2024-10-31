@@ -167,10 +167,10 @@ const config = {
                             fontSize: theme("fontSize.2xl"),
                         },
                         h4: {
-                            textTransform: "uppercase",
-                            letterSpacing: theme("letterSpacing.widest"),
-                            fontWeight: theme("fontWeight.medium"),
-                            fontSize: theme("fontSize.sm"),
+                            fontFamily: theme("fontFamily.display"),
+                            letterSpacing: theme("letterSpacing.tight"),
+                            fontWeight: theme("fontWeight.semibold"),
+                            fontSize: theme("fontSize.xl"),
                         },
                         'code::before': {
                             content: 'none',
