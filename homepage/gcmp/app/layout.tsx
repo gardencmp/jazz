@@ -99,7 +99,7 @@ export default function RootLayout({
                     <main className="flex-1 w-full">
                         {children}
                     </main>
-                    <footer className="py-8 md:py-16 text-sm flex justify-between gap-3 w-full container">
+                    <footer className="py-8 text-sm flex justify-between gap-3 w-full container mt-12 md:mt-20">
                         <p>©2024 Garden Computing, Inc.</p>
 
                         <ThemeToggle className="hidden md:block"/>
