@@ -1,4 +1,4 @@
-import ServerGuide from "./server-side.mdx"
+import ServerGuide from "./server-side.mdx";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { clsx } from "clsx";
@@ -19,16 +19,15 @@ const navItems = [
     {
         name: "Using CoValues instead of Requests",
         href: "/docs/project-setup/server-side#covalues-instead-of-requests",
-    }
-]
-
+    },
+];
 
 export default function Page() {
     return (
         <div
             className={clsx(
                 "col-span-12 md:col-span-8 lg:col-span-9",
-                "lg:flex lg:gap-5",
+                "flex justify-center lg:gap-5",
             )}
         >
             <Prose className="overflow-x-hidden lg:flex-1">

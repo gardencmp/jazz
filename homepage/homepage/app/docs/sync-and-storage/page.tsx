@@ -1,4 +1,4 @@
-import SyncAndStorage from "./sync-and-storage.mdx"
+import SyncAndStorage from "./sync-and-storage.mdx";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { clsx } from "clsx";
@@ -12,7 +12,7 @@ const navItems = [
                 name: "Free Public Alpha",
                 href: "/docs/sync-and-storage#free-public-alpha",
             },
-        ]
+        ],
     },
     {
         name: "Running your own sync server",
@@ -26,17 +26,16 @@ const navItems = [
                 name: "Source code",
                 href: "/docs/sync-and-storage#source-code",
             },
-        ]
-    }
-]
-
+        ],
+    },
+];
 
 export default function Page() {
     return (
         <div
             className={clsx(
                 "col-span-12 md:col-span-8 lg:col-span-9",
-                "lg:flex lg:gap-5",
+                "flex justify-center lg:gap-5",
             )}
         >
             <Prose className="overflow-x-hidden lg:flex-1">

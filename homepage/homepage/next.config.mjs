@@ -29,7 +29,7 @@ const config = {
 function highlightPlugin() {
     return async function transformer(tree) {
         const highlighter = await getHighlighter({
-            langs: ["typescript", "bash", "tsx"],
+            langs: ["typescript", "bash", "tsx", "json"],
             theme: "css-variables", // use the theme
         });
 
@@ -47,7 +47,7 @@ function highlightPlugin() {
             node.type = "html";
             node.value = `<code class="not-prose py-2 flex flex-col leading-relaxed">${lines
                 .map((line) => {
-                    let lineClassName = ''
+                    let lineClassName = "";
 
                     const isSubduedLine = line.some((token) =>
                         token.content.includes("// old"),
@@ -58,19 +58,17 @@ function highlightPlugin() {
                     if (!isBinnedLine) {
                         lineNo++;
                     }
-                    
+
                     if (isBinnedLine) {
-                        lineClassName = 'bg-red-100 dark:bg-red-800'
+                        lineClassName = "bg-red-100 dark:bg-red-800";
                     }
-                    
+
                     return (
                         `<span class="block px-3 min-h-[1em] ${lineClassName}" style="${isBinnedLine ? "user-select: none" : ""}">` +
                         line
-                            .map(
-                                (token) => {
-                                  return  `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`
-                                }
-                            )
+                            .map((token) => {
+                                return `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`;
+                            })
                             .join("") +
                         "</span>"
                     );

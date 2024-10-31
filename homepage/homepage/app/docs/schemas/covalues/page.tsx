@@ -1,4 +1,4 @@
-import CoValuesGuide from "./covalues.mdx"
+import CoValuesGuide from "./covalues.mdx";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { clsx } from "clsx";
@@ -26,9 +26,9 @@ const navItems = [
             },
             {
                 name: "Computed Fields, Methods & Constructors ",
-                href: "/docs/schemas/covalues#custom-fields"
-            }
-        ]
+                href: "/docs/schemas/covalues#custom-fields",
+            },
+        ],
     },
     {
         name: "CoMaps",
@@ -42,7 +42,7 @@ const navItems = [
                 name: "Dict/Record-like CoMaps",
                 href: "/docs/schemas/covalues#comaps-dict-like",
             },
-        ]
+        ],
     },
     {
         name: "CoLists",
@@ -55,16 +55,15 @@ const navItems = [
     {
         name: "BinaryCoStreams",
         href: "/docs/schemas/covalues#binarycostreams",
-    }
-]
-
+    },
+];
 
 export default function Page() {
     return (
         <div
             className={clsx(
                 "col-span-12 md:col-span-8 lg:col-span-9",
-                "lg:flex lg:gap-5",
+                "flex justify-center lg:gap-5",
             )}
         >
             <Prose className="overflow-x-hidden lg:flex-1">
