@@ -135,7 +135,7 @@ const config = {
                         "--tw-prose-invert-code": stonePalette[50],
                         "--tw-prose-links": theme("colors.blue.DEFAULT"),
                         "--tw-prose-invert-links": theme("colors.blue.500"),
-                        maxWidth: theme("screens.4xl"),
+                        maxWidth: null,
                         strong: {
                             color: "var(--tw-prose-bold)",
                             fontWeight: theme("fontWeight.medium"),
