@@ -226,7 +226,7 @@ export default function Home() {
 
                 <div>
                     <SectionHeader
-                        title="First impressions..."
+                        title="See it for yourself"
                         slogan="A chat app in 174 lines of code."
                     />
 
@@ -266,23 +266,6 @@ export default function Home() {
                                 localsrc="http://localhost:5173"
                             />
                         </div>
-                    </div>
-                </div>
-
-                <div>
-                    <SectionHeader
-                        title="Jazz Cloud"
-                        slogan="Serverless sync & storage for Jazz apps"
-                    />
-
-                    <Prose>
-                        <CloudIntro />
-                    </Prose>
-
-                    <div className="mt-8">
-                        <Button href="/cloud" variant="secondary">
-                            Learn more about Jazz Cloud {"->"}
-                        </Button>
                     </div>
                 </div>
 
@@ -328,103 +311,42 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <GappedGrid
-                    title="First-class files & binary data"
-                    className="grid-cols-2 lg:grid-cols-4"
-                >
-                    <GridCard>
-                        <H3>
-                            <CodeRef>BinaryCoStream</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <BinaryCoStreamDescription />
-                        </Prose>
-                    </GridCard>
-
-                    <GridCard>
-                        <H3>
-                            <CodeRef>ImageDefinition</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <ImageDefinitionDescription />
-                        </Prose>
-                    </GridCard>
-                </GappedGrid>
-
-                <GappedGrid
-                    title="Secure permissions, authorship & teams"
-                    className="grid-cols-2 lg:grid-cols-4"
-                >
-                    <GridCard>
-                        <H3>
-                            <CodeRef>Group</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <GroupDescription />
-                        </Prose>
-                    </GridCard>
-                    <GridCard>
-                        <H3>
-                            <CodeRef>Account</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <AccountDescription />
-                        </Prose>
-                    </GridCard>
-                </GappedGrid>
-
                 <SupportedEnvironments />
 
                 <h2 className="sr-only">More features</h2>
 
-                <GappedGrid>
-                    <GridCard>
-                        <H3>Auto-sub</H3>
-                        <P className="text-lg">
-                            Let your UI drive data-syncing.
-                        </P>
-                        <Prose size="sm">
-                            <AutoSubDescription />
-                        </Prose>
-                    </GridCard>
+                <div>
+                    <H2>More features coming soon</H2>
 
-                    <GridCard>
-                        <H3>Cursors & carets</H3>
-                        <P className="text-lg">Ready-made spatial presence.</P>
-                        <Prose size="sm">
-                            <CursorsAndCaretsDescription />
-                        </Prose>
-                    </GridCard>
+                    <GappedGrid>
+                        <GridCard>
+                            <H3>Cursors & carets</H3>
+                            <P className="text-lg">Ready-made spatial presence.</P>
+                            <Prose size="sm">
+                                <CursorsAndCaretsDescription />
+                            </Prose>
+                        </GridCard>
 
-                    <GridCard>
-                        <H3>Two-way sync to your DB</H3>
-                        <P className="text-lg">Add Jazz to an existing app.</P>
-                        <Prose size="sm">
-                            <TwoWaySyncDescription />
-                        </Prose>
-                    </GridCard>
+                        <GridCard>
+                            <H3>Two-way sync to your DB</H3>
+                            <P className="text-lg">Add Jazz to an existing app.</P>
+                            <Prose size="sm">
+                                <TwoWaySyncDescription />
+                            </Prose>
+                        </GridCard>
 
-                    <GridCard>
-                        <H3>File upload & download</H3>
-                        <P className="text-lg">
-                            Just use <CodeRef>{`<input type='file'/>`}</CodeRef>
-                            .
-                        </P>
-                        <Prose size="sm">
-                            <FileUploadDownloadDescription />
-                        </Prose>
-                    </GridCard>
+                        <GridCard>
+                            <H3>Video presence & calls</H3>
+                            <P className="text-lg">
+                                Stream and record audio & video.
+                            </P>
+                            <Prose size="sm">
+                                <VideoPresenceCallsDescription />
+                            </Prose>
+                        </GridCard>
+                    </GappedGrid>
 
-                    <GridCard>
-                        <H3>Video presence & calls</H3>
-                        <P className="text-lg">
-                            Stream and record audio & video.
-                        </P>
-                        <Prose size="sm">
-                            <VideoPresenceCallsDescription />
-                        </Prose>
-                    </GridCard>
-                </GappedGrid>
+                </div>
 
                 <div className="border rounded-xl shadow-sm p-4 md:py-16">
                     <div className="lg:max-w-3xl md:text-center mx-auto space-y-6">

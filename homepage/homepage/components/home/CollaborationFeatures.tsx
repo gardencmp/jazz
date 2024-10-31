@@ -33,7 +33,7 @@ export function CollaborationFeatures() {
             </CodeGroup>
           </div>
           <div className="col-span-2">
-            <p className="font-semibold">Public for everyone</p>
+            <p className="font-semibold">Public</p>
             <p>
               Start collaborating by giving write access to everyone.
             </p>
