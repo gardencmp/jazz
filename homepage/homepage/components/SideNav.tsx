@@ -27,23 +27,20 @@ export function SideNav({
                         items.map(({ name, href, items, done }) => (
                             <ul key={name}>
                                 <li>
-                                    <SideNavItem href={done === 0 ? undefined : href}>
-                                        <span
-                                            className={
-                                                done === 0 ? "opacity-50" : ""
-                                            }
-                                        >
-                                            {name}
-                                        </span>{" "}
-                                        {done === undefined ? (
-                                            ""
-                                        ) : (
-                                            <span className="text-xs opacity-50">
-                                                ({done}%)
-                                            </span>
+                                    <SideNavItem
+                                        href={
+                                            done === 0
+                                                ? "/docs/coming-soon"
+                                                : href
+                                        }
+                                        className={clsx(
+                                            done === 0 ? "text-gray-500" : "",
                                         )}
+                                    >
+                                        {name}
                                     </SideNavItem>
                                 </li>
+
                                 {items && items?.length > 0 && (
                                     <ul className="pl-4">
                                         {items.map(({ name, href }) => (
