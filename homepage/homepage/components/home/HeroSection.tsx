@@ -2,7 +2,7 @@ import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
-export function Hero({
+export function HeroSection({
     features,
 }: {
     features: { title: string; icon: LucideIcon }[];

@@ -45,14 +45,14 @@ import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
 import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
-import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
-import { Hero } from "@/components/home/Hero";
-import { HowItWorks } from "@/components/home/HowItWorks";
-import BeforeAfterJazz from "@/components/home/BeforeAfterJazz";
+import { SupportedEnvironmentsSection } from "@/components/home/SupportedEnvironmentsSection";
+import { HeroSection } from "@/components/home/HeroSection";
+import { HowJazzWorksSection } from "@/components/home/HowJazzWorksSection";
+import ProblemStatementSection from "@/components/home/ProblemStatementSection";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
-import { WhyLocalFirst } from "@/components/home/WhyLocalFirst";
-import {CollaborationFeatures} from "@/components/home/CollaborationFeatures";
-import {FeaturesSection} from "@/components/home/FeaturesSection";
+import { LocalFirstFeaturesSection } from "@/components/home/LocalFirstFeaturesSection";
+import { CollaborationFeaturesSection } from "@/components/home/CollaborationFeaturesSection";
+import { FeaturesSection } from "@/components/home/FeaturesSection";
 
 export default function Home() {
     const localFirst = {
@@ -72,41 +72,41 @@ export default function Home() {
         ),
     };
 
-
     const localFirstFeatures = [
         {
             title: "Instant updates",
             icon: GaugeIcon,
             description: (
-              <>
-                  <p>
-                      Since you&apos;re working with local state,
-                      your UI updates instantly. No spinners and API calls.
-                  </p>
-              </>
+                <>
+                    <p>
+                        Since you&apos;re working with local state, your UI
+                        updates instantly. No spinners and API calls.
+                    </p>
+                </>
             ),
         },
         {
             title: "Real-time sync",
             icon: MonitorSmartphoneIcon,
             description: (
-              <>
-                  <p>
-                      Every device with the same account will always have everything in sync.
-                  </p>
-              </>
+                <>
+                    <p>
+                        Every device with the same account will always have
+                        everything in sync.
+                    </p>
+                </>
             ),
         },
         {
             title: "Multiplayer",
             icon: MousePointerSquareDashedIcon,
             description: (
-              <>
-                  <p>
-                      Share state with other users, and get automatic real-time
-                      multiplayer.
-                  </p>
-              </>
+                <>
+                    <p>
+                        Share state with other users, and get automatic
+                        real-time multiplayer.
+                    </p>
+                </>
             ),
         },
     ];
@@ -200,12 +200,12 @@ export default function Home() {
 
     return (
         <>
-            <Hero features={[...localFirstFeatures, ...features]} />
+            <HeroSection features={[...localFirstFeatures, ...features]} />
 
-            <BeforeAfterJazz />
+            <ProblemStatementSection />
 
             <div className="container flex flex-col gap-12 mt-12 lg:gap-20 lg:mt-20">
-                <HowItWorks />
+                <HowJazzWorksSection />
 
                 <Testimonial name="Serious Adopter #4" role="Technical Founder">
                     <p>
@@ -218,11 +218,11 @@ export default function Home() {
                     </p>
                 </Testimonial>
 
-                <WhyLocalFirst />
+                <LocalFirstFeaturesSection />
 
-                <CollaborationFeatures/>
+                <CollaborationFeaturesSection />
 
-                <FeaturesSection/>
+                <FeaturesSection />
 
                 <div>
                     <SectionHeader
@@ -311,7 +311,7 @@ export default function Home() {
                     </GridCard>
                 </GappedGrid>
 
-                <SupportedEnvironments />
+                <SupportedEnvironmentsSection />
 
                 <h2 className="sr-only">More features</h2>
 
@@ -321,7 +321,9 @@ export default function Home() {
                     <GappedGrid>
                         <GridCard>
                             <H3>Cursors & carets</H3>
-                            <P className="text-lg">Ready-made spatial presence.</P>
+                            <P className="text-lg">
+                                Ready-made spatial presence.
+                            </P>
                             <Prose size="sm">
                                 <CursorsAndCaretsDescription />
                             </Prose>
@@ -329,7 +331,9 @@ export default function Home() {
 
                         <GridCard>
                             <H3>Two-way sync to your DB</H3>
-                            <P className="text-lg">Add Jazz to an existing app.</P>
+                            <P className="text-lg">
+                                Add Jazz to an existing app.
+                            </P>
                             <Prose size="sm">
                                 <TwoWaySyncDescription />
                             </Prose>
@@ -345,7 +349,6 @@ export default function Home() {
                             </Prose>
                         </GridCard>
                     </GappedGrid>
-
                 </div>
 
                 <div className="border rounded-xl shadow-sm p-4 md:py-16">

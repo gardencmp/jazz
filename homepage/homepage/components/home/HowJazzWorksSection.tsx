@@ -74,7 +74,7 @@ function Step({
     );
 }
 
-export function HowItWorks() {
+export function HowJazzWorksSection() {
     const imageProps = {
         alt: "Code samples for defining a schema for Jazz, pushing data, and subscribing to changes.",
         width: 1100,
