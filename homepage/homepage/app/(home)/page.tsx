@@ -210,7 +210,7 @@ export default function Home() {
 
             <BeforeAfterJazz />
 
-            <div className="container flex flex-col gap-12 py-12 lg:gap-20 lg:py-20">
+            <div className="container flex flex-col gap-12 mt-12 lg:gap-20 lg:mt-20">
                 <HowItWorks />
 
                 <Testimonial name="Serious Adopter #4" role="Technical Founder">
