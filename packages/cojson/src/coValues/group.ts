@@ -113,6 +113,20 @@ export class RawGroup<
         });
     }
 
+    getChildGroups(): RawGroup[] {
+        return (
+            this.keys().filter((key) =>
+                key.startsWith("child_"),
+            ) as `child_${CoID<RawGroup>}`[]
+        ).map((childKey) => {
+            const child = this.core.node.expectCoValueLoaded(
+                childKey.slice("child_".length) as CoID<RawGroup>,
+                "Expected child group to be loaded",
+            );
+            return expectGroup(child.getCurrentContent());
+        });
+    }
+
     /**
      * Returns the role of the current account in the group.
      *
@@ -254,24 +268,38 @@ export class RawGroup<
             "trusting",
         );
 
+        console.log("Setting", `readKey`, "to", newReadKey.id, "in", this.id);
+
+
         this.set("readKey", newReadKey.id, "trusting");
 
         for (const parent of this.getParentGroups()) {
-            const {id: parentReadKeyID, secret: parentReadKeySecret} = parent.core.getCurrentReadKey();
+            const { id: parentReadKeyID, secret: parentReadKeySecret } =
+                parent.core.getCurrentReadKey();
             if (!parentReadKeySecret) {
-                throw new Error("Can't reveal new child key to parent where we don't have access to the parent read key");
+                throw new Error(
+                    "Can't reveal new child key to parent where we don't have access to the parent read key",
+                );
             }
 
-            console.log("Setting", `${newReadKey.id}_for_${parentReadKeyID}`);
+            console.log("Setting", `${newReadKey.id}_for_${parentReadKeyID}`, "in", this.id);
 
             this.set(
                 `${newReadKey.id}_for_${parentReadKeyID}`,
                 this.core.crypto.encryptKeySecret({
-                    encrypting: { id: parentReadKeyID, secret: parentReadKeySecret },
+                    encrypting: {
+                        id: parentReadKeyID,
+                        secret: parentReadKeySecret,
+                    },
                     toEncrypt: newReadKey,
                 }).encrypted,
                 "trusting",
             );
+        }
+
+        for (const child of this.getChildGroups()) {
+            console.log("Rotating child", child.id);
+            child.rotateReadKey();
         }
     }
 

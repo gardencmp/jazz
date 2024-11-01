@@ -2283,3 +2283,28 @@ test("When rotating the key of a child group, the new child key is exposed to th
 
     expect(group.get(`${newReadKeyID}_for_${parentReadKeyID}`)).toBeDefined();
 });
+
+test("When rotating the key of a parent group, the keys of all child groups are also rotated", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    parentGroup.set(`child_${group.id}`, "extend", "trusting");
+    group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+    group.rotateReadKey();
+
+    const currentChildReadKeyID = group.get('readKey');
+    if (!currentChildReadKeyID) {
+        throw new Error("Can't get group read key");
+    }
+
+    console.log("child id", group.id);
+    parentGroup.rotateReadKey();
+
+    const newChildReadKeyID = expectGroup(group.core.getCurrentContent()).get('readKey');
+    if (!newChildReadKeyID) {
+        throw new Error("Can't get new group read key");
+    }
+
+    expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
+});
