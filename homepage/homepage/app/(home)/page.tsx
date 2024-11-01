@@ -273,51 +273,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                <GappedGrid
-                    title="Bread-and-butter datastructures"
-                    className="grid-cols-2 lg:grid-cols-4"
-                >
-                    <GridCard>
-                        <H3>
-                            <CodeRef>CoMap</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <CoMapDescription />
-                        </Prose>
-                    </GridCard>
-
-                    <GridCard>
-                        <H3>
-                            <CodeRef>CoList</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <CoListDescription />
-                        </Prose>
-                    </GridCard>
-
-                    <GridCard>
-                        <H3>
-                            <CodeRef>CoPlainText</CodeRef> &{" "}
-                            <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
-                        </H3>
-                        <Prose size="sm">
-                            <CoPlainTextDescription />
-                        </Prose>
-                    </GridCard>
-
-                    <GridCard>
-                        <H3>
-                            <CodeRef>CoStream</CodeRef>
-                        </H3>
-                        <Prose size="sm">
-                            <CoStreamDescription />
-                        </Prose>
-                    </GridCard>
-                </GappedGrid>
-
                 <SupportedEnvironmentsSection />
-
-                <h2 className="sr-only">More features</h2>
 
                 <div>
                     <SectionHeader title="More features coming soon" />
@@ -350,6 +306,16 @@ export default function Home() {
                             </P>
                             <Prose size="sm">
                                 <VideoPresenceCallsDescription />
+                            </Prose>
+                        </GridCard>
+
+                        <GridCard>
+                            <H3>
+                                <CodeRef>CoPlainText</CodeRef> &{" "}
+                                <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
+                            </H3>
+                            <Prose size="sm">
+                                <CoPlainTextDescription />
                             </Prose>
                         </GridCard>
                     </GappedGrid>
