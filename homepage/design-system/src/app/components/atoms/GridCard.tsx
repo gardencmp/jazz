@@ -6,8 +6,8 @@ export function GridCard(props: { children: ReactNode; className?: string }) {
         <div
             className={clsx(
                 "col-span-2 p-4 [&>h4]:mt-0 [&>h3]:mt-0 [&>:last-child]:mb-0",
-                "border border-stone-200 dark:border-stone-900 rounded-xl shadow-sm",
-                props.className
+                "border rounded-xl shadow-sm",
+                props.className,
             )}
         >
             {props.children}

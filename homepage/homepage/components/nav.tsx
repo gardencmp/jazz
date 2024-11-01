@@ -30,11 +30,6 @@ export function JazzNav() {
                     newTab: true,
                 },
                 {
-                    title: "Roadmap",
-                    href: "https://github.com/orgs/gardencmp/projects/4/views/3",
-                    newTab: true,
-                },
-                {
                     title: "GitHub",
                     href: "https://github.com/gardencmp/jazz",
                     newTab: true,
@@ -53,7 +48,7 @@ export function JazzNav() {
                     icon: <SiTwitter className="w-5" />,
                 },
             ]}
-            docNav={<DocNav />}
+            docNav={<DocNav className="block h-auto" />}
         />
     );
 }

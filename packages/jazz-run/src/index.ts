@@ -3,96 +3,84 @@
 import { Command, Options } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Console, Effect } from "effect";
-import { createWebSocketPeer } from "cojson-transport-ws";
-import { WebSocket } from "ws";
-import {
-    Account,
-    WasmCrypto,
-    createJazzContext,
-    isControlledAccount,
-} from "jazz-tools";
-import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools";
-import { startSync } from "./startSync.js";
+import { createWorkerAccount } from "./createWorkerAccount.js";
+import { startSyncServer } from "./startSyncServer.js";
 
 const jazzTools = Command.make("jazz-tools");
 
-const name = Options.text("name").pipe(Options.withAlias("n"));
-const peer = Options.text("peer")
+const nameOption = Options.text("name").pipe(Options.withAlias("n"));
+const peerOption = Options.text("peer")
     .pipe(Options.withAlias("p"))
     .pipe(Options.withDefault("wss://cloud.jazz.tools"));
-const accountCreate = Command.make(
+
+const createAccountCommand = Command.make(
     "create",
-    { name, peer },
-    ({ name, peer: peerAddr }) => {
+    { name: nameOption, peer: peerOption },
+    ({ name, peer }) => {
         return Effect.gen(function* () {
-            const crypto = yield* Effect.promise(() => WasmCrypto.create());
-
-            const peer = createWebSocketPeer({
-                id: "upstream",
-                websocket: new WebSocket(peerAddr),
-                role: "server",
-            });
-
-            const account: Account = yield* Effect.promise(async () =>
-                Account.create({
-                    creationProps: { name },
-                    peersToLoadFrom: [peer],
-                    crypto,
-                }),
-            );
-            if (!isControlledAccount(account)) {
-                throw new Error("account is not a controlled account");
-            }
-
-            yield* Effect.promise(() =>
-                account._raw.core.node.syncManager.syncCoValue(
-                    account._raw.core,
-                ),
-            );
-            yield* Effect.promise(() =>
-                account._raw.core.node.syncManager.syncCoValue(
-                    account.profile!._raw.core,
-                ),
-            );
-
-            // TODO: remove this once we have a better way to wait for the sync
-            yield* Effect.sleep(500);
-
-            const peer2 = createWebSocketPeer({
-                id: "upstream2",
-                websocket: new WebSocket(peerAddr),
-                role: "server",
-            });
-
-            yield* Effect.promise(async () =>
-                createJazzContext({
-                    auth: fixedCredentialsAuth({
-                        accountID: account.id,
-                        secret: account._raw.agentSecret,
-                    }),
-                    sessionProvider: randomSessionProvider,
-                    peersToLoadFrom: [peer2],
-                    crypto,
-                }),
+            const { accountId, agentSecret } = yield* Effect.promise(() =>
+                createWorkerAccount({ name, peer }),
             );
 
             yield* Console.log(`# Credentials for Jazz account "${name}":
-JAZZ_WORKER_ACCOUNT=${account.id}
-JAZZ_WORKER_SECRET=${account._raw.agentSecret}
+JAZZ_WORKER_ACCOUNT=${accountId}
+JAZZ_WORKER_SECRET=${agentSecret}
 `);
         });
     },
 );
 
-const accountBase = Command.make("account");
+const accountCommand = Command.make("account").pipe(
+    Command.withSubcommands([createAccountCommand]),
+);
 
-const account = accountBase.pipe(Command.withSubcommands([accountCreate]));
+const portOption = Options.text("port")
+    .pipe(Options.withAlias("p"))
+    .pipe(
+        Options.withDescription(
+            "Select a different port for the WebSocket server. Default is 4200",
+        ),
+    )
+    .pipe(Options.withDefault("4200"));
 
-const command = jazzTools.pipe(Command.withSubcommands([account, startSync]));
+const inMemoryOption = Options.boolean("in-memory").pipe(
+    Options.withDescription("Use an in-memory storage instead of file-based"),
+);
+
+const dbOption = Options.file("db")
+    .pipe(
+        Options.withDescription(
+            "The path to the file where to store the data. Default is 'sync-db/storage.db'",
+        ),
+    )
+    .pipe(Options.withDefault("sync-db/storage.db"));
+
+export const startSyncServerCommand = Command.make(
+    "sync",
+    { port: portOption, inMemory: inMemoryOption, db: dbOption },
+    ({ port, inMemory, db }) => {
+        return Effect.gen(function* () {
+            yield* Effect.promise(() =>
+                startSyncServer({ port, inMemory, db }),
+            );
+
+            Console.log(
+                `COJSON sync server listening on ws://127.0.0.1:${port}`,
+            );
+
+            // Keep the server up
+            yield* Effect.never;
+        });
+    },
+);
+
+const command = jazzTools.pipe(
+    Command.withSubcommands([accountCommand, startSyncServerCommand]),
+);
 
 const cli = Command.run(command, {
     name: "Jazz CLI Tools",
-    version: "v0.7.0",
+    version: "v0.8.11",
 });
 
 Effect.suspend(() => cli(process.argv)).pipe(

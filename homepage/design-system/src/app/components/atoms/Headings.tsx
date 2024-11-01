@@ -15,7 +15,7 @@ export function H1({ children, className }: HeadingProps) {
                 "text-5xl lg:text-6xl",
                 "mb-3",
                 "font-medium",
-                "tracking-tighter"
+                "tracking-tighter",
             )}
         >
             {children}
@@ -30,10 +30,10 @@ export function H2({ children, className }: HeadingProps) {
                 className,
                 "font-display",
                 "text-stone-950 dark:text-white",
-                "text-2xl",
+                "text-2xl md:text-4xl",
                 "mb-2",
                 "font-semibold",
-                "tracking-tight"
+                "tracking-tight",
             )}
         >
             {children}
@@ -48,10 +48,10 @@ export function H3({ children, className }: HeadingProps) {
                 className,
                 "font-display",
                 "text-stone-950 dark:text-white",
-                "text-xl",
+                "text-xl md:text-2xl",
                 "mb-2",
                 "font-semibold",
-                "tracking-tight"
+                "tracking-tight",
             )}
         >
             {children}

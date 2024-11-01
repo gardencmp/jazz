@@ -75,7 +75,7 @@ export interface Peer {
     id: PeerID;
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
-    role: "peer" | "server" | "client";
+    role: "peer" | "server" | "client" | "storage";
     priority?: number;
     crashOnClose: boolean;
 }
@@ -129,7 +129,7 @@ export class SyncManager {
 
     async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
         const eligiblePeers = this.peersInPriorityOrder().filter(
-            (peer) => peer.id !== forPeer && peer.role === "server",
+            (peer) => peer.id !== forPeer && peer.isServerOrStoragePeer(),
         );
 
         const coValueEntry = this.local.coValues[id];
@@ -253,12 +253,12 @@ export class SyncManager {
         );
 
         const newContentPieces = coValue.newContentSince(
-            peer.optimisticKnownStates[id],
+            peer.optimisticKnownStates.get(id),
         );
 
         if (newContentPieces) {
             const optimisticKnownStateBefore =
-                peer.optimisticKnownStates[id] || emptyKnownState(id);
+                peer.optimisticKnownStates.get(id) || emptyKnownState(id);
 
             const sendPieces = async () => {
                 let lastYield = performance.now();
@@ -285,14 +285,19 @@ export class SyncManager {
 
             sendPieces().catch((e) => {
                 console.error("Error sending new content piece, retrying", e);
-                peer.optimisticKnownStates[id] = optimisticKnownStateBefore;
+                peer.optimisticKnownStates.dispatch({
+                    type: "SET",
+                    id,
+                    value: optimisticKnownStateBefore ?? emptyKnownState(id),
+                });
                 return this.sendNewContentIncludingDependencies(id, peer);
             });
 
-            peer.optimisticKnownStates[id] = combinedKnownStates(
-                optimisticKnownStateBefore,
-                coValue.knownState(),
-            );
+            peer.optimisticKnownStates.dispatch({
+                type: "COMBINE_WITH",
+                id,
+                value: coValue.knownState(),
+            });
         }
     }
 
@@ -300,7 +305,7 @@ export class SyncManager {
         const peerState = new PeerState(peer);
         this.peers[peer.id] = peerState;
 
-        if (peer.role === "server") {
+        if (peerState.isServerOrStoragePeer()) {
             const initialSync = async () => {
                 for (const id of Object.keys(
                     this.local.coValues,
@@ -308,11 +313,10 @@ export class SyncManager {
                     // console.log("subscribing to after peer added", id, peer.id)
                     await this.subscribeToIncludingDependencies(id, peerState);
 
-                    peerState.optimisticKnownStates[id] = {
-                        id: id,
-                        header: false,
-                        sessions: {},
-                    };
+                    peerState.optimisticKnownStates.dispatch({
+                        type: "SET_AS_EMPTY",
+                        id,
+                    });
                 }
             };
             void initialSync();
@@ -376,7 +380,11 @@ export class SyncManager {
     }
 
     async handleLoad(msg: LoadMessage, peer: PeerState) {
-        peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
+        peer.optimisticKnownStates.dispatch({
+            type: "SET",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
         let entry = this.local.coValues[msg.id];
 
         if (!entry) {
@@ -385,7 +393,7 @@ export class SyncManager {
             // special case: we should be able to solve this much more neatly
             // with an explicit state machine in the future
             const eligiblePeers = this.peersInPriorityOrder().filter(
-                (other) => other.id !== peer.id && other.role === "server",
+                (other) => other.id !== peer.id && other.isServerOrStoragePeer(),
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
@@ -426,7 +434,11 @@ export class SyncManager {
             const loaded = await entry.state.ready;
 
             if (loaded === "unavailable") {
-                peer.optimisticKnownStates[msg.id] = knownStateIn(msg);
+                peer.optimisticKnownStates.dispatch({
+                    type: "SET",
+                    id: msg.id,
+                    value: knownStateIn(msg),
+                });
                 peer.toldKnownState.add(msg.id);
 
                 this.trySendToPeer(peer, {
@@ -449,10 +461,11 @@ export class SyncManager {
     async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
         let entry = this.local.coValues[msg.id];
 
-        peer.optimisticKnownStates[msg.id] = combinedKnownStates(
-            peer.optimisticKnownStates[msg.id] || emptyKnownState(msg.id),
-            knownStateIn(msg),
-        );
+        peer.optimisticKnownStates.dispatch({
+            type: "COMBINE_WITH",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
 
         if (!entry) {
             if (msg.asDependencyOf) {
@@ -479,7 +492,7 @@ export class SyncManager {
         }
 
         if (entry.state.type === "unknown") {
-            const availableOnPeer = peer.optimisticKnownStates[msg.id]?.header;
+            const availableOnPeer = peer.optimisticKnownStates.get(msg.id)?.header;
 
             if (!availableOnPeer) {
                 entry.dispatch({
@@ -505,15 +518,6 @@ export class SyncManager {
             return;
         }
 
-        const peerOptimisticKnownState = peer.optimisticKnownStates[msg.id];
-
-        if (!peerOptimisticKnownState) {
-            console.error(
-                "Expected optimisticKnownState to be set for coValue we receive new content for",
-            );
-            return;
-        }
-
         let coValue: CoValueCore;
 
         if (entry.state.type === "unknown") {
@@ -522,7 +526,11 @@ export class SyncManager {
                 return;
             }
 
-            peerOptimisticKnownState.header = true;
+            peer.optimisticKnownStates.dispatch({
+                type: "UPDATE_HEADER",
+                id: msg.id,
+                header: true,
+            });
 
             coValue = new CoValueCore(msg.header, this.local);
 
@@ -611,11 +619,14 @@ export class SyncManager {
                 continue;
             }
 
-            peerOptimisticKnownState.sessions[sessionID] = Math.max(
-                peerOptimisticKnownState.sessions[sessionID] || 0,
-                newContentForSession.after +
+            peer.optimisticKnownStates.dispatch({
+                type: "UPDATE_SESSION_COUNTER",
+                id: msg.id,
+                sessionId: sessionID,
+                value:
+                    newContentForSession.after +
                     newContentForSession.newTransactions.length,
-            );
+            });
         }
 
         await this.syncCoValue(coValue);
@@ -632,7 +643,11 @@ export class SyncManager {
     }
 
     async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
-        peer.optimisticKnownStates[msg.id] = msg;
+        peer.optimisticKnownStates.dispatch({
+            type: "SET",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
 
         return this.sendNewContentIncludingDependencies(msg.id, peer);
     }
@@ -674,9 +689,7 @@ export class SyncManager {
             //     });
             //     blockingSince = performance.now();
             // }
-            const optimisticKnownState = peer.optimisticKnownStates[coValue.id];
-
-            if (optimisticKnownState) {
+            if (peer.optimisticKnownStates.has(coValue.id)) {
                 await this.tellUntoldKnownStateIncludingDependencies(
                     coValue.id,
                     peer,
@@ -685,7 +698,7 @@ export class SyncManager {
                     coValue.id,
                     peer,
                 );
-            } else if (peer.role === "server") {
+            } else if (peer.isServerOrStoragePeer()) {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,

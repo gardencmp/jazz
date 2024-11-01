@@ -1,5 +1,17 @@
 # cojson
 
+## 0.8.12
+
+### Patch Changes
+
+-   6ed75eb: Introduce "storage" peer role
+
+## 0.8.11
+
+### Patch Changes
+
+-   1ed4ab5: Make the peer known states subscribable
+
 ## 0.8.5
 
 ### Patch Changes

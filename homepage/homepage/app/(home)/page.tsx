@@ -1,11 +1,9 @@
 import { CodeExampleTabs, ResponsiveIframe } from "@/components/forMdx";
-import {
-    Prose,
-    SmallProse,
-} from "gcmp-design-system/src/app/components/molecules/Prose";
+import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
+import { Testimonial } from "gcmp-design-system/src/app/components/molecules/Testimonial";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
@@ -20,6 +18,7 @@ import {
     HardDriveDownloadIcon,
     KeyRoundIcon,
     MousePointerSquareDashedIcon,
+    UserIcon,
 } from "lucide-react";
 
 import {
@@ -30,7 +29,6 @@ import {
     Ui_tsx,
 } from "@/codeSamples/examples/chat/src";
 
-import CoValuesIntro from "./coValuesIntro.mdx";
 import CoMapDescription from "./coValueDescriptions/coMapDescription.mdx";
 import CoListDescription from "./coValueDescriptions/coListDescription.mdx";
 import CoPlainTextDescription from "./coValueDescriptions/coPlainTextDescription.mdx";
@@ -41,67 +39,37 @@ import GroupDescription from "./coValueDescriptions/groupDescription.mdx";
 import AccountDescription from "./coValueDescriptions/accountDescription.mdx";
 import AutoSubDescription from "./toolkit/autoSub.mdx";
 import CursorsAndCaretsDescription from "./toolkit/cursorsAndCarets.mdx";
-import AuthProvidersDescription from "./toolkit/authProviders.mdx";
 import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
 import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
 import CloudIntro from "./cloudIntro.mdx";
-import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
-import { DiagramBeforeJazz } from "@/components/DiagramBeforeJazz";
-import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SupportedEnvironments } from "@/components/home/SupportedEnvironments";
-import { HairlineBleedGrid } from "gcmp-design-system/src/app/components/molecules/HairlineGrid";
 import { Hero } from "@/components/home/Hero";
-
-const ArrowDoodle = ({ className }: { className?: string }) => (
-    <svg
-        className={className}
-        xmlns="http://www.w3.org/2000/svg"
-        width="107"
-        height="85"
-        viewBox="0 0 107 85"
-        fill="none"
-    >
-        <path
-            d="M3.87338 33.7809C32.7867 45.4747 65.5543 47.9975 91.7667 37.4141"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-        />
-        <path
-            d="M74.1719 24.958C83.1201 33.0289 92.3253 37.1887 98.5899 34.6593"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-        />
-        <path
-            d="M87.2448 58.8003C88.3842 46.6564 92.3253 37.1887 98.5899 34.6593"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeLinecap="round"
-        />
-    </svg>
-);
+import { HowItWorks } from "@/components/home/HowItWorks";
+import BeforeAfterJazz from "@/components/home/BeforeAfterJazz";
+import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
 
 export default function Home() {
+    const localFirst = {
+        title: "Local-first",
+        icon: HardDriveDownloadIcon,
+        description: (
+            <>
+                <p>
+                    All data you load or create is persisted locally, so your
+                    users can work offline.
+                </p>
+                <p>
+                    When you’re back online, your local changes are synced to
+                    the server.
+                </p>
+            </>
+        ),
+    };
+
     const features = [
-        {
-            title: "Local-first",
-            icon: HardDriveDownloadIcon,
-            description: (
-                <>
-                    <p>
-                        All data you load or create is persisted locally, so
-                        your users can work offline.
-                    </p>
-                    <p>
-                        When you’re back online, your local changes are synced
-                        to the server.
-                    </p>
-                </>
-            ),
-        },
         {
             title: "Multiplayer",
             icon: MousePointerSquareDashedIcon,
@@ -170,7 +138,7 @@ export default function Home() {
             ),
         },
         {
-            title: "Sync",
+            title: "Real-time sync",
             icon: MonitorSmartphoneIcon,
             description: (
                 <>
@@ -186,7 +154,7 @@ export default function Home() {
             ),
         },
         {
-            title: "E2EE",
+            title: "E2E encryption",
             icon: KeyRoundIcon,
             description: (
                 <>
@@ -217,113 +185,64 @@ export default function Home() {
                 </>
             ),
         },
+        {
+            title: "Authentication",
+            icon: UserIcon,
+            description: (
+                <>
+                    <p>Plug and play different kinds of auth.</p>
+                    <ul className="pl-4 list-disc">
+                        <li>DemoAuth (for quick multi-user demos)</li>
+                        <li>WebAuthN (TouchID/FaceID)</li>
+                        <li>Clerk</li>
+                        <li>
+                            Auth0, Okta, NextAuth <ComingSoonBadge />
+                        </li>
+                    </ul>
+                </>
+            ),
+        },
     ];
 
     return (
         <>
             <Hero features={features} />
 
-            <div className="bg-stone-100 border-y dark:bg-stone-925 py-8 lg:py-16 dark:border-stone-900">
-                <div className="container grid gap-8 lg:gap-12">
-                    <h2 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
-                        Hard things are easy now.
-                    </h2>
-                    <div className="grid gap-8 md:grid-cols-11 lg:gap-5">
-                        <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
-                                <p>
-                                    Ever notice how every stack just{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        reinvents shared state between users and
-                                        machines
-                                    </span>
-                                    ?
-                                </p>
-                                <p>
-                                    And far from the simple client-server model,
-                                    you routinely tackle{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        a mess of moving parts
-                                    </span>
-                                    , tech choices and deployment questions.
-                                </p>
-                                <p>
-                                    And{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        your app’s code is all over the place.
-                                    </span>
-                                </p>
-                            </div>
-                            <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
-                                    <DiagramBeforeJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramBeforeJazz>
-                                </div>
-                            </div>
-                        </div>
+            <BeforeAfterJazz />
 
-                        <div className="hidden md:block relative pr-3 top-24">
-                            <ArrowDoodle className="w-full h-auto text-stone-300 dark:text-stone-800" />
-                        </div>
+            <div className="container flex flex-col gap-12 mt-12 lg:gap-20 lg:mt-20">
+                <HowItWorks />
 
-                        <div className="md:col-span-5 flex flex-col justify-between">
-                            <div className="text-pretty leading-relaxed text-lg max-w-2xl space-y-2 md:text-xl md:space-y-4 md:leading-relaxed">
-                                <p>
-                                    Jazz provides a single new abstraction to do
-                                    the whole job.
-                                </p>
-                                <p>
-                                    It turns the data flow around and gives you{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        mutable local state
-                                    </span>
-                                    , solving{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        sync
-                                    </span>
-                                    ,{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        concurrent editing
-                                    </span>{" "}
-                                    and{" "}
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        permissions
-                                    </span>{" "}
-                                    under the hood.
-                                </p>
-                                <p>
-                                    <span className="font-semibold text-stone-900 dark:text-white">
-                                        All that’s left?
-                                    </span>{" "}
-                                    What makes your app your app.
-                                </p>
-                            </div>
-                            <div className="w-full mt-8 lg:mt-12">
-                                <div className="p-4 sm:p-8 rounded-xl bg-white shadow-sm dark:bg-stone-900">
-                                    <DiagramAfterJazz className="w-full h-auto max-w-[30rem] mx-auto dark:text-white"></DiagramAfterJazz>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <Testimonial name="Serious Adopter #4" role="Technical Founder">
+                    <p>
+                        You don&apos;t have to think about deploying a database,
+                        SQL schemas, relations, and writing queries… Basically,{" "}
+                        <span className="bg-blue-50 px-1 dark:bg-transparent">
+                            if you know TypeScript, you know Jazz
+                        </span>
+                        , and you can ship an app. It&apos;s just so nice!
+                    </p>
+                </Testimonial>
 
-            <div className="container flex flex-col gap-8 py-8 lg:gap-20 lg:py-20">
                 <div className="flex flex-col gap-4 md:gap-6">
                     <SectionHeader
                         title="Everything you need to ship top-tier apps quickly."
                         slogan="Features that used to take months to build now work out-of-the-box."
                     />
 
-                    <HairlineBleedGrid>
-                        {features.map(({ title, icon: Icon, description }) => (
-                            <LabelledFeatureIcon
-                                key={title}
-                                label={title}
-                                icon={Icon}
-                                explanation={description}
-                            />
-                        ))}
-                    </HairlineBleedGrid>
+                    <GappedGrid>
+                        {[localFirst, ...features].map(
+                            ({ title, icon: Icon, description }) => (
+                                <LabelledFeatureIcon
+                                    className="col-span-2"
+                                    key={title}
+                                    label={title}
+                                    icon={Icon}
+                                    explanation={description}
+                                />
+                            ),
+                        )}
+                    </GappedGrid>
                 </div>
 
                 <div>
@@ -332,7 +251,7 @@ export default function Home() {
                         slogan="A chat app in 174 lines of code."
                     />
 
-                    <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:border-stone-900 dark:divide-stone-900">
+                    <div className="flex flex-col md:grid md:grid-cols-2 md:divide-x border rounded-sm overflow-hidden shadow-sm dark:divide-stone-900">
                         <CodeExampleTabs
                             tabs={[
                                 {
@@ -358,14 +277,14 @@ export default function Home() {
                             ]}
                         />
                         <div className="border-b order-first md:order-last flex flex-col md:border-b-0">
-                            <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:border-stone-900 dark:bg-stone-900">
+                            <div className="flex border-b overflow-x-auto overflow-y-hidden bg-white dark:bg-stone-900">
                                 <p className="items-center -mb-px transition-colors px-3 pb-1.5 pt-2 block text-xs border-b-2 border-blue-700 text-stone-700 dark:bg-stone-925 dark:text-blue-500 dark:border-blue-500">
                                     result
                                 </p>
                             </div>
                             <ResponsiveIframe
                                 src="https://chat.jazz.tools"
-                                localSrc="http://localhost:5173"
+                                localsrc="http://localhost:5173"
                             />
                         </div>
                     </div>
@@ -388,17 +307,6 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div>
-                    <SectionHeader
-                        title="Collaborative Values"
-                        slogan="Your new building blocks."
-                    />
-
-                    <Prose>
-                        <CoValuesIntro />
-                    </Prose>
-                </div>
-
                 <GappedGrid
                     title="Bread-and-butter datastructures"
                     className="grid-cols-2 lg:grid-cols-4"
@@ -407,18 +315,18 @@ export default function Home() {
                         <H3>
                             <CodeRef>CoMap</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoMapDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
                         <H3>
                             <CodeRef>CoList</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoListDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
@@ -426,18 +334,18 @@ export default function Home() {
                             <CodeRef>CoPlainText</CodeRef> &{" "}
                             <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoPlainTextDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
                         <H3>
                             <CodeRef>CoStream</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <CoStreamDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
@@ -449,18 +357,18 @@ export default function Home() {
                         <H3>
                             <CodeRef>BinaryCoStream</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <BinaryCoStreamDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
                         <H3>
                             <CodeRef>ImageDefinition</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <ImageDefinitionDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
@@ -472,98 +380,82 @@ export default function Home() {
                         <H3>
                             <CodeRef>Group</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <GroupDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                     <GridCard>
                         <H3>
                             <CodeRef>Account</CodeRef>
                         </H3>
-                        <SmallProse>
+                        <Prose size="sm">
                             <AccountDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
                 <SupportedEnvironments />
 
+                <h2 className="sr-only">More features</h2>
+
                 <GappedGrid>
                     <GridCard>
-                        <SectionHeader
-                            title="Auto-sub"
-                            slogan="Let your UI drive data-syncing."
-                        />
-                        <SmallProse>
+                        <H3>Auto-sub</H3>
+                        <P className="text-lg">
+                            Let your UI drive data-syncing.
+                        </P>
+                        <Prose size="sm">
                             <AutoSubDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="Cursors & carets"
-                            slogan="Ready-made spatial presence."
-                        />
-                        <SmallProse>
+                        <H3>Cursors & carets</H3>
+                        <P className="text-lg">Ready-made spatial presence.</P>
+                        <Prose size="sm">
                             <CursorsAndCaretsDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="Auth Providers"
-                            slogan="Plug and play different kinds of auth."
-                        />
-                        <SmallProse>
-                            <AuthProvidersDescription />
-                        </SmallProse>
-                    </GridCard>
-
-                    <GridCard>
-                        <SectionHeader
-                            title="Two-way sync to your DB"
-                            slogan="Add Jazz to an existing app."
-                        />
-                        <SmallProse>
+                        <H3>Two-way sync to your DB</H3>
+                        <P className="text-lg">Add Jazz to an existing app.</P>
+                        <Prose size="sm">
                             <TwoWaySyncDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="File upload & download"
-                            slogan={
-                                <>
-                                    Just use{" "}
-                                    <CodeRef>{`<input type='file'/>`}</CodeRef>.
-                                </>
-                            }
-                        />
-                        <SmallProse>
+                        <H3>File upload & download</H3>
+                        <P className="text-lg">
+                            Just use <CodeRef>{`<input type='file'/>`}</CodeRef>
+                            .
+                        </P>
+                        <Prose size="sm">
                             <FileUploadDownloadDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
 
                     <GridCard>
-                        <SectionHeader
-                            title="Video presence & calls"
-                            slogan="Stream and record audio & video."
-                        />
-                        <SmallProse>
+                        <H3>Video presence & calls</H3>
+                        <P className="text-lg">
+                            Stream and record audio & video.
+                        </P>
+                        <Prose size="sm">
                             <VideoPresenceCallsDescription />
-                        </SmallProse>
+                        </Prose>
                     </GridCard>
                 </GappedGrid>
 
-                <div className="border border-stone-200 dark:border-stone-900 rounded-xl shadow-sm p-4 md:py-16">
-                    <div className="flex flex-col lg:max-w-3xl md:text-center mx-auto justify-between gap-6">
-                        <p className="uppercase text-blue tracking-wide text-sm font-medium dark:text-stone-400">
+                <div className="border rounded-xl shadow-sm p-4 md:py-16">
+                    <div className="lg:max-w-3xl md:text-center mx-auto space-y-6">
+                        <p className="uppercase text-blue tracking-widest text-sm font-medium dark:text-stone-400">
                             Become an early adopter
                         </p>
-                        <h3 className="font-display md:text-center text-stone-950 dark:text-white text-2xl md:text-3xl font-semibold tracking-tight">
+                        <H2>
                             We&apos;ll help you build your next app with Jazz
-                        </h3>
-                        <div className="space-y-2 md:text-balance leading-relaxed">
+                        </H2>
+                        <Prose className="md:text-balance mx-auto">
                             <p>
                                 It&apos;s early days, but we work hard every day
                                 to make Jazz a great tool for our users.
@@ -574,7 +466,7 @@ export default function Home() {
                                 We&apos;ll prioritize features that you need to
                                 succeed.
                             </p>
-                        </div>
+                        </Prose>
                         <div className="flex md:justify-center gap-3">
                             <Button
                                 href="https://discord.gg/utDMjHYg42"

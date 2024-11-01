@@ -1,5 +1,32 @@
 # jazz-run
 
+## 0.8.12
+
+### Patch Changes
+
+-   Updated dependencies [6ed75eb]
+    -   cojson-storage-sqlite@0.8.12
+    -   cojson@0.8.12
+    -   cojson-transport-ws@0.8.12
+    -   jazz-tools@0.8.12
+
+## 0.8.11
+
+### Patch Changes
+
+-   1ed4ab5: Improve the jazz-run create command by subscribing to the peer sync state
+-   Updated dependencies [1ed4ab5]
+    -   cojson@0.8.11
+    -   cojson-storage-sqlite@0.8.11
+    -   cojson-transport-ws@0.8.11
+    -   jazz-tools@0.8.11
+
+## 0.8.10
+
+### Patch Changes
+
+-   a818462: Temporary fix for account create
+
 ## 0.8.7
 
 ### Patch Changes

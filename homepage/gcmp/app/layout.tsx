@@ -1,10 +1,14 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/themeProvider";
+import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
+
 import { Inter, Manrope } from "next/font/google";
+import localFont from "next/font/local";
+
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { GcmpNav } from "@/components/Nav";
+import { ThemeToggle } from "gcmp-design-system/src/app/components/molecules/ThemeToggle";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -16,6 +20,23 @@ const manrope = Manrope({
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
+    display: "swap",
+});
+
+const commitMono = localFont({
+    src: [
+        {
+            path: "../../design-system/fonts/CommitMono-Regular.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../../design-system/fonts/CommitMono-Regular.woff",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-commit-mono",
     display: "swap",
 });
 
@@ -56,12 +77,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html lang="en" className="h-full">
             <body
                 className={[
                     manrope.variable,
+                    commitMono.variable,
                     inter.className,
-                    "flex min-h-screen flex-col items-center",
+                    "min-h-full flex flex-col items-center",
                     "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
                 ].join(" ")}
             >
@@ -74,11 +96,13 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <GcmpNav />
-                    <main className="flex flex-1 flex-col w-full">
+                    <main className="flex-1 w-full">
                         {children}
                     </main>
-                    <footer className="py-8 md:py-16 text-sm">
+                    <footer className="py-8 text-sm flex justify-between gap-3 w-full container mt-12 md:mt-20">
                         <p>©2024 Garden Computing, Inc.</p>
+
+                        <ThemeToggle className="hidden md:block"/>
                     </footer>
                 </ThemeProvider>
             </body>
