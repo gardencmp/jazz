@@ -1,7 +1,5 @@
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import { KeyRoundIcon, LockIcon } from "lucide-react";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
-import { CodeGroup } from "gcmp-design-system/src/app/components/molecules/CodeGroup";
 import CollaborationPrivate from "./CollaborationPrivate.mdx";
 import CollaborationPublic from "./CollaborationPublic.mdx";
 import CollaborationInvite from "./CollaborationInvite.mdx";
@@ -26,6 +24,7 @@ const data = [
         codeSample: CollaborationInvite,
     },
 ];
+
 export function CollaborationFeaturesSection() {
     return (
         <div>
@@ -62,17 +61,6 @@ export function CollaborationFeaturesSection() {
                     </div>
                 ))}
             </GappedGrid>
-
-            <div className="flex items-center gap-3 mt-4">
-                <LockIcon size={20} className="text-blue dark:text-blue-500" />
-                <Prose>
-                    <p>
-                        All data is <strong>end-to-end encrypted</strong> and
-                        cryptographically signed by default, so it can&apos;t be
-                        tampered with.
-                    </p>
-                </Prose>
-            </div>
         </div>
     );
 }
