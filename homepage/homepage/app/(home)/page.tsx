@@ -215,6 +215,15 @@ export default function Home() {
 
                 <CollaborationFeaturesSection />
 
+                <Testimonial name="Serious Adopter #1" role="Lead Developer">
+                    We just wanted to build a single-player experience first,
+                    planning to add team and org features much later. But
+                    because of Jazz, we had that from day one.{" "}
+                    <span className="bg-blue-50 px-1 dark:bg-transparent">
+                        All we needed to add was an invite button.
+                    </span>
+                </Testimonial>
+
                 <EncryptionSection />
 
                 <FeaturesSection />
