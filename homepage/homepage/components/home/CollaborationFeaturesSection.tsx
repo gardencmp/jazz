@@ -11,6 +11,7 @@ export function CollaborationFeaturesSection() {
     return (
         <div className="flex flex-col gap-4 md:gap-6">
             <SectionHeader
+                kicker="Role-based permissions"
                 title="Taking collaboration a step further"
                 slogan={
                     <>
