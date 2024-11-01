@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import {H2, Kicker} from "../atoms/Headings";
+import { H2, Kicker } from "../atoms/Headings";
 import clsx from "clsx";
 import { Prose } from "./Prose";
 
@@ -12,7 +12,7 @@ function H2Sub({ children }: { children: React.ReactNode }) {
 }
 
 export function SectionHeader({
-  kicker,
+    kicker,
     title,
     slogan,
     className,

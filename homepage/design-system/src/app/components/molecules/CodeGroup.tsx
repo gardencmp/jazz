@@ -69,9 +69,11 @@ function CopyButton({ code, size }: { code: string; size?: "sm" | "md" }) {
 export function CodeGroup({
     children,
     size,
+    className,
 }: {
     children: React.ReactNode;
     size?: "sm" | "md";
+    className?: string;
 }) {
     const textRef = useRef<HTMLPreElement | null>(null);
     const [code, setCode] = useState<string>();
@@ -83,11 +85,14 @@ export function CodeGroup({
     }, [children]);
 
     return (
-        <div className="group relative">
+        <div className={clsx(className, "group relative")}>
             <pre
                 className={clsx(
-                    "border p-0 bg-stone-50 dark:bg-stone-900",
+                    "h-full border p-0 bg-stone-50 dark:bg-stone-900",
                     "text-black dark:text-white",
+                    {
+                        "text-sm": size === "sm",
+                    },
                 )}
                 ref={textRef}
             >

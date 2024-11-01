@@ -66,7 +66,7 @@ export function FeaturesSection() {
     ];
 
     return (
-        <div className="flex flex-col gap-4 md:gap-6">
+        <div>
             <SectionHeader
                 title="Everything else you need to ship quickly"
                 slogan={
