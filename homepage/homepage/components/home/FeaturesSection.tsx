@@ -1,12 +1,13 @@
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
-import { ImageIcon, UploadCloudIcon, UserIcon } from "lucide-react";
+import { CheckIcon, ImageIcon, UploadCloudIcon, UserIcon } from "lucide-react";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
 import { clsx } from "clsx";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
+import Link from "next/link";
 
 export function FeaturesSection() {
     const features = [
@@ -22,7 +23,6 @@ export function FeaturesSection() {
                     </p>
                 </>
             ),
-            className: "rounded-r-none rounded-b-none",
         },
         {
             title: "Progressive image loading",
@@ -34,7 +34,6 @@ export function FeaturesSection() {
                     and image size info.
                 </>
             ),
-            className: "rounded-none",
         },
         {
             title: "State management",
@@ -52,7 +51,7 @@ export function FeaturesSection() {
             description: (
                 <>
                     <p>Plug and play different kinds of auth.</p>
-                    <ul className="pl-4 list-disc">
+                    <ul>
                         <li>WebAuthN (TouchID/FaceID)</li>
                         <li>Clerk</li>
                         <li>
@@ -61,7 +60,6 @@ export function FeaturesSection() {
                     </ul>
                 </>
             ),
-            className: "rounded-t-none rounded-r-none",
         },
     ];
 
@@ -93,23 +91,46 @@ export function FeaturesSection() {
                     ),
                 )}
 
-                <div className="border p-4 shadow-sm rounded-br-xl col-span-4 space-y-4">
+                <div className="border p-8 bg-gradient-to-t from-blue-50/50 via-30% via-transparent to-transparent shadow-sm rounded-xl col-span-4 space-y-5">
                     <H3>Jazz Cloud</H3>
-                    <Prose>
+                    <Prose className="max-w-xl">
                         <p>
                             Jazz Cloud is a real-time sync and storage
                             infrastructure that scales your Jazz app up to
-                            millions of users. It gives you secure collaborative
-                            data on a global scale from day one.{" "}
+                            millions of users.{" "}
                             <strong>
                                 Easy setup, no configuration needed.
                             </strong>
                         </p>
                     </Prose>
-                    <div>
+                    <ul className="flex gap-4 text-sm">
+                        {[
+                            "Blob storage",
+                            "Data storage",
+                            "No limits for public alpha",
+                        ].map((feature) => (
+                            <li
+                                key={feature}
+                                className="flex items-center gap-1.5"
+                            >
+                                <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-white/10">
+                                    <CheckIcon size={12} strokeWidth={3} />
+                                </span>
+                                {feature}
+                            </li>
+                        ))}
+                    </ul>
+                    <div className="flex items-center gap-x-6 flex-wrap gap-y-3">
                         <Button href="/cloud" variant="primary">
-                            Get started for free
+                            View full pricing
                         </Button>
+                        <Prose size="sm">
+                            You can rely on us, or{" "}
+                            <Link href="/docs/sync-and-storage#running-your-own">
+                                self-host
+                            </Link>
+                            .
+                        </Prose>
                     </div>
                 </div>
             </GappedGrid>

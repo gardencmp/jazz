@@ -3,7 +3,7 @@ import Link from "next/link";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     children: React.ReactNode;
-    variant?: "primary" | "secondary";
+    variant?: "primary" | "secondary" | "tertiary";
     size?: "md" | "lg";
     href?: string;
 }
@@ -29,6 +29,7 @@ export function Button(props: ButtonProps) {
             "bg-blue border-blue text-white font-medium bg-blue hover:bg-blue-800 hover:border-blue-800",
         secondary:
             "text-stone-900 border font-medium hover:border-stone-300 hover:dark:border-stone-700 dark:text-white",
+        tertiary: "text-blue underline underline-offset-4",
     };
 
     const classNames = clsx(

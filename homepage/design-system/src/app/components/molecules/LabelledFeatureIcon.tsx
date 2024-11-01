@@ -17,7 +17,7 @@ export function LabelledFeatureIcon({
         <div
             className={clsx(
                 className,
-                "not-prose text-base",
+                "text-base",
                 "rounded-xl",
                 "border p-4 shadow-sm",
             )}
