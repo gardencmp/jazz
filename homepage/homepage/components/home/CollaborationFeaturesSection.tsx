@@ -30,7 +30,7 @@ export function CollaborationFeaturesSection() {
         <div>
             <SectionHeader
                 kicker="Role-based permissions"
-                title="Taking collaboration a step further"
+                title="Making secure collaboration the default"
                 slogan={
                     <>
                         Every piece of data is assigned a role-based permission
