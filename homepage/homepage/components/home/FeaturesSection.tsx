@@ -79,17 +79,15 @@ export function FeaturesSection() {
             />
 
             <GappedGrid>
-                {features.map(
-                    ({ title, icon: Icon, description, className = "" }) => (
-                        <LabelledFeatureIcon
-                            className={clsx(className, "col-span-2")}
-                            key={title}
-                            label={title}
-                            icon={Icon}
-                            explanation={description}
-                        />
-                    ),
-                )}
+                {features.map(({ title, icon: Icon, description }) => (
+                    <LabelledFeatureIcon
+                        className="col-span-2"
+                        key={title}
+                        label={title}
+                        icon={Icon}
+                        explanation={description}
+                    />
+                ))}
 
                 <div className="border p-8 bg-gradient-to-t from-blue-50/50 via-30% via-transparent to-transparent shadow-sm rounded-xl col-span-4 space-y-5">
                     <H3>Jazz Cloud</H3>
