@@ -78,7 +78,23 @@ export function FeaturesSection() {
                     and image size info.
                 </>
             ),
-            illustration: <></>,
+            illustration: (
+                <div className="flex w-full h-full items-center justify-center bg-gradient-to-b from-stone-50 to-transparent">
+                    <div className="overflow-hidden rounded-md relative -mt-10 -mr-4">
+                        <img
+                            src="/leaves.jpg"
+                            className="w-32 h-auto blur-md scale-125 opacity-90"
+                        />
+                        <p className="absolute h-full w-full text-center flex items-center justify-center text-sm z-10 text-stone-100 left-0 top-0">
+                            400x300
+                        </p>
+                    </div>
+                    <img
+                        src="/leaves.jpg"
+                        className="z-20 w-32 shadow-xl h-auto rounded-md mt-10 -ml-4"
+                    />
+                </div>
+            ),
         },
         {
             title: "State management",
