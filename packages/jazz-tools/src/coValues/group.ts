@@ -186,6 +186,11 @@ export class Group extends CoValueBase implements CoValue {
             });
     }
 
+    extend(parent: Group) {
+        this._raw.extend(parent._raw);
+        return this;
+    }
+
     /** @category Subscription & Loading */
     static load<G extends Group, Depth>(
         this: CoValueClass<G>,

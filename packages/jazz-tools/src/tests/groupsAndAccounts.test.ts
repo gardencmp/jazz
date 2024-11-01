@@ -89,3 +89,32 @@ describe("Custom accounts and groups", async () => {
         expect(map._owner.castAs(CustomGroup).nMembers).toBe(2);
     });
 });
+
+describe("Group inheritance", () => {
+    class TestMap extends CoMap {
+        title = co.string;
+    }
+
+    test("Group inheritance", async () => {
+        const me = await Account.create({
+            creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
+        });
+
+        const group = Group.create({ owner: me });
+        const childGroup = Group.create({ owner: me });
+
+        childGroup.extend(group);
+
+        const reader = await Account.createAs(me, {
+            creationProps: { name: "Reader" },
+        });
+
+        group.addMember(reader, "reader");
+
+        const mapInParent = TestMap.create({ title: "In Parent" }, { owner: group });
+
+        const mapAsReader = await TestMap.load(mapInParent.id, reader, {});
+        expect(mapAsReader?.title).toBe("In Parent");
+    })
+})
