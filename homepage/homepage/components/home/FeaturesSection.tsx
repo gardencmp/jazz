@@ -33,8 +33,8 @@ export function FeaturesSection() {
             illustration: (
                 <div className="flex w-full h-full flex-col pt-4 gap-4 items-center justify-center bg-gradient-to-b from-stone-50 to-transparent">
                     <div className="grid gap-6 mx-auto">
-                        <pre className="">
-                            <code className="text-stone-900 dark:text-white">
+                        <pre>
+                            <code className="text-sm text-stone-900 dark:text-white">
                                 BinaryCoStream.createFromBlob(file);
                             </code>
                         </pre>

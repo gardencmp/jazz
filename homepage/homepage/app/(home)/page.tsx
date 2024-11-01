@@ -215,7 +215,6 @@ export default function Home() {
                 <CollaborationFeaturesSection />
 
                 <div className="rounded-xl bg-stone-50 border shadow-sm p-4 md:p-12">
-                    <h3 className="sr-only">End-to-end encryption</h3>
                     <div className="flex flex-col md:flex-row md:items-center  justify-between gap-2 md:gap-3">
                         <svg
                             className="text-blue w-12 md:w-52 h-auto md:order-2"
