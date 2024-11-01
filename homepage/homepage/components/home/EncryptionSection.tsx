@@ -1,13 +1,31 @@
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import { LockKeyholeIcon, LockKeyholeOpen } from "lucide-react";
 
-const randomChars =
-    "HXEHHJQJPXLWBIIYPMPDPIXCSLHESD+TIVSPFISKG%LMPMLQUKU#MLZJJA-WJEATZULBR%I=MG#VUWOHXSFPOHVKNPDKETOMQLMJKX#QDI=TFFFMRJDSJJYTKHPLNSST!VOMKBANJTYRQ!OUTYAO!HYCSL#QN%YWI=QBHP-DBHN=AORTCRAMZKIOD#YRTBKLLJVBXWFFIX+WVFRNM+CGTREUQOGO";
-
-const highlightIndices = [
-    12, 6, 19, 46, 92, 100, 23, 85, 89, 102, 200, 212, 278, 130, 120, 139, 157,
-    192, 176,
+const randomChars = [
+    "SFPOHVKNPDKETOMQLMJKX#QDI=TFFFMRJDSJ",
+    "!",
+    "KBANJTYRQ!OUTYAO",
+    "#",
+    "#MLZJJA-WJEATZULBR%I=MG#VUWOHX",
+    "J",
+    "HPLNSST!VOMKBANJTYRCR",
+    "A",
+    "SL#QN%YWI=QBHP-DBHN=A",
+    "Z",
+    "HXEHHJQJPXLWBI",
+    "Z",
+    "DPIXCSLHESD+TIVSPFISKG%LMPM",
+    "J",
+    "HYCSL#QN%IYPMPLQUKUJ",
+    "A",
+    "YTKAMZKIOD#YRTBKLLJREUQOGO",
+    "Z",
+    "SFPOHVKNPDKETOM",
+    "Z",
+    "VBXWFFIX+WVFRNM+CGT",
+    "J",
+    "HYCSL#QN%IYPMPLQUKUJ",
+    "A",
 ];
 
 function Illustration() {
@@ -16,14 +34,14 @@ function Illustration() {
             aria-hidden
             className="z-0 order-1 text-sm relative overflow-hidden flex items-center justify-center"
         >
-            <div className="z-0 opacity-80 w-full h-full absolute top-0 -right-5 font-mono break-all text-stone-300 tracking-[0.5em]">
-                {[...randomChars, ...randomChars].map((character, index) =>
-                    highlightIndices.includes(index) ? (
-                        <span key={index} className="text-stone-500">
-                            {character}
-                        </span>
+            <div className="z-0 opacity-60 w-full h-full absolute top-0 -right-5 font-mono break-all text-stone-300 tracking-[0.5em]">
+                {randomChars.map((char, index) =>
+                    index % 2 === 0 ? (
+                        <span key={index}>{char}</span>
                     ) : (
-                        character
+                        <span key={index} className="text-stone-600">
+                            {char}
+                        </span>
                     ),
                 )}
             </div>
