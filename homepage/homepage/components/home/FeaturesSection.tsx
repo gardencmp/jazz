@@ -120,7 +120,7 @@ export function FeaturesSection() {
                             </li>
                         ))}
                     </ul>
-                    <div className="flex items-center gap-x-6 flex-wrap gap-y-3">
+                    <div className="flex items-center gap-x-5 flex-wrap gap-y-3">
                         <Button href="/cloud" variant="primary">
                             View full pricing
                         </Button>

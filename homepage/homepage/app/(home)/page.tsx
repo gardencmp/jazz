@@ -2,7 +2,6 @@ import { CodeExampleTabs, ResponsiveIframe } from "@/components/forMdx";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
-import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { Testimonial } from "gcmp-design-system/src/app/components/molecules/Testimonial";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
@@ -33,16 +32,9 @@ import CoMapDescription from "./coValueDescriptions/coMapDescription.mdx";
 import CoListDescription from "./coValueDescriptions/coListDescription.mdx";
 import CoPlainTextDescription from "./coValueDescriptions/coPlainTextDescription.mdx";
 import CoStreamDescription from "./coValueDescriptions/coStreamDescription.mdx";
-import BinaryCoStreamDescription from "./coValueDescriptions/binaryCoStreamDescription.mdx";
-import ImageDefinitionDescription from "./coValueDescriptions/imageDefinitionDescription.mdx";
-import GroupDescription from "./coValueDescriptions/groupDescription.mdx";
-import AccountDescription from "./coValueDescriptions/accountDescription.mdx";
-import AutoSubDescription from "./toolkit/autoSub.mdx";
 import CursorsAndCaretsDescription from "./toolkit/cursorsAndCarets.mdx";
 import TwoWaySyncDescription from "./toolkit/twoWaySync.mdx";
-import FileUploadDownloadDescription from "./toolkit/fileUploadDownload.mdx";
 import VideoPresenceCallsDescription from "./toolkit/videoPresenceCalls.mdx";
-import CloudIntro from "./cloudIntro.mdx";
 import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import Link from "next/link";
 import { SupportedEnvironmentsSection } from "@/components/home/SupportedEnvironmentsSection";
@@ -316,7 +308,7 @@ export default function Home() {
                 <h2 className="sr-only">More features</h2>
 
                 <div>
-                    <H2>More features coming soon</H2>
+                    <SectionHeader title="More features coming soon" />
 
                     <GappedGrid>
                         <GridCard>
