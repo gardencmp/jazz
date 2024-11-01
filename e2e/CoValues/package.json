@@ -30,6 +30,7 @@
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react-swc": "^3.3.2",
+    "jazz-run": "workspace:*",
     "jstat": "^1.9.6",
     "typescript": "^5.3.3",
     "vite": "^5.0.10"

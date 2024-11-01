@@ -137,6 +137,9 @@ export namespace CojsonInternalTypes {
     export type KnownStateMessage = import("./sync.js").KnownStateMessage;
     export type LoadMessage = import("./sync.js").LoadMessage;
     export type NewContentMessage = import("./sync.js").NewContentMessage;
+    export type PersistSyncStateMessage = import("./sync.js").PersistSyncStateMessage;
+    export type RequestSyncStateHydrationMessage = import("./sync.js").RequestSyncStateHydrationMessage;
+    export type HydrateSyncStateMessage = import("./sync.js").HydrateSyncStateMessage;
     export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
     export type Transaction = import("./coValueCore.js").Transaction;
     export type TransactionID = import("./ids.js").TransactionID;

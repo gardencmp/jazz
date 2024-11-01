@@ -25,7 +25,10 @@ export type SyncMessage =
     | LoadMessage
     | KnownStateMessage
     | NewContentMessage
-    | DoneMessage;
+    | DoneMessage
+    | PersistSyncStateMessage
+    | RequestSyncStateHydrationMessage
+    | HydrateSyncStateMessage;
 
 export type LoadMessage = {
     action: "load";
@@ -55,6 +58,25 @@ export type SessionNewContent = {
 export type DoneMessage = {
     action: "done";
     id: RawCoID;
+};
+
+export type PersistSyncStateMessage = {
+    action: "persistSyncState";
+    id: RawCoID;
+    payload: CoValueKnownState;
+    fullySynced: boolean;
+    peerId: PeerID;
+};
+
+export type RequestSyncStateHydrationMessage = {
+    action: "requestSyncStateHydration";
+    peerId: PeerID;
+};
+
+export type HydrateSyncStateMessage = {
+    action: "hydrateSyncState";
+    knownStates: CoValueKnownState[];
+    peerId: PeerID;
 };
 
 export type PeerID = string;
@@ -127,6 +149,10 @@ export class SyncManager {
         });
     }
 
+    getPeers(): PeerState[] {
+        return Object.values(this.peers)
+    }
+
     async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
         const eligiblePeers = this.peersInPriorityOrder().filter(
             (peer) => peer.id !== forPeer && peer.isServerOrStoragePeer(),
@@ -164,12 +190,63 @@ export class SyncManager {
                 return await this.handleNewContent(msg, peer);
             case "done":
                 return await this.handleUnsubscribe(msg);
+            case "hydrateSyncState":
+                return await this.handleHydrateSyncState(msg);
+            case "persistSyncState":
+            case "requestSyncStateHydration":
+                return;
             default:
                 throw new Error(
                     `Unknown message type ${
                         (msg as { action: "string" }).action
                     }`,
                 );
+        }
+    }
+
+    async requestSyncStateHydration(peerId: PeerID) {
+        const peers = this.peersInPriorityOrder().filter(
+            (peer) => peer.id !== peerId && peer.role === "storage",
+        );
+
+        for (const peer of peers) {
+            await peer.pushOutgoingMessage({
+                action: "requestSyncStateHydration",
+                peerId,
+            });
+        }
+    }
+
+    async handleHydrateSyncState(msg: HydrateSyncStateMessage) {
+        const peer = this.peers[msg.peerId];
+
+        if (!peer) {
+            throw new Error(`Unknown peer ${msg.peerId}`);
+        }
+
+        const coValuesToResume = new Set<RawCoID>();
+
+        for (const knownState of msg.knownStates) {
+            if (peer.knownStates.has(knownState.id)) {
+                peer.knownStates.dispatch({
+                    type: "COMBINE_WITH",
+                    id: knownState.id,
+                    value: knownState,
+                });
+                continue;
+            }
+
+            peer.knownStates.dispatch({
+                type: "SET",
+                id: knownState.id,
+                value: knownState,
+            });
+
+            coValuesToResume.add(knownState.id);
+        }
+
+        for (const id of coValuesToResume) {
+            void this.local.loadCoValueCore(id);
         }
     }
 
@@ -302,8 +379,17 @@ export class SyncManager {
     }
 
     addPeer(peer: Peer) {
-        const peerState = new PeerState(peer);
+        const prevPeer = this.peers[peer.id];
+        const peerState = new PeerState(peer, prevPeer?.knownStates);
         this.peers[peer.id] = peerState;
+
+        if (prevPeer && !prevPeer.closed) {
+            prevPeer.gracefulShutdown();
+        }
+
+        const unsubscribeToKnownStatesUpdate = peerState.knownStates.subscribe((id) => {
+            this.triggerSyncStateUpdate(peer.id, id);
+        });
 
         if (peerState.isServerOrStoragePeer()) {
             const initialSync = async () => {
@@ -370,9 +456,57 @@ export class SyncManager {
                 }
             })
             .finally(() => {
-                peer.outgoing.close();
-                delete this.peers[peer.id];
+                const state = this.peers[peer.id];
+                state?.gracefulShutdown();
+                unsubscribeToKnownStatesUpdate();
             });
+    }
+
+    syncStateUpdateListeners = new Set<(peerId: PeerID, knownState: CoValueKnownState, fullySynced: boolean) => void>();
+
+    subscribeToSyncStateUpdate(listener: (peerId: PeerID, knownState: CoValueKnownState, fullySynced: boolean) => void) {
+        this.syncStateUpdateListeners.add(listener);
+
+        return () => {
+            this.syncStateUpdateListeners.delete(listener);
+        };
+    }
+
+    triggerSyncStateUpdate(peerId: PeerID, id: RawCoID) {
+        const peer = this.peers[peerId];
+
+        if (!peer) {
+            return;
+        }
+
+        const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
+        const fullySynced = this.getIsCoValueFullySyncedIntoPeer(peerId, id);
+
+        for (const listener of this.syncStateUpdateListeners) {
+            listener(peerId, knownState, fullySynced);
+        }
+    }
+
+    getIsCoValueFullySyncedIntoPeer(peerId: PeerID, id: RawCoID) {
+        const peer = this.peers[peerId];
+        const entry = this.local.coValues[id];
+
+        if (!peer) {
+            return false;
+        }
+
+        if (entry?.state.type !== "available") {
+            return false;
+        }
+
+        const coValue = entry.state.coValue;
+        const knownState = peer.knownStates.get(id);
+
+        if (!knownState) {
+            return false;
+        }
+
+        return getIsFullySynced(knownState.sessions, coValue.knownState().sessions);
     }
 
     trySendToPeer(peer: PeerState, msg: SyncMessage) {
@@ -393,7 +527,8 @@ export class SyncManager {
             // special case: we should be able to solve this much more neatly
             // with an explicit state machine in the future
             const eligiblePeers = this.peersInPriorityOrder().filter(
-                (other) => other.id !== peer.id && other.isServerOrStoragePeer(),
+                (other) =>
+                    other.id !== peer.id && other.isServerOrStoragePeer(),
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
@@ -467,6 +602,12 @@ export class SyncManager {
             value: knownStateIn(msg),
         });
 
+        peer.knownStates.dispatch({
+            type: "COMBINE_WITH",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
+
         if (!entry) {
             if (msg.asDependencyOf) {
                 if (this.local.coValues[msg.asDependencyOf]) {
@@ -492,7 +633,8 @@ export class SyncManager {
         }
 
         if (entry.state.type === "unknown") {
-            const availableOnPeer = peer.optimisticKnownStates.get(msg.id)?.header;
+            const availableOnPeer = peer.optimisticKnownStates.get(msg.id)
+                ?.header;
 
             if (!availableOnPeer) {
                 entry.dispatch({
@@ -639,6 +781,13 @@ export class SyncManager {
             }).catch((e) => {
                 console.error("Error sending known state correction", e);
             });
+        } else {
+            this.trySendToPeer(peer, {
+                action: "known",
+                ...coValue.knownState(),
+            }).catch((e: unknown) => {
+                console.error("Error sending known state", e);
+            });
         }
     }
 
@@ -683,6 +832,7 @@ export class SyncManager {
     async actuallySyncCoValue(coValue: CoValueCore) {
         // let blockingSince = performance.now();
         for (const peer of this.peersInPriorityOrder()) {
+            if (peer.closed) continue;
             // if (performance.now() - blockingSince > 5) {
             //     await new Promise<void>((resolve) => {
             //         setTimeout(resolve, 0);
@@ -706,6 +856,10 @@ export class SyncManager {
                 );
             }
         }
+
+        for (const peer of this.getPeers()) {
+            this.triggerSyncStateUpdate(peer.id, coValue.id);
+        }
     }
 
     gracefulShutdown() {
@@ -721,4 +875,14 @@ function knownStateIn(msg: LoadMessage | KnownStateMessage) {
         header: msg.header,
         sessions: msg.sessions,
     };
+}
+
+function getIsFullySynced(localSessions: Record<string, number>, remoteSessions: Record<string, number>) {
+    for (const sessionId of Object.keys(localSessions)) {
+        if (localSessions[sessionId] !== remoteSessions[sessionId]) {
+            return false;
+        }
+    }
+
+    return true;
 }

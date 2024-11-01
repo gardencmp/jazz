@@ -2,10 +2,10 @@ import { test, expect } from "@playwright/test";
 import { setTimeout } from "node:timers/promises";
 
 test.describe("ResumeSyncState", () => {
-  test.skip("should resume the sync even after a page reload", async ({ page, browser }) => {
+  test("should resume the sync even after a page reload", async ({ page, browser }) => {
     const context = page.context();
 
-    await page.goto("/resume-sync?userName=SuperMario");
+    await page.goto("/resume-sync?userName=SuperMario&peer=ws://localhost:4200");
 
     const id = await page.getByTestId("id").textContent();
 
@@ -26,7 +26,7 @@ test.describe("ResumeSyncState", () => {
 
     // Reload the page but without loading the coValue
     // await page.goto(`/resume-sync?userName=SuperMario`);
-    await page.goto(`/resume-sync?userName=SuperMario`);
+    await page.goto(`/resume-sync?userName=SuperMario&peer=ws://localhost:4200`);
 
     await setTimeout(1000);
 
@@ -34,7 +34,7 @@ test.describe("ResumeSyncState", () => {
 
     // Create a new incognito instance and try to load the coValue
     const newUserPage = await (await browser.newContext()).newPage();
-    await newUserPage.goto(`/resume-sync?userName=Luigi&id=${id}`);
+    await newUserPage.goto(`/resume-sync?userName=Luigi&id=${id}&peer=ws://localhost:4200`);
 
     await expect(newUserPage.getByTestId("id")).toBeInViewport();
 

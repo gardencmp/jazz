@@ -153,6 +153,8 @@ export class LocalNode {
             }
         }
 
+        LocalNode.storeServerPeersKnownStates(nodeWithAccount);
+
         syncAllCoValuesAfterCreateAccount();
 
         setTimeout(syncAllCoValuesAfterCreateAccount, 500);
@@ -163,6 +165,35 @@ export class LocalNode {
             accountSecret: accountOnNodeWithAccount.agentSecret,
             sessionID: nodeWithAccount.currentSessionID,
         };
+    }
+
+    static storeServerPeersKnownStates(node: LocalNode) {
+        const serverPeersIds = new Set<PeerID>(
+            node.syncManager
+                .getPeers()
+                .filter((peer) => peer.role === "server")
+                .map((peer) => peer.id),
+        );
+
+        const storagePeers = node.syncManager
+            .getPeers()
+            .filter((peer) => peer.role === "storage");
+
+        node.syncManager.subscribeToSyncStateUpdate(
+            (peerId, knownState, fullySynced) => {
+                if (serverPeersIds.has(peerId)) {
+                    for (const storagePeer of storagePeers) {
+                        void storagePeer.pushOutgoingMessage({
+                            action: "persistSyncState",
+                            payload: knownState,
+                            fullySynced,
+                            peerId,
+                            id: knownState.id,
+                        });
+                    }
+                }
+            },
+        );
     }
 
     /** @category 2. Node Creation */
@@ -219,6 +250,8 @@ export class LocalNode {
             );
             controlledAccount.core._cachedContent = undefined;
 
+            LocalNode.storeServerPeersKnownStates(node);
+
             const profileID = account.get("profile");
             if (!profileID) {
                 throw new Error("Account has no profile");
@@ -238,6 +271,14 @@ export class LocalNode {
                     controlledAccount.core,
                     controlledAccount.agentSecret,
                 );
+            }
+
+            const serverPeers = node.syncManager
+                .getPeers()
+                .filter((peer) => peer.role === "server");
+
+            for (const peer of serverPeers) {
+                void node.syncManager.requestSyncStateHydration(peer.id);
             }
 
             return node;
