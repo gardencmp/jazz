@@ -1,5 +1,5 @@
 import { Footer } from "gcmp-design-system/src/app/components/organisms/Footer";
-import { GcmpLogo } from "./logos";
+import { GcmpLogo } from "gcmp-design-system/src/app/components/atoms/logos/GcmpLogo";
 
 export function JazzFooter() {
     return (
@@ -11,7 +11,7 @@ export function JazzFooter() {
                     title: "Resources",
                     links: [
                         { href: "/", label: "Toolkit" },
-                        { href: "/mesh", label: "Jazz Mesh" },
+                        { href: "/cloud", label: "Jazz Cloud" },
                         { href: "/docs", label: "Docs" },
                     ],
                 },

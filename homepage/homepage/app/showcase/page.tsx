@@ -4,7 +4,7 @@ import { products } from "@/lib/showcase";
 import Link from "next/link";
 
 export const metadata = {
-    title: "jazz - Built with Jazz",
+    title: "Built with Jazz",
     description: "Great apps by smart people.",
 };
 
@@ -21,7 +21,7 @@ export default function Page() {
                     <Link
                         href={product.url}
                         key={product.url}
-                        className="group border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:p-4 md:gap-4 dark:border-stone-900 dark:bg-stone-900"
+                        className="group border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:p-4 md:gap-4 dark:bg-stone-900"
                     >
                         <Image
                             className="rounded-md border dark:border-0"

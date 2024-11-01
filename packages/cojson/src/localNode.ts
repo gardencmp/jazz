@@ -28,10 +28,11 @@ import {
 import { RawCoValue } from "./coValue.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { err, ok, okAsync, Result, ResultAsync } from "neverthrow";
+import { CoValueState } from "./coValueState.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
-A `LocalNode` can have peers that it syncs to, for example some form of local persistence, or a sync server, such as `sync.jazz.tools` (Jazz Global Mesh).
+A `LocalNode` can have peers that it syncs to, for example some form of local persistence, or a sync server, such as `cloud.jazz.tools` (Jazz Cloud).
 
 @example
 You typically get hold of a `LocalNode` using `jazz-react`'s `useJazz()`:
@@ -130,10 +131,9 @@ export class LocalNode {
         );
 
         nodeWithAccount.account = controlledAccount;
-        nodeWithAccount.coValues[controlledAccount.id] = {
-            state: "loaded",
-            coValue: controlledAccount.core,
-        };
+        nodeWithAccount.coValues[controlledAccount.id] = CoValueState.Available(
+            controlledAccount.core,
+        );
         controlledAccount.core._cachedContent = undefined;
 
         if (!controlledAccount.get("profile")) {
@@ -145,9 +145,9 @@ export class LocalNode {
             for (const coValueEntry of Object.values(
                 nodeWithAccount.coValues,
             )) {
-                if (coValueEntry.state === "loaded") {
+                if (coValueEntry.state.type === "available") {
                     void nodeWithAccount.syncManager.syncCoValue(
-                        coValueEntry.coValue,
+                        coValueEntry.state.coValue,
                     );
                 }
             }
@@ -214,10 +214,9 @@ export class LocalNode {
             node.syncManager.local = node;
 
             controlledAccount.core.node = node;
-            node.coValues[accountID] = {
-                state: "loaded",
-                coValue: controlledAccount.core,
-            };
+            node.coValues[accountID] = CoValueState.Available(
+                controlledAccount.core,
+            );
             controlledAccount.core._cachedContent = undefined;
 
             const profileID = account.get("profile");
@@ -257,7 +256,7 @@ export class LocalNode {
         }
 
         const coValue = new CoValueCore(header, this);
-        this.coValues[coValue.id] = { state: "loaded", coValue: coValue };
+        this.coValues[coValue.id] = CoValueState.Available(coValue);
 
         void this.syncManager.syncCoValue(coValue);
 
@@ -270,7 +269,6 @@ export class LocalNode {
         options: {
             dontLoadFrom?: PeerID;
             dontWaitFor?: PeerID;
-            onProgress?: (progress: number) => void;
         } = {},
     ): Promise<CoValueCore | "unavailable"> {
         if (this.crashed) {
@@ -283,11 +281,11 @@ export class LocalNode {
         if (!entry) {
             const peersToWaitFor = new Set(
                 Object.values(this.syncManager.peers)
-                    .filter((peer) => peer.role === "server")
+                    .filter((peer) => peer.isServerOrStoragePeer())
                     .map((peer) => peer.id),
             );
             if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
-            entry = newLoadingState(peersToWaitFor, options.onProgress);
+            entry = CoValueState.Unknown(peersToWaitFor);
 
             this.coValues[id] = entry;
 
@@ -302,10 +300,19 @@ export class LocalNode {
                     );
                 });
         }
-        if (entry.state === "loaded") {
-            return Promise.resolve(entry.coValue);
+        if (entry.state.type === "available") {
+            return Promise.resolve(entry.state.coValue);
         }
-        return entry.done;
+
+        await entry.state.ready;
+
+        const updatedEntry = this.coValues[id];
+
+        if (updatedEntry?.state.type === "available") {
+            return Promise.resolve(updatedEntry.state.coValue);
+        }
+
+        return "unavailable";
     }
 
     /**
@@ -315,11 +322,8 @@ export class LocalNode {
      *
      * @category 3. Low-level
      */
-    async load<T extends RawCoValue>(
-        id: CoID<T>,
-        onProgress?: (progress: number) => void,
-    ): Promise<T | "unavailable"> {
-        const core = await this.loadCoValueCore(id, { onProgress });
+    async load<T extends RawCoValue>(id: CoID<T>): Promise<T | "unavailable"> {
+        const core = await this.loadCoValueCore(id);
 
         if (core === "unavailable") {
             return "unavailable";
@@ -333,8 +337,8 @@ export class LocalNode {
         if (!entry) {
             return undefined;
         }
-        if (entry.state === "loaded") {
-            return entry.coValue.getCurrentContent() as T;
+        if (entry.state.type === "available") {
+            return entry.state.coValue.getCurrentContent() as T;
         }
         return undefined;
     }
@@ -465,14 +469,14 @@ export class LocalNode {
                 `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`,
             );
         }
-        if (entry.state === "loading") {
+        if (entry.state.type === "unknown") {
             throw new Error(
                 `${
                     expectation ? expectation + ": " : ""
                 }CoValue ${id} not yet loaded`,
             );
         }
-        return entry.coValue;
+        return entry.state.coValue;
     }
 
     /** @internal */
@@ -547,7 +551,7 @@ export class LocalNode {
         }
 
         let coValue: CoValueCore;
-        
+
         try {
             coValue = this.expectCoValueLoaded(id, expectation);
         } catch (e) {
@@ -558,7 +562,7 @@ export class LocalNode {
                 error: e,
             } satisfies LoadCoValueCoreError);
         }
-    
+
         if (
             coValue.header.type !== "comap" ||
             coValue.header.ruleset.type !== "group" ||
@@ -673,13 +677,16 @@ export class LocalNode {
             const [coValueID, entry] =
                 coValuesToCopy[coValuesToCopy.length - 1]!;
 
-            if (entry.state === "loading") {
+            if (entry.state.type === "unknown") {
                 coValuesToCopy.pop();
                 continue;
             } else {
-                const allDepsCopied = entry.coValue
+                const allDepsCopied = entry.state.coValue
                     .getDependedOnCoValues()
-                    .every((dep) => newNode.coValues[dep]?.state === "loaded");
+                    .every(
+                        (dep) =>
+                            newNode.coValues[dep]?.state.type === "available",
+                    );
 
                 if (!allDepsCopied) {
                     // move to end of queue
@@ -688,15 +695,13 @@ export class LocalNode {
                 }
 
                 const newCoValue = new CoValueCore(
-                    entry.coValue.header,
+                    entry.state.coValue.header,
                     newNode,
-                    new Map(entry.coValue.sessionLogs),
+                    new Map(entry.state.coValue.sessionLogs),
                 );
 
-                newNode.coValues[coValueID as RawCoID] = {
-                    state: "loaded",
-                    coValue: newCoValue,
-                };
+                newNode.coValues[coValueID as RawCoID] =
+                    CoValueState.Available(newCoValue);
 
                 coValuesToCopy.pop();
             }
@@ -722,30 +727,6 @@ export class LocalNode {
     }
 }
 
-/** @internal */
-type CoValueState =
-    | {
-          state: "loading";
-          done: Promise<CoValueCore | "unavailable">;
-          resolve: (coValue: CoValueCore | "unavailable") => void;
-          onProgress?: (progress: number) => void;
-          firstPeerState: {
-              [peerID: string]:
-                  | {
-                        type: "waiting";
-                        done: Promise<void>;
-                        resolve: () => void;
-                    }
-                  | { type: "available" }
-                  | { type: "unavailable" };
-          };
-      }
-    | {
-          state: "loaded";
-          coValue: CoValueCore;
-          onProgress?: (progress: number) => void;
-      };
-
 export type LoadCoValueCoreError = {
     type: "ErrorLoadingCoValueCore";
     error: unknown;
@@ -770,31 +751,3 @@ export type ResolveAccountAgentError =
     | LoadCoValueCoreError
     | AccountUnavailableFromAllPeersError
     | UnexpectedlyNotAccountError;
-
-/** @internal */
-export function newLoadingState(
-    currentPeerIds: Set<PeerID>,
-    onProgress?: (progress: number) => void,
-): CoValueState {
-    let resolve: (coValue: CoValueCore | "unavailable") => void;
-
-    const promise = new Promise<CoValueCore | "unavailable">((r) => {
-        resolve = r;
-    });
-
-    return {
-        state: "loading",
-        done: promise,
-        resolve: resolve!,
-        onProgress,
-        firstPeerState: Object.fromEntries(
-            [...currentPeerIds].map((id) => {
-                let resolve: () => void;
-                const done = new Promise<void>((r) => {
-                    resolve = r;
-                });
-                return [id, { type: "waiting", done, resolve: resolve! }];
-            }),
-        ),
-    };
-}

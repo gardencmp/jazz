@@ -3,7 +3,7 @@
     "bin": "./dist/index.js",
     "type": "module",
     "license": "MIT",
-    "version": "0.8.7",
+    "version": "0.8.12",
     "scripts": {
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
@@ -17,11 +17,11 @@
         "@effect/printer-ansi": "^0.34.5",
         "@effect/schema": "^0.71.1",
         "@effect/typeclass": "^0.25.5",
-        "cojson": "workspace:0.8.5",
-        "cojson-storage-sqlite": "workspace:0.8.5",
-        "cojson-transport-ws": "workspace:0.8.7",
+        "cojson": "workspace:0.8.12",
+        "cojson-storage-sqlite": "workspace:0.8.12",
+        "cojson-transport-ws": "workspace:0.8.12",
         "effect": "^3.6.5",
-        "jazz-tools": "workspace:0.8.5",
+        "jazz-tools": "workspace:0.8.12",
         "ws": "^8.14.2"
     },
     "devDependencies": {

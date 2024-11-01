@@ -1,14 +1,16 @@
 {
     "name": "jazz-example-music-player",
     "private": true,
-    "version": "0.0.9",
+    "version": "0.0.11",
     "type": "module",
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test": "playwright test",
+        "test:ui": "playwright test --ui"
     },
     "lint-staged": {
         "*.{ts,tsx}": "eslint --fix",
@@ -20,8 +22,8 @@
         "@radix-ui/react-toast": "^1.1.4",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
-        "jazz-react": "workspace:0.8.7",
-        "jazz-tools": "workspace:0.8.5",
+        "jazz-react": "workspace:0.8.12",
+        "jazz-tools": "workspace:0.8.12",
         "lucide-react": "^0.274.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -31,6 +33,7 @@
         "tailwindcss-animate": "^1.0.7"
     },
     "devDependencies": {
+        "@playwright/test": "^1.46.1",
         "@types/react": "^18.2.19",
         "@types/react-dom": "^18.2.7",
         "@typescript-eslint/eslint-plugin": "^6.2.1",

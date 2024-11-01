@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { ThemeToggle } from "../molecules/ThemeToggle";
 
 type FooterSection = {
     title: string;
@@ -20,20 +21,38 @@ type FooterProps = {
     sections: FooterSection[];
 };
 
+function Copyright({
+    className,
+    companyName,
+}: {
+    companyName: string;
+    className?: string;
+}) {
+    return (
+        <p className={clsx(className, "text-sm")}>
+            © {new Date().getFullYear()} {companyName}
+        </p>
+    );
+}
+
 export function Footer({ logo, companyName, sections }: FooterProps) {
     return (
-        <footer className="flex z-10 mt-10 min-h-[15rem] border-t bg-stone-100 dark:bg-stone-925 text-stone-600 dark:text-stone-400 w-full justify-center  dark:border-stone-900">
-            <div className="p-8 container w-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-8 max-sm:mb-12">
-                <div className="col-span-full md:col-span-1 sm:row-start-4 md:row-start-auto lg:col-span-2 md:row-span-2 md:flex-1 flex flex-row md:flex-col max-sm:mt-4 justify-between max-sm:items-start gap-2 text-sm min-w-[10rem]">
+        <footer className="w-full border-t bg-stone-100 mt-12 md:mt-20 dark:bg-stone-925">
+            <div className="container py-8 md:py-16 grid gap-y-8 grid-cols-12">
+                <div className="flex flex-col justify-between col-span-full md:col-span-4">
                     {logo}
-                    <p className="max-sm:text-right">
-                        © {new Date().getFullYear()}
-                        <br />
-                        {companyName}
-                    </p>
+
+                    <Copyright
+                        className="hidden md:block"
+                        companyName={companyName}
+                    />
                 </div>
+
                 {sections.map((section, index) => (
-                    <div key={index} className="flex flex-col gap-2 text-sm">
+                    <div
+                        key={index}
+                        className="flex flex-col gap-2 text-sm col-span-4 sm:col-span-4 md:col-span-2"
+                    >
                         <h2 className="font-medium">{section.title}</h2>
                         {section.links.map((link, linkIndex) => (
                             <FooterLink
@@ -46,6 +65,15 @@ export function Footer({ logo, companyName, sections }: FooterProps) {
                         ))}
                     </div>
                 ))}
+
+                <div className="hidden md:flex justify-end items-end md:col-span-2">
+                    <ThemeToggle />
+                </div>
+
+                <Copyright
+                    className="col-span-full md:hidden"
+                    companyName={companyName}
+                />
             </div>
         </footer>
     );
@@ -74,7 +102,7 @@ function FooterLink({
                 className,
                 path === href
                     ? "font-medium text-black dark:text-white cursor-default"
-                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none"
+                    : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
             )}
             onClick={onClick}
             target={newTab ? "_blank" : undefined}

@@ -761,7 +761,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     expect(groupTellKnownStateMsg).toMatchObject(groupStateEx(group));
 
     expect(
-        node2.syncManager.peers["test1"]!.optimisticKnownStates[group.core.id],
+        node2.syncManager.peers["test1"]!.optimisticKnownStates.has(group.core.id),
     ).toBeDefined();
 
     // await inTx1.push(adminTellKnownStateMsg);
@@ -1086,7 +1086,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
     const mapOnNode2Promise = node2.loadCoValueCore(map.core.id);
 
-    expect(node2.coValues[map.core.id]?.state).toEqual("loading");
+    expect(node2.coValues[map.core.id]?.state.type).toEqual("unknown");
 
     node2.syncManager.addPeer(node1asPeer);
 

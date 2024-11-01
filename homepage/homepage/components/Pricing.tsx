@@ -17,7 +17,7 @@ import {
     LucideUsers,
     LucideZap,
 } from "lucide-react";
-import { Button } from "@/components/Button";
+import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { FakeGetStartedButton } from "./FakeGetStartedButton";
 import { clsx } from "clsx";
 import { StarterTierLogo, IndieTierLogo, ProTierLogo } from "./TierLogos";
@@ -204,7 +204,7 @@ export function Pricing() {
                 </div>
 
                 <Button size="md" variant="secondary" disabled>
-                    Coming Soon
+                    Coming soon
                 </Button>
 
                 <p className="text-sm">
@@ -296,7 +296,7 @@ export function Pricing() {
                 </div>
 
                 <Button
-                    href="https://cal.com/anselm-io/mesh-pro-intro"
+                    href="https://cal.com/anselm-io/cloud-pro-intro"
                     size="md"
                 >
                     Book intro call
