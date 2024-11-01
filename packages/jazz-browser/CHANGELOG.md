@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.8.12
+
+### Patch Changes
+
+-   Updated dependencies [6ed75eb]
+    -   cojson-storage-indexeddb@0.8.12
+    -   cojson@0.8.12
+    -   cojson-transport-ws@0.8.12
+    -   jazz-tools@0.8.12
+
 ## 0.8.11
 
 ### Patch Changes

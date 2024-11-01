@@ -1,5 +1,13 @@
 # cojson-storage-sqlite
 
+## 0.8.12
+
+### Patch Changes
+
+-   6ed75eb: Introduce "storage" peer role
+-   Updated dependencies [6ed75eb]
+    -   cojson@0.8.12
+
 ## 0.8.11
 
 ### Patch Changes

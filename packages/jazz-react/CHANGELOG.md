@@ -1,5 +1,15 @@
 # jazz-react
 
+## 0.8.12
+
+### Patch Changes
+
+-   3cc6aee: Temporary fix to prevent double creation of Jazz context in React StrictMode
+-   Updated dependencies [6ed75eb]
+    -   cojson@0.8.12
+    -   jazz-browser@0.8.12
+    -   jazz-tools@0.8.12
+
 ## 0.8.11
 
 ### Patch Changes
