@@ -89,7 +89,7 @@ export function FeaturesSection() {
                     />
                 ))}
 
-                <div className="border p-8 bg-gradient-to-t from-blue-50/50 via-30% via-transparent to-transparent shadow-sm rounded-xl col-span-4 space-y-5">
+                <div className="border p-4 sm:p-8 bg-gradient-to-t from-blue-50/50 via-30% via-transparent to-transparent shadow-sm rounded-xl col-span-2 md:col-span-4 space-y-5">
                     <H3>Jazz Cloud</H3>
                     <Prose className="max-w-xl">
                         <p>
@@ -101,7 +101,7 @@ export function FeaturesSection() {
                             </strong>
                         </p>
                     </Prose>
-                    <ul className="flex gap-4 text-sm">
+                    <ul className="flex flex-col sm:flex-row gap-4 text-sm">
                         {[
                             "Blob storage",
                             "Data storage",
@@ -109,7 +109,7 @@ export function FeaturesSection() {
                         ].map((feature) => (
                             <li
                                 key={feature}
-                                className="flex items-center gap-1.5"
+                                className="flex items-center gap-1.5 whitespace-nowrap"
                             >
                                 <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-white/10">
                                     <CheckIcon size={12} strokeWidth={3} />
@@ -118,7 +118,7 @@ export function FeaturesSection() {
                             </li>
                         ))}
                     </ul>
-                    <div className="flex items-center gap-x-5 flex-wrap gap-y-3">
+                    <div className="flex items-center flex-wrap gap-x-5 flex-wrap gap-y-3">
                         <Button href="/cloud" variant="primary">
                             View full pricing
                         </Button>
