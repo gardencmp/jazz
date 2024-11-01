@@ -87,12 +87,13 @@ export function FeaturesSection() {
             ),
         },
         {
-            title: "State management",
+            title: "Server workers",
             icon: ImageIcon,
             description: (
                 <>
-                    2-way data-binding. Mutate JSON directly. Reactivity is
-                    built-in.
+                    Subscribe to Jazz state and update existing databases or
+                    third-party APIs. Or expose an HTTP API that mutates Jazz
+                    state.
                 </>
             ),
             illustration: <></>,
