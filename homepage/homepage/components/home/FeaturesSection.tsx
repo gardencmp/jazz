@@ -50,14 +50,7 @@ export function FeaturesSection() {
             icon: UserIcon,
             description: (
                 <>
-                    <p>Plug and play different kinds of auth.</p>
-                    <ul>
-                        <li>WebAuthN (TouchID/FaceID)</li>
-                        <li>Clerk</li>
-                        <li>
-                            Auth0, Okta, NextAuth <ComingSoonBadge />
-                        </li>
-                    </ul>
+                    <p>Plug and play different kinds of auth like WebAuthN (Touch ID, Face ID), and Clerk. Auth0, Okta, NextAuth coming soon.</p>
                 </>
             ),
         },
@@ -80,17 +73,24 @@ export function FeaturesSection() {
 
             <GappedGrid>
                 {features.map(({ title, icon: Icon, description }) => (
-                    <LabelledFeatureIcon
-                        className="col-span-2"
-                        key={title}
-                        label={title}
-                        icon={Icon}
-                        explanation={description}
-                    />
+                  <div key={title} className="col-span-2 border rounded-xl shadow-sm overflow-hidden">
+                      <div className="bg-gray-100 w-full h-48"></div>
+                      <div className="p-4">
+                          <h3 className="font-medium text-stone-900 dark:text-white mb-1">{title}</h3>
+                          <Prose size="sm">{description}</Prose>
+                      </div>
+                  </div>
                 ))}
+                {/*<LabelledFeatureIcon*/}
+                {/*  className="col-span-2"*/}
+                {/*  key={title}*/}
+                {/*  label={title}*/}
+                {/*  icon={Icon}*/}
+                {/*  explanation={description}*/}
+                {/*/>*/}
 
                 <div className="border p-4 sm:p-8 bg-gradient-to-t from-blue-50/50 via-30% via-transparent to-transparent shadow-sm rounded-xl col-span-2 md:col-span-4 space-y-5">
-                    <H3>Jazz Cloud</H3>
+                    <H3 className="!text-blue">Jazz Cloud</H3>
                     <Prose className="max-w-xl">
                         <p>
                             Jazz Cloud is a real-time sync and storage
@@ -122,6 +122,7 @@ export function FeaturesSection() {
                         <Button href="/cloud" variant="primary">
                             View full pricing
                         </Button>
+                    </div>
                         <Prose size="sm">
                             You can rely on us, or{" "}
                             <Link href="/docs/sync-and-storage#running-your-own">
@@ -129,7 +130,6 @@ export function FeaturesSection() {
                             </Link>
                             .
                         </Prose>
-                    </div>
                 </div>
             </GappedGrid>
         </div>
