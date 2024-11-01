@@ -2308,3 +2308,49 @@ test("When rotating the key of a parent group, the keys of all child groups are 
 
     expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
 });
+
+test("Calling extend on group sets up parent and child references and reveals child key to parent", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    group.extend(parentGroup);
+
+    expect(group.get(`parent_${parentGroup.id}`)).toEqual("extend");
+    expect(parentGroup.get(`child_${group.id}`)).toEqual("extend");
+
+    const parentReadKeyID = parentGroup.get('readKey');
+    if (!parentReadKeyID) {
+        throw new Error("Can't get parent group read key");
+    }
+
+    const childReadKeyID = group.get('readKey');
+    if (!childReadKeyID) {
+        throw new Error("Can't get group read key");
+    }
+
+    expect(group.get(`${childReadKeyID}_for_${parentReadKeyID}`)).toBeDefined();
+
+    const reader = node.createAccount();
+    parentGroup.addMember(reader, "reader");
+
+    const childObject = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        ...Crypto.createdNowUnique(),
+    });
+    const childMap = expectMap(childObject.getCurrentContent());
+
+    childMap.set("foo", "bar", "private");
+
+    const childContentAsReader = expectMap(
+        childObject
+            .testWithDifferentAccount(
+                reader,
+                Crypto.newRandomSessionID(reader.id),
+            )
+            .getCurrentContent(),
+    );
+
+    expect(childContentAsReader.get("foo")).toEqual("bar");
+})

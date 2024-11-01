@@ -303,6 +303,36 @@ export class RawGroup<
         }
     }
 
+    extend(parent: RawGroup) {
+        this.set(`parent_${parent.id}`, "extend", "trusting");
+        parent.set(`child_${this.id}`, "extend", "trusting");
+
+        const {id: parentReadKeyID, secret: parentReadKeySecret} = parent.core.getCurrentReadKey();
+        if (!parentReadKeySecret) {
+            throw new Error("Can't extend group without parent read key secret");
+        }
+
+        const {id: childReadKeyID, secret: childReadKeySecret} = this.core.getCurrentReadKey();
+        if (!childReadKeySecret) {
+            throw new Error("Can't extend group without child read key secret");
+        }
+
+        this.set(
+            `${childReadKeyID}_for_${parentReadKeyID}`,
+            this.core.crypto.encryptKeySecret({
+                encrypting: {
+                    id: parentReadKeyID,
+                    secret: parentReadKeySecret,
+                },
+                toEncrypt: {
+                    id: childReadKeyID,
+                    secret: childReadKeySecret,
+                },
+            }).encrypted,
+            "trusting",
+        );
+    }
+
     /**
      * Strips the specified member of all roles (preventing future writes in
      *  the group and owned values) and rotates the read encryption key for that group
