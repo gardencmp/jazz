@@ -2254,3 +2254,32 @@ test("Writers in a parent group can write to an object owned by a child group", 
     childContentAsWriter.set("foo", "bar", "private");
     expect(childContentAsWriter.get("foo")).toEqual("bar");
 })
+
+test("When rotating the key of a child group, the new child key is exposed to the parent group", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+    const currentReadKeyID = group.get('readKey');
+    if (!currentReadKeyID) {
+        throw new Error("Can't get group read key");
+    }
+
+    group.rotateReadKey();
+
+    const newReadKeyID = group.get('readKey');
+    if (!newReadKeyID) {
+        throw new Error("Can't get new group read key");
+    }
+    expect(newReadKeyID).not.toEqual(currentReadKeyID);
+
+    const parentReadKeyID = parentGroup.get('readKey');
+    if (!parentReadKeyID) {
+        throw new Error("Can't get parent group read key");
+    }
+
+    console.log("Checking", `${newReadKeyID}_for_${parentReadKeyID}`);
+
+    expect(group.get(`${newReadKeyID}_for_${parentReadKeyID}`)).toBeDefined();
+});

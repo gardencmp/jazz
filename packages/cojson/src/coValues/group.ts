@@ -255,6 +255,24 @@ export class RawGroup<
         );
 
         this.set("readKey", newReadKey.id, "trusting");
+
+        for (const parent of this.getParentGroups()) {
+            const {id: parentReadKeyID, secret: parentReadKeySecret} = parent.core.getCurrentReadKey();
+            if (!parentReadKeySecret) {
+                throw new Error("Can't reveal new child key to parent where we don't have access to the parent read key");
+            }
+
+            console.log("Setting", `${newReadKey.id}_for_${parentReadKeyID}`);
+
+            this.set(
+                `${newReadKey.id}_for_${parentReadKeyID}`,
+                this.core.crypto.encryptKeySecret({
+                    encrypting: { id: parentReadKeyID, secret: parentReadKeySecret },
+                    toEncrypt: newReadKey,
+                }).encrypted,
+                "trusting",
+            );
+        }
     }
 
     /**
