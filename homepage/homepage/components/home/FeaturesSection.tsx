@@ -4,27 +4,17 @@ import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/Gapp
 import {
     CheckIcon,
     FileTextIcon,
+    FingerprintIcon,
     ImageIcon,
+    ScanFace,
     TrashIcon,
     UploadCloudIcon,
     UserIcon,
 } from "lucide-react";
-import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
-import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
-import { clsx } from "clsx";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import Link from "next/link";
-
-function FileUploadsIllustration() {
-    return (
-        <div>
-            <pre>
-                <code>BinaryCoStream.createFromBlob(file, ownership);</code>
-            </pre>
-        </div>
-    );
-}
+import { ClerkLogo } from "@/components/icons/ClerkLogo";
 
 export function FeaturesSection() {
     const features = [
@@ -42,7 +32,7 @@ export function FeaturesSection() {
             ),
             illustration: (
                 <div className="flex w-full h-full flex-col pt-4 gap-4 items-center justify-center bg-gradient-to-b from-stone-50 to-transparent">
-                    <div className="grid gap-4 mx-auto">
+                    <div className="grid gap-6 mx-auto">
                         <pre className="">
                             <code className="text-stone-900 dark:text-white">
                                 BinaryCoStream.createFromBlob(file);
@@ -119,7 +109,18 @@ export function FeaturesSection() {
                     </p>
                 </>
             ),
-            illustration: <></>,
+            illustration: (
+                <div className="flex w-full h-full items-center justify-center bg-gradient-to-b from-stone-50 to-transparent">
+                    <div className="flex gap-4 justify-center text-black dark:text-white">
+                        <ScanFace className="h-16 w-auto" strokeWidth={1} />
+                        <ClerkLogo className="h-16 py-0.5 w-auto" />
+                        <FingerprintIcon
+                            className="h-16 w-auto"
+                            strokeWidth={1}
+                        />
+                    </div>
+                </div>
+            ),
         },
     ];
 
@@ -157,15 +158,8 @@ export function FeaturesSection() {
                         </div>
                     ),
                 )}
-                {/*<LabelledFeatureIcon*/}
-                {/*  className="col-span-2"*/}
-                {/*  key={title}*/}
-                {/*  label={title}*/}
-                {/*  icon={Icon}*/}
-                {/*  explanation={description}*/}
-                {/*/>*/}
 
-                <div className="border p-4 sm:p-8 bg-gradient-to-t from-blue-50/50 via-30% via-transparent to-transparent shadow-sm rounded-xl col-span-2 md:col-span-4 space-y-5">
+                <div className="border p-4 sm:p-8 bg-gradient-to-b from-stone-50 to-transparent shadow-sm rounded-xl col-span-2 md:col-span-4 space-y-5">
                     <H3>Jazz Cloud</H3>
                     <Prose className="max-w-xl">
                         <p>
