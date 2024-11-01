@@ -75,7 +75,7 @@ export interface Peer {
     id: PeerID;
     incoming: IncomingSyncStream;
     outgoing: OutgoingSyncQueue;
-    role: "peer" | "server" | "client";
+    role: "peer" | "server" | "client" | "storage";
     priority?: number;
     crashOnClose: boolean;
 }
@@ -129,7 +129,7 @@ export class SyncManager {
 
     async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
         const eligiblePeers = this.peersInPriorityOrder().filter(
-            (peer) => peer.id !== forPeer && peer.role === "server",
+            (peer) => peer.id !== forPeer && peer.isServerOrStoragePeer(),
         );
 
         const coValueEntry = this.local.coValues[id];
@@ -305,7 +305,7 @@ export class SyncManager {
         const peerState = new PeerState(peer);
         this.peers[peer.id] = peerState;
 
-        if (peer.role === "server") {
+        if (peerState.isServerOrStoragePeer()) {
             const initialSync = async () => {
                 for (const id of Object.keys(
                     this.local.coValues,
@@ -393,7 +393,7 @@ export class SyncManager {
             // special case: we should be able to solve this much more neatly
             // with an explicit state machine in the future
             const eligiblePeers = this.peersInPriorityOrder().filter(
-                (other) => other.id !== peer.id && other.role === "server",
+                (other) => other.id !== peer.id && other.isServerOrStoragePeer(),
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
@@ -698,7 +698,7 @@ export class SyncManager {
                     coValue.id,
                     peer,
                 );
-            } else if (peer.role === "server") {
+            } else if (peer.isServerOrStoragePeer()) {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);
                 await this.sendNewContentIncludingDependencies(
                     coValue.id,

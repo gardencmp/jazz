@@ -281,7 +281,7 @@ export class LocalNode {
         if (!entry) {
             const peersToWaitFor = new Set(
                 Object.values(this.syncManager.peers)
-                    .filter((peer) => peer.role === "server")
+                    .filter((peer) => peer.isServerOrStoragePeer())
                     .map((peer) => peer.id),
             );
             if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
