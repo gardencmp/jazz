@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.12
+
+### Patch Changes
+
+-   6ed75eb: Introduce "storage" peer role
+
 ## 0.8.11
 
 ### Patch Changes
