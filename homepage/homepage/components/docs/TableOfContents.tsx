@@ -14,6 +14,8 @@ export function TableOfContents({
     items: NavItem[];
     className?: string;
 }) {
+    if (!items.length) return null;
+
     return (
         <div
             className={clsx(

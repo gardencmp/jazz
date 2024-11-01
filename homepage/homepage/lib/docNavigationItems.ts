@@ -26,9 +26,17 @@ export const docNavigationItems = [
                 done: 100,
             },
             {
-                name: "React / Next.js / React Native",
+                name: "React",
                 href: "/docs/project-setup/react",
                 done: 80,
+            },
+            {
+                name: "React Native",
+                href: "/docs/project-setup/react-native",
+            },
+            {
+                name: "Next.js",
+                href: "/docs/project-setup/next",
             },
             {
                 name: "Node.JS / Server Workers",
