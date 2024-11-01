@@ -2,7 +2,7 @@
 
 import { MenuIcon, XIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { ReactNode, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BreadCrumb } from "../molecules/Breadcrumb";
 import clsx from "clsx";
 import Link from "next/link";
@@ -34,6 +34,10 @@ export function Nav({
     }, [searchOpen]);
 
     const pathname = usePathname();
+
+    useEffect(() => {
+        setMenuOpen(false);
+    }, [pathname]);
 
     return (
         <>

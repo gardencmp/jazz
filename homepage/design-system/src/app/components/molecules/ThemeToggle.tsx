@@ -22,7 +22,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                 "md:p-2 md:rounded-full md:border",
                 "text-stone-400 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white",
                 "md:hover:bg-stone-200 md:dark:hover:bg-stone-900",
-                "transition-colors"
+                "transition-colors",
             )}
             aria-label={
                 mounted ? `Switch to ${otherTheme} theme` : "Toggle theme"
