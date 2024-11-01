@@ -3,9 +3,7 @@ import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
 const randomChars = [
     "SFPOHVKNPDKETOMQLMJKX#QDI=TFFFMRJDSJ",
-    "!",
-    "KBANJTYRQ!OUTYAO",
-    "#",
+    "A",
     "#MLZJJA-WJEATZULBR%I=MG#VUWOHX",
     "J",
     "HPLNSST!VOMKBANJTYRCR",
@@ -18,7 +16,7 @@ const randomChars = [
     "J",
     "HYCSL#QN%IYPMPLQUKUJ",
     "A",
-    "YTKAMZKIOD#YRTBKLLJREUQOGO",
+    "YTKAMZKIOD#YR",
     "Z",
     "SFPOHVKNPDKETOM",
     "Z",
@@ -26,6 +24,8 @@ const randomChars = [
     "J",
     "HYCSL#QN%IYPMPLQUKUJ",
     "A",
+    "KBANJTYRQ!OUTYAO",
+    "Z",
 ];
 
 function Illustration() {
