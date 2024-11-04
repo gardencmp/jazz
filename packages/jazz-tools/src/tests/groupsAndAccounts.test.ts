@@ -101,23 +101,23 @@ describe("Group inheritance", () => {
             crypto: Crypto,
         });
 
+        const parentGroup = Group.create({ owner: me });
         const group = Group.create({ owner: me });
-        const childGroup = Group.create({ owner: me });
 
-        childGroup.extend(group);
+        group.extend(parentGroup);
 
         const reader = await Account.createAs(me, {
             creationProps: { name: "Reader" },
         });
 
-        group.addMember(reader, "reader");
+        parentGroup.addMember(reader, "reader");
 
-        const mapInParent = TestMap.create({ title: "In Parent" }, { owner: group });
+        const mapInParent = TestMap.create({ title: "In Parent" }, { owner: parentGroup });
 
         const mapAsReader = await TestMap.load(mapInParent.id, reader, {});
         expect(mapAsReader?.title).toBe("In Parent");
 
-        group.removeMember(reader);
+        parentGroup.removeMember(reader);
 
         mapInParent.title = "In Parent (updated)";
 

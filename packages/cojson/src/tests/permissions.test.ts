@@ -2354,3 +2354,55 @@ test("Calling extend on group sets up parent and child references and reveals ch
 
     expect(childContentAsReader.get("foo")).toEqual("bar");
 })
+
+test("High-level permissions work correctly when a group is extended", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+
+    group.extend(parentGroup);
+
+    const reader = node.createAccount();
+    parentGroup.addMember(reader, "reader");
+
+    const mapCore = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        ...Crypto.createdNowUnique(),
+    });
+
+    const map = expectMap(mapCore.getCurrentContent());
+
+    map.set("foo", "bar", "private");
+
+    const mapAsReader = expectMap(
+        mapCore
+            .testWithDifferentAccount(
+                reader,
+                Crypto.newRandomSessionID(reader.id),
+            )
+            .getCurrentContent(),
+    );
+
+    expect(mapAsReader.get("foo")).toEqual("bar");
+
+    const groupKeyBeforeRemove = group.core.getCurrentReadKey().id;
+
+    parentGroup.removeMember(reader);
+
+    const groupKeyAfterRemove = group.core.getCurrentReadKey().id;
+    expect(groupKeyAfterRemove).not.toEqual(groupKeyBeforeRemove);
+
+    map.set("foo", "baz", "private");
+
+    const mapAsReaderAfterRemove = expectMap(
+        mapCore
+            .testWithDifferentAccount(
+                reader,
+                Crypto.newRandomSessionID(reader.id),
+            )
+            .getCurrentContent(),
+    );
+
+    expect(mapAsReaderAfterRemove.get("foo")).not.toEqual("baz");
+})
