@@ -8,7 +8,6 @@ import CursorsAndCaretsDescription from "@/app/(home)/toolkit/cursorsAndCarets.m
 import TwoWaySyncDescription from "@/app/(home)/toolkit/twoWaySync.mdx";
 import VideoPresenceCallsDescription from "@/app/(home)/toolkit/videoPresenceCalls.mdx";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
-import { ComingSoonBadge } from "gcmp-design-system/src/app/components/atoms/ComingSoonBadge";
 import CoPlainTextDescription from "@/app/(home)/coValueDescriptions/coPlainTextDescription.mdx";
 
 export function ComingSoonSection() {
@@ -44,7 +43,7 @@ export function ComingSoonSection() {
                 <GridCard>
                     <H3>
                         <CodeRef>CoPlainText</CodeRef> &{" "}
-                        <CodeRef>CoRichText</CodeRef> <ComingSoonBadge />
+                        <CodeRef>CoRichText</CodeRef>
                     </H3>
                     <Prose size="sm">
                         <CoPlainTextDescription />
