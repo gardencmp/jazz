@@ -1,6 +1,9 @@
 import createMDX from "@next/mdx";
 import { visit, SKIP } from "unist-util-visit";
 import { getHighlighter } from "shiki";
+import withSlugs from "rehype-slug"
+import withToc from "@stefanprobst/rehype-extract-toc"
+import withTocExport from "@stefanprobst/rehype-extract-toc/mdx"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -17,7 +20,11 @@ const withMDX = createMDX({
     // Add markdown plugins here, as desired
     options: {
         remarkPlugins: [highlightPlugin, remarkHtmlToJsx],
-        rehypePlugins: [],
+        rehypePlugins: [
+            withSlugs,
+            withToc,
+            withTocExport,
+        ],
     },
 });
 
