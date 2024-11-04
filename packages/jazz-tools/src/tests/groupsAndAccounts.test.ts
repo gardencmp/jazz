@@ -116,5 +116,12 @@ describe("Group inheritance", () => {
 
         const mapAsReader = await TestMap.load(mapInParent.id, reader, {});
         expect(mapAsReader?.title).toBe("In Parent");
+
+        group.removeMember(reader);
+
+        mapInParent.title = "In Parent (updated)";
+
+        const mapAsReaderAfterUpdate = await TestMap.load(mapInParent.id, reader, {});
+        expect(mapAsReaderAfterUpdate?.title).toBe("In Parent");
     })
 })

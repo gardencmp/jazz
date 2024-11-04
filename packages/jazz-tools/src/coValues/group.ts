@@ -154,6 +154,11 @@ export class Group extends CoValueBase implements CoValue {
         return this;
     }
 
+    removeMember(member: Everyone | Account) {
+        this._raw.removeMember(member === "everyone" ? member : member._raw);
+        return this;
+    }
+
     get members() {
         return this._raw
             .keys()
