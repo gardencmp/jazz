@@ -1,5 +1,5 @@
-import { Account, AuthMethod, AuthResult, ID, Credentials } from "jazz-tools";
 import { AgentSecret } from "cojson";
+import { Account, AuthMethod, AuthResult, Credentials, ID } from "jazz-tools";
 
 const localStorageKey = "jazz-clerk-auth";
 
@@ -16,6 +16,16 @@ export type MinimalClerkClient = {
         }) => Promise<unknown>;
     } | null | undefined;
     signOut: () => Promise<void>;
+}
+
+function saveCredentialsToLocalStorage(credentials: Credentials) {
+    localStorage.setItem(
+        localStorageKey,
+        JSON.stringify({
+            accountID: credentials.accountID,
+            secret: credentials.secret,
+        }),
+    );
 }
 
 export class BrowserClerkAuth implements AuthMethod {
@@ -69,13 +79,10 @@ export class BrowserClerkAuth implements AuthMethod {
                         accountID,
                         secret,
                     }: Credentials) => {
-                        localStorage.setItem(
-                            localStorageKey,
-                            JSON.stringify({
-                                accountID,
-                                secret,
-                            }),
-                        );
+                        saveCredentialsToLocalStorage({
+                            accountID,
+                            secret,
+                        });
                     },
                     onSuccess: () => {},
                     onError: (error: string | Error) => {
@@ -99,13 +106,10 @@ export class BrowserClerkAuth implements AuthMethod {
                         accountID,
                         secret,
                     }: Credentials) => {
-                        localStorage.setItem(
-                            localStorageKey,
-                            JSON.stringify({
-                                accountID,
-                                secret,
-                            }),
-                        );
+                        saveCredentialsToLocalStorage({
+                            accountID,
+                            secret,
+                        });
                         await this.clerkClient.user?.update({
                             unsafeMetadata: {
                                 jazzAccountID: accountID,
