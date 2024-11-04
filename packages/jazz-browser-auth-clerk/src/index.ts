@@ -1,7 +1,7 @@
 import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 import { AgentSecret } from "cojson";
 
-type LocallyStoredCredentials = {
+type StoredCredentials = {
     accountID: ID<Account>;
     secret: AgentSecret;
 };
@@ -37,7 +37,7 @@ export class BrowserClerkAuth implements AuthMethod {
             try {
                 const credentials = JSON.parse(
                     locallyStoredCredentials,
-                ) as LocallyStoredCredentials;
+                ) as StoredCredentials;
                 return {
                     type: "existing",
                     credentials,
@@ -70,15 +70,15 @@ export class BrowserClerkAuth implements AuthMethod {
                             storedCredentials.jazzAccountID as ID<Account>,
                         secret: storedCredentials.jazzAccountSecret as AgentSecret,
                     },
-                    saveCredentials: async (credentials: {
-                        accountID: ID<Account>;
-                        secret: AgentSecret;
-                    }) => {
+                    saveCredentials: async ({
+                        accountID,
+                        secret,
+                    }: StoredCredentials) => {
                         localStorage.setItem(
                             localStorageKey,
                             JSON.stringify({
-                                accountID: credentials.accountID,
-                                secret: credentials.secret,
+                                accountID,
+                                secret,
                             }),
                         );
                     },
@@ -100,21 +100,21 @@ export class BrowserClerkAuth implements AuthMethod {
                             this.clerkClient.user.username ||
                             this.clerkClient.user.id,
                     },
-                    saveCredentials: async (credentials: {
-                        accountID: ID<Account>;
-                        secret: AgentSecret;
-                    }) => {
+                    saveCredentials: async ({
+                        accountID,
+                        secret,
+                    }: StoredCredentials) => {
                         localStorage.setItem(
                             localStorageKey,
                             JSON.stringify({
-                                accountID: credentials.accountID,
-                                secret: credentials.secret,
+                                accountID,
+                                secret,
                             }),
                         );
                         await this.clerkClient.user?.update({
                             unsafeMetadata: {
-                                jazzAccountID: credentials.accountID,
-                                jazzAccountSecret: credentials.secret,
+                                jazzAccountID: accountID,
+                                jazzAccountSecret: secret,
                             },
                         });
                     },
