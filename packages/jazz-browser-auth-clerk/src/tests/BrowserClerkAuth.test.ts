@@ -98,10 +98,12 @@ describe("BrowserClerkAuth", () => {
         it("should save credentials to localStorage", async () => {
             const auth = new BrowserClerkAuth(mockDriver, mockClerkClient);
             const result = await auth.start();
-            result.saveCredentials?.({
-                accountID: "test-account-id" as ID<Account>,
-                secret: "test-secret" as AgentSecret,
-            });
+            if (result.saveCredentials) {
+                await result.saveCredentials?.({
+                    accountID: "test-account-id" as ID<Account>,
+                    secret: "test-secret" as AgentSecret,
+                });
+            }
 
             expect(mockLocalStorage["jazz-clerk-auth"]).toBeDefined();
         });
