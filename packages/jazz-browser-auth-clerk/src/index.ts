@@ -30,33 +30,32 @@ export class BrowserClerkAuth implements AuthMethod {
     ) {}
 
     async start(): Promise<AuthResult> {
-        if (this.clerkClient.user) {
-            // Check local storage for credentials
-            const locallyStoredCredentials =
-                localStorage.getItem(localStorageKey);
+        // Check local storage for credentials
+        const locallyStoredCredentials = localStorage.getItem(localStorageKey);
 
-            if (locallyStoredCredentials) {
-                try {
-                    const credentials = JSON.parse(
-                        locallyStoredCredentials,
-                    ) as LocallyStoredCredentials;
-                    return {
-                        type: "existing",
-                        credentials,
-                        onSuccess: () => {},
-                        onError: (error: string | Error) => {
-                            this.driver.onError(error);
-                        },
-                        logOut: () => {
-                            localStorage.removeItem(localStorageKey);
-                            void this.clerkClient.signOut();
-                        },
-                    };
-                } catch (e) {
-                    console.error("Error parsing local storage credentials", e);
-                }
+        if (locallyStoredCredentials) {
+            try {
+                const credentials = JSON.parse(
+                    locallyStoredCredentials,
+                ) as LocallyStoredCredentials;
+                return {
+                    type: "existing",
+                    credentials,
+                    onSuccess: () => {},
+                    onError: (error: string | Error) => {
+                        this.driver.onError(error);
+                    },
+                    logOut: () => {
+                        localStorage.removeItem(localStorageKey);
+                        void this.clerkClient.signOut();
+                    },
+                };
+            } catch (e) {
+                console.error("Error parsing local storage credentials", e);
             }
+        }
 
+        if (this.clerkClient.user) {
             // Check clerk user metadata for credentials
             const storedCredentials = this.clerkClient.user.unsafeMetadata;
             if (storedCredentials.jazzAccountID) {
