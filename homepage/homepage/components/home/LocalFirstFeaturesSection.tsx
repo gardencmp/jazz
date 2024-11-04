@@ -1,12 +1,11 @@
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import {
     GaugeIcon,
     MonitorSmartphoneIcon,
     MousePointerSquareDashedIcon,
     WifiOffIcon,
 } from "lucide-react";
-import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
+import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 
 export function LocalFirstFeaturesSection() {
     const features = [
@@ -16,7 +15,7 @@ export function LocalFirstFeaturesSection() {
             description: (
                 <>
                     Your app works seamlessly offline or on sketchy connections.
-                    When you&apos;re online, your data is synced.
+                    When you&apos;re back online, your data is synced.
                 </>
             ),
         },
@@ -26,7 +25,8 @@ export function LocalFirstFeaturesSection() {
             description: (
                 <>
                     Since you&apos;re working with local state, your UI updates
-                    instantly. No spinners and API calls.
+                    instantly. Just mutate data the JSON object. No API calls
+                    and spinners.
                 </>
             ),
         },
@@ -46,46 +46,35 @@ export function LocalFirstFeaturesSection() {
             description: (
                 <>
                     Adding multiplayer is as easy as sharing state with other
-                    users.
+                    users. Quickly build user presence UI, like cursors.
                 </>
             ),
         },
     ];
     return (
-        <GappedGrid>
-            <div className="col-span-3">
-                <SectionHeader
-                    title="Why local-first?"
-                    slogan={
-                        <>
-                            <p>
-                                With local-first, your data is stored locally,
-                                then synced to the server. This comes with the
-                                following benefits.
-                            </p>
-                        </>
-                    }
-                />
-
-                <div className="mt-8 flex flex-col gap-6">
-                    {features.map(({ title, icon: Icon, description }) => (
-                        <div key={title} className="flex items-center gap-4">
-                            <Icon
-                                size={36}
-                                className="shrink-0  size-12 text-blue p-2 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900"
-                                strokeWidth={1.5}
-                            />
-                            <Prose>
-                                <p>
-                                    <strong>{title}</strong>. {description}
-                                </p>
-                            </Prose>
-                        </div>
-                    ))}
-                </div>
+        <div>
+            <SectionHeader
+                title="Why local-first?"
+                slogan={
+                    <>
+                        <p>
+                            With local-first, your data is stored locally, then
+                            synced to the server.<br/> This comes with the following
+                            benefits.
+                        </p>
+                    </>
+                }
+            />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+                {features.map(({ title, icon: Icon, description }) => (
+                    <LabelledFeatureIcon
+                        label={title}
+                        icon={Icon}
+                        explanation={description}
+                        key={title}
+                    ></LabelledFeatureIcon>
+                ))}
             </div>
-
-            <div className="h-full bg-stone-200 col-span-3" />
-        </GappedGrid>
+        </div>
     );
 }
