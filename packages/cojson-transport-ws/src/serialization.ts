@@ -8,7 +8,14 @@ export function addMessageToBacklog(backlog: string, message: SyncMessage) {
     return `${backlog}\n${JSON.stringify(message)}`;
 }
 
-export function deserializeMessages(messages: string)  {
+export function deserializeMessages(messages: unknown)  {
+    if (typeof messages !== "string") {
+        return {
+            ok: false,
+            error: new Error("Expected a string"),
+        } as const;
+    }
+
     try {
         return {
             ok: true,
