@@ -11,14 +11,16 @@ import {
 } from "cojson";
 import { Account, AccountClass, ID } from "../internal.js";
 
+export type Credentials = {
+    accountID: ID<Account>;
+    secret: AgentSecret;
+};
+
 export type AuthResult =
     | {
           type: "existing";
-          credentials: { accountID: ID<Account>; secret: AgentSecret };
-          saveCredentials?: (credentials: {
-              accountID: ID<Account>;
-              secret: AgentSecret;
-          }) => Promise<void>;
+          credentials: Credentials;
+          saveCredentials?: (credentials: Credentials) => Promise<void>;
           onSuccess: () => void;
           onError: (error: string | Error) => void;
           logOut: () => void;
@@ -27,10 +29,7 @@ export type AuthResult =
           type: "new";
           creationProps: { name: string };
           initialSecret?: AgentSecret;
-          saveCredentials: (credentials: {
-              accountID: ID<Account>;
-              secret: AgentSecret;
-          }) => Promise<void>;
+          saveCredentials: (credentials: Credentials) => Promise<void>;
           onSuccess: () => void;
           onError: (error: string | Error) => void;
           logOut: () => void;
@@ -174,10 +173,13 @@ export async function createJazzContext<Acc extends Account>(
 
                     const account = AccountSchema.fromNode(node);
 
-                    await authResult.saveCredentials?.({
-                        accountID: node.account.id as unknown as ID<Account>,
-                        secret: node.account.agentSecret,
-                    });
+                    if (authResult.saveCredentials) {
+                        await authResult.saveCredentials({
+                            accountID: node.account
+                                .id as unknown as ID<Account>,
+                            secret: node.account.agentSecret,
+                        });
+                    }
 
                     authResult.onSuccess();
 

@@ -1,10 +1,5 @@
-import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
+import { Account, AuthMethod, AuthResult, ID, Credentials } from "jazz-tools";
 import { AgentSecret } from "cojson";
-
-type StoredCredentials = {
-    accountID: ID<Account>;
-    secret: AgentSecret;
-};
 
 const localStorageKey = "jazz-clerk-auth";
 
@@ -37,7 +32,7 @@ export class BrowserClerkAuth implements AuthMethod {
             try {
                 const credentials = JSON.parse(
                     locallyStoredCredentials,
-                ) as StoredCredentials;
+                ) as Credentials;
                 return {
                     type: "existing",
                     credentials,
@@ -73,7 +68,7 @@ export class BrowserClerkAuth implements AuthMethod {
                     saveCredentials: async ({
                         accountID,
                         secret,
-                    }: StoredCredentials) => {
+                    }: Credentials) => {
                         localStorage.setItem(
                             localStorageKey,
                             JSON.stringify({
@@ -103,7 +98,7 @@ export class BrowserClerkAuth implements AuthMethod {
                     saveCredentials: async ({
                         accountID,
                         secret,
-                    }: StoredCredentials) => {
+                    }: Credentials) => {
                         localStorage.setItem(
                             localStorageKey,
                             JSON.stringify({
