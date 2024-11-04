@@ -221,14 +221,15 @@ export function createJazzVueApp<Acc extends Account>({
             return {
                 me: computed(() =>
                     depth === undefined
-                        ? me.value || (context.value as BrowserContext<Acc>).me
+                        ? me.value ||
+                          toRaw((context.value as BrowserContext<Acc>).me)
                         : me.value,
                 ),
             };
         } else {
             return {
-                me: computed(
-                    () => (context.value as BrowserGuestContext).guest,
+                me: computed(() =>
+                    toRaw((context.value as BrowserGuestContext).guest),
                 ),
             };
         }
@@ -305,7 +306,7 @@ export function createJazzVueApp<Acc extends Account>({
 
         const runInviteAcceptance = () => {
             const result = consumeInviteLinkFromWindowLocation({
-                as: (context.value as BrowserContext<Acc>).me,
+                as: toRaw((context.value as BrowserContext<Acc>).me),
                 invitedObjectSchema,
                 forValueHint,
             });
