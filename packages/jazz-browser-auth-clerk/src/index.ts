@@ -1,6 +1,13 @@
 import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 import { AgentSecret } from "cojson";
 
+type LocallyStoredCredentials = {
+    accountID: ID<Account>;
+    secret: AgentSecret;
+};
+
+const localStorageKey = "jazz-clerk-auth";
+
 export type MinimalClerkClient = {
     user: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +31,33 @@ export class BrowserClerkAuth implements AuthMethod {
 
     async start(): Promise<AuthResult> {
         if (this.clerkClient.user) {
+            // Check local storage for credentials
+            const locallyStoredCredentials =
+                localStorage.getItem(localStorageKey);
+
+            if (locallyStoredCredentials) {
+                try {
+                    const credentials = JSON.parse(
+                        locallyStoredCredentials,
+                    ) as LocallyStoredCredentials;
+                    return {
+                        type: "existing",
+                        credentials,
+                        onSuccess: () => {},
+                        onError: (error: string | Error) => {
+                            this.driver.onError(error);
+                        },
+                        logOut: () => {
+                            localStorage.removeItem(localStorageKey);
+                            void this.clerkClient.signOut();
+                        },
+                    };
+                } catch (e) {
+                    console.error("Error parsing local storage credentials", e);
+                }
+            }
+
+            // Check clerk user metadata for credentials
             const storedCredentials = this.clerkClient.user.unsafeMetadata;
             if (storedCredentials.jazzAccountID) {
                 if (!storedCredentials.jazzAccountSecret) {
@@ -45,6 +79,7 @@ export class BrowserClerkAuth implements AuthMethod {
                     },
                 };
             } else {
+                // No credentials found, so we need to create new credentials
                 return {
                     type: "new",
                     creationProps: {
@@ -74,6 +109,7 @@ export class BrowserClerkAuth implements AuthMethod {
                 };
             }
         } else {
+            // Clerk user not found, so we can't authenticate
             throw new Error("Not signed in");
         }
     }
