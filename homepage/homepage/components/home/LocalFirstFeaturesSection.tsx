@@ -59,8 +59,8 @@ export function LocalFirstFeaturesSection() {
                     <>
                         <p>
                             With local-first, your data is stored locally, then
-                            synced to the server.<br/> This comes with the following
-                            benefits.
+                            synced to the server.
+                            <br /> This comes with the following benefits.
                         </p>
                     </>
                 }
