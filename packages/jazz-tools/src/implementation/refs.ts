@@ -12,8 +12,7 @@ import {
     isRefEncoded,
     subscriptionsScopes,
 } from "../internal.js";
-
-const refCache = new WeakMap<RawCoValue, CoValue>();
+import { coValuesCache } from "../lib/cache.js";
 
 const TRACE_ACCESSES = false;
 
@@ -35,14 +34,9 @@ export class Ref<out V extends CoValue> {
                 : this.controlledAccount._raw.core.node;
         const raw = node.getLoaded(this.id as unknown as CoID<RawCoValue>);
         if (raw) {
-            let value = refCache.get(raw);
-            if (value) {
-                // console.log("Using cached value for " + this.id);
-            } else {
-                value = instantiateRefEncoded(this.schema, raw);
-                refCache.set(raw, value);
-            }
-            return value as V;
+            return coValuesCache.get(raw, () =>
+                instantiateRefEncoded(this.schema, raw),
+            );
         } else {
             return null;
         }
