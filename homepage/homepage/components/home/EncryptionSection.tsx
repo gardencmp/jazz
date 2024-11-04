@@ -32,7 +32,7 @@ function Illustration() {
     return (
         <div
             aria-hidden
-            className="z-0 order-1 text-sm relative overflow-hidden flex items-center justify-center"
+            className="z-0 order-first py-4 text-sm relative overflow-hidden flex items-center md:py-0 md:justify-center md:order-last"
         >
             <div className="z-0 opacity-60 w-full h-full absolute top-0 -right-5 font-mono break-all text-stone-300 tracking-[0.5em] dark:text-stone-800">
                 {randomChars.map((char, index) =>
@@ -50,7 +50,7 @@ function Illustration() {
             </div>
 
             <svg
-                className="size-20 z-30"
+                className="size-16 md:size-20 z-30"
                 xmlns="http://www.w3.org/2000/svg"
                 width="54"
                 height="70"
@@ -113,8 +113,8 @@ function Illustration() {
 export function EncryptionSection() {
     return (
         <div className="border rounded-xl bg-stone-50 shadow-sm overflow-hidden dark:bg-stone-925">
-            <div className="flex grid md:grid-cols-3 gap-2 md:gap-3">
-                <div className="md:col-span-2 p-4 md:p-8">
+            <div className="flex grid md:grid-cols-3 md:gap-3">
+                <div className="md:col-span-2 px-4 pb-4 md:p-8">
                     <H3 className="mb-0 text-balance">
                         End-to-end encrypted and tamper-proof
                     </H3>

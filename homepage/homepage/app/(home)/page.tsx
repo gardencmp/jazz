@@ -36,6 +36,8 @@ export default function Home() {
 
                 <CollaborationFeaturesSection />
 
+                <EncryptionSection />
+
                 <Testimonial name="Serious Adopter #1" role="Lead Developer">
                     We just wanted to build a single-player experience first,
                     planning to add team and org features much later. But
@@ -44,8 +46,6 @@ export default function Home() {
                         All we needed to add was an invite button.
                     </span>
                 </Testimonial>
-
-                <EncryptionSection />
 
                 <FeaturesSection />
 
