@@ -82,7 +82,7 @@ export function EncryptionSection() {
                             Instead of trusting centralised authorisation, Jazz
                             uses public-key cryptography. Your edits are
                             encrypted and signed on-device, verifiable by
-                            everyone and readable only to those given access.
+                            everyone and readable only by those given access.
                         </p>
                     </Prose>
                 </div>

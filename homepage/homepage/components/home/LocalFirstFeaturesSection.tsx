@@ -25,8 +25,7 @@ export function LocalFirstFeaturesSection() {
             description: (
                 <>
                     Since you&apos;re working with local state, your UI updates
-                    instantly. Just mutate data the JSON object. No API calls
-                    and spinners.
+                    instantly. Just mutate data. No API calls and spinners.
                 </>
             ),
         },
@@ -45,8 +44,8 @@ export function LocalFirstFeaturesSection() {
             icon: MousePointerSquareDashedIcon,
             description: (
                 <>
-                    Adding multiplayer is as easy as sharing state with other
-                    users. Quickly build user presence UI, like cursors.
+                    Adding multiplayer is as easy as sharing synced data with
+                    other users. Quickly build user presence UI, like cursors.
                 </>
             ),
         },

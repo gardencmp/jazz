@@ -59,8 +59,8 @@ const features = [
         description: (
             <>
                 Using Jazz&apos;s <code>ImageDefinition</code> component, you
-                get progressive image loading, super fast blur preview, and
-                image size info.
+                get progressive image up & downloading, super fast blur preview,
+                and image size info.
             </>
         ),
         illustration: (
@@ -86,8 +86,8 @@ const features = [
         icon: ImageIcon,
         description: (
             <>
-                Subscribe to Jazz state and update existing databases or
-                third-party APIs. Or expose an HTTP API that mutates Jazz state.
+                Expose an HTTP API that mutates Jazz state. Or subscribe to Jazz
+                state and update existing databases or third-party APIs.
             </>
         ),
         illustration: <ServerWorkersDiagram className="pt-8 w-auto" />,
@@ -97,7 +97,7 @@ const features = [
         icon: UserIcon,
         description: (
             <>
-                Plug and play different kinds of auth like WebAuthN (Touch ID,
+                Plug and play different kinds of auth like Passkeys (Touch ID,
                 Face ID), and Clerk. Auth0, Okta, NextAuth coming soon.
             </>
         ),
@@ -155,14 +155,14 @@ export function FeaturesSection() {
                             infrastructure that scales your Jazz app up to
                             millions of users.{" "}
                             <strong>
-                                Easy setup, no configuration needed.
+                                Instant setup, no configuration needed.
                             </strong>
                         </p>
                     </Prose>
                     <ul className="flex flex-col sm:flex-row gap-4 text-sm">
                         {[
-                            "Blob storage",
-                            "Data storage",
+                            "Data & blob storage",
+                            "Global sync",
                             "No limits for public alpha",
                         ].map((feature) => (
                             <li
@@ -178,11 +178,11 @@ export function FeaturesSection() {
                     </ul>
                     <div className="flex items-center flex-wrap gap-x-5 flex-wrap gap-y-3">
                         <Button href="/cloud" variant="primary">
-                            View full pricing
+                            View free tier & pricing
                         </Button>
                     </div>
                     <Prose size="sm">
-                        You can rely on us, or{" "}
+                        Or{" "}
                         <Link href="/docs/sync-and-storage#running-your-own">
                             self-host
                         </Link>
