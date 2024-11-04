@@ -15,6 +15,10 @@ export type AuthResult =
     | {
           type: "existing";
           credentials: { accountID: ID<Account>; secret: AgentSecret };
+          saveCredentials: (credentials: {
+            accountID: ID<Account>;
+            secret: AgentSecret;
+          }) => Promise<void>;
           onSuccess: () => void;
           onError: (error: string | Error) => void;
           logOut: () => void;
@@ -44,6 +48,7 @@ export const fixedCredentialsAuth = (credentials: {
         start: async () => ({
             type: "existing",
             credentials,
+            saveCredentials: async () => {},
             onSuccess: () => {},
             onError: () => {},
             logOut: () => {},
@@ -168,6 +173,12 @@ export async function createJazzContext<Acc extends Account>(
                     });
 
                     const account = AccountSchema.fromNode(node);
+
+                    await authResult.saveCredentials({
+                        accountID: node.account.id as unknown as ID<Account>,
+                        secret: node.account.agentSecret,
+                    });
+
                     authResult.onSuccess();
 
                     return {

@@ -41,6 +41,7 @@ export class BrowserClerkAuth implements AuthMethod {
                 return {
                     type: "existing",
                     credentials,
+                    saveCredentials: async () => {}, // No need to save credentials when recovering from local storage
                     onSuccess: () => {},
                     onError: (error: string | Error) => {
                         this.driver.onError(error);
@@ -69,6 +70,18 @@ export class BrowserClerkAuth implements AuthMethod {
                             storedCredentials.jazzAccountID as ID<Account>,
                         secret: storedCredentials.jazzAccountSecret as AgentSecret,
                     },
+                    saveCredentials: async (credentials: {
+                        accountID: ID<Account>;
+                        secret: AgentSecret;
+                    }) => {
+                        localStorage.setItem(
+                            localStorageKey,
+                            JSON.stringify({
+                                accountID: credentials.accountID,
+                                secret: credentials.secret,
+                            }),
+                        );
+                    },
                     onSuccess: () => {},
                     onError: (error: string | Error) => {
                         this.driver.onError(error);
@@ -91,6 +104,13 @@ export class BrowserClerkAuth implements AuthMethod {
                         accountID: ID<Account>;
                         secret: AgentSecret;
                     }) => {
+                        localStorage.setItem(
+                            localStorageKey,
+                            JSON.stringify({
+                                accountID: credentials.accountID,
+                                secret: credentials.secret,
+                            }),
+                        );
                         await this.clerkClient.user?.update({
                             unsafeMetadata: {
                                 jazzAccountID: credentials.accountID,
