@@ -35,13 +35,13 @@ const features = [
                     </code>
                 </pre>
 
-                <div className="w-full bg-white rounded-md py-3 px-3 flex gap-4 items-center border rounded-xl shadow-lg shadow-stone-500/10">
+                <div className="w-full bg-white rounded-md py-3 px-3 flex gap-4 items-center border rounded-xl shadow-lg shadow-stone-500/10 dark:bg-stone-925">
                     <FileTextIcon
                         size={32}
                         strokeWidth={1}
-                        className="text-blue dark:text-white"
+                        className="text-blue dark:text-blue-500"
                     />
-                    <div className="text-2xl flex-1 text-blue dark:text-white">
+                    <div className="text-2xl flex-1 text-blue dark:text-blue-500">
                         file.pdf
                     </div>
                     <TrashIcon

@@ -55,7 +55,7 @@ export function CollaborationFeaturesSection() {
                                 <p>{description}</p>
                             </Prose>
                         </div>
-                        <pre className="flex-1 text-sm border-t border-x rounded-t-lg bg-stone-50 dark:bg-stone-900">
+                        <pre className="flex-1 text-sm border-t border-x rounded-t-lg bg-stone-50 dark:bg-stone-925">
                             <CodeSample />
                         </pre>
                     </div>

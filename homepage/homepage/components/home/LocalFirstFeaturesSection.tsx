@@ -6,7 +6,6 @@ import {
     MousePointerSquareDashedIcon,
     WifiOffIcon,
 } from "lucide-react";
-import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
 export function LocalFirstFeaturesSection() {
@@ -87,18 +86,6 @@ export function LocalFirstFeaturesSection() {
             </div>
 
             <div className="h-full bg-stone-200 col-span-3" />
-
-            {/*<GappedGrid>*/}
-            {/*    {features.map(({ title, icon: Icon, description }) => (*/}
-            {/*        <LabelledFeatureIcon*/}
-            {/*            className="col-span-2"*/}
-            {/*            key={title}*/}
-            {/*            label={title}*/}
-            {/*            icon={Icon}*/}
-            {/*            explanation={description}*/}
-            {/*        />*/}
-            {/*    ))}*/}
-            {/*</GappedGrid>*/}
         </GappedGrid>
     );
 }

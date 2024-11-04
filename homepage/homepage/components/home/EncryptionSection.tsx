@@ -34,12 +34,15 @@ function Illustration() {
             aria-hidden
             className="z-0 order-1 text-sm relative overflow-hidden flex items-center justify-center"
         >
-            <div className="z-0 opacity-60 w-full h-full absolute top-0 -right-5 font-mono break-all text-stone-300 tracking-[0.5em]">
+            <div className="z-0 opacity-60 w-full h-full absolute top-0 -right-5 font-mono break-all text-stone-300 tracking-[0.5em] dark:text-stone-800">
                 {randomChars.map((char, index) =>
                     index % 2 === 0 ? (
                         <span key={index}>{char}</span>
                     ) : (
-                        <span key={index} className="text-stone-600">
+                        <span
+                            key={index}
+                            className="text-stone-600 dark:text-stone-700"
+                        >
                             {char}
                         </span>
                     ),
@@ -99,32 +102,20 @@ function Illustration() {
                 </defs>
             </svg>
 
-            <div className="w-20 h-full bg-gradient-to-r from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-950"></div>
-            <div className="h-20 w-full bg-gradient-to-b from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-950"></div>
-            <div className="h-20 w-full bg-gradient-to-t from-stone-50 to-transparent absolute bottom-0 left-0 z-10 dark:from-stone-950"></div>
-            <div className="w-20 h-full bg-gradient-to-l from-stone-50 to-transparent absolute top-0 right-0 z-10 dark:from-stone-950"></div>
+            <div className="w-20 h-full bg-gradient-to-r from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
+            <div className="h-20 w-full bg-gradient-to-b from-stone-50 to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
+            <div className="h-20 w-full bg-gradient-to-t from-stone-50 to-transparent absolute bottom-0 left-0 z-10 dark:from-stone-925"></div>
+            <div className="w-20 h-full bg-gradient-to-l from-stone-50 to-transparent absolute top-0 right-0 z-10 dark:from-stone-925"></div>
         </div>
     );
 }
 
 export function EncryptionSection() {
     return (
-        <div className="border rounded-xl bg-stone-50 shadow-sm overflow-hidden">
+        <div className="border rounded-xl bg-stone-50 shadow-sm overflow-hidden dark:bg-stone-925">
             <div className="flex grid md:grid-cols-3 gap-2 md:gap-3">
-                {/*<svg*/}
-                {/*    className="text-blue w-12 md:w-36 h-auto order-2"*/}
-                {/*    xmlns="http://www.w3.org/2000/svg"*/}
-                {/*    width="1em"*/}
-                {/*    height="1em"*/}
-                {/*    viewBox="0 0 20 20"*/}
-                {/*>*/}
-                {/*    <path*/}
-                {/*        fill="currentColor"*/}
-                {/*        d="M10.277 2.084a.5.5 0 0 0-.554 0a15.05 15.05 0 0 1-6.294 2.421A.5.5 0 0 0 3 5v4.5c0 3.891 2.307 6.73 6.82 8.467a.5.5 0 0 0 .36 0C14.693 16.23 17 13.39 17 9.5V5a.5.5 0 0 0-.43-.495a15.05 15.05 0 0 1-6.293-2.421M11.5 9a1.5 1.5 0 0 1-1 1.415V12.5a.5.5 0 0 1-1 0v-2.085A1.5 1.5 0 1 1 11.5 9"*/}
-                {/*    />*/}
-                {/*</svg>*/}
                 <div className="md:col-span-2 p-4 md:p-8">
-                    <H3 className="mb-0 !text-blue text-balance dark:text-white">
+                    <H3 className="mb-0 text-balance">
                         End-to-end encrypted and tamper-proof
                     </H3>
 
