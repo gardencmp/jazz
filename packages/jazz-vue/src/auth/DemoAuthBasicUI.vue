@@ -58,7 +58,7 @@
   
   <script setup lang="ts">
   import { ref, computed } from 'vue';
-  import { DemoAuthState } from './useDemoAuth';
+  import { DemoAuthState } from './useDemoAuth.js';
 
   const props = defineProps<{
     appName: string;
@@ -71,15 +71,16 @@
   const darkMode = computed(() => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const containerStyle = computed(() => ({
-    minHeight: '100%',
+    minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'center',
-    width: '18rem',
-    padding: '1rem 0',
-    maxWidth: 'calc(100vw - 2rem)',
+    alignItems: 'center',
+    width: '100%',
+    padding: '1rem',
+    maxWidth: '100vw',
     gap: '2rem',
-    margin: '0 auto',
+    margin: '0',
     ...(darkMode.value ? { background: '#000' } : {}),
   }));
 

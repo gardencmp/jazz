@@ -13,6 +13,8 @@
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^5.1.4",
+        "@vue/eslint-config-typescript": "^14.0.0",
+        "eslint-plugin-vue": "^9.28.0",
         "typescript": "^5.3.3",
         "vite": "^5.4.9",
         "vite-plugin-dts": "^4.2.4",
