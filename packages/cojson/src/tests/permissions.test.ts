@@ -2309,6 +2309,55 @@ test("When rotating the key of a parent group, the keys of all child groups are 
     expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
 });
 
+test("When rotating the key of a grand-parent group, the keys of all child and grand-child groups are also rotated", () => {
+    const {group, node} = newGroupHighLevel();
+    const grandParentGroup = node.createGroup();
+    const parentGroup = node.createGroup();
+
+    grandParentGroup.set(`child_${parentGroup.id}`, "extend", "trusting");
+    parentGroup.set(`child_${group.id}`, "extend", "trusting");
+    parentGroup.set(`parent_${grandParentGroup.id}`, "extend", "trusting");
+    group.set(`parent_${grandParentGroup.id}`, "extend", "trusting");
+
+    const currentGrandParentReadKeyID = grandParentGroup.get('readKey');
+    if (!currentGrandParentReadKeyID) {
+        throw new Error("Can't get grand-parent group read key");
+    }
+
+    const currentParentReadKeyID = parentGroup.get('readKey');
+    if (!currentParentReadKeyID) {
+        throw new Error("Can't get parent group read key");
+    }
+
+    const currentChildReadKeyID = group.get('readKey');
+    if (!currentChildReadKeyID) {
+        throw new Error("Can't get group read key");
+    }
+
+    grandParentGroup.rotateReadKey();
+
+    const newGrandParentReadKeyID = grandParentGroup.get('readKey');
+    if (!newGrandParentReadKeyID) {
+        throw new Error("Can't get new grand-parent group read key");
+    }
+
+    expect(newGrandParentReadKeyID).not.toEqual(currentGrandParentReadKeyID);
+
+    const newParentReadKeyID = expectGroup(parentGroup.core.getCurrentContent()).get('readKey');
+    if (!newParentReadKeyID) {
+        throw new Error("Can't get new parent group read key");
+    }
+
+    expect(newParentReadKeyID).not.toEqual(currentParentReadKeyID);
+
+    const newChildReadKeyID = expectGroup(group.core.getCurrentContent()).get('readKey');
+    if (!newChildReadKeyID) {
+        throw new Error("Can't get new group read key");
+    }
+
+    expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
+});
+
 test("Calling extend on group sets up parent and child references and reveals child key to parent", () => {
     const {group, node} = newGroupHighLevel();
     const parentGroup = node.createGroup();
