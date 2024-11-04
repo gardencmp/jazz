@@ -1,8 +1,7 @@
 import {
     FileLock2Icon,
     GaugeIcon,
-    KeyRoundIcon,
-    LucideIcon,
+    LockKeyholeIcon,
     MonitorSmartphoneIcon,
     MousePointerSquareDashedIcon,
     UploadCloudIcon,
@@ -39,7 +38,7 @@ const features = [
     },
     {
         title: "E2E encryption",
-        icon: KeyRoundIcon,
+        icon: LockKeyholeIcon,
     },
     {
         title: "Authentication",
