@@ -1,5 +1,11 @@
 # jazz-tools
 
+## 0.8.13
+
+### Patch Changes
+
+-   fd011d7: Add a cache layer on the loadedAs account reads
+
 ## 0.8.12
 
 ### Patch Changes
