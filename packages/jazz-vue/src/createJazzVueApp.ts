@@ -95,7 +95,6 @@ export function createJazzVueApp<Acc extends Account>({
 
             onMounted(async () => {
                 try {
-                    console.log("props.auth", props.auth);
                     const context = await createJazzBrowserContext<Acc>(
                         props.auth === "guest"
                             ? { peer: props.peer, storage: props.storage }
