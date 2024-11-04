@@ -2404,6 +2404,44 @@ test("Calling extend on group sets up parent and child references and reveals ch
     expect(childContentAsReader.get("foo")).toEqual("bar");
 })
 
+test("Calling extend to create grand-child groups parent and child references and reveals child key to parent(s)", () => {
+    const {group, node} = newGroupHighLevel();
+    const parentGroup = node.createGroup();
+    const grandParentGroup = node.createGroup();
+
+    group.extend(parentGroup);
+    parentGroup.extend(grandParentGroup);
+
+    expect(group.get(`parent_${parentGroup.id}`)).toEqual("extend");
+    expect(parentGroup.get(`parent_${grandParentGroup.id}`)).toEqual("extend");
+    expect(parentGroup.get(`child_${group.id}`)).toEqual("extend");
+    expect(grandParentGroup.get(`child_${parentGroup.id}`)).toEqual("extend");
+
+    const reader = node.createAccount();
+    grandParentGroup.addMember(reader, "reader");
+
+    const childObject = node.createCoValue({
+        type: "comap",
+        ruleset: { type: "ownedByGroup", group: group.id },
+        meta: null,
+        ...Crypto.createdNowUnique(),
+    });
+    const childMap = expectMap(childObject.getCurrentContent());
+
+    childMap.set("foo", "bar", "private");
+
+    const childContentAsReader = expectMap(
+        childObject
+            .testWithDifferentAccount(
+                reader,
+                Crypto.newRandomSessionID(reader.id),
+            )
+            .getCurrentContent(),
+    );
+
+    expect(childContentAsReader.get("foo")).toEqual("bar");
+});
+
 test("High-level permissions work correctly when a group is extended", () => {
     const {group, node} = newGroupHighLevel();
     const parentGroup = node.createGroup();
