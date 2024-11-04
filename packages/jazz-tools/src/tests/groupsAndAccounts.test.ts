@@ -112,16 +112,48 @@ describe("Group inheritance", () => {
 
         parentGroup.addMember(reader, "reader");
 
-        const mapInParent = TestMap.create({ title: "In Parent" }, { owner: parentGroup });
+        const mapInChild = TestMap.create({ title: "In Child" }, { owner: group });
 
-        const mapAsReader = await TestMap.load(mapInParent.id, reader, {});
-        expect(mapAsReader?.title).toBe("In Parent");
+        const mapAsReader = await TestMap.load(mapInChild.id, reader, {});
+        expect(mapAsReader?.title).toBe("In Child");
 
         parentGroup.removeMember(reader);
 
-        mapInParent.title = "In Parent (updated)";
+        mapInChild.title = "In Child (updated)";
 
-        const mapAsReaderAfterUpdate = await TestMap.load(mapInParent.id, reader, {});
-        expect(mapAsReaderAfterUpdate?.title).toBe("In Parent");
+        const mapAsReaderAfterUpdate = await TestMap.load(mapInChild.id, reader, {});
+        expect(mapAsReaderAfterUpdate?.title).toBe("In Child (updated)");
+    })
+
+    test("Group inheritance with grand-children", async () => {
+        const me = await Account.create({
+            creationProps: { name: "Hermes Puggington" },
+            crypto: Crypto,
+        });
+
+        const grandParentGroup = Group.create({ owner: me });
+        const parentGroup = Group.create({ owner: me });
+        const group = Group.create({ owner: me });
+
+        group.extend(parentGroup);
+        parentGroup.extend(grandParentGroup);
+
+        const reader = await Account.createAs(me, {
+            creationProps: { name: "Reader" },
+        });
+
+        grandParentGroup.addMember(reader, "reader");
+
+        const mapInGrandChild = TestMap.create({ title: "In Grand Child" }, { owner: group });
+
+        const mapAsReader = await TestMap.load(mapInGrandChild.id, reader, {});
+        expect(mapAsReader?.title).toBe("In Grand Child");
+
+        grandParentGroup.removeMember(reader);
+
+        mapInGrandChild.title = "In Grand Child (updated)";
+
+        const mapAsReaderAfterUpdate = await TestMap.load(mapInGrandChild.id, reader, {});
+        expect(mapAsReaderAfterUpdate?.title).toBe("In Grand Child (updated)");
     })
 })
