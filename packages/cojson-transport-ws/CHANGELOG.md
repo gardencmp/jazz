@@ -1,5 +1,11 @@
 # cojson-transport-nodejs-ws
 
+## 0.8.13
+
+### Patch Changes
+
+-   e0dd006: Add the onClose handler and improve the closing operation
+
 ## 0.8.12
 
 ### Patch Changes

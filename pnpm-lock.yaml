@@ -52,10 +52,10 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -147,13 +147,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       next:
         specifier: 14.2.5
@@ -226,10 +226,10 @@ importers:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -338,13 +338,13 @@ importers:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -728,7 +728,7 @@ importers:
         specifier: workspace:0.8.12
         version: link:../../packages/cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/cojson-transport-ws
       hash-slash:
         specifier: workspace:0.2.1
@@ -825,10 +825,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -901,10 +901,10 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -980,13 +980,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1056,7 +1056,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
@@ -1094,10 +1094,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1303,10 +1303,10 @@ importers:
         specifier: workspace:0.8.12
         version: link:../cojson-storage-indexeddb
       cojson-transport-ws:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1318,10 +1318,10 @@ importers:
         specifier: workspace:0.8.12
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
     devDependencies:
       typescript:
@@ -1337,10 +1337,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
@@ -1359,10 +1359,10 @@ importers:
         specifier: workspace:0.8.12
         version: link:../cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1384,10 +1384,10 @@ importers:
         specifier: workspace:0.8.12
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1409,13 +1409,13 @@ importers:
         specifier: workspace:0.8.12
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-react
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
       react:
         specifier: 18.3.1
@@ -1505,13 +1505,13 @@ importers:
         specifier: workspace:0.8.12
         version: link:../cojson-storage-sqlite
       cojson-transport-ws:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../cojson-transport-ws
       effect:
         specifier: ^3.6.5
         version: 3.6.5
       jazz-tools:
-        specifier: workspace:0.8.12
+        specifier: workspace:0.8.13
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -2751,17 +2751,11 @@ packages:
   '@expo/code-signing-certificates@0.0.5':
     resolution: {integrity: sha512-BNhXkY1bblxKZpltzAx98G2Egj9g1Q+JRcvR7E99DOj862FTCX+ZPsAUtPTr7aHxwtrL7+fL3r0JSmM9kBm+Bw==}
 
-  '@expo/config-plugins@7.2.5':
-    resolution: {integrity: sha512-w+5ccu1IxBHgyQk9CPFKLZOk8yZQEyTjbJwOzESK1eR7QwosbcsLkN1c1WWUZYiCXwORu3UTwJYll4+X2xxJhQ==}
-
   '@expo/config-plugins@8.0.10':
     resolution: {integrity: sha512-KG1fnSKRmsudPU9BWkl59PyE0byrE2HTnqbOrgwr2FAhqh7tfr9nRs6A9oLS/ntpGzmFxccTEcsV0L4apsuxxg==}
 
   '@expo/config-plugins@8.0.9':
     resolution: {integrity: sha512-dNCG45C7BbDPV9MdWvCbsFtJtVn4w/TJbb5b7Yr6FA8HYIlaaVM0wqUMzTPmGj54iYXw8X/Vge8uCPxg7RWgeA==}
-
-  '@expo/config-types@49.0.0':
-    resolution: {integrity: sha512-8eyREVi+K2acnMBe/rTIu1dOfyR2+AMnTLHlut+YpMV9OZPdeKV0Bs9BxAewGqBA2slslbQ9N39IS2CuTKpXkA==}
 
   '@expo/config-types@51.0.2':
     resolution: {integrity: sha512-IglkIoiDwJMY01lYkF/ZSBoe/5cR+O3+Gx6fpLFjLfgZGBTdyPkKa1g8NWoWQCk+D3cKL2MDbszT2DyRRB0YqQ==}
@@ -2784,9 +2778,6 @@ packages:
   '@expo/image-utils@0.5.1':
     resolution: {integrity: sha512-U/GsFfFox88lXULmFJ9Shfl2aQGcwoKPF7fawSCLixIKtMCpsI+1r0h+5i0nQnmt9tHuzXZDL8+Dg1z6OhkI9A==}
 
-  '@expo/json-file@8.2.37':
-    resolution: {integrity: sha512-YaH6rVg11JoTS2P6LsW7ybS2CULjf40AbnAHw2F1eDPuheprNjARZMnyHFPkKv7GuxCy+B9GPcbOKgc4cgA80Q==}
-
   '@expo/json-file@8.3.3':
     resolution: {integrity: sha512-eZ5dld9AD0PrVRiIWpRkm5aIoWBw3kAyd8VkuWEy92sEthBKDDDHAnK2a0dw0Eil6j7rK7lS/Qaq/Zzngv2h5A==}
 
@@ -2804,9 +2795,6 @@ packages:
 
   '@expo/package-manager@1.5.2':
     resolution: {integrity: sha512-IuA9XtGBilce0q8cyxtWINqbzMB1Fia0Yrug/O53HNuRSwQguV/iqjV68bsa4z8mYerePhcFgtvISWLAlNEbUA==}
-
-  '@expo/plist@0.0.20':
-    resolution: {integrity: sha512-UXQ4LXCfTZ580LDHGJ5q62jSTwJFFJ1GqBu8duQMThiHKWbMJ+gajJh6rsB6EJ3aLUr9wcauxneL5LVRFxwBEA==}
 
   '@expo/plist@0.1.3':
     resolution: {integrity: sha512-GW/7hVlAylYg1tUrEASclw1MMk9FP4ZwyFAY/SUTJIhPDQHtfOlXREyWV3hhrHdX/K+pS73GNgdfT6E/e+kBbg==}
@@ -3322,7 +3310,7 @@ packages:
   '@radix-ui/react-compose-refs@1.1.0':
     resolution: {integrity: sha512-b4inOtiaOnYf9KWyO3jAeeCG6FeyfY6ldiEPanbUjWd+xIk5wZeHa8yVwmrJ2vderhu/BQvzCrJI0lHd+wIiqw==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -3406,8 +3394,8 @@ packages:
   '@radix-ui/react-focus-scope@1.1.0':
     resolution: {integrity: sha512-200UD8zylvEyL8Bx+z76RJnASR2gRMuxlgFCPAe/Q/679a/r0eK3MBVYMb7vZODZcffZBdob1EGnky78xmVvcA==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3419,7 +3407,7 @@ packages:
   '@radix-ui/react-id@1.1.0':
     resolution: {integrity: sha512-EJUrI8yYh7WOjNOqpoJaf1jlFIH2LvtgAl+YcFqNCa+4hj64ZXmPkAKOFs/ukjz3byN6bdb/AVUqHkI8/uWWMA==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -3441,8 +3429,8 @@ packages:
   '@radix-ui/react-popper@1.2.0':
     resolution: {integrity: sha512-ZnRMshKF43aBxVWPWvbj21+7TQCvhuULWJ4gNIKYpRlQt5xGRhLx66tMp8pya2UkGHTSlhpXwmjqltDYHhw7Vg==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3519,8 +3507,8 @@ packages:
   '@radix-ui/react-primitive@2.0.0':
     resolution: {integrity: sha512-ZSpFm0/uHa8zTvKBDjLFWLo8dkr4MBsiDLz0g3gMUwqgLHz9rTaRRGYDgvZPtBJgYCBKXkS9fzmoySgr8CO6Cw==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3803,9 +3791,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@babel/core': '*'
-
-  '@react-native/normalize-color@2.1.0':
-    resolution: {integrity: sha512-Z1jQI2NpdFJCVgpY+8Dq/Bt3d+YUi1928Q+/CZm/oh66fzM0RUl54vvuXlPJKybH4pdCZey1eDTPaLHkMPNgWA==}
 
   '@react-native/normalize-colors@0.74.84':
     resolution: {integrity: sha512-Y5W6x8cC5RuakUcTVUFNAIhUZ/tYpuqHZlRBoAuakrTwVuoNHXfQki8lj1KsYU7rW6e3VWgdEx33AfOQpdNp6A==}
@@ -11999,26 +11984,6 @@ snapshots:
       node-forge: 1.3.1
       nullthrows: 1.1.1
 
-  '@expo/config-plugins@7.2.5':
-    dependencies:
-      '@expo/config-types': 49.0.0
-      '@expo/json-file': 8.2.37
-      '@expo/plist': 0.0.20
-      '@expo/sdk-runtime-versions': 1.0.0
-      '@react-native/normalize-color': 2.1.0
-      chalk: 4.1.2
-      debug: 4.3.7
-      find-up: 5.0.0
-      getenv: 1.0.0
-      glob: 7.1.6
-      resolve-from: 5.0.0
-      semver: 7.6.3
-      slash: 3.0.0
-      xcode: 3.0.1
-      xml2js: 0.6.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@expo/config-plugins@8.0.10':
     dependencies:
       '@expo/config-types': 51.0.3
@@ -12059,8 +12024,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@expo/config-types@49.0.0': {}
-
   '@expo/config-types@51.0.2': {}
 
   '@expo/config-types@51.0.3': {}
@@ -12084,7 +12047,7 @@ snapshots:
   '@expo/config@9.0.4':
     dependencies:
       '@babel/code-frame': 7.10.4
-      '@expo/config-plugins': 7.2.5
+      '@expo/config-plugins': 8.0.10
       '@expo/config-types': 51.0.3
       '@expo/json-file': 8.3.3
       getenv: 1.0.0
@@ -12139,12 +12102,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@expo/json-file@8.2.37':
-    dependencies:
-      '@babel/code-frame': 7.10.4
-      json5: 2.2.3
-      write-file-atomic: 2.4.3
-
   '@expo/json-file@8.3.3':
     dependencies:
       '@babel/code-frame': 7.10.4
@@ -12197,12 +12154,6 @@ snapshots:
       ora: 3.4.0
       split: 1.0.1
       sudo-prompt: 9.1.1
-
-  '@expo/plist@0.0.20':
-    dependencies:
-      '@xmldom/xmldom': 0.7.13
-      base64-js: 1.5.1
-      xmlbuilder: 14.0.0
 
   '@expo/plist@0.1.3':
     dependencies:
@@ -13507,8 +13458,6 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/preset-env'
       - supports-color
-
-  '@react-native/normalize-color@2.1.0': {}
 
   '@react-native/normalize-colors@0.74.84': {}
 
@@ -15778,7 +15727,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 7.18.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(typescript@5.3.3)
       '@typescript-eslint/parser': 7.18.0(eslint@8.57.1)(typescript@5.3.3)
       eslint: 8.57.1
-      eslint-import-resolver-typescript: 3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1)
+      eslint-import-resolver-typescript: 3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-expo: 0.0.1(eslint@8.57.1)(typescript@5.3.3)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1)
       eslint-plugin-react: 7.37.1(eslint@8.57.1)
@@ -15798,7 +15747,7 @@ snapshots:
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.3(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint@8.57.1)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-jsx-a11y: 6.10.0(eslint@8.57.1)
       eslint-plugin-react: 7.37.1(eslint@8.57.1)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.57.1)
@@ -15837,20 +15786,20 @@ snapshots:
       is-bun-module: 1.2.1
       is-glob: 4.0.3
     optionalDependencies:
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
     transitivePeerDependencies:
       - '@typescript-eslint/parser'
       - eslint-import-resolver-node
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1):
+  eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.3.7
       enhanced-resolve: 5.17.1
       eslint: 8.57.1
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
       fast-glob: 3.3.2
       get-tsconfig: 4.8.1
       is-bun-module: 1.2.1
@@ -15874,14 +15823,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 7.18.0(eslint@8.57.1)(typescript@5.3.3)
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1)
+      eslint-import-resolver-typescript: 3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1))(eslint@8.57.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -15894,7 +15843,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1):
+  eslint-plugin-import@2.31.0(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@6.15.0(eslint@8.57.1)(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
@@ -15934,7 +15883,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3

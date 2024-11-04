@@ -1,5 +1,14 @@
 # jazz-run
 
+## 0.8.13
+
+### Patch Changes
+
+-   Updated dependencies [fd011d7]
+-   Updated dependencies [e0dd006]
+    -   jazz-tools@0.8.13
+    -   cojson-transport-ws@0.8.13
+
 ## 0.8.12
 
 ### Patch Changes
