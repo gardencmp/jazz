@@ -18,6 +18,9 @@ function setup(opts: Partial<CreateWebSocketPeerOpts> = {}) {
         addEventListener: vi.fn().mockImplementation((type, listener) => {
             listeners.set(type, listener);
         }),
+        removeEventListener: vi.fn().mockImplementation((type) => {
+            listeners.delete(type);
+        }),
         close: vi.fn(),
         send: vi.fn(),
     } as unknown as Mocked<AnyWebSocket>;

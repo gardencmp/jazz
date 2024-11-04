@@ -31,7 +31,7 @@ const team: Array<TeamMember> = [
         x: "anselm_io",
         github: "aeplay",
         website: "http://anselm.io",
-        bluesky: "anselm-io",
+        bluesky: "anselm.io",
     },
     {
         name: "Andrei Popa",
@@ -141,7 +141,7 @@ function Person({ person }: { person: TeamMember }) {
                     )}
                     {person.bluesky && (
                         <SocialLink
-                            link={`https://bsky.app/profile/${person.bluesky}.bsky.social`}
+                            link={`https://bsky.app/profile/${person.bluesky}`}
                             icon={SiBluesky}
                             label="Bluesky profile"
                         />

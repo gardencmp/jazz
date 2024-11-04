@@ -16,7 +16,7 @@ import {
 import { RawAccountID, LSMStorage } from "cojson";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
-import { createWebSocketPeer } from "cojson-transport-ws";
+import { createWebSocketPeerWithReconnection } from "./createWebSocketPeerWithReconnection.js";
 export { BrowserDemoAuth } from "./auth/DemoAuth.js";
 export { BrowserPasskeyAuth } from "./auth/PasskeyAuth.js";
 export { BrowserPassphraseAuth } from "./auth/PassphraseAuth.js";
@@ -64,21 +64,9 @@ export async function createJazzBrowserContext<Acc extends Account>(
 ): Promise<BrowserContext<Acc> | BrowserGuestContext> {
     const crypto = options.crypto || (await WasmCrypto.create());
 
-    const firstWsPeer = createWebSocketPeer({
-        websocket: new WebSocket(options.peer),
-        id: options.peer + "@" + new Date().toISOString(),
-        role: "server",
+    const wsPeer = createWebSocketPeerWithReconnection(options.peer, options.reconnectionTimeout, (peer) => {
+        node.syncManager.addPeer(peer);
     });
-    let shouldTryToReconnect = true;
-
-    let currentReconnectionTimeout = options.reconnectionTimeout || 500;
-
-    function onOnline() {
-        console.log("Online, resetting reconnection timeout");
-        currentReconnectionTimeout = options.reconnectionTimeout || 500;
-    }
-
-    window.addEventListener("online", onOnline);
 
     const context =
         "auth" in options
@@ -93,7 +81,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
                                 // trace: true,
                             })
                           : await IDBStorage.asPeer(),
-                      firstWsPeer,
+                          wsPeer.peer,
                   ],
                   sessionProvider: provideBrowserLockSession,
               })
@@ -106,7 +94,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
                                 // trace: true,
                             })
                           : await IDBStorage.asPeer(),
-                      firstWsPeer,
+                      wsPeer.peer,
                   ],
               });
 
@@ -115,58 +103,11 @@ export async function createJazzBrowserContext<Acc extends Account>(
             ? context.account._raw.core.node
             : context.agent.node;
 
-    async function websocketReconnectLoop() {
-        while (shouldTryToReconnect) {
-            if (
-                Object.keys(node.syncManager.peers).some((peerId) =>
-                    peerId.includes(options.peer),
-                )
-            ) {
-                // TODO: this might drain battery, use listeners instead
-                await new Promise((resolve) => setTimeout(resolve, 100));
-            } else {
-                console.log(
-                    "Websocket disconnected, trying to reconnect in " +
-                        currentReconnectionTimeout +
-                        "ms",
-                );
-                currentReconnectionTimeout = Math.min(
-                    currentReconnectionTimeout * 2,
-                    30000,
-                );
-                await new Promise<void>((resolve) => {
-                    setTimeout(resolve, currentReconnectionTimeout);
-                    window.addEventListener(
-                        "online",
-                        () => {
-                            console.log(
-                                "Online, trying to reconnect immediately",
-                            );
-                            resolve();
-                        },
-                        { once: true },
-                    );
-                });
-
-                node.syncManager.addPeer(
-                    createWebSocketPeer({
-                        websocket: new WebSocket(options.peer),
-                        id: options.peer + "@" + new Date().toISOString(),
-                        role: "server",
-                    }),
-                );
-            }
-        }
-    }
-
-    void websocketReconnectLoop();
-
     return "account" in context
         ? {
               me: context.account,
               done: () => {
-                  shouldTryToReconnect = false;
-                  window.removeEventListener("online", onOnline);
+                  wsPeer.done();
                   context.done();
               },
               logOut: () => {
@@ -176,8 +117,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
         : {
               guest: context.agent,
               done: () => {
-                  shouldTryToReconnect = false;
-                  window.removeEventListener("online", onOnline);
+                  wsPeer.done();
                   context.done();
               },
               logOut: () => {
@@ -360,3 +300,4 @@ export function consumeInviteLinkFromWindowLocation<V extends CoValue>({
         }
     });
 }
+
