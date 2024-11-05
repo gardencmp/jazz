@@ -34,6 +34,8 @@ import {
     subscribeToCoValue,
 } from "jazz-tools";
 
+export const logoutHandler = ref<() => void>();
+
 export interface JazzVueApp<Acc extends Account> {
     JazzProvider: Component;
 
@@ -91,9 +93,16 @@ export function createJazzVueApp<Acc extends Account>({
                 BrowserContext<Acc> | BrowserGuestContext | undefined
             >(undefined);
 
+            const key = ref(0);
+
             provide(JazzContextSymbol, ctx);
 
-            onMounted(async () => {
+            const initializeContext = async () => {
+                if (ctx.value) {
+                    ctx.value.done?.();
+                    ctx.value = undefined;
+                }
+
                 try {
                     const context = await createJazzBrowserContext<Acc>(
                         props.auth === "guest"
@@ -109,17 +118,26 @@ export function createJazzVueApp<Acc extends Account>({
                     ctx.value = {
                         ...context,
                         logOut: () => {
-                            context.logOut();
-                            ctx.value = undefined;
+                            logoutHandler.value?.();
+                            // context.logOut();
+                            key.value += 1;
                         },
                     };
                 } catch (e) {
                     console.error("Error creating Jazz browser context:", e);
-                    // error.value = e instanceof Error ? e : new Error(String(e));
-                } finally {
-                    // loading.value = false;
                 }
+            };
+
+            onMounted(() => {
+                void initializeContext();
             });
+
+            watch(
+                () => key.value,
+                async () => {
+                    await initializeContext();
+                },
+            );
 
             onUnmounted(() => {
                 if (ctx.value) ctx.value.done?.();

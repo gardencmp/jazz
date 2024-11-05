@@ -1,7 +1,8 @@
-import { reactive, ref } from "vue";
+import { onUnmounted, reactive, ref } from "vue";
 import { BrowserDemoAuth } from "jazz-browser";
 import { Account, ID } from "jazz-tools";
 import { AgentSecret } from "cojson";
+import { logoutHandler } from "../createJazzVueApp.js";
 
 export type DemoAuthState = (
     | {
@@ -50,13 +51,19 @@ export function useDemoAuth({
                     (state as DemoAuthState & { state: "ready" }).logInAs =
                         logInAs;
                     state.errors = [];
-                    console.log("ready");
                 },
                 onSignedIn: ({ logOut }) => {
                     state.state = "signedIn";
                     (state as DemoAuthState & { state: "signedIn" }).logOut =
-                        logOut;
+                        () => {
+                            logOut();
+                            state.state = "ready";
+                            state.errors = [];
+                        };
                     state.errors = [];
+                    logoutHandler.value = (
+                        state as DemoAuthState & { state: "signedIn" }
+                    ).logOut;
                 },
                 onError: (error) => {
                     state.errors.push(error.toString());
@@ -65,6 +72,10 @@ export function useDemoAuth({
             seedAccounts,
         ),
     );
-
-    return [authMethod, state] as const;
+    onUnmounted(() => {
+        if (state.state === "signedIn") {
+            logoutHandler.value = undefined;
+        }
+    });
+    return { authMethod, state };
 }

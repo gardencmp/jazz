@@ -11,13 +11,13 @@ const { JazzProvider } = Jazz;
 const RootComponent = defineComponent({
     name: "RootComponent",
     setup() {
-        const demoAuth = useDemoAuth();
+        const { authMethod, state } = useDemoAuth();
 
         return () => [
             h(
                 JazzProvider,
                 {
-                    auth: demoAuth[0].value,
+                    auth: authMethod.value,
                     peer: "wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io",
                 },
                 {
@@ -25,10 +25,10 @@ const RootComponent = defineComponent({
                 },
             ),
 
-            demoAuth[1].state !== "signedIn" &&
+            state.state !== "signedIn" &&
                 h(DemoAuthBasicUI, {
                     appName: "Jazz Chat",
-                    state: demoAuth[1],
+                    state,
                 }),
         ];
     },

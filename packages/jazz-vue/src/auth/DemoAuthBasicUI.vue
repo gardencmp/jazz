@@ -65,8 +65,6 @@
     state: DemoAuthState;
   }>();
 
-  console.log(props.state);
-
   const username = ref('');
   const darkMode = computed(() => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
