@@ -4,7 +4,7 @@ import Link from "next/link";
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "tertiary";
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
   href?: string;
 }
 
@@ -20,9 +20,10 @@ export function Button(props: ButtonProps) {
   } = props;
 
   const sizeClasses = {
-    md: "py-2 px-3",
-    lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3",
-  };
+    sm: "text-sm py-1 px-2",
+        md: "py-2 px-3",
+        lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3",
+    };
 
   const variantClasses = {
     primary:
@@ -34,7 +35,7 @@ export function Button(props: ButtonProps) {
 
   const classNames = clsx(
     className,
-    "inline-block rounded-lg text-center transition-colors",
+    "inline-flex items-center gap-2 rounded-lg text-center transition-colors",
     sizeClasses[size],
     variantClasses[variant],
     disabled && "opacity-50 cursor-not-allowed pointer-events-none",
