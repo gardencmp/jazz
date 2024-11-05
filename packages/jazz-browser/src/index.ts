@@ -17,6 +17,7 @@ import { RawAccountID, LSMStorage, Peer } from "cojson";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import { createWebSocketPeerWithReconnection } from "./createWebSocketPeerWithReconnection.js";
+import { getStorageOptions, StorageConfig } from "./storageOptions.js";
 export { BrowserDemoAuth } from "./auth/DemoAuth.js";
 export { BrowserPasskeyAuth } from "./auth/PasskeyAuth.js";
 export { BrowserPassphraseAuth } from "./auth/PassphraseAuth.js";
@@ -41,10 +42,6 @@ export type BrowserContextOptions<Acc extends Account> = {
         fromNode: (typeof Account)["fromNode"];
     };
 } & BaseBrowserContextOptions;
-
-type StorageOption = "indexedDB" | "singleTabOPFS";
-type CombinedStorageOption = ["singleTabOPFS", "indexedDB"];
-type StorageConfig = StorageOption | CombinedStorageOption | [StorageOption];
 
 export type BaseBrowserContextOptions = {
     peer: `wss://${string}` | `ws://${string}`;
@@ -76,15 +73,9 @@ export async function createJazzBrowserContext<Acc extends Account>(
         },
     );
 
-    const useSingleTabOPFS =
-        (Array.isArray(options.storage) &&
-            options.storage.includes("singleTabOPFS")) ||
-        options.storage === "singleTabOPFS";
-
-    const useIndexedDB =
-        (Array.isArray(options.storage) &&
-            options.storage.includes("indexedDB")) ||
-        options.storage === "indexedDB";
+    const { useSingleTabOPFS, useIndexedDB } = getStorageOptions(
+        options.storage,
+    );
 
     const peersToLoadFrom: Peer[] = [];
 
