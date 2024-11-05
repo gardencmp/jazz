@@ -22,7 +22,6 @@
     "test": "vitest",
     "test:ci": "vitest --coverage.enabled=true",
     "test:coverage": "vitest --ui --coverage.enabled=true",
-    "format": "pnpm run -r format-and-lint && cd homepage/homepage && pnpm run format",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
     "changeset": "changeset",
