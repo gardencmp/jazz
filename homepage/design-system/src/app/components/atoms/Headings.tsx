@@ -62,3 +62,16 @@ export function H3({ children, className }: HeadingProps) {
 export function H4({ children, className }: HeadingProps) {
     return <h4 className={clsx(className, "text-bold")}>{children}</h4>;
 }
+
+export function Kicker({ children, className }: HeadingProps) {
+    return (
+        <p
+            className={clsx(
+                className,
+                "uppercase text-blue tracking-widest text-sm font-medium dark:text-stone-400",
+            )}
+        >
+            {children}
+        </p>
+    );
+}

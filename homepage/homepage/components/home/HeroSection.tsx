@@ -1,12 +1,52 @@
-import { LucideIcon } from "lucide-react";
+import {
+    FileLock2Icon,
+    GaugeIcon,
+    LockKeyholeIcon,
+    MonitorSmartphoneIcon,
+    MousePointerSquareDashedIcon,
+    UploadCloudIcon,
+    UserIcon,
+    UsersIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
-export function Hero({
-    features,
-}: {
-    features: { title: string; icon: LucideIcon }[];
-}) {
+const features = [
+    {
+        title: "Instant updates",
+        icon: GaugeIcon,
+    },
+    {
+        title: "Real-time sync",
+        icon: MonitorSmartphoneIcon,
+    },
+    {
+        title: "Multiplayer",
+        icon: MousePointerSquareDashedIcon,
+    },
+    {
+        title: "File uploads",
+        icon: UploadCloudIcon,
+    },
+    {
+        title: "Social features",
+        icon: UsersIcon,
+    },
+    {
+        title: "Permissions",
+        icon: FileLock2Icon,
+    },
+    {
+        title: "E2E encryption",
+        icon: LockKeyholeIcon,
+    },
+    {
+        title: "Authentication",
+        icon: UserIcon,
+    },
+];
+
+export function HeroSection() {
     return (
         <div className="container grid gap-x-8 gap-y-10 py-12 md:py-16 lg:py-24 lg:gap-0 lg:grid-cols-3">
             <div className="flex flex-col justify-center gap-4 lg:col-span-3 lg:gap-8">

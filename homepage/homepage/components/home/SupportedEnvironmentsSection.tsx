@@ -9,7 +9,7 @@ import React from "react";
 import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { VueLogo } from "@/components/icons/VueLogo";
 
-export function SupportedEnvironments() {
+export function SupportedEnvironmentsSection() {
     const supported = [
         {
             name: "Browser (vanilla JS)",

@@ -26,6 +26,7 @@ export { loadCoValue, subscribeToCoValue, createCoValueObservable } from "./inte
 export {
     type AuthMethod,
     type AuthResult,
+    type Credentials,
     createJazzContext,
     fixedCredentialsAuth,
     ephemeralCredentialsAuth,

@@ -1,0 +1,9 @@
+```tsx
+const group = Group.create({
+  owner: me
+});
+
+group.addMember("everyone", "writer");
+
+Chat.create([], { owner: group })
+```

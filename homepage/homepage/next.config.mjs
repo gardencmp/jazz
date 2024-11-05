@@ -55,23 +55,31 @@ function highlightPlugin() {
                     const isBinnedLine = line.some((token) =>
                         token.content.includes("// *bin*"),
                     );
-                    if (!isBinnedLine) {
-                        lineNo++;
-                    }
+                  const isHighlighted = line.some((token) =>
+                    token.content.includes("// *highlight*"),
+                  );
+                  if (!isBinnedLine) {
+                    lineNo++;
+                  }
 
-                    if (isBinnedLine) {
-                        lineClassName = "bg-red-100 dark:bg-red-800";
-                    }
+                  if (isBinnedLine) {
+                    lineClassName = 'bg-red-100 dark:bg-red-800'
+                  } else if (isHighlighted) {
+                    lineClassName = 'my-0.5 bg-blue-50 text-blue dark:bg-stone-900 dark:text-blue-300'
+                  }
 
-                    return (
-                        `<span class="block px-3 min-h-[1em] ${lineClassName}" style="${isBinnedLine ? "user-select: none" : ""}">` +
-                        line
-                            .map((token) => {
-                                return `<span style="color: ${token.color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", ""))}</span>`;
-                            })
-                            .join("") +
-                        "</span>"
-                    );
+                  return (
+                    `<span class="block px-3 min-h-[1em] ${lineClassName}" style="${isBinnedLine ? "user-select: none" : ""}">` +
+                    line
+                      .map(
+                        (token) => {
+                          let color = isHighlighted ? 'currentColor' : token.color
+                          return  `<span style="color: ${color};${isSubduedLine ? "opacity: 0.4;" : ""}">${escape(token.content.replace("// old", "").replace("// *bin*", "").replace("// *highlight*", ""))}</span>`
+                        }
+                      )
+                      .join("") +
+                    "</span>"
+                  );
                 })
                 .join("\n")}</code>`;
             node.children = [];

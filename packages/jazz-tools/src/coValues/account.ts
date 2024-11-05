@@ -37,6 +37,7 @@ import {
     ensureCoValueLoaded,
     subscribeToExistingCoValue,
 } from "../internal.js";
+import { coValuesCache } from "../lib/cache.js";
 
 /** @category Identity & Permissions */
 export class Account extends CoValueBase implements CoValue {
@@ -71,9 +72,12 @@ export class Account extends CoValueBase implements CoValue {
     get _loadedAs(): Account | AnonymousJazzAgent {
         if (this.isMe) return this;
 
-        if (this._raw.core.node.account instanceof RawAccount) {
-            return Account.fromRaw(this._raw.core.node.account);
+        const rawAccount = this._raw.core.node.account;
+
+        if (rawAccount instanceof RawAccount) {
+            return coValuesCache.get(rawAccount, () => Account.fromRaw(rawAccount)) ;
         }
+
         return new AnonymousJazzAgent(this._raw.core.node);
     }
 

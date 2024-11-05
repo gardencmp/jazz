@@ -29,6 +29,7 @@ import {
     subscribeToExistingCoValue,
     subscriptionsScopes,
 } from "../internal.js";
+import { coValuesCache } from "../lib/cache.js";
 
 /**
  * CoLists are collaborative versions of plain arrays.
@@ -164,9 +165,12 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     }
 
     get _loadedAs() {
-        if (this._raw.core.node.account instanceof RawAccount) {
-            return Account.fromRaw(this._raw.core.node.account);
+        const rawAccount = this._raw.core.node.account;
+
+        if (rawAccount instanceof RawAccount) {
+            return coValuesCache.get(rawAccount, () => Account.fromRaw(rawAccount)) ;
         }
+
         return new AnonymousJazzAgent(this._raw.core.node);
     }
 
