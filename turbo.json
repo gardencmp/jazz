@@ -13,9 +13,7 @@
     "test": {
       "dependsOn": ["build"]
     },
-    "type-check": {}
-  },
-  "tasks": {
+    "type-check": {},
     "//#format-and-lint": {},
     "//#format-and-lint:fix": {
       "cache": false
