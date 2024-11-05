@@ -4,7 +4,7 @@ import { DiagramAfterJazz } from "@/components/DiagramAfterJazz";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
-export default function BeforeAfterJazz() {
+export default function ProblemStatementSection() {
     return (
         <div className="container grid gap-4 lg:gap-8">
             <SectionHeader
