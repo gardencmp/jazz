@@ -4,6 +4,7 @@ import {
     BrowserGuestContext,
     consumeInviteLinkFromWindowLocation,
     createJazzBrowserContext,
+    type BaseBrowserContextOptions,
 } from "jazz-browser";
 
 import {
@@ -38,7 +39,7 @@ export function createJazzReactApp<Acc extends Account>({
         children: React.ReactNode;
         auth: AuthMethod | "guest";
         peer: `wss://${string}` | `ws://${string}`;
-        storage?: "indexedDB" | "singleTabOPFS";
+        storage?: BaseBrowserContextOptions["storage"];
     }) {
         const [ctx, setCtx] = useState<
             BrowserContext<Acc> | BrowserGuestContext | undefined
@@ -113,7 +114,7 @@ export function createJazzReactApp<Acc extends Account>({
 
             return () => {
                 void promise.then((context) => context.done());
-            }
+            };
         }, [AccountSchema, auth, peer, storage, sessionCount]);
 
         return (
@@ -282,7 +283,7 @@ export interface JazzReactApp<Acc extends Account> {
         children: React.ReactNode;
         auth: AuthMethod | "guest";
         peer: `wss://${string}` | `ws://${string}`;
-        storage?: "indexedDB" | "singleTabOPFS";
+        storage?: BaseBrowserContextOptions["storage"];
     }>;
 
     /** @category Hooks */
