@@ -21,7 +21,7 @@ export default function Home() {
             <div className="container flex flex-col gap-12 mt-12 lg:gap-20 lg:mt-20">
                 <HowJazzWorksSection />
 
-                <Testimonial name="Serious Adopter #4" role="Technical Founder">
+                <Testimonial name="Spreadsheet app (stealth)" role="CTO">
                     <p>
                         You don&apos;t have to think about deploying a database,
                         SQL schemas, relations, and writing queries… Basically,{" "}
@@ -38,7 +38,7 @@ export default function Home() {
 
                 <EncryptionSection />
 
-                <Testimonial name="Serious Adopter #1" role="Lead Developer">
+                <Testimonial name="Invoice Radar" role="Technical Founder">
                     We just wanted to build a single-player experience first,
                     planning to add team and org features much later. But
                     because of Jazz, we had that from day one.{" "}
