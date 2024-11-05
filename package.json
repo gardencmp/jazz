@@ -9,6 +9,7 @@
     ],
     "packageManager": "pnpm@9.1.4",
     "devDependencies": {
+        "@biomejs/biome": "1.9.4",
         "@changesets/cli": "^2.27.3",
         "@vitest/coverage-istanbul": "1.5.3",
         "@vitest/ui": "1.5.3",
