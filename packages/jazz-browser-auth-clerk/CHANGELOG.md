@@ -1,5 +1,14 @@
 # jazz-browser-media-images
 
+## 0.8.15
+
+### Patch Changes
+
+-   221c58f: Store clerk credentials in localStorage, and use if available
+-   Updated dependencies [cce679b]
+    -   jazz-tools@0.8.15
+    -   jazz-browser@0.8.15
+
 ## 0.8.14
 
 ### Patch Changes
