@@ -28,6 +28,8 @@
         "test:ci": "vitest --coverage.enabled=true",
         "test:coverage": "vitest --ui --coverage.enabled=true",
         "format": "pnpm run -r format && cd homepage/homepage && pnpm run format",
+        "format-and-lint": "biome check .",
+        "format-and-lint:fix": "biome check . --write",
         "changeset": "changeset",
         "changeset-version": "changeset version && pnpm i --no-frozen-lockfile",
         "monorepo-linting": "npx sherif@1.0.0",
