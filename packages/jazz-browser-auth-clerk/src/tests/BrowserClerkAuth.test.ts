@@ -99,7 +99,7 @@ describe("BrowserClerkAuth", () => {
             const auth = new BrowserClerkAuth(mockDriver, mockClerkClient);
             const result = await auth.start();
             if (result.saveCredentials) {
-                await result.saveCredentials?.({
+                await result.saveCredentials({
                     accountID: "test-account-id" as ID<Account>,
                     secret: "test-secret" as AgentSecret,
                 });
