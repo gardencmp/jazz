@@ -1,12 +1,12 @@
-import { ProgressiveImg } from "jazz-react";
-import { BookReview } from "@/schema";
-import { ChangeEvent, useRef, useState } from "react";
-import { Group, ImageDefinition } from "jazz-tools";
-import { createImage } from "jazz-browser-media-images";
-import { useAccount } from "@/components/JazzAndAuth";
-import clsx from "clsx";
-import PlusIcon from "@/components/icons/PlusIcon";
 import { Button } from "@/components/Button";
+import { useAccount } from "@/components/JazzAndAuth";
+import PlusIcon from "@/components/icons/PlusIcon";
+import { BookReview } from "@/schema";
+import clsx from "clsx";
+import { createImage } from "jazz-browser-media-images";
+import { ProgressiveImg } from "jazz-react";
+import { Group, ImageDefinition } from "jazz-tools";
+import { ChangeEvent, useRef, useState } from "react";
 
 const BookCoverContainer = ({
   children,
@@ -68,7 +68,7 @@ export function BookCoverInput({ bookReview }: { bookReview: BookReview }) {
     const file = event.currentTarget.files?.[0];
 
     if (file) {
-      createImage(file, { owner: me.profile._owner }).then(image => {
+      createImage(file, { owner: me.profile._owner }).then((image) => {
         bookReview.cover = image;
       });
     }

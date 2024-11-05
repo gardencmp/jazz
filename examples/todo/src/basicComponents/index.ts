@@ -8,10 +8,10 @@ export { SubmittableInput } from "./SubmittableInput";
 export { TitleAndLogo } from "./TitleAndLogo";
 export { ThemeProvider } from "./themeProvider";
 export {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "./ui/table";

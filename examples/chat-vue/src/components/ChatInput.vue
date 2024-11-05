@@ -15,19 +15,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref } from "vue";
 
 export default defineComponent({
-  name: 'ChatInput',
-  emits: ['submit'],
+  name: "ChatInput",
+  emits: ["submit"],
   setup(_, { emit }) {
     const inputId = `input-${Math.random().toString(36).substr(2, 9)}`;
-    const inputValue = ref('');
+    const inputValue = ref("");
 
     function submitMessage() {
       if (!inputValue.value) return;
-      emit('submit', inputValue.value);
-      inputValue.value = '';
+      emit("submit", inputValue.value);
+      inputValue.value = "";
     }
 
     return {

@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
 import { setTimeout } from "node:timers/promises";
+import { expect, test } from "@playwright/test";
 
 test.describe("BinaryCoStream - Sync", () => {
   test("should sync a file between the two peers", async ({ page }) => {

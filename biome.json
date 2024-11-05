@@ -7,14 +7,14 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["examples/**/*"]
+    "ignore": ["**/dist/*"]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
   },
   "organizeImports": {
-    "enabled": false
+    "enabled": true
   },
   "linter": {
     "enabled": false,

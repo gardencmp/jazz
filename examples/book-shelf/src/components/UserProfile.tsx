@@ -1,10 +1,10 @@
 "use client";
 
-import { useCoState } from "@/components/JazzAndAuth";
-import { Group, ID } from "jazz-tools";
-import { JazzAccount, JazzProfile, ListOfBookReviews } from "@/schema";
 import { BookReviewThumbnail } from "@/components/BookReviewThumbnail";
 import { Button } from "@/components/Button";
+import { useCoState } from "@/components/JazzAndAuth";
+import { JazzAccount, JazzProfile, ListOfBookReviews } from "@/schema";
+import { Group, ID } from "jazz-tools";
 
 export default function UserProfile({ id }: { id: ID<JazzAccount> }) {
   const user = useCoState(JazzAccount, id);
@@ -13,7 +13,7 @@ export default function UserProfile({ id }: { id: ID<JazzAccount> }) {
   const bookReviews = useCoState(
     ListOfBookReviews,
     user?.profile?._refs.bookReviews?.id,
-    [{}]
+    [{}],
   );
 
   return (
@@ -30,7 +30,7 @@ export default function UserProfile({ id }: { id: ID<JazzAccount> }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        {bookReviews?.map(bookReview => (
+        {bookReviews?.map((bookReview) => (
           <BookReviewThumbnail key={bookReview.id} id={bookReview.id} />
         ))}
       </div>

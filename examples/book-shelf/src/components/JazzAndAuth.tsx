@@ -1,7 +1,7 @@
 "use client";
 
-import { createJazzReactApp, useDemoAuth, DemoAuthBasicUI } from "jazz-react";
 import { JazzAccount } from "@/schema";
+import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 
 const Jazz = createJazzReactApp({
   AccountSchema: JazzAccount,

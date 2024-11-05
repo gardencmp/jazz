@@ -3,14 +3,14 @@
 import { usePathname } from "next/navigation";
 
 export function BreadCrumb({
-    items,
+  items,
 }: {
-    items: { title: string; href: string }[];
+  items: { title: string; href: string }[];
 }) {
-    const pathName = usePathname();
-    const title = items.find((item) => item.href === pathName)?.title;
+  const pathName = usePathname();
+  const title = items.find((item) => item.href === pathName)?.title;
 
-    if (!title) return null;
+  if (!title) return null;
 
-    return <span className="text-sm font-semibold">{title}</span>;
+  return <span className="text-sm font-semibold">{title}</span>;
 }

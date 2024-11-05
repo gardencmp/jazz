@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { JazzAndAuth } from "@/components/JazzAndAuth";
 import { Nav } from "@/components/Nav";
-import { Fraunces } from "next/font/google";
 import clsx from "clsx";
+import { Fraunces } from "next/font/google";
 
 const fraunces = Fraunces({
   subsets: ["latin"],

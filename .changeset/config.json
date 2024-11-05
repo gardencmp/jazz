@@ -1,30 +1,30 @@
 {
-    "$schema": "https://unpkg.com/@changesets/config@2.3.1/schema.json",
-    "changelog": "@changesets/cli/changelog",
-    "commit": false,
-    "fixed": [],
-    "linked": [
-        [
-            "cojson",
-            "jazz-tools",
-            "jazz-browser",
-            "jazz-browser-media-images",
-            "jazz-browser-auth-clerk",
-            "jazz-react-auth-clerk",
-            "jazz-react",
-            "jazz-react-native",
-            "jazz-nodejs",
-            "jazz-run",
-            "cojson-transport-ws",
-            "cojson-storage-indexeddb",
-            "cojson-storage-sqlite"
-        ]
-    ],
-    "access": "public",
-    "baseBranch": "main",
-    "updateInternalDependencies": "patch",
-    "ignore": [],
-    "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
-        "onlyUpdatePeerDependentsWhenOutOfRange": true
-    }
+  "$schema": "https://unpkg.com/@changesets/config@2.3.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    [
+      "cojson",
+      "jazz-tools",
+      "jazz-browser",
+      "jazz-browser-media-images",
+      "jazz-browser-auth-clerk",
+      "jazz-react-auth-clerk",
+      "jazz-react",
+      "jazz-react-native",
+      "jazz-nodejs",
+      "jazz-run",
+      "cojson-transport-ws",
+      "cojson-storage-indexeddb",
+      "cojson-storage-sqlite"
+    ]
+  ],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  }
 }

@@ -6,6 +6,6 @@
 
 <script lang="ts">
 export default {
-  name: 'ChatBody',
+  name: "ChatBody",
 };
 </script>
