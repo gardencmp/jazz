@@ -11,6 +11,7 @@ import {
     AnonymousJazzAgent,
 } from "../internal.js";
 import { fulfillsDepth } from "./deepLoading.js";
+import { coValuesCache } from "../lib/cache.js";
 
 /** @category Abstract interfaces */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,9 +88,12 @@ export class CoValueBase implements CoValue {
 
     /** @private */
     get _loadedAs() {
-        if (this._raw.core.node.account instanceof RawAccount) {
-            return Account.fromRaw(this._raw.core.node.account);
+        const rawAccount = this._raw.core.node.account;
+
+        if (rawAccount instanceof RawAccount) {
+            return coValuesCache.get(rawAccount, () => Account.fromRaw(rawAccount)) ;
         }
+
         return new AnonymousJazzAgent(this._raw.core.node);
     }
 
