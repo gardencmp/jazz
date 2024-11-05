@@ -18,8 +18,10 @@
         "lint": "eslint . --ext ts,tsx",
         "format": "prettier --write './src/**/*.{ts,tsx}'",
         "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
+        "prepublishOnly": "npm run build",
+        "test": "vitest --run --root ../../ --project jazz-browser-auth-clerk",
+        "test:watch": "vitest --watch --root ../../ --project jazz-browser-auth-clerk"
+   },
     "devDependencies": {
         "typescript": "^5.3.3"
     }

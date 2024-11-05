@@ -7,22 +7,18 @@ export function useJazzClerkAuth(clerk: MinimalClerkClient & {
     const [state, setState] = useState<{ errors: string[] }>({ errors: [] });
 
     const authMethod = useMemo(() => {
-        if (clerk.user) {
-            return new BrowserClerkAuth(
-                {
-                    onError: (error) => {
-                        void clerk.signOut();
-                        setState((state) => ({
-                            ...state,
-                            errors: [...state.errors, error.toString()],
-                        }));
-                    },
+        return new BrowserClerkAuth(
+            {
+                onError: (error) => {
+                    void clerk.signOut();
+                    setState((state) => ({
+                        ...state,
+                        errors: [...state.errors, error.toString()],
+                    }));
                 },
-                clerk,
-            );
-        } else {
-            return undefined;
-        }
+            },
+            clerk,
+        );
     }, [clerk.user]);
 
     return [authMethod, state] as const;
