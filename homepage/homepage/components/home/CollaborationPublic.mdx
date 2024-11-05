@@ -4,4 +4,6 @@ const group = Group.create({
 });
 
 group.addMember("everyone", "writer");
+
+Chat.create([], { owner: group })
 ```
