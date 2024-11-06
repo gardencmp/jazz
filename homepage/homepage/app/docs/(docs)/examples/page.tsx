@@ -10,7 +10,6 @@ type Example = {
     name: string;
     slug: string;
     description?: string;
-    image?: string;
     illustration?: React.ReactNode;
     tech?: string[];
     features?: string[];
@@ -156,9 +155,17 @@ const reactExamples = [
         description:
             "A todo list where you can collaborate with invited guests.",
         tech: [tech.react],
-        image: "/todo.jpg",
         features: [features.inviteLink],
         demoUrl: "https://example-todo.jazz.tools",
+        illustration: (
+            <div className="relative h-full">
+                <img
+                    src="/todo.jpg"
+                    className="object-cover"
+                    alt="Todo list illustration"
+                />
+            </div>
+        ),
     },
     {
         name: "Password manager",
@@ -244,25 +251,14 @@ function Example({ example }: { example: Example }) {
         features,
         description,
         demoUrl,
-        image = "/leaves.jpg",
         illustration,
     } = example;
     const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
 
     return (
-        <div className="col-span-2 border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
-            <div className="aspect-[3/2] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925">
-                {illustration
-                    ? illustration
-                    : image && (
-                          <div className="relative w-full">
-                              <img
-                                  alt=""
-                                  src={image}
-                                  className=" object-cover"
-                              />
-                          </div>
-                      )}
+        <div className="border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
+            <div className="aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
+                {illustration}
             </div>
 
             <div className="flex-1 space-y-2">
@@ -314,11 +310,11 @@ export default function Page() {
                         <h2 className="my-0">{category.name}</h2>
                     </div>
 
-                    <GappedGrid className="not-prose">
+                    <div className="not-prose grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8">
                         {category.examples.map((example) => (
                             <Example key={example.slug} example={example} />
                         ))}
-                    </GappedGrid>
+                    </div>
                 </div>
             ))}
         </>
