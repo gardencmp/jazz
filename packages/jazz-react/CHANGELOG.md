@@ -1,5 +1,30 @@
 # jazz-react
 
+## 0.8.15
+
+### Patch Changes
+
+-   Updated dependencies [cce679b]
+    -   jazz-tools@0.8.15
+    -   jazz-browser@0.8.15
+
+## 0.8.14
+
+### Patch Changes
+
+-   Updated dependencies [36273b3]
+    -   jazz-tools@0.8.14
+    -   jazz-browser@0.8.14
+
+## 0.8.13
+
+### Patch Changes
+
+-   Updated dependencies [fd011d7]
+-   Updated dependencies [e0dd006]
+    -   jazz-tools@0.8.13
+    -   jazz-browser@0.8.13
+
 ## 0.8.12
 
 ### Patch Changes

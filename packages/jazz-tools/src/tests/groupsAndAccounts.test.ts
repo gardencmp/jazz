@@ -1,5 +1,5 @@
-import { expect, describe, test } from "vitest";
-import { Account, CoMap, co, Group, WasmCrypto } from "../index.web.js";
+import { describe, expect, test } from "vitest";
+import { Account, CoMap, Group, WasmCrypto, co } from "../index.web.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -61,9 +61,7 @@ describe("Custom accounts and groups", async () => {
                     return member.id === me.id && member.account?.profile;
                 });
                 if (meAsMember) {
-                    expect(meAsMember.account?.profile?.name).toBe(
-                        "Hermes Puggington",
-                    );
+          expect(meAsMember.account?.profile?.name).toBe("Hermes Puggington");
                     expect(meAsMember.account?.profile?.color).toBe("blue");
                     resolve();
                 }
@@ -79,9 +77,7 @@ describe("Custom accounts and groups", async () => {
         const meAsCastMember = map._owner
             .castAs(CustomGroup)
             .members.find((member) => member.id === me.id);
-        expect(meAsCastMember?.account?.profile?.name).toBe(
-            "Hermes Puggington",
-        );
+    expect(meAsCastMember?.account?.profile?.name).toBe("Hermes Puggington");
         expect(meAsCastMember?.account?.profile?.color).toBe("blue");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

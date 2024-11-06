@@ -1,12 +1,8 @@
-import { Button } from "./ui/button";
 import { useAccount } from "@/2_main";
+import { Button } from "./ui/button";
 
 export function LogoutButton() {
-    const { logOut } = useAccount();
+  const { logOut } = useAccount();
 
-    return (
-        <Button onClick={logOut}>
-            Logout
-        </Button>
-    );
+  return <Button onClick={logOut}>Logout</Button>;
 }

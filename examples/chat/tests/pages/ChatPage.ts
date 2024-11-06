@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { Locator, Page, expect } from "@playwright/test";
 
 export class ChatPage {
   readonly page: Page;
@@ -8,7 +8,7 @@ export class ChatPage {
   constructor(page: Page) {
     this.page = page;
     this.messageInput = page.getByRole("textbox", {
-        name: "Type a message and press Enter"
+      name: "Type a message and press Enter",
     });
     this.logoutButton = page.getByRole("button", {
       name: "Log out",

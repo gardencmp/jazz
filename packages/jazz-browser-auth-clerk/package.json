@@ -1,26 +1,24 @@
 {
-    "name": "jazz-browser-auth-clerk",
-    "version": "0.8.12",
-    "type": "module",
-    "main": "dist/index.js",
-    "types": "src/index.ts",
-    "license": "MIT",
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
-    },
-    "dependencies": {
-        "cojson": "workspace:0.8.12",
-        "jazz-browser": "workspace:0.8.12",
-        "jazz-tools": "workspace:0.8.12"
-    },
-    "scripts": {
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "devDependencies": {
-        "typescript": "^5.3.3"
-    }
+  "name": "jazz-browser-auth-clerk",
+  "version": "0.8.15",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "cojson": "workspace:0.8.12",
+    "jazz-browser": "workspace:0.8.15",
+    "jazz-tools": "workspace:0.8.15"
+  },
+  "scripts": {
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build",
+    "test": "vitest --run --root ../../ --project jazz-browser-auth-clerk",
+    "test:watch": "vitest --watch --root ../../ --project jazz-browser-auth-clerk"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
 }

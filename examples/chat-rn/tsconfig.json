@@ -4,7 +4,5 @@
     "strict": true,
     "moduleResolution": "bundler"
   },
-  "exclude": [
-    "src/tests"
-  ]
+  "exclude": ["src/tests"]
 }

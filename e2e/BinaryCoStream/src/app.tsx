@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { DownloaderPeer } from "./DownloaderPeer";
 import { UploaderPeer } from "./UploaderPeer";
-import { getValueId } from "./lib/searchParams";
 import { AuthAndJazz } from "./jazz";
+import { getValueId } from "./lib/searchParams";
 
 function Main() {
   const valueId = getValueId();
@@ -17,8 +17,8 @@ function Main() {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-      <AuthAndJazz>
-          <Main />
-      </AuthAndJazz>
+    <AuthAndJazz>
+      <Main />
+    </AuthAndJazz>
   </React.StrictMode>,
 );

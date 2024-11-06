@@ -1,28 +1,24 @@
 {
-    "name": "cojson-transport-ws",
-    "type": "module",
-    "version": "0.8.12",
-    "main": "dist/index.js",
-    "types": "src/index.ts",
-    "license": "MIT",
-    "dependencies": {
-        "cojson": "workspace:0.8.12",
-        "typescript": "^5.3.3"
-    },
-    "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist",
-        "test": "vitest --run --root ../../ --project cojson-transport-ws",
-        "test:watch": "vitest --watch --root ../../ --project cojson-transport-ws",
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "devDependencies": {
-        "@types/ws": "^8.5.5"
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
-    }
+  "name": "cojson-transport-ws",
+  "type": "module",
+  "version": "0.8.13",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "cojson": "workspace:0.8.12",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "test": "vitest --run --root ../../ --project cojson-transport-ws",
+    "test:watch": "vitest --watch --root ../../ --project cojson-transport-ws",
+    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.5"
+  }
 }

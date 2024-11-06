@@ -1,27 +1,23 @@
 {
   "name": "jazz-react-auth-clerk",
-  "version": "0.8.12",
+  "version": "0.8.15",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
-    "*.{js,jsx,mdx,json}": "prettier --write"
-  },
   "dependencies": {
     "cojson": "workspace:0.8.12",
-    "jazz-browser-auth-clerk": "workspace:0.8.12",
-    "jazz-react": "workspace:0.8.12",
-    "jazz-tools": "workspace:0.8.12"
+    "jazz-browser-auth-clerk": "workspace:0.8.15",
+    "jazz-react": "workspace:0.8.15",
+    "jazz-tools": "workspace:0.8.15"
   },
   "peerDependencies": {
     "react": "^18.2.0"
   },
   "scripts": {
-    "lint": "eslint . --ext ts,tsx",
-    "format": "prettier --write './src/**/*.{ts,tsx}'",
-    "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

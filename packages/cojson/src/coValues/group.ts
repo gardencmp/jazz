@@ -1,14 +1,18 @@
+import { base58 } from "@scure/base";
 import { CoID } from "../coValue.js";
-import { RawCoMap } from "./coMap.js";
-import { RawCoList } from "./coList.js";
-import { JsonObject } from "../jsonValue.js";
-import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
+import { CoValueUniqueness } from "../coValueCore.js";
 import { Encrypted, KeyID, KeySecret, Sealed } from "../crypto/crypto.js";
 import { AgentID, isAgentID } from "../ids.js";
-import { RawAccount, RawAccountID, ControlledAccountOrAgent } from "./account.js";
+import { JsonObject } from "../jsonValue.js";
 import { Role } from "../permissions.js";
-import { base58 } from "@scure/base";
-import { CoValueUniqueness } from "../coValueCore.js";
+import {
+  ControlledAccountOrAgent,
+  RawAccount,
+  RawAccountID,
+} from "./account.js";
+import { RawCoList } from "./coList.js";
+import { RawCoMap } from "./coMap.js";
+import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 
 export const EVERYONE = "everyone" as const;
@@ -178,14 +182,11 @@ export class RawGroup<
                 "trusting",
             );
         } else {
-            const memberKey =
-                typeof account === "string" ? account : account.id;
+      const memberKey = typeof account === "string" ? account : account.id;
             const agent =
                 typeof account === "string"
                     ? account
-                    : account
-                          .currentAgentID()
-                          ._unsafeUnwrap({ withStackTrace: true });
+          : account.currentAgentID()._unsafeUnwrap({ withStackTrace: true });
             this.set(memberKey, role, "trusting");
 
             if (this.get(memberKey) !== role) {
@@ -213,9 +214,7 @@ export class RawGroup<
         const currentlyPermittedReaders = this.keys().filter((key) => {
             if (key.startsWith("co_") || isAgentID(key)) {
                 const role = this.get(key);
-                return (
-                    role === "admin" || role === "writer" || role === "reader"
-                );
+        return role === "admin" || role === "writer" || role === "reader";
             } else {
                 return false;
             }
@@ -224,9 +223,7 @@ export class RawGroup<
         const maybeCurrentReadKey = this.core.getCurrentReadKey();
 
         if (!maybeCurrentReadKey.secret) {
-            throw new Error(
-                "Can't rotate read key secret we don't have access to",
-            );
+      throw new Error("Can't rotate read key secret we don't have access to");
         }
 
         const currentReadKey = {
@@ -363,8 +360,7 @@ export class RawGroup<
     createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
         const secretSeed = this.core.crypto.newRandomSecretSeed();
 
-        const inviteSecret =
-            this.core.crypto.agentSecretFromSecretSeed(secretSeed);
+    const inviteSecret = this.core.crypto.agentSecretFromSecretSeed(secretSeed);
         const inviteID = this.core.crypto.getAgentID(inviteSecret);
 
         this.addMemberInternal(inviteID, `${role}Invite` as Role);

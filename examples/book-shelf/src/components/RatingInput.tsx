@@ -1,7 +1,7 @@
 "use client";
 
-import StarOutlineIcon from "@/components/icons/StarOutlineIcon";
 import StarIcon from "@/components/icons/StarIcon";
+import StarOutlineIcon from "@/components/icons/StarOutlineIcon";
 import clsx from "clsx";
 
 interface RatingInputProps {

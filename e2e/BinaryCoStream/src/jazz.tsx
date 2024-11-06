@@ -1,6 +1,6 @@
 import { createJazzReactApp, useDemoAuth } from "jazz-react";
-import { getValueId } from "./lib/searchParams";
 import { useEffect, useRef } from "react";
+import { getValueId } from "./lib/searchParams";
 
 const key = getValueId()
   ? `downloader-e2e@jazz.tools`
@@ -19,17 +19,20 @@ export function AuthAndJazz({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (state.state === "ready" && !signedUp.current) {
-      state.signUp('Mister X');
+      state.signUp("Mister X");
       signedUp.current = true;
     }
-  }, [state.state])
+  }, [state.state]);
 
   return (
-    <Jazz.Provider auth={auth} peer={
-      localSync
-        ? `ws://localhost:4200?key=${key}`
-        : `wss://cloud.jazz.tools/?key=${key}`
-    }>
+    <Jazz.Provider
+      auth={auth}
+      peer={
+        localSync
+          ? `ws://localhost:4200?key=${key}`
+          : `wss://cloud.jazz.tools/?key=${key}`
+      }
+    >
       {children}
     </Jazz.Provider>
   );

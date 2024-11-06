@@ -1,4 +1,4 @@
-import { Account, Group, BinaryCoStream } from "jazz-tools";
+import { Account, BinaryCoStream, Group } from "jazz-tools";
 import { UploadedFile } from "../schema";
 
 export async function generateTestFile(me: Account, bytes: number) {
@@ -9,13 +9,13 @@ export async function generateTestFile(me: Account, bytes: number) {
   const testFile = UploadedFile.create(
     {
       file: await BinaryCoStream.createFromBlob(
-        new Blob(['1'.repeat(bytes)], { type: 'image/png' }),
-        ownership
+        new Blob(["1".repeat(bytes)], { type: "image/png" }),
+        ownership,
       ),
       syncCompleted: false,
       coMapDownloaded: false,
     },
-    ownership
+    ownership,
   );
 
   const url = new URL(window.location.href);
@@ -24,4 +24,3 @@ export async function generateTestFile(me: Account, bytes: number) {
 
   return testFile;
 }
-

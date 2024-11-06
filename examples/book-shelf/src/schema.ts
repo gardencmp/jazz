@@ -1,11 +1,11 @@
 import {
-  CoMap,
-  co,
-  CoList,
   Account,
-  Profile,
-  ImageDefinition,
+  CoList,
+  CoMap,
   Encoders,
+  ImageDefinition,
+  Profile,
+  co,
 } from "jazz-tools";
 
 export class BookReview extends CoMap {

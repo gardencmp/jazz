@@ -1,25 +1,25 @@
-import type { RawAccountID, Everyone, RawGroup, Role } from "cojson";
+import type { Everyone, RawAccountID, RawGroup, Role } from "cojson";
 import type {
     CoValue,
-    ID,
-    RefEncoded,
-    Schema,
     CoValueClass,
     DeeplyLoaded,
     DepthsIn,
+  ID,
+  RefEncoded,
+  Schema,
 } from "../internal.js";
 import {
     Account,
+  AccountAndGroupProxyHandler,
     CoMap,
     CoValueBase,
+  MembersSym,
     Ref,
     co,
+  ensureCoValueLoaded,
     isControlledAccount,
-    AccountAndGroupProxyHandler,
-    MembersSym,
     loadCoValue,
     subscribeToCoValue,
-    ensureCoValueLoaded,
     subscribeToExistingCoValue,
 } from "../internal.js";
 
@@ -81,9 +81,7 @@ export class Group extends CoValueBase implements CoValue {
                 (new Ref(
                     profileID,
                     this._loadedAs,
-                    this._schema.profile as RefEncoded<
-                        NonNullable<this["profile"]>
-                    >,
+          this._schema.profile as RefEncoded<NonNullable<this["profile"]>>,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ) as any as this["profile"] extends Profile
                     ? Ref<this["profile"]>
@@ -95,9 +93,7 @@ export class Group extends CoValueBase implements CoValue {
                     this._loadedAs,
                     this._schema.root as RefEncoded<NonNullable<this["root"]>>,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ) as any as this["root"] extends CoMap
-                    ? Ref<this["root"]>
-                    : never),
+        ) as any as this["root"] extends CoMap ? Ref<this["root"]> : never),
         };
     }
 
@@ -111,16 +107,11 @@ export class Group extends CoValueBase implements CoValue {
         } else {
             const initOwner = options.owner;
             if (!initOwner) throw new Error("No owner provided");
-            if (
-                initOwner._type === "Account" &&
-                isControlledAccount(initOwner)
-            ) {
+      if (initOwner._type === "Account" && isControlledAccount(initOwner)) {
                 const rawOwner = initOwner._raw;
                 raw = rawOwner.createGroup();
             } else {
-                throw new Error(
-                    "Can only construct group as a controlled account",
-                );
+        throw new Error("Can only construct group as a controlled account");
             }
         }
 
@@ -132,10 +123,7 @@ export class Group extends CoValueBase implements CoValue {
             _raw: { value: raw, enumerable: false },
         });
 
-        return new Proxy(
-            this,
-            AccountAndGroupProxyHandler as ProxyHandler<this>,
-        );
+    return new Proxy(this, AccountAndGroupProxyHandler as ProxyHandler<this>);
     }
 
     static create<G extends Group>(
@@ -168,9 +156,7 @@ export class Group extends CoValueBase implements CoValue {
             .map((id) => {
                 const role = this._raw.get(id as Everyone | RawAccountID);
                 const accountID =
-                    id === "everyone"
-                        ? undefined
-                        : (id as unknown as ID<Account>);
+          id === "everyone" ? undefined : (id as unknown as ID<Account>);
                 const ref =
                     accountID &&
                     new Ref<NonNullable<this[MembersSym]>>(

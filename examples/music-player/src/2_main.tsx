@@ -1,16 +1,16 @@
+import { Toaster } from "@/components/ui/toaster";
 /* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createHashRouter, RouterProvider } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster"
-import { useMediaPlayer } from "./5_useMediaPlayer";
+import { RouterProvider, createHashRouter } from "react-router-dom";
 import { HomePage } from "./3_HomePage";
+import { useMediaPlayer } from "./5_useMediaPlayer";
 import { InvitePage } from "./6_InvitePage";
 import { PlayerControls } from "./components/PlayerControls";
 import "./index.css";
 
 import { MusicaAccount } from "@/1_schema";
-import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
+import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 import { useUploadExampleData } from "./lib/useUploadExampleData";
 
 /**
@@ -25,63 +25,63 @@ import { useUploadExampleData } from "./lib/useUploadExampleData";
  */
 
 const Jazz = createJazzReactApp({
-    AccountSchema: MusicaAccount,
+  AccountSchema: MusicaAccount,
 });
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function Main() {
-    const mediaPlayer = useMediaPlayer();
+  const mediaPlayer = useMediaPlayer();
 
-    useUploadExampleData();
+  useUploadExampleData();
 
-    const router = createHashRouter([
-        {
-            path: "/",
-            element: <HomePage mediaPlayer={mediaPlayer} />,
-        },
-        {
-            path: "/playlist/:playlistId",
-            element: <HomePage mediaPlayer={mediaPlayer} />,
-        },
-        {
-            path: "/invite/*",
-            element: <InvitePage />,
-        },
-    ]);
+  const router = createHashRouter([
+    {
+      path: "/",
+      element: <HomePage mediaPlayer={mediaPlayer} />,
+    },
+    {
+      path: "/playlist/:playlistId",
+      element: <HomePage mediaPlayer={mediaPlayer} />,
+    },
+    {
+      path: "/invite/*",
+      element: <InvitePage />,
+    },
+  ]);
 
-    return (
-        <>
-            <RouterProvider router={router} />
-            <PlayerControls mediaPlayer={mediaPlayer} />
-            <Toaster />
-        </>
-    );
+  return (
+    <>
+      <RouterProvider router={router} />
+      <PlayerControls mediaPlayer={mediaPlayer} />
+      <Toaster />
+    </>
+  );
 }
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-    const [auth, state] = useDemoAuth();
+  const [auth, state] = useDemoAuth();
 
-    const peer =
-        (new URL(window.location.href).searchParams.get(
-            "peer",
-        ) as `ws://${string}`) ??
-        "wss://cloud.jazz.tools/?key=music-player-example-jazz@gcmp.io";
+  const peer =
+    (new URL(window.location.href).searchParams.get(
+      "peer",
+    ) as `ws://${string}`) ??
+    "wss://cloud.jazz.tools/?key=music-player-example-jazz@gcmp.io";
 
-    return (
-        <>
-            <Jazz.Provider auth={auth} peer={peer}>
-                {children}
-            </Jazz.Provider>
-            <DemoAuthBasicUI appName="Jazz Music Player" state={state} />
-        </>
-    );
+  return (
+    <>
+      <Jazz.Provider auth={auth} peer={peer}>
+        {children}
+      </Jazz.Provider>
+      <DemoAuthBasicUI appName="Jazz Music Player" state={state} />
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <JazzAndAuth>
-            <Main />
-        </JazzAndAuth>
-    </React.StrictMode>,
+  <React.StrictMode>
+    <JazzAndAuth>
+      <Main />
+    </JazzAndAuth>
+  </React.StrictMode>,
 );

@@ -1,13 +1,13 @@
 import { CoID } from "./coValue.js";
-import { MapOpPayload } from "./coValues/coMap.js";
-import { JsonValue } from "./jsonValue.js";
-import { KeyID } from "./crypto/crypto.js";
 import { CoValueCore, Transaction } from "./coValueCore.js";
-import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
-import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
 import { RawAccount, RawAccountID, RawProfile } from "./coValues/account.js";
-import { parseJSON } from "./jsonStringify.js";
+import { MapOpPayload } from "./coValues/coMap.js";
 import { EVERYONE, Everyone, RawGroup } from "./coValues/group.js";
+import { KeyID } from "./crypto/crypto.js";
+import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
+import { parseJSON } from "./jsonStringify.js";
+import { JsonValue } from "./jsonValue.js";
+import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
 export type PermissionsDef =
@@ -139,9 +139,7 @@ function determineValidTransactionsForGroup(
                 });
                 continue;
             } else {
-                console.warn(
-                    "Only admins can make private transactions in groups",
-                );
+          console.warn("Only admins can make private transactions in groups");
                 continue;
             }
         }
@@ -256,9 +254,7 @@ function determineValidTransactionsForGroup(
                 change.value === "revoked"
             )
         ) {
-            console.warn(
-                "Everyone can only be set to reader, writer or revoked",
-            );
+        console.warn("Everyone can only be set to reader, writer or revoked");
             continue;
         }
 

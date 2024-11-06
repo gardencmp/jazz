@@ -1,235 +1,235 @@
-import { BlockFilename, FileSystem, WalFilename, CryptoProvider } from "cojson";
+import { BlockFilename, CryptoProvider, FileSystem, WalFilename } from "cojson";
 
 export class OPFSFilesystem
-    implements
-        FileSystem<
-            { id: number; filename: string },
-            { id: number; filename: string }
-        >
+  implements
+    FileSystem<
+      { id: number; filename: string },
+      { id: number; filename: string }
+    >
 {
-    opfsWorker: Worker;
-    callbacks: Map<number, (event: MessageEvent) => void> = new Map();
-    nextRequestId = 0;
+  opfsWorker: Worker;
+  callbacks: Map<number, (event: MessageEvent) => void> = new Map();
+  nextRequestId = 0;
 
-    constructor(public crypto: CryptoProvider) {
-        this.opfsWorker = new Worker(
-            URL.createObjectURL(
-                new Blob([opfsWorkerJSSrc], { type: "text/javascript" }),
-            ),
+  constructor(public crypto: CryptoProvider) {
+    this.opfsWorker = new Worker(
+      URL.createObjectURL(
+        new Blob([opfsWorkerJSSrc], { type: "text/javascript" }),
+      ),
+    );
+    this.opfsWorker.onmessage = (event) => {
+      // console.log("Received from OPFS worker", event.data);
+      const handler = this.callbacks.get(event.data.requestId);
+      if (handler) {
+        handler(event);
+        this.callbacks.delete(event.data.requestId);
+      }
+    };
+  }
+
+  listFiles(): Promise<string[]> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("listFiles" + requestId + "_listFiles");
+      this.callbacks.set(requestId, (event) => {
+        performance.mark("listFilesEnd" + requestId + "_listFiles");
+        performance.measure(
+          "listFiles" + requestId + "_listFiles",
+          "listFiles" + requestId + "_listFiles",
+          "listFilesEnd" + requestId + "_listFiles",
         );
-        this.opfsWorker.onmessage = (event) => {
-            // console.log("Received from OPFS worker", event.data);
-            const handler = this.callbacks.get(event.data.requestId);
-            if (handler) {
-                handler(event);
-                this.callbacks.delete(event.data.requestId);
-            }
-        };
-    }
+        resolve(event.data.fileNames);
+      });
+      this.opfsWorker.postMessage({ type: "listFiles", requestId });
+    });
+  }
 
-    listFiles(): Promise<string[]> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("listFiles" + requestId + "_listFiles");
-            this.callbacks.set(requestId, (event) => {
-                performance.mark("listFilesEnd" + requestId + "_listFiles");
-                performance.measure(
-                    "listFiles" + requestId + "_listFiles",
-                    "listFiles" + requestId + "_listFiles",
-                    "listFilesEnd" + requestId + "_listFiles",
-                );
-                resolve(event.data.fileNames);
-            });
-            this.opfsWorker.postMessage({ type: "listFiles", requestId });
+  openToRead(
+    filename: string,
+  ): Promise<{ handle: { id: number; filename: string }; size: number }> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("openToRead" + "_" + filename);
+      this.callbacks.set(requestId, (event) => {
+        resolve({
+          handle: { id: event.data.handle, filename },
+          size: event.data.size,
         });
-    }
+        performance.mark("openToReadEnd" + "_" + filename);
+        performance.measure(
+          "openToRead" + "_" + filename,
+          "openToRead" + "_" + filename,
+          "openToReadEnd" + "_" + filename,
+        );
+      });
+      this.opfsWorker.postMessage({
+        type: "openToRead",
+        filename,
+        requestId,
+      });
+    });
+  }
 
-    openToRead(
-        filename: string,
-    ): Promise<{ handle: { id: number; filename: string }; size: number }> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("openToRead" + "_" + filename);
-            this.callbacks.set(requestId, (event) => {
-                resolve({
-                    handle: { id: event.data.handle, filename },
-                    size: event.data.size,
-                });
-                performance.mark("openToReadEnd" + "_" + filename);
-                performance.measure(
-                    "openToRead" + "_" + filename,
-                    "openToRead" + "_" + filename,
-                    "openToReadEnd" + "_" + filename,
-                );
-            });
-            this.opfsWorker.postMessage({
-                type: "openToRead",
-                filename,
-                requestId,
-            });
-        });
-    }
+  createFile(filename: string): Promise<{ id: number; filename: string }> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("createFile" + "_" + filename);
+      this.callbacks.set(requestId, (event) => {
+        performance.mark("createFileEnd" + "_" + filename);
+        performance.measure(
+          "createFile" + "_" + filename,
+          "createFile" + "_" + filename,
+          "createFileEnd" + "_" + filename,
+        );
+        resolve({ id: event.data.handle, filename });
+      });
+      this.opfsWorker.postMessage({
+        type: "createFile",
+        filename,
+        requestId,
+      });
+    });
+  }
 
-    createFile(filename: string): Promise<{ id: number; filename: string }> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("createFile" + "_" + filename);
-            this.callbacks.set(requestId, (event) => {
-                performance.mark("createFileEnd" + "_" + filename);
-                performance.measure(
-                    "createFile" + "_" + filename,
-                    "createFile" + "_" + filename,
-                    "createFileEnd" + "_" + filename,
-                );
-                resolve({ id: event.data.handle, filename });
-            });
-            this.opfsWorker.postMessage({
-                type: "createFile",
-                filename,
-                requestId,
-            });
-        });
-    }
+  openToWrite(filename: string): Promise<{ id: number; filename: string }> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("openToWrite" + "_" + filename);
+      this.callbacks.set(requestId, (event) => {
+        performance.mark("openToWriteEnd" + "_" + filename);
+        performance.measure(
+          "openToWrite" + "_" + filename,
+          "openToWrite" + "_" + filename,
+          "openToWriteEnd" + "_" + filename,
+        );
+        resolve({ id: event.data.handle, filename });
+      });
+      this.opfsWorker.postMessage({
+        type: "openToWrite",
+        filename,
+        requestId,
+      });
+    });
+  }
 
-    openToWrite(filename: string): Promise<{ id: number; filename: string }> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("openToWrite" + "_" + filename);
-            this.callbacks.set(requestId, (event) => {
-                performance.mark("openToWriteEnd" + "_" + filename);
-                performance.measure(
-                    "openToWrite" + "_" + filename,
-                    "openToWrite" + "_" + filename,
-                    "openToWriteEnd" + "_" + filename,
-                );
-                resolve({ id: event.data.handle, filename });
-            });
-            this.opfsWorker.postMessage({
-                type: "openToWrite",
-                filename,
-                requestId,
-            });
-        });
-    }
+  append(
+    handle: { id: number; filename: string },
+    data: Uint8Array,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("append" + "_" + handle.filename);
+      this.callbacks.set(requestId, (_) => {
+        performance.mark("appendEnd" + "_" + handle.filename);
+        performance.measure(
+          "append" + "_" + handle.filename,
+          "append" + "_" + handle.filename,
+          "appendEnd" + "_" + handle.filename,
+        );
+        resolve(undefined);
+      });
+      this.opfsWorker.postMessage({
+        type: "append",
+        handle: handle.id,
+        data,
+        requestId,
+      });
+    });
+  }
 
-    append(
-        handle: { id: number; filename: string },
-        data: Uint8Array,
-    ): Promise<void> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("append" + "_" + handle.filename);
-            this.callbacks.set(requestId, (_) => {
-                performance.mark("appendEnd" + "_" + handle.filename);
-                performance.measure(
-                    "append" + "_" + handle.filename,
-                    "append" + "_" + handle.filename,
-                    "appendEnd" + "_" + handle.filename,
-                );
-                resolve(undefined);
-            });
-            this.opfsWorker.postMessage({
-                type: "append",
-                handle: handle.id,
-                data,
-                requestId,
-            });
-        });
-    }
+  read(
+    handle: { id: number; filename: string },
+    offset: number,
+    length: number,
+  ): Promise<Uint8Array> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("read" + "_" + handle.filename);
+      this.callbacks.set(requestId, (event) => {
+        performance.mark("readEnd" + "_" + handle.filename);
+        performance.measure(
+          "read" + "_" + handle.filename,
+          "read" + "_" + handle.filename,
+          "readEnd" + "_" + handle.filename,
+        );
+        resolve(event.data.data);
+      });
+      this.opfsWorker.postMessage({
+        type: "read",
+        handle: handle.id,
+        offset,
+        length,
+        requestId,
+      });
+    });
+  }
 
-    read(
-        handle: { id: number; filename: string },
-        offset: number,
-        length: number,
-    ): Promise<Uint8Array> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("read" + "_" + handle.filename);
-            this.callbacks.set(requestId, (event) => {
-                performance.mark("readEnd" + "_" + handle.filename);
-                performance.measure(
-                    "read" + "_" + handle.filename,
-                    "read" + "_" + handle.filename,
-                    "readEnd" + "_" + handle.filename,
-                );
-                resolve(event.data.data);
-            });
-            this.opfsWorker.postMessage({
-                type: "read",
-                handle: handle.id,
-                offset,
-                length,
-                requestId,
-            });
-        });
-    }
+  close(handle: { id: number; filename: string }): Promise<void> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("close" + "_" + handle.filename);
+      this.callbacks.set(requestId, (_) => {
+        performance.mark("closeEnd" + "_" + handle.filename);
+        performance.measure(
+          "close" + "_" + handle.filename,
+          "close" + "_" + handle.filename,
+          "closeEnd" + "_" + handle.filename,
+        );
+        resolve(undefined);
+      });
+      this.opfsWorker.postMessage({
+        type: "close",
+        handle: handle.id,
+        requestId,
+      });
+    });
+  }
 
-    close(handle: { id: number; filename: string }): Promise<void> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("close" + "_" + handle.filename);
-            this.callbacks.set(requestId, (_) => {
-                performance.mark("closeEnd" + "_" + handle.filename);
-                performance.measure(
-                    "close" + "_" + handle.filename,
-                    "close" + "_" + handle.filename,
-                    "closeEnd" + "_" + handle.filename,
-                );
-                resolve(undefined);
-            });
-            this.opfsWorker.postMessage({
-                type: "close",
-                handle: handle.id,
-                requestId,
-            });
-        });
-    }
+  closeAndRename(
+    handle: { id: number; filename: string },
+    filename: BlockFilename,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("closeAndRename" + "_" + handle.filename);
+      this.callbacks.set(requestId, () => {
+        performance.mark("closeAndRenameEnd" + "_" + handle.filename);
+        performance.measure(
+          "closeAndRename" + "_" + handle.filename,
+          "closeAndRename" + "_" + handle.filename,
+          "closeAndRenameEnd" + "_" + handle.filename,
+        );
+        resolve(undefined);
+      });
+      this.opfsWorker.postMessage({
+        type: "closeAndRename",
+        handle: handle.id,
+        filename,
+        requestId,
+      });
+    });
+  }
 
-    closeAndRename(
-        handle: { id: number; filename: string },
-        filename: BlockFilename,
-    ): Promise<void> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("closeAndRename" + "_" + handle.filename);
-            this.callbacks.set(requestId, () => {
-                performance.mark("closeAndRenameEnd" + "_" + handle.filename);
-                performance.measure(
-                    "closeAndRename" + "_" + handle.filename,
-                    "closeAndRename" + "_" + handle.filename,
-                    "closeAndRenameEnd" + "_" + handle.filename,
-                );
-                resolve(undefined);
-            });
-            this.opfsWorker.postMessage({
-                type: "closeAndRename",
-                handle: handle.id,
-                filename,
-                requestId,
-            });
-        });
-    }
-
-    removeFile(filename: BlockFilename | WalFilename): Promise<void> {
-        return new Promise((resolve) => {
-            const requestId = this.nextRequestId++;
-            performance.mark("removeFile" + "_" + filename);
-            this.callbacks.set(requestId, () => {
-                performance.mark("removeFileEnd" + "_" + filename);
-                performance.measure(
-                    "removeFile" + "_" + filename,
-                    "removeFile" + "_" + filename,
-                    "removeFileEnd" + "_" + filename,
-                );
-                resolve(undefined);
-            });
-            this.opfsWorker.postMessage({
-                type: "removeFile",
-                filename,
-                requestId,
-            });
-        });
-    }
+  removeFile(filename: BlockFilename | WalFilename): Promise<void> {
+    return new Promise((resolve) => {
+      const requestId = this.nextRequestId++;
+      performance.mark("removeFile" + "_" + filename);
+      this.callbacks.set(requestId, () => {
+        performance.mark("removeFileEnd" + "_" + filename);
+        performance.measure(
+          "removeFile" + "_" + filename,
+          "removeFile" + "_" + filename,
+          "removeFileEnd" + "_" + filename,
+        );
+        resolve(undefined);
+      });
+      this.opfsWorker.postMessage({
+        type: "removeFile",
+        filename,
+        requestId,
+      });
+    });
+  }
 }
 
 const opfsWorkerJSSrc = `
