@@ -10,7 +10,7 @@ export default function Page() {
       <p>The best ways to get started are:</p>
       <ul>
         <li>
-          Quickstart (incomplete)
+          Quickstart (work in progress)
           <ol>
             <li>
               <a href="/docs/sync-and-storage">Sync & Storage Setup</a>
@@ -32,7 +32,7 @@ export default function Page() {
           </ol>
         </li>
         <li>
-          The step-by-step <a href="/docs/guide">Guide</a> (incomplete)
+          The step-by-step <a href="/docs/guide">Guide</a> (work in progress)
         </li>
       </ul>
       <p>Also make sure to:</p>
@@ -42,8 +42,8 @@ export default function Page() {
           similar to what you want to build
         </li>
         <li>
-          Check out the <a href="/docs/api-reference">API Reference</a>{" "}
-          (incomplete)
+          Check out the <a href="/docs/api-reference">API Reference</a> (work in
+          progress)
         </li>
       </ul>
       <p>
