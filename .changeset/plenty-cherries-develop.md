@@ -1,6 +1,6 @@
 ---
-"chat-vue": minor
-"jazz-vue": minor
+"chat-vue": patch
+"jazz-vue": patch
 ---
 
 Implemented Vue support for Jazz
