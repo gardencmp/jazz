@@ -1,102 +1,101 @@
 import { Page, expect } from "@playwright/test";
 
 export class HomePage {
-    constructor(public page: Page) {}
+  constructor(public page: Page) {}
 
-    newPlaylistButton = this.page.getByRole("button", {
-        name: "New Playlist",
+  newPlaylistButton = this.page.getByRole("button", {
+    name: "New Playlist",
+  });
+
+  playlistTitleInput = this.page.getByRole("textbox", {
+    name: "Playlist title",
+  });
+
+  logoutButton = this.page.getByRole("button", {
+    name: "Logout",
+  });
+
+  async expectActiveTrackPlaying() {
+    await expect(
+      this.page.getByRole("button", {
+        name: `Pause active track`,
+      }),
+    ).toBeVisible({
+      timeout: 10_000,
     });
+  }
 
-    playlistTitleInput = this.page.getByRole("textbox", {
-        name: "Playlist title",
-    });
+  async expectMusicTrack(trackName: string) {
+    await expect(
+      this.page.getByRole("button", {
+        name: `Play ${trackName}`,
+      }),
+    ).toBeVisible();
+  }
 
-    logoutButton = this.page.getByRole("button", {
-        name: "Logout",
-    });
+  async playMusicTrack(trackName: string) {
+    await this.page
+      .getByRole("button", {
+        name: `Play ${trackName}`,
+      })
+      .click();
+  }
 
-    async expectActiveTrackPlaying() {
-        await expect(
-            this.page.getByRole("button", {
-                name: `Pause active track`,
-            }),
-            
-        ).toBeVisible({
-            timeout: 10_000,
-        });
-    }
+  async editTrackTitle(trackTitle: string, newTitle: string) {
+    await this.page
+      .getByRole("textbox", {
+        name: `Edit track title: ${trackTitle}`,
+      })
+      .fill(newTitle);
+  }
 
-    async expectMusicTrack(trackName: string) {
-        await expect(
-            this.page.getByRole("button", {
-                name: `Play ${trackName}`,
-            }),
-        ).toBeVisible();
-    }
+  async createPlaylist() {
+    await this.newPlaylistButton.click();
+  }
 
-    async playMusicTrack(trackName: string) {
-        await this.page
-            .getByRole("button", {
-                name: `Play ${trackName}`,
-            })
-            .click();
-    }
+  async editPlaylistTitle(playlistTitle: string) {
+    await this.playlistTitleInput.fill(playlistTitle);
+  }
 
-    async editTrackTitle(trackTitle: string, newTitle: string) {
-        await this.page
-            .getByRole("textbox", {
-                name: `Edit track title: ${trackTitle}`,
-            })
-            .fill(newTitle);
-    }
+  async navigateToPlaylist(playlistTitle: string) {
+    await this.page
+      .getByRole("link", {
+        name: playlistTitle,
+      })
+      .click();
+  }
 
-    async createPlaylist() {
-        await this.newPlaylistButton.click();
-    }
+  async getShareLink() {
+    await this.page
+      .getByRole("button", {
+        name: "Share playlist",
+      })
+      .click();
 
-    async editPlaylistTitle(playlistTitle: string) {
-        await this.playlistTitleInput.fill(playlistTitle);
-    }
+    const inviteUrl = await this.page.evaluate(() =>
+      navigator.clipboard.readText(),
+    );
 
-    async navigateToPlaylist(playlistTitle: string) {
-        await this.page
-            .getByRole("link", {
-                name: playlistTitle,
-            })
-            .click();
-    }
+    expect(inviteUrl).toBeTruthy();
 
-    async getShareLink() {
-        await this.page
-            .getByRole("button", {
-                name: "Share playlist",
-            })
-            .click();
+    return inviteUrl;
+  }
 
-        const inviteUrl = await this.page.evaluate(() =>
-            navigator.clipboard.readText(),
-        );
+  async addTrackToPlaylist(trackTitle: string, playlistTitle: string) {
+    await this.page
+      .getByRole("button", {
+        name: `Open ${trackTitle} menu`,
+      })
+      .click();
 
-        expect(inviteUrl).toBeTruthy();
+    await this.page
+      .getByRole("menuitem", {
+        name: `Add to ${playlistTitle}`,
+      })
+      .click();
+  }
 
-        return inviteUrl;
-    }
-
-    async addTrackToPlaylist(trackTitle: string, playlistTitle: string) {
-        await this.page
-            .getByRole("button", {
-                name: `Open ${trackTitle} menu`,
-            })
-            .click();
-
-        await this.page
-            .getByRole("menuitem", {
-                name: `Add to ${playlistTitle}`,
-            })
-            .click();
-    }
-
-    async logout() {
-        await this.logoutButton.click();
-    }
+  async logout() {
+    await this.logoutButton.click();
+  }
 }

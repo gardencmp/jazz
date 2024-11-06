@@ -12,7 +12,7 @@ export function waitForCoValue<T extends CoValue>(
   valueId: ID<T>,
   account: Account,
   predicate: (value: T) => boolean,
-  depth: DepthsIn<T>
+  depth: DepthsIn<T>,
 ) {
   return new Promise<T>((resolve) => {
     function subscribe() {
@@ -30,7 +30,7 @@ export function waitForCoValue<T extends CoValue>(
         () => {
           unsubscribe();
           setTimeout(subscribe, 100);
-        }
+        },
       );
     }
 

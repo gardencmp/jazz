@@ -1,48 +1,45 @@
 {
-    "name": "jazz-react-native",
-    "version": "0.8.15",
-    "type": "module",
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "react-native": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "react-native": "./dist/index.js",
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        }
-    },
-    "license": "MIT",
-    "dependencies": {
-        "@scure/bip39": "^1.3.0",
-        "cojson": "workspace:*",
-        "cojson-transport-ws": "workspace:*",
-        "jazz-tools": "workspace:*",
-        "typescript": "^5.3.3"
-    },
-    "peerDependencies": {
-        "@react-native-community/netinfo": "*",
-        "expo-linking": "*",
-        "expo-secure-store": "*",
-        "react-native": "*"
-    },
-    "devDependencies": {
-        "@react-native-community/netinfo": "^11.3.1",
-        "expo-linking": "~6.3.1",
-        "expo-secure-store": "~13.0.2",
-        "react-native": "~0.74.5"
-    },
-    "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist",
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
-    },
-    "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
+  "name": "jazz-react-native",
+  "version": "0.8.15",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "react-native": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "react-native": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@scure/bip39": "^1.3.0",
+    "cojson": "workspace:*",
+    "cojson-transport-ws": "workspace:*",
+    "jazz-tools": "workspace:*",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "@react-native-community/netinfo": "*",
+    "expo-linking": "*",
+    "expo-secure-store": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@react-native-community/netinfo": "^11.3.1",
+    "expo-linking": "~6.3.1",
+    "expo-secure-store": "~13.0.2",
+    "react-native": "~0.74.5"
+  },
+  "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
+  },
+
+  "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

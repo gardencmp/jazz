@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 @layer components {
-    @import "shiki.css";
+  @import "shiki.css";
 }

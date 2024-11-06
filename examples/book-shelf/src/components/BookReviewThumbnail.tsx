@@ -1,11 +1,11 @@
 "use client";
 
-import { BookReview } from "../schema";
-import { ID } from "jazz-tools";
-import { useCoState } from "@/components/JazzAndAuth";
-import Link from "next/link";
 import { BookCover, BookCoverReadOnly } from "@/components/BookCover";
+import { useCoState } from "@/components/JazzAndAuth";
 import StarIcon from "@/components/icons/StarIcon";
+import { ID } from "jazz-tools";
+import Link from "next/link";
+import { BookReview } from "../schema";
 
 export function BookReviewThumbnail({ id }: { id: ID<BookReview> }) {
   const bookReview = useCoState(BookReview, id);
