@@ -59,32 +59,63 @@ export type SingleCoFeedEntry<Item> = {
 /** @deprecated Use CoFeed instead */
 export { CoFeed as CoStream };
 
-/** @category CoValues */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * CoFeeds are collaborative logs of data.
+ *
+ * They are similar to `CoList`s, but with a few key differences:
+ * - They are append-only
+ * - They have a per-session view
+ *
+ * ```ts
+ *
+ * @category CoValues
+ */
 export class CoFeed<Item = any> extends CoValueBase implements CoValue {
+  /**
+   * Declare a `CoFeed` by subclassing `CoFeed.Of(...)` and passing the item schema using `co`.
+   *
+   * @example
+   * ```ts
+   * class ColorFeed extends CoFeed.Of(co.string) {}
+   * class AnimalFeed extends CoFeed.Of(co.ref(Animal)) {}
+   * ```
+   *
+   * @category Declaration
+   */
   static Of<Item>(item: IfCo<Item, Item>): typeof CoFeed<Item> {
     return class CoFeedOf extends CoFeed<Item> {
       [co.items] = item;
     };
   }
 
+  /**
+   * The ID of this `CoFeed`
+   * @category Content */
   declare id: ID<this>;
+  /** @category Type Helpers */
   declare _type: "CoStream";
   static {
     this.prototype._type = "CoStream";
   }
+  /** @category Internals */
   declare _raw: RawCoStream;
 
   /** @internal This is only a marker type and doesn't exist at runtime */
   [ItemsSym]!: Item;
+  /** @internal */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static _schema: any;
+  /** @internal */
   get _schema(): {
     [ItemsSym]: SchemaFor<Item>;
   } {
     return (this.constructor as typeof CoFeed)._schema;
   }
 
+  /**
+   * The per-account view of this `CoFeed`
+   * @category Content
+   */
   [key: ID<Account>]: CoFeedEntry<Item>;
 
   get byMe(): CoFeedEntry<Item> | undefined {
@@ -94,9 +125,22 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
       return undefined;
     }
   }
+
+  /**
+   * The per-session view of this `CoStream`
+   * @category Content
+   */
   perSession!: {
     [key: SessionID]: CoFeedEntry<Item>;
   };
+
+  /**
+   * The current session's view of this `CoFeed`
+   *
+   * This is a shortcut for `this.perSession` where the session ID is the current session ID.
+   *
+   * @category Content
+   */
   get inCurrentSession(): CoFeedEntry<Item> | undefined {
     if (this._loadedAs._type === "Account") {
       return this.perSession[this._loadedAs.sessionID!];
@@ -125,6 +169,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return new Proxy(this, CoStreamProxyHandler as ProxyHandler<this>);
   }
 
+  /**
+   * Create a new `CoFeed`
+   * @category Creation
+   */
   static create<S extends CoFeed>(
     this: CoValueClass<S>,
     init: S extends CoFeed<infer Item> ? UnCo<Item>[] : never,
