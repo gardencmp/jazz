@@ -36,6 +36,8 @@ We welcome all ideas! If you have suggestions, feel free to open an issue marked
 
 ### 5. Local Setup
 
+You'll need Node.js 20.x or 22.x installed (we're working on support for 23.x), and pnpm 9.x installed. If you're using nix, run `nix develop` to get a shell with the correct versions of everything installed.
+
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/gardencmp/jazz.git
@@ -53,7 +55,13 @@ We welcome all ideas! If you have suggestions, feel free to open an issue marked
 
 ### 6. Testing
 
-Please write tests for any new features or bug fixes. We use Vitest for unit tests. Make sure all tests pass before submitting a pull request.
+Please write tests for any new features or bug fixes. We use Vitest for unit tests, and Playwright for e2e tests. Make sure all tests pass before submitting a pull request.
+
+```bash
+pnpm test
+```
+
+NB: You'll need to run `pnpm exec playwright install` to install the Playwright browsers before first run.
 
 ### 7. Communication
 
