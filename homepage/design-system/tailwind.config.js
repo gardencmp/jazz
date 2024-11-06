@@ -178,6 +178,9 @@ const config = {
         ".dark *": {
           borderColor: "var(--gcmp-invert-border-color)",
         },
+        "*:focus": {
+          outline: "none",
+        },
       }),
     ),
   ],

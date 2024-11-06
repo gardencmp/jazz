@@ -8,6 +8,7 @@ import { JazzFooter } from "@/components/footer";
 import { JazzNav } from "@/components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { clsx } from "clsx";
 import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
 
 // If loading a variable font, you don't need to specify the font weight
@@ -83,22 +84,27 @@ export default function RootLayout({
           manrope.variable,
           commitMono.variable,
           inter.className,
-          "min-h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
-          "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
         ].join(" ")}
       >
-        <SpeedInsights />
-        <Analytics />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+        <div
+          className={clsx(
+            "min-h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
+            "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
+          )}
         >
-          <JazzNav />
-          <main className="flex-1 w-full">{children}</main>
-          <JazzFooter />
-        </ThemeProvider>
+          <SpeedInsights />
+          <Analytics />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <JazzNav />
+            <main className="flex-1 w-full">{children}</main>
+            <JazzFooter />
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );
