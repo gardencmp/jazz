@@ -1,4 +1,4 @@
-# Jazz - Ship top-tier apps at high tempo
+# Jazz - Build local-first apps
 
  **Jazz is an open-source toolkit for building apps with *distributed state.***
 
