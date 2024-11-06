@@ -14,8 +14,8 @@ const config = getDefaultConfig(projectRoot);
 config.watchFolders = [workspaceRoot];
 // #2 - Try resolving with project modules first, then workspace modules
 config.resolver.nodeModulesPaths = [
-    path.resolve(projectRoot, "node_modules"),
-    path.resolve(workspaceRoot, "node_modules"),
+  path.resolve(projectRoot, "node_modules"),
+  path.resolve(workspaceRoot, "node_modules"),
 ];
 config.resolver.sourceExts = ["mjs", "js", "json", "ts", "tsx"];
 config.resolver.unstable_enablePackageExports = true;
@@ -23,9 +23,9 @@ config.resolver.requireCycleIgnorePatterns = [/(^|\/|\\)node_modules($|\/|\\)/];
 
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
-    new FileStore({
-        root: path.join(projectRoot, "node_modules", ".cache", "metro"),
-    }),
+  new FileStore({
+    root: path.join(projectRoot, "node_modules", ".cache", "metro"),
+  }),
 ];
 
 module.exports = config;

@@ -1,8 +1,8 @@
 import React from "react";
-import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
-import VaultPage from "./3_vault";
-import { useAcceptInvite } from "./2_main";
+import { Navigate, RouterProvider, createHashRouter } from "react-router-dom";
 import { Folder } from "./1_schema";
+import { useAcceptInvite } from "./2_main";
+import VaultPage from "./3_vault";
 
 const App: React.FC = () => {
   const router = createHashRouter([

@@ -1,12 +1,10 @@
 {
-    "extends": "./tsconfig.json",
-    "include": [
-        "./src/**/*.ts"
-    ],
-    "exclude": [
-        "./node_modules",
-        "./src/tests",
-        "./src/crypto/WasmCrypto.ts",
-        "./src/index.web.ts"
-    ],
+  "extends": "./tsconfig.json",
+  "include": ["./src/**/*.ts"],
+  "exclude": [
+    "./node_modules",
+    "./src/tests",
+    "./src/crypto/WasmCrypto.ts",
+    "./src/index.web.ts"
+  ]
 }

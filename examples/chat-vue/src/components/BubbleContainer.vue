@@ -6,7 +6,7 @@
 
 <script lang="ts">
 export default {
-  name: 'BubbleContainer',
+  name: "BubbleContainer",
   props: {
     fromMe: {
       type: Boolean,
@@ -15,7 +15,7 @@ export default {
   },
   computed: {
     alignClass() {
-      return this.fromMe ? 'items-end' : 'items-start';
+      return this.fromMe ? "items-end" : "items-start";
     },
   },
 };
