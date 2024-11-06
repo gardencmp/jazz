@@ -69,7 +69,7 @@ const MusicIllustration = () => (
 );
 
 const BookShelfIllustration = () => (
-  <div className="h-full p-5">
+  <div className="h-full p-6 md:p-5">
     <div className="flex justify-between items-baseline">
       <p className="font-display font-medium tracking-tight  text-sm text-stone-900 dark:text-white">
         Your book shelf
@@ -80,7 +80,7 @@ const BookShelfIllustration = () => (
       </p>
     </div>
 
-    <div className="grid grid-cols-3 gap-4 mt-3">
+    <div className="relative grid grid-cols-3 gap-4 mt-3">
       {["malibu.jpg", "pathless.jpg", "upgrade.jpg"].map((book) => (
         <img
           key={book}
@@ -89,6 +89,8 @@ const BookShelfIllustration = () => (
           className="w-full h-full object-cover rounded-r-md shadow-sm border dark:border-none"
         />
       ))}
+
+      <div className="absolute bottom-0 w-full h-10 bg-gradient-to-t from-white dark:from-stone-925 to-transparent md:hidden" />
     </div>
   </div>
 );
@@ -156,13 +158,7 @@ const reactExamples = [
     features: [features.inviteLink],
     demoUrl: "https://example-todo.jazz.tools",
     illustration: (
-      <div className="relative h-full">
-        <img
-          src="/todo.jpg"
-          className="object-cover"
-          alt="Todo list illustration"
-        />
-      </div>
+      <div className="h-full w-full bg-cover bg-[url('/todo.jpg')] bg-left-bottom"></div>
     ),
   },
   {
@@ -205,7 +201,7 @@ const rnExamples: Example[] = [
   {
     name: "Chat",
     slug: "chat-rn",
-    description: "A simple chat app using React Native.",
+    description: "A simple app that creates a chat room with a shareable link.",
     tech: [tech.reactNative],
     illustration: <ChatIllustration />,
   },
