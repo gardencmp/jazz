@@ -1,4 +1,4 @@
-import { LSMStorage, RawAccountID } from "cojson";
+import { LSMStorage, Peer, RawAccountID } from "cojson";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import {
   Account,
@@ -17,7 +17,7 @@ import {
 } from "jazz-tools";
 import { OPFSFilesystem } from "./OPFSFilesystem.js";
 import { createWebSocketPeerWithReconnection } from "./createWebSocketPeerWithReconnection.js";
-import { getStorageOptions, StorageConfig } from "./storageOptions.js";
+import { StorageConfig, getStorageOptions } from "./storageOptions.js";
 export { BrowserDemoAuth } from "./auth/DemoAuth.js";
 export { BrowserPasskeyAuth } from "./auth/PasskeyAuth.js";
 export { BrowserPassphraseAuth } from "./auth/PassphraseAuth.js";
@@ -44,10 +44,10 @@ export type BrowserContextOptions<Acc extends Account> = {
 } & BaseBrowserContextOptions;
 
 export type BaseBrowserContextOptions = {
-    peer: `wss://${string}` | `ws://${string}`;
-    reconnectionTimeout?: number;
-    storage?: StorageConfig;
-    crypto?: CryptoProvider;
+  peer: `wss://${string}` | `ws://${string}`;
+  reconnectionTimeout?: number;
+  storage?: StorageConfig;
+  crypto?: CryptoProvider;
 };
 
 /** @category Context Creation */
@@ -65,48 +65,46 @@ export async function createJazzBrowserContext<Acc extends Account>(
 ): Promise<BrowserContext<Acc> | BrowserGuestContext> {
   const crypto = options.crypto || (await WasmCrypto.create());
 
-    const wsPeer = createWebSocketPeerWithReconnection(
-        options.peer,
-        options.reconnectionTimeout,
-        (peer) => {
-            node.syncManager.addPeer(peer);
-        },
+  const wsPeer = createWebSocketPeerWithReconnection(
+    options.peer,
+    options.reconnectionTimeout,
+    (peer) => {
+      node.syncManager.addPeer(peer);
+    },
+  );
+
+  const { useSingleTabOPFS, useIndexedDB } = getStorageOptions(options.storage);
+
+  const peersToLoadFrom: Peer[] = [];
+
+  if (useSingleTabOPFS) {
+    peersToLoadFrom.push(
+      await LSMStorage.asPeer({
+        fs: new OPFSFilesystem(crypto),
+        // trace: true,
+      }),
     );
+  }
 
-    const { useSingleTabOPFS, useIndexedDB } = getStorageOptions(
-        options.storage,
-    );
+  if (useIndexedDB) {
+    peersToLoadFrom.push(await IDBStorage.asPeer());
+  }
 
-    const peersToLoadFrom: Peer[] = [];
+  peersToLoadFrom.push(wsPeer.peer);
 
-    if (useSingleTabOPFS) {
-        peersToLoadFrom.push(
-            await LSMStorage.asPeer({
-                fs: new OPFSFilesystem(crypto),
-                // trace: true,
-            }),
-        );
-    }
-
-    if (useIndexedDB) {
-        peersToLoadFrom.push(await IDBStorage.asPeer());
-    }
-
-    peersToLoadFrom.push(wsPeer.peer);
-
-    const context =
-        "auth" in options
-            ? await createJazzContext({
-                  AccountSchema: options.AccountSchema,
-                  auth: options.auth,
-                  crypto: await WasmCrypto.create(),
-                  peersToLoadFrom,
-                  sessionProvider: provideBrowserLockSession,
-              })
-            : await createJazzContext({
-                  crypto: await WasmCrypto.create(),
-                  peersToLoadFrom,
-              });
+  const context =
+    "auth" in options
+      ? await createJazzContext({
+          AccountSchema: options.AccountSchema,
+          auth: options.auth,
+          crypto: await WasmCrypto.create(),
+          peersToLoadFrom,
+          sessionProvider: provideBrowserLockSession,
+        })
+      : await createJazzContext({
+          crypto: await WasmCrypto.create(),
+          peersToLoadFrom,
+        });
 
   const node =
     "account" in context ? context.account._raw.core.node : context.agent.node;

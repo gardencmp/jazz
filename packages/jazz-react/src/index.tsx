@@ -30,20 +30,20 @@ export function createJazzReactApp<Acc extends Account>({
     BrowserContext<Acc> | BrowserGuestContext | undefined
   >(undefined);
 
-    function Provider({
-        children,
-        auth,
-        peer,
-        storage,
-    }: {
-        children: React.ReactNode;
-        auth: AuthMethod | "guest";
-        peer: `wss://${string}` | `ws://${string}`;
-        storage?: BaseBrowserContextOptions["storage"];
-    }) {
-        const [ctx, setCtx] = useState<
-            BrowserContext<Acc> | BrowserGuestContext | undefined
-        >();
+  function Provider({
+    children,
+    auth,
+    peer,
+    storage,
+  }: {
+    children: React.ReactNode;
+    auth: AuthMethod | "guest";
+    peer: `wss://${string}` | `ws://${string}`;
+    storage?: BaseBrowserContextOptions["storage"];
+  }) {
+    const [ctx, setCtx] = useState<
+      BrowserContext<Acc> | BrowserGuestContext | undefined
+    >();
 
     const [sessionCount, setSessionCount] = useState(0);
 
@@ -264,13 +264,13 @@ export function createJazzReactApp<Acc extends Account>({
 
 /** @category Context & Hooks */
 export interface JazzReactApp<Acc extends Account> {
-    /** @category Provider Component */
-    Provider: React.FC<{
-        children: React.ReactNode;
-        auth: AuthMethod | "guest";
-        peer: `wss://${string}` | `ws://${string}`;
-        storage?: BaseBrowserContextOptions["storage"];
-    }>;
+  /** @category Provider Component */
+  Provider: React.FC<{
+    children: React.ReactNode;
+    auth: AuthMethod | "guest";
+    peer: `wss://${string}` | `ws://${string}`;
+    storage?: BaseBrowserContextOptions["storage"];
+  }>;
 
   /** @category Hooks */
   useAccount(): {
