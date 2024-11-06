@@ -1,19 +1,19 @@
 import { DocNav } from "@/components/docs/nav";
 
 export const metadata = {
-    title: "Docs",
-    description: "Jazz Guide & Docs.",
+  title: "Docs",
+  description: "Jazz Guide & Docs.",
 };
 
 export default function DocsLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <div className="container relative grid grid-cols-12 gap-5 py-8">
-            <DocNav />
-            {children}
-        </div>
-    );
+  return (
+    <div className="container relative grid grid-cols-12 gap-5 py-8">
+      <DocNav />
+      {children}
+    </div>
+  );
 }

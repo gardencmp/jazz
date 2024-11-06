@@ -1,9 +1,9 @@
+import { Group } from "jazz-tools";
 import React, { useState } from "react";
+import { Folder } from "../1_schema";
+import { shareFolder } from "../4_actions";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { shareFolder } from "../4_actions";
-import { Folder } from "../1_schema";
-import { Group } from "jazz-tools";
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -67,7 +67,7 @@ const InviteModal: React.FC<InviteModalProps> = ({
             value={selectedPermission}
             onChange={(e) =>
               setSelectedPermission(
-                e.target.value as "reader" | "writer" | "admin"
+                e.target.value as "reader" | "writer" | "admin",
               )
             }
           >

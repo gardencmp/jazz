@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ESNext",
-    ],
+    "lib": ["ESNext"],
     "module": "esnext",
     "target": "ESNext",
     "moduleResolution": "bundler",
@@ -13,9 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
-    "declaration": true,
+    "declaration": true
   },
-  "include": [
-    "./src/**/*"
-  ],
+  "include": ["./src/**/*"]
 }

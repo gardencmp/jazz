@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
-  "include": ["./src/**/*"],
+  "include": ["./src/**/*"]
 }

@@ -1,6 +1,6 @@
 import { ID } from "jazz-tools";
-import { Chat, Message } from "./schema.ts";
 import { useCoState } from "./main.tsx";
+import { Chat, Message } from "./schema.ts";
 import {
   BubbleBody,
   BubbleContainer,
@@ -16,12 +16,12 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
   return chat ? (
     <ChatContainer>
       {chat.length > 0 ? (
-        chat.map(msg => <ChatBubble msg={msg} key={msg.id} />)
+        chat.map((msg) => <ChatBubble msg={msg} key={msg.id} />)
       ) : (
         <EmptyChatMessage />
       )}
       <ChatInput
-        onSubmit={text => {
+        onSubmit={(text) => {
           chat.push(Message.create({ text }, { owner: chat._owner }));
         }}
       />

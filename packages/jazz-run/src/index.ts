@@ -10,80 +10,76 @@ const jazzTools = Command.make("jazz-tools");
 
 const nameOption = Options.text("name").pipe(Options.withAlias("n"));
 const peerOption = Options.text("peer")
-    .pipe(Options.withAlias("p"))
-    .pipe(Options.withDefault("wss://cloud.jazz.tools"));
+  .pipe(Options.withAlias("p"))
+  .pipe(Options.withDefault("wss://cloud.jazz.tools"));
 
 const createAccountCommand = Command.make(
-    "create",
-    { name: nameOption, peer: peerOption },
-    ({ name, peer }) => {
-        return Effect.gen(function* () {
-            const { accountId, agentSecret } = yield* Effect.promise(() =>
-                createWorkerAccount({ name, peer }),
-            );
+  "create",
+  { name: nameOption, peer: peerOption },
+  ({ name, peer }) => {
+    return Effect.gen(function* () {
+      const { accountId, agentSecret } = yield* Effect.promise(() =>
+        createWorkerAccount({ name, peer }),
+      );
 
-            yield* Console.log(`# Credentials for Jazz account "${name}":
+      yield* Console.log(`# Credentials for Jazz account "${name}":
 JAZZ_WORKER_ACCOUNT=${accountId}
 JAZZ_WORKER_SECRET=${agentSecret}
 `);
-        });
-    },
+    });
+  },
 );
 
 const accountCommand = Command.make("account").pipe(
-    Command.withSubcommands([createAccountCommand]),
+  Command.withSubcommands([createAccountCommand]),
 );
 
 const portOption = Options.text("port")
-    .pipe(Options.withAlias("p"))
-    .pipe(
-        Options.withDescription(
-            "Select a different port for the WebSocket server. Default is 4200",
-        ),
-    )
-    .pipe(Options.withDefault("4200"));
+  .pipe(Options.withAlias("p"))
+  .pipe(
+    Options.withDescription(
+      "Select a different port for the WebSocket server. Default is 4200",
+    ),
+  )
+  .pipe(Options.withDefault("4200"));
 
 const inMemoryOption = Options.boolean("in-memory").pipe(
-    Options.withDescription("Use an in-memory storage instead of file-based"),
+  Options.withDescription("Use an in-memory storage instead of file-based"),
 );
 
 const dbOption = Options.file("db")
-    .pipe(
-        Options.withDescription(
-            "The path to the file where to store the data. Default is 'sync-db/storage.db'",
-        ),
-    )
-    .pipe(Options.withDefault("sync-db/storage.db"));
+  .pipe(
+    Options.withDescription(
+      "The path to the file where to store the data. Default is 'sync-db/storage.db'",
+    ),
+  )
+  .pipe(Options.withDefault("sync-db/storage.db"));
 
 export const startSyncServerCommand = Command.make(
-    "sync",
-    { port: portOption, inMemory: inMemoryOption, db: dbOption },
-    ({ port, inMemory, db }) => {
-        return Effect.gen(function* () {
-            yield* Effect.promise(() =>
-                startSyncServer({ port, inMemory, db }),
-            );
+  "sync",
+  { port: portOption, inMemory: inMemoryOption, db: dbOption },
+  ({ port, inMemory, db }) => {
+    return Effect.gen(function* () {
+      yield* Effect.promise(() => startSyncServer({ port, inMemory, db }));
 
-            Console.log(
-                `COJSON sync server listening on ws://127.0.0.1:${port}`,
-            );
+      Console.log(`COJSON sync server listening on ws://127.0.0.1:${port}`);
 
-            // Keep the server up
-            yield* Effect.never;
-        });
-    },
+      // Keep the server up
+      yield* Effect.never;
+    });
+  },
 );
 
 const command = jazzTools.pipe(
-    Command.withSubcommands([accountCommand, startSyncServerCommand]),
+  Command.withSubcommands([accountCommand, startSyncServerCommand]),
 );
 
 const cli = Command.run(command, {
-    name: "Jazz CLI Tools",
-    version: "v0.8.11",
+  name: "Jazz CLI Tools",
+  version: "v0.8.11",
 });
 
 Effect.suspend(() => cli(process.argv)).pipe(
-    Effect.provide(NodeContext.layer),
-    NodeRuntime.runMain,
+  Effect.provide(NodeContext.layer),
+  NodeRuntime.runMain,
 );

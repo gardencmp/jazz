@@ -25,17 +25,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, type PropType } from 'vue';
-import type { ID } from 'jazz-tools';
-import { Chat, Message } from '../schema';
-import { useCoState } from '../main';
-import ChatBody from '../components/ChatBody.vue';
-import ChatInput from '../components/ChatInput.vue';
-import EmptyChatMessage from '../components/EmptyChatMessage.vue';
-import ChatBubble from '../components/ChatBubble.vue';
+import type { ID } from "jazz-tools";
+import { type PropType, computed, defineComponent, ref } from "vue";
+import ChatBody from "../components/ChatBody.vue";
+import ChatBubble from "../components/ChatBubble.vue";
+import ChatInput from "../components/ChatInput.vue";
+import EmptyChatMessage from "../components/EmptyChatMessage.vue";
+import { useCoState } from "../main";
+import { Chat, Message } from "../schema";
 
 export default defineComponent({
-  name: 'ChatView',
+  name: "ChatView",
   components: {
     ChatBody,
     ChatInput,

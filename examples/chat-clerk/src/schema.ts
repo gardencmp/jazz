@@ -1,4 +1,4 @@
-import { CoMap, CoList, co } from "jazz-tools";
+import { CoList, CoMap, co } from "jazz-tools";
 
 export class Message extends CoMap {
   text = co.string;

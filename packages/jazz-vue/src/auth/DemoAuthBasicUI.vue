@@ -57,63 +57,67 @@
   </template>
   
   <script setup lang="ts">
-  import { ref, computed } from 'vue';
-  import { DemoAuthState } from './useDemoAuth.js';
+import { computed, ref } from "vue";
+import { DemoAuthState } from "./useDemoAuth.js";
 
-  const props = defineProps<{
-    appName: string;
-    state: DemoAuthState;
-  }>();
+const props = defineProps<{
+  appName: string;
+  state: DemoAuthState;
+}>();
 
-  const username = ref('');
-  const darkMode = computed(() => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+const username = ref("");
+const darkMode = computed(
+  () =>
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches,
+);
 
-  const containerStyle = computed(() => ({
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    padding: '1rem',
-    maxWidth: '100vw',
-    gap: '2rem',
-    margin: '0',
-    ...(darkMode.value ? { background: '#000' } : {}),
-  }));
+const containerStyle = computed(() => ({
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column" as const,
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  padding: "1rem",
+  maxWidth: "100vw",
+  gap: "2rem",
+  margin: "0",
+  ...(darkMode.value ? { background: "#000" } : {}),
+}));
 
-  const inputStyle = computed(() => ({
-    border: darkMode.value ? '2px solid #444' : '2px solid #ddd',
-    padding: '11px 8px',
-    borderRadius: '6px',
-    background: darkMode.value ? '#000' : '#fff',
-    color: darkMode.value ? '#fff' : '#000',
-  }));
+const inputStyle = computed(() => ({
+  border: darkMode.value ? "2px solid #444" : "2px solid #ddd",
+  padding: "11px 8px",
+  borderRadius: "6px",
+  background: darkMode.value ? "#000" : "#fff",
+  color: darkMode.value ? "#fff" : "#000",
+}));
 
-  const buttonStyle = computed(() => ({
-    padding: '13px 5px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    background: darkMode.value ? '#444' : '#ddd',
-    color: darkMode.value ? '#fff' : '#000',
-  }));
+const buttonStyle = computed(() => ({
+  padding: "13px 5px",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  background: darkMode.value ? "#444" : "#ddd",
+  color: darkMode.value ? "#fff" : "#000",
+}));
 
-  const loginButtonStyle = computed(() => ({
-    background: darkMode.value ? '#0d0d0d' : '#eee',
-    color: darkMode.value ? '#fff' : '#000',
-    padding: '0.5rem',
-    border: 'none',
-    borderRadius: '6px',
-  }));
+const loginButtonStyle = computed(() => ({
+  background: darkMode.value ? "#0d0d0d" : "#eee",
+  color: darkMode.value ? "#fff" : "#000",
+  padding: "0.5rem",
+  border: "none",
+  borderRadius: "6px",
+}));
 
-  const signUp = () => {
-    (props.state as DemoAuthState & { state: "ready" }).signUp(username.value);
-    username.value = '';
-  };
+const signUp = () => {
+  (props.state as DemoAuthState & { state: "ready" }).signUp(username.value);
+  username.value = "";
+};
 
-  const logInAs = (user: string) => {
-    (props.state as DemoAuthState & { state: "ready" }).logInAs(user);
-  };
+const logInAs = (user: string) => {
+  (props.state as DemoAuthState & { state: "ready" }).logInAs(user);
+};
 </script>
   

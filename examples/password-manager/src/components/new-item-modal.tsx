@@ -1,11 +1,11 @@
+import { CoMap } from "jazz-tools";
 import React, { useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { Folder } from "../1_schema";
+import { PasswordItemFormValues } from "../types";
+import { Alert, AlertDescription } from "./alert";
 import BaseModal from "./base-modal";
 import Button from "./button";
-import { Alert, AlertDescription } from "./alert";
-import { Folder } from "../1_schema";
-import { CoMap } from "jazz-tools";
-import { PasswordItemFormValues } from "../types";
 
 interface NewItemModalProps {
   isOpen: boolean;

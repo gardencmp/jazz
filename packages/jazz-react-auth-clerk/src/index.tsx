@@ -1,25 +1,30 @@
-import { BrowserClerkAuth, type MinimalClerkClient } from "jazz-browser-auth-clerk";
-import { useState, useMemo } from "react";
+import {
+  BrowserClerkAuth,
+  type MinimalClerkClient,
+} from "jazz-browser-auth-clerk";
+import { useMemo, useState } from "react";
 
-export function useJazzClerkAuth(clerk: MinimalClerkClient & {
+export function useJazzClerkAuth(
+  clerk: MinimalClerkClient & {
     signOut: () => Promise<unknown>;
-}) {
-    const [state, setState] = useState<{ errors: string[] }>({ errors: [] });
+  },
+) {
+  const [state, setState] = useState<{ errors: string[] }>({ errors: [] });
 
-    const authMethod = useMemo(() => {
-        return new BrowserClerkAuth(
-            {
-                onError: (error) => {
-                    void clerk.signOut();
-                    setState((state) => ({
-                        ...state,
-                        errors: [...state.errors, error.toString()],
-                    }));
-                },
-            },
-            clerk,
-        );
-    }, [clerk.user]);
+  const authMethod = useMemo(() => {
+    return new BrowserClerkAuth(
+      {
+        onError: (error) => {
+          void clerk.signOut();
+          setState((state) => ({
+            ...state,
+            errors: [...state.errors, error.toString()],
+          }));
+        },
+      },
+      clerk,
+    );
+  }, [clerk.user]);
 
-    return [authMethod, state] as const;
+  return [authMethod, state] as const;
 }

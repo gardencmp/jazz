@@ -1,397 +1,393 @@
+import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
+import { CoID, RawCoValue } from "../coValue.js";
+import { CoValueCore } from "../coValueCore.js";
+import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { JsonObject, JsonValue } from "../jsonValue.js";
-import { RawCoValue, CoID } from "../coValue.js";
+import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { isAccountID } from "../typeUtils/isAccountID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
-import { CoValueCore } from "../coValueCore.js";
-import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
-import { RawGroup } from "./group.js";
-import { AgentID, SessionID, TransactionID } from "../ids.js";
-import { base64URLtoBytes, bytesToBase64url } from "../base64url.js";
 import { RawAccountID } from "./account.js";
+import { RawGroup } from "./group.js";
 
 export type BinaryStreamInfo = {
-    mimeType: string;
-    fileName?: string;
-    totalSizeBytes?: number;
+  mimeType: string;
+  fileName?: string;
+  totalSizeBytes?: number;
 };
 
 export type BinaryStreamStart = {
-    type: "start";
+  type: "start";
 } & BinaryStreamInfo;
 
 export type BinaryStreamChunk = {
-    type: "chunk";
-    chunk: `binary_U${string}`;
+  type: "chunk";
+  chunk: `binary_U${string}`;
 };
 
 export type BinaryStreamEnd = {
-    type: "end";
+  type: "end";
 };
 
 export type BinaryCoStreamMeta = JsonObject & { type: "binary" };
 
 export type BinaryStreamItem =
-    | BinaryStreamStart
-    | BinaryStreamChunk
-    | BinaryStreamEnd;
+  | BinaryStreamStart
+  | BinaryStreamChunk
+  | BinaryStreamEnd;
 
 export type CoStreamItem<Item extends JsonValue> = {
-    value: Item;
-    tx: TransactionID;
-    madeAt: number;
+  value: Item;
+  tx: TransactionID;
+  madeAt: number;
 };
 
 export class RawCoStreamView<
-    Item extends JsonValue = JsonValue,
-    Meta extends JsonObject | null = JsonObject | null,
+  Item extends JsonValue = JsonValue,
+  Meta extends JsonObject | null = JsonObject | null,
 > implements RawCoValue
 {
-    id: CoID<this>;
-    type = "costream" as const;
-    core: CoValueCore;
-    items: {
-        [key: SessionID]: CoStreamItem<Item>[];
+  id: CoID<this>;
+  type = "costream" as const;
+  core: CoValueCore;
+  items: {
+    [key: SessionID]: CoStreamItem<Item>[];
+  };
+  readonly _item!: Item;
+
+  constructor(core: CoValueCore) {
+    this.id = core.id as CoID<this>;
+    this.core = core;
+    this.items = {};
+    this.fillFromCoValue();
+  }
+
+  get headerMeta(): Meta {
+    return this.core.header.meta as Meta;
+  }
+
+  get group(): RawGroup {
+    return this.core.getGroup();
+  }
+
+  /** Not yet implemented */
+  atTime(_time: number): this {
+    throw new Error("Not yet implemented");
+  }
+
+  /** @internal */
+  protected fillFromCoValue() {
+    this.items = {};
+
+    for (const {
+      txID,
+      madeAt,
+      changes,
+    } of this.core.getValidSortedTransactions()) {
+      for (const changeUntyped of changes) {
+        const change = changeUntyped as Item;
+        let entries = this.items[txID.sessionID];
+        if (!entries) {
+          entries = [];
+          this.items[txID.sessionID] = entries;
+        }
+        entries.push({ value: change, madeAt, tx: txID });
+      }
+    }
+  }
+
+  getSingleStream(): Item[] | undefined {
+    const streams = Object.values(this.items);
+    const firstStream = streams[0];
+
+    if (!firstStream) {
+      return undefined;
+    }
+
+    if (streams.length > 1) {
+      throw new Error(
+        "CoStream.getSingleStream() can only be called when there is exactly one stream",
+      );
+    }
+
+    return firstStream.map((item) => item.value);
+  }
+
+  sessions(): SessionID[] {
+    return Object.keys(this.items) as SessionID[];
+  }
+
+  accounts(): Set<RawAccountID> {
+    return new Set(
+      this.sessions().map(accountOrAgentIDfromSessionID).filter(isAccountID),
+    );
+  }
+
+  nthItemIn(
+    sessionID: SessionID,
+    n: number,
+  ):
+    | {
+        by: RawAccountID | AgentID;
+        tx: TransactionID;
+        at: Date;
+        value: Item;
+      }
+    | undefined {
+    const items = this.items[sessionID];
+    if (!items) return;
+
+    const item = items[n];
+    if (!item) return;
+
+    return {
+      by: accountOrAgentIDfromSessionID(sessionID),
+      tx: item.tx,
+      at: new Date(item.madeAt),
+      value: item.value,
     };
-    readonly _item!: Item;
+  }
 
-    constructor(core: CoValueCore) {
-        this.id = core.id as CoID<this>;
-        this.core = core;
-        this.items = {};
-        this.fillFromCoValue();
+  lastItemIn(sessionID: SessionID):
+    | {
+        by: RawAccountID | AgentID;
+        tx: TransactionID;
+        at: Date;
+        value: Item;
+      }
+    | undefined {
+    const items = this.items[sessionID];
+    if (!items) return;
+    return this.nthItemIn(sessionID, items.length - 1);
+  }
+
+  *itemsIn(sessionID: SessionID) {
+    const items = this.items[sessionID];
+    if (!items) return;
+    for (const item of items) {
+      yield {
+        by: accountOrAgentIDfromSessionID(sessionID),
+        tx: item.tx,
+        at: new Date(item.madeAt),
+        value: item.value as Item,
+      };
     }
+  }
 
-    get headerMeta(): Meta {
-        return this.core.header.meta as Meta;
-    }
-
-    get group(): RawGroup {
-        return this.core.getGroup();
-    }
-
-    /** Not yet implemented */
-    atTime(_time: number): this {
-        throw new Error("Not yet implemented");
-    }
-
-    /** @internal */
-    protected fillFromCoValue() {
-        this.items = {};
-
-        for (const {
-            txID,
-            madeAt,
-            changes,
-        } of this.core.getValidSortedTransactions()) {
-            for (const changeUntyped of changes) {
-                const change = changeUntyped as Item;
-                let entries = this.items[txID.sessionID];
-                if (!entries) {
-                    entries = [];
-                    this.items[txID.sessionID] = entries;
-                }
-                entries.push({ value: change, madeAt, tx: txID });
-            }
+  lastItemBy(account: RawAccountID | AgentID):
+    | {
+        by: RawAccountID | AgentID;
+        tx: TransactionID;
+        at: Date;
+        value: Item;
+      }
+    | undefined {
+    let latestItem:
+      | {
+          by: RawAccountID | AgentID;
+          tx: TransactionID;
+          at: Date;
+          value: Item;
         }
-    }
+      | undefined;
 
-    getSingleStream(): Item[] | undefined {
-        const streams = Object.values(this.items);
-        const firstStream = streams[0];
-
-        if (!firstStream) {
-            return undefined;
-        }
-
-        if (streams.length > 1) {
-            throw new Error(
-                "CoStream.getSingleStream() can only be called when there is exactly one stream",
-            );
-        }
-
-        return firstStream.map((item) => item.value);
-    }
-
-    sessions(): SessionID[] {
-        return Object.keys(this.items) as SessionID[];
-    }
-
-    accounts(): Set<RawAccountID> {
-        return new Set(
-            this.sessions()
-                .map(accountOrAgentIDfromSessionID)
-                .filter(isAccountID),
-        );
-    }
-
-    nthItemIn(
-        sessionID: SessionID,
-        n: number,
-    ):
-        | {
-              by: RawAccountID | AgentID;
-              tx: TransactionID;
-              at: Date;
-              value: Item;
-          }
-        | undefined {
-        const items = this.items[sessionID];
-        if (!items) return;
-
-        const item = items[n];
-        if (!item) return;
-
-        return {
-            by: accountOrAgentIDfromSessionID(sessionID),
+    for (const sessionID of Object.keys(this.items)) {
+      if (sessionID.startsWith(account)) {
+        const item = this.lastItemIn(sessionID as SessionID);
+        if (!item) continue;
+        if (!latestItem || item.at > latestItem.at) {
+          latestItem = {
+            by: item.by,
             tx: item.tx,
-            at: new Date(item.madeAt),
+            at: item.at,
             value: item.value,
-        };
-    }
-
-    lastItemIn(sessionID: SessionID):
-        | {
-              by: RawAccountID | AgentID;
-              tx: TransactionID;
-              at: Date;
-              value: Item;
-          }
-        | undefined {
-        const items = this.items[sessionID];
-        if (!items) return;
-        return this.nthItemIn(sessionID, items.length - 1);
-    }
-
-    *itemsIn(sessionID: SessionID) {
-        const items = this.items[sessionID];
-        if (!items) return;
-        for (const item of items) {
-            yield {
-                by: accountOrAgentIDfromSessionID(sessionID),
-                tx: item.tx,
-                at: new Date(item.madeAt),
-                value: item.value as Item,
-            };
+          };
         }
+      }
     }
 
-    lastItemBy(account: RawAccountID | AgentID):
-        | {
-              by: RawAccountID | AgentID;
-              tx: TransactionID;
-              at: Date;
-              value: Item;
-          }
-        | undefined {
-        let latestItem:
-            | {
-                  by: RawAccountID | AgentID;
-                  tx: TransactionID;
-                  at: Date;
-                  value: Item;
-              }
-            | undefined;
+    return latestItem;
+  }
 
-        for (const sessionID of Object.keys(this.items)) {
-            if (sessionID.startsWith(account)) {
-                const item = this.lastItemIn(sessionID as SessionID);
-                if (!item) continue;
-                if (!latestItem || item.at > latestItem.at) {
-                    latestItem = {
-                        by: item.by,
-                        tx: item.tx,
-                        at: item.at,
-                        value: item.value,
-                    };
-                }
-            }
-        }
+  *itemsBy(account: RawAccountID | AgentID) {
+    // TODO: this can be made more lazy without a huge collect and sort
+    const items = [
+      ...Object.keys(this.items).flatMap((sessionID) =>
+        sessionID.startsWith(account)
+          ? [...this.itemsIn(sessionID as SessionID)].map((item) => ({
+              in: sessionID as SessionID,
+              ...item,
+            }))
+          : [],
+      ),
+    ];
 
-        return latestItem;
+    items.sort((a, b) => a.at.getTime() - b.at.getTime());
+
+    for (const item of items) {
+      yield item;
     }
+  }
 
-    *itemsBy(account: RawAccountID | AgentID) {
-        // TODO: this can be made more lazy without a huge collect and sort
-        const items = [
-            ...Object.keys(this.items).flatMap((sessionID) =>
-                sessionID.startsWith(account)
-                    ? [...this.itemsIn(sessionID as SessionID)].map((item) => ({
-                          in: sessionID as SessionID,
-                          ...item,
-                      }))
-                    : [],
-            ),
-        ];
+  toJSON(): {
+    [key: SessionID]: Item[];
+  } {
+    return Object.fromEntries(
+      Object.entries(this.items).map(([sessionID, items]) => [
+        sessionID,
+        items.map((item) => item.value),
+      ]),
+    );
+  }
 
-        items.sort((a, b) => a.at.getTime() - b.at.getTime());
-
-        for (const item of items) {
-            yield item;
-        }
-    }
-
-    toJSON(): {
-        [key: SessionID]: Item[];
-    } {
-        return Object.fromEntries(
-            Object.entries(this.items).map(([sessionID, items]) => [
-                sessionID,
-                items.map((item) => item.value),
-            ]),
-        );
-    }
-
-    subscribe(listener: (coStream: this) => void): () => void {
-        return this.core.subscribe((content) => {
-            listener(content as this);
-        });
-    }
+  subscribe(listener: (coStream: this) => void): () => void {
+    return this.core.subscribe((content) => {
+      listener(content as this);
+    });
+  }
 }
 
 export class RawCoStream<
-        Item extends JsonValue = JsonValue,
-        Meta extends JsonObject | null = JsonObject | null,
-    >
-    extends RawCoStreamView<Item, Meta>
-    implements RawCoValue
+    Item extends JsonValue = JsonValue,
+    Meta extends JsonObject | null = JsonObject | null,
+  >
+  extends RawCoStreamView<Item, Meta>
+  implements RawCoValue
 {
-    push(item: Item, privacy: "private" | "trusting" = "private"): void {
-        this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
-        this.fillFromCoValue();
-    }
+  push(item: Item, privacy: "private" | "trusting" = "private"): void {
+    this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
+    this.fillFromCoValue();
+  }
 }
 
 const binary_U_prefixLength = 8; // "binary_U".length;
 
 export class RawBinaryCoStreamView<
-        Meta extends BinaryCoStreamMeta = { type: "binary" },
-    >
-    extends RawCoStreamView<BinaryStreamItem, Meta>
-    implements RawCoValue
+    Meta extends BinaryCoStreamMeta = { type: "binary" },
+  >
+  extends RawCoStreamView<BinaryStreamItem, Meta>
+  implements RawCoValue
 {
-    isBinaryStreamEnded() {
-        const items = this.getSingleStream();
+  isBinaryStreamEnded() {
+    const items = this.getSingleStream();
 
-        if (!items || items.length === 0) {
-            return false;
-        }
-
-        const lastItem = items[items.length - 1];
-
-        return lastItem?.type === "end";
+    if (!items || items.length === 0) {
+      return false;
     }
 
-    getBinaryChunks(
-        allowUnfinished?: boolean,
-    ):
-        | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
-        | undefined {
-        const items = this.getSingleStream();
+    const lastItem = items[items.length - 1];
 
-        // No active streams
-        if (!items) return;
+    return lastItem?.type === "end";
+  }
 
-        const start = items[0];
+  getBinaryChunks(
+    allowUnfinished?: boolean,
+  ):
+    | (BinaryStreamInfo & { chunks: Uint8Array[]; finished: boolean })
+    | undefined {
+    const items = this.getSingleStream();
 
-        if (start?.type !== "start") {
-            console.error("Invalid binary stream start", start);
-            return;
-        }
+    // No active streams
+    if (!items) return;
 
-        const end = items[items.length - 1];
+    const start = items[0];
 
-        if (end?.type !== "end" && !allowUnfinished) return;
-
-        const chunks: Uint8Array[] = [];
-
-        let finished = false;
-
-        for (const item of items.slice(1)) {
-            if (item.type === "end") {
-                finished = true;
-                break;
-            }
-
-            if (item.type !== "chunk") {
-                console.error("Invalid binary stream chunk", item);
-                return undefined;
-            }
-
-            const chunk = base64URLtoBytes(
-                item.chunk.slice(binary_U_prefixLength),
-            );
-            chunks.push(chunk);
-        }
-
-        return {
-            mimeType: start.mimeType,
-            fileName: start.fileName,
-            totalSizeBytes: start.totalSizeBytes,
-            chunks,
-            finished,
-        };
+    if (start?.type !== "start") {
+      console.error("Invalid binary stream start", start);
+      return;
     }
+
+    const end = items[items.length - 1];
+
+    if (end?.type !== "end" && !allowUnfinished) return;
+
+    const chunks: Uint8Array[] = [];
+
+    let finished = false;
+
+    for (const item of items.slice(1)) {
+      if (item.type === "end") {
+        finished = true;
+        break;
+      }
+
+      if (item.type !== "chunk") {
+        console.error("Invalid binary stream chunk", item);
+        return undefined;
+      }
+
+      const chunk = base64URLtoBytes(item.chunk.slice(binary_U_prefixLength));
+      chunks.push(chunk);
+    }
+
+    return {
+      mimeType: start.mimeType,
+      fileName: start.fileName,
+      totalSizeBytes: start.totalSizeBytes,
+      chunks,
+      finished,
+    };
+  }
 }
 
 export class RawBinaryCoStream<
-        Meta extends BinaryCoStreamMeta = { type: "binary" },
-    >
-    extends RawBinaryCoStreamView<Meta>
-    implements RawCoValue
+    Meta extends BinaryCoStreamMeta = { type: "binary" },
+  >
+  extends RawBinaryCoStreamView<Meta>
+  implements RawCoValue
 {
-    /** @internal */
-    push(
-        item: BinaryStreamItem,
-        privacy: "private" | "trusting" = "private",
-        updateView: boolean = true,
-    ): void {
-        this.core.makeTransaction([item], privacy);
-        if (updateView) {
-            this.fillFromCoValue();
-        }
+  /** @internal */
+  push(
+    item: BinaryStreamItem,
+    privacy: "private" | "trusting" = "private",
+    updateView: boolean = true,
+  ): void {
+    this.core.makeTransaction([item], privacy);
+    if (updateView) {
+      this.fillFromCoValue();
     }
+  }
 
-    startBinaryStream(
-        settings: BinaryStreamInfo,
-        privacy: "private" | "trusting" = "private",
-    ): void {
-        this.push(
-            {
-                type: "start",
-                ...settings,
-            } satisfies BinaryStreamStart,
-            privacy,
-            false,
-        );
-    }
+  startBinaryStream(
+    settings: BinaryStreamInfo,
+    privacy: "private" | "trusting" = "private",
+  ): void {
+    this.push(
+      {
+        type: "start",
+        ...settings,
+      } satisfies BinaryStreamStart,
+      privacy,
+      false,
+    );
+  }
 
-    pushBinaryStreamChunk(
-        chunk: Uint8Array,
-        privacy: "private" | "trusting" = "private",
-    ): void {
-        // const before = performance.now();
-        this.push(
-            {
-                type: "chunk",
-                chunk: `binary_U${bytesToBase64url(chunk)}`,
-            } satisfies BinaryStreamChunk,
-            privacy,
-            false,
-        );
-        // const after = performance.now();
-        // console.log(
-        //     "pushBinaryStreamChunk bandwidth in MB/s",
-        //     (1000 * chunk.length) / (after - before) / (1024 * 1024)
-        // );
-    }
+  pushBinaryStreamChunk(
+    chunk: Uint8Array,
+    privacy: "private" | "trusting" = "private",
+  ): void {
+    // const before = performance.now();
+    this.push(
+      {
+        type: "chunk",
+        chunk: `binary_U${bytesToBase64url(chunk)}`,
+      } satisfies BinaryStreamChunk,
+      privacy,
+      false,
+    );
+    // const after = performance.now();
+    // console.log(
+    //     "pushBinaryStreamChunk bandwidth in MB/s",
+    //     (1000 * chunk.length) / (after - before) / (1024 * 1024)
+    // );
+  }
 
-    endBinaryStream(privacy: "private" | "trusting" = "private") {
-        this.push(
-            {
-                type: "end",
-            } satisfies BinaryStreamEnd,
-            privacy,
-            true,
-        );
-    }
+  endBinaryStream(privacy: "private" | "trusting" = "private") {
+    this.push(
+      {
+        type: "end",
+      } satisfies BinaryStreamEnd,
+      privacy,
+      true,
+    );
+  }
 }

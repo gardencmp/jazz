@@ -8,6 +8,6 @@
 
 <script lang="ts">
 export default {
-  name: 'AppContainer',
+  name: "AppContainer",
 };
 </script>
