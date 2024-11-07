@@ -40,10 +40,9 @@ export class SyncStateSubscriptionManager {
     peerId: PeerID,
     listener: (knownState: CoValueKnownState, uploadCompleted: boolean) => void,
   ) {
-    let listeners = this.listenersByPeers.get(peerId);
+    const listeners = this.listenersByPeers.get(peerId) ?? new Set();
 
-    if (!listeners) {
-      listeners = new Set();
+    if (listeners.size === 0) {
       this.listenersByPeers.set(peerId, listeners);
     }
 
