@@ -58,7 +58,18 @@ export function isCoValueClass<V extends CoValue>(
   return typeof value === "function" && value.fromRaw !== undefined;
 }
 
-/** @category CoValues */
+/**
+ * IDs are unique identifiers for `CoValue`s.
+ * Can be used as a type argument to refer to a specific `CoValue` type.
+ *
+ * @example
+ *
+ * ```ts
+ * type AccountID = ID<Account>;
+ * ```
+ *
+ * @category CoValues
+ */
 export type ID<T> = CojsonInternalTypes.RawCoID & IDMarker<T>;
 
 type IDMarker<out T> = { __type(_: never): T };
