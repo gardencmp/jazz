@@ -1,7 +1,8 @@
-import { CoValueCore } from "cojson";
+import { CoValueCore, Profile } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import {
   Account,
+  CoMap,
   Peer,
   WasmCrypto,
   createJazzContext,
@@ -44,27 +45,36 @@ export const createWorkerAccount = async ({
     syncManager.syncCoValue(accountProfileCoValue),
   ]);
 
-  await Promise.all([
-    waitForSync(account, peer, accountCoValue),
-    waitForSync(account, peer, accountProfileCoValue),
+  await Promise.race([
+    Promise.all([
+      waitForSync(account, peer, accountCoValue),
+      waitForSync(account, peer, accountProfileCoValue),
+    ]),
+    failAfter(
+      4_000,
+      "Timeout: Didn't manage to upload the account and profile",
+    ),
   ]);
 
   // Spawn a second peer to double check that the account is fully synced
   const peer2 = createWebSocketPeer({
-    id: "upstream2",
+    id: "verifyingPeer",
     websocket: new WebSocket(peerAddr),
     role: "server",
   });
 
-  await createJazzContext({
-    auth: fixedCredentialsAuth({
-      accountID: account.id,
-      secret: account._raw.agentSecret,
+  await Promise.race([
+    createJazzContext({
+      auth: fixedCredentialsAuth({
+        accountID: account.id,
+        secret: account._raw.agentSecret,
+      }),
+      sessionProvider: randomSessionProvider,
+      peersToLoadFrom: [peer2],
+      crypto,
     }),
-    sessionProvider: randomSessionProvider,
-    peersToLoadFrom: [peer2],
-    crypto,
-  });
+    failAfter(4_000, "Timeout: Account loading check failed"),
+  ]);
 
   return {
     accountId: account.id,
@@ -76,18 +86,34 @@ function waitForSync(account: Account, peer: Peer, coValue: CoValueCore) {
   const syncManager = account._raw.core.node.syncManager;
   const peerState = syncManager.peers[peer.id];
 
+  if (!peerState) {
+    throw new Error(`Peer state for ${peer.id} not found`);
+  }
+
+  const isSynced = () => {
+    const knownState = coValue.knownState();
+
+    if (!peerState.optimisticKnownStates.get(coValue.id)) {
+      return false;
+    }
+
+    return isEqualSession(
+      knownState.sessions,
+      peerState.optimisticKnownStates.get(coValue.id)?.sessions ?? {},
+    );
+  };
+
+  if (isSynced()) {
+    return Promise.resolve(true);
+  }
+
   return new Promise((resolve) => {
     const unsubscribe = peerState?.optimisticKnownStates.subscribe(
-      (id, peerKnownState) => {
+      (id, knownState) => {
+        console.log("id", id, knownState);
         if (id !== coValue.id) return;
 
-        const knownState = coValue.knownState();
-
-        const synced = isEqualSession(
-          knownState.sessions,
-          peerKnownState.sessions,
-        );
-        if (synced) {
+        if (isSynced()) {
           resolve(true);
           unsubscribe?.();
         }
@@ -111,4 +137,10 @@ function isEqualSession(a: Record<string, number>, b: Record<string, number>) {
   }
 
   return true;
+}
+
+function failAfter(ms: number, errorMessage: string) {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(errorMessage)), ms);
+  });
 }
