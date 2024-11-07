@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CloseButton,
   Popover,
   PopoverButton,
   PopoverGroup,
@@ -26,32 +27,10 @@ type NavItemProps = {
 
 type NavProps = {
   mainLogo: ReactNode;
-  items: {
-    href: string;
-    icon?: ReactNode;
-    title: string;
-    firstOnRight?: boolean;
-    newTab?: boolean;
-  }[];
+  items: NavItemProps[];
   docNav?: ReactNode;
   cta?: ReactNode;
 };
-
-// function NavLink({
-//   item,
-// }: {
-//   item: NavItemProps;
-// }) {
-//   const { href, icon, title, items } = item;
-//   return (
-//     <Link
-//       className="px-2 lg:px-4 py-3 max-sm:w-full text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none"
-//       href={href}
-//     >
-//       {title}
-//     </Link>
-//   );
-// }
 
 function NavItem({
   item,
@@ -96,10 +75,11 @@ function NavItem({
         <div className="w-screen max-w-md flex-auto overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-stone-925">
           <div className="p-2 grid">
             {items.map(({ href, title, description, icon }) => (
-              <Link
+              <CloseButton
                 className="p-2 rounded flex gap-2 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors"
                 href={href}
                 aria-label={title}
+                as={Link}
               >
                 {icon}
                 <div className="grid gap-1 mt-px">
@@ -108,7 +88,7 @@ function NavItem({
                   </div>
                   <p className="text-xs leading-relaxed">{description}</p>
                 </div>
-              </Link>
+              </CloseButton>
             ))}
           </div>
         </div>
@@ -302,7 +282,7 @@ export function Nav(props: NavProps) {
   const { mainLogo, items, docNav, cta } = props;
   return (
     <>
-      <div className="w-full border-b py-2 border-b sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">
+      <div className="w-full border-b py-2 sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">
         <PopoverGroup className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
           <Link href="/" className="flex items-center">
             {mainLogo}
