@@ -110,7 +110,6 @@ function waitForSync(account: Account, peer: Peer, coValue: CoValueCore) {
   return new Promise((resolve) => {
     const unsubscribe = peerState?.optimisticKnownStates.subscribe(
       (id, knownState) => {
-        console.log("id", id, knownState);
         if (id !== coValue.id) return;
 
         if (isSynced()) {
