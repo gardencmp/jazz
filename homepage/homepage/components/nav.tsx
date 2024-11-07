@@ -11,6 +11,7 @@ export function JazzNav() {
       items={[
         {
           title: "Documentation",
+          href: "/docs",
           items: [
             {
               title: "Documentation",
