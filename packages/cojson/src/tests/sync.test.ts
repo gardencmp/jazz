@@ -1,20 +1,20 @@
-import { expect, test, describe, vi } from "vitest";
-import { LocalNode } from "../localNode.js";
-import { SyncMessage } from "../sync.js";
+import { describe, expect, test, vi } from "vitest";
+import { expectMap } from "../coValue.js";
+import { CoValueHeader } from "../coValueCore.js";
+import { RawAccountID } from "../coValues/account.js";
 import { MapOpPayload, RawCoMap } from "../coValues/coMap.js";
 import { RawGroup } from "../coValues/group.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
+import { stableStringify } from "../jsonStringify.js";
+import { LocalNode } from "../localNode.js";
+import { getPriorityFromHeader } from "../priority.js";
+import { connectedPeers, newQueuePair } from "../streamUtils.js";
+import { SyncMessage } from "../sync.js";
 import {
   createTestNode,
   randomAnonymousAccountAndSessionID,
   waitFor,
 } from "./testUtils.js";
-import { expectMap } from "../coValue.js";
-import { CoValueHeader } from "../coValueCore.js";
-import { RawAccountID } from "../coValues/account.js";
-import { WasmCrypto } from "../crypto/WasmCrypto.js";
-import { stableStringify } from "../jsonStringify.js";
-import { getPriorityFromHeader } from "../priority.js";
-import { connectedPeers, newQueuePair } from "../streamUtils.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -173,7 +173,7 @@ test("Node replies with only new tx to subscribe with some known state", async (
   } satisfies SyncMessage);
 });
 test.todo(
-  "TODO: node only replies with new tx to subscribe with some known state, even in the depended on coValues"
+  "TODO: node only replies with new tx to subscribe with some known state, even in the depended on coValues",
 );
 
 test("After subscribing, node sends own known state and new txs to peer", async () => {
@@ -489,7 +489,7 @@ test("If we add a peer, but it never subscribes to a coValue, it won't get any m
   map.set("hello", "world", "trusting");
 
   const timeoutPromise = new Promise((resolve) =>
-    setTimeout(() => resolve("neverHappened"), 100)
+    setTimeout(() => resolve("neverHappened"), 100),
   );
 
   const result = await Promise.race([
@@ -574,7 +574,7 @@ test.todo(
       },
       priority: getPriorityFromHeader(map.core.header),
     } satisfies SyncMessage);
-  }
+  },
 );
 
 test.skip("If we add a server peer, newly created coValues are auto-subscribed to", async () => {
@@ -628,7 +628,7 @@ test.skip("If we add a server peer, newly created coValues are auto-subscribed t
 });
 
 test.todo(
-  "TODO: when receiving a subscribe response that is behind our optimistic state (due to already sent content), we ignore it"
+  "TODO: when receiving a subscribe response that is behind our optimistic state (due to already sent content), we ignore it",
 );
 
 test("When we connect a new server peer, we try to sync all existing coValues to it", async () => {
@@ -729,7 +729,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
   const node2 = new LocalNode(
     admin,
     Crypto.newRandomSessionID(admin.id),
-    Crypto
+    Crypto,
   );
 
   const [inRx2, inTx2] = newQueuePair();
@@ -765,7 +765,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
   expect(groupTellKnownStateMsg).toMatchObject(groupStateEx(group));
 
   expect(
-    node2.syncManager.peers["test1"]!.optimisticKnownStates.has(group.core.id)
+    node2.syncManager.peers["test1"]!.optimisticKnownStates.has(group.core.id),
   ).toBeDefined();
 
   // await inTx1.push(adminTellKnownStateMsg);
@@ -821,8 +821,8 @@ test.skip("When replaying creation and transactions of a coValue as new content,
 
   expect(
     expectMap(node2.expectCoValueLoaded(map.core.id).getCurrentContent()).get(
-      "hello"
-    )
+      "hello",
+    ),
   ).toEqual("world");
 });
 
@@ -876,7 +876,7 @@ test("Can sync a coValue through a server to another client", async () => {
       peer1role: "server",
       peer2role: "client",
       trace: true,
-    }
+    },
   );
 
   client1.syncManager.addPeer(serverAsPeerForClient1);
@@ -885,7 +885,7 @@ test("Can sync a coValue through a server to another client", async () => {
   const client2 = new LocalNode(
     admin,
     Crypto.newRandomSessionID(admin.id),
-    Crypto
+    Crypto,
   );
 
   const [serverAsPeerForClient2, client2AsPeer] = connectedPeers(
@@ -895,7 +895,7 @@ test("Can sync a coValue through a server to another client", async () => {
       peer1role: "server",
       peer2role: "client",
       trace: true,
-    }
+    },
   );
 
   client2.syncManager.addPeer(serverAsPeerForClient2);
@@ -907,7 +907,7 @@ test("Can sync a coValue through a server to another client", async () => {
   }
 
   expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
-    "world"
+    "world",
   );
 });
 
@@ -937,7 +937,7 @@ test("Can sync a coValue with private transactions through a server to another c
   const client2 = new LocalNode(
     admin,
     client1.crypto.newRandomSessionID(admin.id),
-    Crypto
+    Crypto,
   );
 
   const [serverAsOtherPeer, client2AsPeer] = connectedPeers(
@@ -947,7 +947,7 @@ test("Can sync a coValue with private transactions through a server to another c
       trace: true,
       peer1role: "server",
       peer2role: "client",
-    }
+    },
   );
 
   client2.syncManager.addPeer(serverAsOtherPeer);
@@ -959,7 +959,7 @@ test("Can sync a coValue with private transactions through a server to another c
   }
 
   expect(expectMap(mapOnClient2.getCurrentContent()).get("hello")).toEqual(
-    "world"
+    "world",
   );
 });
 
@@ -1089,7 +1089,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
   const node2 = new LocalNode(
     admin,
     Crypto.newRandomSessionID(admin.id),
-    Crypto
+    Crypto,
   );
 
   const [node1asPeer, node2asPeer] = connectedPeers("peer1", "peer2", {
@@ -1112,7 +1112,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
   }
 
   expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
-    "world"
+    "world",
   );
 });
 
@@ -1150,7 +1150,7 @@ describe("sync - extra tests", () => {
     }
 
     expect(expectMap(mapOnNode2.getCurrentContent()).get("key1")).toEqual(
-      "value1"
+      "value1",
     );
 
     // Simulate disconnection
@@ -1168,7 +1168,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     node1.syncManager.addPeer(newNode2AsPeer);
@@ -1184,7 +1184,7 @@ describe("sync - extra tests", () => {
     }
 
     expect(
-      expectMap(updatedMapOnNode2.getCurrentContent()).get("key2")
+      expectMap(updatedMapOnNode2.getCurrentContent()).get("key2"),
     ).toEqual("value2");
 
     // Make a new change on node2 to verify two-way sync
@@ -1201,7 +1201,7 @@ describe("sync - extra tests", () => {
           value: "value3",
         },
       ],
-      "trusting"
+      "trusting",
     );
 
     if (!success) {
@@ -1218,7 +1218,7 @@ describe("sync - extra tests", () => {
 
     // Verify that node1 has received the change from node2
     expect(expectMap(mapOnNode1.getCurrentContent()).get("key3")).toEqual(
-      "value3"
+      "value3",
     );
   });
   test("Concurrent modifications on multiple nodes are resolved correctly", async () => {
@@ -1245,7 +1245,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     const [node2AsPeerFor3, node3AsPeerFor2] = connectedPeers(
@@ -1255,7 +1255,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     const [node3AsPeerFor1, node1AsPeerFor3] = connectedPeers(
@@ -1265,7 +1265,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     node1.syncManager.addPeer(node2AsPeerFor1);
@@ -1364,13 +1364,13 @@ describe("sync - extra tests", () => {
     // Verify that all data was synced correctly
     const syncedMap = new RawCoMap(largeMapOnNode2);
     expect(
-      Object.keys(largeMapOnNode2.getCurrentContent().toJSON() || {}).length
+      Object.keys(largeMapOnNode2.getCurrentContent().toJSON() || {}).length,
     ).toBe(chunks);
 
     for (let i = 0; i < chunks; i++) {
       const key = `key${i}`;
       const expectedValue = Buffer.alloc(chunkSize, `value${i}`).toString(
-        "base64"
+        "base64",
       );
       expect(syncedMap.get(key)).toBe(expectedValue);
     }
@@ -1409,7 +1409,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     const [node2AsPeerFor3, node3AsPeerFor2] = connectedPeers(
@@ -1419,7 +1419,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     const [node3AsPeerFor1, node1AsPeerFor3] = connectedPeers(
@@ -1429,7 +1429,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         // trace: true,
-      }
+      },
     );
 
     node1.syncManager.addPeer(node2AsPeerFor1);
@@ -1482,34 +1482,34 @@ describe("sync - extra tests", () => {
 
     // Verify that node1 and node2 are in sync, but node3 is not
     expect(expectMap(mapOnNode1Core.getCurrentContent()).get("node1")).toBe(
-      "partition"
+      "partition",
     );
     expect(expectMap(mapOnNode1Core.getCurrentContent()).get("node2")).toBe(
-      "partition"
+      "partition",
     );
     expect(expectMap(mapOnNode1Core.getCurrentContent()).toJSON()?.node3).toBe(
-      undefined
+      undefined,
     );
 
     expect(expectMap(mapOnNode2Core.getCurrentContent()).get("node1")).toBe(
-      "partition"
+      "partition",
     );
     expect(expectMap(mapOnNode2Core.getCurrentContent()).get("node2")).toBe(
-      "partition"
+      "partition",
     );
     expect(expectMap(mapOnNode2Core.getCurrentContent()).toJSON()?.node3).toBe(
-      undefined
+      undefined,
     );
 
     expect(expectMap(mapOnNode3Core.getCurrentContent()).toJSON()?.node1).toBe(
-      undefined
+      undefined,
     );
     expect(expectMap(mapOnNode3Core.getCurrentContent()).toJSON()?.node2).toBe(
-      undefined
+      undefined,
     );
 
     expect(expectMap(mapOnNode3Core.getCurrentContent()).toJSON()?.node3).toBe(
-      "partition"
+      "partition",
     );
 
     // Restore connectivity
@@ -1520,7 +1520,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         trace: true,
-      }
+      },
     );
 
     const [newNode3AsPeerFor2, newNode2AsPeerFor3] = connectedPeers(
@@ -1530,7 +1530,7 @@ describe("sync - extra tests", () => {
         peer1role: "server",
         peer2role: "client",
         trace: true,
-      }
+      },
     );
 
     node1.syncManager.addPeer(newNode3AsPeerFor1);
@@ -1543,13 +1543,13 @@ describe("sync - extra tests", () => {
 
     // Verify final state: all nodes should have all changes
     const finalStateNode1 = expectMap(
-      mapOnNode1Core.getCurrentContent()
+      mapOnNode1Core.getCurrentContent(),
     ).toJSON();
     const finalStateNode2 = expectMap(
-      mapOnNode2Core.getCurrentContent()
+      mapOnNode2Core.getCurrentContent(),
     ).toJSON();
     const finalStateNode3 = expectMap(
-      mapOnNode3Core.getCurrentContent()
+      mapOnNode3Core.getCurrentContent(),
     ).toJSON();
 
     const expectedFinalState = {
@@ -1603,7 +1603,7 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
     await waitFor(() => {
       return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
         "jazzCloudConnection",
-        map.core.id
+        map.core.id,
       );
     });
 
@@ -1611,7 +1611,7 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
 
     // The optimisticKnownStates should be the same as the knownStates after the full sync is complete
     expect(peerState.optimisticKnownStates.get(map.core.id)).toEqual(
-      peerState.knownStates.get(map.core.id)
+      peerState.knownStates.get(map.core.id),
     );
   });
 
@@ -1647,7 +1647,7 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
     const peerState = client.syncManager.peers["jazzCloudConnection"]!;
 
     expect(peerState.optimisticKnownStates.get(map.core.id)).not.toEqual(
-      peerState.knownStates.get(map.core.id)
+      peerState.knownStates.get(map.core.id),
     );
 
     // Restore the implementation of push and send the blocked messages
@@ -1662,12 +1662,12 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
     await waitFor(() => {
       return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
         "jazzCloudConnection",
-        map.core.id
+        map.core.id,
       );
     });
 
     expect(peerState.optimisticKnownStates.get(map.core.id)).toEqual(
-      peerState.knownStates.get(map.core.id)
+      peerState.knownStates.get(map.core.id),
     );
   });
 });
@@ -1687,7 +1687,7 @@ describe("SyncManager.addPeer", () => {
     await waitFor(() => {
       return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
         "jazzCloudConnection",
-        map.core.id
+        map.core.id,
       );
     });
 
@@ -1702,7 +1702,7 @@ describe("SyncManager.addPeer", () => {
       {
         peer1role: "server",
         peer2role: "client",
-      }
+      },
     );
 
     // Add new peer with same ID
@@ -1714,7 +1714,7 @@ describe("SyncManager.addPeer", () => {
 
     expect(newPeerKnownStates).not.toBe(initialKnownStates); // Should be a different instance
     expect(newPeerKnownStates.get(map.core.id)).toEqual(
-      initialKnownStates.get(map.core.id)
+      initialKnownStates.get(map.core.id),
     );
   });
 
@@ -1732,7 +1732,7 @@ describe("SyncManager.addPeer", () => {
     await waitFor(() => {
       return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
         "jazzCloudConnection",
-        map.core.id
+        map.core.id,
       );
     });
 
@@ -1765,7 +1765,7 @@ describe("SyncManager.addPeer", () => {
       {
         peer1role: "server",
         peer2role: "client",
-      }
+      },
     );
 
     client.syncManager.addPeer(jazzCloudConnectionAsPeer2);
@@ -1791,7 +1791,7 @@ describe("SyncManager.addPeer", () => {
       {
         peer1role: "server",
         peer2role: "client",
-      }
+      },
     );
 
     client.syncManager.addPeer(jazzCloudConnectionAsPeer2);
@@ -1818,9 +1818,9 @@ describe("waitForUploadIntoPeer", () => {
       Promise.race([
         client.syncManager.waitForUploadIntoPeer(peer.id, map.core.id),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 100)
+          setTimeout(() => reject(new Error("Timeout")), 100),
         ),
-      ])
+      ]),
     ).resolves.toBe(true);
   });
 
@@ -1843,9 +1843,9 @@ describe("waitForUploadIntoPeer", () => {
       Promise.race([
         client.syncManager.waitForUploadIntoPeer(peer.id, map.core.id),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 100)
+          setTimeout(() => reject(new Error("Timeout")), 100),
         ),
-      ])
+      ]),
     ).rejects.toThrow("Timeout");
   });
 });
