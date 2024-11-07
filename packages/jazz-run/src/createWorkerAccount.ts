@@ -74,18 +74,41 @@ export const createWorkerAccount = async ({
 
 function waitForSync(account: Account, peer: Peer, coValue: CoValueCore) {
   const syncManager = account._raw.core.node.syncManager;
+  const peerState = syncManager.peers[peer.id];
 
-  return Promise.race([
-    failAfter(
-      10_000,
-      "Timeout: can't upload the account data to the target peer.",
-    ),
-    syncManager.waitForUploadIntoPeer(peer.id, coValue.id),
-  ]);
+  return new Promise((resolve) => {
+    const unsubscribe = peerState?.optimisticKnownStates.subscribe(
+      (id, peerKnownState) => {
+        if (id !== coValue.id) return;
+
+        const knownState = coValue.knownState();
+
+        const synced = isEqualSession(
+          knownState.sessions,
+          peerKnownState.sessions,
+        );
+        if (synced) {
+          resolve(true);
+          unsubscribe?.();
+        }
+      },
+    );
+  });
 }
 
-function failAfter(timeout: number, message: string) {
-  return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error(message)), timeout);
-  });
+function isEqualSession(a: Record<string, number>, b: Record<string, number>) {
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  for (const sessionId of keysA) {
+    if (a[sessionId] !== b[sessionId]) {
+      return false;
+    }
+  }
+
+  return true;
 }
