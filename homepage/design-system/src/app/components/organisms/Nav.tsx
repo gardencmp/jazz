@@ -21,6 +21,7 @@ type NavItemProps = {
   firstOnRight?: boolean;
   newTab?: boolean;
   items?: NavItemProps[];
+  description?: string;
 };
 
 type NavProps = {
@@ -59,12 +60,15 @@ function NavItem({
 }) {
   const { href, icon, title, items, firstOnRight } = item;
 
+  const path = usePathname();
+
   if (!items?.length) {
     return (
       <NavLink
         className={clsx(
           "text-sm px-2 lg:px-4 py-3 ",
           firstOnRight && "ml-auto",
+          path === href ? "text-black dark:text-white" : "",
         )}
         {...item}
       >
@@ -75,7 +79,12 @@ function NavItem({
 
   return (
     <Popover className={clsx("relative", firstOnRight && "ml-auto")}>
-      <PopoverButton className="flex items-center gap-1.5 text-sm px-2 lg:px-4 py-3 max-sm:w-full text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none focus-visible:outline-none">
+      <PopoverButton
+        className={clsx(
+          "flex items-center gap-1.5 text-sm px-2 lg:px-4 py-3 max-sm:w-full text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none focus-visible:outline-none",
+          path === href ? "text-black dark:text-white" : "",
+        )}
+      >
         <span>{title}</span>
         <ChevronDownIcon aria-hidden="true" className="size-4" />
       </PopoverButton>
@@ -85,13 +94,20 @@ function NavItem({
         className="absolute left-1/2 -translate-x-1/2 z-10 flex w-screen max-w-[16rem] transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
       >
         <div className="w-screen max-w-md flex-auto overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-stone-925">
-          <div className="px-1 py-2 grid">
-            {items.map((item) => (
+          <div className="p-2 grid">
+            {items.map(({ href, title, description, icon }) => (
               <Link
-                className="text-sm py-1.5 px-3 rounded hover:text-stone-900 dark:hover:text-white transition-colors"
-                href={item.href}
+                className="p-2 rounded flex gap-2 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors"
+                href={href}
+                aria-label={title}
               >
-                {item.title}
+                {icon}
+                <div className="grid gap-1 mt-px">
+                  <div className="text-sm font-medium text-stone-900 dark:text-white">
+                    {title}
+                  </div>
+                  <p className="text-xs leading-relaxed">{description}</p>
+                </div>
               </Link>
             ))}
           </div>
@@ -258,7 +274,6 @@ function NavLinkLogo({
   href,
   className,
   children,
-  prominent,
   onClick,
   newTab,
 }: {
@@ -274,16 +289,7 @@ function NavLinkLogo({
   return (
     <Link
       href={href}
-      className={clsx(
-        "py-3 transition-opacity hover:transition-none",
-        path === href
-          ? "cursor-default"
-          : prominent
-            ? "hover:opacity-50"
-            : "opacity-60 hover:opacity-100",
-        "text-black dark:text-white",
-        className,
-      )}
+      className={clsx("py-3", className)}
       onClick={onClick}
       target={newTab ? "_blank" : undefined}
     >
@@ -297,7 +303,7 @@ export function Nav(props: NavProps) {
   return (
     <>
       <div className="w-full border-b py-2 border-b sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">
-        <PopoverGroup className="container flex justify-between gap-4">
+        <PopoverGroup className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
           <Link href="/" className="flex items-center">
             {mainLogo}
           </Link>
@@ -306,7 +312,7 @@ export function Nav(props: NavProps) {
             <NavItem key={i} item={item} />
           ))}
 
-          <div className="ml-3 flex items-center">{cta}</div>
+          {cta}
         </PopoverGroup>
       </div>
       <MobileNav {...props} />
