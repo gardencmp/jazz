@@ -75,11 +75,11 @@ function NavItem({
         transition
         className="absolute left-1/2 -translate-x-1/2 z-10 flex w-screen max-w-[24rem] mt-5 transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
       >
-        <div className="flex-auto overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-stone-925">
+        <div className="flex-auto overflow-hidden rounded-lg ring-1 ring-stone-300/60 bg-white/90 backdrop-blur-lg shadow-lg dark:ring-stone-800/50 dark:bg-stone-925/90">
           <div className="p-3 grid">
             {items.map(({ href, title, description, icon }) => (
               <CloseButton
-                className="p-3 rounded flex gap-3 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors"
+                className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
                 href={href}
                 aria-label={title}
                 as={Link}
