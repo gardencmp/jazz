@@ -131,7 +131,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * The per-session view of this `CoStream`
+   * The per-session view of this `CoFeed`
    * @category Content
    */
   perSession!: {
@@ -200,7 +200,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * Push items to this `CoStream`
+   * Push items to this `CoFeed`
    * @category Content
    */
   push(...items: Item[]) {
@@ -222,7 +222,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * Get a JSON representation of the `CoStream`
+   * Get a JSON representation of the `CoFeed`
    * @category
    */
   toJSON(): {
@@ -278,7 +278,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * Load a `CoStream`
+   * Load a `CoFeed`
    * @category Subscription & Loading
    */
   static load<S extends CoFeed, Depth>(
@@ -291,7 +291,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * Subscribe to a `CoStream`, when you have an ID but don't have a `CoStream` instance yet
+   * Subscribe to a `CoFeed`, when you have an ID but don't have a `CoFeed` instance yet
    * @category Subscription & Loading
    */
   static subscribe<S extends CoFeed, Depth>(
@@ -305,7 +305,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * Ensure a `CoStream` is loaded
+   * Ensure a `CoFeed` is loaded
    * @category Subscription & Loading
    */
   ensureLoaded<S extends CoFeed, Depth>(
@@ -316,7 +316,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * An instance method to subscribe to an existing `CoStream`
+   * An instance method to subscribe to an existing `CoFeed`
    *
    * No need to provide an ID or Account since they're already part of the instance.
    * @category Subscription & Loading
@@ -331,7 +331,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
 }
 
 /**
- * Converts a raw stream entry into a formatted CoStream entry with proper typing and accessors.
+ * Converts a raw stream entry into a formatted CoFeed entry with proper typing and accessors.
  * @internal
  */
 function entryFromRawEntry<Item>(
@@ -557,10 +557,14 @@ const CoStreamPerSessionProxyHandler = (
   },
 });
 
-/** @deprecated Use CoFeed instead */
+/** @deprecated Use FileStream instead */
 export { FileStream as BinaryCoStream };
 
-/** @category CoValues */
+/**
+ * A `CoFeed` that contains binary data
+ *
+ * @category CoValues
+ */
 export class FileStream extends CoValueBase implements CoValue {
   declare id: ID<this>;
   declare _type: "BinaryCoStream";
@@ -640,6 +644,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return new Blob(chunks.chunks, { type: chunks.mimeType });
   }
 
+  /**
+   * Load a `FileStream` as a `Blob`
+   * @category Content
+   */
   static async loadAsBlob(
     id: ID<FileStream>,
     as: Account,
@@ -669,6 +677,10 @@ export class FileStream extends CoValueBase implements CoValue {
     });
   }
 
+  /**
+   * Create a `FileStream` from a `Blob` or `File`
+   * @category Content
+   */
   static async createFromBlob(
     blob: Blob | File,
     options: {
@@ -714,6 +726,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return stream;
   }
 
+  /**
+   * Get a JSON representation of the `FileStream`
+   * @category Content
+   */
   toJSON(): {
     id: string;
     _type: "BinaryCoStream";
@@ -730,11 +746,15 @@ export class FileStream extends CoValueBase implements CoValue {
     };
   }
 
+  /** @internal */
   [inspect]() {
     return this.toJSON();
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Load a `FileStream`
+   * @category Subscription & Loading
+   */
   static load<B extends FileStream, Depth>(
     this: CoValueClass<B>,
     id: ID<B>,
@@ -744,7 +764,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return loadCoValue(this, id, as, depth);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Subscribe to a `FileStream`, when you have an ID but don't have a `FileStream` instance yet
+   * @category Subscription & Loading
+   */
   static subscribe<B extends FileStream, Depth>(
     this: CoValueClass<B>,
     id: ID<B>,
@@ -755,7 +778,6 @@ export class FileStream extends CoValueBase implements CoValue {
     return subscribeToCoValue<B, Depth>(this, id, as, depth, listener);
   }
 
-  /** @category Subscription & Loading */
   ensureLoaded<B extends FileStream, Depth>(
     this: B,
     depth: Depth & DepthsIn<B>,
@@ -763,7 +785,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return ensureCoValueLoaded(this, depth);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * An instance method to subscribe to an existing `FileStream`
+   * @category Subscription & Loading
+   */
   subscribe<B extends FileStream, Depth>(
     this: B,
     depth: Depth & DepthsIn<B>,
