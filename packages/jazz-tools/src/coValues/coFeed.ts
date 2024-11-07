@@ -76,7 +76,7 @@ export { CoFeed as CoStream };
  */
 export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   /**
-   * Declare a `CoFeed` by subclassing `CoFeed.Of(...)` and passing the item schema using `co`.
+   * Declare a `CoFeed` by subclassing `CoFeed.Of(...)` and passing the item schema using a `co` primitive or a `co.ref`.
    *
    * @example
    * ```ts
