@@ -1,6 +1,9 @@
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
+import plm, { toc } from "./guide/page.mdx";
 
 export default function Page() {
+    // console.log("plm", plm);
+    // console.log("toc", toc);
     return (
         <Prose>
             <h1>Welcome to the Jazz documentation.</h1>
