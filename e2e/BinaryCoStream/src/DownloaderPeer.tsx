@@ -1,13 +1,17 @@
 import { Account, BinaryCoStream, ID } from "jazz-tools";
 import { useEffect } from "react";
 import { useAccount, useCoState } from "./jazz";
-import { UploadedFile } from "./schema";
 import { waitForCoValue } from "./lib/waitForCoValue";
+import { UploadedFile } from "./schema";
 
-async function getUploadedFile(
-  me: Account,
-  uploadedFileId: ID<UploadedFile>) {
-  const uploadedFile = await waitForCoValue(UploadedFile, uploadedFileId, me, Boolean, {})
+async function getUploadedFile(me: Account, uploadedFileId: ID<UploadedFile>) {
+  const uploadedFile = await waitForCoValue(
+    UploadedFile,
+    uploadedFileId,
+    me,
+    Boolean,
+    {},
+  );
 
   uploadedFile.coMapDownloaded = true;
 
@@ -21,7 +25,7 @@ export function DownloaderPeer(props: { testCoMapId: ID<UploadedFile> }) {
   const testCoMap = useCoState(UploadedFile, props.testCoMapId, {});
 
   useEffect(() => {
-    getUploadedFile(account.me, props.testCoMapId).then(value => {
+    getUploadedFile(account.me, props.testCoMapId).then((value) => {
       value.syncCompleted = true;
     });
   }, []);

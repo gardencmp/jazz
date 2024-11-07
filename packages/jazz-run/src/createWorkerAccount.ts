@@ -1,5 +1,5 @@
+import { CoValueCore } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { WebSocket } from "ws";
 import {
     Account,
     Peer,
@@ -8,7 +8,7 @@ import {
     isControlledAccount,
 } from "jazz-tools";
 import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools";
-import { CoValueCore } from "cojson";
+import { WebSocket } from "ws";
 
 export const createWorkerAccount = async ({
     name,

@@ -1,20 +1,16 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.92",
+  "version": "0.0.94",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "echo 'chat example is codegolfed'",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
-    "*.{js,jsx,mdx,json}": "prettier --write"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.4",
@@ -24,8 +20,8 @@
     "clsx": "^2.0.0",
     "cojson": "workspace:0.8.12",
     "hash-slash": "workspace:0.2.1",
-    "jazz-react": "workspace:0.8.13",
-    "jazz-tools": "workspace:0.8.13",
+    "jazz-react": "workspace:0.8.15",
+    "jazz-tools": "workspace:0.8.15",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
@@ -42,13 +38,8 @@
     "@types/qrcode": "^1.5.1",
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.7",
-    "@typescript-eslint/eslint-plugin": "^6.2.1",
-    "@typescript-eslint/parser": "^6.2.1",
     "@vitejs/plugin-react-swc": "^3.3.2",
     "autoprefixer": "^10.4.14",
-    "eslint": "^8.46.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3",
     "is-ci": "^3.0.1",
     "postcss": "^8.4.27",
     "tailwindcss": "3.3.2",

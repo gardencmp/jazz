@@ -1,6 +1,6 @@
+import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createJazzReactApp, DemoAuthBasicUI, useDemoAuth } from "jazz-react";
 import { App } from "./app.tsx";
 
 const Jazz = createJazzReactApp();
@@ -17,10 +17,9 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       >
         {children}
       </Jazz.Provider>
-      {
-        state.state !== "signedIn"
-        && <DemoAuthBasicUI appName="Jazz Chat" state={state} />
-      }
+      {state.state !== "signedIn" && (
+        <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+      )}
     </>
   );
 }
@@ -30,5 +29,5 @@ createRoot(document.getElementById("root")!).render(
     <JazzAndAuth>
       <App />
     </JazzAndAuth>
-  </StrictMode>
+  </StrictMode>,
 );

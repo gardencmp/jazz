@@ -1,0 +1,39 @@
+{
+  "name": "chat-vue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build-type-check": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build": "vite build",
+    "type-check": "vue-tsc --build --force",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write"
+  },
+  "dependencies": {
+    "jazz-browser": "workspace:*",
+    "jazz-tools": "workspace:*",
+    "jazz-vue": "workspace:*",
+    "vue": "^3.5.11",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.5.1",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitejs/plugin-vue-jsx": "^4.0.1",
+    "@vue/tsconfig": "^0.5.1",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.46.0",
+    "eslint-plugin-vue": "^9.28.0",
+    "npm-run-all2": "^6.2.3",
+    "postcss": "^8.4.27",
+    "tailwindcss": "3.3.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vite-plugin-vue-devtools": "^7.4.6",
+    "vue-tsc": "^2.1.6"
+  }
+}

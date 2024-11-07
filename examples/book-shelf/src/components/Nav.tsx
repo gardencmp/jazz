@@ -1,9 +1,9 @@
 "use client";
 
+import { Button } from "@/components/Button";
+import { Container } from "@/components/Container";
 import { useAccount } from "@/components/JazzAndAuth";
 import Link from "next/link";
-import { Container } from "@/components/Container";
-import { Button } from "@/components/Button";
 
 export function Nav() {
   const { me, logOut } = useAccount();

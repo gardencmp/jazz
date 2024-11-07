@@ -1,9 +1,9 @@
 import { expect } from "vitest";
+import { ControlledAgent } from "../coValues/account.js";
+import { WasmCrypto } from "../crypto/WasmCrypto.js";
+import { SessionID } from "../ids.js";
 import { LocalNode } from "../localNode.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
-import { ControlledAgent } from "../coValues/account.js";
-import { SessionID } from "../ids.js";
-import { WasmCrypto } from "../crypto/WasmCrypto.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -90,8 +90,7 @@ export function shouldNotResolve<T>(
             .then((v) =>
                 reject(
                     new Error(
-                        "Should not have resolved, but resolved to " +
-                            JSON.stringify(v),
+            "Should not have resolved, but resolved to " + JSON.stringify(v),
                     ),
                 ),
             )

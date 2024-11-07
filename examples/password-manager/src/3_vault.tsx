@@ -1,20 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import Button from "./components/button";
-import Table from "./components/table";
-import NewItemModal from "./components/new-item-modal";
 import InviteModal from "./components/invite-modal";
+import NewItemModal from "./components/new-item-modal";
+import Table from "./components/table";
 
-import { saveItem, deleteItem, createFolder, updateItem, addSharedFolder } from "./4_actions";
-import { Alert, AlertDescription } from "./components/alert";
-import {
-  Folder,
-  FolderList,
-  PasswordItem,
-} from "./1_schema";
-import { useAccount, useCoState } from "./2_main";
 import { CoMapInit, Group, ID } from "jazz-tools";
 import { useNavigate, useParams } from "react-router-dom";
+import { Folder, FolderList, PasswordItem } from "./1_schema";
+import { useAccount, useCoState } from "./2_main";
+import {
+  addSharedFolder,
+  createFolder,
+  deleteItem,
+  saveItem,
+  updateItem,
+} from "./4_actions";
+import { Alert, AlertDescription } from "./components/alert";
 import { PasswordItemFormValues } from "./types";
 
 const VaultPage: React.FC = () => {
@@ -38,8 +40,8 @@ const VaultPage: React.FC = () => {
   const items = me.root?.folders?.flatMap(
     (folder) =>
       folder?.items?.filter(
-        (item): item is Exclude<typeof item, null> => !!item
-      ) || []
+        (item): item is Exclude<typeof item, null> => !!item,
+      ) || [],
   );
   const folders = useCoState(FolderList, me.root?._refs.folders?.id, [
     { items: [{}] },
@@ -55,7 +57,7 @@ const VaultPage: React.FC = () => {
 
   const filteredItems = selectedFolder
     ? items?.filter(
-        (item) => item?.folder?.name === selectedFolder.name && !item.deleted
+        (item) => item?.folder?.name === selectedFolder.name && !item.deleted,
       )
     : items?.filter((item) => !item?.deleted);
 
@@ -103,7 +105,7 @@ const VaultPage: React.FC = () => {
   const handleDeleteFolder = async () => {
     try {
       const selectedFolderIndex = me.root?.folders?.findIndex(
-        (folder) => folder?.id === selectedFolder?.id
+        (folder) => folder?.id === selectedFolder?.id,
       );
       if (selectedFolderIndex !== undefined && selectedFolderIndex > -1)
         me.root?.folders?.splice(selectedFolderIndex, 1);

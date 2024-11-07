@@ -1,54 +1,50 @@
 {
-    "name": "jazz-tools",
-    "module": "dist/web/index.web.js",
-    "main": "dist/web/index.web.js",
-    "types": "src/index.web.ts",
-    "react-native": "dist/native/index.native.js",
-    "exports": {
-        ".": {
-            "react-native": "./dist/native/index.native.js",
-            "types": "./src/index.web.ts",
-            "default": "./dist/web/index.web.js"
-        },
-        "./native": {
-            "react-native": "./dist/native/index.native.js",
-            "types": "./src/index.native.ts",
-            "default": "./dist/native/index.native.js"
-        },
-        "./src/*": "./src/*"
+  "name": "jazz-tools",
+  "module": "dist/web/index.web.js",
+  "main": "dist/web/index.web.js",
+  "types": "src/index.web.ts",
+  "react-native": "dist/native/index.native.js",
+  "exports": {
+    ".": {
+      "react-native": "./dist/native/index.native.js",
+      "types": "./src/index.web.ts",
+      "default": "./dist/web/index.web.js"
     },
-    "type": "module",
-    "license": "MIT",
-    "version": "0.8.13",
-    "dependencies": {
-        "cojson": "workspace:*",
-        "fast-check": "^3.17.2"
+    "./native": {
+      "react-native": "./dist/native/index.native.js",
+      "types": "./src/index.native.ts",
+      "default": "./dist/native/index.native.js"
     },
-    "scripts": {
-        "dev:web": "tsc --sourceMap --watch --outDir dist/web -p tsconfig.web.json",
-        "dev:native": "tsc --sourceMap --watch --outDir dist/native -p tsconfig.native.json",
-        "test": "vitest --run --root ../../ --project jazz-tools",
-        "test:watch": "vitest --watch --root ../../ --project jazz-tools",
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
-        "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
-        "build": "npm run lint && rm -rf ./dist && pnpm run build:web && pnpm run build:native",
-        "prepublishOnly": "npm run build"
-    },
-    "devDependencies": {
-        "typescript": "^5.3.3",
-        "vitest": "1.5.3"
-    },
-    "madge": {
-        "detectiveOptions": {
-            "ts": {
-                "skipTypeImports": true
-            }
-        }
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
+    "./src/*": "./src/*"
+  },
+  "type": "module",
+  "license": "MIT",
+  "version": "0.8.15",
+  "dependencies": {
+    "cojson": "workspace:*",
+    "fast-check": "^3.17.2"
+  },
+  "scripts": {
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "dev:web": "tsc --sourceMap --watch --outDir dist/web -p tsconfig.web.json",
+    "dev:native": "tsc --sourceMap --watch --outDir dist/native -p tsconfig.native.json",
+    "test": "vitest --run --root ../../ --project jazz-tools",
+    "test:watch": "vitest --watch --root ../../ --project jazz-tools",
+    "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
+    "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
+    "build": "npm run format-and-lint && rm -rf ./dist && pnpm run build:web && pnpm run build:native",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "1.5.3"
+  },
+  "madge": {
+    "detectiveOptions": {
+      "ts": {
+        "skipTypeImports": true
+      }
     }
+  }
 }

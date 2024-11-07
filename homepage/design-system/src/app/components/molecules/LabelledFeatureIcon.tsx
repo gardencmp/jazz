@@ -1,40 +1,37 @@
 import clsx from "clsx";
 import { LucideIcon } from "lucide-react";
+import { Prose } from "./Prose";
 
 export function LabelledFeatureIcon({
-    label,
-    icon: Icon,
-    explanation,
-    className,
+  label,
+  icon: Icon,
+  explanation,
+  className,
 }: {
-    label: string;
-    icon: LucideIcon;
-    explanation: React.ReactNode;
-    className?: string;
+  label: string;
+  icon: LucideIcon;
+  explanation: React.ReactNode;
+  className?: string;
 }) {
-    return (
-        <div
-            className={clsx(
-                className,
-                "p-4 flex flex-col gap-3",
-                "not-prose text-base",
-                "border rounded-xl",
-            )}
-        >
-            <div>
-                <Icon
-                    className="text-stone-500"
-                    strokeWidth={1}
-                    strokeLinecap="butt"
-                    size={40}
-                />
-            </div>
-            <div className="text-stone-900 font-medium md:text-base dark:text-stone-100">
-                {label}
-            </div>
-            <div className="leading-relaxed space-y-3 text-sm">
-                {explanation}
-            </div>
-        </div>
-    );
+  return (
+    <div
+      className={clsx(
+        className,
+        "text-base",
+        "rounded-xl",
+        "border p-4 shadow-sm",
+      )}
+    >
+      <Icon
+        className="size-8 text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900 mb-2.5 md:size-10"
+        strokeWidth={1.5}
+        strokeLinecap="butt"
+        size={80}
+      />
+      <div className="text-stone-900 font-medium md:text-base dark:text-stone-100 mb-2">
+        {label}
+      </div>
+      <Prose>{explanation}</Prose>
+    </div>
+  );
 }

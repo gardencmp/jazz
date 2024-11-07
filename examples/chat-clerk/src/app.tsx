@@ -1,8 +1,8 @@
-import { Group, ID } from "jazz-tools";
 import { useIframeHashRouter } from "hash-slash";
+import { Group, ID } from "jazz-tools";
+import { ChatScreen } from "./chatScreen.tsx";
 import { useAccount } from "./main.tsx";
 import { Chat } from "./schema.ts";
-import { ChatScreen } from "./chatScreen.tsx";
 import { AppContainer, TopBar } from "./ui.tsx";
 
 export function App() {
@@ -24,7 +24,7 @@ export function App() {
       </TopBar>
       {router.route({
         "/": () => createChat() as never,
-        "/chat/:id": id => <ChatScreen chatID={id as ID<Chat>} />,
+        "/chat/:id": (id) => <ChatScreen chatID={id as ID<Chat>} />,
       })}
     </AppContainer>
   );

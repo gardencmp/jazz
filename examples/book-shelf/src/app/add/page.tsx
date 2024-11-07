@@ -1,14 +1,14 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
-import { BookReview, ListOfBookReviews } from "@/schema";
+import { Button } from "@/components/Button";
+import { Container } from "@/components/Container";
 import { useAccount } from "@/components/JazzAndAuth";
-import { useRouter } from "next/navigation";
 import RatingInput from "@/components/RatingInput";
+import { BookReview, ListOfBookReviews } from "@/schema";
 import { createImage } from "jazz-browser-media-images";
 import { Group, ImageDefinition } from "jazz-tools";
-import { Container } from "@/components/Container";
-import { Button } from "@/components/Button";
+import { useRouter } from "next/navigation";
+import { ChangeEvent, useState } from "react";
 
 export default function AddBookReview() {
   const { me } = useAccount();
@@ -18,7 +18,7 @@ export default function AddBookReview() {
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(0);
   const [dateRead, setDateRead] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [coverImage, setCoverImage] = useState<ImageDefinition | undefined>();
 
@@ -37,7 +37,7 @@ export default function AddBookReview() {
     group.addMember("everyone", "reader");
 
     if (file) {
-      createImage(file, { owner: group }).then(image => {
+      createImage(file, { owner: group }).then((image) => {
         setCoverImage(image);
       });
     }
@@ -59,7 +59,7 @@ export default function AddBookReview() {
       },
       {
         owner: me.profile._owner,
-      }
+      },
     );
 
     if (!me.profile.bookReviews) {
@@ -88,7 +88,7 @@ export default function AddBookReview() {
             type="text"
             value={title}
             required
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
           ></input>
         </label>
 
@@ -99,7 +99,7 @@ export default function AddBookReview() {
             type="text"
             value={author}
             required
-            onChange={e => setAuthor(e.target.value)}
+            onChange={(e) => setAuthor(e.target.value)}
           ></input>
         </label>
 
@@ -116,7 +116,10 @@ export default function AddBookReview() {
 
         <div className="grid gap-1 text-sm text-gray-600">
           Rating
-          <RatingInput value={rating} onChange={rating => setRating(rating)} />
+          <RatingInput
+            value={rating}
+            onChange={(rating) => setRating(rating)}
+          />
         </div>
 
         <label className="grid gap-1 text-sm text-gray-600">
@@ -124,7 +127,7 @@ export default function AddBookReview() {
           <textarea
             className="rounded border border-gray-300 px-2 py-1 shadow-sm"
             value={review}
-            onChange={e => setReview(e.target.value)}
+            onChange={(e) => setReview(e.target.value)}
           ></textarea>
         </label>
         <Button variant="primary" type="submit">

@@ -1,13 +1,13 @@
 import { ID } from "jazz-tools";
 import { useEffect, useState } from "react";
 import { useAccount, useCoState } from "./jazz";
+import { BytesRadioGroup } from "./lib/BytesRadioGroup";
 import { createCredentiallessIframe } from "./lib/createCredentiallessIframe";
 import { generateTestFile } from "./lib/generateTestFile";
 import { getDownloaderPeerUrl } from "./lib/getDownloaderPeerUrl";
-import { UploadedFile } from "./schema";
-import { waitForCoValue } from "./lib/waitForCoValue";
 import { getDefaultFileSize, getIsAutoUpload } from "./lib/searchParams";
-import { BytesRadioGroup } from "./lib/BytesRadioGroup";
+import { waitForCoValue } from "./lib/waitForCoValue";
+import { UploadedFile } from "./schema";
 
 export function UploaderPeer() {
   const account = useAccount();
@@ -41,7 +41,7 @@ export function UploaderPeer() {
       file.id,
       account.me,
       (value) => value.syncCompleted,
-      {}
+      {},
     );
 
     iframe.remove();
@@ -75,12 +75,8 @@ export function UploaderPeer() {
         </div>
       )}
       {testFile?.coMapDownloaded && (
-        <div data-testid="co-map-downloaded">
-          CoMap synced!
-        </div>
+        <div data-testid="co-map-downloaded">CoMap synced!</div>
       )}
     </>
   );
 }
-
-

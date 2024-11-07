@@ -1,10 +1,10 @@
 "use client";
 
+import { Container } from "@/components/Container";
 import { useAccount } from "@/components/JazzAndAuth";
 import UserProfile from "@/components/UserProfile";
 import { JazzAccount } from "@/schema";
 import { ID } from "jazz-tools";
-import { Container } from "@/components/Container";
 
 export default function Home() {
   const { me } = useAccount();

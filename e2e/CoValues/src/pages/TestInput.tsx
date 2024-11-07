@@ -1,6 +1,6 @@
-import { co, CoMap, Group, ID } from "jazz-tools";
-import { useAccount, useCoState } from "../jazz";
+import { CoMap, Group, ID, co } from "jazz-tools";
 import { useEffect, useState } from "react";
+import { useAccount, useCoState } from "../jazz";
 
 export class InputTestCoMap extends CoMap {
   title = co.string;

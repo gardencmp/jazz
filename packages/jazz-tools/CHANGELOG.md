@@ -1,5 +1,17 @@
 # jazz-tools
 
+## 0.8.15
+
+### Patch Changes
+
+-   cce679b: Export `type Credentials` and mark `AuthResult.saveCredentials` as optional and run if available
+
+## 0.8.14
+
+### Patch Changes
+
+-   36273b3: Cache other usages of Account.fromRaw
+
 ## 0.8.13
 
 ### Patch Changes

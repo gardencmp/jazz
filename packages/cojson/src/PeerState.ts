@@ -1,10 +1,10 @@
-import { RawCoID } from "./ids.js";
 import { PeerKnownStates } from "./PeerKnownStates.js";
-import { CO_VALUE_PRIORITY } from "./priority.js";
 import {
     PriorityBasedMessageQueue,
     QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
+import { RawCoID } from "./ids.js";
+import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
 
 export class PeerState {
@@ -53,7 +53,6 @@ export class PeerState {
         }
 
         this.processing = true;
-
 
         let entry: QueueEntry | undefined;
         while ((entry = this.queue.pull())) {

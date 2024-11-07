@@ -1,6 +1,7 @@
 import { ID } from "jazz-tools";
-import { Chat, Message } from "./schema.ts";
+import { useState } from "react";
 import { useCoState } from "./main.tsx";
+import { Chat, Message } from "./schema.ts";
 import {
   BubbleBody,
   BubbleContainer,
@@ -9,7 +10,6 @@ import {
   ChatInput,
   EmptyChatMessage,
 } from "./ui.tsx";
-import { useState } from "react";
 
 export function ChatScreen(props: { chatID: ID<Chat> }) {
   const chat = useCoState(Chat, props.chatID, [{}]);
@@ -22,7 +22,7 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
           chat
             .slice(-showNLastMessages)
             .reverse() // this plus flex-col-reverse on ChatBody gives us scroll-to-bottom behavior
-            .map(msg => <ChatBubble msg={msg} key={msg.id} />)
+            .map((msg) => <ChatBubble msg={msg} key={msg.id} />)
         ) : (
           <EmptyChatMessage />
         )}
@@ -36,7 +36,7 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
         )}
       </ChatBody>
       <ChatInput
-        onSubmit={text => {
+        onSubmit={(text) => {
           chat.push(Message.create({ text }, { owner: chat._owner }));
         }}
       />

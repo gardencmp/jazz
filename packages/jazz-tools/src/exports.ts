@@ -1,35 +1,48 @@
 export type {
-    InviteSecret,
-    Peer,
-    SessionID,
-    AgentID,
-    SyncMessage,
-    CryptoProvider,
-    CoValueUniqueness,
+  AgentID,
+  CoValueUniqueness,
+  CryptoProvider,
+  InviteSecret,
+  Peer,
+  SessionID,
+  SyncMessage,
 } from "cojson";
 
-export type { ID, CoValue } from "./internal.js";
+export type { CoValue, ID } from "./internal.js";
 
 export { Encoders, co } from "./internal.js";
 
-export { CoMap, type CoMapInit } from "./internal.js";
-export { CoList } from "./internal.js";
-export { CoStream, BinaryCoStream } from "./internal.js";
-export { Group, Profile } from "./internal.js";
-export { Account, isControlledAccount, type AccountClass } from "./internal.js";
-export { ImageDefinition } from "./internal.js";
-export { CoValueBase, type CoValueClass } from "./internal.js";
-export type { DepthsIn, DeeplyLoaded } from "./internal.js";
-
-export { loadCoValue, subscribeToCoValue, createCoValueObservable } from "./internal.js";
+export {
+  Account,
+  BinaryCoStream,
+  CoList,
+  CoMap,
+  CoStream,
+  CoValueBase,
+  Group,
+  ImageDefinition,
+  Profile,
+  isControlledAccount,
+  type AccountClass,
+  type CoMapInit,
+  type CoValueClass,
+} from "./internal.js";
+export type { DeeplyLoaded, DepthsIn } from "./internal.js";
 
 export {
-    type AuthMethod,
-    type AuthResult,
-    createJazzContext,
-    fixedCredentialsAuth,
-    ephemeralCredentialsAuth,
-    AnonymousJazzAgent,
-    createAnonymousJazzContext,
-    randomSessionProvider,
+  createCoValueObservable,
+  loadCoValue,
+  subscribeToCoValue,
+} from "./internal.js";
+
+export {
+  AnonymousJazzAgent,
+  createAnonymousJazzContext,
+  createJazzContext,
+  ephemeralCredentialsAuth,
+  fixedCredentialsAuth,
+  randomSessionProvider,
+  type AuthMethod,
+  type AuthResult,
+  type Credentials,
 } from "./internal.js";

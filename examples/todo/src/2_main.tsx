@@ -1,22 +1,26 @@
 import ReactDOM from "react-dom/client";
 import {
-    RouterProvider,
-    createHashRouter,
-    useNavigate,
+  RouterProvider,
+  createHashRouter,
+  useNavigate,
 } from "react-router-dom";
 import "./index.css";
 
-import { createJazzReactApp, PasskeyAuthBasicUI, usePasskeyAuth } from "jazz-react";
-
 import {
-    Button,
-    ThemeProvider,
-    TitleAndLogo,
-} from "./basicComponents/index.ts";
+  PasskeyAuthBasicUI,
+  createJazzReactApp,
+  usePasskeyAuth,
+} from "jazz-react";
+
+import React from "react";
+import { TodoAccount, TodoProject } from "./1_schema.ts";
 import { NewProjectForm } from "./3_NewProjectForm.tsx";
 import { ProjectTodoTable } from "./4_ProjectTodoTable.tsx";
-import { TodoAccount, TodoProject } from "./1_schema.ts";
-import React from "react";
+import {
+  Button,
+  ThemeProvider,
+  TitleAndLogo,
+} from "./basicComponents/index.ts";
 
 /**
  * Walkthrough: The top-level provider `<Jazz.Provider/>`
@@ -32,38 +36,39 @@ import React from "react";
 const appName = "Jazz Todo List Example";
 
 const Jazz = createJazzReactApp<TodoAccount>({
-    AccountSchema: TodoAccount,
+  AccountSchema: TodoAccount,
 });
 // eslint-disable-next-line react-refresh/only-export-components
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-    const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
+  const [passkeyAuth, passKeyState] = usePasskeyAuth({ appName });
 
-    return (
-        <>
-            <Jazz.Provider
-                auth={passkeyAuth}
-                peer="wss://cloud.jazz.tools/?key=todo-example-jazz@gcmp.io"
-            >
-                {children}
-            </Jazz.Provider>
-            <PasskeyAuthBasicUI state={passKeyState} />
-        </>
-    );
+  return (
+    <>
+      <Jazz.Provider
+        auth={passkeyAuth}
+        peer="wss://cloud.jazz.tools/?key=todo-example-jazz@gcmp.io"
+      >
+        {children}
+      </Jazz.Provider>
+      <PasskeyAuthBasicUI state={passKeyState} />
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <ThemeProvider>
-            <TitleAndLogo name={appName} />
-            <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
-                <JazzAndAuth>
-                    <App />
-                </JazzAndAuth>
-            </div>
-        </ThemeProvider>,
-    </React.StrictMode>
+  <React.StrictMode>
+    <ThemeProvider>
+      <TitleAndLogo name={appName} />
+      <div className="flex flex-col h-full items-center justify-start gap-10 pt-10 pb-10 px-5">
+        <JazzAndAuth>
+          <App />
+        </JazzAndAuth>
+      </div>
+    </ThemeProvider>
+    ,
+  </React.StrictMode>,
 );
 
 /**
@@ -74,71 +79,69 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
  * - which can also contain invite links.
  */
 export default function App() {
-    // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
-    const { logOut } = useAccount();
+  // logOut logs out the AuthProvider passed to `<Jazz.Provider/>` above.
+  const { logOut } = useAccount();
 
-    const router = createHashRouter([
-        {
-            path: "/",
-            element: <HomeScreen />,
-        },
-        {
-            path: "/project/:projectId",
-            element: <ProjectTodoTable />,
-        },
-        {
-            path: "/invite/*",
-            element: <p>Accepting invite...</p>,
-        },
-    ]);
+  const router = createHashRouter([
+    {
+      path: "/",
+      element: <HomeScreen />,
+    },
+    {
+      path: "/project/:projectId",
+      element: <ProjectTodoTable />,
+    },
+    {
+      path: "/invite/*",
+      element: <p>Accepting invite...</p>,
+    },
+  ]);
 
-    // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
-    // and on success calls our callback where we navigate to the project that we were just invited to.
-    useAcceptInvite({
-        invitedObjectSchema: TodoProject,
-        forValueHint: "project",
-        onAccept: (projectID) => router.navigate("/project/" + projectID),
-    });
+  // `useAcceptInvite()` is a hook that accepts an invite link from the URL hash,
+  // and on success calls our callback where we navigate to the project that we were just invited to.
+  useAcceptInvite({
+    invitedObjectSchema: TodoProject,
+    forValueHint: "project",
+    onAccept: (projectID) => router.navigate("/project/" + projectID),
+  });
 
-    return (
-        <>
-            <RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
 
-            <Button
-                onClick={() =>
-                    router.navigate("/").then(logOut)
-                }
-                variant="outline"
-            >
-                Log out
-            </Button>
-        </>
-    );
+      <Button
+        onClick={() => router.navigate("/").then(logOut)}
+        variant="outline"
+      >
+        Log out
+      </Button>
+    </>
+  );
 }
 
 function HomeScreen() {
-    const { me } = useAccount({
-        root: { projects: [{}] },
-    });
-    const navigate = useNavigate();
+  const { me } = useAccount({
+    root: { projects: [{}] },
+  });
+  const navigate = useNavigate();
 
-    return (
-        <>
-            {me?.root.projects.length ? <h1>My Projects</h1> : null}
-            {me?.root.projects.map((project) => {
-                return (
-                    <Button
-                        key={project.id}
-                        onClick={() => navigate("/project/" + project?.id)}
-                        variant="ghost"
-                    >
-                        {project.title}
-                    </Button>
-                );
-            })}
-            <NewProjectForm />
-        </>
-    );
+  return (
+    <>
+      {me?.root.projects.length ? <h1>My Projects</h1> : null}
+      {me?.root.projects.map((project) => {
+        return (
+          <Button
+            key={project.id}
+            onClick={() => navigate("/project/" + project?.id)}
+            variant="ghost"
+          >
+            {project.title}
+          </Button>
+        );
+      })}
+      <NewProjectForm />
+    </>
+  );
 }
 
 /** Walkthrough: Continue with ./3_NewProjectForm.tsx */

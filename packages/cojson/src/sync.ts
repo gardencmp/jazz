@@ -1,10 +1,10 @@
-import { Signature } from "./crypto/crypto.js";
+import { PeerState } from "./PeerState.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
-import { LocalNode } from "./localNode.js";
 import { CoValueState } from "./coValueState.js";
+import { Signature } from "./crypto/crypto.js";
 import { RawCoID, SessionID } from "./ids.js";
-import { PeerState } from "./PeerState.js";
+import { LocalNode } from "./localNode.js";
 import { CoValuePriority } from "./priority.js";
 import { SyncStateSubscriptionManager } from "./SyncStateSubscriptionManager.js";
 
@@ -176,9 +176,7 @@ export class SyncManager {
                 return await this.handleUnsubscribe(msg);
             default:
                 throw new Error(
-                    `Unknown message type ${
-                        (msg as { action: "string" }).action
-                    }`,
+          `Unknown message type ${(msg as { action: "string" }).action}`,
                 );
         }
     }
@@ -257,9 +255,7 @@ export class SyncManager {
         await Promise.all(
             coValue
                 .getDependedOnCoValues()
-                .map((id) =>
-                    this.sendNewContentIncludingDependencies(id, peer),
-                ),
+        .map((id) => this.sendNewContentIncludingDependencies(id, peer)),
         );
 
         const newContentPieces = coValue.newContentSince(
@@ -331,9 +327,7 @@ export class SyncManager {
 
         if (peerState.isServerOrStoragePeer()) {
             const initialSync = async () => {
-                for (const id of Object.keys(
-                    this.local.coValues,
-                ) as RawCoID[]) {
+        for (const id of Object.keys(this.local.coValues) as RawCoID[]) {
                     // console.log("subscribing to after peer added", id, peer.id)
                     await this.subscribeToIncludingDependencies(id, peerState);
 
@@ -376,18 +370,12 @@ export class SyncManager {
             .then(() => {
                 if (peer.crashOnClose) {
                     console.error("Unexepcted close from peer", peer.id);
-                    this.local.crashed = new Error(
-                        "Unexpected close from peer",
-                    );
+          this.local.crashed = new Error("Unexpected close from peer");
                     throw new Error("Unexpected close from peer");
                 }
             })
             .catch((e) => {
-                console.error(
-                    "Error processing messages from peer",
-                    peer.id,
-                    e,
-                );
+        console.error("Error processing messages from peer", peer.id, e);
                 if (peer.crashOnClose) {
                     this.local.crashed = e;
                     throw new Error(e);
@@ -578,9 +566,10 @@ export class SyncManager {
 
         let invalidStateAssumed = false;
 
-        for (const [sessionID, newContentForSession] of Object.entries(
-            msg.new,
-        ) as [SessionID, SessionNewContent][]) {
+    for (const [sessionID, newContentForSession] of Object.entries(msg.new) as [
+      SessionID,
+      SessionNewContent,
+    ][]) {
             const ourKnownTxIdx =
                 coValue.sessionLogs.get(sessionID)?.transactions.length;
             const theirFirstNewTxIdx = newContentForSession.after;
@@ -619,12 +608,10 @@ export class SyncManager {
                     )
                     .reduce((a, b) => a + b, 0);
                 console.log(
-                    `Adding incoming transactions took ${(
-                        after - before
-                    ).toFixed(2)}ms for ${totalTxLength} bytes = bandwidth: ${(
-                        (1000 * totalTxLength) /
-                        (after - before) /
-                        (1024 * 1024)
+          `Adding incoming transactions took ${(after - before).toFixed(
+            2,
+          )}ms for ${totalTxLength} bytes = bandwidth: ${(
+            (1000 * totalTxLength) / (after - before) / (1024 * 1024)
                     ).toFixed(2)} MB/s`,
                 );
             }
@@ -732,20 +719,11 @@ export class SyncManager {
             //     blockingSince = performance.now();
             // }
             if (peer.optimisticKnownStates.has(coValue.id)) {
-                await this.tellUntoldKnownStateIncludingDependencies(
-                    coValue.id,
-                    peer,
-                );
-                await this.sendNewContentIncludingDependencies(
-                    coValue.id,
-                    peer,
-                );
+        await this.tellUntoldKnownStateIncludingDependencies(coValue.id, peer);
+        await this.sendNewContentIncludingDependencies(coValue.id, peer);
             } else if (peer.isServerOrStoragePeer()) {
                 await this.subscribeToIncludingDependencies(coValue.id, peer);
-                await this.sendNewContentIncludingDependencies(
-                    coValue.id,
-                    peer,
-                );
+        await this.sendNewContentIncludingDependencies(coValue.id, peer);
             }
         }
 

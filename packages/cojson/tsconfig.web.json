@@ -1,11 +1,5 @@
 {
-    "extends": "./tsconfig.json",
-    "include": [
-        "./src/**/*.ts"
-    ],
-    "exclude": [
-        "./node_modules",
-        "./src/tests",
-        "./src/index.native.ts"
-    ]
+  "extends": "./tsconfig.json",
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./node_modules", "./src/tests", "./src/index.native.ts"]
 }

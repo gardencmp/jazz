@@ -1,19 +1,19 @@
 {
   "name": "jazz-example-book-shelf",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "format": "prettier --write ."
+    "start": "next start"
   },
   "dependencies": {
     "clsx": "^2.0.0",
-    "jazz-browser-media-images": "workspace:0.8.13",
-    "jazz-react": "workspace:0.8.13",
-    "jazz-tools": "workspace:0.8.13",
+    "jazz-browser-media-images": "workspace:0.8.15",
+    "jazz-react": "workspace:0.8.15",
+    "jazz-tools": "workspace:0.8.15",
     "next": "14.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -22,13 +22,7 @@
     "@types/node": "^22.5.1",
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.7",
-    "eslint": "^8.46.0",
-    "eslint-config-next": "14.2.5",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
     "postcss": "^8.4.27",
-    "prettier": "^3.1.1",
-    "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "3.3.2",
     "typescript": "^5.3.3"
   }

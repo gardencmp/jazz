@@ -1,8 +1,8 @@
-import { BookReview } from "@/schema";
-import Rating from "@/components/Rating";
-import { Group } from "jazz-tools";
-import RatingInput from "@/components/RatingInput";
 import { BookCover } from "@/components/BookCover";
+import Rating from "@/components/Rating";
+import RatingInput from "@/components/RatingInput";
+import { BookReview } from "@/schema";
+import { Group } from "jazz-tools";
 
 export function BookReviewHeader({ bookReview }: { bookReview: BookReview }) {
   const { title, author, rating, review, dateRead } = bookReview;
@@ -19,7 +19,7 @@ export function BookReviewHeader({ bookReview }: { bookReview: BookReview }) {
 
       {bookReview._owner.castAs(Group).myRole() === "admin" ? (
         <RatingInput
-          onChange={rating => (bookReview.rating = rating)}
+          onChange={(rating) => (bookReview.rating = rating)}
           value={rating}
         />
       ) : (

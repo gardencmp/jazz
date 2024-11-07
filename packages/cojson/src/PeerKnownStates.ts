@@ -1,26 +1,32 @@
 import { RawCoID, SessionID } from "./ids.js";
-import { CoValueKnownState, emptyKnownState, combinedKnownStates } from "./sync.js";
+import {
+  CoValueKnownState,
+  combinedKnownStates,
+  emptyKnownState,
+} from "./sync.js";
 
-type PeerKnownStateActions = {
+type PeerKnownStateActions =
+  | {
     type: "SET_AS_EMPTY";
     id: RawCoID;
-} | {
+    }
+  | {
     type: "UPDATE_HEADER";
     id: RawCoID;
     header: boolean;
-} |
-{
+    }
+  | {
     type: "UPDATE_SESSION_COUNTER";
     id: RawCoID;
     sessionId: SessionID;
     value: number;
-} |
-{
+    }
+  | {
     type: "SET";
     id: RawCoID;
     value: CoValueKnownState;
-} |
-{
+    }
+  | {
     type: "COMBINE_WITH";
     id: RawCoID;
     value: CoValueKnownState;
@@ -43,7 +49,7 @@ export class PeerKnownStates {
     private updateSessionCounter(
         id: RawCoID,
         sessionId: SessionID,
-        value: number
+    value: number,
     ) {
         const knownState = this.coValues.get(id) ?? emptyKnownState(id);
         const currentValue = knownState.sessions[sessionId] || 0;
@@ -72,11 +78,7 @@ export class PeerKnownStates {
                 this.updateHeader(action.id, action.header);
                 break;
             case "UPDATE_SESSION_COUNTER":
-                this.updateSessionCounter(
-                    action.id,
-                    action.sessionId,
-                    action.value
-                );
+        this.updateSessionCounter(action.id, action.sessionId, action.value);
                 break;
             case "SET":
                 this.coValues.set(action.id, action.value);

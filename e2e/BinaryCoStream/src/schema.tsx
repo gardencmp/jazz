@@ -1,4 +1,4 @@
-import { BinaryCoStream, co, CoMap } from "jazz-tools";
+import { BinaryCoStream, CoMap, co } from "jazz-tools";
 
 export class UploadedFile extends CoMap {
   file = co.ref(BinaryCoStream);

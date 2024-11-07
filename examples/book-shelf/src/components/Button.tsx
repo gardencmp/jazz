@@ -1,6 +1,6 @@
+import clsx from "clsx";
 import Link from "next/link";
 import type { ComponentProps } from "react";
-import clsx from "clsx";
 
 interface Props {
   variant?: "primary" | "secondary" | "tertiary";
@@ -43,7 +43,7 @@ export function Button(props: AnchorProps | ButtonProps) {
     customClassName,
     variantClassNames.base,
     variantClassNames[variant],
-    sizeClassNames[size]
+    sizeClassNames[size],
   );
 
   if (!!(props as AnchorProps).href) {

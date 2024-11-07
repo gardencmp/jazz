@@ -1,6 +1,6 @@
+import { createJazzReactApp } from "jazz-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createJazzReactApp } from "jazz-react";
 import { App } from "./app.tsx";
 
 import { ClerkProvider, SignInButton, useClerk } from "@clerk/clerk-react";
@@ -15,7 +15,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {state.errors.map(error => (
+      {state.errors.map((error) => (
         <div key={error}>{error}</div>
       ))}
       {auth ? (
@@ -42,5 +42,5 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </JazzAndAuth>
     </ClerkProvider>
-  </StrictMode>
+  </StrictMode>,
 );
