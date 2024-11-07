@@ -84,27 +84,24 @@ export default function RootLayout({
           manrope.variable,
           commitMono.variable,
           inter.className,
+          "min-h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
+          "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
         ].join(" ")}
       >
-        <div
-          className={clsx(
-            "min-h-full flex flex-col items-center [&_*]:scroll-mt-[5rem]",
-            "bg-white text-stone-700 dark:text-stone-400 dark:bg-stone-950",
-          )}
+        <SpeedInsights />
+        <Analytics />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          <SpeedInsights />
-          <Analytics />
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <div className="flex-1 w-full">
             <JazzNav />
-            <main className="flex-1 w-full">{children}</main>
-            <JazzFooter />
-          </ThemeProvider>
-        </div>
+            <main>{children}</main>
+          </div>
+          <JazzFooter />
+        </ThemeProvider>
       </body>
     </html>
   );

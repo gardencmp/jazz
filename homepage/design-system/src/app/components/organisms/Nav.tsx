@@ -34,8 +34,10 @@ type NavProps = {
 
 function NavItem({
   item,
+  className,
 }: {
   item: NavItemProps;
+  className?: string;
 }) {
   const { href, icon, title, items, firstOnRight } = item;
 
@@ -45,6 +47,7 @@ function NavItem({
     return (
       <NavLink
         className={clsx(
+          className,
           "text-sm px-2 lg:px-4 py-3 ",
           firstOnRight && "ml-auto",
           path === href ? "text-black dark:text-white" : "",
@@ -57,7 +60,7 @@ function NavItem({
   }
 
   return (
-    <Popover className={clsx("relative", firstOnRight && "ml-auto")}>
+    <Popover className={clsx("relative", className, firstOnRight && "ml-auto")}>
       <PopoverButton
         className={clsx(
           "flex items-center gap-1.5 text-sm px-2 lg:px-4 py-3 max-sm:w-full text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none focus-visible:outline-none",
@@ -289,7 +292,11 @@ export function Nav(props: NavProps) {
           </Link>
 
           {items.map((item, i) => (
-            <NavItem key={i} item={item} />
+            <NavItem
+              key={i}
+              item={item}
+              className={i == items.length - 1 ? "mr-3" : ""}
+            />
           ))}
 
           {cta}
