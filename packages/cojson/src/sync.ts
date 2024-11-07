@@ -6,6 +6,7 @@ import { CoValueState } from "./coValueState.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { PeerState } from "./PeerState.js";
 import { CoValuePriority } from "./priority.js";
+import { SyncStateSubscriptionManager } from "./SyncStateSubscriptionManager.js";
 
 export type CoValueKnownState = {
     id: RawCoID;
@@ -116,7 +117,12 @@ export class SyncManager {
 
     constructor(local: LocalNode) {
         this.local = local;
+        this.syncStateSubscriptionManager = new SyncStateSubscriptionManager(
+            this,
+        );
     }
+
+    syncStateSubscriptionManager: SyncStateSubscriptionManager;
 
     peersInPriorityOrder(): PeerState[] {
         return Object.values(this.peers).sort((a, b) => {
@@ -125,6 +131,10 @@ export class SyncManager {
 
             return bPriority - aPriority;
         });
+    }
+
+    getPeers(): PeerState[] {
+        return Object.values(this.peers);
     }
 
     async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
@@ -302,8 +312,22 @@ export class SyncManager {
     }
 
     addPeer(peer: Peer) {
-        const peerState = new PeerState(peer);
+        const prevPeer = this.peers[peer.id];
+        const peerState = new PeerState(peer, prevPeer?.knownStates);
         this.peers[peer.id] = peerState;
+
+        if (prevPeer && !prevPeer.closed) {
+            prevPeer.gracefulShutdown();
+        }
+
+        const unsubscribeFromKnownStatesUpdates = peerState.knownStates.subscribe(
+            (id) => {
+                this.syncStateSubscriptionManager.triggerUpdate(
+                    peer.id,
+                    id,
+                );
+            },
+        );
 
         if (peerState.isServerOrStoragePeer()) {
             const initialSync = async () => {
@@ -370,8 +394,9 @@ export class SyncManager {
                 }
             })
             .finally(() => {
-                peer.outgoing.close();
-                delete this.peers[peer.id];
+                const state = this.peers[peer.id];
+                state?.gracefulShutdown();
+                unsubscribeFromKnownStatesUpdates();
             });
     }
 
@@ -393,7 +418,8 @@ export class SyncManager {
             // special case: we should be able to solve this much more neatly
             // with an explicit state machine in the future
             const eligiblePeers = this.peersInPriorityOrder().filter(
-                (other) => other.id !== peer.id && other.isServerOrStoragePeer(),
+                (other) =>
+                    other.id !== peer.id && other.isServerOrStoragePeer(),
             );
             if (eligiblePeers.length === 0) {
                 if (msg.header || Object.keys(msg.sessions).length > 0) {
@@ -467,6 +493,12 @@ export class SyncManager {
             value: knownStateIn(msg),
         });
 
+        peer.knownStates.dispatch({
+            type: "COMBINE_WITH",
+            id: msg.id,
+            value: knownStateIn(msg),
+        });
+
         if (!entry) {
             if (msg.asDependencyOf) {
                 if (this.local.coValues[msg.asDependencyOf]) {
@@ -492,7 +524,8 @@ export class SyncManager {
         }
 
         if (entry.state.type === "unknown") {
-            const availableOnPeer = peer.optimisticKnownStates.get(msg.id)?.header;
+            const availableOnPeer = peer.optimisticKnownStates.get(msg.id)
+                ?.header;
 
             if (!availableOnPeer) {
                 entry.dispatch({
@@ -639,6 +672,14 @@ export class SyncManager {
             }).catch((e) => {
                 console.error("Error sending known state correction", e);
             });
+        } else {
+            // We send a known message to ack that we reiceved the new content
+            this.trySendToPeer(peer, {
+                action: "known",
+                ...coValue.knownState(),
+            }).catch((e: unknown) => {
+                console.error("Error sending known state", e);
+            });
         }
     }
 
@@ -683,6 +724,7 @@ export class SyncManager {
     async actuallySyncCoValue(coValue: CoValueCore) {
         // let blockingSince = performance.now();
         for (const peer of this.peersInPriorityOrder()) {
+            if (peer.closed) continue;
             // if (performance.now() - blockingSince > 5) {
             //     await new Promise<void>((resolve) => {
             //         setTimeout(resolve, 0);
@@ -706,6 +748,38 @@ export class SyncManager {
                 );
             }
         }
+
+        for (const peer of this.getPeers()) {
+            this.syncStateSubscriptionManager.triggerUpdate(
+                peer.id,
+                coValue.id,
+            );
+        }
+    }
+
+    async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
+        const isAlreadyUploaded =
+            this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+                peerId,
+                id,
+            );
+
+        if (isAlreadyUploaded) {
+            return true;
+        }
+
+        return new Promise((resolve) => {
+            const unsubscribe =
+                this.syncStateSubscriptionManager.subscribeToPeerUpdates(
+                    peerId,
+                    (knownState, uploadCompleted) => {
+                        if (uploadCompleted && knownState.id === id) {
+                            resolve(true);
+                            unsubscribe?.();
+                        }
+                    },
+                );
+        });
     }
 
     gracefulShutdown() {

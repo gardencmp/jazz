@@ -8,9 +8,13 @@ import {
 import { Peer, SyncMessage } from "./sync.js";
 
 export class PeerState {
-    constructor(private peer: Peer) {}
+    constructor(private peer: Peer, knownStates: PeerKnownStates | undefined) {
+        this.optimisticKnownStates = knownStates?.clone() ?? new PeerKnownStates();
+        this.knownStates = knownStates?.clone() ?? new PeerKnownStates();
+    }
 
-    readonly optimisticKnownStates = new PeerKnownStates();
+    readonly optimisticKnownStates: PeerKnownStates;
+    readonly knownStates: PeerKnownStates;
     readonly toldKnownState: Set<RawCoID> = new Set();
 
     get id() {
