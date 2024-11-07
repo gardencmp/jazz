@@ -16,8 +16,21 @@ export class PeerState {
     this.knownStates = knownStates?.clone() ?? new PeerKnownStates();
   }
 
-  readonly optimisticKnownStates: PeerKnownStates;
+  /**
+   * Here we to collect all the known states that a given peer has told us about.
+   *
+   * This can be used to safely track the sync state of a coValue in a given peer.
+   */
   readonly knownStates: PeerKnownStates;
+
+  /**
+   * This one collects the known states "optimistically".
+   * We use it to keep track of the content we have sent to a given peer.
+   *
+   * The main difference with knownState is that this is updated when the content is sent to the peer without
+   * waiting for any acknowledgement from the peer.
+   */
+  readonly optimisticKnownStates: PeerKnownStates;
   readonly toldKnownState: Set<RawCoID> = new Set();
 
   get id() {
