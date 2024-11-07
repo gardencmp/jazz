@@ -24,7 +24,7 @@ export function JazzNav() {
               title: "Documentation",
               href: "/docs",
               description:
-                "Get started with using Jazz for different tech stacks.",
+                "Get started with using Jazz by learning the core concepts, and going through guides.",
             },
             {
               icon: (

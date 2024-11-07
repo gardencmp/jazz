@@ -73,23 +73,23 @@ function NavItem({
 
       <PopoverPanel
         transition
-        className="absolute left-1/2 -translate-x-1/2 z-10 flex w-screen max-w-[16rem] transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
+        className="absolute left-1/2 -translate-x-1/2 z-10 flex w-screen max-w-[24rem] mt-5 transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
       >
-        <div className="w-screen max-w-md flex-auto overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-stone-925">
-          <div className="p-2 grid">
+        <div className="flex-auto overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-stone-925">
+          <div className="p-3 grid">
             {items.map(({ href, title, description, icon }) => (
               <CloseButton
-                className="p-2 rounded flex gap-2 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors"
+                className="p-3 rounded flex gap-3 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors"
                 href={href}
                 aria-label={title}
                 as={Link}
               >
                 {icon}
-                <div className="grid gap-1 mt-px">
-                  <div className="text-sm font-medium text-stone-900 dark:text-white">
+                <div className="grid gap-1.5 mt-px">
+                  <p className="text-sm font-medium text-stone-900 dark:text-white">
                     {title}
-                  </div>
-                  <p className="text-xs leading-relaxed">{description}</p>
+                  </p>
+                  <p className="text-sm leading-relaxed">{description}</p>
                 </div>
               </CloseButton>
             ))}
