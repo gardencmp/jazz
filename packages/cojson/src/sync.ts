@@ -653,7 +653,13 @@ export class SyncManager {
         console.error("Error sending known state correction", e);
       });
     } else {
-      // We send a known message to ack that we reiceved the new content
+      /**
+       * We are sending a known state message to the peer to acknowledge the
+       * receipt of the new content.
+       *
+       * This way the sender knows that the content has been received and applied
+       * and can update their peer's knownState accordingly.
+       */
       this.trySendToPeer(peer, {
         action: "known",
         ...coValue.knownState(),

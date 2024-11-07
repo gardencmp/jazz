@@ -1618,10 +1618,24 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
   test("optimisticKnownStates is updated as new transactions are received, while knownStates only when the coValue is fully synced", async () => {
     const { client, jazzCloudConnectionAsPeer } = createTwoConnectedNodes();
 
-    // Create test data
+    // Create test data and sync the first change
+    // We want that both the nodes know about the coValue so we can test
+    // the content acknowledgement flow.
     const group = client.createGroup();
     const map = group.createMap();
     map.set("key1", "value1", "trusting");
+
+    await client.syncManager.actuallySyncCoValue(map.core);
+    await waitFor(() => {
+      return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+        "jazzCloudConnection",
+        map.core.id,
+      );
+    });
+
+    map.set("key2", "value2", "trusting");
+
+    await client.syncManager.actuallySyncCoValue(map.core);
 
     // Block the content messages
     // The main difference between optimisticKnownStates and knownStates is that
@@ -1641,8 +1655,6 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
 
       return push.call(jazzCloudConnectionAsPeer.outgoing, msg);
     });
-
-    await client.syncManager.actuallySyncCoValue(map.core);
 
     const peerState = client.syncManager.peers["jazzCloudConnection"]!;
 
