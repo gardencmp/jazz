@@ -199,6 +199,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return instance;
   }
 
+  /**
+   * Push items to this `CoStream`
+   * @category Content
+   */
   push(...items: Item[]) {
     for (const item of items) {
       this.pushItem(item);
@@ -217,6 +221,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     }
   }
 
+  /**
+   * Get a JSON representation of the `CoStream`
+   * @category
+   */
   toJSON(): {
     id: string;
     _type: "CoStream";
@@ -249,6 +257,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     };
   }
 
+  /** @internal */
   [inspect](): {
     id: string;
     _type: "CoStream";
@@ -258,6 +267,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return this.toJSON();
   }
 
+  /** @internal */
   static schema<V extends CoFeed>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this: { new (...args: any): V } & typeof CoFeed,
