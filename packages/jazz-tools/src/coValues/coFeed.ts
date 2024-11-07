@@ -62,11 +62,15 @@ export { CoFeed as CoStream };
 /**
  * CoFeeds are collaborative logs of data.
  *
+ * @categoryDescription Content
  * They are similar to `CoList`s, but with a few key differences:
  * - They are append-only
  * - They have a per-session view
  *
  * ```ts
+ * favDog.push("Poodle");
+ * favDog.push("Schnowzer");
+ * ```
  *
  * @category CoValues
  */
