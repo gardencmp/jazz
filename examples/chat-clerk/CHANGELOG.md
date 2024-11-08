@@ -1,5 +1,16 @@
 # jazz-example-chat
 
+## 0.0.93
+
+### Patch Changes
+
+- Updated dependencies [2af107c]
+- Updated dependencies [b934fab]
+  - jazz-react@0.8.16
+  - cojson@0.8.16
+  - jazz-react-auth-clerk@0.8.16
+  - jazz-tools@0.8.16
+
 ## 0.0.92
 
 ### Patch Changes
