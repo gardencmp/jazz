@@ -666,6 +666,11 @@ export class SyncManager {
       });
     }
 
+    /**
+     * We do send a correction/ack message before syncing to give an immediate
+     * response to the peers that are waiting for confirmation that a coValue is
+     * fully synced
+     */
     await this.syncCoValue(coValue);
   }
 
