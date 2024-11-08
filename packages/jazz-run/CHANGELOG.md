@@ -1,5 +1,17 @@
 # jazz-run
 
+## 0.8.17
+
+### Patch Changes
+
+- d433cf4: Improve the sync wait using the new API from the sync manager
+- Updated dependencies [d433cf4]
+- Updated dependencies [b6162f0]
+  - cojson@0.8.17
+  - cojson-transport-ws@0.8.17
+  - cojson-storage-sqlite@0.8.17
+  - jazz-tools@0.8.17
+
 ## 0.8.16
 
 ### Patch Changes

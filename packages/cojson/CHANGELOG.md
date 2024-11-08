@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.17
+
+### Patch Changes
+
+- d433cf4: Add a new API to wait for a CoValue to be uploaded in a peer
+
 ## 0.8.16
 
 ### Patch Changes
