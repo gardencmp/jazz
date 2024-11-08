@@ -1,6 +1,6 @@
 {
   "name": "chat-rn",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "index.js",
   "scripts": {
     "build": "expo export -p ios",
