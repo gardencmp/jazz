@@ -47,8 +47,8 @@ export const createWorkerAccount = async ({
 
   await Promise.race([
     Promise.all([
-      waitForSync(account, peer, accountCoValue),
-      waitForSync(account, peer, accountProfileCoValue),
+      syncManager.waitForUploadIntoPeer(peer.id, accountCoValue.id),
+      syncManager.waitForUploadIntoPeer(peer.id, accountProfileCoValue.id),
     ]),
     failAfter(
       4_000,
@@ -73,7 +73,7 @@ export const createWorkerAccount = async ({
       peersToLoadFrom: [peer2],
       crypto,
     }),
-    failAfter(4_000, "Timeout: Account loading check failed"),
+    failAfter(10_000, "Timeout: Account loading check failed"),
   ]);
 
   return {
@@ -81,62 +81,6 @@ export const createWorkerAccount = async ({
     agentSecret: account._raw.agentSecret,
   };
 };
-
-function waitForSync(account: Account, peer: Peer, coValue: CoValueCore) {
-  const syncManager = account._raw.core.node.syncManager;
-  const peerState = syncManager.peers[peer.id];
-
-  if (!peerState) {
-    throw new Error(`Peer state for ${peer.id} not found`);
-  }
-
-  const isSynced = () => {
-    const knownState = coValue.knownState();
-
-    if (!peerState.optimisticKnownStates.get(coValue.id)) {
-      return false;
-    }
-
-    return isEqualSession(
-      knownState.sessions,
-      peerState.optimisticKnownStates.get(coValue.id)?.sessions ?? {},
-    );
-  };
-
-  if (isSynced()) {
-    return Promise.resolve(true);
-  }
-
-  return new Promise((resolve) => {
-    const unsubscribe = peerState?.optimisticKnownStates.subscribe(
-      (id, knownState) => {
-        if (id !== coValue.id) return;
-
-        if (isSynced()) {
-          resolve(true);
-          unsubscribe?.();
-        }
-      },
-    );
-  });
-}
-
-function isEqualSession(a: Record<string, number>, b: Record<string, number>) {
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  for (const sessionId of keysA) {
-    if (a[sessionId] !== b[sessionId]) {
-      return false;
-    }
-  }
-
-  return true;
-}
 
 function failAfter(ms: number, errorMessage: string) {
   return new Promise((_, reject) => {
