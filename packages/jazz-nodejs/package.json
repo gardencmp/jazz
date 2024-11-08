@@ -5,11 +5,11 @@
   "types": "src/index.ts",
   "type": "module",
   "license": "MIT",
-  "version": "0.8.15",
+  "version": "0.8.17",
   "dependencies": {
-    "cojson": "workspace:0.8.12",
-    "cojson-transport-ws": "workspace:0.8.13",
-    "jazz-tools": "workspace:0.8.15",
+    "cojson": "workspace:0.8.17",
+    "cojson-transport-ws": "workspace:0.8.17",
+    "jazz-tools": "workspace:0.8.17",
     "ws": "^8.14.2"
   },
   "devDependencies": {
@@ -20,7 +20,7 @@
     "dev": "tsc --watch --sourceMap --outDir dist",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   }
 }

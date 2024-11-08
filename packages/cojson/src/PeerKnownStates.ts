@@ -66,6 +66,12 @@ export class PeerKnownStates {
     return this.coValues.has(id);
   }
 
+  clone() {
+    const clone = new PeerKnownStates();
+    clone.coValues = new Map(this.coValues);
+    return clone;
+  }
+
   dispatch(action: PeerKnownStateActions) {
     switch (action.type) {
       case "UPDATE_HEADER":

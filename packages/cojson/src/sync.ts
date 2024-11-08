@@ -1,4 +1,5 @@
 import { PeerState } from "./PeerState.js";
+import { SyncStateSubscriptionManager } from "./SyncStateSubscriptionManager.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { CoValueState } from "./coValueState.js";
@@ -116,7 +117,10 @@ export class SyncManager {
 
   constructor(local: LocalNode) {
     this.local = local;
+    this.syncStateSubscriptionManager = new SyncStateSubscriptionManager(this);
   }
+
+  syncStateSubscriptionManager: SyncStateSubscriptionManager;
 
   peersInPriorityOrder(): PeerState[] {
     return Object.values(this.peers).sort((a, b) => {
@@ -125,6 +129,10 @@ export class SyncManager {
 
       return bPriority - aPriority;
     });
+  }
+
+  getPeers(): PeerState[] {
+    return Object.values(this.peers);
   }
 
   async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
@@ -298,8 +306,19 @@ export class SyncManager {
   }
 
   addPeer(peer: Peer) {
-    const peerState = new PeerState(peer);
+    const prevPeer = this.peers[peer.id];
+    const peerState = new PeerState(peer, prevPeer?.knownStates);
     this.peers[peer.id] = peerState;
+
+    if (prevPeer && !prevPeer.closed) {
+      prevPeer.gracefulShutdown();
+    }
+
+    const unsubscribeFromKnownStatesUpdates = peerState.knownStates.subscribe(
+      (id) => {
+        this.syncStateSubscriptionManager.triggerUpdate(peer.id, id);
+      },
+    );
 
     if (peerState.isServerOrStoragePeer()) {
       const initialSync = async () => {
@@ -358,8 +377,9 @@ export class SyncManager {
         }
       })
       .finally(() => {
-        peer.outgoing.close();
-        delete this.peers[peer.id];
+        const state = this.peers[peer.id];
+        state?.gracefulShutdown();
+        unsubscribeFromKnownStatesUpdates();
       });
   }
 
@@ -450,6 +470,12 @@ export class SyncManager {
     let entry = this.local.coValues[msg.id];
 
     peer.optimisticKnownStates.dispatch({
+      type: "COMBINE_WITH",
+      id: msg.id,
+      value: knownStateIn(msg),
+    });
+
+    peer.knownStates.dispatch({
       type: "COMBINE_WITH",
       id: msg.id,
       value: knownStateIn(msg),
@@ -626,6 +652,20 @@ export class SyncManager {
       }).catch((e) => {
         console.error("Error sending known state correction", e);
       });
+    } else {
+      /**
+       * We are sending a known state message to the peer to acknowledge the
+       * receipt of the new content.
+       *
+       * This way the sender knows that the content has been received and applied
+       * and can update their peer's knownState accordingly.
+       */
+      this.trySendToPeer(peer, {
+        action: "known",
+        ...coValue.knownState(),
+      }).catch((e: unknown) => {
+        console.error("Error sending known state", e);
+      });
     }
   }
 
@@ -670,6 +710,7 @@ export class SyncManager {
   async actuallySyncCoValue(coValue: CoValueCore) {
     // let blockingSince = performance.now();
     for (const peer of this.peersInPriorityOrder()) {
+      if (peer.closed) continue;
       // if (performance.now() - blockingSince > 5) {
       //     await new Promise<void>((resolve) => {
       //         setTimeout(resolve, 0);
@@ -684,6 +725,35 @@ export class SyncManager {
         await this.sendNewContentIncludingDependencies(coValue.id, peer);
       }
     }
+
+    for (const peer of this.getPeers()) {
+      this.syncStateSubscriptionManager.triggerUpdate(peer.id, coValue.id);
+    }
+  }
+
+  async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
+    const isAlreadyUploaded =
+      this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+        peerId,
+        id,
+      );
+
+    if (isAlreadyUploaded) {
+      return true;
+    }
+
+    return new Promise((resolve) => {
+      const unsubscribe =
+        this.syncStateSubscriptionManager.subscribeToPeerUpdates(
+          peerId,
+          (knownState, uploadCompleted) => {
+            if (uploadCompleted && knownState.id === id) {
+              resolve(true);
+              unsubscribe?.();
+            }
+          },
+        );
+    });
   }
 
   gracefulShutdown() {

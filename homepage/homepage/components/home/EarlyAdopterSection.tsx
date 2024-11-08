@@ -27,7 +27,7 @@ export function EarlyAdopterSection() {
           </Button>
           <Button href="/docs" variant="secondary">
             Read <span className="sm:hidden">docs</span>{" "}
-            <span className="hidden sm:inline">documentation</span>
+            <span className="hidden sm:inline">the documentation</span>
           </Button>
         </div>
       </div>

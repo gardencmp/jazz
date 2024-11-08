@@ -1,4 +1,4 @@
-import { Result, err, ok } from "neverthrow";
+import { Result, ok } from "neverthrow";
 import { CoID, RawCoValue } from "../coValue.js";
 import {
   CoValueCore,
@@ -49,15 +49,16 @@ export class RawAccount<
     if (this._cachedCurrentAgentID) {
       return ok(this._cachedCurrentAgentID);
     }
-    const agents = this.keys().filter((k): k is AgentID =>
-      k.startsWith("sealer_"),
-    );
+    const agents = this.keys()
+      .filter((k): k is AgentID => k.startsWith("sealer_"))
+      .sort(
+        (a, b) =>
+          (this.lastEditAt(a)?.at.getTime() || 0) -
+          (this.lastEditAt(b)?.at.getTime() || 0),
+      );
 
     if (agents.length !== 1) {
-      return err({
-        type: "InvalidAccountAgentID",
-        reason: "Account has " + agents.length + " agents",
-      });
+      console.warn("Account has " + agents.length + " agents", this.id);
     }
 
     this._cachedCurrentAgentID = agents[0];

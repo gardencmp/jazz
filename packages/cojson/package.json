@@ -19,7 +19,7 @@
   },
   "type": "module",
   "license": "MIT",
-  "version": "0.8.12",
+  "version": "0.8.17",
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "typescript": "^5.3.3",
@@ -44,7 +44,7 @@
     "format-and-lint:fix": "biome check . --write",
     "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
     "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
-    "build": "npm run format-and-lint && rm -rf ./dist && pnpm run build:native && pnpm run build:web",
+    "build": "rm -rf ./dist && pnpm run build:native && pnpm run build:web",
     "prepublishOnly": "npm run build"
   },
   "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"

@@ -1,13 +1,13 @@
 {
   "name": "cojson-storage-sqlite",
   "type": "module",
-  "version": "0.8.12",
+  "version": "0.8.17",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^8.5.2",
-    "cojson": "workspace:0.8.12",
+    "cojson": "workspace:0.8.17",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
@@ -17,7 +17,7 @@
     "dev": "tsc --watch --sourceMap --outDir dist",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },
   "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"

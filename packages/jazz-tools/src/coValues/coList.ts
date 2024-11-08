@@ -34,7 +34,7 @@ import { coValuesCache } from "../lib/cache.js";
 /**
  * CoLists are collaborative versions of plain arrays.
  *
- *  * @categoryDescription Content
+ * @categoryDescription Content
  * You can access items on a `CoList` as if they were normal items on a plain array, using `[]` notation, etc.
  *
  * Since `CoList` is a subclass of `Array`, you can use all the normal array methods like `push`, `pop`, `splice`, etc.

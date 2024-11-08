@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v3
