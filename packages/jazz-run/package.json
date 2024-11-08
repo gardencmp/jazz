@@ -7,7 +7,8 @@
   "scripts": {
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "npm run format-and-lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "build-and-run": "pnpm turbo build && chmod +x ./dist/index.js && ./dist/index.js sync --in-memory",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

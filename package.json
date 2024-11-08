@@ -10,6 +10,7 @@
     "@vitest/coverage-istanbul": "1.5.3",
     "@vitest/ui": "1.5.3",
     "happy-dom": "^15.8.3",
+    "lefthook": "^1.8.2",
     "ts-node": "^10.9.1",
     "turbo": "^1.11.2",
     "typedoc": "^0.25.13",

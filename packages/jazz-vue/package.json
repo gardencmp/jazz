@@ -26,7 +26,7 @@
     "dev": "vite",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "npm run format-and-lint && rm -rf ./dist && vite build",
+    "build": "rm -rf ./dist && vite build",
     "prepublishOnly": "npm run build"
   }
 }
