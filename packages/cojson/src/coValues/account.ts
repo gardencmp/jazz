@@ -1,4 +1,4 @@
-import { Result, err, ok } from "neverthrow";
+import { Result, ok } from "neverthrow";
 import { CoID, RawCoValue } from "../coValue.js";
 import {
   CoValueCore,
