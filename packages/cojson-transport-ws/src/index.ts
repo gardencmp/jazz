@@ -147,6 +147,11 @@ export function createWebSocketPeer({
   );
 
   function handleIncomingMsg(event: { data: unknown }) {
+    if (event.data === "") {
+      console.log("client", id, "sent empty message");
+      return;
+    }
+
     const result = deserializeMessages(event.data);
 
     if (!result.ok) {
