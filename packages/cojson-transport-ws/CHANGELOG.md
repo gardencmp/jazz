@@ -1,5 +1,13 @@
 # cojson-transport-nodejs-ws
 
+## 0.8.17
+
+### Patch Changes
+
+- b6162f0: Less noisy logs if clients send empty WebSocket messages
+- Updated dependencies [d433cf4]
+  - cojson@0.8.17
+
 ## 0.8.16
 
 ### Patch Changes

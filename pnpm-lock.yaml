@@ -46,7 +46,7 @@ importers:
   e2e/BinaryCoStream:
     dependencies:
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
@@ -55,10 +55,10 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -150,13 +150,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       next:
         specifier: 14.2.5
@@ -205,16 +205,16 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -302,19 +302,19 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -738,10 +738,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/cojson-transport-ws
       hash-slash:
         specifier: workspace:0.2.1
@@ -823,10 +823,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -881,10 +881,10 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -945,13 +945,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1006,7 +1006,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
@@ -1044,10 +1044,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1145,7 +1145,7 @@ importers:
   packages/cojson-storage-indexeddb:
     dependencies:
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1170,7 +1170,7 @@ importers:
         specifier: ^8.5.2
         version: 8.7.0
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1183,7 +1183,7 @@ importers:
   packages/cojson-transport-ws:
     dependencies:
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1211,16 +1211,16 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       cojson-storage-indexeddb:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson-storage-indexeddb
       cojson-transport-ws:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1229,13 +1229,13 @@ importers:
   packages/jazz-browser-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
     devDependencies:
       typescript:
@@ -1251,10 +1251,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
@@ -1270,13 +1270,13 @@ importers:
   packages/jazz-nodejs:
     dependencies:
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1295,13 +1295,13 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1320,16 +1320,16 @@ importers:
   packages/jazz-react-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-react
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
       react:
         specifier: 18.3.1
@@ -1413,19 +1413,19 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5(effect@3.6.5)
       cojson:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson
       cojson-storage-sqlite:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson-storage-sqlite
       cojson-transport-ws:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../cojson-transport-ws
       effect:
         specifier: ^3.6.5
         version: 3.6.5
       jazz-tools:
-        specifier: workspace:0.8.16
+        specifier: workspace:0.8.17
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
