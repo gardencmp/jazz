@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.18
+
+### Patch Changes
+
+- d4319d8: Immediately ack new content before syncing it upstream
+
 ## 0.8.17
 
 ### Patch Changes
