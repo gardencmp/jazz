@@ -642,8 +642,6 @@ export class SyncManager {
       });
     }
 
-    await this.syncCoValue(coValue);
-
     if (invalidStateAssumed) {
       this.trySendToPeer(peer, {
         action: "known",
@@ -667,6 +665,8 @@ export class SyncManager {
         console.error("Error sending known state", e);
       });
     }
+
+    await this.syncCoValue(coValue);
   }
 
   async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
