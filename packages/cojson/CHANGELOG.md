@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.19
+
+### Patch Changes
+
+- 9c2aadb: Set a CoValue as errored per peer after first error
+
 ## 0.8.18
 
 ### Patch Changes
