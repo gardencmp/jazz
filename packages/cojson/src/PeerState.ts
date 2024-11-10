@@ -3,6 +3,7 @@ import {
   PriorityBasedMessageQueue,
   QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
+import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
@@ -32,6 +33,8 @@ export class PeerState {
    */
   readonly optimisticKnownStates: PeerKnownStates;
   readonly toldKnownState: Set<RawCoID> = new Set();
+
+  readonly erroredCoValues: Map<RawCoID, TryAddTransactionsError> = new Map();
 
   get id() {
     return this.peer.id;
