@@ -29,8 +29,8 @@ export function ResponsiveIframe(
   const user1 = "A";
   const user2 = "B";
 
-  // const isLocal = window.location.hostname === "localhost"
-  const isLocal = false;
+  const isLocal = window.location.hostname === "localhost";
+  // const isLocal = false;
 
   const [src1, setSrc1] = useState(
     (isLocal ? "http://localhost:5173" : "https://chat.jazz.tools") +

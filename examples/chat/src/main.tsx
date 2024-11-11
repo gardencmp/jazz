@@ -9,6 +9,10 @@ export const { useAccount, useCoState } = Jazz;
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, state] = useDemoAuth();
 
+  const url = new URL(window.location.href);
+
+  const user = url.searchParams.get("user") || undefined;
+
   return (
     <>
       {window.location.href}
@@ -19,7 +23,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
         {children}
       </Jazz.Provider>
       {state.state !== "signedIn" && (
-        <DemoAuthBasicUI appName="Jazz Chat" state={state} />
+        <DemoAuthBasicUI appName="Jazz Chat" state={state} user={user} />
       )}
     </>
   );
