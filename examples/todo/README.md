@@ -1,6 +1,6 @@
 # Jazz Todo List Example
 
-Live version: https://example-todo.jazz.tools
+Live version: https://todo-demo.jazz.tools/
 
 ## Installing & running the example locally
 
