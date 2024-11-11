@@ -69,15 +69,28 @@ export function useDemoAuth({
 export const DemoAuthBasicUI = ({
   appName,
   state,
+  user,
 }: {
   appName: string;
   state: DemoAuthState;
+  user?: string;
 }) => {
   const [username, setUsername] = useState<string>("");
   const darkMode =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
       : false;
+
+  if (user && state.state === "ready") {
+    if (state.existingUsers.includes(user)) {
+      state.logInAs(user);
+      return <></>;
+    } else {
+      state.signUp(user);
+    }
+
+    return <></>;
+  }
 
   return (
     <div
