@@ -1,5 +1,4 @@
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import plm, { toc } from "./guide/page.mdx";
 
 export default function Page() {
     // console.log("plm", plm);
