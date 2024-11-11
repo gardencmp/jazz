@@ -10,11 +10,19 @@ export function App() {
   const router = useIframeHashRouter();
 
   const createChat = () => {
+    console.log("createChat", window.location.href);
     if (!me) return;
     const group = Group.create({ owner: me });
     group.addMember("everyone", "writer");
     const chat = Chat.create([], { owner: group });
     router.navigate("/#/chat/" + chat.id);
+
+    if (window.parent) {
+      window.parent.postMessage(
+        { type: "chat-load", id: "/chat/" + chat.id },
+        "*",
+      );
+    }
   };
 
   return (
