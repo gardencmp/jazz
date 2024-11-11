@@ -147,7 +147,7 @@ const reactExamples = [
       "Upload a photo of your pet, and invite your friends to react to it.",
     tech: [tech.react],
     features: [features.fileUpload, features.inviteLink],
-    demoUrl: "https://example-pets.jazz.tools",
+    demoUrl: "https://pets-demo.jazz.tools",
     illustration: <PetIllustration />,
   },
   {
@@ -156,7 +156,7 @@ const reactExamples = [
     description: "A todo list where you can collaborate with invited guests.",
     tech: [tech.react],
     features: [features.inviteLink],
-    demoUrl: "https://example-todo.jazz.tools",
+    demoUrl: "https://todo-demo.jazz.tools",
     illustration: (
       <div className="h-full w-full bg-cover bg-[url('/todo.jpg')] bg-left-bottom"></div>
     ),
