@@ -8,13 +8,17 @@ export function ResponsiveIframe(
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [url, setUrl] = useState<string | undefined>();
   const [src, setSrc] = useState<string | undefined>();
 
+  const dimensions = {
+    width: 300,
+    height: 400,
+  };
+
   useLayoutEffect(() => {
     const listener = (e: MessageEvent) => {
-      console.log(e);
+      console.log("navigate", e.data.url);
       if (e.data.type === "navigate" && src?.startsWith(e.origin)) {
         setUrl(e.data.url);
       }
@@ -24,21 +28,6 @@ export function ResponsiveIframe(
       window.removeEventListener("message", listener);
     };
   }, [src]);
-
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver(() => {
-      if (!containerRef.current) return;
-      setDimensions({
-        width: containerRef.current.offsetWidth,
-        height: containerRef.current.offsetHeight,
-      });
-    });
-    observer.observe(containerRef.current);
-    return () => {
-      observer.disconnect();
-    };
-  }, [containerRef]);
 
   useLayoutEffect(() => {
     setSrc(
@@ -82,6 +71,17 @@ export function ResponsiveIframe(
       <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 dark:bg-stone-925">
         <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
           <div className="h-full" ref={containerRef}>
+            <iframe
+              {...props}
+              src={src}
+              className="dark:bg-black w-full"
+              {...dimensions}
+              allowFullScreen
+            />
+          </div>
+        </div>
+        <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
+          <div className="h-full">
             <iframe
               {...props}
               src={src}
