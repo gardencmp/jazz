@@ -1,20 +1,45 @@
 "use client";
 
-import { CopyIcon } from "lucide-react";
 import { IframeHTMLAttributes, useLayoutEffect, useRef, useState } from "react";
+
+const dimensions = {
+  width: 200,
+  height: 800,
+};
+
+function Iframe(props: IframeHTMLAttributes<HTMLIFrameElement>) {
+  const { src } = props;
+  return (
+    <iframe
+      {...props}
+      src={src}
+      className="dark:bg-black w-full"
+      {...dimensions}
+      allowFullScreen
+    />
+  );
+}
 
 export function ResponsiveIframe(
   props: IframeHTMLAttributes<HTMLIFrameElement> & { localsrc: string },
 ) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const [url, setUrl] = useState<string | undefined>();
   const [src, setSrc] = useState<string | undefined>();
 
-  const dimensions = {
-    width: 300,
-    height: 400,
-  };
+  const user1 = "A";
+  const user2 = "B";
+
+  // const isLocal = window.location.hostname === "localhost"
+  const isLocal = false;
+
+  const [src1, setSrc1] = useState(
+    (isLocal ? "http://localhost:5173" : "https://chat.jazz.tools") +
+      `?user=${user1}`,
+  );
+  const [src2, setSrc2] = useState(
+    (isLocal ? "http://localhost:5174" : "https://jazz-chat-2.vercel.app") +
+      `?user=${user2}`,
+  );
 
   useLayoutEffect(() => {
     const listener = (e: MessageEvent) => {
@@ -38,60 +63,10 @@ export function ResponsiveIframe(
     );
   }, [props.src, props.localsrc]);
 
-  const copyUrl = () => {
-    if (url) {
-      navigator.clipboard.writeText(url);
-    }
-  };
-
   return (
-    <>
-      <div className="bg-white flex gap-3 border-b text-xs dark:bg-stone-925">
-        <input
-          className="flex-1 font-mono bg-transparent overflow-hidden text-ellipsis py-2 px-3"
-          value={url?.replace("http://", "").replace("https://", "")}
-          onClick={(e) => e.currentTarget.select()}
-          onBlur={(e) => e.currentTarget.setSelectionRange(0, 0)}
-          readOnly
-        />
-        {url?.includes("/#/chat/") && (
-          <button
-            type="button"
-            className="text-blue-600 flex items-center gap-1.5 py-2 px-3"
-            onClick={copyUrl}
-          >
-            <CopyIcon className="hidden sm:inline" size={12} />
-            <span>
-              Copy URL{" "}
-              <span className="hidden sm:inline">to invite others</span>
-            </span>
-          </button>
-        )}
-      </div>
-      <div className="flex-1 bg-stone-100 flex items-stretch justify-center p-2 sm:p-6 dark:bg-stone-925">
-        <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
-          <div className="h-full" ref={containerRef}>
-            <iframe
-              {...props}
-              src={src}
-              className="dark:bg-black w-full"
-              {...dimensions}
-              allowFullScreen
-            />
-          </div>
-        </div>
-        <div className="border rounded-lg overflow-hidden shadow-2xl w-[20rem] min-h-[30rem]">
-          <div className="h-full">
-            <iframe
-              {...props}
-              src={src}
-              className="dark:bg-black w-full"
-              {...dimensions}
-              allowFullScreen
-            />
-          </div>
-        </div>
-      </div>
-    </>
+    <div className="grid grid-cols-2 justify-center gap-8">
+      <Iframe src={src1} />
+      <Iframe src={src2} />
+    </div>
   );
 }
