@@ -10,7 +10,8 @@
     "format-and-lint:fix": "biome check . --write",
     "preview": "vite preview",
     "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "sync": "jazz-run sync"
   },
   "dependencies": {
     "jazz-browser-media-images": "workspace:0.8.19",
@@ -20,6 +21,7 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "jazz-run": "workspace:0.8.19",
     "@playwright/test": "^1.46.1",
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.7",
