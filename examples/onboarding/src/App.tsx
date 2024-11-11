@@ -1,3 +1,9 @@
+import { Button } from "@/components/Button.tsx";
+import { useAccount, useCoState } from "@/main.tsx";
+import { EmployeeList } from "@/pages/EmployeeList.tsx";
+import { EmployeeOnboading } from "@/pages/EmployeeOnboarding.tsx";
+import { NewEmployee } from "@/pages/NewEmployee.tsx";
+import { CoEmployee, EmployeeCoList } from "@/schema.ts";
 import { ID } from "jazz-tools";
 import { useEffect } from "react";
 import {
@@ -6,12 +12,6 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { Button } from "./components/Button.tsx";
-import { useAccount, useCoState } from "./main.tsx";
-import { EmployeeList } from "./pages/EmployeeList.tsx";
-import { EmployeeOnboading } from "./pages/EmployeeOnboarding.tsx";
-import { NewEmployee } from "./pages/NewEmployee.tsx";
-import { CoEmployee, EmployeeCoList } from "./schema.ts";
 
 function ImportEmployee({
   employeeListCoId,

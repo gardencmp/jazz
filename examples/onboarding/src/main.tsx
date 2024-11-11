@@ -1,9 +1,9 @@
+import App from "@/App.tsx";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
+import "@/index.css";
+import { HRAccount } from "@/schema.ts";
 import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
-import { HRAccount } from "./schema.ts";
 
 const Jazz = createJazzReactApp({
   AccountSchema: HRAccount,
