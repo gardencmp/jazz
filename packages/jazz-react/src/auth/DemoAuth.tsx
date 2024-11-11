@@ -81,6 +81,8 @@ export const DemoAuthBasicUI = ({
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
       : false;
 
+  console.log("log in as", user);
+
   if (user && state.state === "ready") {
     if (state.existingUsers.includes(user)) {
       state.logInAs(user);
