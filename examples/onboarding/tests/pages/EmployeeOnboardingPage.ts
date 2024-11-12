@@ -11,13 +11,13 @@ export class EmployeeOnboardingPage {
   constructor(page: Page) {
     this.page = page;
     this.shareButton = page.getByRole("button", {
-      name: /Invite a co-worker/i,
+      name: /invite a co-worker/i,
     });
     this.backButton = page.getByRole("button", {
-      name: /Back button/i,
+      name: /back/i,
     });
     this.logoutButton = page.getByRole("button", {
-      name: /Log Out/i,
+      name: /log out/i,
     });
     this.finalConfirmationButton = this.page.getByRole("button", {
       name: /confirmation by admin/i,

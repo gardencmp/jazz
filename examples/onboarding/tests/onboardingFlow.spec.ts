@@ -74,15 +74,13 @@ test.describe("Admin onboarding flow", () => {
     // invitee cannot confirm the onboarding completion
     expect(onboardingPage.finalConfirmationButton.isDisabled()).toBeTruthy();
 
-    // final step by admin
+    // final confirmation step by admin
     await onboardingPage.logout();
     await login({ page, userName: adminUser, loginAs: true });
-    await page.waitForTimeout(1000);
+
     await homePage.expectEmployee(["Paul", "admin"]);
     await homePage.navigateToEmployeeOnboardingPage("Paul");
-
     await scrollToBottom(page);
-    // await page.screenshot({ path: "screenshot.png", fullPage: true });
     await onboardingPage.finalConfirmationButton.click();
     await onboardingPage.backButton.click();
     await homePage.expectOnboardingCompleteForEmployee("Paul");
