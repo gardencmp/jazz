@@ -1,7 +1,7 @@
 import { AgentSecret } from "cojson";
 import { BrowserDemoAuth } from "jazz-browser";
 import { Account, ID } from "jazz-tools";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DemoAuthState = (
   | {
@@ -81,16 +81,19 @@ export const DemoAuthBasicUI = ({
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
       : false;
 
-  if (user && state.state === "ready") {
+  const isAutoLogin = !!(user && state.state === "ready");
+
+  useEffect(() => {
+    if (!isAutoLogin) return;
+
     if (state.existingUsers.includes(user)) {
       state.logInAs(user);
-      return <></>;
     } else {
       state.signUp(user);
     }
+  }, [isAutoLogin]);
 
-    return <></>;
-  }
+  if (isAutoLogin) return <></>;
 
   return (
     <div
