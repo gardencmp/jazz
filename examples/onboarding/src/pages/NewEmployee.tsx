@@ -33,17 +33,17 @@ export function NewEmployee({
     if (!employees) return;
 
     const initialStep = CoInitialStep.create(
-      { done: false },
+      { done: false, type: "initial" },
       { owner: writerGroup },
     );
 
     const docUploadStep = CoDocUploadStep.create(
-      { done: false, prevStep: initialStep },
+      { done: false, prevStep: initialStep, type: "upload" },
       { owner: writerGroup },
     );
 
     const finalStep = CoFinalStep.create(
-      { done: false, prevStep: docUploadStep },
+      { done: false, prevStep: docUploadStep, type: "final" },
       { owner: readerGroup },
     );
 

@@ -18,19 +18,18 @@ interface Step {
 }
 
 export class CoInitialStep extends CoMap implements Step {
-  type = "initial" as const;
+  type = co.literal("initial");
   ssn? = co.string;
   address? = co.string;
   done = co.boolean;
-  prevStep: undefined;
-
+  prevStep = co.null;
   isCurrentStep() {
     return !this.done;
   }
 }
 
 export class CoDocUploadStep extends CoMap implements Step {
-  type = "upload" as const;
+  type = co.literal("upload");
   prevStep = co.ref(CoInitialStep);
   photo = co.ref(ImageDefinition, { optional: true });
   done = co.boolean;
@@ -41,7 +40,7 @@ export class CoDocUploadStep extends CoMap implements Step {
 }
 
 export class CoFinalStep extends CoMap implements Step {
-  type = "final" as const;
+  type = co.literal("final");
   prevStep = co.ref(CoDocUploadStep);
   done = co.boolean;
 
