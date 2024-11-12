@@ -43,6 +43,11 @@ export const docNavigationItems = [
         href: "/docs/project-setup/server-side",
         done: 80,
       },
+      {
+        name: "VueJS",
+        href: "/docs/project-setup/vue",
+        done: 80,
+      },
     ],
   },
   {
