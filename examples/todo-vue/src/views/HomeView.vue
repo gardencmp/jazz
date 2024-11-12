@@ -64,16 +64,16 @@
 
 <script setup lang="ts">
 import { Group, type ID } from "jazz-tools";
-import { useAccount, useCoState } from "../main";
-import { ref, toRaw, watch } from 'vue';
-import { Folder, FolderList, ToDoItem, ToDoList } from '../schema';
+import { ref, toRaw, watch } from "vue";
 import { computed } from "vue";
+import { useAccount, useCoState } from "../main";
+import { Folder, FolderList, ToDoItem, ToDoList } from "../schema";
 
 const { me } = useAccount();
 
 // Get the id of the folders list so we can pass it to useCoState.
 // It's a computed ref because the id is not available until the root is loaded.
-const computedFoldersId = computed(() => me.value?.root?.folders?.id)
+const computedFoldersId = computed(() => me.value?.root?.folders?.id);
 
 // Load the folders list.
 // useCoState will react to changes in computedFoldersId and to changes in data inside the FolderList covalue
@@ -81,12 +81,12 @@ const computedFoldersId = computed(() => me.value?.root?.folders?.id)
 const folders = useCoState(FolderList, computedFoldersId, [{ items: [{}] }]);
 
 const selectedFolder = ref<Folder>();
-const newFolderName = ref('');
-const newTodoTitle = ref('');
+const newFolderName = ref("");
+const newTodoTitle = ref("");
 
 // Select the first folder if none is selected
 watch(folders, (loadedFolders) => {
-  if (selectedFolder.value) return
+  if (selectedFolder.value) return;
   selectedFolder.value = loadedFolders?.[0] || undefined;
 });
 
@@ -101,20 +101,23 @@ const createFolder = async () => {
   const group = Group.create({ owner: me.value });
 
   // Create the folder
-  const newFolder = Folder.create({
-    name: newFolderName.value,
-    items: ToDoList.create([], { owner: group })
-  }, { owner: group });
+  const newFolder = Folder.create(
+    {
+      name: newFolderName.value,
+      items: ToDoList.create([], { owner: group }),
+    },
+    { owner: group },
+  );
 
   // Add the folder to the list of folders. This change will be synced to all connected clients.
   folders.value?.push(newFolder);
-  newFolderName.value = '';
+  newFolderName.value = "";
 };
 
 const deleteFolder = async (folderId: ID<Folder> | undefined) => {
   if (!folders.value || !folderId) return;
 
-  const index = folders.value.findIndex(f => f.id === folderId);
+  const index = folders.value.findIndex((f) => f.id === folderId);
   if (index !== -1) {
     // Remove the folder from the list. This change will be synced to all connected clients.
     folders.value.splice(index, 1);
@@ -129,22 +132,27 @@ const deleteFolder = async (folderId: ID<Folder> | undefined) => {
 const createTodo = async () => {
   if (!newTodoTitle.value.trim() || !selectedFolder.value) return;
   const group = Group.create({ owner: me.value });
-  const newTodo = ToDoItem.create({
-    name: newTodoTitle.value,
-    completed: false
-  }, { owner: group });
+  const newTodo = ToDoItem.create(
+    {
+      name: newTodoTitle.value,
+      completed: false,
+    },
+    { owner: group },
+  );
 
   // Add the todo to the list of todos. This change will be synced to all connected clients.
   // toRaw is used to get the plain object from the reactive object, because the plain object is already proxied by Jazz.
   // otherwise it will throw an error.
   toRaw(selectedFolder.value)?.items?.push(newTodo);
-  newTodoTitle.value = '';
+  newTodoTitle.value = "";
 };
 
 const deleteTodo = async (todoId: ID<ToDoItem> | undefined) => {
   if (!selectedFolder.value?.items || !todoId) return;
 
-  const index = toRaw(selectedFolder.value)?.items?.findIndex(t => t?.id === todoId);
+  const index = toRaw(selectedFolder.value)?.items?.findIndex(
+    (t) => t?.id === todoId,
+  );
   if (index !== -1 && index !== undefined) {
     toRaw(selectedFolder.value)?.items?.splice(index, 1);
   }
