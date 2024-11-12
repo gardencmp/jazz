@@ -1,5 +1,11 @@
 # jazz-browser-media-images
 
+## 0.8.16
+
+### Patch Changes
+
+- 3ef3ff3: Remove typescript from the direct dependencies
+
 ## 0.8.15
 
 ### Patch Changes

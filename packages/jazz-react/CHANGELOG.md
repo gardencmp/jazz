@@ -1,5 +1,15 @@
 # jazz-react
 
+## 0.8.20
+
+### Patch Changes
+
+- dd9b13f: Move auto login check to useEffect
+- a69ed0b: Fix the Jazz.Provider initialization when multiple storage options are provided
+- 3ef3ff3: Remove typescript from the direct dependencies
+- c6931b8: Add user prop to demo auth to skip login on demos
+  - jazz-browser@0.8.20
+
 ## 0.8.19
 
 ### Patch Changes
