@@ -17,6 +17,7 @@ jobs:
           "password-manager",
           "pets",
           "todo",
+          "onboarding",
         ]
 
     steps:

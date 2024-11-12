@@ -41,7 +41,7 @@ test.describe("Admin onboarding flow", () => {
     await homePage.expectEmployeeDeleted("Sean");
   });
 
-  test.only("Onboard flow", async ({ page }) => {
+  test("Onboard flow", async ({ page }) => {
     const adminUser = "HR specialist";
     const writerUser = "Invitee";
     await login({ page, userName: adminUser });
