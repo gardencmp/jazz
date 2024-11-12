@@ -1633,10 +1633,6 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
       );
     });
 
-    map.set("key2", "value2", "trusting");
-
-    await client.syncManager.actuallySyncCoValue(map.core);
-
     // Block the content messages
     // The main difference between optimisticKnownStates and knownStates is that
     // optimisticKnownStates is updated when the content messages are sent,
@@ -1655,6 +1651,10 @@ describe("SyncManager - knownStates vs optimisticKnownStates", () => {
 
       return push.call(jazzCloudConnectionAsPeer.outgoing, msg);
     });
+
+    map.set("key2", "value2", "trusting");
+
+    await client.syncManager.actuallySyncCoValue(map.core);
 
     const peerState = client.syncManager.peers["jazzCloudConnection"]!;
 

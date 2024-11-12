@@ -1,6 +1,6 @@
 # Jazz Rate-My-Pet List Example
 
-Live version: https://example-pets.jazz.tools
+Live version: https://pets-demo.jazz.tools/
 
 ## Installing & running the example locally
 

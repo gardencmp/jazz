@@ -143,6 +143,12 @@ export class SyncManager {
     const coValueEntry = this.local.coValues[id];
 
     for (const peer of eligiblePeers) {
+      if (peer.erroredCoValues.has(id)) {
+        console.error(
+          `Skipping load on errored coValue ${id} from peer ${peer.id}`,
+        );
+        continue;
+      }
       await peer.pushOutgoingMessage({
         action: "load",
         id: id,
@@ -157,6 +163,12 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerState) {
+    if (peer.erroredCoValues.has(msg.id)) {
+      console.error(
+        `Skipping message ${msg.action} on errored coValue ${msg.id} from peer ${peer.id}`,
+      );
+      return;
+    }
     // TODO: validate
     switch (msg.action) {
       case "load":
@@ -629,6 +641,7 @@ export class SyncManager {
           "our last known tx idx now: " +
             coValue.sessionLogs.get(sessionID)?.transactions.length,
         );
+        peer.erroredCoValues.set(msg.id, result.error);
         continue;
       }
 
@@ -641,8 +654,6 @@ export class SyncManager {
           newContentForSession.newTransactions.length,
       });
     }
-
-    await this.syncCoValue(coValue);
 
     if (invalidStateAssumed) {
       this.trySendToPeer(peer, {
@@ -667,6 +678,13 @@ export class SyncManager {
         console.error("Error sending known state", e);
       });
     }
+
+    /**
+     * We do send a correction/ack message before syncing to give an immediate
+     * response to the peers that are waiting for confirmation that a coValue is
+     * fully synced
+     */
+    await this.syncCoValue(coValue);
   }
 
   async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
@@ -711,6 +729,7 @@ export class SyncManager {
     // let blockingSince = performance.now();
     for (const peer of this.peersInPriorityOrder()) {
       if (peer.closed) continue;
+      if (peer.erroredCoValues.has(coValue.id)) continue;
       // if (performance.now() - blockingSince > 5) {
       //     await new Promise<void>((resolve) => {
       //         setTimeout(resolve, 0);

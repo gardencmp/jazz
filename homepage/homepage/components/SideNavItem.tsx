@@ -1,5 +1,8 @@
+"use client";
+
 import { clsx } from "clsx";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 
 export function SideNavItem({
@@ -15,6 +18,7 @@ export function SideNavItem({
     className,
     "py-1 flex items-center hover:transition-colors",
   );
+  const path = usePathname();
 
   if (href) {
     return (
@@ -24,6 +28,9 @@ export function SideNavItem({
           classes,
           href &&
             "hover:text-black dark:hover:text-stone-200 transition-colors hover:transition-none",
+          {
+            "text-black": path === href,
+          },
         )}
       >
         {children}
