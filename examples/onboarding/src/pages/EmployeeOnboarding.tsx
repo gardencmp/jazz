@@ -74,7 +74,7 @@ const InfoCard = ({
         />
         {!initialStep.done && (
           <Button
-            text={"Next step >"}
+            text={"Upload step >"}
             disabled={!initialStep.ssn || !initialStep.address || isDisabled}
             onClick={() => (initialStep.done = true)}
           />
@@ -133,7 +133,7 @@ const UploadCard = ({
               data-testid="file-upload"
             />
             <Button
-              text={"Next step >"}
+              text={"Confirmation step >"}
               disabled={isDisabled || !uploadStep.photo}
               onClick={() => (uploadStep.done = true)}
             />
@@ -161,7 +161,7 @@ const ConfirmationCard = ({
       <Stack>
         {!finalStep.done && (
           <Button
-            text="Confirm"
+            text="Confirmation by admin"
             disabled={isDisabled}
             onClick={() => (finalStep.done = true)}
           />

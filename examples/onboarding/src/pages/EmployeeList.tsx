@@ -19,31 +19,32 @@ export function EmployeeList({
   return (
     <Stack>
       <NavigateButton to="/employee/new" text={"Add New Employee"} />
-      {employees.map((employee: CoEmployee) =>
-        employee.deleted ? null : (
-          <div
-            key={employee.id}
-            className="flex flex-row space-x-8 w-full max-w-md"
-          >
-            <span>{employee._owner.myRole()}</span>
-            <span className="w-1/3">
-              <NavLink to={`/employee/${employee.id}`}>{employee.name}</NavLink>
-            </span>
-            {employee.finalStep?.done && <span>✅</span>}
-            {employee._owner.myRole() === "admin" &&
-              !employee.finalStep?.done && (
-                <span
-                  onClick={() => {
-                    employee.deleted = true;
-                  }}
-                  className="cursor-pointer"
-                >
-                  🗑
-                </span>
-              )}
-          </div>
-        ),
-      )}
+      <ul className="max-w-md">
+        {employees.map((employee: CoEmployee) =>
+          employee.deleted ? null : (
+            <li key={employee.id} className="flex flex-row space-x-8 w-full">
+              <span>{employee._owner.myRole()}</span>
+              <span className="w-1/3">
+                <NavLink to={`/employee/${employee.id}`}>
+                  {employee.name}
+                </NavLink>
+              </span>
+              {employee.finalStep?.done && <span>✅</span>}
+              {employee._owner.myRole() === "admin" &&
+                !employee.finalStep?.done && (
+                  <span
+                    onClick={() => {
+                      employee.deleted = true;
+                    }}
+                    className="cursor-pointer"
+                  >
+                    🗑
+                  </span>
+                )}
+            </li>
+          ),
+        )}
+      </ul>
     </Stack>
   );
 }

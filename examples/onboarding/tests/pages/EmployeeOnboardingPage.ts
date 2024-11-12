@@ -5,19 +5,24 @@ export class EmployeeOnboardingPage {
   readonly shareButton: Locator;
   readonly backButton: Locator;
   readonly logoutButton: Locator;
+  readonly finalConfirmationButton: Locator;
   readonly fileInput: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.shareButton = page.getByRole("button", {
-      name: "Invite a co-worker",
+      name: /Invite a co-worker/i,
     });
     this.backButton = page.getByRole("button", {
-      name: "Back button",
+      name: /Back button/i,
     });
     this.logoutButton = page.getByRole("button", {
-      name: "Log Out",
+      name: /Log Out/i,
     });
+    this.finalConfirmationButton = this.page.getByRole("button", {
+      name: /confirmation by admin/i,
+    });
+
     this.fileInput = page.getByTestId("file-upload");
   }
 
@@ -30,34 +35,43 @@ export class EmployeeOnboardingPage {
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(value);
   }
-  // await newPostPage.uploadFile("./public/jazz-logo-low-res.jpg");
-  //
-  async expectEmployeeName(petName: string) {
+
+  async expectEmployeeName(name: string) {
     await expect(
       this.page.getByRole("heading", {
-        name: petName,
+        name: name,
       }),
     ).toBeVisible();
   }
 
-  async expectReactionSelectedByCurrentUser(emoji: string, selected: boolean) {
-    await expect(
-      this.page.getByRole("button", {
-        name: emoji,
-      }),
-    ).toHaveAttribute("data-selected", String(selected));
+  async fillPersonalDetailsCardAndSave(ssn: string, address: string) {
+    const nextStepButton = this.page.getByRole("button", {
+      name: /upload step >/i,
+    });
+    await expect(nextStepButton).toBeDisabled();
+
+    const ssnInput = this.page.getByLabel(/Social Security Number/i);
+    await ssnInput.fill(ssn);
+
+    const addressInput = this.page.getByLabel(/Address/i);
+    await addressInput.fill(address);
+
+    // save and hide the button
+    await expect(nextStepButton).toBeEnabled();
+    await nextStepButton.click();
+    await expect(nextStepButton).not.toBeVisible();
   }
 
-  async expectReactionByUser(emoji: string, userName: string) {
-    await expect(this.page.getByText(`${emoji} ${userName}`)).toBeVisible();
-  }
+  async fillUploadCardAndSave(file: string) {
+    const nextStepButton = this.page.getByRole("button", {
+      name: /confirmation step >/i,
+    });
+    await expect(nextStepButton).toBeDisabled();
 
-  async toggleReaction(emoji: string) {
-    await this.page
-      .getByRole("button", {
-        name: emoji,
-      })
-      .click();
+    await this.uploadFile(file);
+    await expect(nextStepButton).toBeEnabled();
+    await nextStepButton.click();
+    await expect(nextStepButton).not.toBeVisible();
   }
 
   async getShareLink() {
