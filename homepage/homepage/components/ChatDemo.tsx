@@ -26,9 +26,7 @@ function Iframe(props: IframeHTMLAttributes<HTMLIFrameElement>) {
   );
 }
 
-export function ResponsiveIframe(
-  props: IframeHTMLAttributes<HTMLIFrameElement> & { localsrc: string },
-) {
+export function ChatDemo() {
   const [chatId, setChatId] = useState<string | undefined>();
 
   const user1 = "A";

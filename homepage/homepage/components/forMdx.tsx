@@ -6,7 +6,7 @@ import {
 import { CodeGroup as CodeGroupClient } from "gcmp-design-system/src/app/components/molecules/CodeGroup";
 
 import { IframeHTMLAttributes } from "react";
-import { ResponsiveIframe as ResponsiveIframeClient } from "./ResponsiveIframe";
+import { ChatDemo as ResponsiveIframeClient } from "./ChatDemo";
 
 export function ResponsiveIframe(
   props: IframeHTMLAttributes<HTMLIFrameElement> & { localsrc: string },
