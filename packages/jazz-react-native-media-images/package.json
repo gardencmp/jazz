@@ -6,13 +6,13 @@
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "jazz-tools": "workspace:*",
-    "typescript": "^5.3.3"
+    "jazz-tools": "workspace:*"
   },
   "devDependencies": {
     "@bam.tech/react-native-image-resizer": "^3.0.10",
     "expo-file-system": "^17.0.1",
-    "react-native": "~0.74.5"
+    "react-native": "~0.74.5",
+    "typescript": "^5.3.3"
   },
   "peerDependencies": {
     "@bam.tech/react-native-image-resizer": "*",
