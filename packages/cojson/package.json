@@ -1,61 +1,51 @@
 {
-    "name": "cojson",
-    "module": "dist/web/index.web.js",
-    "main": "dist/web/index.web.js",
-    "types": "src/index.web.ts",
-    "react-native": "dist/native/index.native.js",
-    "exports": {
-        ".": {
-            "react-native": "./dist/native/index.native.js",
-            "types": "./src/index.web.ts",
-            "default": "./dist/web/index.web.js"
-        },
-        "./native": {
-            "react-native": "./dist/native/index.native.js",
-            "types": "./src/index.native.ts",
-            "default": "./dist/native/index.native.js"
-        },
-        "./src/*": "./src/*"
+  "name": "cojson",
+  "module": "dist/web/index.web.js",
+  "main": "dist/web/index.web.js",
+  "types": "src/index.web.ts",
+  "react-native": "dist/native/index.native.js",
+  "exports": {
+    ".": {
+      "react-native": "./dist/native/index.native.js",
+      "types": "./src/index.web.ts",
+      "default": "./dist/web/index.web.js"
     },
-    "type": "module",
-    "license": "MIT",
-    "version": "0.8.12",
-    "devDependencies": {
-        "@types/jest": "^29.5.3",
-        "@typescript-eslint/eslint-plugin": "^6.2.1",
-        "@typescript-eslint/parser": "^6.2.1",
-        "eslint": "^8.46.0",
-        "eslint-config-prettier": "^9.1.0",
-        "eslint-plugin-neverthrow": "^1.1.4",
-        "eslint-plugin-require-extensions": "^0.1.3",
-        "typescript": "^5.3.3",
-        "vitest": "1.5.3"
+    "./native": {
+      "react-native": "./dist/native/index.native.js",
+      "types": "./src/index.native.ts",
+      "default": "./dist/native/index.native.js"
     },
-    "dependencies": {
-        "@hazae41/berith": "^1.2.6",
-        "@noble/ciphers": "^0.1.3",
-        "@noble/curves": "^1.3.0",
-        "@noble/hashes": "^1.4.0",
-        "@scure/base": "^1.1.1",
-        "hash-wasm": "^4.9.0",
-        "neverthrow": "^7.0.1",
-        "queueueue": "^4.1.2"
-    },
-    "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist/web -p tsconfig.web.json",
-        "dev:native": "tsc --watch --sourceMap --outDir dist/native -p tsconfig.native.json",
-        "test": "vitest --run --root ../../ --project cojson",
-        "test:watch": "vitest --watch --root ../../ --project cojson",
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
-        "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
-        "build": "npm run lint && rm -rf ./dist && pnpm run build:native && pnpm run build:web",
-        "prepublishOnly": "npm run build"
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
-    },
-    "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
+    "./src/*": "./src/*"
+  },
+  "type": "module",
+  "license": "MIT",
+  "version": "0.8.19",
+  "devDependencies": {
+    "@types/jest": "^29.5.3",
+    "typescript": "^5.3.3",
+    "vitest": "1.5.3"
+  },
+  "dependencies": {
+    "@hazae41/berith": "^1.2.6",
+    "@noble/ciphers": "^0.1.3",
+    "@noble/curves": "^1.3.0",
+    "@noble/hashes": "^1.4.0",
+    "@scure/base": "^1.1.1",
+    "hash-wasm": "^4.9.0",
+    "neverthrow": "^7.0.1",
+    "queueueue": "^4.1.2"
+  },
+  "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist/web -p tsconfig.web.json",
+    "dev:native": "tsc --watch --sourceMap --outDir dist/native -p tsconfig.native.json",
+    "test": "vitest --run --root ../../ --project cojson",
+    "test:watch": "vitest --watch --root ../../ --project cojson",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
+    "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
+    "build": "rm -rf ./dist && pnpm run build:native && pnpm run build:web",
+    "prepublishOnly": "npm run build"
+  },
+  "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
 }

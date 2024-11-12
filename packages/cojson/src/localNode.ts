@@ -1,34 +1,34 @@
-import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
-import {
-    CoValueCore,
-    CoValueHeader,
-    CoValueUniqueness,
-} from "./coValueCore.js";
-import {
-    InviteSecret,
-    RawGroup,
-    secretSeedFromInviteSecret,
-} from "./coValues/group.js";
-import { Peer, PeerID, SyncManager } from "./sync.js";
-import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
+import { Result, ResultAsync, err, ok, okAsync } from "neverthrow";
 import { CoID } from "./coValue.js";
-import {
-    RawAccount,
-    AccountMeta,
-    accountHeaderForInitialAgentSecret,
-    ControlledAccountOrAgent,
-    RawControlledAccount,
-    ControlledAgent,
-    RawAccountID,
-    RawProfile,
-    RawProfile as Profile,
-    RawAccountMigration,
-    InvalidAccountAgentIDError,
-} from "./coValues/account.js";
 import { RawCoValue } from "./coValue.js";
-import { expectGroup } from "./typeUtils/expectGroup.js";
-import { err, ok, okAsync, Result, ResultAsync } from "neverthrow";
+import {
+  CoValueCore,
+  CoValueHeader,
+  CoValueUniqueness,
+} from "./coValueCore.js";
 import { CoValueState } from "./coValueState.js";
+import {
+  AccountMeta,
+  ControlledAccountOrAgent,
+  ControlledAgent,
+  InvalidAccountAgentIDError,
+  RawProfile as Profile,
+  RawAccount,
+  RawAccountID,
+  RawAccountMigration,
+  RawControlledAccount,
+  RawProfile,
+  accountHeaderForInitialAgentSecret,
+} from "./coValues/account.js";
+import {
+  InviteSecret,
+  RawGroup,
+  secretSeedFromInviteSecret,
+} from "./coValues/group.js";
+import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
+import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
+import { Peer, PeerID, SyncManager } from "./sync.js";
+import { expectGroup } from "./typeUtils/expectGroup.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -42,753 +42,728 @@ const { localNode } = useJazz();
 ```
 */
 export class LocalNode {
-    /** @internal */
+  /** @internal */
+  crypto: CryptoProvider;
+  /** @internal */
+  coValues: { [key: RawCoID]: CoValueState } = {};
+  /** @category 3. Low-level */
+  account: ControlledAccountOrAgent;
+  /** @category 3. Low-level */
+  currentSessionID: SessionID;
+  /** @category 3. Low-level */
+  syncManager = new SyncManager(this);
+
+  crashed: Error | undefined = undefined;
+
+  /** @category 3. Low-level */
+  constructor(
+    account: ControlledAccountOrAgent,
+    currentSessionID: SessionID,
+    crypto: CryptoProvider,
+  ) {
+    this.account = account;
+    this.currentSessionID = currentSessionID;
+    this.crypto = crypto;
+  }
+
+  /** @category 2. Node Creation */
+  static async withNewlyCreatedAccount<Meta extends AccountMeta = AccountMeta>({
+    creationProps,
+    peersToLoadFrom,
+    migration,
+    crypto,
+    initialAgentSecret = crypto.newRandomAgentSecret(),
+  }: {
+    creationProps: { name: string };
+    peersToLoadFrom?: Peer[];
+    migration?: RawAccountMigration<Meta>;
     crypto: CryptoProvider;
-    /** @internal */
-    coValues: { [key: RawCoID]: CoValueState } = {};
-    /** @category 3. Low-level */
-    account: ControlledAccountOrAgent;
-    /** @category 3. Low-level */
-    currentSessionID: SessionID;
-    /** @category 3. Low-level */
-    syncManager = new SyncManager(this);
+    initialAgentSecret?: AgentSecret;
+  }): Promise<{
+    node: LocalNode;
+    accountID: RawAccountID;
+    accountSecret: AgentSecret;
+    sessionID: SessionID;
+  }> {
+    const throwawayAgent = crypto.newRandomAgentSecret();
+    const setupNode = new LocalNode(
+      new ControlledAgent(throwawayAgent, crypto),
+      crypto.newRandomSessionID(crypto.getAgentID(throwawayAgent)),
+      crypto,
+    );
 
-    crashed: Error | undefined = undefined;
+    const account = setupNode.createAccount(initialAgentSecret);
 
-    /** @category 3. Low-level */
-    constructor(
-        account: ControlledAccountOrAgent,
-        currentSessionID: SessionID,
-        crypto: CryptoProvider,
-    ) {
-        this.account = account;
-        this.currentSessionID = currentSessionID;
-        this.crypto = crypto;
+    const nodeWithAccount = account.core.node.testWithDifferentAccount(
+      account,
+      crypto.newRandomSessionID(account.id),
+    );
+
+    const accountOnNodeWithAccount =
+      nodeWithAccount.account as RawControlledAccount<Meta>;
+
+    if (peersToLoadFrom) {
+      for (const peer of peersToLoadFrom) {
+        nodeWithAccount.syncManager.addPeer(peer);
+      }
     }
 
-    /** @category 2. Node Creation */
-    static async withNewlyCreatedAccount<
-        Meta extends AccountMeta = AccountMeta,
-    >({
-        creationProps,
-        peersToLoadFrom,
-        migration,
-        crypto,
-        initialAgentSecret = crypto.newRandomAgentSecret(),
-    }: {
-        creationProps: { name: string };
-        peersToLoadFrom?: Peer[];
-        migration?: RawAccountMigration<Meta>;
-        crypto: CryptoProvider;
-        initialAgentSecret?: AgentSecret;
-    }): Promise<{
-        node: LocalNode;
-        accountID: RawAccountID;
-        accountSecret: AgentSecret;
-        sessionID: SessionID;
-    }> {
-        const throwawayAgent = crypto.newRandomAgentSecret();
-        const setupNode = new LocalNode(
-            new ControlledAgent(throwawayAgent, crypto),
-            crypto.newRandomSessionID(crypto.getAgentID(throwawayAgent)),
-            crypto,
-        );
+    if (migration) {
+      await migration(accountOnNodeWithAccount, nodeWithAccount, creationProps);
+    } else {
+      const profileGroup = accountOnNodeWithAccount.createGroup();
+      profileGroup.addMember("everyone", "reader");
+      const profile = profileGroup.createMap<Profile>({
+        name: creationProps.name,
+      });
+      accountOnNodeWithAccount.set("profile", profile.id, "trusting");
+    }
 
-        const account = setupNode.createAccount(initialAgentSecret);
+    const controlledAccount = new RawControlledAccount(
+      accountOnNodeWithAccount.core,
+      accountOnNodeWithAccount.agentSecret,
+    );
 
-        const nodeWithAccount = account.core.node.testWithDifferentAccount(
-            account,
-            crypto.newRandomSessionID(account.id),
-        );
+    nodeWithAccount.account = controlledAccount;
+    nodeWithAccount.coValues[controlledAccount.id] = CoValueState.Available(
+      controlledAccount.core,
+    );
+    controlledAccount.core._cachedContent = undefined;
 
-        const accountOnNodeWithAccount =
-            nodeWithAccount.account as RawControlledAccount<Meta>;
+    if (!controlledAccount.get("profile")) {
+      throw new Error("Must set account profile in initial migration");
+    }
 
-        if (peersToLoadFrom) {
-            for (const peer of peersToLoadFrom) {
-                nodeWithAccount.syncManager.addPeer(peer);
-            }
+    // we shouldn't need this, but it fixes account data not syncing for new accounts
+    function syncAllCoValuesAfterCreateAccount() {
+      for (const coValueEntry of Object.values(nodeWithAccount.coValues)) {
+        if (coValueEntry.state.type === "available") {
+          void nodeWithAccount.syncManager.syncCoValue(
+            coValueEntry.state.coValue,
+          );
         }
+      }
+    }
 
-        if (migration) {
-            await migration(
-                accountOnNodeWithAccount,
-                nodeWithAccount,
-                creationProps,
-            );
-        } else {
-            const profileGroup = accountOnNodeWithAccount.createGroup();
-            profileGroup.addMember("everyone", "reader");
-            const profile = profileGroup.createMap<Profile>({
-                name: creationProps.name,
+    LocalNode.storeServerPeersKnownStates(nodeWithAccount);
+
+    syncAllCoValuesAfterCreateAccount();
+
+    setTimeout(syncAllCoValuesAfterCreateAccount, 500);
+
+    return {
+      node: nodeWithAccount,
+      accountID: accountOnNodeWithAccount.id,
+      accountSecret: accountOnNodeWithAccount.agentSecret,
+      sessionID: nodeWithAccount.currentSessionID,
+    };
+  }
+
+  static storeServerPeersKnownStates(node: LocalNode) {
+    const serverPeersIds = new Set<PeerID>(
+      node.syncManager
+        .getPeers()
+        .filter((peer) => peer.role === "server")
+        .map((peer) => peer.id),
+    );
+
+    const storagePeers = node.syncManager
+      .getPeers()
+      .filter((peer) => peer.role === "storage");
+
+    node.syncManager.subscribeToSyncStateUpdate(
+      (peerId, knownState, fullySynced) => {
+        if (serverPeersIds.has(peerId)) {
+          for (const storagePeer of storagePeers) {
+            void storagePeer.pushOutgoingMessage({
+              action: "persistSyncState",
+              payload: knownState,
+              fullySynced,
+              peerId,
+              id: knownState.id,
             });
-            accountOnNodeWithAccount.set("profile", profile.id, "trusting");
+          }
         }
+      },
+    );
+  }
 
-        const controlledAccount = new RawControlledAccount(
-            accountOnNodeWithAccount.core,
-            accountOnNodeWithAccount.agentSecret,
-        );
+  /** @category 2. Node Creation */
+  static async withLoadedAccount<Meta extends AccountMeta = AccountMeta>({
+    accountID,
+    accountSecret,
+    sessionID,
+    peersToLoadFrom,
+    crypto,
+    migration,
+  }: {
+    accountID: RawAccountID;
+    accountSecret: AgentSecret;
+    sessionID: SessionID | undefined;
+    peersToLoadFrom: Peer[];
+    crypto: CryptoProvider;
+    migration?: RawAccountMigration<Meta>;
+  }): Promise<LocalNode> {
+    try {
+      const loadingNode = new LocalNode(
+        new ControlledAgent(accountSecret, crypto),
+        crypto.newRandomSessionID(accountID),
+        crypto,
+      );
 
-        nodeWithAccount.account = controlledAccount;
-        nodeWithAccount.coValues[controlledAccount.id] = CoValueState.Available(
-            controlledAccount.core,
-        );
-        controlledAccount.core._cachedContent = undefined;
+      for (const peer of peersToLoadFrom) {
+        loadingNode.syncManager.addPeer(peer);
+      }
 
-        if (!controlledAccount.get("profile")) {
-            throw new Error("Must set account profile in initial migration");
-        }
+      const accountPromise = loadingNode.load(accountID);
 
-        // we shouldn't need this, but it fixes account data not syncing for new accounts
-        function syncAllCoValuesAfterCreateAccount() {
-            for (const coValueEntry of Object.values(
-                nodeWithAccount.coValues,
-            )) {
-                if (coValueEntry.state.type === "available") {
-                    void nodeWithAccount.syncManager.syncCoValue(
-                        coValueEntry.state.coValue,
-                    );
-                }
-            }
-        }
+      const account = await accountPromise;
 
-        LocalNode.storeServerPeersKnownStates(nodeWithAccount);
+      if (account === "unavailable") {
+        throw new Error("Account unavailable from all peers");
+      }
 
-        syncAllCoValuesAfterCreateAccount();
-
-        setTimeout(syncAllCoValuesAfterCreateAccount, 500);
-
-        return {
-            node: nodeWithAccount,
-            accountID: accountOnNodeWithAccount.id,
-            accountSecret: accountOnNodeWithAccount.agentSecret,
-            sessionID: nodeWithAccount.currentSessionID,
-        };
-    }
-
-    static storeServerPeersKnownStates(node: LocalNode) {
-        const serverPeersIds = new Set<PeerID>(
-            node.syncManager
-                .getPeers()
-                .filter((peer) => peer.role === "server")
-                .map((peer) => peer.id),
-        );
-
-        const storagePeers = node.syncManager
-            .getPeers()
-            .filter((peer) => peer.role === "storage");
-
-        node.syncManager.subscribeToSyncStateUpdate(
-            (peerId, knownState, fullySynced) => {
-                if (serverPeersIds.has(peerId)) {
-                    for (const storagePeer of storagePeers) {
-                        void storagePeer.pushOutgoingMessage({
-                            action: "persistSyncState",
-                            payload: knownState,
-                            fullySynced,
-                            peerId,
-                            id: knownState.id,
-                        });
-                    }
-                }
-            },
-        );
-    }
-
-    /** @category 2. Node Creation */
-    static async withLoadedAccount<Meta extends AccountMeta = AccountMeta>({
-        accountID,
+      const controlledAccount = new RawControlledAccount(
+        account.core,
         accountSecret,
-        sessionID,
-        peersToLoadFrom,
-        crypto,
-        migration,
-    }: {
-        accountID: RawAccountID;
-        accountSecret: AgentSecret;
-        sessionID: SessionID | undefined;
-        peersToLoadFrom: Peer[];
-        crypto: CryptoProvider;
-        migration?: RawAccountMigration<Meta>;
-    }): Promise<LocalNode> {
-        try {
-            const loadingNode = new LocalNode(
-                new ControlledAgent(accountSecret, crypto),
-                crypto.newRandomSessionID(accountID),
-                crypto,
-            );
+      );
 
-            for (const peer of peersToLoadFrom) {
-                loadingNode.syncManager.addPeer(peer);
-            }
+      // since this is all synchronous, we can just swap out nodes for the SyncManager
+      const node = loadingNode.testWithDifferentAccount(
+        controlledAccount,
+        sessionID || crypto.newRandomSessionID(accountID),
+      );
+      node.syncManager = loadingNode.syncManager;
+      node.syncManager.local = node;
 
-            const accountPromise = loadingNode.load(accountID);
+      controlledAccount.core.node = node;
+      node.coValues[accountID] = CoValueState.Available(controlledAccount.core);
+      controlledAccount.core._cachedContent = undefined;
 
-            const account = await accountPromise;
+      LocalNode.storeServerPeersKnownStates(node);
 
-            if (account === "unavailable") {
-                throw new Error("Account unavailable from all peers");
-            }
+      const profileID = account.get("profile");
+      if (!profileID) {
+        throw new Error("Account has no profile");
+      }
+      const profile = await node.load(profileID);
 
-            const controlledAccount = new RawControlledAccount(
-                account.core,
-                accountSecret,
-            );
+      if (profile === "unavailable") {
+        throw new Error("Profile unavailable from all peers");
+      }
 
-            // since this is all synchronous, we can just swap out nodes for the SyncManager
-            const node = loadingNode.testWithDifferentAccount(
-                controlledAccount,
-                sessionID || crypto.newRandomSessionID(accountID),
-            );
-            node.syncManager = loadingNode.syncManager;
-            node.syncManager.local = node;
-
-            controlledAccount.core.node = node;
-            node.coValues[accountID] = CoValueState.Available(
-                controlledAccount.core,
-            );
-            controlledAccount.core._cachedContent = undefined;
-
-            LocalNode.storeServerPeersKnownStates(node);
-
-            const profileID = account.get("profile");
-            if (!profileID) {
-                throw new Error("Account has no profile");
-            }
-            const profile = await node.load(profileID);
-
-            if (profile === "unavailable") {
-                throw new Error("Profile unavailable from all peers");
-            }
-
-            if (migration) {
-                await migration(
-                    controlledAccount as RawControlledAccount<Meta>,
-                    node,
-                );
-                node.account = new RawControlledAccount(
-                    controlledAccount.core,
-                    controlledAccount.agentSecret,
-                );
-            }
-
-            const serverPeers = node.syncManager
-                .getPeers()
-                .filter((peer) => peer.role === "server");
-
-            for (const peer of serverPeers) {
-                void node.syncManager.requestSyncStateHydration(peer.id);
-            }
-
-            return node;
-        } catch (e) {
-            console.error("Error withLoadedAccount", e);
-            throw e;
-        }
-    }
-
-    /** @internal */
-    createCoValue(header: CoValueHeader): CoValueCore {
-        if (this.crashed) {
-            throw new Error("Trying to create CoValue after node has crashed", {
-                cause: this.crashed,
-            });
-        }
-
-        const coValue = new CoValueCore(header, this);
-        this.coValues[coValue.id] = CoValueState.Available(coValue);
-
-        void this.syncManager.syncCoValue(coValue);
-
-        return coValue;
-    }
-
-    /** @internal */
-    async loadCoValueCore(
-        id: RawCoID,
-        options: {
-            dontLoadFrom?: PeerID;
-            dontWaitFor?: PeerID;
-        } = {},
-    ): Promise<CoValueCore | "unavailable"> {
-        if (this.crashed) {
-            throw new Error("Trying to load CoValue after node has crashed", {
-                cause: this.crashed,
-            });
-        }
-
-        let entry = this.coValues[id];
-        if (!entry) {
-            const peersToWaitFor = new Set(
-                Object.values(this.syncManager.peers)
-                    .filter((peer) => peer.isServerOrStoragePeer())
-                    .map((peer) => peer.id),
-            );
-            if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
-            entry = CoValueState.Unknown(peersToWaitFor);
-
-            this.coValues[id] = entry;
-
-            this.syncManager
-                .loadFromPeers(id, options.dontLoadFrom)
-                .catch((e) => {
-                    console.error(
-                        "Error loading from peers",
-                        id,
-
-                        e,
-                    );
-                });
-        }
-        if (entry.state.type === "available") {
-            return Promise.resolve(entry.state.coValue);
-        }
-
-        await entry.state.ready;
-
-        const updatedEntry = this.coValues[id];
-
-        if (updatedEntry?.state.type === "available") {
-            return Promise.resolve(updatedEntry.state.coValue);
-        }
-
-        return "unavailable";
-    }
-
-    /**
-     * Loads a CoValue's content, syncing from peers as necessary and resolving the returned
-     * promise once a first version has been loaded. See `coValue.subscribe()` and `node.useTelepathicData()`
-     * for listening to subsequent updates to the CoValue.
-     *
-     * @category 3. Low-level
-     */
-    async load<T extends RawCoValue>(id: CoID<T>): Promise<T | "unavailable"> {
-        const core = await this.loadCoValueCore(id);
-
-        if (core === "unavailable") {
-            return "unavailable";
-        }
-
-        return core.getCurrentContent() as T;
-    }
-
-    getLoaded<T extends RawCoValue>(id: CoID<T>): T | undefined {
-        const entry = this.coValues[id];
-        if (!entry) {
-            return undefined;
-        }
-        if (entry.state.type === "available") {
-            return entry.state.coValue.getCurrentContent() as T;
-        }
-        return undefined;
-    }
-
-    /** @category 3. Low-level */
-    subscribe<T extends RawCoValue>(
-        id: CoID<T>,
-        callback: (update: T | "unavailable") => void,
-    ): () => void {
-        let stopped = false;
-        let unsubscribe!: () => void;
-
-        // console.log("Subscribing to " + id);
-
-        this.load(id)
-            .then((coValue) => {
-                if (stopped) {
-                    return;
-                }
-                if (coValue === "unavailable") {
-                    callback("unavailable");
-                    return;
-                }
-                unsubscribe = coValue.subscribe(callback);
-            })
-            .catch((e) => {
-                console.error("Error subscribing to ", id, e);
-            });
-
-        return () => {
-            console.log("Unsubscribing from " + id);
-            stopped = true;
-            unsubscribe?.();
-        };
-    }
-
-    /** @deprecated Use Account.acceptInvite instead */
-    async acceptInvite<T extends RawCoValue>(
-        groupOrOwnedValueID: CoID<T>,
-        inviteSecret: InviteSecret,
-    ): Promise<void> {
-        const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
-
-        if (groupOrOwnedValue === "unavailable") {
-            throw new Error(
-                "Trying to accept invite: Group/owned value unavailable from all peers",
-            );
-        }
-
-        if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
-            return this.acceptInvite(
-                groupOrOwnedValue.core.header.ruleset.group as CoID<RawGroup>,
-                inviteSecret,
-            );
-        } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
-            throw new Error("Can only accept invites to groups");
-        }
-
-        const group = expectGroup(groupOrOwnedValue);
-
-        const inviteAgentSecret = this.crypto.agentSecretFromSecretSeed(
-            secretSeedFromInviteSecret(inviteSecret),
+      if (migration) {
+        await migration(controlledAccount as RawControlledAccount<Meta>, node);
+        node.account = new RawControlledAccount(
+          controlledAccount.core,
+          controlledAccount.agentSecret,
         );
-        const inviteAgentID = this.crypto.getAgentID(inviteAgentSecret);
+      }
 
-        const inviteRole = await new Promise((resolve, reject) => {
-            group.subscribe((groupUpdate) => {
-                const role = groupUpdate.get(inviteAgentID);
-                if (role) {
-                    resolve(role);
-                }
-            });
-            setTimeout(
-                () => reject(new Error("Couldn't find invite before timeout")),
-                2000,
-            );
-        });
+      const serverPeers = node.syncManager
+        .getPeers()
+        .filter((peer) => peer.role === "server");
 
-        if (!inviteRole) {
-            throw new Error("No invite found");
-        }
+      for (const peer of serverPeers) {
+        void node.syncManager.requestSyncStateHydration(peer.id);
+      }
 
-        const existingRole = group.get(this.account.id);
+      return node;
+    } catch (e) {
+      console.error("Error withLoadedAccount", e);
+      throw e;
+    }
+  }
 
-        if (
-            existingRole === "admin" ||
-            (existingRole === "writer" && inviteRole === "writerInvite") ||
-            (existingRole === "writer" && inviteRole === "reader") ||
-            (existingRole === "reader" && inviteRole === "readerInvite")
-        ) {
-            console.debug(
-                "Not accepting invite that would replace or downgrade role",
-            );
-            return;
-        }
+  /** @internal */
+  createCoValue(header: CoValueHeader): CoValueCore {
+    if (this.crashed) {
+      throw new Error("Trying to create CoValue after node has crashed", {
+        cause: this.crashed,
+      });
+    }
 
-        const groupAsInvite = expectGroup(
-            group.core
-                .testWithDifferentAccount(
-                    new ControlledAgent(inviteAgentSecret, this.crypto),
-                    this.crypto.newRandomSessionID(inviteAgentID),
-                )
-                .getCurrentContent(),
+    const coValue = new CoValueCore(header, this);
+    this.coValues[coValue.id] = CoValueState.Available(coValue);
+
+    void this.syncManager.syncCoValue(coValue);
+
+    return coValue;
+  }
+
+  /** @internal */
+  async loadCoValueCore(
+    id: RawCoID,
+    options: {
+      dontLoadFrom?: PeerID;
+      dontWaitFor?: PeerID;
+    } = {},
+  ): Promise<CoValueCore | "unavailable"> {
+    if (this.crashed) {
+      throw new Error("Trying to load CoValue after node has crashed", {
+        cause: this.crashed,
+      });
+    }
+
+    let entry = this.coValues[id];
+    if (!entry) {
+      const peersToWaitFor = new Set(
+        Object.values(this.syncManager.peers)
+          .filter((peer) => peer.isServerOrStoragePeer())
+          .map((peer) => peer.id),
+      );
+      if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
+      entry = CoValueState.Unknown(peersToWaitFor);
+
+      this.coValues[id] = entry;
+
+      this.syncManager.loadFromPeers(id, options.dontLoadFrom).catch((e) => {
+        console.error(
+          "Error loading from peers",
+          id,
+
+          e,
         );
-
-        groupAsInvite.addMemberInternal(
-            this.account,
-            inviteRole === "adminInvite"
-                ? "admin"
-                : inviteRole === "writerInvite"
-                  ? "writer"
-                  : "reader",
-        );
-
-        group.core._sessionLogs = groupAsInvite.core.sessionLogs;
-        group.core._cachedContent = undefined;
-
-        for (const groupListener of group.core.listeners) {
-            groupListener(group.core.getCurrentContent());
-        }
+      });
+    }
+    if (entry.state.type === "available") {
+      return Promise.resolve(entry.state.coValue);
     }
 
-    /** @internal */
-    expectCoValueLoaded(id: RawCoID, expectation?: string): CoValueCore {
-        const entry = this.coValues[id];
-        if (!entry) {
-            throw new Error(
-                `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`,
-            );
-        }
-        if (entry.state.type === "unknown") {
-            throw new Error(
-                `${
-                    expectation ? expectation + ": " : ""
-                }CoValue ${id} not yet loaded`,
-            );
-        }
-        return entry.state.coValue;
+    await entry.state.ready;
+
+    const updatedEntry = this.coValues[id];
+
+    if (updatedEntry?.state.type === "available") {
+      return Promise.resolve(updatedEntry.state.coValue);
     }
 
-    /** @internal */
-    expectProfileLoaded(id: RawAccountID, expectation?: string): RawProfile {
-        const account = this.expectCoValueLoaded(id, expectation);
-        const profileID = expectGroup(account.getCurrentContent()).get(
-            "profile",
-        );
-        if (!profileID) {
-            throw new Error(
-                `${
-                    expectation ? expectation + ": " : ""
-                }Account ${id} has no profile`,
-            );
-        }
-        return this.expectCoValueLoaded(
-            profileID,
-            expectation,
-        ).getCurrentContent() as RawProfile;
+    return "unavailable";
+  }
+
+  /**
+   * Loads a CoValue's content, syncing from peers as necessary and resolving the returned
+   * promise once a first version has been loaded. See `coValue.subscribe()` and `node.useTelepathicData()`
+   * for listening to subsequent updates to the CoValue.
+   *
+   * @category 3. Low-level
+   */
+  async load<T extends RawCoValue>(id: CoID<T>): Promise<T | "unavailable"> {
+    const core = await this.loadCoValueCore(id);
+
+    if (core === "unavailable") {
+      return "unavailable";
     }
 
-    /** @internal */
-    createAccount(
-        agentSecret = this.crypto.newRandomAgentSecret(),
-    ): RawControlledAccount {
-        const accountAgentID = this.crypto.getAgentID(agentSecret);
-        const account = expectGroup(
-            this.createCoValue(
-                accountHeaderForInitialAgentSecret(agentSecret, this.crypto),
-            )
-                .testWithDifferentAccount(
-                    new ControlledAgent(agentSecret, this.crypto),
-                    this.crypto.newRandomSessionID(accountAgentID),
-                )
-                .getCurrentContent(),
-        );
+    return core.getCurrentContent() as T;
+  }
 
-        account.set(accountAgentID, "admin", "trusting");
+  getLoaded<T extends RawCoValue>(id: CoID<T>): T | undefined {
+    const entry = this.coValues[id];
+    if (!entry) {
+      return undefined;
+    }
+    if (entry.state.type === "available") {
+      return entry.state.coValue.getCurrentContent() as T;
+    }
+    return undefined;
+  }
 
-        const readKey = this.crypto.newRandomKeySecret();
+  /** @category 3. Low-level */
+  subscribe<T extends RawCoValue>(
+    id: CoID<T>,
+    callback: (update: T | "unavailable") => void,
+  ): () => void {
+    let stopped = false;
+    let unsubscribe!: () => void;
 
-        const sealed = this.crypto.seal({
-            message: readKey.secret,
-            from: this.crypto.getAgentSealerSecret(agentSecret),
-            to: this.crypto.getAgentSealerID(accountAgentID),
-            nOnceMaterial: {
-                in: account.id,
-                tx: account.core.nextTransactionID(),
-            },
-        });
+    // console.log("Subscribing to " + id);
 
-        account.set(`${readKey.id}_for_${accountAgentID}`, sealed, "trusting");
+    this.load(id)
+      .then((coValue) => {
+        if (stopped) {
+          return;
+        }
+        if (coValue === "unavailable") {
+          callback("unavailable");
+          return;
+        }
+        unsubscribe = coValue.subscribe(callback);
+      })
+      .catch((e) => {
+        console.error("Error subscribing to ", id, e);
+      });
 
-        account.set("readKey", readKey.id, "trusting");
+    return () => {
+      console.log("Unsubscribing from " + id);
+      stopped = true;
+      unsubscribe?.();
+    };
+  }
 
-        const accountOnThisNode = this.expectCoValueLoaded(account.id);
+  /** @deprecated Use Account.acceptInvite instead */
+  async acceptInvite<T extends RawCoValue>(
+    groupOrOwnedValueID: CoID<T>,
+    inviteSecret: InviteSecret,
+  ): Promise<void> {
+    const groupOrOwnedValue = await this.load(groupOrOwnedValueID);
 
-        accountOnThisNode._sessionLogs = new Map(account.core.sessionLogs);
-
-        accountOnThisNode._cachedContent = undefined;
-
-        return new RawControlledAccount(accountOnThisNode, agentSecret);
+    if (groupOrOwnedValue === "unavailable") {
+      throw new Error(
+        "Trying to accept invite: Group/owned value unavailable from all peers",
+      );
     }
 
-    /** @internal */
-    resolveAccountAgent(
-        id: RawAccountID | AgentID,
-        expectation?: string,
-    ): Result<AgentID, ResolveAccountAgentError> {
-        if (isAgentID(id)) {
-            return ok(id);
-        }
-
-        let coValue: CoValueCore;
-
-        try {
-            coValue = this.expectCoValueLoaded(id, expectation);
-        } catch (e) {
-            return err({
-                type: "ErrorLoadingCoValueCore",
-                expectation,
-                id,
-                error: e,
-            } satisfies LoadCoValueCoreError);
-        }
-
-        if (
-            coValue.header.type !== "comap" ||
-            coValue.header.ruleset.type !== "group" ||
-            !coValue.header.meta ||
-            !("type" in coValue.header.meta) ||
-            coValue.header.meta.type !== "account"
-        ) {
-            return err({
-                type: "UnexpectedlyNotAccount",
-                expectation,
-                id,
-            } satisfies UnexpectedlyNotAccountError);
-        }
-
-        return (coValue.getCurrentContent() as RawAccount).currentAgentID();
+    if (groupOrOwnedValue.core.header.ruleset.type === "ownedByGroup") {
+      return this.acceptInvite(
+        groupOrOwnedValue.core.header.ruleset.group as CoID<RawGroup>,
+        inviteSecret,
+      );
+    } else if (groupOrOwnedValue.core.header.ruleset.type !== "group") {
+      throw new Error("Can only accept invites to groups");
     }
 
-    resolveAccountAgentAsync(
-        id: RawAccountID | AgentID,
-        expectation?: string,
-    ): ResultAsync<AgentID, ResolveAccountAgentError> {
-        if (isAgentID(id)) {
-            return okAsync(id);
+    const group = expectGroup(groupOrOwnedValue);
+
+    const inviteAgentSecret = this.crypto.agentSecretFromSecretSeed(
+      secretSeedFromInviteSecret(inviteSecret),
+    );
+    const inviteAgentID = this.crypto.getAgentID(inviteAgentSecret);
+
+    const inviteRole = await new Promise((resolve, reject) => {
+      group.subscribe((groupUpdate) => {
+        const role = groupUpdate.get(inviteAgentID);
+        if (role) {
+          resolve(role);
         }
+      });
+      setTimeout(
+        () => reject(new Error("Couldn't find invite before timeout")),
+        2000,
+      );
+    });
 
-        return ResultAsync.fromPromise(
-            this.loadCoValueCore(id),
-            (e) =>
-                ({
-                    type: "ErrorLoadingCoValueCore",
-                    expectation,
-                    id,
-                    error: e,
-                }) satisfies LoadCoValueCoreError,
-        ).andThen((coValue) => {
-            if (coValue === "unavailable") {
-                return err({
-                    type: "AccountUnavailableFromAllPeers" as const,
-                    expectation,
-                    id,
-                } satisfies AccountUnavailableFromAllPeersError);
-            }
-
-            if (
-                coValue.header.type !== "comap" ||
-                coValue.header.ruleset.type !== "group" ||
-                !coValue.header.meta ||
-                !("type" in coValue.header.meta) ||
-                coValue.header.meta.type !== "account"
-            ) {
-                return err({
-                    type: "UnexpectedlyNotAccount" as const,
-                    expectation,
-                    id,
-                } satisfies UnexpectedlyNotAccountError);
-            }
-
-            return (coValue.getCurrentContent() as RawAccount).currentAgentID();
-        });
+    if (!inviteRole) {
+      throw new Error("No invite found");
     }
 
-    /**
-     * @deprecated use Account.createGroup() instead
-     */
-    createGroup(
-        uniqueness: CoValueUniqueness = this.crypto.createdNowUnique(),
-    ): RawGroup {
-        const groupCoValue = this.createCoValue({
-            type: "comap",
-            ruleset: { type: "group", initialAdmin: this.account.id },
-            meta: null,
-            ...uniqueness,
-        });
+    const existingRole = group.get(this.account.id);
 
-        const group = expectGroup(groupCoValue.getCurrentContent());
+    if (
+      existingRole === "admin" ||
+      (existingRole === "writer" && inviteRole === "writerInvite") ||
+      (existingRole === "writer" && inviteRole === "reader") ||
+      (existingRole === "reader" && inviteRole === "readerInvite")
+    ) {
+      console.debug(
+        "Not accepting invite that would replace or downgrade role",
+      );
+      return;
+    }
 
-        group.set(this.account.id, "admin", "trusting");
+    const groupAsInvite = expectGroup(
+      group.core
+        .testWithDifferentAccount(
+          new ControlledAgent(inviteAgentSecret, this.crypto),
+          this.crypto.newRandomSessionID(inviteAgentID),
+        )
+        .getCurrentContent(),
+    );
 
-        const readKey = this.crypto.newRandomKeySecret();
+    groupAsInvite.addMemberInternal(
+      this.account,
+      inviteRole === "adminInvite"
+        ? "admin"
+        : inviteRole === "writerInvite"
+          ? "writer"
+          : "reader",
+    );
 
-        group.set(
-            `${readKey.id}_for_${this.account.id}`,
-            this.crypto.seal({
-                message: readKey.secret,
-                from: this.account.currentSealerSecret(),
-                to: this.account
-                    .currentSealerID()
-                    ._unsafeUnwrap({ withStackTrace: true }),
-                nOnceMaterial: {
-                    in: groupCoValue.id,
-                    tx: groupCoValue.nextTransactionID(),
-                },
-            }),
-            "trusting",
+    group.core._sessionLogs = groupAsInvite.core.sessionLogs;
+    group.core._cachedContent = undefined;
+
+    for (const groupListener of group.core.listeners) {
+      groupListener(group.core.getCurrentContent());
+    }
+  }
+
+  /** @internal */
+  expectCoValueLoaded(id: RawCoID, expectation?: string): CoValueCore {
+    const entry = this.coValues[id];
+    if (!entry) {
+      throw new Error(
+        `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`,
+      );
+    }
+    if (entry.state.type === "unknown") {
+      throw new Error(
+        `${expectation ? expectation + ": " : ""}CoValue ${id} not yet loaded`,
+      );
+    }
+    return entry.state.coValue;
+  }
+
+  /** @internal */
+  expectProfileLoaded(id: RawAccountID, expectation?: string): RawProfile {
+    const account = this.expectCoValueLoaded(id, expectation);
+    const profileID = expectGroup(account.getCurrentContent()).get("profile");
+    if (!profileID) {
+      throw new Error(
+        `${expectation ? expectation + ": " : ""}Account ${id} has no profile`,
+      );
+    }
+    return this.expectCoValueLoaded(
+      profileID,
+      expectation,
+    ).getCurrentContent() as RawProfile;
+  }
+
+  /** @internal */
+  createAccount(
+    agentSecret = this.crypto.newRandomAgentSecret(),
+  ): RawControlledAccount {
+    const accountAgentID = this.crypto.getAgentID(agentSecret);
+    const account = expectGroup(
+      this.createCoValue(
+        accountHeaderForInitialAgentSecret(agentSecret, this.crypto),
+      )
+        .testWithDifferentAccount(
+          new ControlledAgent(agentSecret, this.crypto),
+          this.crypto.newRandomSessionID(accountAgentID),
+        )
+        .getCurrentContent(),
+    );
+
+    account.set(accountAgentID, "admin", "trusting");
+
+    const readKey = this.crypto.newRandomKeySecret();
+
+    const sealed = this.crypto.seal({
+      message: readKey.secret,
+      from: this.crypto.getAgentSealerSecret(agentSecret),
+      to: this.crypto.getAgentSealerID(accountAgentID),
+      nOnceMaterial: {
+        in: account.id,
+        tx: account.core.nextTransactionID(),
+      },
+    });
+
+    account.set(`${readKey.id}_for_${accountAgentID}`, sealed, "trusting");
+
+    account.set("readKey", readKey.id, "trusting");
+
+    const accountOnThisNode = this.expectCoValueLoaded(account.id);
+
+    accountOnThisNode._sessionLogs = new Map(account.core.sessionLogs);
+
+    accountOnThisNode._cachedContent = undefined;
+
+    return new RawControlledAccount(accountOnThisNode, agentSecret);
+  }
+
+  /** @internal */
+  resolveAccountAgent(
+    id: RawAccountID | AgentID,
+    expectation?: string,
+  ): Result<AgentID, ResolveAccountAgentError> {
+    if (isAgentID(id)) {
+      return ok(id);
+    }
+
+    let coValue: CoValueCore;
+
+    try {
+      coValue = this.expectCoValueLoaded(id, expectation);
+    } catch (e) {
+      return err({
+        type: "ErrorLoadingCoValueCore",
+        expectation,
+        id,
+        error: e,
+      } satisfies LoadCoValueCoreError);
+    }
+
+    if (
+      coValue.header.type !== "comap" ||
+      coValue.header.ruleset.type !== "group" ||
+      !coValue.header.meta ||
+      !("type" in coValue.header.meta) ||
+      coValue.header.meta.type !== "account"
+    ) {
+      return err({
+        type: "UnexpectedlyNotAccount",
+        expectation,
+        id,
+      } satisfies UnexpectedlyNotAccountError);
+    }
+
+    return (coValue.getCurrentContent() as RawAccount).currentAgentID();
+  }
+
+  resolveAccountAgentAsync(
+    id: RawAccountID | AgentID,
+    expectation?: string,
+  ): ResultAsync<AgentID, ResolveAccountAgentError> {
+    if (isAgentID(id)) {
+      return okAsync(id);
+    }
+
+    return ResultAsync.fromPromise(
+      this.loadCoValueCore(id),
+      (e) =>
+        ({
+          type: "ErrorLoadingCoValueCore",
+          expectation,
+          id,
+          error: e,
+        }) satisfies LoadCoValueCoreError,
+    ).andThen((coValue) => {
+      if (coValue === "unavailable") {
+        return err({
+          type: "AccountUnavailableFromAllPeers" as const,
+          expectation,
+          id,
+        } satisfies AccountUnavailableFromAllPeersError);
+      }
+
+      if (
+        coValue.header.type !== "comap" ||
+        coValue.header.ruleset.type !== "group" ||
+        !coValue.header.meta ||
+        !("type" in coValue.header.meta) ||
+        coValue.header.meta.type !== "account"
+      ) {
+        return err({
+          type: "UnexpectedlyNotAccount" as const,
+          expectation,
+          id,
+        } satisfies UnexpectedlyNotAccountError);
+      }
+
+      return (coValue.getCurrentContent() as RawAccount).currentAgentID();
+    });
+  }
+
+  /**
+   * @deprecated use Account.createGroup() instead
+   */
+  createGroup(
+    uniqueness: CoValueUniqueness = this.crypto.createdNowUnique(),
+  ): RawGroup {
+    const groupCoValue = this.createCoValue({
+      type: "comap",
+      ruleset: { type: "group", initialAdmin: this.account.id },
+      meta: null,
+      ...uniqueness,
+    });
+
+    const group = expectGroup(groupCoValue.getCurrentContent());
+
+    group.set(this.account.id, "admin", "trusting");
+
+    const readKey = this.crypto.newRandomKeySecret();
+
+    group.set(
+      `${readKey.id}_for_${this.account.id}`,
+      this.crypto.seal({
+        message: readKey.secret,
+        from: this.account.currentSealerSecret(),
+        to: this.account
+          .currentSealerID()
+          ._unsafeUnwrap({ withStackTrace: true }),
+        nOnceMaterial: {
+          in: groupCoValue.id,
+          tx: groupCoValue.nextTransactionID(),
+        },
+      }),
+      "trusting",
+    );
+
+    group.set("readKey", readKey.id, "trusting");
+
+    return group;
+  }
+
+  /** @internal */
+  testWithDifferentAccount(
+    account: ControlledAccountOrAgent,
+    currentSessionID: SessionID,
+  ): LocalNode {
+    const newNode = new LocalNode(account, currentSessionID, this.crypto);
+
+    const coValuesToCopy = Object.entries(this.coValues);
+
+    while (coValuesToCopy.length > 0) {
+      const [coValueID, entry] = coValuesToCopy[coValuesToCopy.length - 1]!;
+
+      if (entry.state.type === "unknown") {
+        coValuesToCopy.pop();
+        continue;
+      } else {
+        const allDepsCopied = entry.state.coValue
+          .getDependedOnCoValues()
+          .every((dep) => newNode.coValues[dep]?.state.type === "available");
+
+        if (!allDepsCopied) {
+          // move to end of queue
+          coValuesToCopy.unshift(coValuesToCopy.pop()!);
+          continue;
+        }
+
+        const newCoValue = new CoValueCore(
+          entry.state.coValue.header,
+          newNode,
+          new Map(entry.state.coValue.sessionLogs),
         );
 
-        group.set("readKey", readKey.id, "trusting");
+        newNode.coValues[coValueID as RawCoID] =
+          CoValueState.Available(newCoValue);
 
-        return group;
+        coValuesToCopy.pop();
+      }
     }
 
-    /** @internal */
-    testWithDifferentAccount(
-        account: ControlledAccountOrAgent,
-        currentSessionID: SessionID,
-    ): LocalNode {
-        const newNode = new LocalNode(account, currentSessionID, this.crypto);
-
-        const coValuesToCopy = Object.entries(this.coValues);
-
-        while (coValuesToCopy.length > 0) {
-            const [coValueID, entry] =
-                coValuesToCopy[coValuesToCopy.length - 1]!;
-
-            if (entry.state.type === "unknown") {
-                coValuesToCopy.pop();
-                continue;
-            } else {
-                const allDepsCopied = entry.state.coValue
-                    .getDependedOnCoValues()
-                    .every(
-                        (dep) =>
-                            newNode.coValues[dep]?.state.type === "available",
-                    );
-
-                if (!allDepsCopied) {
-                    // move to end of queue
-                    coValuesToCopy.unshift(coValuesToCopy.pop()!);
-                    continue;
-                }
-
-                const newCoValue = new CoValueCore(
-                    entry.state.coValue.header,
-                    newNode,
-                    new Map(entry.state.coValue.sessionLogs),
-                );
-
-                newNode.coValues[coValueID as RawCoID] =
-                    CoValueState.Available(newCoValue);
-
-                coValuesToCopy.pop();
-            }
-        }
-
-        if (account instanceof RawControlledAccount) {
-            // To make sure that when we edit the account, we're modifying the correct sessions
-            const accountInNode = new RawControlledAccount(
-                newNode.expectCoValueLoaded(account.id),
-                account.agentSecret,
-            );
-            if (accountInNode.core.node !== newNode) {
-                throw new Error("Account's node is not the new node");
-            }
-            newNode.account = accountInNode;
-        }
-
-        return newNode;
+    if (account instanceof RawControlledAccount) {
+      // To make sure that when we edit the account, we're modifying the correct sessions
+      const accountInNode = new RawControlledAccount(
+        newNode.expectCoValueLoaded(account.id),
+        account.agentSecret,
+      );
+      if (accountInNode.core.node !== newNode) {
+        throw new Error("Account's node is not the new node");
+      }
+      newNode.account = accountInNode;
     }
 
-    gracefulShutdown() {
-        this.syncManager.gracefulShutdown();
-    }
+    return newNode;
+  }
+
+  gracefulShutdown() {
+    this.syncManager.gracefulShutdown();
+  }
 }
 
 export type LoadCoValueCoreError = {
-    type: "ErrorLoadingCoValueCore";
-    error: unknown;
-    expectation?: string;
-    id: RawAccountID;
+  type: "ErrorLoadingCoValueCore";
+  error: unknown;
+  expectation?: string;
+  id: RawAccountID;
 };
 
 export type AccountUnavailableFromAllPeersError = {
-    type: "AccountUnavailableFromAllPeers";
-    expectation?: string;
-    id: RawAccountID;
+  type: "AccountUnavailableFromAllPeers";
+  expectation?: string;
+  id: RawAccountID;
 };
 
 export type UnexpectedlyNotAccountError = {
-    type: "UnexpectedlyNotAccount";
-    expectation?: string;
-    id: RawAccountID;
+  type: "UnexpectedlyNotAccount";
+  expectation?: string;
+  id: RawAccountID;
 };
 
 export type ResolveAccountAgentError =
-    | InvalidAccountAgentIDError
-    | LoadCoValueCoreError
-    | AccountUnavailableFromAllPeersError
-    | UnexpectedlyNotAccountError;
+  | InvalidAccountAgentIDError
+  | LoadCoValueCoreError
+  | AccountUnavailableFromAllPeersError
+  | UnexpectedlyNotAccountError;

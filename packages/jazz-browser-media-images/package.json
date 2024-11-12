@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser-media-images",
-  "version": "0.8.13",
+  "version": "0.8.19",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
@@ -8,22 +8,18 @@
   "dependencies": {
     "@types/image-blob-reduce": "^4.1.1",
     "image-blob-reduce": "^4.1.0",
-    "jazz-browser": "workspace:0.8.13",
-    "jazz-tools": "workspace:0.8.13",
+    "jazz-browser": "workspace:0.8.19",
+    "jazz-tools": "workspace:0.8.19",
     "pica": "^9.0.1",
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "lint": "eslint . --ext ts,tsx",
-    "format": "prettier --write './src/**/*.{ts,tsx}'",
-    "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/pica": "^9.0.4"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
-    "*.{js,jsx,mdx,json}": "prettier --write"
   }
 }

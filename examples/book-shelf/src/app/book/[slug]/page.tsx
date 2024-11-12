@@ -1,13 +1,13 @@
 "use client";
 
-import { useCoState } from "@/components/JazzAndAuth";
-import { BookReview } from "@/schema";
-import { Group, ID } from "jazz-tools";
 import { BookCover } from "@/components/BookCover";
-import clsx from "clsx";
-import RatingInput from "@/components/RatingInput";
-import Rating from "@/components/Rating";
 import { Container } from "@/components/Container";
+import { useCoState } from "@/components/JazzAndAuth";
+import Rating from "@/components/Rating";
+import RatingInput from "@/components/RatingInput";
+import { BookReview } from "@/schema";
+import clsx from "clsx";
+import { Group, ID } from "jazz-tools";
 
 const BookReviewTitle = ({
   bookReview,
@@ -28,9 +28,9 @@ const BookReviewTitle = ({
       placeholder="Book title"
       className={clsx(
         className,
-        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm"
+        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm",
       )}
-      onChange={e => (bookReview.title = e.target.value)}
+      onChange={(e) => (bookReview.title = e.target.value)}
     ></input>
   );
 };
@@ -54,9 +54,9 @@ const BookReviewAuthor = ({
       placeholder="Author"
       className={clsx(
         className,
-        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm"
+        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm",
       )}
-      onChange={e => (bookReview.author = e.target.value)}
+      onChange={(e) => (bookReview.author = e.target.value)}
     ></input>
   );
 };
@@ -85,9 +85,9 @@ const BookReviewDateRead = ({
       placeholder="Date read"
       className={clsx(
         className,
-        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm"
+        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm",
       )}
-      onChange={e => {
+      onChange={(e) => {
         const date = new Date(e.target.value);
         bookReview.dateRead = date;
       }}
@@ -116,9 +116,9 @@ const BookReviewReview = ({
       placeholder="Write your review here..."
       className={clsx(
         className,
-        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm"
+        "w-full rounded border border-transparent px-2 py-1 hover:border-gray-300 hover:shadow-sm",
       )}
-      onChange={e => (bookReview.review = e.target.value)}
+      onChange={(e) => (bookReview.review = e.target.value)}
     ></textarea>
   );
 };
@@ -139,7 +139,7 @@ const BookReviewRating = ({
   return (
     <RatingInput
       className={clsx(className, "p-2")}
-      onChange={rating => (bookReview.rating = rating)}
+      onChange={(rating) => (bookReview.rating = rating)}
       value={bookReview.rating}
     />
   );

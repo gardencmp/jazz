@@ -2,9 +2,9 @@
 const isFunction = (func: any) => typeof func === "function";
 
 const isObject = (supposedObject: any) =>
-    typeof supposedObject === "object" &&
-    supposedObject !== null &&
-    !Array.isArray(supposedObject);
+  typeof supposedObject === "object" &&
+  supposedObject !== null &&
+  !Array.isArray(supposedObject);
 
 const isThenable = (obj: any) => isObject(obj) && isFunction(obj.then);
 
@@ -13,14 +13,14 @@ const identity = (co: any) => co;
 export { isObject, isThenable, identity, isFunction };
 
 enum States {
-    PENDING = "PENDING",
-    RESOLVED = "RESOLVED",
-    REJECTED = "REJECTED",
+  PENDING = "PENDING",
+  RESOLVED = "RESOLVED",
+  REJECTED = "REJECTED",
 }
 
 interface Handler<T, U> {
-    onSuccess: HandlerOnSuccess<T, U>;
-    onFail: HandlerOnFail<U>;
+  onSuccess: HandlerOnSuccess<T, U>;
+  onFail: HandlerOnFail<U>;
 }
 
 type HandlerOnSuccess<T, U = any> = (value: T) => U | Thenable<U>;
@@ -28,202 +28,197 @@ type HandlerOnFail<U = any> = (reason: any) => U | Thenable<U>;
 type Finally<U> = () => U | Thenable<U>;
 
 interface Thenable<T> {
-    then<U>(
-        onSuccess?: HandlerOnSuccess<T, U>,
-        onFail?: HandlerOnFail<U>,
-    ): Thenable<U>;
-    then<U>(
-        onSuccess?: HandlerOnSuccess<T, U>,
-        onFail?: (reason: any) => void,
-    ): Thenable<U>;
+  then<U>(
+    onSuccess?: HandlerOnSuccess<T, U>,
+    onFail?: HandlerOnFail<U>,
+  ): Thenable<U>;
+  then<U>(
+    onSuccess?: HandlerOnSuccess<T, U>,
+    onFail?: (reason: any) => void,
+  ): Thenable<U>;
 }
 
 type Resolve<R> = (value?: R | Thenable<R>) => void;
 type Reject = (value?: any) => void;
 
 export class SyncPromise<T> {
-    private state: States = States.PENDING;
-    private handlers: Handler<T, any>[] = [];
-    private value: T | any;
+  private state: States = States.PENDING;
+  private handlers: Handler<T, any>[] = [];
+  private value: T | any;
 
-    public constructor(
-        callback: (resolve: Resolve<T>, reject: Reject) => void,
-    ) {
-        try {
-            callback(this.resolve as Resolve<T>, this.reject);
-        } catch (e) {
-            this.reject(e);
-        }
+  public constructor(callback: (resolve: Resolve<T>, reject: Reject) => void) {
+    try {
+      callback(this.resolve as Resolve<T>, this.reject);
+    } catch (e) {
+      this.reject(e);
     }
+  }
 
-    private resolve = (value: T) => {
-        return this.setResult(value, States.RESOLVED);
+  private resolve = (value: T) => {
+    return this.setResult(value, States.RESOLVED);
+  };
+
+  private reject = (reason: any) => {
+    return this.setResult(reason, States.REJECTED);
+  };
+
+  private setResult = (value: T | any, state: States) => {
+    const set = () => {
+      if (this.state !== States.PENDING) {
+        return null;
+      }
+
+      if (isThenable(value)) {
+        return (value as Thenable<T>).then(this.resolve, this.reject);
+      }
+
+      this.value = value;
+      this.state = state;
+
+      return this.executeHandlers();
     };
 
-    private reject = (reason: any) => {
-        return this.setResult(reason, States.REJECTED);
-    };
+    void set();
+  };
 
-    private setResult = (value: T | any, state: States) => {
-        const set = () => {
-            if (this.state !== States.PENDING) {
-                return null;
-            }
-
-            if (isThenable(value)) {
-                return (value as Thenable<T>).then(this.resolve, this.reject);
-            }
-
-            this.value = value;
-            this.state = state;
-
-            return this.executeHandlers();
-        };
-
-        void set();
-    };
-
-    private executeHandlers = () => {
-        if (this.state === States.PENDING) {
-            return null;
-        }
-
-        this.handlers.forEach((handler) => {
-            if (this.state === States.REJECTED) {
-                return handler.onFail(this.value);
-            }
-
-            return handler.onSuccess(this.value);
-        });
-
-        this.handlers = [];
-    };
-
-    private attachHandler = (handler: Handler<T, any>) => {
-        this.handlers = [...this.handlers, handler];
-
-        this.executeHandlers();
-    };
-
-    public then<U>(
-        onSuccess: HandlerOnSuccess<T, U>,
-        onFail?: HandlerOnFail<U>,
-    ) {
-        return new SyncPromise<U>((resolve, reject) => {
-            return this.attachHandler({
-                onSuccess: (result) => {
-                    try {
-                        return resolve(onSuccess(result));
-                    } catch (e) {
-                        return reject(e);
-                    }
-                },
-                onFail: (reason) => {
-                    if (!onFail) {
-                        return reject(reason);
-                    }
-
-                    try {
-                        return resolve(onFail(reason));
-                    } catch (e) {
-                        return reject(e);
-                    }
-                },
-            });
-        });
+  private executeHandlers = () => {
+    if (this.state === States.PENDING) {
+      return null;
     }
 
-    public catch<U>(onFail: HandlerOnFail<U>) {
-        return this.then<U>(identity, onFail);
-    }
+    this.handlers.forEach((handler) => {
+      if (this.state === States.REJECTED) {
+        return handler.onFail(this.value);
+      }
 
-    // methods
+      return handler.onSuccess(this.value);
+    });
 
-    public toString() {
-        return `[object SyncPromise]`;
-    }
+    this.handlers = [];
+  };
 
-    public finally<U>(cb: Finally<U>) {
-        return new SyncPromise<U>((resolve, reject) => {
-            let co: U | any;
-            let isRejected: boolean;
+  private attachHandler = (handler: Handler<T, any>) => {
+    this.handlers = [...this.handlers, handler];
 
-            return this.then(
-                (value) => {
-                    isRejected = false;
-                    co = value;
-                    return cb();
-                },
-                (reason) => {
-                    isRejected = true;
-                    co = reason;
-                    return cb();
-                },
-            ).then(() => {
-                if (isRejected) {
-                    return reject(co);
-                }
+    this.executeHandlers();
+  };
 
-                return resolve(co);
-            });
-        });
-    }
-
-    public spread<U>(handler: (...args: any[]) => U) {
-        return this.then<U>((collection) => {
-            if (Array.isArray(collection)) {
-                return handler(...collection);
-            }
-
-            return handler(collection);
-        });
-    }
-
-    // static
-
-    public static resolve<U = any>(value?: U | Thenable<U>) {
-        return new SyncPromise<U>((resolve) => {
-            return resolve(value);
-        });
-    }
-
-    public static reject<U>(reason?: any) {
-        return new SyncPromise<U>((_resolve, reject) => {
+  public then<U>(onSuccess: HandlerOnSuccess<T, U>, onFail?: HandlerOnFail<U>) {
+    return new SyncPromise<U>((resolve, reject) => {
+      return this.attachHandler({
+        onSuccess: (result) => {
+          try {
+            return resolve(onSuccess(result));
+          } catch (e) {
+            return reject(e);
+          }
+        },
+        onFail: (reason) => {
+          if (!onFail) {
             return reject(reason);
-        });
-    }
+          }
 
-    public static all<U = any>(collection: (U | Thenable<U>)[]) {
-        return new SyncPromise<U[]>((resolve, reject) => {
-            if (!Array.isArray(collection)) {
-                return reject(new TypeError("An array must be provided."));
-            }
+          try {
+            return resolve(onFail(reason));
+          } catch (e) {
+            return reject(e);
+          }
+        },
+      });
+    });
+  }
 
-            if (collection.length === 0) {
-                return resolve([]);
-            }
+  public catch<U>(onFail: HandlerOnFail<U>) {
+    return this.then<U>(identity, onFail);
+  }
 
-            let counter = collection.length;
-            const resolvedCollection: U[] = [];
+  // methods
 
-            const tryResolve = (value: U, index: number) => {
-                counter -= 1;
-                resolvedCollection[index] = value;
+  public toString() {
+    return `[object SyncPromise]`;
+  }
 
-                if (counter !== 0) {
-                    return null;
-                }
+  public finally<U>(cb: Finally<U>) {
+    return new SyncPromise<U>((resolve, reject) => {
+      let co: U | any;
+      let isRejected: boolean;
 
-                return resolve(resolvedCollection);
-            };
+      return this.then(
+        (value) => {
+          isRejected = false;
+          co = value;
+          return cb();
+        },
+        (reason) => {
+          isRejected = true;
+          co = reason;
+          return cb();
+        },
+      ).then(() => {
+        if (isRejected) {
+          return reject(co);
+        }
 
-            return collection.forEach((item, index) => {
-                return SyncPromise.resolve(item)
-                    .then((value) => {
-                        return tryResolve(value, index);
-                    })
-                    .catch(reject);
-            });
-        });
-    }
+        return resolve(co);
+      });
+    });
+  }
+
+  public spread<U>(handler: (...args: any[]) => U) {
+    return this.then<U>((collection) => {
+      if (Array.isArray(collection)) {
+        return handler(...collection);
+      }
+
+      return handler(collection);
+    });
+  }
+
+  // static
+
+  public static resolve<U = any>(value?: U | Thenable<U>) {
+    return new SyncPromise<U>((resolve) => {
+      return resolve(value);
+    });
+  }
+
+  public static reject<U>(reason?: any) {
+    return new SyncPromise<U>((_resolve, reject) => {
+      return reject(reason);
+    });
+  }
+
+  public static all<U = any>(collection: (U | Thenable<U>)[]) {
+    return new SyncPromise<U[]>((resolve, reject) => {
+      if (!Array.isArray(collection)) {
+        return reject(new TypeError("An array must be provided."));
+      }
+
+      if (collection.length === 0) {
+        return resolve([]);
+      }
+
+      let counter = collection.length;
+      const resolvedCollection: U[] = [];
+
+      const tryResolve = (value: U, index: number) => {
+        counter -= 1;
+        resolvedCollection[index] = value;
+
+        if (counter !== 0) {
+          return null;
+        }
+
+        return resolve(resolvedCollection);
+      };
+
+      return collection.forEach((item, index) => {
+        return SyncPromise.resolve(item)
+          .then((value) => {
+            return tryResolve(value, index);
+          })
+          .catch(reject);
+      });
+    });
+  }
 }

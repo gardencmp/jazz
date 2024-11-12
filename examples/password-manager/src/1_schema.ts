@@ -1,4 +1,4 @@
-import { Account, co, CoList, CoMap, Group, Profile } from "jazz-tools";
+import { Account, CoList, CoMap, Group, Profile, co } from "jazz-tools";
 
 export class PasswordItem extends CoMap {
   name = co.string;
@@ -37,7 +37,7 @@ export class PasswordManagerAccount extends Account {
           name: "Default",
           items: PasswordList.create([], { owner: group }),
         },
-        { owner: group }
+        { owner: group },
       );
 
       firstFolder.items?.push(
@@ -50,8 +50,8 @@ export class PasswordManagerAccount extends Account {
             folder: firstFolder,
             deleted: false,
           },
-          { owner: group }
-        )
+          { owner: group },
+        ),
       );
 
       firstFolder.items?.push(
@@ -64,8 +64,8 @@ export class PasswordManagerAccount extends Account {
             folder: firstFolder,
             deleted: false,
           },
-          { owner: group }
-        )
+          { owner: group },
+        ),
       );
 
       this.root = PasswordManagerAccountRoot.create(
@@ -74,7 +74,7 @@ export class PasswordManagerAccount extends Account {
             owner: this,
           }),
         },
-        { owner: this }
+        { owner: this },
       );
     }
   }

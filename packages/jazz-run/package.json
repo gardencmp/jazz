@@ -1,35 +1,32 @@
 {
-    "name": "jazz-run",
-    "bin": "./dist/index.js",
-    "type": "module",
-    "license": "MIT",
-    "version": "0.8.13",
-    "scripts": {
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "dependencies": {
-        "@effect/cli": "^0.41.2",
-        "@effect/platform-node": "^0.57.2",
-        "@effect/printer": "^0.34.5",
-        "@effect/printer-ansi": "^0.34.5",
-        "@effect/schema": "^0.71.1",
-        "@effect/typeclass": "^0.25.5",
-        "cojson": "workspace:0.8.12",
-        "cojson-storage-sqlite": "workspace:0.8.12",
-        "cojson-transport-ws": "workspace:0.8.13",
-        "effect": "^3.6.5",
-        "jazz-tools": "workspace:0.8.13",
-        "ws": "^8.14.2"
-    },
-    "devDependencies": {
-        "@types/ws": "^8.5.5",
-        "typescript": "^5.3.3"
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
-    }
+  "name": "jazz-run",
+  "bin": "./dist/index.js",
+  "type": "module",
+  "license": "MIT",
+  "version": "0.8.19",
+  "scripts": {
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "build-and-run": "pnpm turbo build && chmod +x ./dist/index.js && ./dist/index.js sync --in-memory",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@effect/cli": "^0.41.2",
+    "@effect/platform-node": "^0.57.2",
+    "@effect/printer": "^0.34.5",
+    "@effect/printer-ansi": "^0.34.5",
+    "@effect/schema": "^0.71.1",
+    "@effect/typeclass": "^0.25.5",
+    "cojson": "workspace:0.8.19",
+    "cojson-storage-sqlite": "workspace:0.8.19",
+    "cojson-transport-ws": "workspace:0.8.19",
+    "effect": "^3.6.5",
+    "jazz-tools": "workspace:0.8.19",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.5",
+    "typescript": "^5.3.3"
+  }
 }

@@ -1,104 +1,89 @@
+import { CoValueCore, Profile } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { WebSocket } from "ws";
 import {
-    Account,
-    Peer,
-    WasmCrypto,
-    createJazzContext,
-    isControlledAccount,
+  Account,
+  CoMap,
+  Peer,
+  WasmCrypto,
+  createJazzContext,
+  isControlledAccount,
 } from "jazz-tools";
 import { fixedCredentialsAuth, randomSessionProvider } from "jazz-tools";
-import { CoValueCore } from "cojson";
+import { WebSocket } from "ws";
 
 export const createWorkerAccount = async ({
-    name,
-    peer: peerAddr,
+  name,
+  peer: peerAddr,
 }: {
-    name: string;
-    peer: string;
+  name: string;
+  peer: string;
 }) => {
-    const crypto = await WasmCrypto.create();
+  const crypto = await WasmCrypto.create();
 
-    const peer = createWebSocketPeer({
-        id: "upstream",
-        websocket: new WebSocket(peerAddr),
-        role: "server",
-    });
+  const peer = createWebSocketPeer({
+    id: "upstream",
+    websocket: new WebSocket(peerAddr),
+    role: "server",
+  });
 
-    const account = await Account.create({
-        creationProps: { name },
-        peersToLoadFrom: [peer],
-        crypto,
-    });
+  const account = await Account.create({
+    creationProps: { name },
+    peersToLoadFrom: [peer],
+    crypto,
+  });
 
-    if (!isControlledAccount(account)) {
-        throw new Error("account is not a controlled account");
-    }
+  if (!isControlledAccount(account)) {
+    throw new Error("account is not a controlled account");
+  }
 
-    const accountCoValue = account._raw.core;
-    const accountProfileCoValue = account.profile!._raw.core;
-    const syncManager = account._raw.core.node.syncManager;
+  const accountCoValue = account._raw.core;
+  const accountProfileCoValue = account.profile!._raw.core;
+  const syncManager = account._raw.core.node.syncManager;
 
-    await Promise.all([
-        syncManager.syncCoValue(accountCoValue),
-        syncManager.syncCoValue(accountProfileCoValue),
-    ]);
+  await Promise.all([
+    syncManager.syncCoValue(accountCoValue),
+    syncManager.syncCoValue(accountProfileCoValue),
+  ]);
 
-    await Promise.race([
-        Promise.all([
-            waitForSync(account, peer, accountCoValue),
-            waitForSync(account, peer, accountProfileCoValue),
-        ]),
-        failAfter(
-            10_000,
-            "Timeout: can't upload the account data to the target peer.",
-        ),
-    ]);
+  await Promise.race([
+    Promise.all([
+      syncManager.waitForUploadIntoPeer(peer.id, accountCoValue.id),
+      syncManager.waitForUploadIntoPeer(peer.id, accountProfileCoValue.id),
+    ]),
+    failAfter(
+      4_000,
+      "Timeout: Didn't manage to upload the account and profile",
+    ),
+  ]);
 
-    // Spawn a second peer to double check that the account is fully synced
-    const peer2 = createWebSocketPeer({
-        id: "upstream2",
-        websocket: new WebSocket(peerAddr),
-        role: "server",
-    });
+  // Spawn a second peer to double check that the account is fully synced
+  const peer2 = createWebSocketPeer({
+    id: "verifyingPeer",
+    websocket: new WebSocket(peerAddr),
+    role: "server",
+  });
 
-    await createJazzContext({
-        auth: fixedCredentialsAuth({
-            accountID: account.id,
-            secret: account._raw.agentSecret,
-        }),
-        sessionProvider: randomSessionProvider,
-        peersToLoadFrom: [peer2],
-        crypto,
-    });
+  await Promise.race([
+    createJazzContext({
+      auth: fixedCredentialsAuth({
+        accountID: account.id,
+        secret: account._raw.agentSecret,
+      }),
+      sessionProvider: randomSessionProvider,
+      peersToLoadFrom: [peer2],
+      crypto,
+    }),
+    failAfter(10_000, "Timeout: Account loading check failed"),
+  ]);
 
-    return {
-        accountId: account.id,
-        agentSecret: account._raw.agentSecret,
-    };
+  return {
+    accountId: account.id,
+    agentSecret: account._raw.agentSecret,
+  };
 };
 
-function waitForSync(account: Account, peer: Peer, coValue: CoValueCore) {
-    const syncManager = account._raw.core.node.syncManager;
-
-    return new Promise((resolve) => {
-        const unsubscribe = syncManager.subscribeToSyncStateUpdate(
-            (peerId, knownState, fullySynced) => {
-                if (
-                    fullySynced &&
-                    peerId === peer.id &&
-                    knownState.id === coValue.id
-                ) {
-                    resolve(true);
-                    unsubscribe?.();
-                }
-            },
-        );
-    });
-}
-
-function failAfter(timeout: number, message: string) {
-    return new Promise((_, reject) => {
-        setTimeout(() => reject(new Error(message)), timeout);
-    });
+function failAfter(ms: number, errorMessage: string) {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(errorMessage)), ms);
+  });
 }

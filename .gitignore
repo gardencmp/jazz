@@ -5,3 +5,14 @@ docsTmp
 .DS_Store
 .turbo
 coverage
+
+# Next.js
+**/.next
+
+# Vite output
+**/dist
+
+# Playwright
+test-results
+
+.husky

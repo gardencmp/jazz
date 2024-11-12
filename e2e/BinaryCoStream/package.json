@@ -1,24 +1,23 @@
 {
   "name": "@jazz-e2e/binarycostream",
   "private": true,
-  "version": "0.0.91",
+  "version": "0.0.97",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },
-  "lint-staged": {
-    "*.{js,jsx,mdx,json}": "prettier --write"
-  },
   "dependencies": {
-    "cojson": "workspace:0.8.12",
+    "cojson": "workspace:0.8.19",
     "hash-slash": "workspace:0.2.1",
     "is-ci": "^3.0.1",
-    "jazz-react": "workspace:0.8.13",
-    "jazz-tools": "workspace:0.8.13",
+    "jazz-react": "workspace:0.8.19",
+    "jazz-tools": "workspace:0.8.19",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

@@ -1,30 +1,26 @@
 {
-    "name": "jazz-nodejs",
-    "module": "dist/index.js",
-    "main": "dist/index.js",
-    "types": "src/index.ts",
-    "type": "module",
-    "license": "MIT",
-    "version": "0.8.13",
-    "dependencies": {
-        "cojson": "workspace:0.8.12",
-        "cojson-transport-ws": "workspace:0.8.13",
-        "jazz-tools": "workspace:0.8.13",
-        "ws": "^8.14.2"
-    },
-    "devDependencies": {
-        "@types/ws": "^8.5.5",
-        "typescript": "^5.3.3"
-    },
-    "scripts": {
-        "dev": "tsc --watch --sourceMap --outDir dist",
-        "lint": "eslint . --ext ts,tsx",
-        "format": "prettier --write './src/**/*.{ts,tsx}'",
-        "build": "npm run lint && rm -rf ./dist && tsc --sourceMap --outDir dist",
-        "prepublishOnly": "npm run build"
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --fix",
-        "*.{js,jsx,mdx,json}": "prettier --write"
-    }
+  "name": "jazz-nodejs",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "version": "0.8.19",
+  "dependencies": {
+    "cojson": "workspace:0.8.19",
+    "cojson-transport-ws": "workspace:0.8.19",
+    "jazz-tools": "workspace:0.8.19",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.5",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "dev": "tsc --watch --sourceMap --outDir dist",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
+  }
 }
