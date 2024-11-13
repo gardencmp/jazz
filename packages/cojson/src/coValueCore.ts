@@ -1,6 +1,7 @@
 import { Result, err, ok } from "neverthrow";
 import { AnyRawCoValue, CoID, RawCoValue } from "./coValue.js";
 import { ControlledAccountOrAgent, RawAccountID } from "./coValues/account.js";
+import { MapOpPayload } from "./coValues/coMap.js";
 import { RawGroup } from "./coValues/group.js";
 import { coreToCoValue } from "./coreToCoValue.js";
 import {
@@ -27,7 +28,6 @@ import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
-import { MapOpPayload } from "./coValues/coMap.js";
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -1001,20 +1001,20 @@ export class CoValueCore {
             .map((k) => k.replace("parent_", "") as RawCoID),
         ]
       : this.header.ruleset.type === "ownedByGroup"
-      ? [
-          this.header.ruleset.group,
-          ...new Set(
-            [...this.sessionLogs.keys()]
-              .map((sessionID) =>
-                accountOrAgentIDfromSessionID(sessionID as SessionID)
-              )
-              .filter(
-                (session): session is RawAccountID =>
-                  isAccountID(session) && session !== this.id
-              )
-          ),
-        ]
-      : [];
+        ? [
+            this.header.ruleset.group,
+            ...new Set(
+              [...this.sessionLogs.keys()]
+                .map((sessionID) =>
+                  accountOrAgentIDfromSessionID(sessionID as SessionID),
+                )
+                .filter(
+                  (session): session is RawAccountID =>
+                    isAccountID(session) && session !== this.id,
+                ),
+            ),
+          ]
+        : [];
   }
 }
 
