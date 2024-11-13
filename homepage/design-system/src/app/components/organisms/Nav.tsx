@@ -5,29 +5,40 @@ import { MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "../../../components/ui/navigation-menu";
 import { BreadCrumb } from "../molecules/Breadcrumb";
 import { ThemeToggle } from "../molecules/ThemeToggle";
 
-export function Nav({
-  mainLogo,
-  items,
-  docNav,
-  cta,
-}: {
+type NavItemProps = {
+  href: string;
+  icon?: ReactNode;
+  title: string;
+  firstOnRight?: boolean;
+  newTab?: boolean;
+  items?: NavItemProps[];
+  description?: string;
+};
+
+type NavProps = {
   mainLogo: ReactNode;
-  items: {
-    href: string;
-    icon?: ReactNode;
-    title: string;
-    firstOnRight?: boolean;
-    newTab?: boolean;
-  }[];
+  items: NavItemProps[];
   docNav?: ReactNode;
   cta?: ReactNode;
-}) {
+};
+
+export function Nav(props: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const { mainLogo, items, docNav, cta } = props;
 
   useLayoutEffect(() => {
     searchOpen && searchRef.current?.focus();
@@ -38,6 +49,38 @@ export function Nav({
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
+
+  return (
+    <NavigationMenu>
+      <NavigationMenuList>
+        {items.map((item, i) =>
+          item.items?.length ? (
+            <>
+              <NavigationMenuItem key={item.title}>
+                <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px]">
+                    {item.items.map(({ title, description }) => (
+                      <li className="grid gap-1.5 mt-px">
+                        <p className="text-sm font-medium text-stone-900 dark:text-white">
+                          {title}
+                        </p>
+                        <p className="text-sm leading-relaxed">{description}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </>
+          ) : (
+            <NavigationMenuLink asChild>
+              <Link href={item.href}>{item.title}</Link>
+            </NavigationMenuLink>
+          ),
+        )}
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
 
   return (
     <>

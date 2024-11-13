@@ -1,6 +1,7 @@
 import { SiDiscord, SiGithub, SiTwitter } from "@icons-pack/react-simple-icons";
 import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
+import { BookTextIcon, BoxIcon, CodeIcon } from "lucide-react";
 import { DocNav } from "./docs/nav";
 
 export function JazzNav() {
@@ -8,11 +9,91 @@ export function JazzNav() {
     <Nav
       mainLogo={<JazzLogo className="w-24 -ml-2" />}
       items={[
+        {
+          title: "Documentation",
+          href: "/docs",
+          items: [
+            {
+              icon: (
+                <BookTextIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "Documentation",
+              href: "/docs",
+              description:
+                "Get started with using Jazz by learning the core concepts, and going through guides.",
+            },
+            {
+              icon: (
+                <BoxIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "API reference",
+              href: "/docs/api-reference",
+              description:
+                "API references for packages like jazz-tools, jazz-react, and more.",
+            },
+            {
+              icon: (
+                <CodeIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "Example apps",
+              href: "/docs/examples",
+              description:
+                "Demo and source code for example apps built with Jazz.",
+            },
+          ],
+        },
         { title: "Home", href: "/" },
         { title: "Jazz Cloud", href: "/cloud" },
         {
-          title: "Docs",
+          title: "Documentation",
           href: "/docs",
+          items: [
+            {
+              icon: (
+                <BookTextIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "Documentation",
+              href: "/docs",
+              description:
+                "Get started with using Jazz by learning the core concepts, and going through guides.",
+            },
+            {
+              icon: (
+                <BoxIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "API reference",
+              href: "/docs/api-reference",
+              description:
+                "API references for packages like jazz-tools, jazz-react, and more.",
+            },
+            {
+              icon: (
+                <CodeIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "Example apps",
+              href: "/docs/examples",
+              description:
+                "Demo and source code for example apps built with Jazz.",
+            },
+          ],
         },
         {
           title: "Built with Jazz",
