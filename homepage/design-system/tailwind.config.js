@@ -40,7 +40,7 @@ const config = {
   theme: {
     colors: {
       ...harmonyPalette,
-      stone: "stonePaletteWithAlpha",
+      stone: stonePaletteWithAlpha,
       blue: {
         ...colors.indigo,
         500: "#5870F1",
@@ -50,8 +50,8 @@ const config = {
         900: "#12046A",
         DEFAULT: "#3313F7",
       },
-      green: "colors.green",
-      red: "colors.red",
+      green: colors.green,
+      red: colors.red,
     },
     extend: {
       fontFamily: {
@@ -61,65 +61,8 @@ const config = {
       fontSize: {
         "2xs": ["0.75rem", { lineHeight: "1.25rem" }],
       },
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-      },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
       container: {
-        center: "true",
+        center: true,
         padding: {
           DEFAULT: "0.75rem",
           sm: "1rem",
@@ -133,13 +76,84 @@ const config = {
         md: "960px",
         lg: "1276px",
       },
-      typography:
-        '(theme) => ({\n        DEFAULT: {\n          css: {\n            "--tw-prose-body": stonePalette[700],\n            "--tw-prose-headings": stonePalette[900],\n            "--tw-prose-bold": stonePalette[900],\n            "--tw-prose-invert-bold": theme("colors.white"),\n            "--tw-prose-invert-body": stonePalette[400],\n            "--tw-prose-invert-headings": theme("colors.white"),\n            "--tw-prose-code": stonePalette[900],\n            "--tw-prose-invert-code": stonePalette[50],\n            "--tw-prose-links": theme("colors.blue.DEFAULT"),\n            "--tw-prose-invert-links": theme("colors.blue.500"),\n            maxWidth: null,\n            strong: {\n              color: "var(--tw-prose-bold)",\n              fontWeight: theme("fontWeight.medium"),\n            },\n            b: {\n              color: "var(--tw-prose-bold)",\n              fontWeight: theme("fontWeight.medium"),\n            },\n            a: {\n              fontWeight: theme("fontWeight.normal"),\n              textUnderlineOffset: "4px",\n            },\n            h1: {\n              fontFamily: theme("fontFamily.display"),\n              letterSpacing: theme("letterSpacing.tight"),\n              fontWeight: theme("fontWeight.semibold"),\n              fontSize: theme("fontSize.4xl"),\n            },\n            h2: {\n              fontFamily: theme("fontFamily.display"),\n              letterSpacing: theme("letterSpacing.tight"),\n              fontWeight: theme("fontWeight.semibold"),\n              fontSize: theme("fontSize.3xl"),\n            },\n            h3: {\n              fontFamily: theme("fontFamily.display"),\n              letterSpacing: theme("letterSpacing.tight"),\n              fontWeight: theme("fontWeight.semibold"),\n              fontSize: theme("fontSize.2xl"),\n            },\n            h4: {\n              fontFamily: theme("fontFamily.display"),\n              letterSpacing: theme("letterSpacing.tight"),\n              fontWeight: theme("fontWeight.semibold"),\n              fontSize: theme("fontSize.xl"),\n            },\n            "code::before": {\n              content: "none",\n            },\n            "code::after": {\n              content: "none",\n            },\n            code: {\n              backgroundColor: stonePalette[100],\n              padding: "0.15rem 0.25rem",\n              borderRadius: "2px",\n              whiteSpace: "nowrap",\n            },\n            p: {\n              marginBottom: theme("spacing.3"),\n              marginTop: theme("spacing.3"),\n            },\n          },\n        },\n        xl: {\n          css: {\n            p: {\n              marginBottom: theme("spacing.3"),\n              marginTop: theme("spacing.3"),\n            },\n          },\n        },\n      })',
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
+
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            "--tw-prose-body": stonePalette[700],
+            "--tw-prose-headings": stonePalette[900],
+            "--tw-prose-bold": stonePalette[900],
+            "--tw-prose-invert-bold": theme("colors.white"),
+            "--tw-prose-invert-body": stonePalette[400],
+            "--tw-prose-invert-headings": theme("colors.white"),
+            "--tw-prose-code": stonePalette[900],
+            "--tw-prose-invert-code": stonePalette[50],
+            "--tw-prose-links": theme("colors.blue.DEFAULT"),
+            "--tw-prose-invert-links": theme("colors.blue.500"),
+            maxWidth: null,
+            strong: {
+              color: "var(--tw-prose-bold)",
+              fontWeight: theme("fontWeight.medium"),
+            },
+            b: {
+              color: "var(--tw-prose-bold)",
+              fontWeight: theme("fontWeight.medium"),
+            },
+            a: {
+              fontWeight: theme("fontWeight.normal"),
+              textUnderlineOffset: "4px",
+            },
+            h1: {
+              fontFamily: theme("fontFamily.display"),
+              letterSpacing: theme("letterSpacing.tight"),
+              fontWeight: theme("fontWeight.semibold"),
+              fontSize: theme("fontSize.4xl"),
+            },
+            h2: {
+              fontFamily: theme("fontFamily.display"),
+              letterSpacing: theme("letterSpacing.tight"),
+              fontWeight: theme("fontWeight.semibold"),
+              fontSize: theme("fontSize.3xl"),
+            },
+            h3: {
+              fontFamily: theme("fontFamily.display"),
+              letterSpacing: theme("letterSpacing.tight"),
+              fontWeight: theme("fontWeight.semibold"),
+              fontSize: theme("fontSize.2xl"),
+            },
+            h4: {
+              fontFamily: theme("fontFamily.display"),
+              letterSpacing: theme("letterSpacing.tight"),
+              fontWeight: theme("fontWeight.semibold"),
+              fontSize: theme("fontSize.xl"),
+            },
+            "code::before": {
+              content: "none",
+            },
+            "code::after": {
+              content: "none",
+            },
+            code: {
+              backgroundColor: stonePalette[100],
+              padding: "0.15rem 0.25rem",
+              borderRadius: "2px",
+              whiteSpace: "nowrap",
+            },
+            p: {
+              marginBottom: theme("spacing.3"),
+              marginTop: theme("spacing.3"),
+            },
+          },
+        },
+        xl: {
+          css: {
+            p: {
+              marginBottom: theme("spacing.3"),
+              marginTop: theme("spacing.3"),
+            },
+          },
+        },
+      }),
     },
   },
   plugins: [

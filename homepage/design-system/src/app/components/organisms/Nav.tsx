@@ -57,35 +57,33 @@ export function Nav(props: NavProps) {
           <NavLinkLogo href="/">{mainLogo}</NavLinkLogo>
           {items.map((item, i) =>
             item.items?.length ? (
-              <>
-                <NavigationMenuItem key={item.title}>
-                  <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-                  <NavigationMenuContent asChild>
-                    <ul>
-                      {item.items.map(({ title, description, href, icon }) => (
-                        <li className="grid gap-1.5 mt-px">
-                          <NavigationMenuLink asChild>
-                            <Link
-                              className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
-                              href={href}
-                            >
-                              {icon}
-                              <div>
-                                <p className="text-sm font-medium text-stone-900 dark:text-white">
-                                  {title}
-                                </p>
-                                <p className="text-sm leading-relaxed">
-                                  {description}
-                                </p>
-                              </div>
-                            </Link>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </>
+              <NavigationMenuItem key={item.title}>
+                <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+                <NavigationMenuContent asChild>
+                  <ul>
+                    {item.items.map(({ title, description, href, icon }) => (
+                      <li className="grid gap-1.5 mt-px">
+                        <NavigationMenuLink asChild>
+                          <Link
+                            className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
+                            href={href}
+                          >
+                            {icon}
+                            <div>
+                              <p className="text-sm font-medium text-stone-900 dark:text-white">
+                                {title}
+                              </p>
+                              <p className="text-sm leading-relaxed">
+                                {description}
+                              </p>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
             ) : (
               <NavigationMenuLink asChild>
                 {"icon" in item ? (
@@ -108,6 +106,7 @@ export function Nav(props: NavProps) {
               </NavigationMenuLink>
             ),
           )}
+          {cta}
         </NavigationMenuList>
       </NavigationMenu>
 
