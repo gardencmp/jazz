@@ -18,7 +18,7 @@ export function App() {
   const { me, logOut } = useAccount();
   const router = useIframeHashRouter();
 
-  const createChat = async () => {
+  const createChat = () => {
     if (!me) return;
     const group = Group.create({ owner: me });
     group.addMember("everyone", "writer");
