@@ -1,5 +1,13 @@
 # jazz-example-inspector
 
+## 0.0.72-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - cojson@0.8.19-group-inheritance.0
+  - cojson-transport-ws@0.8.19-group-inheritance.0
+
 ## 0.0.71
 
 ### Patch Changes

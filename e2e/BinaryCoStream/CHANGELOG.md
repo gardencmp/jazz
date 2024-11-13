@@ -1,5 +1,14 @@
 # @jazz-e2e/binarycostream
 
+## 0.0.97-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - jazz-tools@0.8.19-group-inheritance.0
+  - cojson@0.8.19-group-inheritance.0
+  - jazz-react@0.8.19-group-inheritance.0
+
 ## 0.0.96
 
 ### Patch Changes

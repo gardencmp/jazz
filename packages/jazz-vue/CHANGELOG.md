@@ -1,5 +1,14 @@
 # jazz-react
 
+## 0.8.9-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - jazz-tools@0.8.19-group-inheritance.0
+  - cojson@0.8.19-group-inheritance.0
+  - jazz-browser@0.8.19-group-inheritance.0
+
 ## 0.8.8
 
 ### Patch Changes

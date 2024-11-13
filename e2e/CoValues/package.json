@@ -1,7 +1,7 @@
 {
   "name": "@jazz-e2e/covalues",
   "private": true,
-  "version": "0.0.95",
+  "version": "0.0.96-group-inheritance.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

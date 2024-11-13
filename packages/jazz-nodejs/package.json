@@ -5,11 +5,11 @@
   "types": "src/index.ts",
   "type": "module",
   "license": "MIT",
-  "version": "0.8.18",
+  "version": "0.8.19-group-inheritance.0",
   "dependencies": {
-    "cojson": "workspace:0.8.18",
-    "cojson-transport-ws": "workspace:0.8.18",
-    "jazz-tools": "workspace:0.8.18",
+    "cojson": "workspace:0.8.19-group-inheritance.0",
+    "cojson-transport-ws": "workspace:0.8.19-group-inheritance.0",
+    "jazz-tools": "workspace:0.8.19-group-inheritance.0",
     "ws": "^8.14.2"
   },
   "devDependencies": {

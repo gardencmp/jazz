@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.8.19-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - cojson-storage-indexeddb@0.8.19-group-inheritance.0
+  - jazz-tools@0.8.19-group-inheritance.0
+  - cojson@0.8.19-group-inheritance.0
+  - cojson-transport-ws@0.8.19-group-inheritance.0
+
 ## 0.8.18
 
 ### Patch Changes

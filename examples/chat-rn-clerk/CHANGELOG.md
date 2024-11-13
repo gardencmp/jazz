@@ -1,5 +1,15 @@
 # chat-rn-clerk
 
+## 1.0.12-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - jazz-tools@0.8.19-group-inheritance.0
+  - jazz-react-auth-clerk@0.8.19-group-inheritance.0
+  - jazz-react-native@0.8.19-group-inheritance.0
+  - jazz-react-native-media-images@0.8.15-group-inheritance.0
+
 ## 1.0.11
 
 ### Patch Changes

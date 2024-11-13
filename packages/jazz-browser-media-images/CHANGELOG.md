@@ -1,5 +1,13 @@
 # jazz-browser-media-images
 
+## 0.8.19-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - jazz-tools@0.8.19-group-inheritance.0
+  - jazz-browser@0.8.19-group-inheritance.0
+
 ## 0.8.18
 
 ### Patch Changes

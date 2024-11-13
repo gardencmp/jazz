@@ -1,5 +1,13 @@
 # chat-rn
 
+## 1.0.14-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - jazz-tools@0.8.19-group-inheritance.0
+  - jazz-react-native@0.8.19-group-inheritance.0
+
 ## 1.0.13
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "chat-rn",
-  "version": "1.0.13",
+  "version": "1.0.14-group-inheritance.0",
   "main": "index.js",
   "scripts": {
     "build": "expo export -p ios",

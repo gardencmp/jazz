@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.19-group-inheritance.0
+
+### Patch Changes
+
+- 8b87117: Implement Group Inheritance
+
 ## 0.8.18
 
 ### Patch Changes

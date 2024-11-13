@@ -19,7 +19,7 @@
   },
   "type": "module",
   "license": "MIT",
-  "version": "0.8.18",
+  "version": "0.8.19-group-inheritance.0",
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "typescript": "^5.3.3",

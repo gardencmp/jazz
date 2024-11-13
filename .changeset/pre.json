@@ -33,5 +33,7 @@
     "jazz-tools": "0.8.18",
     "jazz-vue": "0.8.8"
   },
-  "changesets": []
+  "changesets": [
+    "real-steaks-drum"
+  ]
 }

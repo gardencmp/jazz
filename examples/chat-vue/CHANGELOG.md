@@ -1,5 +1,14 @@
 # chat-vue
 
+## 0.0.4-group-inheritance.0
+
+### Patch Changes
+
+- Updated dependencies [8b87117]
+  - jazz-tools@0.8.19-group-inheritance.0
+  - jazz-browser@0.8.19-group-inheritance.0
+  - jazz-vue@0.8.9-group-inheritance.0
+
 ## 0.0.3
 
 ### Patch Changes
