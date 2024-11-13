@@ -1,8 +1,4 @@
 import { RawGroup } from "cojson";
-import { CoID } from "cojson";
-import { MapOpPayload } from "cojson/src/coValues/coMap.js";
-import { parseJSON } from "cojson/src/jsonStringify.js";
-import { expectGroup } from "cojson/src/typeUtils/expectGroup.js";
 import { describe, expect, test } from "vitest";
 import { Account, CoMap, Group, WasmCrypto, co } from "../index.web.js";
 
