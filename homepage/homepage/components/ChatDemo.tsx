@@ -2,16 +2,14 @@
 
 import {
   IframeHTMLAttributes,
-  useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
 const dimensions = {
   width: 200,
-  height: 800,
+  height: 480,
 };
 
 function Iframe(props: IframeHTMLAttributes<HTMLIFrameElement>) {
@@ -20,7 +18,7 @@ function Iframe(props: IframeHTMLAttributes<HTMLIFrameElement>) {
     <iframe
       {...props}
       src={src}
-      className="dark:bg-black w-full"
+      className="col-span-2 w-full border rounded-xl shadow-sm lg:col-span-2 dark:bg-black"
       {...dimensions}
       allowFullScreen
     />
@@ -82,9 +80,9 @@ export function ChatDemo() {
   if (!server1) return null;
 
   return (
-    <div className="grid grid-cols-2 justify-center gap-8">
+    <>
       <Iframe src={server1} />
       {server2WithSameChatId && <Iframe src={server2WithSameChatId} />}
-    </div>
+    </>
   );
 }
