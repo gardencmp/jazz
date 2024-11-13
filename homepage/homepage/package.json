@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=8192 next dev",
-    "build": "node genDocs.mjs --build && node renderCodeSamples.mjs && next build",
+    "build": "node genDocs.mjs --build && next build",
     "start": "next start",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write"
