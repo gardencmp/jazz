@@ -1590,32 +1590,39 @@ function createTwoConnectedNodes() {
 
 describe("SyncManager - knownStates vs optimisticKnownStates", () => {
   test("knownStates and optimisticKnownStates are the same when the coValue is fully synced", async () => {
-    const { client } = createTwoConnectedNodes();
+    const { client, jazzCloud } = createTwoConnectedNodes();
 
     // Create test data
     const group = client.createGroup();
-    const map = group.createMap();
-    map.set("key1", "value1", "trusting");
+    const mapOnClient = group.createMap();
+    mapOnClient.set("key1", "value1", "trusting");
 
-    await client.syncManager.actuallySyncCoValue(map.core);
+    await client.syncManager.actuallySyncCoValue(mapOnClient.core);
 
     // Wait for the full sync to complete
     await waitFor(() => {
       return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
         "jazzCloudConnection",
-        map.core.id,
+        mapOnClient.core.id,
       );
     });
 
-    const peerState = client.syncManager.peers["jazzCloudConnection"]!;
+    const peerStateClient = client.syncManager.peers["jazzCloudConnection"]!;
+    const peerStateJazzCloud =
+      jazzCloud.syncManager.peers["connectionWithClient"]!;
 
     // The optimisticKnownStates should be the same as the knownStates after the full sync is complete
-    expect(peerState.optimisticKnownStates.get(map.core.id)).toEqual(
-      peerState.knownStates.get(map.core.id),
-    );
+    expect(
+      peerStateClient.optimisticKnownStates.get(mapOnClient.core.id),
+    ).toEqual(peerStateClient.knownStates.get(mapOnClient.core.id));
+
+    // On the other node the knownStates should be updated correctly based on the messages we received
+    expect(
+      peerStateJazzCloud.optimisticKnownStates.get(mapOnClient.core.id),
+    ).toEqual(peerStateJazzCloud.knownStates.get(mapOnClient.core.id));
   });
 
-  test("optimisticKnownStates is updated as new transactions are received, while knownStates only when the coValue is fully synced", async () => {
+  test("optimisticKnownStates is updated as new transactions are sent, while knownStates only when the updates are acknowledged", async () => {
     const { client, jazzCloudConnectionAsPeer } = createTwoConnectedNodes();
 
     // Create test data and sync the first change

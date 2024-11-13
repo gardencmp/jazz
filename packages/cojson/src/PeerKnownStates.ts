@@ -5,7 +5,7 @@ import {
   emptyKnownState,
 } from "./sync.js";
 
-type PeerKnownStateActions =
+export type PeerKnownStateActions =
   | {
       type: "SET_AS_EMPTY";
       id: RawCoID;

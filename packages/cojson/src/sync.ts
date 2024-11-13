@@ -400,7 +400,7 @@ export class SyncManager {
   }
 
   async handleLoad(msg: LoadMessage, peer: PeerState) {
-    peer.optimisticKnownStates.dispatch({
+    peer.dispatchToKnownStates({
       type: "SET",
       id: msg.id,
       value: knownStateIn(msg),
@@ -454,7 +454,7 @@ export class SyncManager {
       const loaded = await entry.state.ready;
 
       if (loaded === "unavailable") {
-        peer.optimisticKnownStates.dispatch({
+        peer.dispatchToKnownStates({
           type: "SET",
           id: msg.id,
           value: knownStateIn(msg),
@@ -481,13 +481,7 @@ export class SyncManager {
   async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
     let entry = this.local.coValues[msg.id];
 
-    peer.optimisticKnownStates.dispatch({
-      type: "COMBINE_WITH",
-      id: msg.id,
-      value: knownStateIn(msg),
-    });
-
-    peer.knownStates.dispatch({
+    peer.dispatchToKnownStates({
       type: "COMBINE_WITH",
       id: msg.id,
       value: knownStateIn(msg),
@@ -552,7 +546,7 @@ export class SyncManager {
         return;
       }
 
-      peer.optimisticKnownStates.dispatch({
+      peer.dispatchToKnownStates({
         type: "UPDATE_HEADER",
         id: msg.id,
         header: true,
@@ -645,7 +639,7 @@ export class SyncManager {
         continue;
       }
 
-      peer.optimisticKnownStates.dispatch({
+      peer.dispatchToKnownStates({
         type: "UPDATE_SESSION_COUNTER",
         id: msg.id,
         sessionId: sessionID,
@@ -688,7 +682,7 @@ export class SyncManager {
   }
 
   async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
-    peer.optimisticKnownStates.dispatch({
+    peer.dispatchToKnownStates({
       type: "SET",
       id: msg.id,
       value: knownStateIn(msg),
