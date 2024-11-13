@@ -1,4 +1,4 @@
-import { CodeExampleSection } from "@/components/home/CodeExampleSection";
+import { ChatDemoSection } from "@/components/home/ChatDemoSection";
 import { CollaborationFeaturesSection } from "@/components/home/CollaborationFeaturesSection";
 import { ComingSoonSection } from "@/components/home/ComingSoonSection";
 import { EarlyAdopterSection } from "@/components/home/EarlyAdopterSection";
@@ -21,7 +21,7 @@ export default function Home() {
       <div className="container flex flex-col gap-12 mt-12 lg:gap-20 lg:mt-20">
         <HowJazzWorksSection />
 
-        <CodeExampleSection />
+        <ChatDemoSection />
 
         <LocalFirstFeaturesSection />
 

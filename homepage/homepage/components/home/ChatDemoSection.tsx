@@ -25,7 +25,7 @@ const TestimonialContent = () => (
   </>
 );
 
-export function CodeExampleSection() {
+export function ChatDemoSection() {
   return (
     <>
       <GappedGrid className="gap-y-8">
