@@ -74,7 +74,9 @@ export function Nav(props: NavProps) {
             </>
           ) : (
             <NavigationMenuLink asChild>
-              <Link href={item.href}>{item.title}</Link>
+              <Link className="text-sm" href={item.href}>
+                {item.title}
+              </Link>
             </NavigationMenuLink>
           ),
         )}
