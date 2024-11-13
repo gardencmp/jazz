@@ -28,8 +28,8 @@ function Iframe(props: IframeHTMLAttributes<HTMLIFrameElement>) {
 export function ChatDemo() {
   const [chatId, setChatId] = useState<string | undefined>();
 
-  const user1 = "A";
-  const user2 = "B";
+  const user1 = "Alice";
+  const user2 = "Bob";
 
   const [server1, setServer1] = useState<string | null>();
   const [server2, setServer2] = useState<string | null>();
