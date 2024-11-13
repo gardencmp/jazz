@@ -14,14 +14,14 @@
     "sync": "jazz-run sync"
   },
   "dependencies": {
-    "jazz-browser-media-images": "workspace:0.8.19",
-    "jazz-react": "workspace:0.8.19",
-    "jazz-tools": "workspace:0.8.19",
+    "jazz-browser-media-images": "workspace:*",
+    "jazz-react": "workspace:*",
+    "jazz-tools": "workspace:*",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "jazz-run": "workspace:0.8.19",
+    "jazz-run": "workspace:*",
     "@playwright/test": "^1.46.1",
     "@types/react": "^18.2.19",
     "@types/react-dom": "^18.2.7",
