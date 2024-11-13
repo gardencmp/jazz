@@ -1,7 +1,6 @@
 import { Result, err, ok } from "neverthrow";
 import { AnyRawCoValue, CoID, RawCoValue } from "./coValue.js";
 import { ControlledAccountOrAgent, RawAccountID } from "./coValues/account.js";
-import { MapOpPayload } from "./coValues/coMap.js";
 import { RawGroup } from "./coValues/group.js";
 import { coreToCoValue } from "./coreToCoValue.js";
 import {

@@ -146,7 +146,7 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
         asDependencyOf || id,
       );
     } else if (!known?.header && coValue.header?.ruleset.type === "group") {
-      const dependedOnAccounts = new Set();
+      const dependedOnAccountsAndGroups = new Set();
       for (const session of Object.values(coValue.sessionEntries)) {
         for (const entry of session) {
           for (const tx of entry.transactions) {
@@ -154,16 +154,24 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
               const parsedChanges = JSON.parse(tx.changes);
               for (const change of parsedChanges) {
                 if (change.op === "set" && change.key.startsWith("co_")) {
-                  dependedOnAccounts.add(change.key);
+                  dependedOnAccountsAndGroups.add(change.key);
+                }
+                if (
+                  change.op === "set" &&
+                  change.key.startsWith("parent_co_")
+                ) {
+                  dependedOnAccountsAndGroups.add(
+                    change.key.replace("parent_", ""),
+                  );
                 }
               }
             }
           }
         }
       }
-      for (const account of dependedOnAccounts) {
+      for (const accountOrGroup of dependedOnAccountsAndGroups) {
         await this.sendNewContent(
-          account as CoID<RawCoValue>,
+          accountOrGroup as CoID<RawCoValue>,
           undefined,
           asDependencyOf || id,
         );

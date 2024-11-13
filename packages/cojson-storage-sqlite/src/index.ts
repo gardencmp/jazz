@@ -392,9 +392,19 @@ export class SQLiteStorage {
                       "key" in change &&
                       change.key,
                   )
-                  .filter(
-                    (key): key is CojsonInternalTypes.RawCoID =>
-                      typeof key === "string" && key.startsWith("co_"),
+                  .flatMap((key) =>
+                    typeof key === "string"
+                      ? key.startsWith("co_")
+                        ? [key as CojsonInternalTypes.RawCoID]
+                        : key.startsWith("parent_co_")
+                          ? [
+                              key.replace(
+                                "parent_",
+                                "",
+                              ) as CojsonInternalTypes.RawCoID,
+                            ]
+                          : []
+                      : [],
                   );
               }),
             )
