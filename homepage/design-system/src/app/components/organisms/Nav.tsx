@@ -51,110 +51,68 @@ export function Nav(props: NavProps) {
   }, [pathname]);
 
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavLinkLogo prominent href="/">
-          {mainLogo}
-        </NavLinkLogo>
-        {items.map((item, i) =>
-          item.items?.length ? (
-            <>
-              <NavigationMenuItem key={item.title}>
-                <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid p-3 md:w-[400px]">
-                    {item.items.map(({ title, description, href, icon }) => (
-                      <li className="grid gap-1.5 mt-px">
-                        <NavigationMenuLink asChild>
-                          <Link
-                            className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
-                            href={href}
-                          >
-                            {icon}
-                            <div>
-                              <p className="text-sm font-medium text-stone-900 dark:text-white">
-                                {title}
-                              </p>
-                              <p className="text-sm leading-relaxed">
-                                {description}
-                              </p>
-                            </div>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </>
-          ) : (
-            <NavigationMenuLink asChild>
-              {"icon" in item ? (
-                <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
-                  {item.icon}
-                </NavLinkLogo>
-              ) : (
-                <NavLink
-                  key={i}
-                  href={item.href}
-                  newTab={item.newTab}
-                  className={clsx(
-                    "max-sm:w-full",
-                    item.firstOnRight ? "md:ml-auto" : "",
-                  )}
-                >
-                  {item.title}
-                </NavLink>
-              )}
-            </NavigationMenuLink>
-          ),
-        )}
-      </NavigationMenuList>
-    </NavigationMenu>
-  );
-
-  return (
     <>
-      <nav
-        className={[
-          clsx(
-            "hidden md:flex sticky left-0 right-0 top-0 w-full justify-center",
-            "bg-white dark:bg-stone-950 border-b",
-            "z-50",
-          ),
-        ].join(" ")}
-      >
-        <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
-          <div className="flex items-center flex-shrink">
-            <NavLinkLogo prominent href="/" className="-ml-2">
-              {mainLogo}
-            </NavLinkLogo>
-          </div>
+      <NavigationMenu className="hidden md:block">
+        <NavigationMenuList>
+          <NavLinkLogo href="/">{mainLogo}</NavLinkLogo>
           {items.map((item, i) =>
-            "icon" in item ? (
-              <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
-                {item.icon}
-              </NavLinkLogo>
+            item.items?.length ? (
+              <>
+                <NavigationMenuItem key={item.title}>
+                  <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+                  <NavigationMenuContent asChild>
+                    <ul>
+                      {item.items.map(({ title, description, href, icon }) => (
+                        <li className="grid gap-1.5 mt-px">
+                          <NavigationMenuLink asChild>
+                            <Link
+                              className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
+                              href={href}
+                            >
+                              {icon}
+                              <div>
+                                <p className="text-sm font-medium text-stone-900 dark:text-white">
+                                  {title}
+                                </p>
+                                <p className="text-sm leading-relaxed">
+                                  {description}
+                                </p>
+                              </div>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </>
             ) : (
-              <NavLink
-                key={i}
-                href={item.href}
-                newTab={item.newTab}
-                className={clsx(
-                  "max-sm:w-full",
-                  item.firstOnRight ? "md:ml-auto" : "",
+              <NavigationMenuLink asChild>
+                {"icon" in item ? (
+                  <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
+                    {item.icon}
+                  </NavLinkLogo>
+                ) : (
+                  <NavLink
+                    key={i}
+                    href={item.href}
+                    newTab={item.newTab}
+                    className={clsx(
+                      "max-sm:w-full",
+                      item.firstOnRight ? "md:ml-auto" : "",
+                    )}
+                  >
+                    {item.title}
+                  </NavLink>
                 )}
-              >
-                {item.title}
-              </NavLink>
+              </NavigationMenuLink>
             ),
           )}
+        </NavigationMenuList>
+      </NavigationMenu>
 
-          {cta}
-        </div>
-      </nav>
       <div className="md:hidden px-4 flex items-center self-stretch dark:text-white">
-        <NavLinkLogo prominent href="/" className="mr-auto">
+        <NavLinkLogo href="/" className="mr-auto">
           {mainLogo}
         </NavLinkLogo>
         <button
@@ -189,7 +147,6 @@ export function Nav(props: NavProps) {
         <div className={clsx(menuOpen ? "block" : "hidden", " px-2 pb-2")}>
           <div className="flex items-center w-full border-b">
             <NavLinkLogo
-              prominent
               href="/"
               className="mr-auto"
               onClick={() => setMenuOpen(false)}
@@ -310,7 +267,7 @@ function NavLink({
     <Link
       href={href}
       className={clsx(
-        "px-2 lg:px-4 py-3 text-sm",
+        "py-3 text-sm",
         className,
         path === href
           ? "font-medium text-black dark:text-white cursor-default"
@@ -335,30 +292,20 @@ function NavLinkLogo({
   href,
   className,
   children,
-  prominent,
   onClick,
   newTab,
 }: {
   href: string;
   className?: string;
   children: ReactNode;
-  prominent?: boolean;
   onClick?: () => void;
   newTab?: boolean;
 }) {
-  const path = usePathname();
-
   return (
     <Link
       href={href}
       className={clsx(
-        "max-sm:px-4 px-2 lg:px-3 py-3 transition-opacity hover:transition-none",
-        path === href
-          ? "cursor-default"
-          : prominent
-            ? "hover:opacity-50"
-            : "opacity-60 hover:opacity-100",
-        "text-black dark:text-white",
+        "py-3 hover:text-stone-900 dark:hover:text-white transition-colors",
         className,
       )}
       onClick={onClick}
