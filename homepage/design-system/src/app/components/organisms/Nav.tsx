@@ -85,25 +85,25 @@ export function Nav(props: NavProps) {
                 </NavigationMenuContent>
               </NavigationMenuItem>
             ) : (
-              <NavigationMenuLink asChild>
-                {"icon" in item ? (
-                  <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
-                    {item.icon}
-                  </NavLinkLogo>
-                ) : (
-                  <NavLink
-                    key={i}
-                    href={item.href}
-                    newTab={item.newTab}
-                    className={clsx(
-                      "max-sm:w-full",
-                      item.firstOnRight ? "md:ml-auto" : "",
-                    )}
-                  >
-                    {item.title}
-                  </NavLink>
+              <NavigationMenuItem
+                key={item.title}
+                className={clsx(
+                  "max-sm:w-full",
+                  item.firstOnRight ? "md:ml-auto" : "",
                 )}
-              </NavigationMenuLink>
+              >
+                <NavigationMenuLink>
+                  {"icon" in item ? (
+                    <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
+                      {item.icon}
+                    </NavLinkLogo>
+                  ) : (
+                    <NavLink key={i} href={item.href} newTab={item.newTab}>
+                      {item.title}
+                    </NavLink>
+                  )}
+                </NavigationMenuLink>
+              </NavigationMenuItem>
             ),
           )}
           {cta}
@@ -201,28 +201,6 @@ export function Nav(props: NavProps) {
           </div>
         </div>
         <div className="flex items-center self-stretch justify-between">
-          {/* <input
-                        type="text"
-                        className={clsx(
-                            menuOpen || searchOpen ? "" : "hidden",
-                            "ml-2 border px-2 py-1 rounded w-full"
-                        )}
-                        placeholder="Search docs..."
-                        ref={searchRef}
-                    /> */}
-          {/* <button
-                        className="flex p-3 rounded-xl"
-                        onClick={() => {
-                            setSearchOpen(true);
-                        }}
-                        onBlur={(e) => {
-                            if (!e.currentTarget.value) {
-                                setSearchOpen(false);
-                            }
-                        }}
-                    >
-                        <SearchIcon className="" />
-                    </button> */}
           {(menuOpen || searchOpen) && <ThemeToggle className="p-3" />}
           <button
             className="flex gap-2 p-3 rounded-xl items-center"
@@ -266,7 +244,7 @@ function NavLink({
     <Link
       href={href}
       className={clsx(
-        "py-3 text-sm",
+        "py-5 text-sm",
         className,
         path === href
           ? "font-medium text-black dark:text-white cursor-default"
