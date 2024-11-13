@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useId } from "react";
 
 export function AppContainer(props: { children: React.ReactNode }) {
@@ -47,9 +48,20 @@ export function BubbleContainer(props: {
   );
 }
 
-export function BubbleBody(props: { children: React.ReactNode }) {
+export function BubbleBody(props: {
+  children: React.ReactNode;
+  fromMe: boolean | undefined;
+}) {
   return (
-    <div className="rounded-2xl text-sm line-clamp-10 text-ellipsis bg-white max-w-full whitespace-pre-wrap dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
+    <div
+      className={clsx(
+        "text-sm line-clamp-10 text-ellipsis whitespace-pre-wrap",
+        "rounded-2xl max-w-full py-1 px-3 shadow-sm",
+        props.fromMe
+          ? "bg-white dark:bg-stone-700 dark:text-white"
+          : "bg-blue text-white",
+      )}
+    >
       {props.children}
     </div>
   );
