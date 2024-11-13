@@ -53,19 +53,34 @@ export function Nav(props: NavProps) {
   return (
     <NavigationMenu>
       <NavigationMenuList>
+        <NavLinkLogo prominent href="/">
+          {mainLogo}
+        </NavLinkLogo>
         {items.map((item, i) =>
           item.items?.length ? (
             <>
               <NavigationMenuItem key={item.title}>
                 <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px]">
-                    {item.items.map(({ title, description }) => (
+                  <ul className="grid p-3 md:w-[400px]">
+                    {item.items.map(({ title, description, href, icon }) => (
                       <li className="grid gap-1.5 mt-px">
-                        <p className="text-sm font-medium text-stone-900 dark:text-white">
-                          {title}
-                        </p>
-                        <p className="text-sm leading-relaxed">{description}</p>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
+                            href={href}
+                          >
+                            {icon}
+                            <div>
+                              <p className="text-sm font-medium text-stone-900 dark:text-white">
+                                {title}
+                              </p>
+                              <p className="text-sm leading-relaxed">
+                                {description}
+                              </p>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
                       </li>
                     ))}
                   </ul>
@@ -74,9 +89,23 @@ export function Nav(props: NavProps) {
             </>
           ) : (
             <NavigationMenuLink asChild>
-              <Link className="text-sm" href={item.href}>
-                {item.title}
-              </Link>
+              {"icon" in item ? (
+                <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
+                  {item.icon}
+                </NavLinkLogo>
+              ) : (
+                <NavLink
+                  key={i}
+                  href={item.href}
+                  newTab={item.newTab}
+                  className={clsx(
+                    "max-sm:w-full",
+                    item.firstOnRight ? "md:ml-auto" : "",
+                  )}
+                >
+                  {item.title}
+                </NavLink>
+              )}
             </NavigationMenuLink>
           ),
         )}
