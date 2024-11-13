@@ -9,8 +9,6 @@ export const { useAccount, useCoState } = Jazz;
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, state] = useDemoAuth();
 
-  console.log({ state });
-
   const url = new URL(window.location.href);
 
   const user = url.searchParams.get("user") || undefined;

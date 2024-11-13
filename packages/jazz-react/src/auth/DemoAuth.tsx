@@ -75,8 +75,6 @@ export const DemoAuthBasicUI = ({
   state: DemoAuthState;
   user?: string;
 }) => {
-  console.log(state);
-
   const [username, setUsername] = useState<string>("");
   const darkMode =
     typeof window !== "undefined"
