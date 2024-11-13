@@ -55,11 +55,9 @@ export function ChatDemo() {
     if (!server1 || !server2) return;
 
     const server1Url = new URL(server1);
-    const server2Url = new URL(server2);
 
     const listener = (e: MessageEvent) => {
-      const isValidOrigin =
-        e.origin === server1Url.origin || e.origin === server2Url.origin;
+      const isValidOrigin = e.origin === server1Url.origin;
 
       if (e.data.type === "chat-load" && isValidOrigin && e.data.id) {
         setChatId(e.data.id);
@@ -71,32 +69,22 @@ export function ChatDemo() {
     };
   }, [chatId, server1, server2]);
 
-  const src1 = useMemo(() => {
-    if (chatId && server1) {
-      const server1Url = new URL(server1);
-      server1Url.hash = chatId;
-      return server1Url.toString();
-    }
-
-    return server1;
-  }, [chatId, server1]);
-
-  const src2 = useMemo(() => {
+  const server2WithSameChatId = useMemo(() => {
     if (chatId && server2) {
       const server2Url = new URL(server2);
       server2Url.hash = chatId;
       return server2Url.toString();
     }
 
-    return server2;
+    return null;
   }, [chatId, server2]);
 
-  if (!src1 || !src2) return null;
+  if (!server1) return null;
 
   return (
     <div className="grid grid-cols-2 justify-center gap-8">
-      <Iframe src={src1} />
-      <Iframe src={src2} />
+      <Iframe src={server1} />
+      {server2WithSameChatId && <Iframe src={server2WithSameChatId} />}
     </div>
   );
 }
