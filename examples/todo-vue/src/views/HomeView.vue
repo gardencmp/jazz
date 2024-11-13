@@ -94,7 +94,7 @@ const selectFolder = (folder: Folder) => {
   selectedFolder.value = folder;
 };
 
-const createFolder = async () => {
+const createFolder = () => {
   if (!newFolderName.value.trim()) return;
 
   // Create a group where the folder will be owned by the current user
@@ -114,7 +114,7 @@ const createFolder = async () => {
   newFolderName.value = "";
 };
 
-const deleteFolder = async (folderId: ID<Folder> | undefined) => {
+const deleteFolder = (folderId: ID<Folder> | undefined) => {
   if (!folders.value || !folderId) return;
 
   const index = folders.value.findIndex((f) => f.id === folderId);
@@ -129,7 +129,7 @@ const deleteFolder = async (folderId: ID<Folder> | undefined) => {
 };
 
 // Todo handlers
-const createTodo = async () => {
+const createTodo = () => {
   if (!newTodoTitle.value.trim() || !selectedFolder.value) return;
   const group = Group.create({ owner: me.value });
   const newTodo = ToDoItem.create(
@@ -147,7 +147,7 @@ const createTodo = async () => {
   newTodoTitle.value = "";
 };
 
-const deleteTodo = async (todoId: ID<ToDoItem> | undefined) => {
+const deleteTodo = (todoId: ID<ToDoItem> | undefined) => {
   if (!selectedFolder.value?.items || !todoId) return;
 
   const index = toRaw(selectedFolder.value)?.items?.findIndex(
@@ -284,9 +284,6 @@ h2 {
   display: flex;
   gap: 0.5rem;
 }
-
-/* Add to the top of your style section */
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 .folder-name {
   color: #333;
