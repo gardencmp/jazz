@@ -156,7 +156,7 @@ app.post(
     if (chunkIndex === totalChunks - 1) {
       // This was the last chunk
       logger.debug(
-        `Chunked upload of ${totalChunks} file '${filename}' completed successfully.`,
+        `Upload of ${totalChunks} chunks of file '${filename}' completed successfully.`,
       );
       const file: File = { name: filename, path: targetPath };
       const covalue: CoValue = {

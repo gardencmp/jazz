@@ -42,7 +42,7 @@ test.describe('Binary CoValue', () => {
         await page.waitForSelector('#status >> text=Loaded (binary) data for:');
     });
 
-    test.skip('create', async () => {
+    test('create', async () => {
         await page.goto(SERVER_URL);
 
         await page.waitForSelector('#status >> text=CoValue UUIDs loaded successfully.');

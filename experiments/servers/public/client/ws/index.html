@@ -150,7 +150,6 @@
           };
 
           socket.onmessage = (event) => {
-            // log(`WebSocket response received: ${event.data}`);
             if (typeof event.data !== "string") {
               fileBlobs.push(event.data);
               receivedSize += event.data.size;
@@ -193,7 +192,7 @@
                     log(`Websocket method unknown: ${response.action}`);
                 }
               } else {
-                log(`Websocket request failed: ${response}`);
+                log(`Websocket request failed: ${JSON.stringify(response)}`);
               }
             } catch (error) {
               log(`Websocket processing error: ${error.message}`);
@@ -242,7 +241,10 @@
       }
 
       function createCoValueViaWS(response) {
-        if (response.code === 201) {
+        if (response.code === 200) {
+          // 200 - OK: here means an acknowledgement of (an in progress) binary chunk
+          log(`Chunked upload via websocket acknowledged for: ${currentCoValue.uuid}.`);
+        } else if (response.code === 201) {
           // 201 - Created: here is an acknowledgement of a textual covalue / the final chunk of a binary covalue
           appendCoValue(currentCoValue);
           logCoValue(currentCoValue);
@@ -251,9 +253,6 @@
               currentCoValue.uuid
             }.`,
           );
-        } else {
-          // 200 - OK: here means an acknowledgement of (an in progress) binary chunk
-          log(`Chunked data for: ${currentCoValue.uuid}.`);
         }
       }
 
@@ -280,13 +279,15 @@
       }
 
       async function onPageLoad() {
+        console.log(`isBinary flag was set to: ${isBinary()}.`);
+        console.log(`WebSocket support flag was set to: ${isWS()}.`);
         const uuid = getMutationUUID();
 
         if (uuid) {
           // Subscribe to Server-Sent Events (SSE) of the CoValue specified by its uuid.
           connect(uuid);
           appendCoValue({ uuid: uuid });
-          // allow the connection to be closed.
+          // Allow the connection to be closed.
           disconnectButton.addEventListener("click", () => {
             isEnabled = !isEnabled;
 
@@ -332,12 +333,10 @@
         ) {
           binaryFlag = true;
         }
-        console.log(`isBinary flag was set to: ${binaryFlag}.`);
         return binaryFlag;
       }
 
       function isWS() {
-        console.log(`WebSocket support flag was set to: ${useWebSocket}.`);
         return useWebSocket;
       }
 
@@ -633,6 +632,16 @@
         }
       }
 
+      async function appendChunk(chunk) {
+        try {
+          const arrayBuffer = await chunk.arrayBuffer();
+          const base64Chunk = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          return base64Chunk;
+        } catch (error) {
+          console.error("Error reading Blob as ArrayBuffer:", error);
+        }
+      }
+
       async function createCoValueBinary(url = "", coValue = {}, file) {
         const chunkSize = 100 * 1024; // 100KB chunks
         const totalChunks = Math.ceil(file.size / chunkSize);
@@ -650,12 +659,21 @@
 
           try {
             if (isWS()) {
-              // TODO:
+              formData.delete("file");
+              formData.append("filename", file.name);
+              const base64String = await appendChunk(chunk);
+              formData.append("base64", base64String);
+              let payload = {};
+              for (let [key, value] of formData.entries()) {
+                payload[key] = value;
+              }
+
               sendWhenReady({
                 action: "POST",
                 binary: true,
-                payload: { uuid: `${uuid}`, formdata: formData },
+                payload: { uuid: `${coValue.uuid}`, formdata: payload },
               });
+
             } else {
               const response = await fetch(url, {
                 method: "POST",
@@ -676,7 +694,7 @@
             break;
           }
         }
-        console.log("File upload complete");
+        console.log(`Creating (binary) data for ${coValue.uuid} ... file upload complete.`);
         if (!isWS()) {
           appendCoValue(coValue);
           logCoValue(coValue);
