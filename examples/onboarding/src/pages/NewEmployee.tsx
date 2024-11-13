@@ -21,9 +21,6 @@ export function NewEmployee({
 }) {
   const navigate = useNavigate();
   const { me } = useAccount();
-  const writerGroup = Group.create({ owner: me });
-  const readerGroup = Group.create({ owner: me });
-  readerGroup.addMember("everyone", "reader");
 
   const employees = useCoState(EmployeeCoList, employeeListCoId, [{}]);
 
@@ -31,6 +28,10 @@ export function NewEmployee({
 
   const createEmployee = useCallback(() => {
     if (!employees) return;
+
+    const writerGroup = Group.create({ owner: me });
+    const readerGroup = Group.create({ owner: me });
+    readerGroup.addMember("everyone", "reader");
 
     const initialStep = CoInitialStep.create(
       { done: false, type: "initial" },
