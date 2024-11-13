@@ -42,7 +42,9 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
       />
     </>
   ) : (
-    <div className="flex-1 flex justify-center items-center">Loading...</div>
+    <div className="flex-1 flex justify-center items-center">
+      Loading chat {props.chatID}...
+    </div>
   );
 }
 
