@@ -71,13 +71,7 @@ import { Folder, FolderList, ToDoItem, ToDoList } from "../schema";
 
 const { me } = useAccount();
 
-// Get the id of the folders list so we can pass it to useCoState.
-// It's a computed ref because the id is not available until the root is loaded.
 const computedFoldersId = computed(() => me.value?.root?.folders?.id);
-
-// Load the folders list.
-// useCoState will react to changes in computedFoldersId and to changes in data inside the FolderList covalue
-// It also specifies a depth parameter to load nested values
 const folders = useCoState(FolderList, computedFoldersId, [{ items: [{}] }]);
 
 const selectedFolder = ref<Folder>();

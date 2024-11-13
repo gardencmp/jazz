@@ -19,6 +19,7 @@ import {
 import {
   Component,
   ComputedRef,
+  MaybeRef,
   PropType,
   Ref,
   ShallowRef,
@@ -57,7 +58,7 @@ export interface JazzVueApp<Acc extends Account> {
 
   useCoState<V extends CoValue, D>(
     Schema: CoValueClass<V>,
-    id: ComputedRef<ID<V> | undefined>,
+    id: MaybeRef<ID<V> | undefined>,
     depth?: D & DepthsIn<V>,
   ): Ref<DeeplyLoaded<V, D> | undefined>;
 
@@ -188,7 +189,7 @@ export function createJazzVueApp<Acc extends Account>({
 
     const me = useCoState<Acc, D>(
       contextMe.value?.constructor as CoValueClass<Acc>,
-      computed(() => contextMe.value?.id),
+      contextMe.value?.id,
       depth,
     );
 
@@ -230,7 +231,7 @@ export function createJazzVueApp<Acc extends Account>({
 
     const me = useCoState<Acc, D>(
       contextMe.value?.constructor as CoValueClass<Acc>,
-      computed(() => contextMe.value?.id),
+      contextMe.value?.id,
       depth,
     );
 
@@ -251,7 +252,7 @@ export function createJazzVueApp<Acc extends Account>({
 
   function useCoState<V extends CoValue, D>(
     Schema: CoValueClass<V>,
-    id: ComputedRef<ID<V> | undefined>,
+    id: MaybeRef<ID<V> | undefined>,
     depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
   ): Ref<DeeplyLoaded<V, D> | undefined> {
     const state: ShallowRef<DeeplyLoaded<V, D> | undefined> =
