@@ -38,9 +38,15 @@ import {
   subscribeToExistingCoValue,
 } from "../internal.js";
 
+/** @deprecated Use CoFeedEntry instead */
+export type CoStreamEntry<Item> = CoFeedEntry<Item>;
+
 export type CoFeedEntry<Item> = SingleCoFeedEntry<Item> & {
   all: IterableIterator<SingleCoFeedEntry<Item>>;
 };
+
+/** @deprecated Use SingleCoFeedEntry instead */
+export type SingleCoStreamEntry<Item> = SingleCoFeedEntry<Item>;
 
 export type SingleCoFeedEntry<Item> = {
   value: NonNullable<Item> extends CoValue ? NonNullable<Item> | null : Item;
@@ -49,6 +55,9 @@ export type SingleCoFeedEntry<Item> = {
   madeAt: Date;
   tx: CojsonInternalTypes.TransactionID;
 };
+
+/** @deprecated Use CoFeed instead */
+export { CoFeed as CoStream };
 
 /** @category CoValues */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

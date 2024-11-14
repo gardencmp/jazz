@@ -18,6 +18,7 @@ export {
   CoList,
   CoMap,
   CoFeed,
+  CoStream,
   CoValueBase,
   Group,
   ImageDefinition,
