@@ -32,10 +32,10 @@ function Iframe(
         {...dimensions}
         allowFullScreen
       />
-      <div className="absolute top-0 left-0 w-full flex items-center gap-2 p-3 bg-white w-full text-xs border-b dark:bg-transparent">
+      <div className="absolute top-0 left-0 w-full flex items-center gap-2 p-3 bg-white w-full border-b dark:bg-transparent">
         <div
           className={clsx(
-            "size-5 lead rounded-full text-white font-medium inline-flex items-center justify-center",
+            "size-8 lead rounded-full text-white font-medium inline-flex items-center justify-center",
             avatarClassName,
           )}
         >
