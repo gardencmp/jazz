@@ -471,9 +471,6 @@ importers:
       '@babel/core':
         specifier: ^7.20.0
         version: 7.25.2
-      '@babel/plugin-transform-class-static-block':
-        specifier: ^7.24.7
-        version: 7.24.7(@babel/core@7.25.2)
       '@types/react':
         specifier: ^18.2.19
         version: 18.2.79
@@ -628,9 +625,6 @@ importers:
       '@babel/core':
         specifier: ^7.20.0
         version: 7.25.2
-      '@babel/plugin-transform-class-static-block':
-        specifier: ^7.24.7
-        version: 7.24.7(@babel/core@7.25.2)
       '@types/jest':
         specifier: ^29.5.3
         version: 29.5.13
