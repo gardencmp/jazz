@@ -69,17 +69,21 @@ export function useDemoAuth({
 export const DemoAuthBasicUI = ({
   appName,
   state,
-  user,
 }: {
   appName: string;
   state: DemoAuthState;
-  user?: string;
 }) => {
   const [username, setUsername] = useState<string>("");
+
   const darkMode =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
       : false;
+
+  const user =
+    typeof window !== "undefined"
+      ? new URL(window.location.href).searchParams.get("user")
+      : undefined;
 
   const isAutoLogin = !!(user && state.state === "ready");
 
