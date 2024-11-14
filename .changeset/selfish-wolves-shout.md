@@ -1,7 +1,7 @@
 ---
-"chat-vue": minor
-"todo-vue": minor
-"jazz-vue": minor
+"chat-vue": patch
+"todo-vue": patch
+"jazz-vue": patch
 ---
 
 fix useCoState reactivity
