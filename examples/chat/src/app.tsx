@@ -1,18 +1,10 @@
+import { onChatLoad } from "@/util.ts";
 import { useIframeHashRouter } from "hash-slash";
-import { Account, CoValue, Group, ID } from "jazz-tools";
+import { Group, ID } from "jazz-tools";
 import { ChatScreen } from "./chatScreen.tsx";
 import { useAccount } from "./main.tsx";
 import { Chat } from "./schema.ts";
 import { AppContainer, TopBar } from "./ui.tsx";
-
-export function waitForUpload(id: ID<CoValue>, me: Account) {
-  const syncManager = me._raw.core.node.syncManager;
-  const peers = syncManager.getPeers();
-
-  return Promise.all(
-    peers.map((peer) => syncManager.waitForUploadIntoPeer(peer.id, id)),
-  );
-}
 
 export function App() {
   const { me, logOut } = useAccount();
@@ -25,14 +17,8 @@ export function App() {
     const chat = Chat.create([], { owner: group });
     router.navigate("/#/chat/" + chat.id);
 
-    if (window.parent) {
-      waitForUpload(chat.id, me).then(() => {
-        window.parent.postMessage(
-          { type: "chat-load", id: "/chat/" + chat.id },
-          "*",
-        );
-      });
-    }
+    // for https://jazz.tools marketing site demo only
+    onChatLoad(chat, me);
   };
 
   return (
