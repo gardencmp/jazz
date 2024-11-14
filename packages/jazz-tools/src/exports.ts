@@ -17,7 +17,7 @@ export {
   BinaryCoStream,
   CoList,
   CoMap,
-  CoStream,
+  CoFeed,
   CoValueBase,
   Group,
   ImageDefinition,

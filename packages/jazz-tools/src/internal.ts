@@ -5,7 +5,7 @@ export * from "./coValues/interfaces.js";
 export * from "./coValues/coMap.js";
 export * from "./coValues/account.js";
 export * from "./coValues/coList.js";
-export * from "./coValues/coStream.js";
+export * from "./coValues/coFeed.js";
 export * from "./coValues/group.js";
 
 export * from "./implementation/errors.js";

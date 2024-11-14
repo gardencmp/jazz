@@ -1,8 +1,8 @@
 import {
   Account,
+  CoFeed,
   CoList,
   CoMap,
-  CoStream,
   ImageDefinition,
   Profile,
   co,
@@ -25,7 +25,7 @@ export const ReactionTypes = [
 ] as const;
 export type ReactionType = (typeof ReactionTypes)[number];
 
-export class PetReactions extends CoStream.Of(co.json<ReactionType>()) {}
+export class PetReactions extends CoFeed.Of(co.json<ReactionType>()) {}
 
 export class PetPost extends CoMap {
   name = co.string;
