@@ -1,5 +1,13 @@
 # jazz-tools
 
+## 0.8.21
+
+### Patch Changes
+
+- 149ca97: changed jazz-tools TS target to ES2021
+- Updated dependencies [0f30eea]
+  - cojson@0.8.21
+
 ## 0.8.19
 
 ### Patch Changes

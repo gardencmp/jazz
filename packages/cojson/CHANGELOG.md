@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.21
+
+### Patch Changes
+
+- 0f30eea: Improved the known state tracking within the PeerState.knownState property
+
 ## 0.8.19
 
 ### Patch Changes
