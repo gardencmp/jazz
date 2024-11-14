@@ -102,16 +102,16 @@ For monorepos, use the following metro.config.js:
 
   config.watchFolders = [workspaceRoot];
   config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
+    path.resolve(projectRoot, "node_modules"),
+    path.resolve(workspaceRoot, "node_modules"),
   ];
   config.resolver.sourceExts = ["mjs", "js", "json", "ts", "tsx"];
   config.resolver.unstable_enablePackageExports = true;
   config.resolver.requireCycleIgnorePatterns = [/(^|\/|\\)node_modules($|\/|\\)/];
   config.cacheStores = [
-  new FileStore({
-  root: path.join(projectRoot, "node_modules", ".cache", "metro"),
-}),
+    new FileStore({
+      root: path.join(projectRoot, "node_modules", ".cache", "metro"),
+    }),
   ];
 
   module.exports = config;
@@ -126,37 +126,18 @@ For monorepos, use the following metro.config.js:
 <CodeGroup>
   ```json
   "pnpm": {
-  "peerDependencyRules": {
-  "ignoreMissing": [
-  "@babel/*",
-  "expo-modules-*",
-  "typescript"
-  ]
-}
-}
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@babel/*",
+        "expo-modules-*",
+        "typescript"
+      ]
+    }
+  }
   ```
 </CodeGroup>
 
 For more information, refer to [this](https://github.com/byCedric/expo-monorepo-example#pnpm-workarounds) Expo monorepo example.
-
-### Configure Babel
-
-Add `@babel/plugin-transform-class-static-block` to the array of Babel plugins inside `babel.config.js`:
-
-<CodeGroup>
-  ```ts
-  module.exports = function (api) {
-  api.cache(true);
-  return {
-  presets: ["babel-preset-expo"],
-  plugins: [
-  "nativewind/babel",
-  "@babel/plugin-transform-class-static-block",
-  ],
-};
-};
-  ```
-</CodeGroup>
 
 ### Add Polyfills
 
@@ -247,9 +228,9 @@ To work with images in Jazz, import the `createImage` function from [`jazz-react
   const base64ImageDataURI = "data:image/png;base64,...";
 
   const image = await createImage(base64ImageDataURI, {
-  owner: newPetPost._owner,
-  maxSize: 2048, // optional: specify maximum image size
-});
+    owner: newPetPost._owner,
+    maxSize: 2048, // optional: specify maximum image size
+  });
 
   someCovalue.image = image;
   ```
