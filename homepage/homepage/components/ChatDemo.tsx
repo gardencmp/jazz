@@ -1,5 +1,6 @@
 "use client";
 
+import { clsx } from "clsx";
 import {
   IframeHTMLAttributes,
   useLayoutEffect,
@@ -12,16 +13,37 @@ const dimensions = {
   height: 480,
 };
 
-function Iframe(props: IframeHTMLAttributes<HTMLIFrameElement>) {
-  const { src } = props;
+function Iframe(
+  props: IframeHTMLAttributes<HTMLIFrameElement> & {
+    user: string;
+    avatarClassName: string;
+  },
+) {
+  const { src, user, avatarClassName } = props;
+
+  const initials = user[0];
+
   return (
-    <iframe
-      {...props}
-      src={src}
-      className="col-span-2 w-full border rounded-xl shadow-sm lg:col-span-2 dark:bg-black"
-      {...dimensions}
-      allowFullScreen
-    />
+    <div className="relative col-span-2 w-full border rounded-xl shadow-sm overflow-hidden lg:col-span-2 dark:bg-black">
+      <iframe
+        {...props}
+        src={src}
+        className="w-full"
+        {...dimensions}
+        allowFullScreen
+      />
+      <div className="absolute top-0 left-0 w-full flex items-center gap-2 p-3 bg-white w-full text-xs border-b dark:bg-transparent">
+        <div
+          className={clsx(
+            "size-5 lead rounded-full text-white font-medium inline-flex items-center justify-center",
+            avatarClassName,
+          )}
+        >
+          {initials}
+        </div>
+        {user}
+      </div>
+    </div>
   );
 }
 
@@ -81,8 +103,14 @@ export function ChatDemo() {
 
   return (
     <>
-      <Iframe src={server1} />
-      {server2WithSameChatId && <Iframe src={server2WithSameChatId} />}
+      <Iframe src={server1} user={user1} avatarClassName="bg-pink-600" />
+      {server2WithSameChatId && (
+        <Iframe
+          src={server2WithSameChatId}
+          user={user2}
+          avatarClassName="bg-green-600"
+        />
+      )}
     </>
   );
 }
