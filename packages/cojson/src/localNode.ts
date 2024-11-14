@@ -253,10 +253,7 @@ export class LocalNode {
   /** @internal */
   async loadCoValueCore(
     id: RawCoID,
-    options: {
-      dontLoadFrom?: PeerID;
-      dontWaitFor?: PeerID;
-    } = {},
+    skipLoadingFromPeer?: PeerID,
   ): Promise<CoValueCore | "unavailable"> {
     if (this.crashed) {
       throw new Error("Trying to load CoValue after node has crashed", {
@@ -265,39 +262,24 @@ export class LocalNode {
     }
 
     let entry = this.coValues[id];
-    if (!entry) {
-      const peersToWaitFor = new Set(
-        Object.values(this.syncManager.peers)
-          .filter((peer) => peer.isServerOrStoragePeer())
-          .map((peer) => peer.id),
-      );
-      if (options.dontWaitFor) peersToWaitFor.delete(options.dontWaitFor);
-      entry = CoValueState.Unknown(peersToWaitFor);
 
-      this.coValues[id] = entry;
+    // If the CoValue has been never loaded or we tried to load it but
+    // was marked as unavailable, we reset the state to unknown.
+    // This will trigger a new loading process.
+    if (!entry || entry.state.type === "unavailable") {
+      entry = this.coValues[id] = CoValueState.Unknown(id);
+    }
 
-      this.syncManager.loadFromPeers(id, options.dontLoadFrom).catch((e) => {
-        console.error(
-          "Error loading from peers",
-          id,
+    if (entry.state.type === "unknown") {
+      const peers =
+        this.syncManager.getServerAndStoragePeers(skipLoadingFromPeer);
 
-          e,
-        );
+      await entry.loadFromPeers(peers).catch((e) => {
+        console.error("Error loading from peers", id, e);
       });
     }
-    if (entry.state.type === "available") {
-      return Promise.resolve(entry.state.coValue);
-    }
 
-    await entry.state.ready;
-
-    const updatedEntry = this.coValues[id];
-
-    if (updatedEntry?.state.type === "available") {
-      return Promise.resolve(updatedEntry.state.coValue);
-    }
-
-    return "unavailable";
+    return entry.value;
   }
 
   /**
@@ -454,7 +436,7 @@ export class LocalNode {
         `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`,
       );
     }
-    if (entry.state.type === "unknown") {
+    if (entry.state.type !== "available") {
       throw new Error(
         `${expectation ? expectation + ": " : ""}CoValue ${id} not yet loaded`,
       );
@@ -655,7 +637,7 @@ export class LocalNode {
     while (coValuesToCopy.length > 0) {
       const [coValueID, entry] = coValuesToCopy[coValuesToCopy.length - 1]!;
 
-      if (entry.state.type === "unknown") {
+      if (entry.state.type !== "available") {
         coValuesToCopy.pop();
         continue;
       } else {

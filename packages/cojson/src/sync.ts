@@ -79,6 +79,7 @@ export interface Peer {
   role: "peer" | "server" | "client" | "storage";
   priority?: number;
   crashOnClose: boolean;
+  retryUnavailableCoValues?: boolean;
 }
 
 export function combinedKnownStates(
@@ -135,31 +136,10 @@ export class SyncManager {
     return Object.values(this.peers);
   }
 
-  async loadFromPeers(id: RawCoID, forPeer?: PeerID) {
-    const eligiblePeers = this.peersInPriorityOrder().filter(
-      (peer) => peer.id !== forPeer && peer.isServerOrStoragePeer(),
+  getServerAndStoragePeers(excludePeerId?: PeerID): PeerState[] {
+    return this.peersInPriorityOrder().filter(
+      (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
     );
-
-    const coValueEntry = this.local.coValues[id];
-
-    for (const peer of eligiblePeers) {
-      if (peer.erroredCoValues.has(id)) {
-        console.error(
-          `Skipping load on errored coValue ${id} from peer ${peer.id}`,
-        );
-        continue;
-      }
-      await peer.pushOutgoingMessage({
-        action: "load",
-        id: id,
-        header: false,
-        sessions: {},
-      });
-
-      if (coValueEntry?.state.type === "unknown") {
-        await coValueEntry.state.waitForPeer(peer.id);
-      }
-    }
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerState) {
@@ -198,7 +178,7 @@ export class SyncManager {
       throw new Error("Expected coValue entry on subscribe");
     }
 
-    if (entry.state.type === "unknown") {
+    if (entry.state.type !== "available") {
       this.trySendToPeer(peer, {
         action: "load",
         id,
@@ -412,14 +392,10 @@ export class SyncManager {
 
       // special case: we should be able to solve this much more neatly
       // with an explicit state machine in the future
-      const eligiblePeers = this.peersInPriorityOrder().filter(
-        (other) => other.id !== peer.id && other.isServerOrStoragePeer(),
-      );
+      const eligiblePeers = this.getServerAndStoragePeers(peer.id);
       if (eligiblePeers.length === 0) {
         if (msg.header || Object.keys(msg.sessions).length > 0) {
-          this.local.coValues[msg.id] = CoValueState.Unknown(
-            new Set([peer.id]),
-          );
+          this.local.coValues[msg.id] = CoValueState.Loading(msg.id, [peer.id]);
           this.trySendToPeer(peer, {
             action: "known",
             id: msg.id,
@@ -431,29 +407,24 @@ export class SyncManager {
         }
         return;
       } else {
-        this.local
-          .loadCoValueCore(msg.id, {
-            dontLoadFrom: peer.id,
-            dontWaitFor: peer.id,
-          })
-          .catch((e) => {
-            console.error("Error loading coValue in handleLoad", e);
-          });
+        this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
+          console.error("Error loading coValue in handleLoad", e);
+        });
       }
 
       entry = this.local.coValues[msg.id]!;
     }
 
-    if (entry.state.type === "unknown") {
+    if (entry.state.type !== "available") {
       // console.debug(
       //     "Waiting for loaded",
       //     msg.id,
       //     "after message from",
       //     peer.id,
       // );
-      const loaded = await entry.state.ready;
+      const value = await entry.value;
 
-      if (loaded === "unavailable") {
+      if (value === "unavailable") {
         peer.dispatchToKnownStates({
           type: "SET",
           id: msg.id,
@@ -490,14 +461,12 @@ export class SyncManager {
     if (!entry) {
       if (msg.asDependencyOf) {
         if (this.local.coValues[msg.asDependencyOf]) {
-          this.local
-            .loadCoValueCore(msg.id, { dontLoadFrom: peer.id })
-            .catch((e) => {
-              console.error(
-                `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
-                e,
-              );
-            });
+          this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
+            console.error(
+              `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
+              e,
+            );
+          });
           entry = this.local.coValues[msg.id]!; // must exist after loadCoValueCore
         } else {
           throw new Error(
@@ -511,7 +480,7 @@ export class SyncManager {
       }
     }
 
-    if (entry.state.type === "unknown") {
+    if (entry.state.type !== "available") {
       const availableOnPeer = peer.optimisticKnownStates.get(msg.id)?.header;
 
       if (!availableOnPeer) {
@@ -540,7 +509,7 @@ export class SyncManager {
 
     let coValue: CoValueCore;
 
-    if (entry.state.type === "unknown") {
+    if (entry.state.type !== "available") {
       if (!msg.header) {
         console.error("Expected header to be sent in first message");
         return;

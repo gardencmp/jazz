@@ -11,6 +11,7 @@ export function createWebSocketPeerWithReconnection(
     id: peer,
     role: "server",
     onClose: reconnectWebSocket,
+    retryUnavailableCoValues: true,
   });
 
   let shouldTryToReconnect = true;
@@ -46,6 +47,7 @@ export function createWebSocketPeerWithReconnection(
         id: peer,
         role: "server",
         onClose: reconnectWebSocket,
+        retryUnavailableCoValues: true,
       }),
     );
   }

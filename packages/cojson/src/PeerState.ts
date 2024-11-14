@@ -57,6 +57,10 @@ export class PeerState {
     return this.peer.crashOnClose;
   }
 
+  get retryUnavailableCoValues() {
+    return this.peer.retryUnavailableCoValues;
+  }
+
   isServerOrStoragePeer() {
     return this.peer.role === "server" || this.peer.role === "storage";
   }

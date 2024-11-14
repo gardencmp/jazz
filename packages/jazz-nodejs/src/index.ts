@@ -26,6 +26,7 @@ export async function startWorker<Acc extends Account>({
     id: "upstream",
     websocket: new WebSocket(peer),
     role: "server",
+    retryUnavailableCoValues: true,
   });
 
   if (!accountID) {
@@ -61,6 +62,7 @@ export async function startWorker<Acc extends Account>({
         id: "upstream",
         websocket: new WebSocket(peer),
         role: "server",
+        retryUnavailableCoValues: true,
       });
 
       worker._raw.core.node.syncManager.addPeer(wsPeer);

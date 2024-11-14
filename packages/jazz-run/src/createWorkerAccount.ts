@@ -24,6 +24,7 @@ export const createWorkerAccount = async ({
     id: "upstream",
     websocket: new WebSocket(peerAddr),
     role: "server",
+    retryUnavailableCoValues: true,
   });
 
   const account = await Account.create({
@@ -61,6 +62,7 @@ export const createWorkerAccount = async ({
     id: "verifyingPeer",
     websocket: new WebSocket(peerAddr),
     role: "server",
+    retryUnavailableCoValues: true,
   });
 
   await Promise.race([

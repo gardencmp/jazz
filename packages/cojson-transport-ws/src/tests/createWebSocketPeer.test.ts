@@ -30,6 +30,7 @@ function setup(opts: Partial<CreateWebSocketPeerOpts> = {}) {
     websocket: mockWebSocket,
     role: "client",
     batchingByDefault: true,
+    retryUnavailableCoValues: false,
     ...opts,
   });
 
