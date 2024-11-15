@@ -46,7 +46,7 @@ export function JazzNav() {
                 />
               ),
               title: "Example apps",
-              href: "/docs/examples",
+              href: "/examples",
               description:
                 "Demo and source code for example apps built with Jazz.",
             },

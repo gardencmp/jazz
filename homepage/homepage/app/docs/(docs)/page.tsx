@@ -38,8 +38,8 @@ export default function Page() {
       <p>Also make sure to:</p>
       <ul>
         <li>
-          Find an <a href="/docs/examples">example app with code</a> most
-          similar to what you want to build
+          Find an <a href="/examples">example app with code</a> most similar to
+          what you want to build
         </li>
         <li>
           Check out the <a href="/docs/api-reference">API Reference</a> (work in

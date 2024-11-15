@@ -125,7 +125,7 @@ export const docNavigationItems = [
     items: [
       {
         name: "Example apps",
-        href: "/docs/examples",
+        href: "/examples",
         done: 30,
       },
       {

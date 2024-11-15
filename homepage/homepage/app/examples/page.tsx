@@ -3,7 +3,9 @@ import { NextjsLogo } from "@/components/icons/NextjsLogo";
 import { ReactLogo } from "@/components/icons/ReactLogo";
 import { ReactNativeLogo } from "@/components/icons/ReactNativeLogo";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
+import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
+import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { CloudUploadIcon, FingerprintIcon, KeyRoundIcon } from "lucide-react";
 
 type Example = {
@@ -239,7 +241,7 @@ function Example({ example }: { example: Example }) {
   const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
 
   return (
-    <div className="border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
+    <div className="col-span-2 border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
       <div className="aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
         {illustration}
       </div>
@@ -284,22 +286,28 @@ function Example({ example }: { example: Example }) {
 
 export default function Page() {
   return (
-    <>
-      <h1>Example Apps</h1>
-      {categories.map((category) => (
-        <div className="my-12" key={category.name}>
-          <div className="flex items-center gap-3 mb-5">
-            <category.logo className="h-8 w-8" />
-            <h2 className="my-0">{category.name}</h2>
-          </div>
+    <div className="container flex flex-col gap-6 pb-10 lg:pb-20">
+      <HeroHeader
+        title="Example apps"
+        slogan="Find an example app with code most similar to what you want to build"
+      />
 
-          <div className="not-prose grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8">
-            {category.examples.map((example) => (
-              <Example key={example.slug} example={example} />
-            ))}
+      <div className="grid gap-12 lg:gap-20">
+        {categories.map((category) => (
+          <div key={category.name}>
+            <div className="flex items-center gap-3 mb-5">
+              <category.logo className="h-8 w-8" />
+              <H2 className="!mb-0">{category.name}</H2>
+            </div>
+
+            <GappedGrid>
+              {category.examples.map((example) => (
+                <Example key={example.slug} example={example} />
+              ))}
+            </GappedGrid>
           </div>
-        </div>
-      ))}
-    </>
+        ))}
+      </div>
+    </div>
   );
 }
