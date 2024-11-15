@@ -3,7 +3,9 @@ import { NextjsLogo } from "@/components/icons/NextjsLogo";
 import { ReactLogo } from "@/components/icons/ReactLogo";
 import { ReactNativeLogo } from "@/components/icons/ReactNativeLogo";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
+import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
+import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { CloudUploadIcon, FingerprintIcon, KeyRoundIcon } from "lucide-react";
 
 type Example = {
@@ -55,21 +57,21 @@ const ClerkIllustration = () => (
 
 const MusicIllustration = () => (
   <div className="flex flex-col items-center justify-center h-full p-8">
-    <div className="py-3 px-4 border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center">
+    <div className="py-3 px-8 border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center">
       <CloudUploadIcon
-        size={30}
+        size={40}
         strokeWidth={1.5}
         className="stroke-blue mx-auto dark:stroke-blue-500"
       />
-      <p className="whitespace-nowrap text-xs text-stone-900 dark:text-white">
-        tortured-poets-department.mp3
+      <p className="whitespace-nowrap text-stone-900 dark:text-white">
+        take-five.mp3
       </p>
     </div>
   </div>
 );
 
 const BookShelfIllustration = () => (
-  <div className="h-full p-6 md:p-5">
+  <div className="h-full max-w-[30rem] mx-auto flex flex-col justify-center p-6 md:p-5">
     <div className="flex justify-between items-baseline">
       <p className="font-display font-medium tracking-tight  text-sm text-stone-900 dark:text-white">
         Your book shelf
@@ -80,7 +82,7 @@ const BookShelfIllustration = () => (
       </p>
     </div>
 
-    <div className="relative grid grid-cols-3 gap-4 mt-3">
+    <div className="grid grid-cols-3 gap-4 mt-3">
       {["malibu.jpg", "pathless.jpg", "upgrade.jpg"].map((book) => (
         <img
           key={book}
@@ -89,8 +91,6 @@ const BookShelfIllustration = () => (
           className="w-full h-full object-cover rounded-r-md shadow-sm border dark:border-none"
         />
       ))}
-
-      <div className="absolute bottom-0 w-full h-10 bg-gradient-to-t from-white dark:from-stone-925 to-transparent md:hidden" />
     </div>
   </div>
 );
@@ -239,7 +239,7 @@ function Example({ example }: { example: Example }) {
   const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
 
   return (
-    <div className="border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
+    <div className="col-span-2 border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
       <div className="aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
         {illustration}
       </div>
@@ -284,22 +284,28 @@ function Example({ example }: { example: Example }) {
 
 export default function Page() {
   return (
-    <>
-      <h1>Example Apps</h1>
-      {categories.map((category) => (
-        <div className="my-12" key={category.name}>
-          <div className="flex items-center gap-3 mb-5">
-            <category.logo className="h-8 w-8" />
-            <h2 className="my-0">{category.name}</h2>
-          </div>
+    <div className="container flex flex-col gap-6 pb-10 lg:pb-20">
+      <HeroHeader
+        title="Example apps"
+        slogan="Find an example app with code most similar to what you want to build"
+      />
 
-          <div className="not-prose grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8">
-            {category.examples.map((example) => (
-              <Example key={example.slug} example={example} />
-            ))}
+      <div className="grid gap-12 lg:gap-20">
+        {categories.map((category) => (
+          <div key={category.name}>
+            <div className="flex items-center gap-3 mb-5">
+              <category.logo className="h-8 w-8" />
+              <H2 className="!mb-0">{category.name}</H2>
+            </div>
+
+            <GappedGrid>
+              {category.examples.map((example) => (
+                <Example key={example.slug} example={example} />
+              ))}
+            </GappedGrid>
           </div>
-        </div>
-      ))}
-    </>
+        ))}
+      </div>
+    </div>
   );
 }
