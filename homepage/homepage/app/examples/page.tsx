@@ -71,7 +71,7 @@ const MusicIllustration = () => (
 );
 
 const BookShelfIllustration = () => (
-  <div className="h-full p-6 md:p-5">
+  <div className="h-full max-w-[30rem] mx-auto flex flex-col justify-center p-6 md:p-5">
     <div className="flex justify-between items-baseline">
       <p className="font-display font-medium tracking-tight  text-sm text-stone-900 dark:text-white">
         Your book shelf
@@ -82,7 +82,7 @@ const BookShelfIllustration = () => (
       </p>
     </div>
 
-    <div className="relative grid grid-cols-3 gap-4 mt-3">
+    <div className="grid grid-cols-3 gap-4 mt-3">
       {["malibu.jpg", "pathless.jpg", "upgrade.jpg"].map((book) => (
         <img
           key={book}
@@ -91,8 +91,6 @@ const BookShelfIllustration = () => (
           className="w-full h-full object-cover rounded-r-md shadow-sm border dark:border-none"
         />
       ))}
-
-      <div className="absolute bottom-0 w-full h-10 bg-gradient-to-t from-white dark:from-stone-925 to-transparent md:hidden" />
     </div>
   </div>
 );
