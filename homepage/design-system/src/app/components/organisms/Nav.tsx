@@ -44,6 +44,15 @@ function NavItem({
   const path = usePathname();
 
   if (!items?.length) {
+    if (item.icon) {
+      return (
+        <NavLinkLogo className="px-3" {...item}>
+          {icon}
+          <span className="sr-only">{title}</span>
+        </NavLinkLogo>
+      );
+    }
+
     return (
       <NavLink
         className={clsx(
@@ -267,12 +276,13 @@ function NavLinkLogo({
   onClick?: () => void;
   newTab?: boolean;
 }) {
-  const path = usePathname();
-
   return (
     <Link
       href={href}
-      className={clsx("py-3", className)}
+      className={clsx(
+        "py-3 hover:text-stone-900 dark:hover:text-white",
+        className,
+      )}
       onClick={onClick}
       target={newTab ? "_blank" : undefined}
     >

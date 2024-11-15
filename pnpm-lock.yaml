@@ -20,7 +20,7 @@ importers:
         version: 2.27.3
       '@vitest/coverage-istanbul':
         specifier: 1.5.3
-        version: 1.5.3(vitest@1.5.3)
+        version: 1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0))
       '@vitest/ui':
         specifier: 1.5.3
         version: 1.5.3(vitest@1.5.3)
@@ -1238,8 +1238,6 @@ importers:
       '@types/ws':
         specifier: ^8.5.5
         version: 8.5.10
-
-  packages/coverage: {}
 
   packages/hash-slash:
     devDependencies:
@@ -14396,7 +14394,7 @@ snapshots:
       - esbuild
       - rollup
 
-  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3)':
+  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0))':
     dependencies:
       debug: 4.3.7
       istanbul-lib-coverage: 3.2.2
