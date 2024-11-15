@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
 
     return (
       <>
-        <Prose className="overflow-x-hidden lg:flex-1">
+        <Prose className="overflow-x-hidden lg:flex-1 pt-6">
           <Content />
         </Prose>
         {tableOfContents && <TableOfContents items={tableOfContents as Toc} />}
