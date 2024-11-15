@@ -8,6 +8,7 @@ import { JazzFooter } from "@/components/footer";
 import { JazzNav } from "@/components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { clsx } from "clsx";
 import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
 
 // If loading a variable font, you don't need to specify the font weight
@@ -95,8 +96,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <JazzNav />
-          <main className="flex-1 w-full">{children}</main>
+          <div className="flex-1 w-full">
+            <JazzNav />
+            <main>{children}</main>
+          </div>
           <JazzFooter />
         </ThemeProvider>
       </body>

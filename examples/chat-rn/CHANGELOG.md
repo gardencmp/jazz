@@ -1,5 +1,20 @@
 # chat-rn
 
+## 1.0.16
+
+### Patch Changes
+
+- Updated dependencies [149ca97]
+  - jazz-tools@0.8.21
+  - jazz-react-native@0.8.21
+
+## 1.0.15
+
+### Patch Changes
+
+- Updated dependencies [3ef3ff3]
+  - jazz-react-native@0.8.20
+
 ## 1.0.14
 
 ### Patch Changes

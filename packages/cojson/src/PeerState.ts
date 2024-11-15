@@ -1,4 +1,4 @@
-import { PeerKnownStates } from "./PeerKnownStates.js";
+import { PeerKnownStateActions, PeerKnownStates } from "./PeerKnownStates.js";
 import {
   PriorityBasedMessageQueue,
   QueueEntry,
@@ -33,6 +33,11 @@ export class PeerState {
    */
   readonly optimisticKnownStates: PeerKnownStates;
   readonly toldKnownState: Set<RawCoID> = new Set();
+
+  dispatchToKnownStates(action: PeerKnownStateActions) {
+    this.knownStates.dispatch(action);
+    this.optimisticKnownStates.dispatch(action);
+  }
 
   readonly erroredCoValues: Map<RawCoID, TryAddTransactionsError> = new Map();
 

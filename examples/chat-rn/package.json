@@ -1,6 +1,6 @@
 {
   "name": "chat-rn",
-  "version": "1.0.14",
+  "version": "1.0.16",
   "main": "index.js",
   "scripts": {
     "build": "expo export -p ios",
@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@babel/plugin-transform-class-static-block": "^7.24.7",
     "@types/react": "^18.2.19",
     "tailwindcss": "3.3.2",
     "typescript": "^5.3.3"

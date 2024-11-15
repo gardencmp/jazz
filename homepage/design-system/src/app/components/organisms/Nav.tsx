@@ -1,30 +1,115 @@
 "use client";
 
+import {
+  CloseButton,
+  Popover,
+  PopoverButton,
+  PopoverGroup,
+  PopoverPanel,
+} from "@headlessui/react";
 import clsx from "clsx";
-import { MenuIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BreadCrumb } from "../molecules/Breadcrumb";
 import { ThemeToggle } from "../molecules/ThemeToggle";
 
-export function Nav({
-  mainLogo,
-  items,
-  docNav,
-  cta,
-}: {
+type NavItemProps = {
+  href: string;
+  icon?: ReactNode;
+  title: string;
+  firstOnRight?: boolean;
+  newTab?: boolean;
+  items?: NavItemProps[];
+  description?: string;
+};
+
+type NavProps = {
   mainLogo: ReactNode;
-  items: {
-    href: string;
-    icon?: ReactNode;
-    title: string;
-    firstOnRight?: boolean;
-    newTab?: boolean;
-  }[];
+  items: NavItemProps[];
   docNav?: ReactNode;
   cta?: ReactNode;
+};
+
+function NavItem({
+  item,
+  className,
+}: {
+  item: NavItemProps;
+  className?: string;
 }) {
+  const { href, icon, title, items, firstOnRight } = item;
+
+  const path = usePathname();
+
+  if (!items?.length) {
+    if (item.icon) {
+      return (
+        <NavLinkLogo className="px-3" {...item}>
+          {icon}
+          <span className="sr-only">{title}</span>
+        </NavLinkLogo>
+      );
+    }
+
+    return (
+      <NavLink
+        className={clsx(
+          className,
+          "text-sm px-2 lg:px-4 py-3 ",
+          firstOnRight && "ml-auto",
+          path === href ? "text-black dark:text-white" : "",
+        )}
+        {...item}
+      >
+        {title}
+      </NavLink>
+    );
+  }
+
+  return (
+    <Popover className={clsx("relative", className, firstOnRight && "ml-auto")}>
+      <PopoverButton
+        className={clsx(
+          "flex items-center gap-1.5 text-sm px-2 lg:px-4 py-3 max-sm:w-full text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none focus-visible:outline-none",
+          path === href ? "text-black dark:text-white" : "",
+        )}
+      >
+        <span>{title}</span>
+        <ChevronDownIcon aria-hidden="true" className="size-4" />
+      </PopoverButton>
+
+      <PopoverPanel
+        transition
+        className="absolute left-1/2 -translate-x-1/2 z-10 flex w-screen max-w-[24rem] mt-5 transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
+      >
+        <div className="flex-auto overflow-hidden rounded-lg ring-1 ring-stone-300/60 bg-white/90 backdrop-blur-lg shadow-lg dark:ring-stone-800/50 dark:bg-stone-925/90">
+          <div className="p-3 grid">
+            {items.map(({ href, title, description, icon }) => (
+              <CloseButton
+                className="p-3 rounded-md flex gap-3 hover:bg-stone-100/80 dark:hover:bg-stone-900/80 transition-colors"
+                href={href}
+                aria-label={title}
+                as={Link}
+              >
+                {icon}
+                <div className="grid gap-1.5 mt-px">
+                  <p className="text-sm font-medium text-stone-900 dark:text-white">
+                    {title}
+                  </p>
+                  <p className="text-sm leading-relaxed">{description}</p>
+                </div>
+              </CloseButton>
+            ))}
+          </div>
+        </div>
+      </PopoverPanel>
+    </Popover>
+  );
+}
+
+export function MobileNav({ mainLogo, items, docNav, cta }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -41,44 +126,6 @@ export function Nav({
 
   return (
     <>
-      <nav
-        className={[
-          clsx(
-            "hidden md:flex sticky left-0 right-0 top-0 w-full justify-center",
-            "bg-white dark:bg-stone-950 border-b",
-            "z-50",
-          ),
-        ].join(" ")}
-      >
-        <div className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
-          <div className="flex items-center flex-shrink">
-            <NavLinkLogo prominent href="/" className="-ml-2">
-              {mainLogo}
-            </NavLinkLogo>
-          </div>
-          {items.map((item, i) =>
-            "icon" in item ? (
-              <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
-                {item.icon}
-              </NavLinkLogo>
-            ) : (
-              <NavLink
-                key={i}
-                href={item.href}
-                newTab={item.newTab}
-                className={clsx(
-                  "max-sm:w-full",
-                  item.firstOnRight ? "md:ml-auto" : "",
-                )}
-              >
-                {item.title}
-              </NavLink>
-            ),
-          )}
-
-          {cta}
-        </div>
-      </nav>
       <div className="md:hidden px-4 flex items-center self-stretch dark:text-white">
         <NavLinkLogo prominent href="/" className="mr-auto">
           {mainLogo}
@@ -137,33 +184,16 @@ export function Nav({
             </div>
           )}
 
-          <div className="flex gap-4 justify-end -mb-2">
-            {items
+          <div className="flex flex-wrap justify-end py-2 gap-x-3 gap-y-1 border-b">
+            {[{ title: "Home", href: "/" }, ...items]
               .filter((item) => !("icon" in item))
-              .slice(0, 3)
               .map((item, i) => (
                 <NavLink
+                  className="p-1 text-sm"
                   key={i}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
                   newTab={item.newTab}
-                >
-                  {item.title}
-                </NavLink>
-              ))}
-          </div>
-
-          <div className="flex gap-4 justify-end border-b">
-            {items
-              .filter((item) => !("icon" in item))
-              .slice(3)
-              .map((item, i) => (
-                <NavLink
-                  key={i}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  newTab={item.newTab}
-                  className={clsx("")}
                 >
                   {item.title}
                 </NavLink>
@@ -171,28 +201,6 @@ export function Nav({
           </div>
         </div>
         <div className="flex items-center self-stretch justify-between">
-          {/* <input
-                        type="text"
-                        className={clsx(
-                            menuOpen || searchOpen ? "" : "hidden",
-                            "ml-2 border px-2 py-1 rounded w-full"
-                        )}
-                        placeholder="Search docs..."
-                        ref={searchRef}
-                    /> */}
-          {/* <button
-                        className="flex p-3 rounded-xl"
-                        onClick={() => {
-                            setSearchOpen(true);
-                        }}
-                        onBlur={(e) => {
-                            if (!e.currentTarget.value) {
-                                setSearchOpen(false);
-                            }
-                        }}
-                    >
-                        <SearchIcon className="" />
-                    </button> */}
           {(menuOpen || searchOpen) && <ThemeToggle className="p-3" />}
           <button
             className="flex gap-2 p-3 rounded-xl items-center"
@@ -236,11 +244,8 @@ function NavLink({
     <Link
       href={href}
       className={clsx(
-        "px-2 lg:px-4 py-3 text-sm",
+        "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
         className,
-        path === href
-          ? "font-medium text-black dark:text-white cursor-default"
-          : "text-stone-600 dark:text-stone-400 hover:text-black dark:hover:text-white transition-colors hover:transition-none",
       )}
       onClick={onClick}
       target={newTab ? "_blank" : undefined}
@@ -261,7 +266,6 @@ function NavLinkLogo({
   href,
   className,
   children,
-  prominent,
   onClick,
   newTab,
 }: {
@@ -272,19 +276,11 @@ function NavLinkLogo({
   onClick?: () => void;
   newTab?: boolean;
 }) {
-  const path = usePathname();
-
   return (
     <Link
       href={href}
       className={clsx(
-        "max-sm:px-4 px-2 lg:px-3 py-3 transition-opacity hover:transition-none",
-        path === href
-          ? "cursor-default"
-          : prominent
-            ? "hover:opacity-50"
-            : "opacity-60 hover:opacity-100",
-        "text-black dark:text-white",
+        "py-3 hover:text-stone-900 dark:hover:text-white",
         className,
       )}
       onClick={onClick}
@@ -292,5 +288,31 @@ function NavLinkLogo({
     >
       {children}
     </Link>
+  );
+}
+
+export function Nav(props: NavProps) {
+  const { mainLogo, items, docNav, cta } = props;
+  return (
+    <>
+      <div className="w-full border-b py-2 sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">
+        <PopoverGroup className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
+          <Link href="/" className="flex items-center">
+            {mainLogo}
+          </Link>
+
+          {items.map((item, i) => (
+            <NavItem
+              key={i}
+              item={item}
+              className={i == items.length - 1 ? "mr-3" : ""}
+            />
+          ))}
+
+          {cta}
+        </PopoverGroup>
+      </div>
+      <MobileNav {...props} />
+    </>
   );
 }

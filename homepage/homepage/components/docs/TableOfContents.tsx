@@ -1,17 +1,25 @@
+import type { Toc, TocEntry } from "@stefanprobst/rehype-extract-toc";
 import { clsx } from "clsx";
 import Link from "next/link";
 
-interface NavItem {
-  name: string;
-  href: string;
-  items?: NavItem[];
-}
+const TocList = ({ items }: { items: TocEntry[] }) => {
+  return (
+    <ul className="list-disc pl-4 space-y-2">
+      {items.map((item) => (
+        <li key={item.id} className="space-y-2">
+          <Link href={`#${item.id}`}>{item.value}</Link>
+          {item.children && <TocList items={item.children} />}
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 export function TableOfContents({
   className,
   items,
 }: {
-  items: NavItem[];
+  items: Toc;
   className?: string;
 }) {
   if (!items.length) return null;
@@ -19,27 +27,12 @@ export function TableOfContents({
   return (
     <div
       className={clsx(
-        "pl-3 sticky align-start top-[4.75rem] h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden hidden md:block",
+        "pl-3 py-6 text-sm sticky align-start top-[4.75rem] w-[16rem] h-[calc(100vh-108px)] overflow-y-auto overflow-x-hidden hidden lg:block",
         className,
       )}
     >
       <p className="mb-3">On this page:</p>
-      <ul className="space-y-2 text-sm list-disc pl-4">
-        {items.map(({ name, href, items }) => (
-          <li key={name} className="space-y-2">
-            <Link href={href}>{name}</Link>
-            {items && items?.length > 0 && (
-              <ul className="list-disc pl-4 space-y-2">
-                {items.map(({ name, href }) => (
-                  <li key={href}>
-                    <Link href={href}>{name}</Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
+      <TocList items={items} />
     </div>
   );
 }

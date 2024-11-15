@@ -70,7 +70,11 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Jazz.Provider auth={auth} peer={peer}>
+      <Jazz.Provider
+        storage={["singleTabOPFS", "indexedDB"]}
+        auth={auth}
+        peer={peer}
+      >
         {children}
       </Jazz.Provider>
       <DemoAuthBasicUI appName="Jazz Music Player" state={state} />

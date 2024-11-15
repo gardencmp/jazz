@@ -1,0 +1,47 @@
+# Sync and Storage
+
+## Using Jazz Cloud
+
+Simply use `wss://cloud.jazz.tools/?key=...` as the sync server URL.
+
+Jazz Cloud will
+- sync CoValues in real-time between users and devices
+- safely persist CoValues on redundant storage nodes with additional backups
+- make use of geographically distributed cache nodes for low latency
+
+### Free Public Alpha
+
+- Jazz Cloud is free during the public alpha, with no strict usage limits
+- We plan to keep a free tier, so you'll always be able to get started with zero setup
+- See [Jazz Cloud Pricing](https://jazz.tools/cloud#pricing) for more details
+- ⚠️ Please use a valid email address as your API key.
+
+    Your full sync server URL should look something like
+
+    ```wss://cloud.jazz.tools/?key=you@example.com```
+
+    Once we support per-app API keys, we'll email you an API key you can use instead.
+
+
+## Running your own sync server
+
+You can run your own sync server using:
+
+```sh
+npx jazz-run sync
+```
+
+And then use `ws://localhost:4200` as the sync server URL.
+
+You can also run this simple sync server behind a proxy that supports WebSockets, for example to provide TLS.
+In this case, provide the WebSocket endpoint your proxy exposes as the sync server URL.
+
+### Command line options:
+
+- `--port` / `-p` - the port to run the sync server on. Defaults to 4200.
+- `--in-memory` - keep CoValues in-memory only and do sync only, no persistence. Persistence is enabled by default.
+- `--db` - the path to the file where to store the data (SQLite). Defaults to `sync-db/storage.db`.
+
+### Source code
+
+The implementation of this simple sync server is available open-source [on GitHub](https://github.com/gardencmp/jazz/blob/main/packages/jazz-run/src/startSync.ts).

@@ -1,7 +1,7 @@
 {
   "name": "chat-rn-clerk",
   "main": "index.js",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "scripts": {
     "build": "expo export -p ios",
     "start": "expo start",
@@ -65,7 +65,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@babel/plugin-transform-class-static-block": "^7.24.7",
     "@types/jest": "^29.5.3",
     "@types/react": "^18.2.19",
     "@types/react-test-renderer": "^18.0.7",

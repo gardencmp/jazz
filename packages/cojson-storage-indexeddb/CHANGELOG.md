@@ -1,5 +1,18 @@
 # cojson-storage-indexeddb
 
+## 0.8.21
+
+### Patch Changes
+
+- Updated dependencies [0f30eea]
+  - cojson@0.8.21
+
+## 0.8.20
+
+### Patch Changes
+
+- 3ef3ff3: Remove typescript from the direct dependencies
+
 ## 0.8.19
 
 ### Patch Changes
