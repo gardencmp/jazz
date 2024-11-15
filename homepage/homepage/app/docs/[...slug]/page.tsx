@@ -1,25 +1,61 @@
-import { clsx } from "clsx";
-import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import type { Toc } from '@stefanprobst/rehype-extract-toc'
+import fs from "fs";
+import path from "path";
 import { TableOfContents } from "@/components/docs/TableOfContents";
+import type { Toc } from "@stefanprobst/rehype-extract-toc";
+import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
-export default async function Page({params}: {params: {slug: string | string[]}}) {
-  return (
-    <>
+export default async function Page({ params }: { params: { slug: string[] } }) {
+  const slugPath = params.slug.join("/");
+  try {
+    const { default: Content, tableOfContents } = await import(
+      `./${slugPath}.mdx`
+    );
+
+    return (
+      <>
+        <Prose className="overflow-x-hidden lg:flex-1">
+          <Content />
+        </Prose>
+        {tableOfContents && <TableOfContents items={tableOfContents as Toc} />}
+      </>
+    );
+  } catch (error) {
+    console.error("Error loading MDX file:" + slugPath, error);
+    return (
       <Prose className="overflow-x-hidden lg:flex-1">
-        <Content name={Array.isArray(params.slug) ? params.slug.join("/") : params.slug}/>
+        <h3>Error loading page: {slugPath}</h3>
       </Prose>
-      <ToC name={Array.isArray(params.slug) ? params.slug.join("/") : params.slug}/>
-    </>
-  );
+    );
+  }
 }
 
-async function Content({name}: {name: string}) {
-  const Inner = (await import(`./${name}.mdx`)).default;
-  return <Inner />;
-}
+// https://nextjs.org/docs/app/api-reference/functions/generate-static-params
+export const dynamicParams = false;
+export const dynamic = "force-static";
 
-async function ToC({name}: {name: string}) {
-  const tableOfContents = (await import(`./${name}.mdx`)).tableOfContents as Toc
-  return <TableOfContents items={tableOfContents} />;
+export async function generateStaticParams() {
+  const docsDir = path.join(process.cwd(), "app/docs/[...slug]");
+  const getAllMdxPaths = (dir: string, basePath = ""): string[] => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const paths: string[] = [];
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      const relativePath = path.join(basePath, entry.name);
+
+      if (entry.isDirectory()) {
+        paths.push(...getAllMdxPaths(fullPath, relativePath));
+      } else if (entry.isFile() && entry.name.endsWith(".mdx")) {
+        paths.push(relativePath.replace(/\.mdx$/, ""));
+      }
+    }
+
+    return paths;
+  };
+
+  const paths = getAllMdxPaths(docsDir).map((slug) => ({
+    slug: slug.split("/"),
+  }));
+
+  return paths;
 }

@@ -12,6 +12,7 @@
   },
   "packageManager": "pnpm@9.1.4",
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
     "@icons-pack/react-simple-icons": "^9.1.0",
     "@mdx-js/loader": "^2.3.0",
     "@mdx-js/react": "^2.3.0",
