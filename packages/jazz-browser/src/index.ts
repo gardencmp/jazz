@@ -97,12 +97,12 @@ export async function createJazzBrowserContext<Acc extends Account>(
       ? await createJazzContext({
           AccountSchema: options.AccountSchema,
           auth: options.auth,
-          crypto: await WasmCrypto.create(),
+          crypto,
           peersToLoadFrom,
           sessionProvider: provideBrowserLockSession,
         })
       : await createJazzContext({
-          crypto: await WasmCrypto.create(),
+          crypto,
           peersToLoadFrom,
         });
 

@@ -91,7 +91,7 @@ export class IDBStorage {
   ): Promise<Peer> {
     const [localNodeAsPeer, storageAsPeer] = cojsonInternals.connectedPeers(
       localNodeName,
-      "storage",
+      "indexedDB",
       {
         peer1role: "client",
         peer2role: "storage",
