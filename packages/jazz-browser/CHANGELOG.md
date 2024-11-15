@@ -1,5 +1,13 @@
 # jazz-browser
 
+## 0.8.22
+
+### Patch Changes
+
+- f6bc8af: Reuse the crypto instance between OPFS and the jazz context
+- Updated dependencies [f6bc8af]
+  - cojson-storage-indexeddb@0.8.22
+
 ## 0.8.21
 
 ### Patch Changes
