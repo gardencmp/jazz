@@ -57,14 +57,14 @@ const ClerkIllustration = () => (
 
 const MusicIllustration = () => (
   <div className="flex flex-col items-center justify-center h-full p-8">
-    <div className="py-3 px-4 border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center">
+    <div className="py-3 px-8 border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center">
       <CloudUploadIcon
-        size={30}
+        size={40}
         strokeWidth={1.5}
         className="stroke-blue mx-auto dark:stroke-blue-500"
       />
-      <p className="whitespace-nowrap text-xs text-stone-900 dark:text-white">
-        tortured-poets-department.mp3
+      <p className="whitespace-nowrap text-stone-900 dark:text-white">
+        take-five.mp3
       </p>
     </div>
   </div>
