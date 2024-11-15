@@ -1,6 +1,6 @@
+import type { Toc, TocEntry } from "@stefanprobst/rehype-extract-toc";
 import { clsx } from "clsx";
 import Link from "next/link";
-import type { Toc, TocEntry } from '@stefanprobst/rehype-extract-toc'
 
 const TocList = ({ items }: { items: TocEntry[] }) => {
   return (
@@ -27,7 +27,7 @@ export function TableOfContents({
   return (
     <div
       className={clsx(
-        "pl-3 sticky align-start top-[4.75rem] h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden hidden md:block",
+        "pl-3 py-6 text-sm sticky align-start top-[4.75rem] w-[16rem] h-[calc(100vh-108px)] overflow-y-auto overflow-x-hidden hidden lg:block",
         className,
       )}
     >

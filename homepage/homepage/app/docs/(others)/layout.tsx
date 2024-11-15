@@ -10,9 +10,5 @@ export default function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <Prose className="overflow-x-hidden lg:flex-1">
-      {children}
-    </Prose>
-  );
+  return <Prose className="py-6 overflow-x-hidden lg:flex-1">{children}</Prose>;
 }
