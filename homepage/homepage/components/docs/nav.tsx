@@ -16,7 +16,7 @@ export function DocNav({ className }: { className?: string }) {
       className={clsx(
         twMerge(
           "pr-3 md:col-span-4 lg:col-span-3",
-          "sticky align-start top-[4.75rem] h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden",
+          "sticky align-start top-[4.75rem] h-[calc(100vh-108px)] overflow-y-auto overflow-x-hidden",
           "hidden md:block",
           className,
         ),
