@@ -19,6 +19,7 @@ import {
 import {
   Component,
   ComputedRef,
+  MaybeRef,
   PropType,
   Ref,
   ShallowRef,
@@ -31,6 +32,7 @@ import {
   ref,
   shallowRef,
   toRaw,
+  unref,
   watch,
 } from "vue";
 
@@ -56,7 +58,7 @@ export interface JazzVueApp<Acc extends Account> {
 
   useCoState<V extends CoValue, D>(
     Schema: CoValueClass<V>,
-    id: ID<V> | undefined,
+    id: MaybeRef<ID<V> | undefined>,
     depth?: D & DepthsIn<V>,
   ): Ref<DeeplyLoaded<V, D> | undefined>;
 
@@ -181,9 +183,13 @@ export function createJazzVueApp<Acc extends Account>({
       );
     }
 
+    const contextMe = computed(() =>
+      "me" in context.value ? context.value.me : undefined,
+    );
+
     const me = useCoState<Acc, D>(
-      context.value.me.constructor as CoValueClass<Acc>,
-      context.value.me.id,
+      contextMe.value?.constructor as CoValueClass<Acc>,
+      contextMe.value?.id,
       depth,
     );
 
@@ -219,11 +225,13 @@ export function createJazzVueApp<Acc extends Account>({
       throw new Error("useAccountOrGuest must be used within a JazzProvider");
     }
 
-    const contextMe = "me" in context.value ? context.value.me : undefined;
+    const contextMe = computed(() =>
+      "me" in context.value ? context.value.me : undefined,
+    );
 
     const me = useCoState<Acc, D>(
-      contextMe?.constructor as CoValueClass<Acc>,
-      contextMe?.id,
+      contextMe.value?.constructor as CoValueClass<Acc>,
+      contextMe.value?.id,
       depth,
     );
 
@@ -244,7 +252,7 @@ export function createJazzVueApp<Acc extends Account>({
 
   function useCoState<V extends CoValue, D>(
     Schema: CoValueClass<V>,
-    id: ID<V> | undefined,
+    id: MaybeRef<ID<V> | undefined>,
     depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
   ): Ref<DeeplyLoaded<V, D> | undefined> {
     const state: ShallowRef<DeeplyLoaded<V, D> | undefined> =
@@ -258,15 +266,16 @@ export function createJazzVueApp<Acc extends Account>({
     let unsubscribe: (() => void) | undefined;
 
     watch(
-      [() => id, () => context, () => Schema, () => depth],
+      [() => unref(id), () => context, () => Schema, () => depth],
       () => {
         if (unsubscribe) unsubscribe();
 
-        if (!id) return;
+        const idValue = unref(id);
+        if (!idValue) return;
 
         unsubscribe = subscribeToCoValue(
           Schema,
-          id,
+          idValue,
           "me" in context.value
             ? toRaw(context.value.me)
             : toRaw(context.value.guest),
@@ -276,7 +285,7 @@ export function createJazzVueApp<Acc extends Account>({
           },
         );
       },
-      { immediate: true },
+      { deep: true, immediate: true },
     );
 
     onUnmounted(() => {
