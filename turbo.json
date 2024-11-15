@@ -13,7 +13,7 @@
     "test": {
       "dependsOn": ["build"]
     },
-    "type-check": {},
+    "typecheck": {},
     "//#format-and-lint": {},
     "//#format-and-lint:fix": {
       "cache": false

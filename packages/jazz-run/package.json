@@ -5,9 +5,13 @@
   "license": "MIT",
   "version": "0.8.21",
   "scripts": {
+    "dev": "tsup src/index.ts --format esm --watch",
+    "test": "vitest --run --root ../../ --project jazz-run",
+    "test:watch": "vitest --watch --root ../../ --project jazz-run",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "typecheck": "tsc --noEmit --sourceMap -p tsconfig.json",
+    "build": "rm -rf ./dist && tsup src/index.ts --format esm",
     "build-and-run": "pnpm turbo build && chmod +x ./dist/index.js && ./dist/index.js sync --in-memory",
     "prepublishOnly": "npm run build"
   },

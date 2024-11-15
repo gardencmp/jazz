@@ -10,12 +10,13 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "dev": "tsc --watch --sourceMap --outDir dist",
-    "format-and-lint": "biome check .",
-    "format-and-lint:fix": "biome check . --write",
+    "dev": "tsup src/index.ts --format esm --watch",
     "test": "vitest --run --root ../../ --project cojson-transport-ws",
     "test:watch": "vitest --watch --root ../../ --project cojson-transport-ws",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "typecheck": "tsc --noEmit --sourceMap -p tsconfig.json",
+    "build": "rm -rf ./dist && tsup src/index.ts --format esm",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

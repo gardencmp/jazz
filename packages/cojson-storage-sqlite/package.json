@@ -14,10 +14,13 @@
     "@types/better-sqlite3": "^7.6.4"
   },
   "scripts": {
-    "dev": "tsc --watch --sourceMap --outDir dist",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "test": "vitest --run --root ../../ --project cojson-storage-sqlite",
+    "test:watch": "vitest --watch --root ../../ --project cojson-storage-sqlite",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "typecheck": "tsc --noEmit --sourceMap -p tsconfig.json",
+    "build": "rm -rf ./dist && tsup src/index.ts --format esm",
     "prepublishOnly": "npm run build"
   },
   "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"

@@ -37,6 +37,7 @@
     "dev": "tsc --watch --sourceMap --outDir dist",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
+    "typecheck": "tsc --noEmit",
     "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
   },

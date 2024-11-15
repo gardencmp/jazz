@@ -15,9 +15,13 @@
     "react": "^18.2.0"
   },
   "scripts": {
+    "dev": "tsup src/index.ts --format esm --watch",
+    "test": "vitest --run --root ../../ --project jazz-react-auth-clerk",
+    "test:watch": "vitest --watch --root ../../ --project jazz-react-auth-clerk",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "typecheck": "tsc --noEmit --sourceMap -p tsconfig.json",
+    "build": "rm -rf ./dist && tsup src/index.tsx --format esm",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

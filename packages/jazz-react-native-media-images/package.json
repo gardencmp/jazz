@@ -20,10 +20,13 @@
     "react-native": "*"
   },
   "scripts": {
+    "dev": "tsup src/index.ts --format esm --watch",
+    "test": "vitest --run --root ../../ --project jazz-react-native-media-images",
+    "test:watch": "vitest --watch --root ../../ --project jazz-react-native-media-images",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
-    "dev": "tsc --watch --sourceMap --outDir dist",
+    "typecheck": "tsc --noEmit --sourceMap -p tsconfig.json",
+    "build": "rm -rf ./dist && tsup src/index.ts --format esm",
     "prepublishOnly": "npm run build"
   }
 }

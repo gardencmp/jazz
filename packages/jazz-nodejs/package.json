@@ -17,10 +17,13 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "dev": "tsc --watch --sourceMap --outDir dist",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "test": "vitest --run --root ../../ --project jazz-nodejs",
+    "test:watch": "vitest --watch --root ../../ --project jazz-nodejs",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "typecheck": "tsc --noEmit --sourceMap -p tsconfig.json",
+    "build": "rm -rf ./dist && tsup src/index.ts --format esm",
     "prepublishOnly": "npm run build"
   }
 }
