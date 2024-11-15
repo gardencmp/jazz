@@ -1,6 +1,6 @@
 import { CodeGroup } from "@/components/forMdx";
 
-# <span id="vue">VueJS Demo Todo App Guide</span>
+# VueJS Demo Todo App Guide
 
 This guide provides step-by-step instructions for setting up and running a Jazz-powered Todo application using VueJS.
 
@@ -8,7 +8,7 @@ See the full example [here](https://github.com/gardencmp/jazz/tree/main/examples
 
 ---
 
-## <span id="vue-setup">Setup</span>
+## Setup
 
 ### Create a New App
 
@@ -40,7 +40,7 @@ pnpm install jazz-tools jazz-browser jazz-vue
 ```
 </CodeGroup>
 
-### <span id="schema">Implement `schema.ts`</span>
+### Implement `schema.ts`
 
 Define the schema for your application.
 
@@ -204,7 +204,7 @@ const { me, logOut } = useAccount();
 ```
 </CodeGroup>
 
-###  <span id="subscribing">Subscribing to a CoValue</span>
+## Subscribing to a CoValue
 
 Subscribe to a CoValue inside `src/views/HomeView.vue`:
 
@@ -229,7 +229,7 @@ const folders = useCoState(FolderList, computedFoldersId, [{ items: [{}] }]);
 
 See the full example [here](https://github.com/gardencmp/jazz/tree/main/examples/examples/todo-vue).
 
-### <span id="mutating"> Mutating a CoValue</span>
+## Mutating a CoValue
 
 Here's how to create a new folder:
 
