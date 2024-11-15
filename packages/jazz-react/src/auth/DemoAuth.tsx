@@ -85,30 +85,21 @@ export const DemoAuthBasicUI = ({
       ? new URL(window.location.href).searchParams.get("user")
       : undefined;
 
-  const isAutoLogin = !!(
-    user &&
-    (state.state === "ready" || state.state === "signedIn")
-  );
+  console.log(state);
+
+  const isAutoLogin = !!(user && state.state === "ready");
 
   useEffect(() => {
     if (!isAutoLogin) return;
 
-    if (state.state === "ready") {
-      if (state.existingUsers.includes(user)) {
-        state.logInAs(user);
-      } else {
-        state.signUp(user);
-      }
-    }
-
-    if (state.state === "signedIn" && user !== state.username) {
-      state.logOut();
+    if (state.existingUsers.includes(user)) {
+      state.logInAs(user);
+    } else {
+      state.signUp(user);
     }
   }, [isAutoLogin]);
 
   if (isAutoLogin) return <></>;
-
-  if (state.state === "signedIn") return <></>;
 
   return (
     <div
