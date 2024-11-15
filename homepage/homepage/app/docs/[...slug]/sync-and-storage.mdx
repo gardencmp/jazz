@@ -9,7 +9,7 @@ Jazz Cloud will
 - safely persist CoValues on redundant storage nodes with additional backups
 - make use of geographically distributed cache nodes for low latency
 
-### Free Public Alpha <a id="free-public-alpha"/>
+### Free Public Alpha
 
 - Jazz Cloud is free during the public alpha, with no strict usage limits
 - We plan to keep a free tier, so you'll always be able to get started with zero setup
@@ -23,7 +23,7 @@ Jazz Cloud will
     Once we support per-app API keys, we'll email you an API key you can use instead.
 
 
-## Running your own sync server <a id="running-your-own"/>
+## Running your own sync server
 
 You can run your own sync server using:
 
@@ -36,12 +36,12 @@ And then use `ws://localhost:4200` as the sync server URL.
 You can also run this simple sync server behind a proxy that supports WebSockets, for example to provide TLS.
 In this case, provide the WebSocket endpoint your proxy exposes as the sync server URL.
 
-### Command line options: <a id="command-line-options"/>
+### Command line options:
 
 - `--port` / `-p` - the port to run the sync server on. Defaults to 4200.
 - `--in-memory` - keep CoValues in-memory only and do sync only, no persistence. Persistence is enabled by default.
 - `--db` - the path to the file where to store the data (SQLite). Defaults to `sync-db/storage.db`.
 
-### Source code <a id="source-code"/>
+### Source code
 
 The implementation of this simple sync server is available open-source [on GitHub](https://github.com/gardencmp/jazz/blob/main/packages/jazz-run/src/startSync.ts).
