@@ -21,7 +21,7 @@ export type AuthResult =
       type: "existing";
       credentials: Credentials;
       saveCredentials?: (credentials: Credentials) => Promise<void>;
-      onSuccess: () => void;
+      onSuccess: (username?: string) => void;
       onError: (error: string | Error) => void;
       logOut: () => void;
     }
@@ -30,7 +30,7 @@ export type AuthResult =
       creationProps: { name: string };
       initialSecret?: AgentSecret;
       saveCredentials: (credentials: Credentials) => Promise<void>;
-      onSuccess: () => void;
+      onSuccess: (username?: string) => void;
       onError: (error: string | Error) => void;
       logOut: () => void;
     };
@@ -178,7 +178,7 @@ export async function createJazzContext<Acc extends Account>(
             });
           }
 
-          authResult.onSuccess();
+          authResult.onSuccess(account.profile?.name);
 
           return {
             account,
@@ -225,7 +225,7 @@ export async function createJazzContext<Acc extends Account>(
           secret: node.account.agentSecret,
         });
 
-        authResult.onSuccess();
+        authResult.onSuccess(account.profile?.name);
         return {
           account,
           done: () => {
