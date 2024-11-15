@@ -1,5 +1,11 @@
 # cojson-storage-indexeddb
 
+## 0.8.22
+
+### Patch Changes
+
+- f6bc8af: Set up a unique peer id for the indexeddb storage
+
 ## 0.8.21
 
 ### Patch Changes
