@@ -173,16 +173,8 @@ const ConfirmationCard = ({
 
 export function EmployeeOnboading() {
   const { employeeCoId } = useParams();
-  const navigate = useNavigate();
 
   const employee = useCoState(CoEmployee, employeeCoId as ID<CoEmployee>, {});
-
-  useAcceptInvite({
-    invitedObjectSchema: CoEmployee,
-    onAccept: (employeeCoId) => {
-      navigate(`/import/${employeeCoId}`);
-    },
-  });
 
   const handleInviteLinkCreation = useCallback(
     (role: "reader" | "writer") => {
