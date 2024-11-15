@@ -22,7 +22,7 @@ Over time, we're hoping to introduce independent doc sections for every concept 
 Plus, if you get stuck or you have questions, [ask us on Discord](https://discord.gg/utDMjHYg42)
 and we'll know exactly where you're at.
 
-<h2 id="guide-setup">Project Setup</h2>
+## Project Setup
 
 1. Create a project called "circular" from a generic Vite starter template:
 
@@ -104,7 +104,7 @@ This sets Jazz up, extracts app-specific hooks for later, and wraps our app in t
 
 {/* TODO: explain Auth */}
 
-<h2 id="intro-to-covalues">Intro to CoValues</h2>
+## Intro to CoValues
 
 Let's learn about the **central idea** behind Jazz: **Collaborative Values.**
 
@@ -117,7 +117,7 @@ We can
 -   **edit** CoValues, from anywhere, by mutating them like local state
 -   **subscribe to edits** in CoValues, whether they're local or remote
 
-<h3 id="declaring-covalues">Declaring our own CoValues</h3>
+### Declaring our own CoValues
 
 To make our own CoValues, we first need to declare a schema for them. Think of a schema as a combination of TypeScript types and runtime type information.
 
@@ -140,7 +140,7 @@ export class Issue extends CoMap {
 
 {/* TODO: explain what's happening */}
 
-<h3 id="reading-covalues">Reading from CoValues</h3>
+### Reading from CoValues
 
 CoValues are designed to be read like simple local JSON state. Let's see how we can read from an Issue by building a component to render one.
 
@@ -166,7 +166,7 @@ export function IssueComponent({ issue }: { issue: Issue }) {
 
 Simple enough!
 
-<h3 id="creating-covalues">Creating CoValues</h3>
+### Creating CoValues
 
 To actually see an Issue, we have to create one. This is where things start to get interesting...
 
@@ -255,7 +255,7 @@ We'll already notice one interesting thing here:
 
 We'll make use of both of these facts in a bit, but for now let's start with local editing and subscribing.
 
-<h3 id="editing-and-subscription">Editing CoValues and subscribing to edits</h3>
+### Editing CoValues and subscribing to edits
 
 Since we're the owner of the CoValue, we should be able to edit it, right?
 
@@ -427,7 +427,7 @@ This works because CoValues
 
 We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which will cause the `App` component and its children **to** re-render whenever the Issue changes.
 
-<h3 id="persistence">Automatic local & cloud persistence</h3>
+### Automatic local & cloud persistence
 
 So far our Issue CoValues just looked like ephemeral local state. We'll now start exploring the first main feature that makes CoValues special: **automatic persistence.**
 
@@ -479,7 +479,7 @@ export default App; // old
 
 🏁 Now you should be able to create an issue, edit it, reload the page, and still see the same issue.
 
-<h3 id="remote-sync">Remote sync</h3>
+### Remote sync
 
 To see that sync is also already working, try the following:
 
@@ -490,7 +490,7 @@ This works because we load the issue as the same account that created it and own
 
 But how can we share an Issue with someone else?
 
-<h3 id="simple-public-sharing">Simple Public Sharing</h3>
+### Simple Public Sharing
 
 We'll learn more about access control in "Groups & Permissions", but for now let's build a super simple way of sharing an Issue by just making it publicly readable & writable.
 
@@ -545,7 +545,7 @@ export default App; // old
 
 This concludes our intro to the essence of CoValues. Hopefully you're starting to have a feeling for how CoValues behave and how they're magically available everywhere.
 
-<h2 id="refs-and-on-demand-subscribe">Refs & Auto-Subscribe</h2>
+## Refs & Auto-Subscribe
 
 Now let's have a look at how to compose CoValues into more complex structures and build a whole app around them.
 
@@ -682,7 +682,7 @@ Two things to note here:
 -   We only need to use `useCoState` on the Project, and the nested `ListOfIssues` and each `Issue` will be **automatically loaded and subscribed to when we access them.**
 -   However, because either the `Project`, `ListOfIssues`, or each `Issue` might not be loaded yet, we have to check for them being defined.
 
-<h3 id="loading-depth">Precise Loading Depths</h3>
+### Precise Loading Depths
 
 The load-and-subscribe-on-access is a convenient way to have your rendering drive data loading (including in nested components!) and lets you quickly chuck UIs together without worrying too much about the shape of all data you'll need.
 
@@ -732,12 +732,12 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 
 {/* TODO: explain about not loaded vs not set/defined and `_refs` basics */}
 
-<h2 id="groups-and-permissions">Groups & Permissions</h2>
+## Groups & Permissions
 
 We've seen briefly how we can use Groups to give everyone access to a Project,
 and how we can use `{ owner: me }` to make something private to the current user.
 
-<h3 id="groups-accounts-as-scopes">Groups / Accounts as Permission Scopes</h3>
+### Groups / Accounts as Permission Scopes
 
 This gives us a hint of how permissions work in Jazz: **every CoValue has an owner,
 and the access rights on that CoValue are determined by its owner.**
@@ -748,7 +748,7 @@ and the access rights on that CoValue are determined by its owner.**
     - `"writer"`s can read and write to CoValues belonging to the Group.
     - `"admin"`s can read and write to CoValues belonging to the Group *and can add and remove other members from the Group itself.*
 
-<h3 id="creating-invites">Creating Invites</h3>
+### Creating Invites
 
 There is also an abstraction for creating *invitations to join a Group* (with a specific role) that you can use
 to add people without having to know their Account ID.
@@ -850,7 +850,7 @@ export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// 
 ```
 </CodeGroup>
 
-<h3 id="consuming-invites">Consuming Invites</h3>
+### Consuming Invites
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
 </div>
