@@ -30,7 +30,7 @@ export function JazzFooter() {
             },
             {
               href: "https://x.com/jazz_tools",
-              label: "Twitter",
+              label: "X",
               newTab: true,
             },
           ],
