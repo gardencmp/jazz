@@ -18,7 +18,6 @@ type DemoAuthState = (
     }
   | {
       state: "signedIn";
-      username?: string;
       logOut: () => void;
     }
 ) & {
@@ -50,8 +49,8 @@ export function useDemoAuth({
             errors: [],
           });
         },
-        onSignedIn: ({ logOut, username }) => {
-          setState({ state: "signedIn", username, logOut, errors: [] });
+        onSignedIn: ({ logOut }) => {
+          setState({ state: "signedIn", logOut, errors: [] });
         },
         onError: (error) => {
           setState((current) => ({
@@ -75,6 +74,7 @@ export const DemoAuthBasicUI = ({
   state: DemoAuthState;
 }) => {
   const [username, setUsername] = useState<string>("");
+
   const darkMode =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -84,8 +84,6 @@ export const DemoAuthBasicUI = ({
     typeof window !== "undefined"
       ? new URL(window.location.href).searchParams.get("user")
       : undefined;
-
-  console.log(state);
 
   const isAutoLogin = !!(user && state.state === "ready");
 

@@ -4,7 +4,6 @@ import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 type StorageData = {
   accountID: ID<Account>;
   accountSecret: AgentSecret;
-  username: string;
 };
 
 const localStorageKey = "demo-auth-logged-in-secret";
@@ -16,11 +15,11 @@ export class BrowserDemoAuth implements AuthMethod {
       [name: string]: {
         accountID: ID<Account>;
         accountSecret: AgentSecret;
-        username?: string;
       };
     },
   ) {
     for (const [name, credentials] of Object.entries(seedAccounts || {})) {
+      const storageData = JSON.stringify(credentials satisfies StorageData);
       if (
         !(
           localStorage["demo-auth-existing-users"]?.split(",") as
@@ -34,10 +33,7 @@ export class BrowserDemoAuth implements AuthMethod {
           ? localStorage["demo-auth-existing-users"] + "," + name
           : name;
       }
-      localStorage["demo-auth-existing-users-" + name] = JSON.stringify({
-        username: name,
-        ...credentials,
-      } satisfies StorageData);
+      localStorage["demo-auth-existing-users-" + name] = storageData;
     }
   }
 
@@ -54,10 +50,7 @@ export class BrowserDemoAuth implements AuthMethod {
         type: "existing",
         credentials: { accountID, secret },
         onSuccess: () => {
-          this.driver.onSignedIn({
-            logOut,
-            username: localStorageData.username,
-          });
+          this.driver.onSignedIn({ logOut });
         },
         onError: (error: string | Error) => {
           this.driver.onError(error);
@@ -80,7 +73,6 @@ export class BrowserDemoAuth implements AuthMethod {
                 const storageData = JSON.stringify({
                   accountID: credentials.accountID,
                   accountSecret: credentials.secret,
-                  username,
                 } satisfies StorageData);
 
                 localStorage["demo-auth-logged-in-secret"] = storageData;
@@ -120,8 +112,8 @@ export class BrowserDemoAuth implements AuthMethod {
                 accountID: storageData.accountID,
                 secret: storageData.accountSecret,
               },
-              onSuccess: (username) => {
-                this.driver.onSignedIn({ logOut, username });
+              onSuccess: () => {
+                this.driver.onSignedIn({ logOut });
               },
               onError: (error: string | Error) => {
                 this.driver.onError(error);
@@ -146,7 +138,7 @@ export namespace BrowserDemoAuth {
       existingUsers: string[];
       logInAs: (existingUser: string) => Promise<void>;
     }) => void;
-    onSignedIn: (next: { logOut: () => void; username?: string }) => void;
+    onSignedIn: (next: { logOut: () => void }) => void;
     onError: (error: string | Error) => void;
   }
 }
