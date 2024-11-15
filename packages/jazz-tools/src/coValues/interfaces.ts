@@ -1,17 +1,11 @@
 import type { CojsonInternalTypes, RawCoValue } from "cojson";
 import { RawAccount } from "cojson";
-import type { DeeplyLoaded, DepthsIn } from "../internal.js";
-import {
-  Account,
-  AnonymousJazzAgent,
-  Group,
-  Ref,
-  SubscriptionScope,
-  inspect,
-  subscriptionsScopes,
-} from "../internal.js";
+import { AnonymousJazzAgent } from "../implementation/createContext.js";
+import { inspect } from "../implementation/inspect.js";
+import { subscriptionsScopes } from "../implementation/subscriptionScope.js";
 import { coValuesCache } from "../lib/cache.js";
-import { fulfillsDepth } from "./deepLoading.js";
+import { Account } from "./account.js";
+import { Group } from "./group.js";
 
 /** @category Abstract interfaces */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,131 +128,4 @@ export class CoValueBase implements CoValue {
     }
     return casted;
   }
-}
-
-export function loadCoValue<V extends CoValue, Depth>(
-  cls: CoValueClass<V>,
-  id: ID<V>,
-  as: Account | AnonymousJazzAgent,
-  depth: Depth & DepthsIn<V>,
-): Promise<DeeplyLoaded<V, Depth> | undefined> {
-  return new Promise((resolve) => {
-    const unsubscribe = subscribeToCoValue(
-      cls,
-      id,
-      as,
-      depth,
-      (value) => {
-        resolve(value);
-        unsubscribe();
-      },
-      () => {
-        resolve(undefined);
-        unsubscribe();
-      },
-    );
-  });
-}
-
-export function ensureCoValueLoaded<V extends CoValue, Depth>(
-  existing: V,
-  depth: Depth & DepthsIn<V>,
-): Promise<DeeplyLoaded<V, Depth> | undefined> {
-  return loadCoValue(
-    existing.constructor as CoValueClass<V>,
-    existing.id,
-    existing._loadedAs,
-    depth,
-  );
-}
-
-export function subscribeToCoValue<V extends CoValue, Depth>(
-  cls: CoValueClass<V>,
-  id: ID<V>,
-  as: Account | AnonymousJazzAgent,
-  depth: Depth & DepthsIn<V>,
-  listener: (value: DeeplyLoaded<V, Depth>) => void,
-  onUnavailable?: () => void,
-): () => void {
-  const ref = new Ref(id, as, { ref: cls, optional: false });
-
-  let unsubscribed = false;
-  let unsubscribe: (() => void) | undefined;
-
-  ref
-    .load()
-    .then((value) => {
-      if (!value) {
-        onUnavailable && onUnavailable();
-        return;
-      }
-      if (unsubscribed) return;
-      const subscription = new SubscriptionScope(
-        value,
-        cls as CoValueClass<V> & CoValueFromRaw<V>,
-        (update) => {
-          if (fulfillsDepth(depth, update)) {
-            listener(update as DeeplyLoaded<V, Depth>);
-          }
-        },
-      );
-
-      unsubscribe = () => subscription.unsubscribeAll();
-    })
-    .catch((e) => {
-      console.error("Failed to load / subscribe to CoValue", e);
-    });
-
-  return function unsubscribeAtAnyPoint() {
-    unsubscribed = true;
-    unsubscribe && unsubscribe();
-  };
-}
-
-export function createCoValueObservable<V extends CoValue, Depth>() {
-  let currentValue: DeeplyLoaded<V, Depth> | undefined = undefined;
-
-  function subscribe(
-    cls: CoValueClass<V>,
-    id: ID<V>,
-    as: Account | AnonymousJazzAgent,
-    depth: Depth & DepthsIn<V>,
-    listener: () => void,
-    onUnavailable?: () => void,
-  ) {
-    const unsubscribe = subscribeToCoValue(
-      cls,
-      id,
-      as,
-      depth,
-      (value) => {
-        currentValue = value;
-        listener();
-      },
-      onUnavailable,
-    );
-
-    return unsubscribe;
-  }
-
-  const observable = {
-    getCurrentValue: () => currentValue,
-    subscribe,
-  };
-
-  return observable;
-}
-
-export function subscribeToExistingCoValue<V extends CoValue, Depth>(
-  existing: V,
-  depth: Depth & DepthsIn<V>,
-  listener: (value: DeeplyLoaded<V, Depth>) => void,
-): () => void {
-  return subscribeToCoValue(
-    existing.constructor as CoValueClass<V>,
-    existing.id,
-    existing._loadedAs,
-    depth,
-    listener,
-  );
 }

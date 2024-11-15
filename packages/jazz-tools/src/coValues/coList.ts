@@ -1,35 +1,27 @@
 import type { JsonValue, RawCoList } from "cojson";
 import { RawAccount } from "cojson";
-import type {
-  CoValue,
-  CoValueClass,
-  CoValueFromRaw,
-  DeeplyLoaded,
-  DepthsIn,
-  ID,
-  RefEncoded,
-  Schema,
-  SchemaFor,
-  UnCo,
-} from "../internal.js";
+
+import { AnonymousJazzAgent } from "../implementation/createContext.js";
+import { inspect } from "../implementation/inspect.js";
+import { Ref, makeRefs } from "../implementation/refs.js";
 import {
-  Account,
-  AnonymousJazzAgent,
-  Group,
-  ItemsSym,
-  Ref,
-  SchemaInit,
+  type RefEncoded,
+  type Schema,
+  type SchemaFor,
+  type UnCo,
   co,
-  ensureCoValueLoaded,
-  inspect,
   isRefEncoded,
-  loadCoValue,
-  makeRefs,
-  subscribeToCoValue,
-  subscribeToExistingCoValue,
-  subscriptionsScopes,
-} from "../internal.js";
+} from "../implementation/schema.js";
+import { subscriptionsScopes } from "../implementation/subscriptionScope.js";
+import { ItemsSym, SchemaInit } from "../implementation/symbols.js";
 import { coValuesCache } from "../lib/cache.js";
+import { Account } from "./account.js";
+import type { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
+import { Group } from "./group.js";
+import { CoValue, CoValueClass, CoValueFromRaw, ID } from "./interfaces.js";
+import { ensureCoValueLoaded, loadCoValue } from "./load.js";
+import { subscribeToCoValue } from "./subscribe.js";
+import { subscribeToExistingCoValue } from "./subscribe.js";
 
 /**
  * CoLists are collaborative versions of plain arrays.

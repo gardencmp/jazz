@@ -9,7 +9,8 @@ import {
   RawAccountID,
   SessionID,
 } from "cojson";
-import { Account, AccountClass, ID } from "../internal.js";
+import { Account, AccountClass } from "../coValues/account.js";
+import { ID } from "../coValues/interfaces.js";
 
 export type Credentials = {
   accountID: ID<Account>;

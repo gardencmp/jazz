@@ -4,35 +4,26 @@ import {
   type RawCoMap,
   cojsonInternals,
 } from "cojson";
-import type {
-  AnonymousJazzAgent,
-  CoValue,
-  CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
-  Group,
-  ID,
-  IfCo,
-  RefEncoded,
-  RefIfCoValue,
-  Schema,
-  co,
-} from "../internal.js";
+import type { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
+
+import { type AnonymousJazzAgent } from "../implementation/createContext.js";
+import { inspect } from "../implementation/inspect.js";
+import { Ref, type RefIfCoValue, makeRefs } from "../implementation/refs.js";
 import {
-  Account,
-  CoValueBase,
-  ItemsSym,
-  Ref,
-  SchemaInit,
-  ensureCoValueLoaded,
-  inspect,
+  type IfCo,
+  type RefEncoded,
+  type Schema,
+  type co,
   isRefEncoded,
-  loadCoValue,
-  makeRefs,
-  subscribeToCoValue,
-  subscribeToExistingCoValue,
-  subscriptionsScopes,
-} from "../internal.js";
+} from "../implementation/schema.js";
+import { subscriptionsScopes } from "../implementation/subscriptionScope.js";
+import { ItemsSym, SchemaInit } from "../implementation/symbols.js";
+import { Account } from "./account.js";
+import { type Group } from "./group.js";
+import { CoValue, CoValueBase, CoValueClass, ID } from "./interfaces.js";
+import { ensureCoValueLoaded, loadCoValue } from "./load.js";
+import { subscribeToCoValue } from "./subscribe.js";
+import { subscribeToExistingCoValue } from "./subscribe.js";
 
 type CoMapEdit<V> = {
   value?: V;

@@ -1,32 +1,19 @@
 import type { Everyone, RawAccountID, RawGroup, Role } from "cojson";
-import type {
-  CoValue,
-  CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
-  ID,
-  RefEncoded,
-  Schema,
-} from "../internal.js";
+import { Ref } from "../implementation/refs.js";
+import { type RefEncoded, type Schema } from "../implementation/schema.js";
+import { MembersSym } from "../implementation/symbols.js";
 import {
   Account,
   AccountAndGroupProxyHandler,
-  CoMap,
-  CoValueBase,
-  MembersSym,
-  Ref,
-  co,
-  ensureCoValueLoaded,
   isControlledAccount,
-  loadCoValue,
-  subscribeToCoValue,
-  subscribeToExistingCoValue,
-} from "../internal.js";
-
-/** @category Identity & Permissions */
-export class Profile extends CoMap {
-  name = co.string;
-}
+} from "./account.js";
+import type { CoMap } from "./coMap.js";
+import type { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
+import { CoValue, CoValueBase, CoValueClass, ID } from "./interfaces.js";
+import { ensureCoValueLoaded, loadCoValue } from "./load.js";
+import { type Profile } from "./profile.js";
+import { subscribeToCoValue } from "./subscribe.js";
+import { subscribeToExistingCoValue } from "./subscribe.js";
 
 /** @category Identity & Permissions */
 export class Group extends CoValueBase implements CoValue {

@@ -4,11 +4,9 @@ import {
   type CoValue,
   type CoValueClass,
   CoValueFromRaw,
-  ItemsSym,
-  MembersSym,
-  SchemaInit,
   isCoValueClass,
-} from "../internal.js";
+} from "../coValues/interfaces.js";
+import { ItemsSym, MembersSym, SchemaInit } from "../implementation/symbols.js";
 
 /** @category Schema definition */
 export const Encoders = {

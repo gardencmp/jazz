@@ -1,18 +1,15 @@
 import type { CoID, RawCoValue } from "cojson";
-import type {
-  Account,
-  AnonymousJazzAgent,
-  CoValue,
-  ID,
-  RefEncoded,
-  UnCo,
-} from "../internal.js";
+import { type Account } from "../coValues/account.js";
+import { CoValue, ID } from "../coValues/interfaces.js";
+import { coValuesCache } from "../lib/cache.js";
+import { type AnonymousJazzAgent } from "./createContext.js";
 import {
+  type RefEncoded,
+  type UnCo,
   instantiateRefEncoded,
   isRefEncoded,
-  subscriptionsScopes,
-} from "../internal.js";
-import { coValuesCache } from "../lib/cache.js";
+} from "./schema.js";
+import { subscriptionsScopes } from "./subscriptionScope.js";
 
 const TRACE_ACCESSES = false;
 

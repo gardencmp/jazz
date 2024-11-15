@@ -1,5 +1,5 @@
-import { RawCoValue } from "cojson";
-import { CoValue } from "../internal.js";
+import { type RawCoValue } from "cojson";
+import { type CoValue } from "../coValues/interfaces.js";
 
 const weakMap = new WeakMap<RawCoValue, CoValue>();
 

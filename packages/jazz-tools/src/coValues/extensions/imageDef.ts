@@ -1,9 +1,7 @@
-import {
-  BinaryCoStream,
-  CoMap,
-  co,
-  subscriptionsScopes,
-} from "../../internal.js";
+import { co } from "../../implementation/schema.js";
+import { subscriptionsScopes } from "../../implementation/subscriptionScope.js";
+import { CoMap } from "../coMap.js";
+import { BinaryCoStream } from "../coStream.js";
 
 /** @category Media */
 export class ImageDefinition extends CoMap {

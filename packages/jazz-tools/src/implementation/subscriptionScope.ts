@@ -1,12 +1,13 @@
 import type { RawCoValue } from "cojson";
-import type {
-  Account,
-  AnonymousJazzAgent,
-  CoValue,
-  CoValueClass,
+import type { Account } from "../coValues/account.js";
+
+import {
+  type CoValue,
+  type CoValueClass,
   CoValueFromRaw,
   ID,
-} from "../internal.js";
+} from "../coValues/interfaces.js";
+import type { AnonymousJazzAgent } from "./createContext.js";
 
 export const subscriptionsScopes = new WeakMap<
   CoValue,

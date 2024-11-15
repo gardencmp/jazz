@@ -12,31 +12,21 @@ import {
   SessionID,
   cojsonInternals,
 } from "cojson";
-import {
-  AnonymousJazzAgent,
-  CoMap,
-  type CoValue,
-  CoValueBase,
-  CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
-  Group,
-  ID,
-  MembersSym,
-  Profile,
-  Ref,
-  type RefEncoded,
-  RefIfCoValue,
-  type Schema,
-  SchemaInit,
-  ensureCoValueLoaded,
-  inspect,
-  loadCoValue,
-  subscribeToCoValue,
-  subscribeToExistingCoValue,
-  subscriptionsScopes,
-} from "../internal.js";
+import { AnonymousJazzAgent } from "../exports.js";
+import { inspect } from "../implementation/inspect.js";
+import { Ref, type RefIfCoValue } from "../implementation/refs.js";
+import { type RefEncoded, type Schema } from "../implementation/schema.js";
+import { subscriptionsScopes } from "../implementation/subscriptionScope.js";
+import { MembersSym, SchemaInit } from "../implementation/symbols.js";
 import { coValuesCache } from "../lib/cache.js";
+import { CoMap } from "./coMap.js";
+import type { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
+import { Group } from "./group.js";
+import { CoValue, CoValueBase, CoValueClass, ID } from "./interfaces.js";
+import { ensureCoValueLoaded, loadCoValue } from "./load.js";
+import { Profile } from "./profile.js";
+import { subscribeToCoValue } from "./subscribe.js";
+import { subscribeToExistingCoValue } from "./subscribe.js";
 
 /** @category Identity & Permissions */
 export class Account extends CoValueBase implements CoValue {

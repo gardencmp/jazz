@@ -8,32 +8,31 @@ export type {
   SyncMessage,
 } from "cojson";
 
-export type { CoValue, ID } from "./internal.js";
+export type { CoValue, ID, CoValueClass } from "./coValues/interfaces.js";
+export { CoValueBase } from "./coValues/interfaces.js";
+export {
+  subscribeToCoValue,
+  createCoValueObservable,
+} from "./coValues/subscribe.js";
+export { loadCoValue } from "./coValues/load.js";
 
-export { Encoders, co } from "./internal.js";
+export { CoMap, type CoMapInit } from "./coValues/coMap.js";
+
+export { Encoders, co } from "./implementation/schema.js";
 
 export {
   Account,
-  BinaryCoStream,
-  CoList,
-  CoMap,
-  CoStream,
-  CoValueBase,
-  Group,
-  ImageDefinition,
-  Profile,
   isControlledAccount,
   type AccountClass,
-  type CoMapInit,
-  type CoValueClass,
-} from "./internal.js";
-export type { DeeplyLoaded, DepthsIn } from "./internal.js";
+} from "./coValues/account.js";
 
-export {
-  createCoValueObservable,
-  loadCoValue,
-  subscribeToCoValue,
-} from "./internal.js";
+export { CoList } from "./coValues/coList.js";
+export { CoStream, BinaryCoStream } from "./coValues/coStream.js";
+
+export type { DepthsIn, DeeplyLoaded } from "./coValues/deepLoading.js";
+
+export { Group } from "./coValues/group.js";
+export { Profile } from "./coValues/profile.js";
 
 export {
   AnonymousJazzAgent,
@@ -45,4 +44,8 @@ export {
   type AuthMethod,
   type AuthResult,
   type Credentials,
-} from "./internal.js";
+} from "./implementation/createContext.js";
+
+export { ImageDefinition } from "./coValues/extensions/imageDef.js";
+
+import "./implementation/devtoolsFormatters.js";

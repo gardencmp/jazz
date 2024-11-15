@@ -10,33 +10,26 @@ import type {
   SessionID,
 } from "cojson";
 import { MAX_RECOMMENDED_TX_SIZE, cojsonInternals } from "cojson";
-import type {
-  AnonymousJazzAgent,
-  CoValue,
-  CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
-  Group,
-  ID,
-  IfCo,
-  Schema,
-  SchemaFor,
-  UnCo,
-} from "../internal.js";
+import type { DeeplyLoaded, DepthsIn } from "./deepLoading.js";
+
+import type { AnonymousJazzAgent } from "../implementation/createContext.js";
+import { inspect } from "../implementation/inspect.js";
+import { Ref } from "../implementation/refs.js";
 import {
-  Account,
-  CoValueBase,
-  ItemsSym,
-  Ref,
-  SchemaInit,
+  type IfCo,
+  type Schema,
+  type SchemaFor,
+  type UnCo,
   co,
-  ensureCoValueLoaded,
-  inspect,
   isRefEncoded,
-  loadCoValue,
-  subscribeToCoValue,
-  subscribeToExistingCoValue,
-} from "../internal.js";
+} from "../implementation/schema.js";
+import { ItemsSym, SchemaInit } from "../implementation/symbols.js";
+import { Account } from "./account.js";
+import { type Group } from "./group.js";
+import { CoValue, CoValueBase, CoValueClass, ID } from "./interfaces.js";
+import { ensureCoValueLoaded, loadCoValue } from "./load.js";
+import { subscribeToCoValue } from "./subscribe.js";
+import { subscribeToExistingCoValue } from "./subscribe.js";
 
 export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
   all: IterableIterator<SingleCoStreamEntry<Item>>;

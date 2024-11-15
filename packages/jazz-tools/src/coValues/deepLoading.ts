@@ -1,16 +1,12 @@
-import { SessionID } from "cojson";
-import {
-  Account,
-  CoList,
-  CoStream,
-  CoStreamEntry,
-  ItemsSym,
-  Ref,
-  RefEncoded,
-  UnCo,
-} from "../internal.js";
-import { CoKeys, CoMap } from "./coMap.js";
-import { CoValue, ID } from "./interfaces.js";
+import type { SessionID } from "cojson";
+import type { Ref } from "../implementation/refs.js";
+import type { RefEncoded, UnCo } from "../implementation/schema.js";
+import { ItemsSym } from "../implementation/symbols.js";
+import type { Account } from "./account.js";
+import type { CoList } from "./coList.js";
+import type { CoKeys, CoMap } from "./coMap.js";
+import type { CoStream, CoStreamEntry } from "./coStream.js";
+import type { CoValue, ID } from "./interfaces.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fulfillsDepth(depth: any, value: CoValue): boolean {
