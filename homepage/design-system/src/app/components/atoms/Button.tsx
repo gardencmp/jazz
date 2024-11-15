@@ -21,7 +21,7 @@ export function Button(props: ButtonProps) {
 
   const sizeClasses = {
     sm: "text-sm py-1 px-2",
-    md: "py-2 px-3",
+    md: "py-1.5 px-3",
     lg: "md:text-lg  py-2 px-3 md:px-8 md:py-3",
   };
 
