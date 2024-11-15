@@ -2,7 +2,7 @@ import { CodeGroup } from "@/components/forMdx";
 
 # Next.js
 
-## <span id="next-csr">Client-side only</span>
+## Client-side only
 
 The easiest way to use Jazz with Next.JS is to only use it on the client side. You can ensure this by:
 
@@ -39,7 +39,7 @@ The easiest way to use Jazz with Next.JS is to only use it on the client side. Y
 
 - marking any file with components where you use Jazz hooks (such as `useAccount` or `useCoState`) as `"use client"`
 
-## <span id="next-ssr">SSR use (experimental)</span>
+## SSR use (experimental)
 
 Pure SSR use of Jazz is basically just using jazz-nodejs (see [Node.JS / Server Workers](/docs/project-setup/server-side)) inside Server Components.
 
@@ -51,7 +51,7 @@ This should work well for cases like rendering publicly-readable information, si
 
 In the future, it will be possible to use trusted auth methods (such as Clerk, Auth0, etc.) that let you act as the same Jazz user both on the client and on the server, letting you use SSR even for data private to that user.
 
-## <span id="next-ssr-plus-csr">SSR + client-side (experimental)</span>
+## SSR + client-side (experimental)
 
 You can combine the two approaches by creating
 
