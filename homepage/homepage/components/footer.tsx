@@ -48,11 +48,6 @@ export function JazzFooter() {
               label: "Releases",
               newTab: true,
             },
-            {
-              href: "https://github.com/orgs/gardencmp/projects/4/views/3",
-              label: "Roadmap",
-              newTab: true,
-            },
           ],
         },
       ]}
