@@ -166,10 +166,14 @@ export class CoValueState {
     const peersWithRetry = peers.filter((p) => p.retryUnavailableCoValues);
 
     if (peersWithRetry.length > 0) {
-      await runWithRetry(
-        () => doLoad(peersWithRetry),
-        CO_VALUE_LOADING_MAX_RETRIES,
-      );
+      // We want to exit early if the coValue becomes available in between the retries
+      await Promise.race([
+        await runWithRetry(
+          () => doLoad(peersWithRetry),
+          CO_VALUE_LOADING_MAX_RETRIES,
+        ),
+        this.value,
+      ]);
     }
 
     // If after the retries the coValue is still loading, we mark it as unavailable
