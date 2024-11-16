@@ -30,7 +30,7 @@ export function JazzFooter() {
             },
             {
               href: "https://x.com/jazz_tools",
-              label: "Twitter",
+              label: "X",
               newTab: true,
             },
           ],
@@ -46,11 +46,6 @@ export function JazzFooter() {
             {
               href: "https://github.com/gardencmp/jazz/releases",
               label: "Releases",
-              newTab: true,
-            },
-            {
-              href: "https://github.com/orgs/gardencmp/projects/4/views/3",
-              label: "Roadmap",
               newTab: true,
             },
           ],

@@ -240,19 +240,25 @@ export function createJazzReactApp<Acc extends Account>({
     }
 
     useEffect(() => {
-      if (!context) return;
-
-      const result = consumeInviteLinkFromWindowLocation({
-        as: context.me,
-        invitedObjectSchema,
-        forValueHint,
-      });
-
-      result
-        .then((result) => result && onAccept(result?.valueID))
-        .catch((e) => {
-          console.error("Failed to accept invite", e);
+      const handleInvite = () => {
+        const result = consumeInviteLinkFromWindowLocation({
+          as: context.me,
+          invitedObjectSchema,
+          forValueHint,
         });
+
+        result
+          .then((result) => result && onAccept(result?.valueID))
+          .catch((e) => {
+            console.error("Failed to accept invite", e);
+          });
+      };
+
+      handleInvite();
+
+      window.addEventListener("hashchange", handleInvite);
+
+      return () => window.removeEventListener("hashchange", handleInvite);
     }, [onAccept]);
   }
 

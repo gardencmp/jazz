@@ -1,9 +1,9 @@
-import { GardenLogo } from "@/components/GardenLogo";
 import { TilescapeLogo } from "@/components/TilescapeLogo";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import { H2, H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
+import { GcmpLogo } from "gcmp-design-system/src/app/components/atoms/logos/GcmpLogo";
 import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 
@@ -52,7 +52,7 @@ export default function Products() {
 
           <div className="mt-8 space-y-3">
             <div className="flex items-center justify-between gap-4">
-              <GardenLogo className="h-10 w-auto" />
+              <GcmpLogo className="h-10 w-auto" />
               <div>
                 <ComingSoon>Coming 2024</ComingSoon>
               </div>

@@ -1,3 +1,5 @@
+import { clsx } from "clsx";
+
 export function GcmpLogo({
   monochrome,
   className,
@@ -10,7 +12,7 @@ export function GcmpLogo({
       viewBox="0 0 557 164"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={clsx(className, "text-black dark:text-white")}
     >
       <g clipPath="url(#clip0_12197_1172)">
         <path

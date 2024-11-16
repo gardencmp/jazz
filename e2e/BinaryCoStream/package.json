@@ -1,7 +1,7 @@
 {
   "name": "@jazz-e2e/binarycostream",
   "private": true,
-  "version": "0.0.98",
+  "version": "0.0.100",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,11 +13,11 @@
     "test:ui": "playwright test --ui"
   },
   "dependencies": {
-    "cojson": "workspace:0.8.19",
+    "cojson": "workspace:0.8.21",
     "hash-slash": "workspace:0.2.1",
     "is-ci": "^3.0.1",
-    "jazz-react": "workspace:0.8.20",
-    "jazz-tools": "workspace:0.8.19",
+    "jazz-react": "workspace:0.8.22",
+    "jazz-tools": "workspace:0.8.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

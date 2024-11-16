@@ -1,5 +1,23 @@
 # jazz-react
 
+## 0.8.12
+
+### Patch Changes
+
+- a734530: fix useCoState reactivity
+- Updated dependencies [f6bc8af]
+  - jazz-browser@0.8.22
+
+## 0.8.11
+
+### Patch Changes
+
+- Updated dependencies [0f30eea]
+- Updated dependencies [149ca97]
+  - cojson@0.8.21
+  - jazz-tools@0.8.21
+  - jazz-browser@0.8.21
+
 ## 0.8.10
 
 ### Patch Changes
