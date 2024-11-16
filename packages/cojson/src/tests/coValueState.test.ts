@@ -228,6 +228,51 @@ describe("CoValueState", () => {
     vi.useRealTimers();
   });
 
+  test("should handle the coValues that become available in between of the retries", async () => {
+    vi.useFakeTimers();
+
+    let retries = 0;
+
+    const peer1 = {
+      id: "peer1",
+      erroredCoValues: new Set([]),
+      retryUnavailableCoValues: true,
+      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+        retries++;
+        state.dispatch({
+          type: "not-found",
+          peerId: "peer1",
+        });
+
+        if (retries === 2) {
+          setTimeout(() => {
+            state.dispatch({
+              type: "found",
+              peerId: "peer1",
+              coValue: { id: mockCoValueId } as CoValueCore,
+            });
+          }, 100);
+        }
+      }),
+    };
+    const mockPeers = [peer1] as unknown as PeerState[];
+
+    const state = CoValueState.Unknown(mockCoValueId);
+    const loadPromise = state.loadFromPeers(mockPeers);
+
+    // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
+    for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES + 1; i++) {
+      await vi.runAllTimersAsync();
+    }
+
+    await loadPromise;
+
+    expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(2);
+    expect(state.state.type).toBe("available");
+
+    vi.useRealTimers();
+  });
+
   test("should stop retrying when value becomes available", async () => {
     vi.useFakeTimers();
 

@@ -438,7 +438,7 @@ export class LocalNode {
     }
     if (entry.state.type !== "available") {
       throw new Error(
-        `${expectation ? expectation + ": " : ""}CoValue ${id} not yet loaded`,
+        `${expectation ? expectation + ": " : ""}CoValue ${id} not yet loaded. Current state: ${entry.state.type}`,
       );
     }
     return entry.state.coValue;

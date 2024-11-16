@@ -136,6 +136,11 @@ export class CoValueState {
     }
 
     const doLoad = async (peersToLoadFrom: PeerState[]) => {
+      // Check if the coValue has become available in between the retries
+      if (this.state.type === "available") {
+        return true;
+      }
+
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
         this.id,
@@ -161,10 +166,14 @@ export class CoValueState {
     const peersWithRetry = peers.filter((p) => p.retryUnavailableCoValues);
 
     if (peersWithRetry.length > 0) {
-      await runWithRetry(
-        () => doLoad(peersWithRetry),
-        CO_VALUE_LOADING_MAX_RETRIES,
-      );
+      // We want to exit early if the coValue becomes available in between the retries
+      await Promise.race([
+        await runWithRetry(
+          () => doLoad(peersWithRetry),
+          CO_VALUE_LOADING_MAX_RETRIES,
+        ),
+        this.value,
+      ]);
     }
 
     // If after the retries the coValue is still loading, we mark it as unavailable
@@ -187,9 +196,9 @@ export class CoValueState {
         break;
       case "found":
         // When the coValue is found we move in the available state
+        this.state = new CoValueAvailableState(action.coValue);
         state.update(action.peerId, action.coValue);
         this.resolve(action.coValue);
-        this.state = new CoValueAvailableState(action.coValue);
         break;
     }
   }
