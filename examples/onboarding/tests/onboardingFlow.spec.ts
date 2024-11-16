@@ -85,7 +85,7 @@ test.describe("Admin onboarding flow", () => {
     const invitation = await adminOnboardingPage.getShareLink();
 
     // Wait for the invitation to be synced
-    await writerPage.waitForTimeout(1000);
+    await writerPage.waitForTimeout(3000);
 
     //fill out by invitee (writer)
     await writerPage.goto(invitation);
