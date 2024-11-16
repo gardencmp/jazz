@@ -136,6 +136,11 @@ export class CoValueState {
     }
 
     const doLoad = async (peersToLoadFrom: PeerState[]) => {
+      // Check if the coValue has become available in between the retries
+      if (this.state.type === "available") {
+        return true;
+      }
+
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
         this.id,
@@ -187,9 +192,9 @@ export class CoValueState {
         break;
       case "found":
         // When the coValue is found we move in the available state
+        this.state = new CoValueAvailableState(action.coValue);
         state.update(action.peerId, action.coValue);
         this.resolve(action.coValue);
-        this.state = new CoValueAvailableState(action.coValue);
         break;
     }
   }
