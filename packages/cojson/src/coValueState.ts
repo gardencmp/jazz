@@ -116,15 +116,17 @@ export class CoValueState {
       | CoValueAvailableState
       | CoValueUnavailableState,
   ) {
-    if (state.type !== "available") {
+    if (state.type === "unknown" || state.type === "loading") {
       const { promise, resolve } = createResolvablePromise<
         CoValueCore | "unavailable"
       >();
 
       this.value = promise;
       this.resolve = resolve;
-    } else {
+    } else if (state.type === "available") {
       this.value = Promise.resolve(state.coValue);
+    } else {
+      this.value = Promise.resolve("unavailable");
     }
   }
 
@@ -138,6 +140,10 @@ export class CoValueState {
 
   static Available(coValue: CoValueCore) {
     return new CoValueState(coValue.id, new CoValueAvailableState(coValue));
+  }
+
+  static Unavailable(id: RawCoID) {
+    return new CoValueState(id, new CoValueUnavailableState());
   }
 
   async loadFromPeers(peers: PeerState[]) {

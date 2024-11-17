@@ -388,21 +388,18 @@ export class SyncManager {
     let entry = this.local.coValues[msg.id];
 
     if (!entry) {
-      // console.log(`Loading ${msg.id} from all peers except ${peer.id}`);
+      this.local.coValues[msg.id] = entry = CoValueState.Unknown(msg.id);
+    }
 
-      // special case: we should be able to solve this much more neatly
-      // with an explicit state machine in the future
+    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
       const eligiblePeers = this.getServerAndStoragePeers(peer.id);
+
       if (eligiblePeers.length === 0) {
+        // If we know less then the "load" sender and we don't have any eligible
+        // peers to load the coValue from, we try to load it from the sender
         if (msg.header || Object.keys(msg.sessions).length > 0) {
-          this.local.coValues[msg.id] = CoValueState.Loading(msg.id, [peer.id]);
-          this.trySendToPeer(peer, {
-            action: "known",
-            id: msg.id,
-            header: false,
-            sessions: {},
-          }).catch((e) => {
-            console.error("Error sending known state", e);
+          entry.loadFromPeers([peer]).catch((e) => {
+            console.error("Error loading coValue in handleLoad", e);
           });
         }
         return;
@@ -411,17 +408,9 @@ export class SyncManager {
           console.error("Error loading coValue in handleLoad", e);
         });
       }
-
-      entry = this.local.coValues[msg.id]!;
     }
 
-    if (entry.state.type !== "available") {
-      // console.debug(
-      //     "Waiting for loaded",
-      //     msg.id,
-      //     "after message from",
-      //     peer.id,
-      // );
+    if (entry.state.type === "loading") {
       const value = await entry.value;
 
       if (value === "unavailable") {
@@ -445,8 +434,10 @@ export class SyncManager {
       }
     }
 
-    await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-    await this.sendNewContentIncludingDependencies(msg.id, peer);
+    if (entry.state.type === "available") {
+      await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
+      await this.sendNewContentIncludingDependencies(msg.id, peer);
+    }
   }
 
   async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
