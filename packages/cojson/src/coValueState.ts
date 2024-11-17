@@ -89,9 +89,6 @@ type CoValueStateAction =
       peersIds: PeerID[];
     }
   | {
-      type: "load-failed";
-    }
-  | {
       type: "not-found-in-peer";
       peerId: PeerID;
     }
@@ -101,17 +98,19 @@ type CoValueStateAction =
       coValue: CoValueCore;
     };
 
+type CoValueStateType =
+  | CoValueUnknownState
+  | CoValueLoadingState
+  | CoValueAvailableState
+  | CoValueUnavailableState;
+
 export class CoValueState {
   promise?: Promise<CoValueCore | "unavailable">;
   private resolve?: (value: CoValueCore | "unavailable") => void;
 
   constructor(
     public id: RawCoID,
-    public state:
-      | CoValueUnknownState
-      | CoValueLoadingState
-      | CoValueAvailableState
-      | CoValueUnavailableState,
+    public state: CoValueStateType,
   ) {}
 
   static Unknown(id: RawCoID) {
@@ -138,6 +137,8 @@ export class CoValueState {
       return "unavailable";
     }
 
+    // If we don't have a resolved state we return a new promise
+    // that will be resolved when the state will move to available or unavailable
     if (!this.promise) {
       const { promise, resolve } = createResolvablePromise<
         CoValueCore | "unavailable"
@@ -150,12 +151,33 @@ export class CoValueState {
     return this.promise;
   }
 
+  private moveToState(value: CoValueStateType) {
+    this.state = value;
+
+    if (!this.resolve) {
+      return;
+    }
+
+    // If the state is available we resolve the promise
+    // and clear it to handle the possible transition from unavailable to available
+    if (value.type === "available") {
+      this.resolve(value.coValue);
+      this.clearPromise();
+    } else if (value.type === "unavailable") {
+      this.resolve("unavailable");
+      this.clearPromise();
+    }
+  }
+
+  private clearPromise() {
+    this.promise = undefined;
+    this.resolve = undefined;
+  }
+
   async loadFromPeers(peers: PeerState[]) {
     const state = this.state;
 
-    // This method can only be called on unknown states
-    // Otherwise it could mean that it's already loading, available or unavailable
-    if (state.type !== "unknown") {
+    if (state.type !== "unknown" && state.type !== "unavailable") {
       return;
     }
 
@@ -203,9 +225,7 @@ export class CoValueState {
 
     // If after the retries the coValue is still loading, we consider the load failed
     if (this.state.type === "loading") {
-      this.dispatch({
-        type: "load-failed",
-      });
+      this.moveToState(new CoValueUnavailableState());
     }
   }
 
@@ -216,27 +236,17 @@ export class CoValueState {
       case "load-requested":
         // We use this action to reset the loading state
         if (prevState.type === "loading" || prevState.type === "unknown") {
-          this.state = new CoValueLoadingState(action.peersIds);
-        }
-
-        break;
-      case "load-failed":
-        if (prevState.type === "loading") {
-          this.state = new CoValueUnavailableState();
-          this.resolve?.("unavailable");
+          this.moveToState(new CoValueLoadingState(action.peersIds));
         }
 
         break;
       case "found-in-peer":
         if (prevState.type === "loading") {
           prevState.update(action.peerId, action.coValue);
-          this.resolve?.(action.coValue);
-        } else if (prevState.type === "unknown") {
-          this.resolve?.(action.coValue);
         }
 
-        // When the coValue is found we move in the available state
-        this.state = new CoValueAvailableState(action.coValue);
+        // It should be always possible to move to the available state
+        this.moveToState(new CoValueAvailableState(action.coValue));
 
         break;
       case "not-found-in-peer":

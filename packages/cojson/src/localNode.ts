@@ -266,11 +266,11 @@ export class LocalNode {
     // If the CoValue has been never loaded or we tried to load it but
     // was marked as unavailable, we reset the state to unknown.
     // This will trigger a new loading process.
-    if (!entry || entry.state.type === "unavailable") {
+    if (!entry) {
       entry = this.coValues[id] = CoValueState.Unknown(id);
     }
 
-    if (entry.state.type === "unknown") {
+    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
       const peers =
         this.syncManager.getServerAndStoragePeers(skipLoadingFromPeer);
 
