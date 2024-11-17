@@ -225,11 +225,12 @@ export class CoValueState {
         break;
       case "found-in-peer":
         if (prevState.type === "loading") {
-          // When the coValue is found we move in the available state
-          this.state = new CoValueAvailableState(action.coValue);
           prevState.update(action.peerId, action.coValue);
           this.resolve(action.coValue);
         }
+
+        // When the coValue is found we move in the available state
+        this.state = new CoValueAvailableState(action.coValue);
 
         break;
       case "not-found-in-peer":
