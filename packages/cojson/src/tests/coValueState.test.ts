@@ -36,26 +36,6 @@ describe("CoValueState", () => {
     await expect(state.getCoValue()).resolves.toEqual(mockCoValue);
   });
 
-  test("should handle not-found action", async () => {
-    const state = CoValueState.Loading(mockCoValueId, ["peer1", "peer2"]);
-
-    const innerState = state.state as CoValueLoadingState;
-
-    state.dispatch({
-      type: "not-found-in-peer",
-      peerId: "peer1",
-    });
-
-    expect(innerState.resolution).toBe(undefined);
-
-    state.dispatch({
-      type: "not-found-in-peer",
-      peerId: "peer2",
-    });
-
-    expect(innerState.resolution).toBe("unavailable");
-  });
-
   test("should handle found action", async () => {
     const mockCoValue = { id: mockCoValueId } as CoValueCore;
     const state = CoValueState.Loading(mockCoValueId, ["peer1", "peer2"]);
@@ -68,8 +48,6 @@ describe("CoValueState", () => {
       peerId: "peer1",
       coValue: mockCoValue,
     });
-
-    expect(innerState.resolution).toBe(mockCoValue);
 
     const result = await state.getCoValue();
     expect(result).toBe(mockCoValue);

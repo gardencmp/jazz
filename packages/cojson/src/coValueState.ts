@@ -18,7 +18,6 @@ export class CoValueLoadingState {
   private resolve: (value: CoValueCore | "unavailable") => void;
 
   result: Promise<CoValueCore | "unavailable">;
-  resolution: undefined | CoValueCore | "unavailable";
 
   constructor(peersIds: Iterable<PeerID>) {
     this.peers = new Map();
@@ -44,7 +43,6 @@ export class CoValueLoadingState {
 
     if (value !== "unavailable") {
       this.resolve(value);
-      this.resolution = value;
 
       for (const entry of this.peers.values()) {
         entry.resolve();
@@ -60,7 +58,6 @@ export class CoValueLoadingState {
     // If none of the peers have the coValue, we resolve to unavailable
     if (this.peers.size === 0) {
       this.resolve("unavailable");
-      this.resolution = "unavailable";
     }
   }
 
