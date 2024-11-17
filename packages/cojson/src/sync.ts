@@ -488,7 +488,7 @@ export class SyncManager {
 
       if (!availableOnPeer) {
         entry.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: peer.id,
         });
       }
@@ -527,7 +527,7 @@ export class SyncManager {
       coValue = new CoValueCore(msg.header, this.local);
 
       entry.dispatch({
-        type: "found",
+        type: "found-in-peer",
         coValue,
         peerId: peer.id,
       });

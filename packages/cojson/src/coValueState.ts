@@ -45,6 +45,13 @@ export class CoValueLoadingState {
     if (value !== "unavailable") {
       this.resolve(value);
       this.resolution = value;
+
+      for (const entry of this.peers.values()) {
+        entry.resolve();
+      }
+
+      this.peers.clear();
+
       return;
     }
 
@@ -81,11 +88,18 @@ export class CoValueUnavailableState {
 
 type CoValueStateAction =
   | {
-      type: "not-found";
+      type: "load-requested";
+      peersIds: PeerID[];
+    }
+  | {
+      type: "load-failed";
+    }
+  | {
+      type: "not-found-in-peer";
       peerId: PeerID;
     }
   | {
-      type: "found";
+      type: "found-in-peer";
       peerId: PeerID;
       coValue: CoValueCore;
     };
@@ -136,31 +150,32 @@ export class CoValueState {
     }
 
     const doLoad = async (peersToLoadFrom: PeerState[]) => {
-      // Check if the coValue has become available in between the retries
-      if (this.state.type === "available") {
-        return true;
-      }
-
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
         this.id,
       );
 
       // Set the state to loading and reset all the loading promises
-      this.state = new CoValueLoadingState(peersWithoutErrors.map((p) => p.id));
+      const currentState = this.dispatch({
+        type: "load-requested",
+        peersIds: peersWithoutErrors.map((p) => p.id),
+      });
 
-      await loadCoValueFromPeers(this, peersWithoutErrors);
+      // If we entered successfully the loading state, we load the coValue from the peers
+      //
+      // We may not enter the loading state if the coValue has become available in between
+      // of the retries
+      if (currentState.type === "loading") {
+        await loadCoValueFromPeers(this, peersWithoutErrors);
 
-      const result = await this.state.result;
+        const result = await currentState.result;
+        return result !== "unavailable";
+      }
 
-      return result !== "unavailable";
+      return currentState.type === "available";
     };
 
     await doLoad(peers);
-
-    if (this.state.type === "available") {
-      return;
-    }
 
     // Retry loading from peers that have the retry flag enabled
     const peersWithRetry = peers.filter((p) => p.retryUnavailableCoValues);
@@ -176,31 +191,50 @@ export class CoValueState {
       ]);
     }
 
-    // If after the retries the coValue is still loading, we mark it as unavailable
+    // If after the retries the coValue is still loading, we consider the load failed
     if (this.state.type === "loading") {
-      this.state = new CoValueUnavailableState();
-      this.resolve("unavailable");
+      this.dispatch({
+        type: "load-failed",
+      });
     }
   }
 
   dispatch(action: CoValueStateAction) {
-    const state = this.state;
-
-    if (state.type !== "loading") {
-      return;
-    }
+    const prevState = this.state;
 
     switch (action.type) {
-      case "not-found":
-        state.update(action.peerId, "unavailable");
+      case "load-requested":
+        // We use this action to reset the loading state
+        if (prevState.type === "loading" || prevState.type === "unknown") {
+          this.state = new CoValueLoadingState(action.peersIds);
+        }
+
         break;
-      case "found":
-        // When the coValue is found we move in the available state
-        this.state = new CoValueAvailableState(action.coValue);
-        state.update(action.peerId, action.coValue);
-        this.resolve(action.coValue);
+      case "load-failed":
+        if (prevState.type === "loading") {
+          this.state = new CoValueUnavailableState();
+          this.resolve("unavailable");
+        }
+
+        break;
+      case "found-in-peer":
+        if (prevState.type === "loading") {
+          // When the coValue is found we move in the available state
+          this.state = new CoValueAvailableState(action.coValue);
+          prevState.update(action.peerId, action.coValue);
+          this.resolve(action.coValue);
+        }
+
+        break;
+      case "not-found-in-peer":
+        if (prevState.type === "loading") {
+          prevState.update(action.peerId, "unavailable");
+        }
+
         break;
     }
+
+    return this.state;
   }
 }
 

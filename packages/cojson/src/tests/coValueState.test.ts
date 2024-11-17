@@ -42,14 +42,14 @@ describe("CoValueState", () => {
     const innerState = state.state as CoValueLoadingState;
 
     state.dispatch({
-      type: "not-found",
+      type: "not-found-in-peer",
       peerId: "peer1",
     });
 
     expect(innerState.resolution).toBe(undefined);
 
     state.dispatch({
-      type: "not-found",
+      type: "not-found-in-peer",
       peerId: "peer2",
     });
 
@@ -63,7 +63,7 @@ describe("CoValueState", () => {
     const innerState = state.state as CoValueLoadingState;
 
     state.dispatch({
-      type: "found",
+      type: "found-in-peer",
       peerId: "peer1",
       coValue: mockCoValue,
     });
@@ -78,7 +78,7 @@ describe("CoValueState", () => {
     const state = CoValueState.Unknown(mockCoValueId);
 
     state.dispatch({
-      type: "not-found",
+      type: "not-found-in-peer",
       peerId: "peer1",
     });
 
@@ -94,7 +94,7 @@ describe("CoValueState", () => {
       retryUnavailableCoValues: true,
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer1",
         });
       }),
@@ -105,7 +105,7 @@ describe("CoValueState", () => {
       retryUnavailableCoValues: true,
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer2",
         });
       }),
@@ -144,7 +144,7 @@ describe("CoValueState", () => {
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         peer1.erroredCoValues.add(mockCoValueId);
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer1",
         });
       }),
@@ -156,7 +156,7 @@ describe("CoValueState", () => {
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         console.log("pushing not-found from peer2");
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer2",
         });
       }),
@@ -191,7 +191,7 @@ describe("CoValueState", () => {
       retryUnavailableCoValues: false,
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer1",
         });
       }),
@@ -202,7 +202,7 @@ describe("CoValueState", () => {
       retryUnavailableCoValues: true,
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer2",
         });
       }),
@@ -240,14 +240,14 @@ describe("CoValueState", () => {
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         retries++;
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer1",
         });
 
         if (retries === 2) {
           setTimeout(() => {
             state.dispatch({
-              type: "found",
+              type: "found-in-peer",
               peerId: "peer1",
               coValue: { id: mockCoValueId } as CoValueCore,
             });
@@ -285,13 +285,13 @@ describe("CoValueState", () => {
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         if (run > 2) {
           state.dispatch({
-            type: "found",
+            type: "found-in-peer",
             peerId: "peer1",
             coValue: { id: mockCoValueId } as CoValueCore,
           });
         }
         state.dispatch({
-          type: "not-found",
+          type: "not-found-in-peer",
           peerId: "peer1",
         });
         run++;
