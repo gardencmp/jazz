@@ -33,7 +33,7 @@ describe("CoValueState", () => {
     expect(state.id).toBe(mockCoValueId);
     expect(state.state.type).toBe("available");
     expect((state.state as any).coValue).toBe(mockCoValue);
-    await expect(state.value).resolves.toBe(mockCoValue);
+    await expect(state.getCoValue()).resolves.toEqual(mockCoValue);
   });
 
   test("should handle not-found action", async () => {
@@ -61,6 +61,7 @@ describe("CoValueState", () => {
     const state = CoValueState.Loading(mockCoValueId, ["peer1", "peer2"]);
 
     const innerState = state.state as CoValueLoadingState;
+    const stateValuePromise = state.getCoValue();
 
     state.dispatch({
       type: "found-in-peer",
@@ -70,8 +71,9 @@ describe("CoValueState", () => {
 
     expect(innerState.resolution).toBe(mockCoValue);
 
-    const result = await state.value;
+    const result = await state.getCoValue();
     expect(result).toBe(mockCoValue);
+    await expect(stateValuePromise).resolves.toBe(mockCoValue);
   });
 
   test("should ignore actions when not in loading state", () => {
@@ -130,6 +132,7 @@ describe("CoValueState", () => {
       CO_VALUE_LOADING_MAX_RETRIES,
     );
     expect(state.state.type).toBe("unavailable");
+    await expect(state.getCoValue()).resolves.toBe("unavailable");
 
     vi.useRealTimers();
   });
@@ -178,6 +181,7 @@ describe("CoValueState", () => {
       CO_VALUE_LOADING_MAX_RETRIES,
     );
     expect(state.state.type).toBe("unavailable");
+    await expect(state.getCoValue()).resolves.toBe("unavailable");
 
     vi.useRealTimers();
   });
@@ -224,6 +228,7 @@ describe("CoValueState", () => {
       CO_VALUE_LOADING_MAX_RETRIES,
     );
     expect(state.state.type).toBe("unavailable");
+    await expect(state.getCoValue()).resolves.toEqual("unavailable");
 
     vi.useRealTimers();
   });
@@ -269,6 +274,45 @@ describe("CoValueState", () => {
 
     expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(2);
     expect(state.state.type).toBe("available");
+    await expect(state.getCoValue()).resolves.toEqual({ id: mockCoValueId });
+    vi.useRealTimers();
+  });
+
+  test("should have a coValue as value property when becomes available after that have been marked as unavailable", async () => {
+    vi.useFakeTimers();
+
+    const peer1 = {
+      id: "peer1",
+      erroredCoValues: new Set([]),
+      retryUnavailableCoValues: true,
+      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+        state.dispatch({
+          type: "not-found-in-peer",
+          peerId: "peer1",
+        });
+      }),
+    };
+    const mockPeers = [peer1] as unknown as PeerState[];
+
+    const state = CoValueState.Unknown(mockCoValueId);
+    const loadPromise = state.loadFromPeers(mockPeers);
+
+    // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
+    for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES; i++) {
+      await vi.runAllTimersAsync();
+    }
+
+    state.dispatch({
+      type: "found-in-peer",
+      peerId: "peer1",
+      coValue: { id: mockCoValueId } as CoValueCore,
+    });
+
+    await loadPromise;
+
+    expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(5);
+    expect(state.state.type).toBe("available");
+    await expect(state.getCoValue()).resolves.toEqual({ id: mockCoValueId });
 
     vi.useRealTimers();
   });
@@ -310,6 +354,7 @@ describe("CoValueState", () => {
 
     expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(3);
     expect(state.state.type).toBe("available");
+    await expect(state.getCoValue()).resolves.toEqual({ id: mockCoValueId });
 
     vi.useRealTimers();
   });

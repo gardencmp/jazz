@@ -411,7 +411,7 @@ export class SyncManager {
     }
 
     if (entry.state.type === "loading") {
-      const value = await entry.value;
+      const value = await entry.getCoValue();
 
       if (value === "unavailable") {
         peer.dispatchToKnownStates({

@@ -279,7 +279,7 @@ export class LocalNode {
       });
     }
 
-    return entry.value;
+    return entry.getCoValue();
   }
 
   /**

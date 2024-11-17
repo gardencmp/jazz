@@ -105,8 +105,8 @@ type CoValueStateAction =
     };
 
 export class CoValueState {
-  value: Promise<CoValueCore | "unavailable">;
-  private resolve: (value: CoValueCore | "unavailable") => void = () => {};
+  promise?: Promise<CoValueCore | "unavailable">;
+  private resolve?: (value: CoValueCore | "unavailable") => void;
 
   constructor(
     public id: RawCoID,
@@ -115,20 +115,7 @@ export class CoValueState {
       | CoValueLoadingState
       | CoValueAvailableState
       | CoValueUnavailableState,
-  ) {
-    if (state.type === "unknown" || state.type === "loading") {
-      const { promise, resolve } = createResolvablePromise<
-        CoValueCore | "unavailable"
-      >();
-
-      this.value = promise;
-      this.resolve = resolve;
-    } else if (state.type === "available") {
-      this.value = Promise.resolve(state.coValue);
-    } else {
-      this.value = Promise.resolve("unavailable");
-    }
-  }
+  ) {}
 
   static Unknown(id: RawCoID) {
     return new CoValueState(id, new CoValueUnknownState());
@@ -144,6 +131,26 @@ export class CoValueState {
 
   static Unavailable(id: RawCoID) {
     return new CoValueState(id, new CoValueUnavailableState());
+  }
+
+  async getCoValue() {
+    if (this.state.type === "available") {
+      return this.state.coValue;
+    }
+    if (this.state.type === "unavailable") {
+      return "unavailable";
+    }
+
+    if (!this.promise) {
+      const { promise, resolve } = createResolvablePromise<
+        CoValueCore | "unavailable"
+      >();
+
+      this.promise = promise;
+      this.resolve = resolve;
+    }
+
+    return this.promise;
   }
 
   async loadFromPeers(peers: PeerState[]) {
@@ -189,11 +196,11 @@ export class CoValueState {
     if (peersWithRetry.length > 0) {
       // We want to exit early if the coValue becomes available in between the retries
       await Promise.race([
+        this.getCoValue(),
         runWithRetry(
           () => doLoad(peersWithRetry),
           CO_VALUE_LOADING_MAX_RETRIES,
         ),
-        this.value,
       ]);
     }
 
@@ -219,14 +226,16 @@ export class CoValueState {
       case "load-failed":
         if (prevState.type === "loading") {
           this.state = new CoValueUnavailableState();
-          this.resolve("unavailable");
+          this.resolve?.("unavailable");
         }
 
         break;
       case "found-in-peer":
         if (prevState.type === "loading") {
           prevState.update(action.peerId, action.coValue);
-          this.resolve(action.coValue);
+          this.resolve?.(action.coValue);
+        } else if (prevState.type === "unknown") {
+          this.resolve?.(action.coValue);
         }
 
         // When the coValue is found we move in the available state
