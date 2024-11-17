@@ -1,11 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { PeerState } from "../PeerState";
 import { CoValueCore } from "../coValueCore";
-import {
-  CO_VALUE_LOADING_MAX_RETRIES,
-  CoValueLoadingState,
-  CoValueState,
-} from "../coValueState";
+import { CO_VALUE_LOADING_MAX_RETRIES, CoValueState } from "../coValueState";
 import { RawCoID } from "../ids";
 
 describe("CoValueState", () => {
@@ -40,12 +36,10 @@ describe("CoValueState", () => {
     const mockCoValue = { id: mockCoValueId } as CoValueCore;
     const state = CoValueState.Loading(mockCoValueId, ["peer1", "peer2"]);
 
-    const innerState = state.state as CoValueLoadingState;
     const stateValuePromise = state.getCoValue();
 
     state.dispatch({
-      type: "found-in-peer",
-      peerId: "peer1",
+      type: "available",
       coValue: mockCoValue,
     });
 
@@ -230,8 +224,7 @@ describe("CoValueState", () => {
         if (retries === 2) {
           setTimeout(() => {
             state.dispatch({
-              type: "found-in-peer",
-              peerId: "peer1",
+              type: "available",
               coValue: { id: mockCoValueId } as CoValueCore,
             });
           }, 100);
@@ -281,8 +274,7 @@ describe("CoValueState", () => {
     }
 
     state.dispatch({
-      type: "found-in-peer",
-      peerId: "peer1",
+      type: "available",
       coValue: { id: mockCoValueId } as CoValueCore,
     });
 
@@ -307,8 +299,7 @@ describe("CoValueState", () => {
       pushOutgoingMessage: vi.fn().mockImplementation(async () => {
         if (run > 2) {
           state.dispatch({
-            type: "found-in-peer",
-            peerId: "peer1",
+            type: "available",
             coValue: { id: mockCoValueId } as CoValueCore,
           });
         }

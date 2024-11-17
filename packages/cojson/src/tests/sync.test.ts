@@ -807,7 +807,7 @@ test.skip("When replaying creation and transactions of a coValue as new content,
     sessions: {},
   } satisfies SyncMessage);
 
-  expect(node2.coValues[map.core.id]?.state).toEqual("loading");
+  expect(node2.coValuesStore.get(map.core.id).state.type).toEqual("loading");
 
   await inTx2.push(mapNewContentMsg);
 
@@ -1102,7 +1102,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
 
   const mapOnNode2Promise = node2.loadCoValueCore(map.core.id);
 
-  expect(node2.coValues[map.core.id]?.state.type).toEqual("loading");
+  expect(node2.coValuesStore.get(map.core.id).state.type).toEqual("unknown");
 
   node2.syncManager.addPeer(node1asPeer);
 
