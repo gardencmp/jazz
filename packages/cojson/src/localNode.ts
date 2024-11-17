@@ -1,4 +1,5 @@
 import { Result, ResultAsync, err, ok, okAsync } from "neverthrow";
+import { CoValuesStore } from "./CoValuesStore.js";
 import { CoID } from "./coValue.js";
 import { RawCoValue } from "./coValue.js";
 import {
@@ -6,7 +7,6 @@ import {
   CoValueHeader,
   CoValueUniqueness,
 } from "./coValueCore.js";
-import { CoValueState } from "./coValueState.js";
 import {
   AccountMeta,
   ControlledAccountOrAgent,
@@ -45,7 +45,7 @@ export class LocalNode {
   /** @internal */
   crypto: CryptoProvider;
   /** @internal */
-  coValues: { [key: RawCoID]: CoValueState } = {};
+  coValuesStore = new CoValuesStore();
   /** @category 3. Low-level */
   account: ControlledAccountOrAgent;
   /** @category 3. Low-level */
@@ -125,7 +125,8 @@ export class LocalNode {
     );
 
     nodeWithAccount.account = controlledAccount;
-    nodeWithAccount.coValues[controlledAccount.id] = CoValueState.Available(
+    nodeWithAccount.coValuesStore.setAsAvailable(
+      controlledAccount.id,
       controlledAccount.core,
     );
     controlledAccount.core._cachedContent = undefined;
@@ -136,7 +137,7 @@ export class LocalNode {
 
     // we shouldn't need this, but it fixes account data not syncing for new accounts
     function syncAllCoValuesAfterCreateAccount() {
-      for (const coValueEntry of Object.values(nodeWithAccount.coValues)) {
+      for (const coValueEntry of nodeWithAccount.coValuesStore.getValues()) {
         if (coValueEntry.state.type === "available") {
           void nodeWithAccount.syncManager.syncCoValue(
             coValueEntry.state.coValue,
@@ -206,7 +207,7 @@ export class LocalNode {
       node.syncManager.local = node;
 
       controlledAccount.core.node = node;
-      node.coValues[accountID] = CoValueState.Available(controlledAccount.core);
+      node.coValuesStore.setAsAvailable(accountID, controlledAccount.core);
       controlledAccount.core._cachedContent = undefined;
 
       const profileID = account.get("profile");
@@ -243,7 +244,7 @@ export class LocalNode {
     }
 
     const coValue = new CoValueCore(header, this);
-    this.coValues[coValue.id] = CoValueState.Available(coValue);
+    this.coValuesStore.setAsAvailable(coValue.id, coValue);
 
     void this.syncManager.syncCoValue(coValue);
 
@@ -261,14 +262,7 @@ export class LocalNode {
       });
     }
 
-    let entry = this.coValues[id];
-
-    // If the CoValue has been never loaded or we tried to load it but
-    // was marked as unavailable, we reset the state to unknown.
-    // This will trigger a new loading process.
-    if (!entry) {
-      entry = this.coValues[id] = CoValueState.Unknown(id);
-    }
+    const entry = this.coValuesStore.get(id);
 
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
       const peers =
@@ -300,13 +294,12 @@ export class LocalNode {
   }
 
   getLoaded<T extends RawCoValue>(id: CoID<T>): T | undefined {
-    const entry = this.coValues[id];
-    if (!entry) {
-      return undefined;
-    }
+    const entry = this.coValuesStore.get(id);
+
     if (entry.state.type === "available") {
       return entry.state.coValue.getCurrentContent() as T;
     }
+
     return undefined;
   }
 
@@ -430,12 +423,8 @@ export class LocalNode {
 
   /** @internal */
   expectCoValueLoaded(id: RawCoID, expectation?: string): CoValueCore {
-    const entry = this.coValues[id];
-    if (!entry) {
-      throw new Error(
-        `${expectation ? expectation + ": " : ""}Unknown CoValue ${id}`,
-      );
-    }
+    const entry = this.coValuesStore.get(id);
+
     if (entry.state.type !== "available") {
       throw new Error(
         `${expectation ? expectation + ": " : ""}CoValue ${id} not yet loaded. Current state: ${entry.state.type}`,
@@ -632,7 +621,7 @@ export class LocalNode {
   ): LocalNode {
     const newNode = new LocalNode(account, currentSessionID, this.crypto);
 
-    const coValuesToCopy = Object.entries(this.coValues);
+    const coValuesToCopy = Array.from(this.coValuesStore.getEntries());
 
     while (coValuesToCopy.length > 0) {
       const [coValueID, entry] = coValuesToCopy[coValuesToCopy.length - 1]!;
@@ -643,7 +632,9 @@ export class LocalNode {
       } else {
         const allDepsCopied = entry.state.coValue
           .getDependedOnCoValues()
-          .every((dep) => newNode.coValues[dep]?.state.type === "available");
+          .every(
+            (dep) => newNode.coValuesStore.get(dep).state.type === "available",
+          );
 
         if (!allDepsCopied) {
           // move to end of queue
@@ -657,8 +648,7 @@ export class LocalNode {
           new Map(entry.state.coValue.sessionLogs),
         );
 
-        newNode.coValues[coValueID as RawCoID] =
-          CoValueState.Available(newCoValue);
+        newNode.coValuesStore.setAsAvailable(coValueID, newCoValue);
 
         coValuesToCopy.pop();
       }

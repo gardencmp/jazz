@@ -15,7 +15,7 @@ export class CoValueLoadingState {
     PeerID,
     ReturnType<typeof createResolvablePromise<void>>
   >();
-  private resolve: (value: CoValueCore | "unavailable") => void;
+  private resolveResult: (value: CoValueCore | "unavailable") => void;
 
   result: Promise<CoValueCore | "unavailable">;
 
@@ -31,26 +31,14 @@ export class CoValueLoadingState {
     >();
 
     this.result = promise;
-    this.resolve = resolve;
+    this.resolveResult = resolve;
   }
 
-  update(peerId: PeerID, value: CoValueCore | "unavailable") {
+  markAsUnavailable(peerId: PeerID) {
     const entry = this.peers.get(peerId);
 
     if (entry) {
       entry.resolve();
-    }
-
-    if (value !== "unavailable") {
-      this.resolve(value);
-
-      for (const entry of this.peers.values()) {
-        entry.resolve();
-      }
-
-      this.peers.clear();
-
-      return;
     }
 
     this.peers.delete(peerId);
@@ -59,6 +47,14 @@ export class CoValueLoadingState {
     if (this.peers.size === 0) {
       this.resolve("unavailable");
     }
+  }
+
+  resolve(value: CoValueCore | "unavailable") {
+    this.resolveResult(value);
+    for (const entry of this.peers.values()) {
+      entry.resolve();
+    }
+    this.peers.clear();
   }
 
   // Wait for a specific peer to have a known state
@@ -93,8 +89,7 @@ type CoValueStateAction =
       peerId: PeerID;
     }
   | {
-      type: "found-in-peer";
-      peerId: PeerID;
+      type: "available";
       coValue: CoValueCore;
     };
 
@@ -181,6 +176,10 @@ export class CoValueState {
       return;
     }
 
+    if (peers.length === 0) {
+      return;
+    }
+
     const doLoad = async (peersToLoadFrom: PeerState[]) => {
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
@@ -240,9 +239,9 @@ export class CoValueState {
         }
 
         break;
-      case "found-in-peer":
+      case "available":
         if (prevState.type === "loading") {
-          prevState.update(action.peerId, action.coValue);
+          prevState.resolve(action.coValue);
         }
 
         // It should be always possible to move to the available state
@@ -251,7 +250,7 @@ export class CoValueState {
         break;
       case "not-found-in-peer":
         if (prevState.type === "loading") {
-          prevState.update(action.peerId, "unavailable");
+          prevState.markAsUnavailable(action.peerId);
         }
 
         break;
