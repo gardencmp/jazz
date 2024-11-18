@@ -2,9 +2,11 @@ import { CodeGroup } from "@/components/forMdx";
 
 # Accounts & Migrations
 
-Accounts are a core part of the Jazz user system. They are top-level `CoMap`s that store user data. Account data and metadata are publicly visible to other users, so they should only contain information that's safe to share.
+Accounts are a fundamental building block for user identity and data organization in Jazz applications, providing a structured way to manage both public and private user data while maintaining type-safety and access control.
 
-For private data, you should create separate CoMaps nested within the account, owned by the account.
+Account data and metadata are publicly visible to other users.
+
+For private data, we suggest nesting privately owned CoValues within the account.
 
 ## Accounts
 
@@ -15,7 +17,7 @@ To create a custom account type, extend the `Account` class and register it with
 import { Account, CoMap } from "jazz-tools"; 
 
 class MyAccountRoot extends CoMap {
-  privateString = co.string; // Readable by me
+  privateString = co.string; // Readable by the account owner
 }
 
 class MyAccount extends Account {
@@ -25,9 +27,9 @@ class MyAccount extends Account {
 ```
 </CodeGroup>
 
-### Account Schema
+### Schema
 
-When passing the account class to the Jazz runtime, account data is now typed.
+When passing the account class to the Jazz runtime, the schema is used to type account data.
 
 <CodeGroup>
 ```ts
