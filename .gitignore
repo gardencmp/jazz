@@ -16,3 +16,5 @@ coverage
 test-results
 
 .husky
+
+.vscode/settings.json
