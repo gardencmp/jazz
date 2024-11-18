@@ -78,7 +78,6 @@ export interface Peer {
   role: "peer" | "server" | "client" | "storage";
   priority?: number;
   crashOnClose: boolean;
-  retryUnavailableCoValues?: boolean;
 }
 
 export function combinedKnownStates(

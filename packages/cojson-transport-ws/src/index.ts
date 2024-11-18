@@ -18,7 +18,6 @@ export type CreateWebSocketPeerOpts = {
   role: Peer["role"];
   expectPings?: boolean;
   batchingByDefault?: boolean;
-  retryUnavailableCoValues: boolean;
   onClose?: () => void;
 };
 
@@ -119,7 +118,6 @@ export function createWebSocketPeer({
   role,
   expectPings = true,
   batchingByDefault = true,
-  retryUnavailableCoValues,
   onClose,
 }: CreateWebSocketPeerOpts): Peer {
   const incoming = new cojsonInternals.Channel<
@@ -214,6 +212,5 @@ export function createWebSocketPeer({
     },
     role,
     crashOnClose: false,
-    retryUnavailableCoValues,
   };
 }

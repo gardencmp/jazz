@@ -64,7 +64,6 @@ export default function CoJsonViewerApp() {
         id: "cloud",
         websocket: new WebSocket("wss://cloud.jazz.tools"),
         role: "server",
-        retryUnavailableCoValues: true,
       });
       const node = await LocalNode.withLoadedAccount({
         accountID: currentAccount.id,

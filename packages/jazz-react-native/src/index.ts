@@ -71,7 +71,6 @@ export async function createJazzRNContext<Acc extends Account>(
     id: options.peer + "@" + new Date().toISOString(),
     role: "server",
     expectPings: true,
-    retryUnavailableCoValues: true,
   });
   let shouldTryToReconnect = true;
 
@@ -136,7 +135,6 @@ export async function createJazzRNContext<Acc extends Account>(
             websocket: new WebSocket(options.peer),
             id: options.peer + "@" + new Date().toISOString(),
             role: "server",
-            retryUnavailableCoValues: true,
           }),
         );
       }

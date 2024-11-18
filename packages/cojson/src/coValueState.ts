@@ -215,7 +215,9 @@ export class CoValueState {
     await doLoad(peers);
 
     // Retry loading from peers that have the retry flag enabled
-    const peersWithRetry = peers.filter((p) => p.retryUnavailableCoValues);
+    const peersWithRetry = peers.filter((p) =>
+      p.shouldRetryUnavailableCoValues(),
+    );
 
     if (peersWithRetry.length > 0) {
       // We want to exit early if the coValue becomes available in between the retries

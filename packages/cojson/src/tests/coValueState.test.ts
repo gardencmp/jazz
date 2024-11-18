@@ -3,6 +3,7 @@ import { PeerState } from "../PeerState";
 import { CoValueCore } from "../coValueCore";
 import { CO_VALUE_LOADING_MAX_RETRIES, CoValueState } from "../coValueState";
 import { RawCoID } from "../ids";
+import { Peer } from "../sync";
 
 describe("CoValueState", () => {
   const mockCoValueId = "co_test123" as RawCoID;
@@ -62,29 +63,30 @@ describe("CoValueState", () => {
   test("should retry loading from peers when unsuccessful", async () => {
     vi.useFakeTimers();
 
-    const peer1 = {
-      id: "peer1",
-      erroredCoValues: new Set(),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer1",
         });
-      }),
-    };
-    const peer2 = {
-      id: "peer2",
-      erroredCoValues: new Set(),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+      },
+    );
+    const peer2 = createMockPeerState(
+      {
+        id: "peer2",
+        role: "server",
+      },
+      async () => {
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer2",
         });
-      }),
-    };
-
+      },
+    );
     const mockPeers = [peer1, peer2] as unknown as PeerState[];
 
     const state = CoValueState.Unknown(mockCoValueId);
@@ -112,30 +114,32 @@ describe("CoValueState", () => {
   test("should skip errored coValues when loading from peers", async () => {
     vi.useFakeTimers();
 
-    const peer1 = {
-      id: "peer1",
-      erroredCoValues: new Set<RawCoID>(),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
-        peer1.erroredCoValues.add(mockCoValueId);
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
+        peer1.erroredCoValues.set(mockCoValueId, new Error("test") as any);
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer1",
         });
-      }),
-    };
-    const peer2 = {
-      id: "peer2",
-      erroredCoValues: new Set(),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
-        console.log("pushing not-found from peer2");
+      },
+    );
+    const peer2 = createMockPeerState(
+      {
+        id: "peer2",
+        role: "server",
+      },
+      async () => {
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer2",
         });
-      }),
-    };
+      },
+    );
+
     const mockPeers = [peer1, peer2] as unknown as PeerState[];
 
     const state = CoValueState.Unknown(mockCoValueId);
@@ -158,31 +162,33 @@ describe("CoValueState", () => {
     vi.useRealTimers();
   });
 
-  test("should retry only from peers that have the retry flag enabled", async () => {
+  test("should retry only on server peers", async () => {
     vi.useFakeTimers();
 
-    const peer1 = {
-      id: "peer1",
-      erroredCoValues: new Set([]),
-      retryUnavailableCoValues: false,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "storage",
+      },
+      async () => {
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer1",
         });
-      }),
-    };
-    const peer2 = {
-      id: "peer2",
-      erroredCoValues: new Set(),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+      },
+    );
+    const peer2 = createMockPeerState(
+      {
+        id: "peer2",
+        role: "server",
+      },
+      async () => {
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer2",
         });
-      }),
-    };
+      },
+    );
     const mockPeers = [peer1, peer2] as unknown as PeerState[];
 
     const state = CoValueState.Unknown(mockCoValueId);
@@ -210,11 +216,12 @@ describe("CoValueState", () => {
 
     let retries = 0;
 
-    const peer1 = {
-      id: "peer1",
-      erroredCoValues: new Set([]),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
         retries++;
         state.dispatch({
           type: "not-found-in-peer",
@@ -229,8 +236,9 @@ describe("CoValueState", () => {
             });
           }, 100);
         }
-      }),
-    };
+      },
+    );
+
     const mockPeers = [peer1] as unknown as PeerState[];
 
     const state = CoValueState.Unknown(mockCoValueId);
@@ -252,17 +260,19 @@ describe("CoValueState", () => {
   test("should have a coValue as value property when becomes available after that have been marked as unavailable", async () => {
     vi.useFakeTimers();
 
-    const peer1 = {
-      id: "peer1",
-      erroredCoValues: new Set([]),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
         state.dispatch({
           type: "not-found-in-peer",
           peerId: "peer1",
         });
-      }),
-    };
+      },
+    );
+
     const mockPeers = [peer1] as unknown as PeerState[];
 
     const state = CoValueState.Unknown(mockCoValueId);
@@ -292,11 +302,12 @@ describe("CoValueState", () => {
 
     let run = 1;
 
-    const peer1 = {
-      id: "peer1",
-      erroredCoValues: new Set(),
-      retryUnavailableCoValues: true,
-      pushOutgoingMessage: vi.fn().mockImplementation(async () => {
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
         if (run > 2) {
           state.dispatch({
             type: "available",
@@ -308,8 +319,8 @@ describe("CoValueState", () => {
           peerId: "peer1",
         });
         run++;
-      }),
-    };
+      },
+    );
 
     const mockPeers = [peer1] as unknown as PeerState[];
 
@@ -328,3 +339,24 @@ describe("CoValueState", () => {
     vi.useRealTimers();
   });
 });
+
+function createMockPeerState(
+  peer: Partial<Peer>,
+  pushFn = () => Promise.resolve(),
+) {
+  const peerState = new PeerState(
+    {
+      id: "peer",
+      role: "server",
+      outgoing: {
+        push: pushFn,
+      },
+      ...peer,
+    } as Peer,
+    undefined,
+  );
+
+  vi.spyOn(peerState, "pushOutgoingMessage").mockImplementation(pushFn);
+
+  return peerState;
+}
