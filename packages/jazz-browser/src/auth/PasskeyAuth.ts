@@ -148,6 +148,12 @@ export class BrowserPasskeyAuth implements AuthMethod {
             resolve({
               type: "existing",
               credentials: { accountID, secret },
+              saveCredentials: async ({ accountID, secret }) => {
+                localStorage[localStorageKey] = JSON.stringify({
+                  accountID,
+                  accountSecret: secret,
+                } satisfies LocalStorageData);
+              },
               onSuccess: () => {
                 this.driver.onSignedIn({ logOut });
               },
