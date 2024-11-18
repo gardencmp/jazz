@@ -3,6 +3,8 @@ import { clsx } from "clsx";
 import { MessageCircleQuestionIcon, PackageIcon } from "lucide-react";
 import Link from "next/link";
 
+import { DocNav } from "@/components/docs/nav";
+
 const CardHeading = ({
   children,
   className,
