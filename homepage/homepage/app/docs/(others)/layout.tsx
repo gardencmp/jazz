@@ -1,10 +1,5 @@
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
-export const metadata = {
-  title: "Docs",
-  description: "Jazz Guide & Docs.",
-};
-
 export default function DocsLayout({
   children,
 }: {

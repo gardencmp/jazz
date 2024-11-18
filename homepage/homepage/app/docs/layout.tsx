@@ -2,8 +2,8 @@ import { DocNav } from "@/components/docs/nav";
 import { clsx } from "clsx";
 
 export const metadata = {
-  title: "Docs",
-  description: "Jazz Guide & Docs.",
+  title: "Documentation",
+  description: "Jazz guide and documentation.",
 };
 
 export default function DocsLayout({
