@@ -4,7 +4,6 @@ import spdy from "spdy";
 import fs from "fs";
 import path from "path";
 import bodyParser from "body-parser";
-import multer from "multer";
 import {
   CoValue,
   File,
@@ -17,9 +16,12 @@ import {
   tlsCert,
   logger,
   port,
+  CHUNK_SIZE,
 } from "../util";
+import { FileUploadManager, UploadBody } from "./upload-manager";
 
 const app = express();
+const fileManager = new FileUploadManager();
 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("public/client/http"));
@@ -66,8 +68,6 @@ app.get("/covalue/:uuid/binary", (req: Request, res: Response) => {
 
   const stat = fs.statSync(filePath);
   const fileSize = stat.size;
-  const chunkSize = 100 * 1024; // 100KB chunk
-
   const range = req.headers.range;
 
   logger.debug(
@@ -78,7 +78,7 @@ app.get("/covalue/:uuid/binary", (req: Request, res: Response) => {
   if (range) {
     const parts = range.replace(/bytes=/, "").split("-");
     const start = parseInt(parts[0], 10);
-    const end = Math.min(start + chunkSize, fileSize - 1);
+    const end = Math.min(start + CHUNK_SIZE, fileSize - 1);
 
     const contentLength = end - start + 1;
     const file = fs.createReadStream(filePath, { start, end });
@@ -98,6 +98,11 @@ app.get("/covalue/:uuid/binary", (req: Request, res: Response) => {
     };
     res.writeHead(200, head);
     fs.createReadStream(filePath).pipe(res);
+    logger.debug(
+      `Streamed file '${filePath}' of size ${fileSize} (${
+        fileSize / 1_000_000
+      }MB).`,
+    );
   }
 });
 
@@ -112,69 +117,10 @@ app.post("/covalue", (req: Request, res: Response) => {
   res.status(201).json({ m: "OK" });
 });
 
-const upload = multer({ dest: "public/uploads" });
-interface ChunkRequest extends Request {
-  body: {
-    uuid: string;
-    chunk: string;
-    chunks: string;
-  };
-}
-app.post(
-  "/covalue/binary",
-  upload.single("file"),
-  (req: ChunkRequest, res: Response) => {
-    const { uuid, chunk, chunks } = req.body;
-    const chunkIndex = parseInt(chunk, 10);
-    const totalChunks = parseInt(chunks, 10);
-
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({ m: "No file was specified in the upload." });
-    }
-
-    const originalName = req.file.originalname;
-    const ext = originalName.substring(
-      originalName.lastIndexOf("."),
-      originalName.length,
-    );
-    const filename = `${uuid}${ext}`;
-    const tempPath = req.file.path;
-    const targetPath = `public/uploads/${filename}`;
-
-    // Append the chunk to the target file
-    try {
-      fs.appendFileSync(targetPath, fs.readFileSync(tempPath));
-      fs.unlinkSync(tempPath);
-    } catch (err) {
-      const msg = `Error processing chunked upload for file '${filename}'.`;
-      logger.error(msg, err);
-      return res.status(500).json({ m: msg });
-    }
-
-    if (chunkIndex === totalChunks - 1) {
-      // This was the last chunk
-      logger.debug(
-        `Upload of ${totalChunks} chunks of file '${filename}' completed successfully.`,
-      );
-      const file: File = { name: filename, path: targetPath };
-      const covalue: CoValue = {
-        uuid: uuid,
-        lastUpdated: new Date(),
-        author: "",
-        title: "",
-        summary: "",
-        preview: "",
-        url: file,
-      };
-      addCoValue(covalues, covalue);
-      res.status(201).json({ m: "OK" });
-    } else {
-      res.status(200).json({ m: "OK" });
-    }
-  },
-);
+app.post("/covalue/binary", async (req: Request, res: Response) => {
+  const payload = req.body as UploadBody;
+  await fileManager.handleFileChunk(payload, res);
+});
 
 app.patch("/covalue/:uuid", (req: Request, res: Response) => {
   const { uuid } = req.params;

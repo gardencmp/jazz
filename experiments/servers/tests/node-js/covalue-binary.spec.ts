@@ -62,6 +62,9 @@ test.describe('Binary CoValue', () => {
         await page.waitForSelector('#status >> text=Created (binary) data for:');
         options = await page.locator('select#coValueSelect option').all();
 
+        const uuid = await page.locator('select#coValueSelect').evaluate((el: HTMLSelectElement) => el.value);
+        logger.debug(`Creating CoValue with uuid: ${uuid} ...`);
+
         // assert that the CoValues list has increased by 1
         expect(options.length).toEqual(optionsCount + 1);
     });

@@ -13,7 +13,9 @@ import {
   tlsCert,
   logger,
   port,
+  CHUNK_SIZE,
 } from "../util";
+import { FileUploadManager } from "./upload-manager";
 
 import WebSocket from "ws";
 import finalhandler from "finalhandler";
@@ -80,26 +82,7 @@ const server = https.createServer(
 
 // Create WebSocket server
 const wss = new WebSocket.Server({ server });
-
-interface WebSocketMessage {
-  uuid: string;
-  formdata: {
-    filename: string;
-    base64: string;
-    chunk: number;
-    chunks: number;
-  };
-}
-
-interface UploadState {
-  targetPath: string;
-  receivedChunks: Set<number>;
-  totalChunks: number;
-  originalFilename: string;
-}
-
-const uploads = new Map<string, UploadState>();
-const CHUNK_SIZE = 100 * 1024; // 100KB chunk
+const fileManager = new FileUploadManager();
 
 wss.on("connection", (ws: WebSocket) => {
   logger.debug("New WebSocket connection");
@@ -114,9 +97,9 @@ wss.on("connection", (ws: WebSocket) => {
         case "LIST":
           res.action("LIST");
           if (payload && payload === "all") {
-            res.status(200).end(Object.values(covalues));
+            res.status(200).json(Object.values(covalues));
           } else {
-            res.status(200).end(Object.keys(covalues));
+            res.status(200).json(Object.keys(covalues));
           }
           break;
 
@@ -127,7 +110,7 @@ wss.on("connection", (ws: WebSocket) => {
             if (binary) {
               const filePath = covalue.url?.path as string;
               if (!filePath) {
-                res.status(404).end({ m: "CoValue binary file not found" });
+                res.status(404).json({ m: "CoValue binary file not found" });
                 return;
               }
 
@@ -152,7 +135,7 @@ wss.on("connection", (ws: WebSocket) => {
               const contentLength = end - start + 1;
               // const fileStream = fs.createReadStream(filePath, { start, end });
 
-              res.status(202).end({
+              res.status(202).json({
                 fileName: "sample.zip",
                 contentLength,
                 contentType: "application/octet-stream",
@@ -190,20 +173,26 @@ wss.on("connection", (ws: WebSocket) => {
               }
 
               fileStream.on("end", () => {
-                res.status(204).end({ m: "OK" });
+                res.status(204).json({ m: "OK" });
+                logger.debug(
+                  `Streamed file '${filePath}' of size ${fileSize} (${
+                    fileSize / 1_000_000
+                  }MB).`,
+                );
               });
 
               fileStream.on("error", (error) => {
-                res.status(500).end({ m: "Error reading file" });
+                res.status(500).json({ m: "Error reading file" });
                 fileStream.destroy();
               });
 
               sendChunk();
             } else {
-              res.status(200).end(covalue);
+              // send textual CoValue
+              res.status(200).json(covalue);
             }
           } else {
-            res.status(404).end({ m: "CoValue not found" });
+            res.status(404).json({ m: "CoValue not found" });
           }
           break;
 
@@ -211,15 +200,13 @@ wss.on("connection", (ws: WebSocket) => {
           res.action("POST");
           if (payload) {
             if (binary) {
-              // logger.debug(`POST / Create binary CoValue - testing ...`);
-              await handleFileChunk(res, payload);
+              await fileManager.handleFileChunk(payload, res);
             } else {
-              // logger.debug(`POST / Create CoValue ${JSON.stringify(payload)}`);
               addCoValue(covalues, payload);
-              res.status(201).end({ m: "OK" });
+              res.status(201).json({ m: "OK" });
             }
           } else {
-            res.status(400).end({ m: "CoValue cannot be blank" });
+            res.status(400).json({ m: "CoValue cannot be blank" });
           }
           break;
 
@@ -229,13 +216,12 @@ wss.on("connection", (ws: WebSocket) => {
           const existingCovalue = covalues[uuid];
 
           if (existingCovalue) {
-            // logger.debug(`PATCH: ${JSON.stringify(payload)}`);
             if (binary) {
               updateCoValueBinary(existingCovalue, partialCovalue);
             } else {
               updateCoValue(existingCovalue, partialCovalue);
             }
-            res.status(204).end({ m: "OK" });
+            res.status(204).json({ m: "OK" });
 
             // broadcast the mutation to clients
             const event = events.get(uuid) as MutationEvent;
@@ -247,7 +233,7 @@ wss.on("connection", (ws: WebSocket) => {
             );
             res.status(200).action("MUTATION").broadcast(event, ws);
           } else {
-            res.status(404).end({ m: "CoValue not found" });
+            res.status(404).json({ m: "CoValue not found" });
           }
           break;
 
@@ -268,111 +254,22 @@ wss.on("connection", (ws: WebSocket) => {
               `[Client-#${ua}] Closed the WebSocket for: ${subscriptionUuid}.`,
             );
           });
-          res.status(200).end({ m: "OK" });
+          res.status(200).json({ m: "OK" });
           break;
 
         default:
-          res.status(400).action("ERROR").end({ m: "Unknown action" });
+          res.status(400).action("ERROR").json({ m: "Unknown action" });
       }
     } catch (error) {
       logger.error("Error processing WebSocket message:", error);
       new WebSocketResponse(ws, wss)
         .status(500)
         .action("ERROR")
-        .end({ m: "Error processing request" });
+        .json({ m: "Error processing request" });
     }
   });
 });
 
-async function handleFileChunk(
-  res: WebSocketResponse,
-  payload: WebSocketMessage,
-) {
-  const { uuid, formdata } = payload;
-  const { filename, base64, chunk: chunkIndex, chunks: totalChunks } = formdata;
-
-  if (!uploads.has(uuid)) {
-      const ext = filename.substring(
-          filename.lastIndexOf("."),
-          filename.length,
-      );
-      const targetPath = `public/uploads/${uuid}${ext}`;
-
-      uploads.set(uuid, {
-          targetPath,
-          receivedChunks: new Set(),
-          totalChunks,
-          originalFilename: filename,
-      });
-
-      fs.writeFileSync(targetPath, "");
-  }
-
-  const uploadState = uploads.get(uuid)!;
-
-  try {
-      // Check if we already received this chunk
-      if (uploadState.receivedChunks.has(chunkIndex)) {
-        res.status(202).end({ m: `Chunk ${chunkIndex} already received` });
-        return;
-      }
-
-      // Write chunk to file at the correct position
-      const writeStream = fs.createWriteStream(uploadState.targetPath, {
-        flags: "r+",
-        start: chunkIndex * CHUNK_SIZE,
-      });
-
-      const buffer = Buffer.from(base64, "base64");
-      writeStream.write(buffer);
-      writeStream.end();
-
-      // Mark chunk as received
-      uploadState.receivedChunks.add(chunkIndex);
-
-      // Check if upload is complete
-      logger.debug(`Received chunk ${uploadState.receivedChunks.size} of ${totalChunks} with size ${buffer.length}`);
-      if (uploadState.receivedChunks.size === +totalChunks) {
-        await handleCompletedUpload(res, uuid, uploadState);
-        res.status(201).end({ m: "OK" });
-      } else {
-        res.status(200).end({ m: "OK" });
-      }
-  } catch (err: unknown) {
-      const msg = `Error processing chunk ${chunkIndex} for file '${uploadState.originalFilename}'`;
-      if (err instanceof Error) logger.error(err.stack);
-      logger.error(msg, err);
-      res.status(500).end({ m: msg });
-  }
-}
-
-async function handleCompletedUpload(
-  res: WebSocketResponse,
-  uuid: string,
-  uploadState: UploadState,
-) {
-  const file: File = {
-      name: uploadState.originalFilename,
-      path: uploadState.targetPath,
-  };
-
-  const covalue: CoValue = {
-      uuid,
-      lastUpdated: new Date(),
-      author: "",
-      title: "",
-      summary: "",
-      preview: "",
-      url: file,
-  };
-
-  addCoValue(covalues, covalue);
-  uploads.delete(uuid);
-
-  logger.debug(
-      `Chunked upload of ${uploadState.totalChunks} chunks for file '${uploadState.originalFilename}' completed successfully.`,
-  );
-}
 
 // Start the server
 server.listen(port, () => {

@@ -493,6 +493,7 @@
           }
           appendCoValue(coValue);
           logCoValue(coValue);
+          log(`Created (JSON) data for: ${coValue.uuid}.`);
         }
       }
 
@@ -608,7 +609,13 @@
               size: file.size,
               note: "** 50MB binary **",
             };
-            log(`Created (binary) data for: ${coValue.uuid}.`);
+
+            if (!isWS()) {
+              console.log(`Creating (binary) data for ${coValue.uuid} ... file upload complete.`);
+              appendCoValue(coValue);
+              logCoValue(coValue);
+              log(`Created (binary) data for: ${coValue.uuid}.`);
+            }
           } else {
             if (window.faker) {
               coValue.author = faker.person.fullName();
@@ -623,7 +630,6 @@
             }
 
             await createCoValueJSON(url, coValue);
-            log(`Created (JSON) data for: ${coValue.uuid}.`);
           }
         } catch (error) {
           log(
@@ -632,13 +638,13 @@
         }
       }
 
-      async function appendChunk(chunk) {
+      async function base64EncodeChunk(chunk) {
         try {
           const arrayBuffer = await chunk.arrayBuffer();
-          const base64Chunk = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-          return base64Chunk;
+          const uint8Array = new Uint8Array(arrayBuffer);
+          return btoa(String.fromCharCode.apply(null, uint8Array));
         } catch (error) {
-          console.error("Error reading Blob as ArrayBuffer:", error);
+          console.error("Error encoding to base64:", error);
         }
       }
 
@@ -650,54 +656,46 @@
           const start = chunkIndex * chunkSize;
           const end = Math.min(file.size, start + chunkSize);
           const chunk = file.slice(start, end);
-
-          const formData = new FormData();
-          formData.append("file", chunk, file.name);
-          formData.append("uuid", coValue.uuid);
-          formData.append("chunk", chunkIndex);
-          formData.append("chunks", totalChunks);
+          const base64Chunk = await base64EncodeChunk(chunk);
+          const payload = {
+            uuid: coValue.uuid,
+            filename: file.name,
+            chunk: chunkIndex,
+            chunks: totalChunks,
+            base64: base64Chunk,
+          };
 
           try {
             if (isWS()) {
-              formData.delete("file");
-              formData.append("filename", file.name);
-              const base64String = await appendChunk(chunk);
-              formData.append("base64", base64String);
-              let payload = {};
-              for (let [key, value] of formData.entries()) {
-                payload[key] = value;
-              }
-
               sendWhenReady({
                 action: "POST",
                 binary: true,
-                payload: { uuid: `${coValue.uuid}`, formdata: payload },
+                payload: payload,
               });
 
             } else {
               const response = await fetch(url, {
+                headers: {
+                  "Content-Type": "application/json",
+                },
                 method: "POST",
-                body: formData,
+                body: JSON.stringify(payload),
               });
+
               if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP status: ${response.status}`);
+              } else {
+                console.log(
+                `Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`);
               }
-              console.log(
-                `Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully`,
-              );
             }
           } catch (error) {
             console.error(
               `Upload failed at chunk: ${chunkIndex + 1}/${totalChunks}`,
               error,
             );
-            break;
+            throw error;
           }
-        }
-        console.log(`Creating (binary) data for ${coValue.uuid} ... file upload complete.`);
-        if (!isWS()) {
-          appendCoValue(coValue);
-          logCoValue(coValue);
         }
       }
 

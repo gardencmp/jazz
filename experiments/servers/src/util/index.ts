@@ -11,6 +11,8 @@ export const tlsCert = {
   cert: fs.readFileSync("cert/localhost+1.pem"),
 };
 
+export const CHUNK_SIZE = 100 * 1024; // 100KB chunk
+
 const customFormat = winston.format.printf(({ level, message, timestamp }) => {
   return `${level}: [${timestamp}] ${message}`;
 });
@@ -185,7 +187,7 @@ export class WebSocketResponse {
     return this;
   }
 
-  end(data: object): void {
+  json(data: object): void {
     this.ws.send(
       JSON.stringify({
         action: this.actionName,
