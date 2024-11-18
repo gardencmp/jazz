@@ -1,7 +1,6 @@
 import {
   SiBluesky,
   SiGithub,
-  SiGitlab,
   SiLinkedin,
   SiX,
 } from "@icons-pack/react-simple-icons";
@@ -16,7 +15,6 @@ interface TeamMember {
   location: string;
   x?: string;
   github?: string;
-  gitlab?: string;
   website?: string;
   linkedin?: string;
   bluesky?: string;
@@ -67,9 +65,8 @@ const team: Array<TeamMember> = [
     name: "Marina Orlova",
     titles: ["Full-Stack Dev"],
     location: "Tarragona, Spain ",
-    gitlab: "marinaorlova",
     linkedin: "marina-orlova-52a34394",
-    // github: "marinoska",
+    github: "marinoska",
     image: "marina.jpeg",
   },
 ];
@@ -144,13 +141,6 @@ function Person({ person }: { person: TeamMember }) {
               link={`https://bsky.app/profile/${person.bluesky}`}
               icon={SiBluesky}
               label="Bluesky profile"
-            />
-          )}
-          {person.gitlab && (
-            <SocialLink
-              link={`https://gitlab.com/${person.gitlab}`}
-              icon={SiGitlab}
-              label="Gitlab profile"
             />
           )}
           {person.linkedin && (
