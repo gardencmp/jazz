@@ -14,6 +14,7 @@ export { Encoders, co } from "./internal.js";
 
 export {
   Account,
+  FileStream,
   BinaryCoStream,
   CoList,
   CoMap,
