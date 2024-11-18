@@ -98,11 +98,13 @@ export class BrowserPassphraseAuth implements AuthMethod {
             resolve({
               type: "existing",
               credentials: { accountID, secret: accountSecret },
-              onSuccess: () => {
+              saveCredentials: async ({ accountID, secret }) => {
                 localStorage[localStorageKey] = JSON.stringify({
                   accountID,
-                  accountSecret,
+                  accountSecret: secret,
                 } satisfies LocalStorageData);
+              },
+              onSuccess: () => {
                 this.driver.onSignedIn({ logOut });
               },
               onError: (error: string | Error) => {
