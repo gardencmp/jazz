@@ -43,6 +43,52 @@ importers:
         specifier: 1.5.3
         version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0)
 
+  e2e/BinaryCoStream:
+    dependencies:
+      cojson:
+        specifier: workspace:0.8.21
+        version: link:../../packages/cojson
+      hash-slash:
+        specifier: workspace:0.2.1
+        version: link:../../packages/hash-slash
+      is-ci:
+        specifier: ^3.0.1
+        version: 3.0.1
+      jazz-react:
+        specifier: workspace:0.8.22
+        version: link:../../packages/jazz-react
+      jazz-tools:
+        specifier: workspace:0.8.21
+        version: link:../../packages/jazz-tools
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.46.1
+        version: 1.46.1
+      '@types/node':
+        specifier: ^22.5.1
+        version: 22.5.1
+      '@types/react':
+        specifier: ^18.2.19
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.2.18
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.3.2
+        version: 3.5.0(@swc/helpers@0.5.5)(vite@5.0.10(@types/node@22.5.1)(terser@5.33.0))
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.2
+      vite:
+        specifier: ^5.0.10
+        version: 5.0.10(@types/node@22.5.1)(terser@5.33.0)
+
   e2e/CoValues:
     dependencies:
       cojson:
@@ -94,52 +140,6 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
-      vite:
-        specifier: ^5.0.10
-        version: 5.0.10(@types/node@22.5.1)(terser@5.33.0)
-
-  e2e/FileStream:
-    dependencies:
-      cojson:
-        specifier: workspace:0.8.21
-        version: link:../../packages/cojson
-      hash-slash:
-        specifier: workspace:0.2.1
-        version: link:../../packages/hash-slash
-      is-ci:
-        specifier: ^3.0.1
-        version: 3.0.1
-      jazz-react:
-        specifier: workspace:0.8.22
-        version: link:../../packages/jazz-react
-      jazz-tools:
-        specifier: workspace:0.8.21
-        version: link:../../packages/jazz-tools
-      react:
-        specifier: 18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: 18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@playwright/test':
-        specifier: ^1.46.1
-        version: 1.46.1
-      '@types/node':
-        specifier: ^22.5.1
-        version: 22.5.1
-      '@types/react':
-        specifier: ^18.2.19
-        version: 18.2.79
-      '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.2.18
-      '@vitejs/plugin-react-swc':
-        specifier: ^3.3.2
-        version: 3.5.0(@swc/helpers@0.5.5)(vite@5.0.10(@types/node@22.5.1)(terser@5.33.0))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.6.2
       vite:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@22.5.1)(terser@5.33.0)
@@ -14345,7 +14345,7 @@ snapshots:
 
   '@types/react-dom@18.2.18':
     dependencies:
-      '@types/react': 18.2.45
+      '@types/react': 18.2.79
 
   '@types/react-test-renderer@18.3.0':
     dependencies:
