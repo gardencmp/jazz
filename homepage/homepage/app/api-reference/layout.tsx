@@ -15,7 +15,7 @@ export default function Layout({
 }) {
   return (
     <DocsLayout nav={<ApiNav />}>
-      <Prose>{children}</Prose>
+      <Prose className="py-8">{children}</Prose>
     </DocsLayout>
   );
 }
