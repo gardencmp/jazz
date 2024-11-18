@@ -20,9 +20,13 @@ class MyAccountRoot extends CoMap {
   privateString = co.string; // Readable by the account owner
 }
 
+class MyProfile extends Profile {
+  publicString = co.string; // Readable by everyone
+}
+
 class MyAccount extends Account {
   root = co.ref(MyAccountRoot);
-  publicString = co.string; // Readable by everyone
+  profile = co.ref(MyProfile);
 }
 ```
 </CodeGroup>
@@ -37,7 +41,20 @@ When passing the account class to the Jazz runtime, the schema is used to type a
 const Jazz = createJazzReactApp({
   AccountSchema: MyAccount,
 });
+```
+</CodeGroup>
 
+<CodeGroup>
+```ts
+// React Native
+const Jazz = createJazzReactNativeApp({
+  AccountSchema: MyAccount,
+});
+```
+</CodeGroup>
+
+<CodeGroup>
+```ts
 // Vue
 const Jazz = createJazzVueApp({
   AccountSchema: MyAccount,
@@ -60,7 +77,7 @@ class MyAccount extends Account {
 
     if (!this._refs.root) {
       this.root = MyAccountRoot.create({
-        privateString: "Hello, world!",
+        privateString: "Keep it hidden, keep it safe.",
       },
       { owner: this });
     }
