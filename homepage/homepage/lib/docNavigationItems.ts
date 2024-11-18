@@ -44,14 +44,14 @@ export const docNavigationItems = [
         done: 80,
       },
       {
-        name: "Node.JS / Server Workers",
+        name: "Node.JS / server workers",
         href: "/docs/project-setup/server-side",
         done: 80,
       },
     ],
   },
   {
-    name: "Defining Schemas",
+    name: "Defining schemas",
     items: [
       {
         name: "CoValues",
@@ -59,7 +59,7 @@ export const docNavigationItems = [
         done: 20,
       },
       {
-        name: "Accounts & Migrations",
+        name: "Accounts & migrations",
         href: "/docs/schemas/accounts",
         done: 0,
       },
@@ -69,42 +69,42 @@ export const docNavigationItems = [
     name: "Using CoValues",
     items: [
       {
-        name: "Creation & Ownership",
+        name: "Creation & ownership",
         href: "/docs/covalues/creation",
         done: 0,
       },
       {
-        name: "Subscribing & Deep Loading",
+        name: "Subscribing & deep loading",
         href: "/docs/covalues/reading",
         done: 0,
       },
       {
-        name: "Updating & Deleting",
+        name: "Updating & deleting",
         href: "/docs/covalues/updating",
         done: 0,
       },
       {
-        name: "Metadata & Time-travel",
+        name: "Metadata & time-travel",
         href: "/docs/covalues/metadata",
         done: 0,
       },
     ],
   },
   {
-    name: "Groups, Permissions & Sharing",
+    name: "Groups, permissions & sharing",
     items: [
       {
-        name: "Groups as Permission Scopes",
+        name: "Groups as permission scopes",
         href: "/docs/groups/intro",
         done: 0,
       },
       {
-        name: "Public Sharing & Invites",
+        name: "Public sharing & Invites",
         href: "/docs/groups/sharing",
         done: 0,
       },
       {
-        name: "Group Inheritance",
+        name: "Group inheritance",
         href: "/docs/groups/inheritance",
         done: 0,
       },
@@ -114,12 +114,12 @@ export const docNavigationItems = [
     name: "Authentication",
     items: [
       {
-        name: "Auth Methods Overview",
+        name: "Auth methods overview",
         href: "/docs/authentication/auth-methods",
         done: 0,
       },
       {
-        name: "Writing Your Own",
+        name: "Writing your own",
         href: "/docs/authentication/writing-your-own",
         done: 0,
       },
