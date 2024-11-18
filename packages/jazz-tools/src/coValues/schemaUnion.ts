@@ -98,6 +98,7 @@ export abstract class SchemaUnion extends CoValueBase implements CoValue {
    *
    * @internal
    */
+  // @ts-ignore
   static fromRaw<V extends CoValue>(this: CoValueClass<V>, raw: V["_raw"]): V {
     throw new Error("Not implemented");
   }
