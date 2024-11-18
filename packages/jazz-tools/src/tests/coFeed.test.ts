@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   Account,
   BinaryCoStream,
-  CoStream,
+  CoFeed,
   ID,
   WasmCrypto,
   co,
@@ -16,7 +16,7 @@ import { randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
 
-describe("Simple CoStream operations", async () => {
+describe("Simple CoFeed operations", async () => {
   const me = await Account.create({
     creationProps: { name: "Hermes Puggington" },
     crypto: Crypto,
@@ -24,7 +24,7 @@ describe("Simple CoStream operations", async () => {
   if (!isControlledAccount(me)) {
     throw "me is not a controlled account";
   }
-  class TestStream extends CoStream.Of(co.string) {}
+  class TestStream extends CoFeed.Of(co.string) {}
 
   const stream = TestStream.create(["milk"], { owner: me });
 
@@ -46,16 +46,16 @@ describe("Simple CoStream operations", async () => {
   });
 });
 
-describe("CoStream resolution", async () => {
-  class TwiceNestedStream extends CoStream.Of(co.string) {
+describe("CoFeed resolution", async () => {
+  class TwiceNestedStream extends CoFeed.Of(co.string) {
     fancyValueOf(account: ID<Account>) {
       return "Sir " + this[account]?.value;
     }
   }
 
-  class NestedStream extends CoStream.Of(co.ref(TwiceNestedStream)) {}
+  class NestedStream extends CoFeed.Of(co.ref(TwiceNestedStream)) {}
 
-  class TestStream extends CoStream.Of(co.ref(NestedStream)) {}
+  class TestStream extends CoFeed.Of(co.ref(NestedStream)) {}
 
   const initNodeAndStream = async () => {
     const me = await Account.create({

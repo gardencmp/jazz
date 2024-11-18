@@ -3,9 +3,9 @@ import { connectedPeers } from "cojson/src/streamUtils.js";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 import {
   Account,
+  CoFeed,
   CoList,
   CoMap,
-  CoStream,
   WasmCrypto,
   co,
   createJazzContext,
@@ -31,7 +31,7 @@ class Message extends CoMap {
 }
 
 class MessagesList extends CoList.Of(co.ref(Message)) {}
-class ReactionsStream extends CoStream.Of(co.string) {}
+class ReactionsStream extends CoFeed.Of(co.string) {}
 
 async function setupAccount() {
   const me = await Account.create({

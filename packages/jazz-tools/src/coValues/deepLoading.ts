@@ -1,9 +1,9 @@
 import { SessionID } from "cojson";
 import {
   Account,
+  CoFeed,
+  CoFeedEntry,
   CoList,
-  CoStream,
-  CoStreamEntry,
   ItemsSym,
   Ref,
   RefEncoded,
@@ -66,10 +66,10 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
       return true;
     } else {
       const itemDepth = depth[0];
-      return Object.values((value as CoStream).perSession).every((entry) =>
+      return Object.values((value as CoFeed).perSession).every((entry) =>
         entry.ref
           ? entry.value && fulfillsDepth(itemDepth, entry.value)
-          : ((value as CoStream)._schema[ItemsSym] as RefEncoded<CoValue>)
+          : ((value as CoFeed)._schema[ItemsSym] as RefEncoded<CoValue>)
               .optional,
       );
     }
@@ -121,7 +121,7 @@ export type DepthsIn<
               | never[]
           : V extends {
                 _type: "CoStream";
-                byMe: CoStreamEntry<infer Item> | undefined;
+                byMe: CoFeedEntry<infer Item> | undefined;
               }
             ?
                 | [
@@ -192,7 +192,7 @@ export type DeeplyLoaded<
       : [V] extends [
             {
               _type: "CoStream";
-              byMe: CoStreamEntry<infer Item> | undefined;
+              byMe: CoFeedEntry<infer Item> | undefined;
             },
           ]
         ? Depth extends never[]

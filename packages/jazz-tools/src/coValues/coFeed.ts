@@ -38,11 +38,17 @@ import {
   subscribeToExistingCoValue,
 } from "../internal.js";
 
-export type CoStreamEntry<Item> = SingleCoStreamEntry<Item> & {
-  all: IterableIterator<SingleCoStreamEntry<Item>>;
+/** @deprecated Use CoFeedEntry instead */
+export type CoStreamEntry<Item> = CoFeedEntry<Item>;
+
+export type CoFeedEntry<Item> = SingleCoFeedEntry<Item> & {
+  all: IterableIterator<SingleCoFeedEntry<Item>>;
 };
 
-export type SingleCoStreamEntry<Item> = {
+/** @deprecated Use SingleCoFeedEntry instead */
+export type SingleCoStreamEntry<Item> = SingleCoFeedEntry<Item>;
+
+export type SingleCoFeedEntry<Item> = {
   value: NonNullable<Item> extends CoValue ? NonNullable<Item> | null : Item;
   ref: NonNullable<Item> extends CoValue ? Ref<NonNullable<Item>> : never;
   by?: Account | null;
@@ -50,11 +56,14 @@ export type SingleCoStreamEntry<Item> = {
   tx: CojsonInternalTypes.TransactionID;
 };
 
+/** @deprecated Use CoFeed instead */
+export { CoFeed as CoStream };
+
 /** @category CoValues */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class CoStream<Item = any> extends CoValueBase implements CoValue {
-  static Of<Item>(item: IfCo<Item, Item>): typeof CoStream<Item> {
-    return class CoStreamOf extends CoStream<Item> {
+export class CoFeed<Item = any> extends CoValueBase implements CoValue {
+  static Of<Item>(item: IfCo<Item, Item>): typeof CoFeed<Item> {
+    return class CoFeedOf extends CoFeed<Item> {
       [co.items] = item;
     };
   }
@@ -73,12 +82,12 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
   get _schema(): {
     [ItemsSym]: SchemaFor<Item>;
   } {
-    return (this.constructor as typeof CoStream)._schema;
+    return (this.constructor as typeof CoFeed)._schema;
   }
 
-  [key: ID<Account>]: CoStreamEntry<Item>;
+  [key: ID<Account>]: CoFeedEntry<Item>;
 
-  get byMe(): CoStreamEntry<Item> | undefined {
+  get byMe(): CoFeedEntry<Item> | undefined {
     if (this._loadedAs._type === "Account") {
       return this[this._loadedAs.id];
     } else {
@@ -86,9 +95,9 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     }
   }
   perSession!: {
-    [key: SessionID]: CoStreamEntry<Item>;
+    [key: SessionID]: CoFeedEntry<Item>;
   };
-  get inCurrentSession(): CoStreamEntry<Item> | undefined {
+  get inCurrentSession(): CoFeedEntry<Item> | undefined {
     if (this._loadedAs._type === "Account") {
       return this.perSession[this._loadedAs.sessionID!];
     } else {
@@ -116,9 +125,9 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     return new Proxy(this, CoStreamProxyHandler as ProxyHandler<this>);
   }
 
-  static create<S extends CoStream>(
+  static create<S extends CoFeed>(
     this: CoValueClass<S>,
-    init: S extends CoStream<infer Item> ? UnCo<Item>[] : never,
+    init: S extends CoFeed<infer Item> ? UnCo<Item>[] : never,
     options: { owner: Account | Group },
   ) {
     const instance = new this({ init, owner: options.owner });
@@ -197,9 +206,9 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
     return this.toJSON();
   }
 
-  static schema<V extends CoStream>(
+  static schema<V extends CoFeed>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this: { new (...args: any): V } & typeof CoStream,
+    this: { new (...args: any): V } & typeof CoFeed,
     def: { [ItemsSym]: V["_schema"][ItemsSym] },
   ) {
     this._schema ||= {};
@@ -207,7 +216,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  static load<S extends CoStream, Depth>(
+  static load<S extends CoFeed, Depth>(
     this: CoValueClass<S>,
     id: ID<S>,
     as: Account,
@@ -217,7 +226,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  static subscribe<S extends CoStream, Depth>(
+  static subscribe<S extends CoFeed, Depth>(
     this: CoValueClass<S>,
     id: ID<S>,
     as: Account,
@@ -228,7 +237,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  ensureLoaded<S extends CoStream, Depth>(
+  ensureLoaded<S extends CoFeed, Depth>(
     this: S,
     depth: Depth & DepthsIn<S>,
   ): Promise<DeeplyLoaded<S, Depth> | undefined> {
@@ -236,7 +245,7 @@ export class CoStream<Item = any> extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  subscribe<S extends CoStream, Depth>(
+  subscribe<S extends CoFeed, Depth>(
     this: S,
     depth: Depth & DepthsIn<S>,
     listener: (value: DeeplyLoaded<S, Depth>) => void,
@@ -256,7 +265,7 @@ function entryFromRawEntry<Item>(
   loadedAs: Account | AnonymousJazzAgent,
   accountID: ID<Account> | undefined,
   itemField: Schema,
-): Omit<CoStreamEntry<Item>, "all"> {
+): Omit<CoFeedEntry<Item>, "all"> {
   return {
     get value(): NonNullable<Item> extends CoValue
       ? (CoValue & Item) | null
@@ -307,7 +316,7 @@ function entryFromRawEntry<Item>(
   };
 }
 
-export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
+export const CoStreamProxyHandler: ProxyHandler<CoFeed> = {
   get(target, key, receiver) {
     if (typeof key === "string" && key.startsWith("co_")) {
       const rawEntry = target._raw.lastItemBy(key as RawAccountID);
@@ -337,7 +346,7 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
               );
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
+          })() satisfies IterableIterator<SingleCoFeedEntry<any>>;
         },
       });
 
@@ -350,8 +359,8 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
   },
   set(target, key, value, receiver) {
     if (key === ItemsSym && typeof value === "object" && SchemaInit in value) {
-      (target.constructor as typeof CoStream)._schema ||= {};
-      (target.constructor as typeof CoStream)._schema[ItemsSym] =
+      (target.constructor as typeof CoFeed)._schema ||= {};
+      (target.constructor as typeof CoFeed)._schema[ItemsSym] =
         value[SchemaInit];
       return true;
     } else {
@@ -365,8 +374,8 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
       typeof descriptor.value === "object" &&
       SchemaInit in descriptor.value
     ) {
-      (target.constructor as typeof CoStream)._schema ||= {};
-      (target.constructor as typeof CoStream)._schema[ItemsSym] =
+      (target.constructor as typeof CoFeed)._schema ||= {};
+      (target.constructor as typeof CoFeed)._schema[ItemsSym] =
         descriptor.value[SchemaInit];
       return true;
     } else {
@@ -396,8 +405,8 @@ export const CoStreamProxyHandler: ProxyHandler<CoStream> = {
 };
 
 const CoStreamPerSessionProxyHandler = (
-  innerTarget: CoStream,
-  accessFrom: CoStream,
+  innerTarget: CoFeed,
+  accessFrom: CoFeed,
 ): ProxyHandler<Record<string, never>> => ({
   get(_target, key, receiver) {
     if (typeof key === "string" && key.includes("session")) {
@@ -435,7 +444,7 @@ const CoStreamPerSessionProxyHandler = (
               );
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          })() satisfies IterableIterator<SingleCoStreamEntry<any>>;
+          })() satisfies IterableIterator<SingleCoFeedEntry<any>>;
         },
       });
 
