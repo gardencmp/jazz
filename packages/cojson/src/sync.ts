@@ -171,7 +171,7 @@ export class SyncManager {
   }
 
   async subscribeToIncludingDependencies(id: RawCoID, peer: PeerState) {
-    let entry = this.local.coValuesStore.get(id);
+    const entry = this.local.coValuesStore.get(id);
 
     if (entry.state.type !== "available") {
       entry.loadFromPeers([peer]).catch((e: unknown) => {
@@ -381,8 +381,10 @@ export class SyncManager {
       const eligiblePeers = this.getServerAndStoragePeers(peer.id);
 
       if (eligiblePeers.length === 0) {
-        // If we know less then the "load" sender and we don't have any eligible
-        // peers to load the coValue from, we try to load it from the sender
+        // If the load request contains a header or any session data
+        // and we don't have any eligible peers to load the coValue from
+        // we try to load it from the sender because it is the only place
+        // where we can get informations about the coValue
         if (msg.header || Object.keys(msg.sessions).length > 0) {
           entry.loadFromPeers([peer]).catch((e) => {
             console.error("Error loading coValue in handleLoad", e);
