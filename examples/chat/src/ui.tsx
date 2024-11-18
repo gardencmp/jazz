@@ -11,7 +11,7 @@ export function AppContainer(props: { children: React.ReactNode }) {
 
 export function TopBar(props: { children: React.ReactNode }) {
   return (
-    <div className="p-3 bg-white w-full flex justify-end gap-2 border-b dark:bg-transparent dark:border-stone-800">
+    <div className="p-3 bg-white w-full flex justify-between gap-2 border-b dark:bg-transparent dark:border-stone-800">
       {props.children}
     </div>
   );

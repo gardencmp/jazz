@@ -24,7 +24,8 @@ export function App() {
   return (
     <AppContainer>
       <TopBar>
-        <p>{me?.profile?.name}</p> · <button onClick={logOut}>Log out</button>
+        <p>{me?.profile?.name}</p>
+        <button onClick={logOut}>Log out</button>
       </TopBar>
       {router.route({
         "/": () => createChat() as never,

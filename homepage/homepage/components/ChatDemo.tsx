@@ -29,6 +29,7 @@ function Iframe(
         {...dimensions}
         allowFullScreen
       />
+      <div className="absolute top-0 right-0 bg-white w-32 h-12" />
     </div>
   );
 }
