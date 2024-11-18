@@ -1,0 +1,68 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Accounts & Migrations
+
+Accounts are a core part of the Jazz user system. They are top-level `CoMap`s that store user data. Account data and metadata are publicly visible to other users, so they should only contain information that's safe to share.
+
+For private data, you should create separate CoMaps nested within the account, owned by the account.
+
+## Accounts
+
+To create a custom account type, extend the `Account` class and register it with the Jazz runtime.
+
+<CodeGroup>
+```ts
+import { Account, CoMap } from "jazz-tools"; 
+
+class MyAccountRoot extends CoMap {
+  privateString = co.string; // Readable by me
+}
+
+class MyAccount extends Account {
+  root = co.ref(MyAccountRoot);
+  publicString = co.string; // Readable by everyone
+}
+```
+</CodeGroup>
+
+### Account Schema
+
+When passing the account class to the Jazz runtime, account data is now typed.
+
+<CodeGroup>
+```ts
+// React
+const Jazz = createJazzReactApp({
+  AccountSchema: MyAccount,
+});
+
+// Browser
+const Jazz = createJazz({
+  AccountSchema: MyAccount,
+});
+```
+</CodeGroup>
+
+## Migrations
+
+Accounts can be migrated to add new data or update schemas. The `migrate()` method runs automatically when an account is created and each time a user logs in.
+
+You can use migrations to initialize the account root and set up any other required CoValues.
+
+
+<CodeGroup>
+```ts
+class MyAccount extends Account {
+  async migrate() {
+    super.migrate(creationProps);
+
+    if (!this._refs.root) {
+      this.root = MyAccountRoot.create({
+        privateString: "Hello, world!",
+      },
+      { owner: this });
+    }
+  }
+}
+```
+</CodeGroup>
