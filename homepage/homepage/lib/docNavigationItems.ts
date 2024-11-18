@@ -56,12 +56,12 @@ export const docNavigationItems = [
       {
         name: "CoValues",
         href: "/docs/schemas/covalues",
-        done: 20,
+        done: 50,
       },
       {
         name: "Accounts & Migrations",
         href: "/docs/schemas/accounts",
-        done: 0,
+        done: 20,
       },
     ],
   },

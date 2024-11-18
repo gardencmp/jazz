@@ -1,0 +1,87 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Accounts & migrations
+
+Accounts are a fundamental building block for user identity and data organization in Jazz applications, providing a structured way to manage both public and private user data while maintaining type-safety and access control.
+
+Account data and metadata are publicly visible to other users.
+
+For private data, we suggest nesting privately owned CoValues within the account root.
+
+## Accounts
+
+To create a custom account type, extend the `Account` class and register it with the Jazz runtime.
+
+<CodeGroup>
+```ts
+import { Account, CoMap } from "jazz-tools"; 
+
+class MyAccountRoot extends CoMap {
+  privateString = co.string; // Readable by the account owner
+}
+
+class MyProfile extends Profile {
+  publicString = co.string; // Readable by everyone
+}
+
+class MyAccount extends Account {
+  root = co.ref(MyAccountRoot);
+  profile = co.ref(MyProfile);
+}
+```
+</CodeGroup>
+
+### Schema
+
+When passing the account class to the Jazz runtime, the schema is used to type account data.
+
+<CodeGroup>
+```ts
+// React
+const Jazz = createJazzReactApp({
+  AccountSchema: MyAccount,
+});
+```
+</CodeGroup>
+
+<CodeGroup>
+```ts
+// React Native
+const Jazz = createJazzReactNativeApp({
+  AccountSchema: MyAccount,
+});
+```
+</CodeGroup>
+
+<CodeGroup>
+```ts
+// Vue
+const Jazz = createJazzVueApp({
+  AccountSchema: MyAccount,
+});
+```
+</CodeGroup>
+
+## Migrations
+
+Accounts can be migrated to add new data or update schemas. The `migrate()` method runs automatically when an account is created and each time a user logs in.
+
+You can use migrations to initialize the account root and set up any other required CoValues.
+
+
+<CodeGroup>
+```ts
+class MyAccount extends Account {
+  async migrate() {
+    super.migrate(creationProps);
+
+    if (!this._refs.root) {
+      this.root = MyAccountRoot.create({
+        privateString: "Keep it hidden, keep it safe.",
+      },
+      { owner: this });
+    }
+  }
+}
+```
+</CodeGroup>
