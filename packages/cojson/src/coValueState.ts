@@ -186,11 +186,17 @@ export class CoValueState {
         this.id,
       );
 
-      // Set the state to loading and reset all the loading promises
-      const currentState = this.dispatch({
-        type: "load-requested",
-        peersIds: peersWithoutErrors.map((p) => p.id),
-      });
+      // If we are in the loading state we move to a new loading state
+      // to reset all the loading promises
+      if (this.state.type === "loading" || this.state.type === "unknown") {
+        this.moveToState(
+          new CoValueLoadingState(peersWithoutErrors.map((p) => p.id)),
+        );
+      }
+
+      // Assign the current state to a variable to not depend on the state changes
+      // that may happen while we wait for loadCoValueFromPeers to complete
+      const currentState = this.state;
 
       // If we entered successfully the loading state, we load the coValue from the peers
       //
@@ -229,19 +235,12 @@ export class CoValueState {
   }
 
   dispatch(action: CoValueStateAction) {
-    const prevState = this.state;
+    const currentState = this.state;
 
     switch (action.type) {
-      case "load-requested":
-        // We use this action to reset the loading state
-        if (prevState.type === "loading" || prevState.type === "unknown") {
-          this.moveToState(new CoValueLoadingState(action.peersIds));
-        }
-
-        break;
       case "available":
-        if (prevState.type === "loading") {
-          prevState.resolve(action.coValue);
+        if (currentState.type === "loading") {
+          currentState.resolve(action.coValue);
         }
 
         // It should be always possible to move to the available state
@@ -249,14 +248,12 @@ export class CoValueState {
 
         break;
       case "not-found-in-peer":
-        if (prevState.type === "loading") {
-          prevState.markAsUnavailable(action.peerId);
+        if (currentState.type === "loading") {
+          currentState.markAsUnavailable(action.peerId);
         }
 
         break;
     }
-
-    return this.state;
   }
 }
 
