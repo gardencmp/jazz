@@ -10,15 +10,17 @@ const Jazz = createJazzReactApp({
 });
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
+const peer =
+  (new URL(window.location.href).searchParams.get(
+    "peer",
+  ) as `ws://${string}`) ??
+  "wss://cloud.jazz.tools/?key=onboarding-example-jazz@gcmp.io";
+
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, authState] = useDemoAuth();
   return (
     <>
-      <Jazz.Provider
-        auth={auth}
-        // replace `you@example.com` with your email as a temporary API key
-        peer="wss://cloud.jazz.tools/?key=you@example.com"
-      >
+      <Jazz.Provider auth={auth} peer={peer}>
         {children}
       </Jazz.Provider>
       {authState.state !== "signedIn" && (

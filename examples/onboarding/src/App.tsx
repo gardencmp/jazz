@@ -1,5 +1,5 @@
 import { Button } from "@/components/Button.tsx";
-import { useAccount, useCoState } from "@/main.tsx";
+import { useAcceptInvite, useAccount, useCoState } from "@/main.tsx";
 import { EmployeeList } from "@/pages/EmployeeList.tsx";
 import { EmployeeOnboading } from "@/pages/EmployeeOnboarding.tsx";
 import { NewEmployee } from "@/pages/NewEmployee.tsx";
@@ -8,7 +8,7 @@ import { ID } from "jazz-tools";
 import { useEffect } from "react";
 import {
   RouterProvider,
-  createBrowserRouter,
+  createHashRouter,
   useNavigate,
   useParams,
 } from "react-router-dom";
@@ -36,11 +36,24 @@ function ImportEmployee({
   return <div>Importing Employee ${employeeCoId} ...</div>;
 }
 
+function AcceptInvite() {
+  const navigate = useNavigate();
+
+  useAcceptInvite({
+    invitedObjectSchema: CoEmployee,
+    onAccept: (employeeCoId) => {
+      navigate(`/import/${employeeCoId}`);
+    },
+  });
+
+  return <p>Accepting invite...</p>;
+}
+
 function App() {
   const { me, logOut } = useAccount();
   const employeeCoListId = me.profile?._refs.employees.id;
 
-  const router = createBrowserRouter([
+  const router = createHashRouter([
     {
       path: "/",
       element: <EmployeeList employeeListCoId={employeeCoListId} />,
@@ -56,6 +69,10 @@ function App() {
     {
       path: "/import/:employeeCoId",
       element: <ImportEmployee employeeListCoId={employeeCoListId} />,
+    },
+    {
+      path: "/invite/*",
+      element: <AcceptInvite />,
     },
   ]);
 

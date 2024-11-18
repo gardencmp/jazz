@@ -1,4 +1,11 @@
-import { Page, expect, test } from "@playwright/test";
+import {
+  Browser,
+  BrowserContext,
+  Page,
+  chromium,
+  expect,
+  test,
+} from "@playwright/test";
 import { EmployeeOnboardingPage } from "./pages/EmployeeOnboardingPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -29,60 +36,82 @@ const login = async ({
 };
 
 test.describe("Admin onboarding flow", () => {
-  test("Create and delete flow", async ({ page }) => {
-    await login({ page, userName: "HR specialist" });
+  let browser: Browser;
+  let adminContext: BrowserContext;
+  let writerContext: BrowserContext;
 
-    const homePage = new HomePage(page);
-    await homePage.createEmployee("Paul");
-    await homePage.createEmployee("Sean");
-    await homePage.expectEmployee(["Sean", "admin"]);
-    await homePage.expectEmployee(["Paul", "admin"]);
-    await homePage.deleteEmployee("Sean");
-    await homePage.expectEmployeeDeleted("Sean");
+  test.beforeAll(async () => {
+    browser = await chromium.launch();
+    adminContext = await browser.newContext();
+    writerContext = await browser.newContext();
   });
 
-  test("Onboard flow", async ({ page }) => {
+  test.afterAll(async () => {
+    await adminContext.close();
+    await writerContext.close();
+    await browser.close();
+  });
+
+  test("Create and delete flow", async () => {
+    const adminPage = await adminContext.newPage();
+    await login({ page: adminPage, userName: "HR specialist" });
+    const adminHomePage = new HomePage(adminPage);
+    await adminHomePage.createEmployee("Paul");
+    await adminHomePage.createEmployee("Sean");
+    await adminHomePage.expectEmployee(["Sean", "admin"]);
+    await adminHomePage.expectEmployee(["Paul", "admin"]);
+    await adminHomePage.deleteEmployee("Sean");
+    await adminHomePage.expectEmployeeDeleted("Sean");
+
+    await adminPage.close();
+  });
+
+  test("Onboard flow", async () => {
+    const adminPage = await adminContext.newPage();
+    const writerPage = await writerContext.newPage();
+
     const adminUser = "HR specialist";
     const writerUser = "Invitee";
-    await login({ page, userName: adminUser });
+    await login({ page: adminPage, userName: adminUser });
+    await login({ page: writerPage, userName: writerUser });
 
-    const homePage = new HomePage(page);
-    await homePage.createEmployee("Paul");
-    await homePage.expectEmployee(["Paul", "admin"]);
-    await homePage.navigateToEmployeeOnboardingPage("Paul");
-    const onboardingPage = new EmployeeOnboardingPage(page);
+    const adminHomePage = new HomePage(adminPage);
+    await adminHomePage.createEmployee("Paul");
+    await adminHomePage.expectEmployee(["Paul", "admin"]);
+    await adminHomePage.navigateToEmployeeOnboardingPage("Paul");
+    const adminOnboardingPage = new EmployeeOnboardingPage(adminPage);
 
     // create invitation
-    const invitation = await onboardingPage.getShareLink();
-    await onboardingPage.logout();
+    const invitation = await adminOnboardingPage.getShareLink();
+
+    // Wait for the invitation to be synced
+    await writerPage.waitForTimeout(3000);
 
     //fill out by invitee (writer)
-    await login({ page, userName: writerUser });
-    await page.goto(invitation);
-    await page.waitForTimeout(1000);
-    await homePage.expectEmployee(["Paul", "write"]);
-    await homePage.navigateToEmployeeOnboardingPage("Paul");
-    await onboardingPage.expectEmployeeName("Paul");
-    await onboardingPage.fillPersonalDetailsCardAndSave(
+    await writerPage.goto(invitation);
+
+    const writerHomePage = new HomePage(writerPage);
+    await writerHomePage.expectEmployee(["Paul", "write"]);
+    await writerHomePage.navigateToEmployeeOnboardingPage("Paul");
+    const writerOnboardingPage = new EmployeeOnboardingPage(writerPage);
+    await writerOnboardingPage.expectEmployeeName("Paul");
+    await writerOnboardingPage.fillPersonalDetailsCardAndSave(
       "123-45-6789",
       "123 Elm Street",
     );
-    await onboardingPage.fillUploadCardAndSave(
+    await writerOnboardingPage.fillUploadCardAndSave(
       "./public/jazz-logo-low-res.jpg",
     );
 
     // invitee cannot confirm the onboarding completion
-    expect(onboardingPage.finalConfirmationButton.isDisabled()).toBeTruthy();
+    expect(
+      writerOnboardingPage.finalConfirmationButton.isDisabled(),
+    ).toBeTruthy();
 
     // final confirmation step by admin
-    await onboardingPage.logout();
-    await login({ page, userName: adminUser, loginAs: true });
-
-    await homePage.expectEmployee(["Paul", "admin"]);
-    await homePage.navigateToEmployeeOnboardingPage("Paul");
-    await scrollToBottom(page);
-    await onboardingPage.finalConfirmationButton.click();
-    await onboardingPage.backButton.click();
-    await homePage.expectOnboardingCompleteForEmployee("Paul");
+    await scrollToBottom(adminPage);
+    await adminOnboardingPage.finalConfirmationButton.click();
+    await adminOnboardingPage.backButton.click();
+    await adminHomePage.expectOnboardingCompleteForEmployee("Paul");
   });
 });

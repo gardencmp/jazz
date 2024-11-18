@@ -2,13 +2,12 @@ import { Button } from "@/components/Button.tsx";
 import { NavigateBack } from "@/components/NavigateBack.tsx";
 import { Stack } from "@/components/Stack.tsx";
 import { TextInput } from "@/components/TextInput.tsx";
-import { useAcceptInvite, useCoState } from "@/main.tsx";
+import { useCoState } from "@/main.tsx";
 import { createImage } from "jazz-browser-media-images";
 import { ProgressiveImg, createInviteLink } from "jazz-react";
 import { CoMap, ID } from "jazz-tools";
 import { ChangeEvent, ReactNode, useCallback } from "react";
 import { useParams } from "react-router";
-import { useNavigate } from "react-router-dom";
 import {
   CoDocUploadStep,
   CoEmployee,
@@ -173,16 +172,8 @@ const ConfirmationCard = ({
 
 export function EmployeeOnboading() {
   const { employeeCoId } = useParams();
-  const navigate = useNavigate();
 
   const employee = useCoState(CoEmployee, employeeCoId as ID<CoEmployee>, {});
-
-  useAcceptInvite({
-    invitedObjectSchema: CoEmployee,
-    onAccept: (employeeCoId) => {
-      navigate(`/import/${employeeCoId}`);
-    },
-  });
 
   const handleInviteLinkCreation = useCallback(
     (role: "reader" | "writer") => {
