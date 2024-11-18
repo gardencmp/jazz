@@ -79,6 +79,7 @@ export interface Peer {
   role: "peer" | "server" | "client" | "storage";
   priority?: number;
   crashOnClose: boolean;
+  deletePeerStateOnClose?: boolean;
 }
 
 export function combinedKnownStates(
@@ -392,6 +393,10 @@ export class SyncManager {
         const state = this.peers[peer.id];
         state?.gracefulShutdown();
         unsubscribeFromKnownStatesUpdates();
+
+        if (peer.deletePeerStateOnClose) {
+          delete this.peers[peer.id];
+        }
       });
   }
 
