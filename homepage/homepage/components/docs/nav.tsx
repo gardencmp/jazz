@@ -6,7 +6,7 @@ import { clsx } from "clsx";
 export function DocNav({ className }: { className?: string }) {
   return (
     <SideNav items={docNavigationItems} className={clsx(className)}>
-      <SideNavHeader href="/docs/api-reference">API Reference</SideNavHeader>
+      <SideNavHeader href="/api-reference">API Reference</SideNavHeader>
     </SideNav>
   );
 }

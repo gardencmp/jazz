@@ -35,7 +35,7 @@ export async function PackageNavItem({
     <>
       <SideNavItem
         className="mb-1 flex gap-2 items-center"
-        href={`/docs/api-reference/${packageName}`}
+        href={`/api-reference/${packageName}`}
       >
         <PackageIcon size={15} strokeWidth={1.5} />
         {packageName}
@@ -59,7 +59,7 @@ export async function PackageNavItem({
                     <Link
                       key={child.id}
                       className="block py-0.5 text-ellipsis overflow-hidden font-mono hover:text-stone-800 dark:hover:text-stone-200"
-                      href={`/docs/api-reference/${packageName}#${child.name}`}
+                      href={`/api-reference/${packageName}#${child.name}`}
                     >
                       {child.name}
                     </Link>

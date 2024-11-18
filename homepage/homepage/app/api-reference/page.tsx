@@ -62,7 +62,7 @@ export default function Page() {
         {packages.map(({ name, description }) => (
           <Link
             className="not-prose block"
-            href={`/docs/api-reference/${name}`}
+            href={`/api-reference/${name}`}
             key={name}
           >
             <Card className="border shadow-sm">
