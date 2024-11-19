@@ -875,7 +875,7 @@ test("Can sync a coValue through a server to another client", async () => {
     {
       peer1role: "server",
       peer2role: "client",
-      trace: true,
+      // trace: true,
     },
   );
 
@@ -894,7 +894,7 @@ test("Can sync a coValue through a server to another client", async () => {
     {
       peer1role: "server",
       peer2role: "client",
-      trace: true,
+      // trace: true,
     },
   );
 
@@ -926,7 +926,7 @@ test("Can sync a coValue with private transactions through a server to another c
   const server = new LocalNode(serverUser, serverSession, Crypto);
 
   const [serverAsPeer, client1AsPeer] = connectedPeers("server", "client1", {
-    trace: true,
+    // trace: true,
     peer1role: "server",
     peer2role: "client",
   });
@@ -944,7 +944,7 @@ test("Can sync a coValue with private transactions through a server to another c
     "server",
     "client2",
     {
-      trace: true,
+      // trace: true,
       peer1role: "server",
       peer2role: "client",
     },
@@ -1095,7 +1095,7 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
   const [node1asPeer, node2asPeer] = connectedPeers("peer1", "peer2", {
     peer1role: "server",
     peer2role: "client",
-    trace: true,
+    // trace: true,
   });
 
   node1.syncManager.addPeer(node2asPeer);
@@ -1114,6 +1114,59 @@ test("If we start loading a coValue before connecting to a peer that has it, it 
   expect(expectMap(mapOnNode2.getCurrentContent()).get("hello")).toEqual(
     "world",
   );
+});
+
+test("should keep the peer state when the peer closes", async () => {
+  const {
+    client,
+    jazzCloud,
+    jazzCloudConnectionAsPeer,
+    connectionWithClientAsPeer,
+  } = createTwoConnectedNodes();
+
+  const group = jazzCloud.createGroup();
+  const map = group.createMap();
+  map.set("hello", "world", "trusting");
+
+  await client.loadCoValueCore(map.core.id);
+
+  const syncManager = client.syncManager;
+  const peerState = syncManager.peers[jazzCloudConnectionAsPeer.id];
+
+  // @ts-expect-error Simulating a peer closing, leveraging the direct connection between the client/server peers
+  await connectionWithClientAsPeer.outgoing.push("Disconnected");
+
+  await waitFor(() => peerState?.closed);
+
+  expect(syncManager.peers[jazzCloudConnectionAsPeer.id]).not.toBeUndefined();
+});
+
+test("should delete the peer state when the peer closes if deletePeerStateOnClose is true", async () => {
+  const {
+    client,
+    jazzCloud,
+    jazzCloudConnectionAsPeer,
+    connectionWithClientAsPeer,
+  } = createTwoConnectedNodes();
+
+  jazzCloudConnectionAsPeer.deletePeerStateOnClose = true;
+
+  const group = jazzCloud.createGroup();
+  const map = group.createMap();
+  map.set("hello", "world", "trusting");
+
+  await client.loadCoValueCore(map.core.id);
+
+  const syncManager = client.syncManager;
+
+  const peerState = syncManager.peers[jazzCloudConnectionAsPeer.id];
+
+  // @ts-expect-error Simulating a peer closing, leveraging the direct connection between the client/server peers
+  await connectionWithClientAsPeer.outgoing.push("Disconnected");
+
+  await waitFor(() => peerState?.closed);
+
+  expect(syncManager.peers[jazzCloudConnectionAsPeer.id]).toBeUndefined();
 });
 
 describe("sync - extra tests", () => {
@@ -1519,7 +1572,7 @@ describe("sync - extra tests", () => {
       {
         peer1role: "server",
         peer2role: "client",
-        trace: true,
+        // trace: true,
       },
     );
 
@@ -1529,7 +1582,7 @@ describe("sync - extra tests", () => {
       {
         peer1role: "server",
         peer2role: "client",
-        trace: true,
+        // trace: true,
       },
     );
 
