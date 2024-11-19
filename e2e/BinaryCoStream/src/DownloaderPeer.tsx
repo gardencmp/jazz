@@ -1,4 +1,4 @@
-import { Account, BinaryCoStream, ID } from "jazz-tools";
+import { Account, FileStream, ID } from "jazz-tools";
 import { useEffect } from "react";
 import { useAccount, useCoState } from "./jazz";
 import { waitForCoValue } from "./lib/waitForCoValue";
@@ -15,7 +15,7 @@ async function getUploadedFile(me: Account, uploadedFileId: ID<UploadedFile>) {
 
   uploadedFile.coMapDownloaded = true;
 
-  await BinaryCoStream.loadAsBlob(uploadedFile._refs.file.id, me);
+  await FileStream.loadAsBlob(uploadedFile._refs.file.id, me);
 
   return uploadedFile;
 }

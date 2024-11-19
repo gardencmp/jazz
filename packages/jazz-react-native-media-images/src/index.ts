@@ -1,6 +1,6 @@
 import ImageResizer from "@bam.tech/react-native-image-resizer";
 import * as FileSystem from "expo-file-system";
-import { Account, BinaryCoStream, Group, ImageDefinition } from "jazz-tools";
+import { Account, FileStream, Group, ImageDefinition } from "jazz-tools";
 import { Image } from "react-native";
 
 function arrayBuffer(blob: Blob): Promise<ArrayBuffer> {
@@ -157,7 +157,7 @@ export async function createImage(
           0,
         );
 
-        const binaryStream = await BinaryCoStream.createFromBlob(
+        const binaryStream = await FileStream.createFromBlob(
           await fileUriToBlob(resizedImage.uri),
           { owner: options.owner },
         );
@@ -214,7 +214,7 @@ export async function createImage(
 
     if (options.maxSize === undefined || options.maxSize > 2048) {
       try {
-        const originalBinaryStream = await BinaryCoStream.createFromBlob(
+        const originalBinaryStream = await FileStream.createFromBlob(
           await base64DataURIToBlob(base64ImageDataURI),
           { owner: options.owner },
         );
