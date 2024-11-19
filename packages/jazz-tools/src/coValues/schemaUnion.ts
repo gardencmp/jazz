@@ -41,6 +41,7 @@ import {
  *
  * @categoryDescription Loading
  * When loading a SchemaUnion, the correct subclass will be instantiated based on the discriminator.
+ * You can narrow the returned instance to a subclass by using `instanceof` like so:
  *
  * ```ts
  * const widget = await WidgetUnion.load(id, me, {});
