@@ -6,17 +6,18 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "tertiary";
   size?: "sm" | "md" | "lg";
   href?: string;
+  newTab?: boolean;
 }
 
 export function Button(props: ButtonProps) {
   const {
-    type = "button",
     className,
     children,
     size = "md",
     variant = "primary",
     href,
     disabled,
+    newTab,
   } = props;
 
   const sizeClasses = {
@@ -43,14 +44,18 @@ export function Button(props: ButtonProps) {
 
   if (href) {
     return (
-      <Link href={href} className={classNames}>
+      <Link
+        href={href}
+        target={newTab ? "_blank" : undefined}
+        className={classNames}
+      >
         {children}
       </Link>
     );
   }
 
   return (
-    <button className={classNames} {...props}>
+    <button {...props} className={classNames}>
       {children}
     </button>
   );
