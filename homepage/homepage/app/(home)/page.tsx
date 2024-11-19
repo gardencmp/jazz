@@ -21,6 +21,17 @@ export default function Home() {
       <div className="container flex flex-col gap-12 mt-12 lg:gap-20 lg:mt-20">
         <HowJazzWorksSection />
 
+        <Testimonial name="Spreadsheet app (stealth)" role="CTO">
+          <p>
+            You don&apos;t have to think about deploying a database, SQL
+            schemas, relations, and writing queries… Basically,{" "}
+            <span className="bg-blue-50 px-1 dark:bg-transparent">
+              if you know TypeScript, you know Jazz
+            </span>
+            , and you can ship an app. It&apos;s just so nice!
+          </p>
+        </Testimonial>
+
         <ChatDemoSection />
 
         <LocalFirstFeaturesSection />
