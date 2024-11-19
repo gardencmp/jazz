@@ -65,6 +65,7 @@ export function PagefindSearch() {
       onOpenChange={setOpen}
       label="Search"
       className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+      shouldFilter={false}
     >
       <div
         className="w-[640px] overflow-hidden rounded-xl bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl border border-gray-700
@@ -84,13 +85,21 @@ export function PagefindSearch() {
           className="w-full text-lg px-5 py-5 outline-none border-b border-gray-700 bg-transparent text-gray-100 placeholder:text-gray-400 caret-indigo-500"
         />
         <Command.List className="h-[300px] max-h-[400px] overflow-auto overscroll-contain transition-all duration-100 ease-in p-2">
-          <Command.Empty className="flex items-center justify-center h-16 text-sm text-gray-400">
-            No results found.
-          </Command.Empty>
-
-          {results.map((result: any) => (
-            <SearchResult key={result.id} result={result} setOpen={setOpen} />
-          ))}
+          {results.length === 0 ? (
+            <Command.Empty className="flex items-center justify-center h-16 text-sm text-gray-400">
+              No results found.
+            </Command.Empty>
+          ) : (
+            <Command.Group>
+              {results.map((result: any) => (
+                <SearchResult
+                  key={result.id}
+                  result={result}
+                  setOpen={setOpen}
+                />
+              ))}
+            </Command.Group>
+          )}
         </Command.List>
       </div>
     </Command.Dialog>
@@ -98,7 +107,8 @@ export function PagefindSearch() {
 }
 
 function HighlightedText({ text }: { text: string }) {
-  const parts = text.split(/(<mark>.*?<\/mark>)/g);
+  const decodedText = text.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+  const parts = decodedText.split(/(<mark>.*?<\/mark>)/g);
 
   return (
     <p className="text-xs text-gray-400 mt-1">
@@ -137,7 +147,9 @@ function SearchResult({
     fetchData();
   }, [result]);
 
-  if (!data) return null;
+  if (!data) {
+    return null;
+  }
 
   let url = data?.url
     ?.split("/_next/static/chunks/server/app/")?.[1]
@@ -158,8 +170,10 @@ function SearchResult({
       text-gray-100 data-[selected=true]:bg-gray-800/50 hover:bg-gray-800/30 active:bg-gray-800/50`}
     >
       <div>
-        <h3 className="text-sm font-medium text-gray-200">{data.title}</h3>
-        <HighlightedText text={data.excerpt} />
+        <h3 className="text-sm font-medium text-gray-200">
+          {data.meta?.title || "No title"}
+        </h3>
+        <HighlightedText text={data.excerpt || ""} />
       </div>
 
       <div className="absolute left-0 w-[3px] h-full bg-indigo-500 transition-opacity duration-200 ease-in-out opacity-0 group-data-[selected=true]:opacity-100" />

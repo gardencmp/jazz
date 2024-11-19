@@ -14,9 +14,7 @@ export default function Layout({
 }) {
   return (
     <DocsLayout nav={<DocNav />}>
-      <div className="flex justify-center lg:gap-5 data-pagefind-body">
-        {children}
-      </div>
+      <div className="flex justify-center lg:gap-5">{children}</div>
     </DocsLayout>
   );
 }

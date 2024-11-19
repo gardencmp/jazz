@@ -10,7 +10,7 @@ const highlighter = getHighlighter({
 
 export function Example({ children }: { children: ReactNode }) {
   return (
-    <div className="flex-1">
+    <div className="flex-1" data-pagefind-weight="2">
       <div className="border bg-white dark:bg-stone-900 rounded shadow-sm">
         <div className="py-1 px-2  border-b text-xs">Example</div>
         <div className="py-1 px-2 overflow-x-auto">{children}</div>
@@ -74,6 +74,7 @@ export function ClassOrInterface({
       <div
         id={name}
         className="peer sticky top-0 mt-4 md:top-[65px] md:pt-8 bg-white dark:bg-stone-950 z-20"
+        data-pagefind-weight="6"
       >
         <Link
           href={"#" + name}
@@ -119,7 +120,7 @@ export function PropDecl({
   example?: ReactNode;
 }) {
   return (
-    <div className="text-sm py-3 flex flex-col gap-5">
+    <div className="text-sm py-3 flex flex-col gap-5" data-pagefind-weight="4">
       {(name || type) && (
         <div>
           {name && <Highlight>{name + ":"}</Highlight>}
@@ -157,7 +158,7 @@ export function FnDecl({
   example: ReactNode;
 }) {
   return (
-    <div className="text-sm py-3 flex flex-col gap-5">
+    <div className="text-sm py-3 flex flex-col gap-5" data-pagefind-weight="5">
       <div className="flex flex-col gap-2">
         <div>
           {<Highlight>{signature + ":"}</Highlight>}{" "}
@@ -201,7 +202,10 @@ export function PropCategory({
 }) {
   return (
     <>
-      <div className="col-span-6 uppercase font-medium tracking-widest text-stone-500 text-xs py-3">
+      <div
+        className="col-span-6 uppercase font-medium tracking-widest text-stone-500 text-xs py-3"
+        data-pagefind-weight="3"
+      >
         {name}
       </div>
       {description && <PropDecl doc={description} example={example} />}
@@ -211,7 +215,10 @@ export function PropCategory({
 
 export function DocComment({ children }: { children: ReactNode }) {
   return (
-    <div className="prose-inner-sm flex-1 max-w-2xl leading-snug">
+    <div
+      className="prose-inner-sm flex-1 max-w-2xl leading-snug"
+      data-pagefind-weight="2"
+    >
       {children}
     </div>
   );
