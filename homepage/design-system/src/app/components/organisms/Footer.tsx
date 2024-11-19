@@ -37,7 +37,10 @@ function Copyright({
 
 export function Footer({ logo, companyName, sections }: FooterProps) {
   return (
-    <footer className="w-full border-t bg-stone-100 mt-12 md:mt-20 dark:bg-stone-925">
+    <footer
+      className="w-full border-t bg-stone-100 mt-12 md:mt-20 dark:bg-stone-925"
+      data-pagefind-ignore="all"
+    >
       <div className="container py-8 md:py-16 grid gap-y-8 grid-cols-12">
         <div className="flex flex-col justify-between col-span-full md:col-span-4">
           {logo}

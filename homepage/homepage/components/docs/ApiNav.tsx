@@ -11,7 +11,10 @@ import { requestProject } from "./requestProject";
 
 export function ApiNav({ className }: { className?: string }) {
   return (
-    <div className={clsx(className, "text-sm space-y-5")}>
+    <div
+      className={clsx(className, "text-sm space-y-5")}
+      data-pagefind-ignore="all"
+    >
       <SideNavHeader href="/api-reference">API Reference</SideNavHeader>
       <ul className="space-y-5">
         {packages.map(({ name }) => (
