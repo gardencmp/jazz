@@ -35,7 +35,7 @@ export function Button(props: ButtonProps) {
 
   const classNames = clsx(
     className,
-    "inline-flex items-center gap-2 rounded-lg text-center transition-colors",
+    "inline-flex items-center justify-center gap-2 rounded-lg text-center transition-colors",
     sizeClasses[size],
     variantClasses[variant],
     disabled && "opacity-50 cursor-not-allowed pointer-events-none",
