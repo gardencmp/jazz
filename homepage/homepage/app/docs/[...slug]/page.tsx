@@ -59,3 +59,16 @@ export async function generateStaticParams() {
 
   return paths;
 }
+
+export async function generateMetadata({
+  params,
+}: { params: { slug: string[] } }) {
+  const slugPath = params.slug.join("/");
+  const mdx = await import(`./${slugPath}.mdx`);
+
+  const { title, description } = mdx?.frontmatter ?? {};
+  return {
+    title: title ? `${title} - Documentation` : `Documentation`,
+    description: description ? description : undefined,
+  };
+}
