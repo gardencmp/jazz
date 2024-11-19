@@ -1,17 +1,14 @@
 import { Account, FileStream, ID } from "jazz-tools";
 import { useEffect } from "react";
 import { useAccount, useCoState } from "./jazz";
-import { waitForCoValue } from "./lib/waitForCoValue";
 import { UploadedFile } from "./schema";
 
 async function getUploadedFile(me: Account, uploadedFileId: ID<UploadedFile>) {
-  const uploadedFile = await waitForCoValue(
-    UploadedFile,
-    uploadedFileId,
-    me,
-    Boolean,
-    {},
-  );
+  const uploadedFile = await UploadedFile.load(uploadedFileId, me, {});
+
+  if (!uploadedFile) {
+    throw new Error("Uploaded file not found");
+  }
 
   uploadedFile.coMapDownloaded = true;
 

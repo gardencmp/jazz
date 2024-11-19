@@ -86,9 +86,9 @@ export class SyncStateSubscriptionManager {
 
   getIsCoValueFullyUploadedIntoPeer(peerId: PeerID, id: RawCoID) {
     const peer = this.syncManager.peers[peerId];
-    const entry = this.syncManager.local.coValues[id];
+    const entry = this.syncManager.local.coValuesStore.get(id);
 
-    if (!peer || !entry) {
+    if (!peer) {
       return false;
     }
 
