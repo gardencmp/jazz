@@ -2,4 +2,4 @@
 "jazz-tools": patch
 ---
 
-Implemented SchemaUnion.Of()
+Added SchemaUnion, a new API that let's you assign multiple possible schemas to a given coValue and selectively apply them at runtime.
