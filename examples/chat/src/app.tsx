@@ -1,4 +1,4 @@
-import { onChatLoad } from "@/util.ts";
+import { inIframe, onChatLoad } from "@/util.ts";
 import { useIframeHashRouter } from "hash-slash";
 import { Group, ID } from "jazz-tools";
 import { ChatScreen } from "./chatScreen.tsx";
@@ -25,7 +25,7 @@ export function App() {
     <AppContainer>
       <TopBar>
         <p>{me?.profile?.name}</p>
-        <button onClick={logOut}>Log out</button>
+        {!inIframe && <button onClick={logOut}>Log out</button>}
       </TopBar>
       {router.route({
         "/": () => createChat() as never,

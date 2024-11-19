@@ -23,3 +23,5 @@ export function onChatLoad(chat: Chat, me: Account) {
     });
   }
 }
+
+export const inIframe = window.self !== window.top;
