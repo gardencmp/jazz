@@ -1,7 +1,7 @@
 "use client";
 
 import { Command } from "cmdk";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { singletonHook } from "react-singleton-hook";
 
 export const usePagefindSearch = singletonHook(
@@ -16,6 +16,7 @@ export function PagefindSearch() {
   const { open, setOpen } = usePagefindSearch();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -48,6 +49,12 @@ export function PagefindSearch() {
     loadPagefind();
   }, []);
 
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+  }, [results]);
+
   async function handleSearch(value: string) {
     setQuery(value);
     // @ts-expect-error pagefind.js generated after build
@@ -64,7 +71,13 @@ export function PagefindSearch() {
   return (
     <Command.Dialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setQuery("");
+          setResults([]);
+        }
+        setOpen(open);
+      }}
       label="Search"
       className="fixed top-[10%] sm:top-1/2 left-1/2 -translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-auto z-20"
       shouldFilter={false}
@@ -86,7 +99,10 @@ export function PagefindSearch() {
           placeholder="Search documentation..."
           className="w-full text-base sm:text-lg px-4 sm:px-5 py-4 sm:py-5 outline-none border-b border-gray-700 bg-transparent text-gray-100 placeholder:text-gray-400 caret-indigo-500"
         />
-        <Command.List className="h-[50vh] sm:h-[300px] max-h-[60vh] sm:max-h-[400px] overflow-y-auto overflow-x-hidden overscroll-contain transition-all duration-100 ease-in p-2">
+        <Command.List
+          ref={listRef}
+          className="h-[50vh] sm:h-[300px] max-h-[60vh] sm:max-h-[400px] overflow-y-auto overflow-x-hidden overscroll-contain transition-all duration-100 ease-in p-2"
+        >
           {results.length === 0 ? (
             <Command.Empty className="flex items-center justify-center h-16 text-sm text-gray-400">
               No results found.
