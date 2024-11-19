@@ -6,6 +6,7 @@ import localFont from "next/font/local";
 
 import { JazzFooter } from "@/components/footer";
 import { JazzNav } from "@/components/nav";
+import { PagefindSearch } from "@/components/pagefind";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
@@ -100,6 +101,7 @@ export default function RootLayout({
             <main>{children}</main>
           </div>
           <JazzFooter />
+          <PagefindSearch />
         </ThemeProvider>
       </body>
     </html>
