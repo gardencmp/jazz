@@ -464,9 +464,8 @@ export class SyncManager {
       }
     }
 
-    // When we receive a known state from a peer and the header is "false"
-    // it means that the peer doesn't know anything about this coValue
-    // So we can say that the coValue has been not found on this peer
+    // The header is a boolean value that tells us if the other peer do have information about the header.
+    // If it's false in this point it means that the coValue is unavailable on the other peer.
     if (entry.state.type !== "available") {
       const availableOnPeer = peer.optimisticKnownStates.get(msg.id)?.header;
 
