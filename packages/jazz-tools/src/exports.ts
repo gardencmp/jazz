@@ -24,6 +24,7 @@ export {
   ImageDefinition,
   Profile,
   isControlledAccount,
+  SchemaUnion,
   type AccountClass,
   type CoMapInit,
   type CoValueClass,
