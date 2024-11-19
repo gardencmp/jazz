@@ -14,7 +14,6 @@ export function ResponsiveIframe(
 
   useLayoutEffect(() => {
     const listener = (e: MessageEvent) => {
-      console.log(e);
       if (e.data.type === "navigate" && src?.startsWith(e.origin)) {
         setUrl(e.data.url);
       }

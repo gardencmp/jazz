@@ -21,7 +21,7 @@ export default function DocsLayout({
           "sticky align-start top-[65px] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden",
           "hidden md:block",
         )}
-        data-pagefind-ignore="all"
+        data-pagefind-ignore
       >
         <div className="pb-5">
           <QuickSearch onClick={() => setOpen((open) => !open)} />

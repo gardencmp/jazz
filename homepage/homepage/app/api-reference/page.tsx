@@ -55,7 +55,7 @@ const Card = ({
 
 export default function Page() {
   return (
-    <>
+    <div data-pagefind-ignore="all">
       <h1>API Reference</h1>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -104,6 +104,6 @@ export default function Page() {
           </CardBody>
         </Card>
       </div>
-    </>
+    </div>
   );
 }

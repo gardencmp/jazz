@@ -5,12 +5,10 @@ export function Prose({
   children,
   className,
   size = "md",
-  dataPagefindIgnore = false,
 }: {
   children: ReactNode;
   className?: string;
   size?: "sm" | "md" | "lg";
-  dataPagefindIgnore?: boolean;
 }) {
   const sizeClassName = {
     sm: "prose-sm",
@@ -27,7 +25,6 @@ export function Prose({
         "dark:prose-invert",
         "prose-code:dark:bg-stone-900",
       )}
-      {...(dataPagefindIgnore ? { "data-pagefind-ignore": "all" } : {})}
     >
       {children}
     </div>

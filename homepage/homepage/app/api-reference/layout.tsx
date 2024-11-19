@@ -15,9 +15,7 @@ export default function Layout({
 }) {
   return (
     <DocsLayout nav={<ApiNav />}>
-      <Prose className="py-8" dataPagefindIgnore={true}>
-        {children}
-      </Prose>
+      <Prose className="py-8">{children}</Prose>
     </DocsLayout>
   );
 }
