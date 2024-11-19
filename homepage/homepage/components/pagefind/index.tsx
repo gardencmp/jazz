@@ -45,7 +45,11 @@ export function PagefindSearch() {
     if (window.pagefind) {
       // @ts-expect-error pagefind.js generated after build
       const search = await window.pagefind.search(value);
-      setResults(search.results);
+      const results = await Promise.all(
+        search.results.map((r: any) => r.data()),
+      );
+
+      setResults(results);
     }
   }
 
@@ -108,26 +112,15 @@ function SearchResult({
   result: any;
   setOpen: (open: boolean) => void;
 }) {
-  const [data, setData] = useState<any>(null);
+  if (!result) return null;
 
-  useEffect(() => {
-    async function fetchData() {
-      const data = await result.data();
-      setData(data);
-    }
-    fetchData();
-  }, [result]);
-
-  if (!data) return null;
-
-  console.log("data", data);
-  let url = data?.url
+  let url = result?.url
     ?.split("/_next/static/chunks/server/app/")?.[1]
     ?.split(".html")?.[0];
 
   return (
     <Command.Item
-      value={data.meta.title}
+      value={result.meta.title}
       onSelect={() => {
         if (!url) return;
         const cleanUrl = url.startsWith("/") ? url : `/${url}`;
@@ -137,8 +130,10 @@ function SearchResult({
       className={`group relative flex items-center gap-3 px-4 py-3 cursor-pointer text-sm rounded-md mt-1 select-none transition-colors text-gray-100 data-[selected=true]:bg-gray-800/50 hover:bg-gray-800/30 active:bg-gray-800/50`}
     >
       <div>
-        <h3 className="text-sm font-medium text-gray-200">{data.meta.title}</h3>
-        <HighlightedText text={data.excerpt} />
+        <h3 className="text-sm font-medium text-gray-200">
+          {result.meta.title}
+        </h3>
+        <HighlightedText text={result.excerpt} />
       </div>
 
       <div className="absolute left-0 w-[3px] h-full bg-indigo-500 opacity-0 group-data-[selected=true]:opacity-100" />
