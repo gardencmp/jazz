@@ -1,5 +1,5 @@
 import ImageBlobReduce from "image-blob-reduce";
-import { Account, BinaryCoStream, Group, ImageDefinition } from "jazz-tools";
+import { Account, FileStream, Group, ImageDefinition } from "jazz-tools";
 import Pica from "pica";
 
 const pica = new Pica();
@@ -51,7 +51,7 @@ export async function createImage(
           ? 256
           : Math.round(256 * (originalHeight / originalWidth));
 
-      const binaryStream = await BinaryCoStream.createFromBlob(max256, {
+      const binaryStream = await FileStream.createFromBlob(max256, {
         owner: options.owner,
       });
 
@@ -74,7 +74,7 @@ export async function createImage(
           ? 1024
           : Math.round(1024 * (originalHeight / originalWidth));
 
-      const binaryStream = await BinaryCoStream.createFromBlob(max1024, {
+      const binaryStream = await FileStream.createFromBlob(max1024, {
         owner: options.owner,
       });
 
@@ -97,7 +97,7 @@ export async function createImage(
           ? 2048
           : Math.round(2048 * (originalHeight / originalWidth));
 
-      const binaryStream = await BinaryCoStream.createFromBlob(max2048, {
+      const binaryStream = await FileStream.createFromBlob(max2048, {
         owner: options.owner,
       });
 
@@ -108,7 +108,7 @@ export async function createImage(
 
     if (options.maxSize === 2048) return;
 
-    const originalBinaryStream = await BinaryCoStream.createFromBlob(
+    const originalBinaryStream = await FileStream.createFromBlob(
       imageBlobOrFile,
       { owner: options.owner },
     );

@@ -1,13 +1,13 @@
 import { CodeGroup } from "@/components/forMdx";
 
-# React Guide
+# React guide
 
 This is a step-by-step tutorial where we'll build an issue tracker app using React.
 
 You'll learn how to set up a Jazz app, use Jazz Cloud for sync and storage, create and manipulate data using
 Collaborative Values (CoValues), build a UI and subscribe to changes, set permissions, and send invites.
 
-## Project Setup
+## Project setup
 
 1. Create a project called "circular" from a generic Vite starter template:
 
@@ -475,7 +475,7 @@ This works because we load the issue as the same account that created it and own
 
 But how can we share an Issue with someone else?
 
-### Simple Public Sharing
+### Simple public sharing
 
 We'll learn more about access control in "Groups & Permissions", but for now let's build a super simple way of sharing an Issue by just making it publicly readable & writable.
 
@@ -530,7 +530,7 @@ export default App; // old
 
 This concludes our intro to the essence of CoValues. Hopefully you're starting to have a feeling for how CoValues behave and how they're magically available everywhere.
 
-## Refs & Auto-Subscribe
+## Refs & auto-subscribe
 
 Now let's have a look at how to compose CoValues into more complex structures and build a whole app around them.
 
@@ -667,7 +667,7 @@ Two things to note here:
 -   We only need to use `useCoState` on the Project, and the nested `ListOfIssues` and each `Issue` will be **automatically loaded and subscribed to when we access them.**
 -   However, because either the `Project`, `ListOfIssues`, or each `Issue` might not be loaded yet, we have to check for them being defined.
 
-### Precise Loading Depths
+### Precise loading depths
 
 The load-and-subscribe-on-access is a convenient way to have your rendering drive data loading (including in nested components!) and lets you quickly chuck UIs together without worrying too much about the shape of all data you'll need.
 
@@ -717,12 +717,12 @@ The loading-depth spec `{ issues: [{}] }` means "in `Project`, load `issues` and
 
 {/* TODO: explain about not loaded vs not set/defined and `_refs` basics */}
 
-## Groups & Permissions
+## Groups & permissions
 
 We've seen briefly how we can use Groups to give everyone access to a Project,
 and how we can use `{ owner: me }` to make something private to the current user.
 
-### Groups / Accounts as Permission Scopes
+### Groups / Accounts as permission scopes
 
 This gives us a hint of how permissions work in Jazz: **every CoValue has an owner,
 and the access rights on that CoValue are determined by its owner.**
@@ -733,7 +733,7 @@ and the access rights on that CoValue are determined by its owner.**
     - `"writer"`s can read and write to CoValues belonging to the Group.
     - `"admin"`s can read and write to CoValues belonging to the Group *and can add and remove other members from the Group itself.*
 
-### Creating Invites
+### Creating invites
 
 There is also an abstraction for creating *invitations to join a Group* (with a specific role) that you can use
 to add people without having to know their Account ID.
@@ -835,7 +835,7 @@ export function ProjectComponent({ projectID }: { projectID: ID<Project> }) {// 
 ```
 </CodeGroup>
 
-### Consuming Invites
+### Consuming invites
 <div className="text-amber-500 mt-52">
     🚧 OH NO - This is as far as we've written the Guide. 🚧
 </div>

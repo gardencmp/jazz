@@ -16,7 +16,7 @@ Tested with:
 
 ## Setup
 
-### Create a New Project
+### Create a new project
 
 (skip this step if you already have one)
 
@@ -43,7 +43,7 @@ Tested with:
   ```
 </CodeGroup>
 
-### Fix Incompatible Dependencies
+### Fix incompatible dependencies
 
 <CodeGroup>
   ```bash
@@ -61,7 +61,7 @@ Tested with:
 
 ### Configure Metro
 
-#### Regular Repositories
+#### Regular repositories
 
 If you are not working within a monorepo, create a new file metro.config.js in the root of your project with the following content:
 
@@ -118,7 +118,7 @@ For monorepos, use the following metro.config.js:
   ```
 </CodeGroup>
 
-### Additional Monorepo Configuration (for pnpm users)
+### Additional monorepo configuration (for pnpm users)
 
 - Add node-linker=hoisted to the root .npmrc (create this file if it doesn’t exist).
 - Add the following to the root package.json:
@@ -139,7 +139,7 @@ For monorepos, use the following metro.config.js:
 
 For more information, refer to [this](https://github.com/byCedric/expo-monorepo-example#pnpm-workarounds) Expo monorepo example.
 
-### Add Polyfills
+### Add polyfills
 
 Create a file `polyfills.js` at the project root with the following content:
 
@@ -203,7 +203,7 @@ Create a file `jazz.tsx` with the following contents:
 
 You can optionally pass a custom `kvStore` and `AccountSchema` to `createJazzRNApp()`, otherwise, it defaults to `ExpoSecureStoreAdapter` and `Account`.
 
-### Choosing an Auth Method
+### Choosing an auth method
 
 Refer to the Jazz + React Native demo projects for implementing authentication:
 
@@ -238,7 +238,7 @@ To work with images in Jazz, import the `createImage` function from [`jazz-react
 
 For a complete implementation, please refer to [this](https://github.com/gardencmp/jazz/blob/main/examples/pets/src/3_NewPetPostForm.tsx) demo.
 
-### Running Your App
+### Running your app
 
 <CodeGroup>
   ```bash

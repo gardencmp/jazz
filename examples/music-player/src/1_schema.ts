@@ -1,11 +1,4 @@
-import {
-  Account,
-  BinaryCoStream,
-  CoList,
-  CoMap,
-  Profile,
-  co,
-} from "jazz-tools";
+import { Account, CoList, CoMap, FileStream, Profile, co } from "jazz-tools";
 
 /** Walkthrough: Defining the data model with CoJSON
  *
@@ -36,12 +29,12 @@ export class MusicTrack extends CoMap {
   sourceTrack = co.optional.ref(MusicTrack);
 
   /**
-   * In Jazz you can files using BinaryCoStream.
+   * In Jazz you can upload files using FileStream.
    *
-   * As for any other coValue the music files we put inside BinaryCoStream
+   * As for any other coValue the music files we put inside FileStream
    * is available offline and end-to-end encrypted 😉
    */
-  file = co.ref(BinaryCoStream);
+  file = co.ref(FileStream);
   waveform = co.ref(MusicTrackWaveform);
 }
 

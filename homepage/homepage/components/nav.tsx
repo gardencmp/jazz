@@ -35,7 +35,7 @@ export function JazzNav() {
                 />
               ),
               title: "API reference",
-              href: "/docs/api-reference",
+              href: "/api-reference",
               description:
                 "API references for packages like jazz-tools, jazz-react, and more.",
             },

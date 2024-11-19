@@ -13,7 +13,7 @@ import {
   isControlledAccount,
 } from "../index.web.js";
 import {
-  BinaryCoStream,
+  FileStream,
   Group,
   randomSessionProvider,
   subscribeToCoValue,
@@ -27,7 +27,7 @@ class ChatRoom extends CoMap {
 class Message extends CoMap {
   text = co.string;
   reactions = co.ref(ReactionsStream);
-  attachment = co.optional.ref(BinaryCoStream);
+  attachment = co.optional.ref(FileStream);
 }
 
 class MessagesList extends CoList.Of(co.ref(Message)) {}

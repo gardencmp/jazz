@@ -2,8 +2,8 @@ import { connectedPeers } from "cojson/src/streamUtils.ts";
 import { describe, expect, test } from "vitest";
 import {
   Account,
-  BinaryCoStream,
   CoFeed,
+  FileStream,
   ID,
   WasmCrypto,
   co,
@@ -242,13 +242,13 @@ describe("CoFeed resolution", async () => {
   });
 });
 
-describe("Simple BinaryCoStream operations", async () => {
+describe("Simple FileStream operations", async () => {
   const me = await Account.create({
     creationProps: { name: "Hermes Puggington" },
     crypto: Crypto,
   });
 
-  const stream = BinaryCoStream.create({ owner: me });
+  const stream = FileStream.create({ owner: me });
 
   test("Construction", () => {
     expect(stream.getChunks()).toBe(undefined);
@@ -270,14 +270,14 @@ describe("Simple BinaryCoStream operations", async () => {
   });
 });
 
-describe("BinaryCoStream loading & Subscription", async () => {
+describe("FileStream loading & Subscription", async () => {
   const initNodeAndStream = async () => {
     const me = await Account.create({
       creationProps: { name: "Hermes Puggington" },
       crypto: Crypto,
     });
 
-    const stream = BinaryCoStream.create({ owner: me });
+    const stream = FileStream.create({ owner: me });
 
     stream.start({ mimeType: "text/plain" });
     stream.push(new Uint8Array([1, 2, 3]));
@@ -316,11 +316,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
       crypto: Crypto,
     });
 
-    const loadedStream = await BinaryCoStream.load(
-      stream.id,
-      meOnSecondPeer,
-      [],
-    );
+    const loadedStream = await FileStream.load(stream.id, meOnSecondPeer, []);
 
     expect(loadedStream?.getChunks()).toEqual({
       mimeType: "text/plain",
@@ -331,7 +327,7 @@ describe("BinaryCoStream loading & Subscription", async () => {
 
   test("Subscription", async () => {
     const { me } = await initNodeAndStream();
-    const stream = BinaryCoStream.create({ owner: me });
+    const stream = FileStream.create({ owner: me });
 
     const [initialAsPeer, secondAsPeer] = connectedPeers("initial", "second", {
       peer1role: "server",
@@ -353,14 +349,9 @@ describe("BinaryCoStream loading & Subscription", async () => {
 
     const queue = new cojsonInternals.Channel();
 
-    BinaryCoStream.subscribe(
-      stream.id,
-      meOnSecondPeer,
-      [],
-      (subscribedStream) => {
-        void queue.push(subscribedStream);
-      },
-    );
+    FileStream.subscribe(stream.id, meOnSecondPeer, [], (subscribedStream) => {
+      void queue.push(subscribedStream);
+    });
 
     const update1 = (await queue.next()).value;
     expect(update1.getChunks()).toBe(undefined);
@@ -411,14 +402,14 @@ describe("BinaryCoStream loading & Subscription", async () => {
   });
 });
 
-describe("BinaryCoStream.loadAsBlob", async () => {
+describe("FileStream.loadAsBlob", async () => {
   async function setup() {
     const me = await Account.create({
       creationProps: { name: "Hermes Puggington" },
       crypto: Crypto,
     });
 
-    const stream = BinaryCoStream.create({ owner: me });
+    const stream = FileStream.create({ owner: me });
 
     stream.start({ mimeType: "text/plain" });
 
@@ -429,7 +420,7 @@ describe("BinaryCoStream.loadAsBlob", async () => {
     const { stream, me } = await setup();
     stream.push(new Uint8Array([1]));
 
-    const promise = BinaryCoStream.loadAsBlob(stream.id, me);
+    const promise = FileStream.loadAsBlob(stream.id, me);
 
     await stream.ensureLoaded([]);
 
@@ -447,7 +438,7 @@ describe("BinaryCoStream.loadAsBlob", async () => {
     const { stream, me } = await setup();
     stream.push(new Uint8Array([1]));
 
-    const promise = BinaryCoStream.loadAsBlob(stream.id, me, {
+    const promise = FileStream.loadAsBlob(stream.id, me, {
       allowUnfinished: true,
     });
 

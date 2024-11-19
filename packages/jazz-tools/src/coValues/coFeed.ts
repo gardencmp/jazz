@@ -469,8 +469,11 @@ const CoStreamPerSessionProxyHandler = (
   },
 });
 
+/** @deprecated Use CoFeed instead */
+export { FileStream as BinaryCoStream };
+
 /** @category CoValues */
-export class BinaryCoStream extends CoValueBase implements CoValue {
+export class FileStream extends CoValueBase implements CoValue {
   declare id: ID<this>;
   declare _type: "BinaryCoStream";
   declare _raw: RawBinaryCoStream;
@@ -505,7 +508,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
     });
   }
 
-  static create<S extends BinaryCoStream>(
+  static create<S extends FileStream>(
     this: CoValueClass<S>,
     options: { owner: Account | Group },
   ) {
@@ -550,7 +553,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
   }
 
   static async loadAsBlob(
-    id: ID<BinaryCoStream>,
+    id: ID<FileStream>,
     as: Account,
     options?: {
       allowUnfinished?: boolean;
@@ -563,7 +566,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
      * stream isn't complete wait for the stream download before progressing
      */
     if (!options?.allowUnfinished && !stream?.isBinaryStreamEnded()) {
-      stream = await new Promise<BinaryCoStream>((resolve) => {
+      stream = await new Promise<FileStream>((resolve) => {
         const unsubscribe = subscribeToCoValue(this, id, as, [], (value) => {
           if (value.isBinaryStreamEnded()) {
             unsubscribe();
@@ -584,7 +587,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
       owner: Group | Account;
       onProgress?: (progress: number) => void;
     },
-  ): Promise<BinaryCoStream> {
+  ): Promise<FileStream> {
     const stream = this.create({ owner: options.owner });
 
     const start = Date.now();
@@ -644,7 +647,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  static load<B extends BinaryCoStream, Depth>(
+  static load<B extends FileStream, Depth>(
     this: CoValueClass<B>,
     id: ID<B>,
     as: Account,
@@ -654,7 +657,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  static subscribe<B extends BinaryCoStream, Depth>(
+  static subscribe<B extends FileStream, Depth>(
     this: CoValueClass<B>,
     id: ID<B>,
     as: Account,
@@ -665,7 +668,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  ensureLoaded<B extends BinaryCoStream, Depth>(
+  ensureLoaded<B extends FileStream, Depth>(
     this: B,
     depth: Depth & DepthsIn<B>,
   ): Promise<DeeplyLoaded<B, Depth> | undefined> {
@@ -673,7 +676,7 @@ export class BinaryCoStream extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  subscribe<B extends BinaryCoStream, Depth>(
+  subscribe<B extends FileStream, Depth>(
     this: B,
     depth: Depth & DepthsIn<B>,
     listener: (value: DeeplyLoaded<B, Depth>) => void,

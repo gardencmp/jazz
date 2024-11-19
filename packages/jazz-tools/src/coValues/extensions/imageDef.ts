@@ -1,21 +1,16 @@
-import {
-  BinaryCoStream,
-  CoMap,
-  co,
-  subscriptionsScopes,
-} from "../../internal.js";
+import { CoMap, FileStream, co, subscriptionsScopes } from "../../internal.js";
 
 /** @category Media */
 export class ImageDefinition extends CoMap {
   originalSize = co.json<[number, number]>();
   placeholderDataURL? = co.string;
 
-  [co.items] = co.ref(BinaryCoStream);
-  [res: `${number}x${number}`]: co<BinaryCoStream | null>;
+  [co.items] = co.ref(FileStream);
+  [res: `${number}x${number}`]: co<FileStream | null>;
 
   highestResAvailable(options?: {
     maxWidth?: number;
-  }): { res: `${number}x${number}`; stream: BinaryCoStream } | undefined {
+  }): { res: `${number}x${number}`; stream: FileStream } | undefined {
     if (!subscriptionsScopes.get(this)) {
       console.warn(
         "highestResAvailable() only makes sense when used within a subscription.",
