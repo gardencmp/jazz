@@ -37,7 +37,7 @@ export function PagefindSearch() {
           // @ts-expect-error pagefind.js generated after build
           window.pagefind = await import(
             // @ts-expect-error pagefind.js generated after build
-            /* webpackIgnore: true */ "../pagefind/pagefind.js"
+            /* webpackIgnore: true */ "/_next/static/chunks/pagefind/pagefind.js "
           );
         } catch (e) {
           // @ts-expect-error pagefind.js generated after build
