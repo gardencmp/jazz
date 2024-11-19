@@ -27,7 +27,7 @@ export function TableOfContents({
   return (
     <div
       className={clsx(
-        "pl-3 py-6 text-sm sticky align-start top-[4.75rem] w-[16rem] h-[calc(100vh-108px)] overflow-y-auto overflow-x-hidden hidden lg:block",
+        "pl-3 py-6 text-sm sticky align-start top-[65px] w-[16rem] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden hidden lg:block",
         className,
       )}
     >
