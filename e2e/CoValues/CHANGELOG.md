@@ -1,5 +1,11 @@
 # @jazz-e2e/covalues
 
+## 0.0.101
+
+### Patch Changes
+
+- jazz-react@0.8.24
+
 ## 0.0.100
 
 ### Patch Changes

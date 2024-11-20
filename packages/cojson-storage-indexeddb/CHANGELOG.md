@@ -1,5 +1,11 @@
 # cojson-storage-indexeddb
 
+## 0.8.24
+
+### Patch Changes
+
+- e17e959: Fix: IndexedDB not delivering depended-on CoValues
+
 ## 0.8.23
 
 ### Patch Changes
