@@ -1,5 +1,14 @@
 # jazz-browser
 
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+  - cojson-transport-ws@0.8.28
+  - jazz-tools@0.8.28
+
 ## 0.8.27
 
 ### Patch Changes

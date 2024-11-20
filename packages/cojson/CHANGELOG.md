@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.28
+
+### Patch Changes
+
+- 605734c: Send empty known state on all states except available
+
 ## 0.8.27
 
 ### Patch Changes
