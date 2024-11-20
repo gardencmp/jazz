@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.8.14
+
+### Patch Changes
+
+- jazz-browser@0.8.24
+
 ## 0.8.13
 
 ### Patch Changes
