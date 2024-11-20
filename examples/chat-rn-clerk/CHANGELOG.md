@@ -1,5 +1,14 @@
 # chat-rn-clerk
 
+## 1.0.19
+
+### Patch Changes
+
+- jazz-react-auth-clerk@0.8.27
+- jazz-react-native@0.8.27
+- jazz-tools@0.8.27
+- jazz-react-native-media-images@0.8.19
+
 ## 1.0.18
 
 ### Patch Changes

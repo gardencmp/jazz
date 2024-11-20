@@ -1,5 +1,14 @@
 # @jazz-e2e/covalues
 
+## 0.0.103
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+  - jazz-react@0.8.27
+  - jazz-tools@0.8.27
+
 ## 0.0.102
 
 ### Patch Changes
