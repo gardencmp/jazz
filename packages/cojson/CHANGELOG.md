@@ -1,5 +1,12 @@
 # cojson
 
+## 0.8.23
+
+### Patch Changes
+
+- 6f745be: Retry unavailable coValues and improve the state management around them
+- 124bf67: Add a flag to delete a peer when it is closed
+
 ## 0.8.21
 
 ### Patch Changes
