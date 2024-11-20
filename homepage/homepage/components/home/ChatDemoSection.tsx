@@ -63,10 +63,6 @@ export function ChatDemoSection() {
 
     const isLocal = window.location.hostname === "localhost";
 
-    const url1 = isLocal
-      ? "http://localhost:5173"
-      : "https://jazz-chat-1.vercel.app";
-
     if (chatId) {
       const shareServer = isLocal
         ? "http://localhost:5173"
@@ -83,7 +79,10 @@ export function ChatDemoSection() {
       return; // Once the chatId is set, we don't need to listen for messages anymore
     }
 
-    setServer1(url1 + `?user=${user1}`);
+    setServer1(
+      (isLocal ? "http://localhost:5173" : "https://jazz-chat-1.vercel.app") +
+        `?user=${user1}`,
+    );
     setServer2(
       (isLocal ? "http://localhost:5174" : "https://jazz-chat-2.vercel.app") +
         `?user=${user2}`,
@@ -96,8 +95,8 @@ export function ChatDemoSection() {
     const listener = (e: MessageEvent) => {
       const isValidOrigin = e.origin === server1Url.origin;
 
-      if (e.data.type === "chat-load" && isValidOrigin && e.data.id) {
-        setChatId(e.data.id);
+      if (e.data.type === "navigate" && isValidOrigin) {
+        setChatId(new URL(e.data.url).hash);
       }
     };
     window.addEventListener("message", listener);
