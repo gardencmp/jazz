@@ -7,11 +7,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { MinimalAccount } from "./schema";
 
-const Jazz = createJazzReactApp<MinimalAccount>({
-  AccountSchema: MinimalAccount,
-});
+const Jazz = createJazzReactApp();
 
 export const { useAccount, useCoState } = Jazz;
 
