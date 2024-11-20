@@ -65,7 +65,8 @@ export { CoFeed as CoStream };
  * @categoryDescription Content
  * They are similar to `CoList`s, but with a few key differences:
  * - They are append-only
- * - They have a per-session view
+ * - They consist of several internal append-only logs, one per account session (tab, device, app instance, etc.)
+ * - They expose those as a per-account aggregated view (default) or a precise per-session view
  *
  * ```ts
  * favDog.push("Poodle");
