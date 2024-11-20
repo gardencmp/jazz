@@ -60,7 +60,7 @@ export function isCoValueClass<V extends CoValue>(
 
 /**
  * IDs are unique identifiers for `CoValue`s.
- * Can be used as a type argument to refer to a specific `CoValue` type.
+ * Can be used with a type argument to refer to a specific `CoValue` type.
  *
  * @example
  *
