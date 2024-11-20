@@ -1,5 +1,11 @@
 # jazz-react
 
+## 0.8.26
+
+### Patch Changes
+
+- 59d37df: add autologin option to DemoAuth to skip login
+
 ## 0.8.24
 
 ### Patch Changes

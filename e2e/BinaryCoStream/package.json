@@ -1,7 +1,7 @@
 {
   "name": "@jazz-e2e/filestream",
   "private": true,
-  "version": "0.0.102",
+  "version": "0.0.103",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,7 @@
     "cojson": "workspace:0.8.23",
     "hash-slash": "workspace:0.2.1",
     "is-ci": "^3.0.1",
-    "jazz-react": "workspace:0.8.24",
+    "jazz-react": "workspace:0.8.26",
     "jazz-tools": "workspace:0.8.23",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

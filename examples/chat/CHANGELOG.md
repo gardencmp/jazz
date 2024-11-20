@@ -1,5 +1,13 @@
 # jazz-example-chat
 
+## 0.0.104
+
+### Patch Changes
+
+- 59d37df: add autologin option to DemoAuth to skip login
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
 ## 0.0.103
 
 ### Patch Changes
