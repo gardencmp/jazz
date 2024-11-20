@@ -34,7 +34,7 @@ export const dynamicParams = false;
 export const dynamic = "force-static";
 
 export async function generateStaticParams() {
-  const docsDir = path.join(process.cwd(), "app/docs/[...slug]");
+  const docsDir = path.join(process.cwd(), "app/docs/[framework]/[...slug]");
   const getAllMdxPaths = (dir: string, basePath = ""): string[] => {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     const paths: string[] = [];
