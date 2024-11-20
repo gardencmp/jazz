@@ -1,5 +1,11 @@
 # cojson-storage-sqlite
 
+## 0.8.25
+
+### Patch Changes
+
+- 63d46c9: Fix: sqlite not delivering depended-on CoValues
+
 ## 0.8.23
 
 ### Patch Changes
