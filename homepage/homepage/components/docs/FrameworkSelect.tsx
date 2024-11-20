@@ -2,28 +2,25 @@
 
 import { clsx } from "clsx";
 import { Select } from "gcmp-design-system/src/app/components/molecules/Select";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function FrameworkSelect({ className }: { className?: string }) {
-  const searchParams = useSearchParams();
+export function FrameworkSelect({
+  className,
+  framework: defaultFramework,
+}: { className?: string; framework: string }) {
   const router = useRouter();
-  const [framework, setFramework] = useState(
-    searchParams.get("framework") || "react",
-  );
+  const [framework, setFramework] = useState(defaultFramework);
 
   const path = usePathname();
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
 
-    const newParams = new URLSearchParams({ framework: e.target.value });
     const newFramework = e.target.value;
-
     setFramework(newFramework);
 
-    newParams.set("framework", newFramework);
-    router.push(`${path}?${newParams.toString()}`);
+    router.push(path.replace(defaultFramework, newFramework));
   };
 
   return (
