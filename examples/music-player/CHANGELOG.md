@@ -1,5 +1,12 @@
 # jazz-example-musicplayer
 
+## 0.0.25
+
+### Patch Changes
+
+- jazz-react@0.8.27
+- jazz-tools@0.8.27
+
 ## 0.0.24
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.27
+
+### Patch Changes
+
+- 75fdff4: Improve the initial load by telling what's on storage in the first load request
+
 ## 0.8.23
 
 ### Patch Changes
