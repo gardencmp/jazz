@@ -12,6 +12,7 @@ import {
  * Declare your union types by extending `SchemaUnion.Of(...)` and passing a discriminator function
  * that determines which concrete type to use based on the raw data.
  *
+ * @example
  * ```ts
  * import { SchemaUnion, CoMap } from "jazz-tools";
  *
@@ -43,8 +44,9 @@ import {
  * When loading a SchemaUnion, the correct subclass will be instantiated based on the discriminator.
  * You can narrow the returned instance to a subclass by using `instanceof` like so:
  *
+ * @example
  * ```ts
- * const widget = await WidgetUnion.load(id, me, {});
+ * const widget = await loadCoValue(WidgetUnion, id, me, {});
  * if (widget instanceof ButtonWidget) {
  *   console.log(widget.label);
  * } else if (widget instanceof SliderWidget) {
