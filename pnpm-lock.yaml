@@ -1132,7 +1132,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.25
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
@@ -1606,7 +1606,7 @@ importers:
         specifier: workspace:0.8.23
         version: link:../cojson
       cojson-storage-sqlite:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.25
         version: link:../cojson-storage-sqlite
       cojson-transport-ws:
         specifier: workspace:0.8.23

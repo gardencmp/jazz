@@ -41,7 +41,7 @@
     "@vitejs/plugin-react-swc": "^3.3.2",
     "autoprefixer": "^10.4.14",
     "is-ci": "^3.0.1",
-    "jazz-run": "workspace:0.8.23",
+    "jazz-run": "workspace:0.8.25",
     "postcss": "^8.4.27",
     "tailwindcss": "3.3.2",
     "typescript": "^5.3.3",

@@ -1,5 +1,12 @@
 # jazz-run
 
+## 0.8.25
+
+### Patch Changes
+
+- Updated dependencies [63d46c9]
+  - cojson-storage-sqlite@0.8.25
+
 ## 0.8.23
 
 ### Patch Changes
