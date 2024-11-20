@@ -264,17 +264,17 @@ async function loadCoValueFromPeers(
   peers: PeerState[],
 ) {
   for (const peer of peers) {
-    if (coValueEntry.state.type === "loading") {
+    if (coValueEntry.state.type === "available") {
+      await peer.pushOutgoingMessage({
+        action: "load",
+        ...coValueEntry.state.coValue.knownState(),
+      });
+    } else {
       await peer.pushOutgoingMessage({
         action: "load",
         id: coValueEntry.id,
         header: false,
         sessions: {},
-      });
-    } else if (coValueEntry.state.type === "available") {
-      await peer.pushOutgoingMessage({
-        action: "load",
-        ...coValueEntry.state.coValue.knownState(),
       });
     }
 
