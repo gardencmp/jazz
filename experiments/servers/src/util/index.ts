@@ -166,6 +166,17 @@ export function updateCoValueBinary(
   _updateCoValue(covalue, event);
 }
 
+// BufferLike partial copy from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/ac8b76bf4ccc707b38e8b2ec8b0a3cb42bd83bf5/types/ws/index.d.ts#L20
+type BufferLike =
+  | string
+  | Buffer
+  | DataView
+  | number
+  | ArrayBufferView
+  | Uint8Array
+  | ArrayBuffer
+  | SharedArrayBuffer;
+
 export class WebSocketResponse {
   private ws: WebSocket;
   private wss: WebSocket.Server;
@@ -209,5 +220,9 @@ export class WebSocketResponse {
         );
       }
     });
+  }
+
+  send(data: BufferLike, cb?: (err?: Error) => void): void {
+    this.ws.send(data, cb);
   }
 }

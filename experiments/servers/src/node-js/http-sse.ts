@@ -66,57 +66,16 @@ app.get("/covalue/:uuid/binary", async (req: Request, res: Response) => {
     return res.status(404).json({ m: "CoValue binary file not found." });
   }
 
-  /*
-  await fileManager.streamFile(
+  await fileManager.chunkFileDownload(
     {
       filePath,
       range: req.headers.range,
-      fileName: "sample.zip",
     },
     {
       type: 'http',
       res
     }
-  );*/
-
-  const stat = fs.statSync(filePath);
-  const fileSize = stat.size;
-  const range = req.headers.range;
-
-  logger.debug(
-    `Streaming file '${filePath}' of size ${fileSize} (${
-      fileSize / 1_000_000
-    }MB) in 100KB chunks ...`,
   );
-  if (range) {
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = Math.min(start + CHUNK_SIZE, fileSize - 1);
-
-    const contentLength = end - start + 1;
-    const file = fs.createReadStream(filePath, { start, end });
-    const head = {
-      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-      "Accept-Ranges": "bytes",
-      "Content-Length": contentLength,
-      "Content-Type": "application/octet-stream",
-    };
-
-    res.writeHead(206, head);
-    file.pipe(res);
-  } else {
-    const head = {
-      "Content-Length": fileSize,
-      "Content-Type": "application/octet-stream",
-    };
-    res.writeHead(200, head);
-    fs.createReadStream(filePath).pipe(res);
-    logger.debug(
-      `Streamed file '${filePath}' of size ${fileSize} (${
-        fileSize / 1_000_000
-      }MB).`,
-    );
-  }
 });
 
 app.post("/covalue", (req: Request, res: Response) => {
@@ -132,7 +91,7 @@ app.post("/covalue", (req: Request, res: Response) => {
 
 app.post("/covalue/binary", async (req: Request, res: Response) => {
   const payload = req.body as UploadBody;
-  await fileManager.handleFileChunk(payload, res);
+  await fileManager.chunkFileUpload(payload, res);
 });
 
 app.patch("/covalue/:uuid", (req: Request, res: Response) => {

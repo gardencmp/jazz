@@ -114,92 +114,16 @@ wss.on("connection", (ws: WebSocket) => {
                 return;
               }
 
-              /*
-              await fileManager.streamFile(
+              await fileManager.chunkFileDownload(
                 {
                   filePath,
                   range: payload.range,
-                  fileName: "sample.zip",
                 },
                 {
                   type: 'websocket',
-                  ws
+                  wsr: res,
                 }
-              );*/
-
-              const stat = fs.statSync(filePath);
-              const fileSize = stat.size;
-
-              logger.debug(
-                `Streaming file '${filePath}' of size ${fileSize} (${
-                  fileSize / 1_000_000
-                }MB) in 100KB chunks ...`,
               );
-
-              let start = 0;
-              let end = fileSize - 1;
-
-              const range = payload.range;
-              if (range) {
-                const parts = range.replace(/bytes=/, "").split("-");
-                start = parseInt(parts[0], 10);
-                end = Math.min(start + CHUNK_SIZE, fileSize - 1);
-              }
-              const contentLength = end - start + 1;
-              // const fileStream = fs.createReadStream(filePath, { start, end });
-
-              res.status(202).json({
-                fileName: "sample.zip",
-                contentLength,
-                contentType: "application/octet-stream",
-                fileSize,
-                start,
-                end,
-              });
-
-              // fileStream.on('data', (chunk) => {
-              //   ws.send(chunk);
-              // });
-
-              let bytesRead = 0;
-              const fileStream = fs.createReadStream(filePath, {
-                highWaterMark: CHUNK_SIZE,
-              });
-
-              function sendChunk() {
-                const chunk = fileStream.read(CHUNK_SIZE);
-                if (chunk) {
-                  ws.send(chunk, (error) => {
-                    if (error) {
-                      logger.error("Error sending chunk:", error);
-                      fileStream.destroy();
-                      return;
-                    }
-                    bytesRead += chunk.length;
-                    if (bytesRead < fileSize) {
-                      setTimeout(sendChunk, 0);
-                    }
-                  });
-                } else if (!fileStream.readableEnded) {
-                  fileStream.once("readable", sendChunk);
-                }
-              }
-
-              fileStream.on("end", () => {
-                res.status(204).json({ m: "OK" });
-                logger.debug(
-                  `Streamed file '${filePath}' of size ${fileSize} (${
-                    fileSize / 1_000_000
-                  }MB).`,
-                );
-              });
-
-              fileStream.on("error", (error) => {
-                res.status(500).json({ m: "Error reading file" });
-                fileStream.destroy();
-              });
-
-              sendChunk();
             } else {
               // send textual CoValue
               res.status(200).json(covalue);
@@ -213,7 +137,7 @@ wss.on("connection", (ws: WebSocket) => {
           res.action("POST");
           if (payload) {
             if (binary) {
-              await fileManager.handleFileChunk(payload, res);
+              await fileManager.chunkFileUpload(payload, res);
             } else {
               addCoValue(covalues, payload);
               res.status(201).json({ m: "OK" });
