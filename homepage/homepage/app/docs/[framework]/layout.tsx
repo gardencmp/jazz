@@ -17,7 +17,9 @@ export default function Layout({
   return (
     <DocsLayout
       nav={<DocNav framework={params.framework} />}
-      navHeader={<FrameworkSelect className="mb-8" />}
+      navHeader={
+        <FrameworkSelect className="mb-8" framework={params.framework} />
+      }
     >
       <div className="flex justify-center lg:gap-5">{children}</div>
     </DocsLayout>
