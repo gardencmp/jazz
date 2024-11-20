@@ -17,32 +17,37 @@ export const docNavigationItems = [
     ],
   },
   {
-    name: "Project Setup",
+    name: "Project setup",
     items: [
+      {
+        name: "Installation",
+        href: "/docs/project-setup",
+        done: 100,
+      },
       {
         // jazz mesh, setting api key, free plan, unlimited
         name: "Sync and storage",
         href: "/docs/sync-and-storage",
         done: 100,
       },
-      {
-        name: "React",
-        href: "/docs/project-setup/react",
-        done: 80,
-      },
-      {
-        name: "React Native",
-        href: "/docs/project-setup/react-native",
-      },
-      {
-        name: "Next.js",
-        href: "/docs/project-setup/next",
-      },
-      {
-        name: "VueJS",
-        href: "/docs/project-setup/vue",
-        done: 80,
-      },
+      // {
+      //   name: "React",
+      //   href: "/docs/project-setup/react",
+      //   done: 80,
+      // },
+      // {
+      //   name: "React Native",
+      //   href: "/docs/project-setup/react-native",
+      // },
+      // {
+      //   name: "Next.js",
+      //   href: "/docs/project-setup/next",
+      // },
+      // {
+      //   name: "VueJS",
+      //   href: "/docs/project-setup/vue",
+      //   done: 80,
+      // },
       {
         name: "Node.JS / server workers",
         href: "/docs/project-setup/server-side",

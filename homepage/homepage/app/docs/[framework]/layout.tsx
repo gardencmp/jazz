@@ -9,12 +9,14 @@ export const metadata = {
 
 export default function Layout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { framework: string };
 }) {
   return (
     <DocsLayout
-      nav={<DocNav />}
+      nav={<DocNav framework={params.framework} />}
       navHeader={<FrameworkSelect className="mb-8" />}
     >
       <div className="flex justify-center lg:gap-5">{children}</div>
