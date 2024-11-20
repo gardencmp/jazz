@@ -18,10 +18,10 @@ import {
   port,
   CHUNK_SIZE,
 } from "../util";
-import { FileUploadManager, UploadBody } from "./upload-manager";
+import { FileStreamManager, UploadBody } from "./filestream-manager";
 
 const app = express();
-const fileManager = new FileUploadManager();
+const fileManager = new FileStreamManager();
 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("public/client/http"));
@@ -53,7 +53,7 @@ app.get("/covalue/:uuid", (req: Request, res: Response) => {
   res.json(covalue);
 });
 
-app.get("/covalue/:uuid/binary", (req: Request, res: Response) => {
+app.get("/covalue/:uuid/binary", async (req: Request, res: Response) => {
   const { uuid } = req.params;
 
   const covalue: CoValue = covalues[uuid];
@@ -65,6 +65,19 @@ app.get("/covalue/:uuid/binary", (req: Request, res: Response) => {
   if (!filePath) {
     return res.status(404).json({ m: "CoValue binary file not found." });
   }
+
+  /*
+  await fileManager.streamFile(
+    {
+      filePath,
+      range: req.headers.range,
+      fileName: "sample.zip",
+    },
+    {
+      type: 'http',
+      res
+    }
+  );*/
 
   const stat = fs.statSync(filePath);
   const fileSize = stat.size;

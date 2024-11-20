@@ -15,7 +15,7 @@ import {
   port,
   CHUNK_SIZE,
 } from "../util";
-import { FileUploadManager } from "./upload-manager";
+import { FileStreamManager } from "./filestream-manager";
 
 import WebSocket from "ws";
 import finalhandler from "finalhandler";
@@ -82,7 +82,7 @@ const server = https.createServer(
 
 // Create WebSocket server
 const wss = new WebSocket.Server({ server });
-const fileManager = new FileUploadManager();
+const fileManager = new FileStreamManager();
 
 wss.on("connection", (ws: WebSocket) => {
   logger.debug("New WebSocket connection");
@@ -113,6 +113,19 @@ wss.on("connection", (ws: WebSocket) => {
                 res.status(404).json({ m: "CoValue binary file not found" });
                 return;
               }
+
+              /*
+              await fileManager.streamFile(
+                {
+                  filePath,
+                  range: payload.range,
+                  fileName: "sample.zip",
+                },
+                {
+                  type: 'websocket',
+                  ws
+                }
+              );*/
 
               const stat = fs.statSync(filePath);
               const fileSize = stat.size;

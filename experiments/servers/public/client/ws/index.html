@@ -153,7 +153,7 @@
             if (typeof event.data !== "string") {
               fileBlobs.push(event.data);
               receivedSize += event.data.size;
-              log(`WebSocket chunk received: ${receivedSize}.`);
+              log(`WebSocket chunk received: ${receivedSize} of ${totalSize} for ${fileName}.`);
               return;
             }
 
@@ -166,7 +166,7 @@
                     break;
                   case "GET":
                     log(
-                      `File streaming in progress: ${JSON.stringify(
+                      `Websocket chunk streaming metadata: ${JSON.stringify(
                         response,
                       )} ...`,
                     );
@@ -214,30 +214,29 @@
       }
 
       function loadCoValueViaWS(response) {
-        if (isBinary()) {
-          if (response.code === 202) {
-            // 202 - Accepted: here signifies the start of a binary download
-            fileName = response.payload.fileName;
-            totalSize = response.payload.fileSize;
-          } else if (response.code === 204) {
-            // 204 - No Content: here signifies the end of a binary download
-            handleLoadCoValue(
-              currentCoValue.uuid,
-              receivedSize,
-              totalSize,
-              fileBlobs,
-            );
-            // reset for subsequent downloads
-            fileName = "";
-            fileBlobs = [];
-            receivedSize = 0;
-            totalSize = 0;
-          }
-        } else {
+        if (response.code === 200) {
+          // 200 - OK: here signifies a successful response for text CoValue
           currentCoValue = response.payload;
           log(`Loaded (JSON) data for: ${currentCoValue.uuid}.`);
+          logCoValue(currentCoValue);
+        } else if (response.code === 202) {
+          // 202 - Accepted: here signifies the start of a binary download
+          fileName = response.payload.fileName;
+          totalSize = response.payload.fileSize;
+        } else if (response.code === 204) {
+          // 204 - No Content: here signifies the end of a binary download
+          handleBinaryCoValue(
+            currentCoValue.uuid,
+            receivedSize,
+            totalSize,
+            fileBlobs,
+          );
+          // reset for subsequent downloads
+          fileName = "";
+          fileBlobs = [];
+          receivedSize = 0;
+          totalSize = 0;
         }
-        logCoValue(currentCoValue);
       }
 
       function createCoValueViaWS(response) {
@@ -530,16 +529,16 @@
               `Received ${receivedLength} of ${contentLength} bytes for: ${uuid}.`,
             );
           }
-          handleLoadCoValue(uuid, receivedLength, contentLength, chunks);
+          handleBinaryCoValue(uuid, receivedLength, contentLength, chunks);
         } else {
           const response = await fetch(url);
           currentCoValue = await response.json();
           log(`Loaded (JSON) data for: ${uuid}.`);
+          logCoValue(currentCoValue);
         }
-        return currentCoValue;
       }
 
-      function handleLoadCoValue(uuid, receivedLength, contentLength, chunks) {
+      function handleBinaryCoValue(uuid, receivedLength, contentLength, chunks) {
         let binaryData = new Uint8Array(receivedLength);
         let position = 0;
         for (let chunk of chunks) {
@@ -557,6 +556,7 @@
           bindata: binaryData,
         };
         log(`Loaded (binary) data for: ${uuid} (${receivedLength} bytes).`);
+        logCoValue(currentCoValue);
       }
 
       async function loadCoValue(isBinary) {
@@ -577,7 +577,7 @@
               payload: { uuid: `${uuid}` },
             });
           } else {
-            logCoValue(loadCoValueViaHTTP(uuid, isBinary));
+            await loadCoValueViaHTTP(uuid, isBinary);
           }
         } catch (error) {
           log(`Error loading CoValue: ${error.message}`);
