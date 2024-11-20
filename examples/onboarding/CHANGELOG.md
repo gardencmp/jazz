@@ -1,5 +1,12 @@
 # jazz-example-onboarding
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
 ## 0.0.4
 
 ### Patch Changes

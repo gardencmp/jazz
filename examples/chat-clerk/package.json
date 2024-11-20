@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat-clerk",
   "private": true,
-  "version": "0.0.101",
+  "version": "0.0.102",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,8 +19,8 @@
     "clsx": "^2.0.0",
     "cojson": "workspace:0.8.23",
     "hash-slash": "workspace:0.2.1",
-    "jazz-react": "workspace:0.8.24",
-    "jazz-react-auth-clerk": "workspace:0.8.24",
+    "jazz-react": "workspace:0.8.26",
+    "jazz-react-auth-clerk": "workspace:0.8.26",
     "jazz-tools": "workspace:0.8.23",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",

@@ -1,5 +1,12 @@
 # jazz-example-book-shelf
 
+## 0.1.18
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
 ## 0.1.17
 
 ### Patch Changes
