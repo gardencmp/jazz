@@ -24,7 +24,7 @@ describe("CoValueState", () => {
   });
 
   test("should create available state", async () => {
-    const mockCoValue = { id: mockCoValueId } as CoValueCore;
+    const mockCoValue = createMockCoValueCore(mockCoValueId);
     const state = CoValueState.Available(mockCoValue);
 
     expect(state.id).toBe(mockCoValueId);
@@ -34,7 +34,7 @@ describe("CoValueState", () => {
   });
 
   test("should handle found action", async () => {
-    const mockCoValue = { id: mockCoValueId } as CoValueCore;
+    const mockCoValue = createMockCoValueCore(mockCoValueId);
     const state = CoValueState.Loading(mockCoValueId, ["peer1", "peer2"]);
 
     const stateValuePromise = state.getCoValue();
@@ -232,7 +232,7 @@ describe("CoValueState", () => {
           setTimeout(() => {
             state.dispatch({
               type: "available",
-              coValue: { id: mockCoValueId } as CoValueCore,
+              coValue: createMockCoValueCore(mockCoValueId),
             });
           }, 100);
         }
@@ -285,7 +285,7 @@ describe("CoValueState", () => {
 
     state.dispatch({
       type: "available",
-      coValue: { id: mockCoValueId } as CoValueCore,
+      coValue: createMockCoValueCore(mockCoValueId),
     });
 
     await loadPromise;
@@ -311,7 +311,7 @@ describe("CoValueState", () => {
         if (run > 2) {
           state.dispatch({
             type: "available",
-            coValue: { id: mockCoValueId } as CoValueCore,
+            coValue: createMockCoValueCore(mockCoValueId),
           });
         }
         state.dispatch({
@@ -338,6 +338,56 @@ describe("CoValueState", () => {
 
     vi.useRealTimers();
   });
+
+  test("should start sending the known state to peers when available", async () => {
+    vi.useFakeTimers();
+
+    const mockCoValue = createMockCoValueCore(mockCoValueId);
+
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "storage",
+      },
+      async () => {
+        state.dispatch({
+          type: "available",
+          coValue: mockCoValue,
+        });
+      },
+    );
+    const peer2 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
+        state.dispatch({
+          type: "not-found-in-peer",
+          peerId: "peer2",
+        });
+      },
+    );
+
+    const state = CoValueState.Unknown(mockCoValueId);
+    const loadPromise = state.loadFromPeers([peer1, peer2]);
+
+    for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES; i++) {
+      await vi.runAllTimersAsync();
+    }
+    await loadPromise;
+
+    expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(1);
+    expect(peer2.pushOutgoingMessage).toHaveBeenCalledTimes(1);
+    expect(peer2.pushOutgoingMessage).toHaveBeenCalledWith({
+      action: "load",
+      ...mockCoValue.knownState(),
+    });
+    expect(state.state.type).toBe("available");
+    await expect(state.getCoValue()).resolves.toEqual({ id: mockCoValueId });
+
+    vi.useRealTimers();
+  });
 });
 
 function createMockPeerState(
@@ -359,4 +409,19 @@ function createMockPeerState(
   vi.spyOn(peerState, "pushOutgoingMessage").mockImplementation(pushFn);
 
   return peerState;
+}
+
+function createMockCoValueCore(mockCoValueId: string) {
+  // Setting the knownState as part of the prototype to simplify
+  // the equality checks
+  const mockCoValue = Object.create({
+    knownState: vi.fn().mockReturnValue({
+      id: mockCoValueId,
+      header: true,
+      sessions: {},
+    }),
+  });
+
+  mockCoValue.id = mockCoValueId;
+  return mockCoValue as unknown as CoValueCore;
 }
