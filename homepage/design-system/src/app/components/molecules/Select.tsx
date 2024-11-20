@@ -1,3 +1,5 @@
+"use client";
+
 import { clsx } from "clsx";
 import { ChevronDownIcon } from "lucide-react";
 import { useId } from "react";
@@ -26,7 +28,7 @@ export function Select(
       </label>
 
       <div className="relative flex items-center">
-        <select id={id} className={selectClassName}>
+        <select {...props} id={id} className={selectClassName}>
           {props.children}
         </select>
 
