@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-native-media-images",
-  "version": "0.8.17",
+  "version": "0.8.20",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",

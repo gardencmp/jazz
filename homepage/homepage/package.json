@@ -29,6 +29,7 @@
     "mdast-util-mdx": "^3.0.0",
     "micromark-extension-mdxjs": "^3.0.0",
     "next": "13.5.4",
+    "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",
     "react-singleton-hook": "^4.0.1",

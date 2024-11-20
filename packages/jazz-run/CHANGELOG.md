@@ -1,5 +1,47 @@
 # jazz-run
 
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+  - cojson-storage-sqlite@0.8.28
+  - cojson-transport-ws@0.8.28
+  - jazz-tools@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+  - cojson-storage-sqlite@0.8.27
+  - cojson-transport-ws@0.8.27
+  - jazz-tools@0.8.27
+
+## 0.8.25
+
+### Patch Changes
+
+- Updated dependencies [63d46c9]
+  - cojson-storage-sqlite@0.8.25
+
+## 0.8.23
+
+### Patch Changes
+
+- 124bf67: Enable the deletePeerStateOnClose on the Websocket peers
+- Updated dependencies [6f745be]
+- Updated dependencies [d348c2d]
+- Updated dependencies [124bf67]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - cojson@0.8.23
+  - jazz-tools@0.8.23
+  - cojson-transport-ws@0.8.23
+  - cojson-storage-sqlite@0.8.23
+
 ## 0.8.21
 
 ### Patch Changes

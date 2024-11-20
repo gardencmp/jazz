@@ -1,4 +1,4 @@
-import { CodeExampleSection } from "@/components/home/CodeExampleSection";
+import { ChatDemoSection } from "@/components/home/ChatDemoSection";
 import { CollaborationFeaturesSection } from "@/components/home/CollaborationFeaturesSection";
 import { ComingSoonSection } from "@/components/home/ComingSoonSection";
 import { EarlyAdopterSection } from "@/components/home/EarlyAdopterSection";
@@ -32,6 +32,8 @@ export default function Home() {
           </p>
         </Testimonial>
 
+        <ChatDemoSection />
+
         <LocalFirstFeaturesSection />
 
         <CollaborationFeaturesSection />
@@ -48,8 +50,6 @@ export default function Home() {
         </Testimonial>
 
         <FeaturesSection />
-
-        <CodeExampleSection />
 
         <SupportedEnvironmentsSection />
 

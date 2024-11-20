@@ -1,5 +1,30 @@
 # jazz-tools
 
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+
+## 0.8.23
+
+### Patch Changes
+
+- d348c2d: Rename BinaryCoStream to FileStream
+- 6902b5b: Rename CoStream to CoFeed
+- 1a0cd3d: Added SchemaUnion.Of(), a new API that lets you express unions of other Schema definitions (often different subclasses of a parent Schema class) that are correctly narrowed in TypeScript and correctly instantiated at runtime based on a discriminating field in the raw loaded CoValue.
+- Updated dependencies [6f745be]
+- Updated dependencies [124bf67]
+  - cojson@0.8.23
+
 ## 0.8.21
 
 ### Patch Changes

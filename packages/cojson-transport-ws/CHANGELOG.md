@@ -1,5 +1,28 @@
 # cojson-transport-nodejs-ws
 
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+
+## 0.8.23
+
+### Patch Changes
+
+- 124bf67: Add a flag to delete a peer when it is closed
+- Updated dependencies [6f745be]
+- Updated dependencies [124bf67]
+  - cojson@0.8.23
+
 ## 0.8.21
 
 ### Patch Changes

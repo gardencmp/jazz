@@ -92,6 +92,7 @@ function NavItem({
                 href={href}
                 aria-label={title}
                 as={Link}
+                key={href}
               >
                 {icon}
                 <div className="grid gap-1.5 mt-px">
