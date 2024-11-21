@@ -8,10 +8,33 @@ Jazz supports a variety of authentication methods, which you can use to authenti
 - Passkey (built-in)
 - Clerk ([React](https://www.npmjs.com/package/jazz-react-auth-clerk) and [vanilla](https://www.npmjs.com/package/jazz-browser-auth-clerk) packages)
 
+## Passphrase
+
+Passphrase authentication allows users to create a new account or log in with an existing one by providing a passphrase.
+
+Passphrase authentication is supported out of the box and imported from `jazz-react`.
+
+### How to use
+
+1. Setup up Jazz as described in the [React setup guide](/docs/project-setup/react).
+
+2. Use the `usePassphraseAuth` hook to authenticate.
+
+<CodeGroup>
+```ts
+import { usePassphraseAuth } from "jazz-react";
+
+// ...
+
+const [passphraseAuth, passphraseState] = usePassphraseAuth({ appName });
+```
+</CodeGroup>
 
 ## Passkey
 
-Passkey authentication is supported out of the box by Jazz.
+Passkey authentication allows users to create a new account or log in with an existing one by providing a passkey.
+
+Passkey authentication is supported out of the box.
 
 ### How to use
 
