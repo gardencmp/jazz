@@ -15,7 +15,7 @@ export default function Layout({
 }) {
   return (
     <DocsLayout nav={<ApiNav />}>
-      <Prose className="py-8">{children}</Prose>
+      <Prose className="py-8 [&_*]:scroll-mt-[7rem]">{children}</Prose>
     </DocsLayout>
   );
 }
