@@ -1,15 +1,16 @@
 "use client";
 
+import { FrameworkContext } from "@/context/FrameworkContext";
 import { clsx } from "clsx";
 import { Select } from "gcmp-design-system/src/app/components/molecules/Select";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
-export function FrameworkSelect({
-  className,
-  framework: defaultFramework,
-}: { className?: string; framework: string }) {
+export function FrameworkSelect({ className }: { className?: string }) {
   const router = useRouter();
+
+  const defaultFramework = useContext(FrameworkContext);
+
   const [framework, setFramework] = useState(defaultFramework);
 
   const path = usePathname();
