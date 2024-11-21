@@ -6,7 +6,6 @@ import path from "path";
 import bodyParser from "body-parser";
 import {
     CoValue,
-    File,
     MutationEvent,
     covalues,
     events,
@@ -16,7 +15,6 @@ import {
     tlsCert,
     logger,
     port,
-    CHUNK_SIZE,
 } from "../util";
 import { FileStreamManager, UploadBody } from "./filestream-manager";
 

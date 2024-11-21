@@ -3,7 +3,6 @@ import path from "path";
 import {
     CoValue,
     WebSocketResponse,
-    File,
     MutationEvent,
     covalues,
     events,
@@ -13,7 +12,6 @@ import {
     tlsCert,
     logger,
     port,
-    CHUNK_SIZE,
 } from "../util";
 import { FileStreamManager } from "./filestream-manager";
 
