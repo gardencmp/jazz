@@ -116,7 +116,7 @@ export const docNavigationItems = [
       {
         name: "Auth methods overview",
         href: "/docs/authentication/auth-methods",
-        done: 0,
+        done: 20,
       },
       {
         name: "Writing your own",
