@@ -1,11 +1,12 @@
 "use client";
 
 import { FrameworkContext } from "@/context/FrameworkContext";
+import { Framework } from "@/lib/framework";
 
 export function Providers({
   framework,
   children,
-}: { framework: string; children: React.ReactNode }) {
+}: { framework: Framework; children: React.ReactNode }) {
   return (
     <FrameworkContext.Provider value={framework}>
       {children}
