@@ -17,7 +17,7 @@ const localStorageKey = "jazz-logged-in-secret";
  *
  * const auth = new BrowserPassphraseAuth(driver, wordlist, appName);
  * ```
- * 
+ *
  * @category Auth Providers
  */
 export class BrowserPassphraseAuth implements AuthMethod {

@@ -18,7 +18,7 @@ const localStorageKey = "demo-auth-logged-in-secret";
  *
  * const auth = new BrowserDemoAuth(driver);
  * ```
- * 
+ *
  * @category Auth Providers
  */
 export class BrowserDemoAuth implements AuthMethod {
