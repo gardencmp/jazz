@@ -8,6 +8,12 @@ export const metadata = {
   description: "Jazz guide and documentation.",
 };
 
+export type Framework = "react" | "react-native" | "vue";
+
+function isValidFramework(framework: string): framework is Framework {
+  return ["react", "react-native", "vue"].includes(framework);
+}
+
 export default function Layout({
   children,
   params,
@@ -15,10 +21,14 @@ export default function Layout({
   children: React.ReactNode;
   params: { framework: string };
 }) {
+  const framework = isValidFramework(params.framework)
+    ? params.framework
+    : "react";
+
   return (
-    <Providers framework={params.framework}>
+    <Providers framework={framework}>
       <DocsLayout
-        nav={<DocNav framework={params.framework} />}
+        nav={<DocNav framework={framework} />}
         navHeader={<FrameworkSelect className="mb-8" />}
       >
         <div className="flex justify-center lg:gap-5">{children}</div>
