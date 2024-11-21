@@ -7,6 +7,7 @@ import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
+import { logSyncMessage } from "./utils.js";
 
 export class PeerState {
   constructor(
@@ -97,6 +98,8 @@ export class PeerState {
   }
 
   pushOutgoingMessage(msg: SyncMessage) {
+    logSyncMessage("to", this, msg);
+
     const promise = this.queue.push(msg);
 
     void this.processQueue();

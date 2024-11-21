@@ -6,6 +6,7 @@ import { Signature } from "./crypto/crypto.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { LocalNode } from "./localNode.js";
 import { CoValuePriority } from "./priority.js";
+import { logSyncMessage } from "./utils.js";
 
 export type CoValueKnownState = {
   id: RawCoID;
@@ -142,6 +143,7 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerState) {
+    logSyncMessage("from", peer, msg);
     if (peer.erroredCoValues.has(msg.id)) {
       console.error(
         `Skipping message ${msg.action} on errored coValue ${msg.id} from peer ${peer.id}`,
