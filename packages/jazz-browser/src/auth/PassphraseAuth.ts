@@ -10,8 +10,14 @@ type LocalStorageData = {
 const localStorageKey = "jazz-logged-in-secret";
 
 /**
- * BrowserPassphraseAuth is a class that provides a `JazzAuth` object for passphrase authentication.
+ * `BrowserPassphraseAuth` provides a `JazzAuth` object for passphrase authentication.
  *
+ * ```ts
+ * import { BrowserPassphraseAuth } from "jazz-browser";
+ *
+ * const auth = new BrowserPassphraseAuth(driver, wordlist, appName);
+ * ```
+ * 
  * @category Auth Providers
  */
 export class BrowserPassphraseAuth implements AuthMethod {
@@ -129,8 +135,7 @@ export class BrowserPassphraseAuth implements AuthMethod {
   }
 }
 
-/** @category Auth Providers */
-// eslint-disable-next-line @typescript-eslint/no-namespace
+/** @internal */
 export namespace BrowserPassphraseAuth {
   export interface Driver {
     onReady: (next: {
