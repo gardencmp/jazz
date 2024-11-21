@@ -1,3 +1,4 @@
+import { Framework } from "@/app/docs/[framework]/layout";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { SideNavItem } from "@/components/SideNavItem";
 import { clsx } from "clsx";
@@ -6,7 +7,11 @@ import React from "react";
 interface SideNavItem {
   name: string;
   href?: string;
-  done?: number;
+  done?:
+    | number
+    | {
+        [key in Framework]: number;
+      };
   items?: SideNavItem[];
 }
 export function SideNav({

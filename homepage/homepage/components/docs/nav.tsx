@@ -1,3 +1,4 @@
+import { Framework } from "@/app/docs/[framework]/layout";
 import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { docNavigationItems } from "@/lib/docNavigationItems";
@@ -6,7 +7,7 @@ import { clsx } from "clsx";
 export function DocNav({
   className,
   framework,
-}: { className?: string; framework: string }) {
+}: { className?: string; framework: Framework }) {
   const items = docNavigationItems.map((headerItem) => {
     return {
       ...headerItem,
@@ -15,6 +16,8 @@ export function DocNav({
           return {
             ...item,
             href: item.href.replace("/docs", `/docs/${framework}`),
+            done:
+              typeof item.done === "number" ? item.done : item.done[framework],
           };
         }
         return item;

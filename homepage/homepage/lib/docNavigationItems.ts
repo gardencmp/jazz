@@ -12,7 +12,11 @@ export const docNavigationItems = [
       {
         name: "Guide",
         href: "/docs/guide",
-        done: 50,
+        done: {
+          react: 100,
+          "react-native": 0,
+          vue: 0,
+        },
       },
     ],
   },
