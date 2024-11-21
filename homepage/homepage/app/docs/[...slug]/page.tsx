@@ -7,9 +7,8 @@ import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 export default async function Page({ params }: { params: { slug: string[] } }) {
   const slugPath = params.slug.join("/");
   try {
-    const { default: Content, tableOfContents } = await import(
-      `./${slugPath}.mdx`
-    );
+    const mdx = await import(`./${slugPath}.mdx`);
+    const { default: Content, tableOfContents } = mdx;
 
     return (
       <>

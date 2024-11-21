@@ -11,6 +11,12 @@ import ProblemStatementSection from "@/components/home/ProblemStatementSection";
 import { SupportedEnvironmentsSection } from "@/components/home/SupportedEnvironmentsSection";
 import { Testimonial } from "gcmp-design-system/src/app/components/molecules/Testimonial";
 
+export const metadata = {
+  title: "Jazz - Build Collaborative Apps with TypeScript",
+  description:
+    "Jazz helps you build collaborative, local-first apps with TypeScript. Ship faster with built-in features like real-time sync, offline support, and end-to-end encryption.",
+};
+
 export default function Home() {
   return (
     <>
