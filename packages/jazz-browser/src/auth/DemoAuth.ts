@@ -8,6 +8,19 @@ type StorageData = {
 
 const localStorageKey = "demo-auth-logged-in-secret";
 
+/**
+ * BrowserDemoAuth is a class that provides a `JazzAuth` object for demo authentication.
+ *
+ * The demo authentication is useful for quickly testing your app, as it allows you to create new accounts and log in as existing ones. The authentication persists across page reloads, but as the data is stored in `localStorage`, it will be lost when the browser is closed.
+ *
+ * ```
+ * import { BrowserDemoAuth } from "jazz-browser";
+ *
+ * const auth = new BrowserDemoAuth(driver);
+ * ```
+ *
+ * @category Auth Providers
+ */
 export class BrowserDemoAuth implements AuthMethod {
   constructor(
     public driver: BrowserDemoAuth.Driver,

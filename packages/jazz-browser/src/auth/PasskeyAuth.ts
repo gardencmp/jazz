@@ -13,6 +13,11 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
+/**
+ * BrowserPasskeyAuth is a class that provides a `JazzAuth` object for passkey authentication.
+ *
+ * @category Auth Providers
+ */
 export class BrowserPasskeyAuth implements AuthMethod {
   constructor(
     public driver: BrowserPasskeyAuth.Driver,

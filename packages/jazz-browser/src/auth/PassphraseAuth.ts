@@ -9,6 +9,11 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
+/**
+ * BrowserPassphraseAuth is a class that provides a `JazzAuth` object for passphrase authentication.
+ *
+ * @category Auth Providers
+ */
 export class BrowserPassphraseAuth implements AuthMethod {
   constructor(
     public driver: BrowserPassphraseAuth.Driver,
@@ -18,6 +23,9 @@ export class BrowserPassphraseAuth implements AuthMethod {
     public appHostname: string = window.location.hostname,
   ) {}
 
+  /**
+   * @returns A `JazzAuth` object
+   */
   async start(crypto: CryptoProvider): Promise<AuthResult> {
     if (localStorage[localStorageKey]) {
       const localStorageData = JSON.parse(
