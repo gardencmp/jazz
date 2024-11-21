@@ -1,6 +1,7 @@
 "use client";
 
 import { FrameworkContext } from "@/context/FrameworkContext";
+import { Framework } from "@/lib/framework";
 import { clsx } from "clsx";
 import { Select } from "gcmp-design-system/src/app/components/molecules/Select";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,7 +19,7 @@ export function FrameworkSelect({ className }: { className?: string }) {
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
 
-    const newFramework = e.target.value;
+    const newFramework = e.target.value as Framework;
     setFramework(newFramework);
 
     router.push(path.replace(defaultFramework, newFramework));

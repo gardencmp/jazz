@@ -1,6 +1,6 @@
-import { Framework } from "@/app/docs/[framework]/layout";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { SideNavItem } from "@/components/SideNavItem";
+import { Framework } from "@/lib/framework";
 import { clsx } from "clsx";
 import React from "react";
 
