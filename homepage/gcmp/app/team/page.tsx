@@ -69,6 +69,15 @@ const team: Array<TeamMember> = [
     github: "marinoska",
     image: "marina.jpeg",
   },
+  {
+    name: "Giordano Ricci",
+    titles: ["Full-Stack Dev", "DevOps"],
+    location: "Lisbon, Portugal ",
+    linkedin: "giordanoricci",
+    github: "Elfo404",
+    website: "https://giordanoricci.com",
+    image: "gio.jpg",
+  },
 ];
 
 function SocialLink({
