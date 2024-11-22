@@ -118,8 +118,16 @@ export class PeerState {
     return this.peer.incoming;
   }
 
+  private closeQueue() {
+    let entry: QueueEntry | undefined;
+    while ((entry = this.queue.pull())) {
+      entry.reject(new Error("Peer disconnected"));
+    }
+  }
+
   gracefulShutdown() {
     console.debug("Gracefully closing", this.id);
+    this.closeQueue();
     this.peer.outgoing.close();
     this.closed = true;
   }

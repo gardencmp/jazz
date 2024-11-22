@@ -57,6 +57,36 @@ describe("PeerState", () => {
     consoleSpy.mockRestore();
   });
 
+  test("should empty the queue when closing", async () => {
+    const { mockPeer, peerState } = setup();
+
+    mockPeer.outgoing.push = vi.fn().mockImplementation((message) => {
+      return new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    });
+
+    const message1 = peerState.pushOutgoingMessage({
+      action: "content",
+      id: "co_z1",
+      new: {},
+      priority: CO_VALUE_PRIORITY.HIGH,
+    });
+    const message2 = peerState.pushOutgoingMessage({
+      action: "content",
+      id: "co_z1",
+      new: {},
+      priority: CO_VALUE_PRIORITY.HIGH,
+    });
+
+    peerState.gracefulShutdown();
+
+    await Promise.allSettled([message1, message2]);
+
+    await expect(message1).resolves.toBe(undefined);
+    await expect(message2).rejects.toThrow("Peer disconnected");
+  });
+
   test("should schedule outgoing messages based on their priority", async () => {
     const { peerState } = setup();
 
