@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { LucideIcon } from "lucide-react";
+import { Card } from "../atoms/Card";
 import { Prose } from "./Prose";
 
 export function LabelledFeatureIcon({
@@ -14,14 +15,7 @@ export function LabelledFeatureIcon({
   className?: string;
 }) {
   return (
-    <div
-      className={clsx(
-        className,
-        "text-base",
-        "rounded-xl",
-        "border p-4 shadow-sm",
-      )}
-    >
+    <Card className={clsx(className, "p-4")}>
       <Icon
         className="size-8 text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900 mb-2.5 md:size-10"
         strokeWidth={1.5}
@@ -32,6 +26,6 @@ export function LabelledFeatureIcon({
         {label}
       </div>
       <Prose>{explanation}</Prose>
-    </div>
+    </Card>
   );
 }

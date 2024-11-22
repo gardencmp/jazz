@@ -1,3 +1,4 @@
+import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { LockKeyholeIcon } from "lucide-react";
@@ -64,7 +65,7 @@ function Illustration() {
 
 export function EncryptionSection() {
   return (
-    <div className="border rounded-xl bg-white shadow-sm overflow-hidden dark:bg-stone-925">
+    <Card className="overflow-hidden dark:bg-stone-925">
       <div className="flex grid md:grid-cols-3 md:gap-3">
         <div className="md:col-span-2 px-4 pb-4 md:p-8">
           <H3 className="mb-0 text-balance">
@@ -86,6 +87,6 @@ export function EncryptionSection() {
 
         <Illustration />
       </div>
-    </div>
+    </Card>
   );
 }

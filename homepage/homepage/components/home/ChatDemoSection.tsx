@@ -1,5 +1,6 @@
 "use client";
 
+import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
@@ -22,7 +23,7 @@ function Iframe(
   const { src, user } = props;
 
   return (
-    <div className="relative col-span-2 w-full border rounded-xl shadow-sm overflow-hidden lg:col-span-2 dark:bg-black">
+    <Card className="relative col-span-2 w-full overflow-hidden lg:col-span-2 dark:bg-black">
       <iframe
         {...props}
         src={src}
@@ -31,7 +32,7 @@ function Iframe(
         height="390"
         allowFullScreen
       />
-    </div>
+    </Card>
   );
 }
 

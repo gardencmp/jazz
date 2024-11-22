@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import CodeStepAction from "./CodeStepAction.mdx";
@@ -48,10 +49,10 @@ function Step({
   className?: string;
 }) {
   return (
-    <div
+    <Card
       className={clsx(
         className,
-        "rounded-lg overflow-hidden shadow-sm flex flex-col gap-6 border",
+        "overflow-hidden flex flex-col gap-6",
         "pt-4 sm:pt-6",
         "col-span-2 lg:col-span-3",
       )}
@@ -70,7 +71,7 @@ function Step({
         <p className="max-w-md">{description}</p>
       </div>
       <div className="flex-1 pl-4 sm:pl-12">{children}</div>
-    </div>
+    </Card>
   );
 }
 
