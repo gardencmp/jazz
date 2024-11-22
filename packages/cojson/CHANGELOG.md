@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.31
+
+### Patch Changes
+
+- e511d6d: Performance: make the isUploaded check on the SyncStateManager lazy
+
 ## 0.8.30
 
 ### Patch Changes
