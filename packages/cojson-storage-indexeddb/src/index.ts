@@ -1,1 +1,1 @@
-export { IdbNode } from "./idbNode";
+export { IDBNode, IDBNode as IDBStorage } from "./idbNode";

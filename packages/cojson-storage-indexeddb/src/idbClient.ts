@@ -1,5 +1,7 @@
 import { SyncPromise } from "./syncPromises";
 
+export type MakeRequestFunction = typeof IDBClient.prototype.makeRequest;
+
 export class IDBClient {
   private db;
 

@@ -2,7 +2,7 @@ import "fake-indexeddb/auto"; // Polyfill for IndexedDB
 
 import { ControlledAgent, LocalNode, WasmCrypto } from "cojson";
 import { expect, test } from "vitest";
-import { IdbNode } from "../index.js";
+import { IDBNode } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -15,7 +15,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
     Crypto,
   );
 
-  node.syncManager.addPeer(await IdbNode.asPeer({ trace: true }));
+  node.syncManager.addPeer(await IDBNode.asPeer({ trace: true }));
 
   console.log("yay!");
 
@@ -36,7 +36,7 @@ test("Should be able to sync data to database and then load that from a new node
   );
 
   node1.syncManager.addPeer(
-    await IdbNode.asPeer({ trace: true, localNodeName: "node1" }),
+    await IDBNode.asPeer({ trace: true, localNodeName: "node1" }),
   );
 
   console.log("yay!");
@@ -56,7 +56,7 @@ test("Should be able to sync data to database and then load that from a new node
   );
 
   node2.syncManager.addPeer(
-    await IdbNode.asPeer({ trace: true, localNodeName: "node2" }),
+    await IDBNode.asPeer({ trace: true, localNodeName: "node2" }),
   );
 
   const map2 = await node2.load(map.id);

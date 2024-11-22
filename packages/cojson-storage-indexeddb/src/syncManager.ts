@@ -9,7 +9,7 @@ import {
   SyncMessage,
   cojsonInternals,
 } from "cojson";
-import { IDBClient } from "./idbClient";
+import { IDBClient, MakeRequestFunction } from "./idbClient";
 import { SyncPromise } from "./syncPromises.js";
 
 type CoValueRow = {
@@ -42,7 +42,7 @@ type SignatureAfterRow = {
 };
 
 export class SyncManager {
-  private readonly makeRequest: typeof IDBClient.prototype.makeRequest;
+  private readonly makeRequest: MakeRequestFunction;
   private readonly toLocalNode: OutgoingSyncQueue;
 
   constructor(dbClient: IDBClient, toLocalNode: OutgoingSyncQueue) {
@@ -65,6 +65,49 @@ export class SyncManager {
         await this.handleDone(msg);
         break;
     }
+  }
+
+  async handleSessionUpdate(
+    sessionRow: StoredSessionRow,
+    theirKnown: CojsonInternalTypes.CoValueKnownState,
+    ourKnown: CojsonInternalTypes.CoValueKnownState,
+    newContentPieces: CojsonInternalTypes.NewContentMessage[],
+  ) {
+    ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
+
+    if (sessionRow.lastIdx <= (theirKnown.sessions[sessionRow.sessionID] || 0))
+      return;
+
+    const firstNewTxIdx = theirKnown.sessions[sessionRow.sessionID] || 0;
+
+    const signaturesAndIdxs = await this.makeRequest<SignatureAfterRow[]>(
+      ({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
+        signatureAfter.getAll(
+          IDBKeyRange.bound(
+            [sessionRow.rowID, firstNewTxIdx],
+            [sessionRow.rowID, Infinity],
+          ),
+        ),
+    );
+
+    const newTxsInSession = await this.makeRequest<TransactionRow[]>(
+      ({ transactions }) =>
+        transactions.getAll(
+          IDBKeyRange.bound(
+            [sessionRow.rowID, firstNewTxIdx],
+            [sessionRow.rowID, Infinity],
+          ),
+        ),
+    );
+
+    collectNewTxs(
+      newTxsInSession,
+      newContentPieces,
+      sessionRow,
+      signaturesAndIdxs,
+      theirKnown,
+      firstNewTxIdx,
+    );
   }
 
   async sendNewContentAfter(
@@ -97,47 +140,16 @@ export class SyncManager {
       },
     ];
 
-    async function handleSessionUpdate(sessionRow: StoredSessionRow) {
-      ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
-
-      if (
-        sessionRow.lastIdx <= (theirKnown.sessions[sessionRow.sessionID] || 0)
-      )
-        return;
-
-      const firstNewTxIdx = theirKnown.sessions[sessionRow.sessionID] || 0;
-
-      const signaturesAndIdxs = await this.makeRequest<SignatureAfterRow[]>(
-        ({ signatureAfter }) =>
-          signatureAfter.getAll(
-            IDBKeyRange.bound(
-              [sessionRow.rowID, firstNewTxIdx],
-              [sessionRow.rowID, Infinity],
-            ),
-          ),
-      );
-
-      const newTxsInSession = await this.makeRequest<TransactionRow[]>(
-        ({ transactions }) =>
-          transactions.getAll(
-            IDBKeyRange.bound(
-              [sessionRow.rowID, firstNewTxIdx],
-              [sessionRow.rowID, Infinity],
-            ),
-          ),
-      );
-
-      collectNewTxs(
-        newTxsInSession,
-        newContentPieces,
-        sessionRow,
-        signaturesAndIdxs,
-        theirKnown,
-        firstNewTxIdx,
-      );
-    }
-
-    await Promise.all(allOurSessions.map(handleSessionUpdate.bind(this)));
+    await Promise.all(
+      allOurSessions.map((sessionRow) =>
+        this.handleSessionUpdate(
+          sessionRow,
+          theirKnown,
+          ourKnown,
+          newContentPieces,
+        ),
+      ),
+    );
 
     const dependedOnCoValues = getDependedOnCoValues(
       coValueRow,
@@ -185,90 +197,83 @@ export class SyncManager {
     return this.sendNewContentAfter(msg);
   }
 
-  handleContent(msg: CojsonInternalTypes.NewContentMessage): SyncPromise<void> {
-    return this.makeRequest<StoredCoValueRow | undefined>(({ coValues }) =>
-      coValues.index("coValuesById").get(msg.id),
-    )
-      .then((coValueRow) => {
-        if (coValueRow?.rowID === undefined) {
-          const header = msg.header;
-          if (!header) {
-            console.error("Expected to be sent header first");
-            this.toLocalNode
-              .push({
-                action: "known",
-                id: msg.id,
-                header: false,
-                sessions: {},
-                isCorrection: true,
-              })
-              .catch((e) => console.error("Error sending known state", e));
-            return SyncPromise.resolve();
-          }
+  async handleContent(
+    msg: CojsonInternalTypes.NewContentMessage,
+  ): Promise<void> {
+    const coValueRow = await this.makeRequest<StoredCoValueRow | undefined>(
+      ({ coValues }) => coValues.index("coValuesById").get(msg.id),
+    );
+    // TODO suspicious piece of code
+    if (!msg.header) {
+      console.error("Expected to be sent header first");
+      this.toLocalNode
+        .push({
+          action: "known",
+          id: msg.id,
+          header: false,
+          sessions: {},
+          isCorrection: true,
+        })
+        .catch((e) => console.error("Error sending known state", e));
+      return;
+    }
 
-          return this.makeRequest<IDBValidKey>(({ coValues }) =>
+    const storedCoValueRowID: number = coValueRow?.rowID
+      ? coValueRow.rowID
+      : ((await this.makeRequest<IDBValidKey>(
+          ({ coValues }) =>
             coValues.put({
               id: msg.id,
-              header: header,
+              header: msg.header!,
             } satisfies CoValueRow),
-          ) as SyncPromise<number>;
-        } else {
-          return SyncPromise.resolve(coValueRow.rowID);
+          // TODO is it always number?
+        )) as number);
+
+    const allOurSessionsEntries = await this.makeRequest<StoredSessionRow[]>(
+      ({ sessions }) =>
+        sessions.index("sessionsByCoValue").getAll(storedCoValueRowID),
+    );
+
+    const allOurSessions: {
+      [sessionID: SessionID]: StoredSessionRow;
+    } = Object.fromEntries(
+      allOurSessionsEntries.map((row) => [row.sessionID, row]),
+    );
+
+    const ourKnown: CojsonInternalTypes.CoValueKnownState = {
+      id: msg.id,
+      header: true,
+      sessions: {},
+    };
+    let invalidAssumptions = false;
+
+    await Promise.all(
+      (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
+        const sessionRow = allOurSessions[sessionID];
+        if (sessionRow) {
+          ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
         }
-      })
-      .then((storedCoValueRowID: number) => {
-        void this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
-          sessions.index("sessionsByCoValue").getAll(storedCoValueRowID),
-        ).then((allOurSessionsEntries) => {
-          const allOurSessions: {
-            [sessionID: SessionID]: StoredSessionRow;
-          } = Object.fromEntries(
-            allOurSessionsEntries.map((row) => [row.sessionID, row]),
-          );
 
-          const ourKnown: CojsonInternalTypes.CoValueKnownState = {
-            id: msg.id,
-            header: true,
-            sessions: {},
-          };
-          let invalidAssumptions = false;
+        if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
+          invalidAssumptions = true;
+        } else {
+          return this.putNewTxs(msg, sessionID, sessionRow, storedCoValueRowID);
+        }
+      }),
+    );
 
-          return Promise.all(
-            (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
-              const sessionRow = allOurSessions[sessionID];
-              if (sessionRow) {
-                ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
-              }
-
-              if (
-                (sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)
-              ) {
-                invalidAssumptions = true;
-              } else {
-                return this.putNewTxs(
-                  msg,
-                  sessionID,
-                  sessionRow,
-                  storedCoValueRowID,
-                );
-              }
-            }),
-          ).then(() => {
-            if (invalidAssumptions) {
-              this.toLocalNode
-                .push({
-                  action: "known",
-                  ...ourKnown,
-                  isCorrection: invalidAssumptions,
-                })
-                .catch((e) => console.error("Error sending known state", e));
-            }
-          });
-        });
-      });
+    if (invalidAssumptions) {
+      this.toLocalNode
+        .push({
+          action: "known",
+          ...ourKnown,
+          isCorrection: invalidAssumptions,
+        })
+        .catch((e) => console.error("Error sending known state", e));
+    }
   }
 
-  private putNewTxs(
+  private async putNewTxs(
     msg: CojsonInternalTypes.NewContentMessage,
     sessionID: SessionID,
     sessionRow: StoredSessionRow | undefined,
@@ -312,7 +317,7 @@ export class SyncManager {
       bytesSinceLastSignature: newBytesSinceLastSignature,
     };
 
-    return this.makeRequest<number>(({ sessions }) =>
+    const sessionRowID = await this.makeRequest<number>(({ sessions }) =>
       sessions.put(
         sessionRow?.rowID
           ? {
@@ -321,35 +326,35 @@ export class SyncManager {
             }
           : sessionUpdate,
       ),
-    ).then((sessionRowID) => {
-      let maybePutRequest;
-      if (shouldWriteSignature) {
-        maybePutRequest = this.makeRequest(({ signatureAfter }) =>
-          signatureAfter.put({
-            ses: sessionRowID,
-            // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
-            idx: newLastIdx - 1,
-            signature: msg.new[sessionID]!.lastSignature,
-          } satisfies SignatureAfterRow),
-        );
-      } else {
-        maybePutRequest = SyncPromise.resolve();
-      }
+    );
 
-      return maybePutRequest.then(() =>
-        Promise.all(
-          actuallyNewTransactions.map((newTransaction, i) => {
-            return this.makeRequest(({ transactions }) =>
-              transactions.add({
-                ses: sessionRowID,
-                idx: nextIdx + i,
-                tx: newTransaction,
-              } satisfies TransactionRow),
-            );
-          }),
-        ),
+    let maybePutRequest;
+    if (shouldWriteSignature) {
+      maybePutRequest = this.makeRequest(({ signatureAfter }) =>
+        signatureAfter.put({
+          ses: sessionRowID,
+          // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
+          idx: newLastIdx - 1,
+          signature: msg.new[sessionID]!.lastSignature,
+        } satisfies SignatureAfterRow),
       );
-    });
+    } else {
+      maybePutRequest = SyncPromise.resolve();
+    }
+
+    return maybePutRequest.then(() =>
+      Promise.all(
+        actuallyNewTransactions.map((newTransaction, i) => {
+          return this.makeRequest(({ transactions }) =>
+            transactions.add({
+              ses: sessionRowID,
+              idx: nextIdx + i,
+              tx: newTransaction,
+            } satisfies TransactionRow),
+          );
+        }),
+      ),
+    );
   }
 
   handleKnown(msg: CojsonInternalTypes.KnownStateMessage) {

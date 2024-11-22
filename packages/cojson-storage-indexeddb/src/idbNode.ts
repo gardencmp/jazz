@@ -7,7 +7,7 @@ import {
 import { IDBClient } from "./idbClient";
 import { SyncManager } from "./syncManager";
 
-export class IdbNode {
+export class IDBNode {
   private dbClient: IDBClient;
   private syncManager: SyncManager;
 
@@ -67,7 +67,7 @@ export class IdbNode {
       },
     );
 
-    await IdbNode.open(localNodeAsPeer.incoming, localNodeAsPeer.outgoing);
+    await IDBNode.open(localNodeAsPeer.incoming, localNodeAsPeer.outgoing);
 
     return { ...storageAsPeer, priority: 100 };
   }
@@ -118,6 +118,6 @@ export class IdbNode {
       };
     });
 
-    return new IdbNode(await dbPromise, fromLocalNode, toLocalNode);
+    return new IDBNode(await dbPromise, fromLocalNode, toLocalNode);
   }
 }
