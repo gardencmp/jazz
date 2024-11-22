@@ -4,7 +4,7 @@ import { Framework, useFramework } from "@/lib/framework";
 import { clsx } from "clsx";
 import { Select } from "gcmp-design-system/src/app/components/molecules/Select";
 import { usePathname, useRouter } from "next/navigation";
-import { useContext, useState } from "react";
+import { useState } from "react";
 
 export function FrameworkSelect({ className }: { className?: string }) {
   const router = useRouter();
