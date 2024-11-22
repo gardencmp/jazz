@@ -155,15 +155,16 @@ export class CoValueCore {
 
   /** @internal */
   knownStateUncached(): CoValueKnownState {
+    const sessions: CoValueKnownState["sessions"] = {};
+
+    for (const [sessionID, sessionLog] of this.sessionLogs.entries()) {
+      sessions[sessionID] = sessionLog.transactions.length;
+    }
+
     return {
       id: this.id,
       header: true,
-      sessions: Object.fromEntries(
-        [...this.sessionLogs.entries()].map(([k, v]) => [
-          k,
-          v.transactions.length,
-        ]),
-      ),
+      sessions
     };
   }
 
