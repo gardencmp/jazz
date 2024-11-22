@@ -1,5 +1,12 @@
 # cojson
 
+## 0.8.29
+
+### Patch Changes
+
+- dcc9c2e: Clear out the queues when closing a Peer
+- 699553f: Restore offline support and improve loading perfromance when values are cached
+
 ## 0.8.28
 
 ### Patch Changes

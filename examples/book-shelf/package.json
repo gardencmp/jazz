@@ -1,6 +1,6 @@
 {
   "name": "jazz-example-book-shelf",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "clsx": "^2.0.0",
-    "jazz-browser-media-images": "workspace:0.8.28",
-    "jazz-react": "workspace:0.8.28",
-    "jazz-tools": "workspace:0.8.28",
+    "jazz-browser-media-images": "workspace:0.8.29",
+    "jazz-react": "workspace:0.8.29",
+    "jazz-tools": "workspace:0.8.29",
     "next": "14.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

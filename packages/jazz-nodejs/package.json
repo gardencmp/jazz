@@ -5,11 +5,11 @@
   "types": "src/index.ts",
   "type": "module",
   "license": "MIT",
-  "version": "0.8.28",
+  "version": "0.8.29",
   "dependencies": {
-    "cojson": "workspace:0.8.28",
-    "cojson-transport-ws": "workspace:0.8.28",
-    "jazz-tools": "workspace:0.8.28",
+    "cojson": "workspace:0.8.29",
+    "cojson-transport-ws": "workspace:0.8.29",
+    "jazz-tools": "workspace:0.8.29",
     "ws": "^8.14.2"
   },
   "devDependencies": {
