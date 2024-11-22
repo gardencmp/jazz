@@ -3,11 +3,9 @@ import { clsx } from "clsx";
 export default function DocsLayout({
   children,
   nav,
-  navHeader,
 }: {
   children: React.ReactNode;
   nav?: React.ReactNode;
-  navHeader?: React.ReactNode;
 }) {
   return (
     <div className="container relative grid grid-cols-12 gap-5">
@@ -19,7 +17,6 @@ export default function DocsLayout({
           "hidden md:block",
         )}
       >
-        {navHeader}
         {nav}
       </div>
       <div className="col-span-12 md:col-span-8 lg:col-span-9">{children}</div>
