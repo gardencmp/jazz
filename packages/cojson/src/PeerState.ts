@@ -121,7 +121,8 @@ export class PeerState {
   private closeQueue() {
     let entry: QueueEntry | undefined;
     while ((entry = this.queue.pull())) {
-      entry.reject(new Error("Peer disconnected"));
+      // Using resolve here to avoid unnecessary noise in the logs
+      entry.resolve();
     }
   }
 

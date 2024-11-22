@@ -4,7 +4,7 @@ import { RawCoID } from "./ids.js";
 import { PeerID } from "./sync.js";
 
 export const CO_VALUE_LOADING_MAX_RETRIES = 5;
-export const CO_VALUE_LOADING_TIMEOUT = 5000;
+export const CO_VALUE_LOADING_TIMEOUT = 30_000;
 
 export class CoValueUnknownState {
   type = "unknown" as const;
