@@ -718,8 +718,8 @@ export class SyncManager {
       const unsubscribe =
         this.syncStateSubscriptionManager.subscribeToPeerUpdates(
           peerId,
-          (knownState, getIsUploadCompleted) => {
-            if (getIsUploadCompleted() && knownState.id === id) {
+          (knownState, syncState) => {
+            if (syncState.isUploaded && knownState.id === id) {
               resolve(true);
               unsubscribe?.();
             }

@@ -6,15 +6,19 @@ import {
   emptyKnownState,
 } from "./sync.js";
 
+export type SyncStateGetter = {
+  isUploaded: boolean;
+};
+
 export type GlobalSyncStateListenerCallback = (
   peerId: PeerID,
   knownState: CoValueKnownState,
-  getIsUploadCompleted: () => boolean,
+  sync: SyncStateGetter,
 ) => void;
 
 export type PeerSyncStateListenerCallback = (
   knownState: CoValueKnownState,
-  getIsUploadCompleted: () => boolean,
+  sync: SyncStateGetter,
 ) => void;
 
 export class SyncStateSubscriptionManager {
@@ -66,18 +70,29 @@ export class SyncStateSubscriptionManager {
     }
 
     const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
-    const getIsCoValueFullyUploadedIntoPeer = simpleMemoize(() =>
+
+    // Build a lazy sync state object to process the isUploaded info
+    // only when requested
+    const syncState = {} as SyncStateGetter;
+
+    const getIsUploaded = simpleMemoize(() =>
       this.getIsCoValueFullyUploadedIntoPeer(peerId, id),
     );
+    Object.defineProperties(syncState, {
+      isUploaded: {
+        enumerable: true,
+        get: getIsUploaded,
+      },
+    });
 
     for (const listener of this.listeners) {
-      listener(peerId, knownState, getIsCoValueFullyUploadedIntoPeer);
+      listener(peerId, knownState, syncState);
     }
 
     if (!peerListeners) return;
 
     for (const listener of peerListeners) {
-      listener(knownState, getIsCoValueFullyUploadedIntoPeer);
+      listener(knownState, syncState);
     }
   }
 
