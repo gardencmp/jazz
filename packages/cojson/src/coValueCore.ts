@@ -164,7 +164,7 @@ export class CoValueCore {
     return {
       id: this.id,
       header: true,
-      sessions
+      sessions,
     };
   }
 
