@@ -84,7 +84,7 @@ describe("PeerState", () => {
     await Promise.allSettled([message1, message2]);
 
     await expect(message1).resolves.toBe(undefined);
-    await expect(message2).rejects.toThrow("Peer disconnected");
+    await expect(message2).resolves.toBe(undefined);
   });
 
   test("should schedule outgoing messages based on their priority", async () => {
