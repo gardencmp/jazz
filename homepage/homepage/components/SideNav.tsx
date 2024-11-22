@@ -41,7 +41,7 @@ export function SideNav({
             items.map(({ name, href, items, done }) => (
               <ul key={name}>
                 <li>
-                  <SideNavItem href={done === 0 ? "/docs/coming-soon" : href}>
+                  <SideNavItem href={href}>
                     {done == 0 && (
                       <span className="mr-1.5 inline-block size-2 rounded-full bg-yellow-400"></span>
                     )}

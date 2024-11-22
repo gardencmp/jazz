@@ -13,15 +13,19 @@ export function DocNav({ className }: { className?: string }) {
     return {
       ...headerItem,
       items: headerItem.items.map((item) => {
-        if (item.href?.startsWith("/docs")) {
-          return {
-            ...item,
-            href: item.href.replace("/docs", `/docs/${framework}`),
-            done:
-              typeof item.done === "number" ? item.done : item.done[framework],
-          };
-        }
-        return item;
+        if (!item.href?.startsWith("/docs")) return item;
+
+        let done =
+          typeof item.done === "number" ? item.done : item.done[framework];
+        let href = !!done
+          ? item.href.replace("/docs", `/docs/${framework}`)
+          : `/docs/${framework}/coming-soon`;
+
+        return {
+          ...item,
+          href,
+          done,
+        };
       }),
     };
   });
