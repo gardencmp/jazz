@@ -1,7 +1,6 @@
 "use client";
 
-import { FrameworkContext } from "@/context/FrameworkContext";
-import { useContext } from "react";
+import { useFramework } from "@/lib/framework";
 
 export interface ContentByFrameworkProps {
   framework: string;
@@ -19,7 +18,7 @@ export function ContentByFramework(props: {
   framework: string;
   children: React.ReactNode;
 }) {
-  const framework = useContext(FrameworkContext);
+  const framework = useFramework();
 
   if (framework == props.framework) {
     return props.children;
