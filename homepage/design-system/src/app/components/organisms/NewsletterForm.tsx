@@ -38,7 +38,7 @@ export function NewsletterForm() {
   }
 
   return (
-    <form action="" onSubmit={submit} className="flex gap-x-4 w-120 max-w-xl">
+    <form action="" onSubmit={submit} className="flex gap-x-4 w-120 max-w-md">
       <Input
         id="email-address"
         name="email"
