@@ -1,3 +1,4 @@
+import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import {
@@ -64,7 +65,7 @@ export function LocalFirstFeaturesSection() {
           </>
         }
       />
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+      <GappedGrid cols={4}>
         {features.map(({ title, icon: Icon, description }) => (
           <LabelledFeatureIcon
             label={title}
@@ -73,7 +74,7 @@ export function LocalFirstFeaturesSection() {
             key={title}
           ></LabelledFeatureIcon>
         ))}
-      </div>
+      </GappedGrid>
     </div>
   );
 }
