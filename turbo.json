@@ -3,6 +3,7 @@
   "remoteCache": {},
   "tasks": {
     "build": {
+      "env": ["RESEND_API_KEY", "RESEND_AUDIENCE_ID"],
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
