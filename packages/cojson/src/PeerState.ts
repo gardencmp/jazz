@@ -97,6 +97,10 @@ export class PeerState {
   }
 
   pushOutgoingMessage(msg: SyncMessage) {
+    if (this.closed) {
+      return Promise.resolve();
+    }
+
     const promise = this.queue.push(msg);
 
     void this.processQueue();

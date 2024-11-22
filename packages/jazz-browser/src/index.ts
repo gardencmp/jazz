@@ -1,4 +1,4 @@
-import { LSMStorage, Peer, RawAccountID } from "cojson";
+import { LSMStorage, LocalNode, Peer, RawAccountID } from "cojson";
 import { IDBStorage } from "cojson-storage-indexeddb";
 import {
   Account,
@@ -64,12 +64,15 @@ export async function createJazzBrowserContext<Acc extends Account>(
   options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
 ): Promise<BrowserContext<Acc> | BrowserGuestContext> {
   const crypto = options.crypto || (await WasmCrypto.create());
+  let node: LocalNode | undefined = undefined;
 
   const wsPeer = createWebSocketPeerWithReconnection(
     options.peer,
     options.reconnectionTimeout,
     (peer) => {
-      node.syncManager.addPeer(peer);
+      if (node) {
+        node.syncManager.addPeer(peer);
+      }
     },
   );
 
@@ -106,7 +109,7 @@ export async function createJazzBrowserContext<Acc extends Account>(
           peersToLoadFrom,
         });
 
-  const node =
+  node =
     "account" in context ? context.account._raw.core.node : context.agent.node;
 
   return "account" in context
