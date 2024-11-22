@@ -153,6 +153,23 @@ describe("createWebSocketPeer", () => {
     expect(mockWebSocket.close).toHaveBeenCalled();
   });
 
+  test("should return a rejection if a message is sent after the peer is closed", async () => {
+    const { peer } = setup();
+
+    peer.outgoing.close();
+
+    const message: SyncMessage = {
+      action: "known",
+      id: "co_ztest",
+      header: false,
+      sessions: {},
+    };
+
+    await expect(peer.outgoing.push(message)).rejects.toThrow(
+      "WebSocket closed",
+    );
+  });
+
   describe("batchingByDefault = true", () => {
     test("should batch outgoing messages", async () => {
       const { peer, mockWebSocket } = setup();
