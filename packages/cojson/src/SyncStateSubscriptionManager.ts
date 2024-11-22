@@ -6,29 +6,27 @@ import {
   emptyKnownState,
 } from "./sync.js";
 
+export type GlobalSyncStateListenerCallback = (
+  peerId: PeerID,
+  knownState: CoValueKnownState,
+  getIsUploadCompleted: () => boolean,
+) => void;
+
+export type PeerSyncStateListenerCallback = (
+  knownState: CoValueKnownState,
+  getIsUploadCompleted: () => boolean,
+) => void;
+
 export class SyncStateSubscriptionManager {
   constructor(private syncManager: SyncManager) {}
 
-  private listeners = new Set<
-    (
-      peerId: PeerID,
-      knownState: CoValueKnownState,
-      uploadCompleted: boolean,
-    ) => void
-  >();
-
+  private listeners = new Set<GlobalSyncStateListenerCallback>();
   private listenersByPeers = new Map<
     PeerID,
-    Set<(knownState: CoValueKnownState, uploadCompleted: boolean) => void>
+    Set<PeerSyncStateListenerCallback>
   >();
 
-  subscribeToUpdates(
-    listener: (
-      peerId: PeerID,
-      knownState: CoValueKnownState,
-      uploadCompleted: boolean,
-    ) => void,
-  ) {
+  subscribeToUpdates(listener: GlobalSyncStateListenerCallback) {
     this.listeners.add(listener);
 
     return () => {
@@ -38,7 +36,7 @@ export class SyncStateSubscriptionManager {
 
   subscribeToPeerUpdates(
     peerId: PeerID,
-    listener: (knownState: CoValueKnownState, uploadCompleted: boolean) => void,
+    listener: PeerSyncStateListenerCallback,
   ) {
     const listeners = this.listenersByPeers.get(peerId) ?? new Set();
 
@@ -68,19 +66,18 @@ export class SyncStateSubscriptionManager {
     }
 
     const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
-    const fullyUploadedIntoPeer = this.getIsCoValueFullyUploadedIntoPeer(
-      peerId,
-      id,
+    const getIsCoValueFullyUploadedIntoPeer = simpleMemoize(() =>
+      this.getIsCoValueFullyUploadedIntoPeer(peerId, id),
     );
 
     for (const listener of this.listeners) {
-      listener(peerId, knownState, fullyUploadedIntoPeer);
+      listener(peerId, knownState, getIsCoValueFullyUploadedIntoPeer);
     }
 
     if (!peerListeners) return;
 
     for (const listener of peerListeners) {
-      listener(knownState, fullyUploadedIntoPeer);
+      listener(knownState, getIsCoValueFullyUploadedIntoPeer);
     }
   }
 
@@ -121,4 +118,9 @@ function getIsUploadCompleted(
   }
 
   return true;
+}
+
+function simpleMemoize<T>(fn: () => T): () => T {
+  let value: T | undefined;
+  return () => value ?? (value = fn());
 }

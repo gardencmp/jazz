@@ -1,4 +1,8 @@
 import { describe, expect, onTestFinished, test, vi } from "vitest";
+import {
+  GlobalSyncStateListenerCallback,
+  PeerSyncStateListenerCallback,
+} from "../SyncStateSubscriptionManager.js";
 import { connectedPeers } from "../streamUtils.js";
 import { emptyKnownState } from "../sync.js";
 import { createTestNode, waitFor } from "./testUtils.js";
@@ -29,7 +33,9 @@ describe("SyncStateSubscriptionManager", () => {
 
     const subscriptionManager = client.syncManager.syncStateSubscriptionManager;
 
-    const updateSpy = vi.fn();
+    const updateSpy: GlobalSyncStateListenerCallback = vi
+      .fn()
+      .mockImplementation((_, __, isUploaded) => isUploaded());
     const unsubscribe = subscriptionManager.subscribeToUpdates(updateSpy);
 
     await client.syncManager.actuallySyncCoValue(map.core);
@@ -37,8 +43,9 @@ describe("SyncStateSubscriptionManager", () => {
     expect(updateSpy).toHaveBeenCalledWith(
       "jazzCloudConnection",
       emptyKnownState(map.core.id),
-      false,
+      expect.any(Function),
     );
+    expect(updateSpy).toHaveLastReturnedWith(false);
 
     await waitFor(() => {
       return subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
@@ -52,8 +59,9 @@ describe("SyncStateSubscriptionManager", () => {
       client.syncManager.peers["jazzCloudConnection"]!.knownStates.get(
         map.core.id,
       )!,
-      true,
+      expect.any(Function),
     );
+    expect(updateSpy).toHaveLastReturnedWith(true);
 
     // Cleanup
     unsubscribe();
@@ -90,8 +98,12 @@ describe("SyncStateSubscriptionManager", () => {
 
     const subscriptionManager = client.syncManager.syncStateSubscriptionManager;
 
-    const updateToJazzCloudSpy = vi.fn();
-    const updateToStorageSpy = vi.fn();
+    const updateToJazzCloudSpy: PeerSyncStateListenerCallback = vi
+      .fn()
+      .mockImplementation((_, isUploaded) => isUploaded());
+    const updateToStorageSpy: PeerSyncStateListenerCallback = vi
+      .fn()
+      .mockImplementation((_, isUploaded) => isUploaded());
     const unsubscribe1 = subscriptionManager.subscribeToPeerUpdates(
       "jazzCloudConnection",
       updateToJazzCloudSpy,
@@ -110,8 +122,9 @@ describe("SyncStateSubscriptionManager", () => {
 
     expect(updateToJazzCloudSpy).toHaveBeenCalledWith(
       emptyKnownState(map.core.id),
-      false,
+      expect.any(Function),
     );
+    expect(updateToJazzCloudSpy).toHaveLastReturnedWith(false);
 
     await waitFor(() => {
       return subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
@@ -124,13 +137,15 @@ describe("SyncStateSubscriptionManager", () => {
       client.syncManager.peers["jazzCloudConnection"]!.knownStates.get(
         map.core.id,
       )!,
-      true,
+      expect.any(Function),
     );
+    expect(updateToJazzCloudSpy).toHaveLastReturnedWith(true);
 
     expect(updateToStorageSpy).toHaveBeenLastCalledWith(
       emptyKnownState(map.core.id),
-      false,
+      expect.any(Function),
     );
+    expect(updateToStorageSpy).toHaveLastReturnedWith(false);
   });
 
   test("getIsCoValueFullyUploadedIntoPeer returns correct status", async () => {
