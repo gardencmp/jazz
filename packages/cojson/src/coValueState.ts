@@ -4,6 +4,7 @@ import { RawCoID } from "./ids.js";
 import { PeerID } from "./sync.js";
 
 export const CO_VALUE_LOADING_MAX_RETRIES = 5;
+export const CO_VALUE_LOADING_TIMEOUT = 5000;
 
 export class CoValueUnknownState {
   type = "unknown" as const;
@@ -176,6 +177,10 @@ export class CoValueState {
       return;
     }
 
+    if (peers.length === 0) {
+      return;
+    }
+
     const doLoad = async (peersToLoadFrom: PeerState[]) => {
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
@@ -264,34 +269,50 @@ async function loadCoValueFromPeers(
       continue;
     }
 
-    const timeout = setTimeout(() => {
-      if (coValueEntry.state.type === "loading") {
-        console.error("Failed to load coValue from peer", peer.id);
-        coValueEntry.dispatch({
-          type: "not-found-in-peer",
-          peerId: peer.id,
-        });
-      }
-    }, 3000);
-
     if (coValueEntry.state.type === "available") {
-      void peer.pushOutgoingMessage({
-        action: "load",
-        ...coValueEntry.state.coValue.knownState(),
-      });
+      /**
+       * We don't need to wait for the message to be delivered here.
+       *
+       * This way when the coValue becomes available because it's cached we don't wait for the server
+       * peer to consume the messages queue before moving forward.
+       */
+      peer
+        .pushOutgoingMessage({
+          action: "load",
+          ...coValueEntry.state.coValue.knownState(),
+        })
+        .catch((err) => {
+          console.error(`Failed to push load message to peer ${peer.id}`, err);
+        });
     } else {
-      void peer.pushOutgoingMessage({
-        action: "load",
-        id: coValueEntry.id,
-        header: false,
-        sessions: {},
-      });
+      /**
+       * We only wait for the load state to be resolved.
+       */
+      peer
+        .pushOutgoingMessage({
+          action: "load",
+          id: coValueEntry.id,
+          header: false,
+          sessions: {},
+        })
+        .catch((err) => {
+          console.error(`Failed to push load message to peer ${peer.id}`, err);
+        });
     }
 
     if (coValueEntry.state.type === "loading") {
+      const timeout = setTimeout(() => {
+        if (coValueEntry.state.type === "loading") {
+          console.error("Failed to load coValue from peer", peer.id);
+          coValueEntry.dispatch({
+            type: "not-found-in-peer",
+            peerId: peer.id,
+          });
+        }
+      }, CO_VALUE_LOADING_TIMEOUT);
       await coValueEntry.state.waitForPeer(peer.id);
+      clearTimeout(timeout);
     }
-    clearTimeout(timeout);
   }
 }
 

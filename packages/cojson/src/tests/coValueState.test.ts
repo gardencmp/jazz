@@ -400,10 +400,7 @@ describe("CoValueState", () => {
         role: "storage",
       },
       async () => {
-        state.dispatch({
-          type: "available",
-          coValue: mockCoValue,
-        });
+        return new Promise(() => {});
       },
     );
     const peer2 = createMockPeerState(
@@ -446,9 +443,7 @@ describe("CoValueState", () => {
         id: "peer1",
         role: "server",
       },
-      async () => {
-        return new Promise(() => {});
-      },
+      async () => {},
     );
 
     const state = CoValueState.Unknown(mockCoValueId);
