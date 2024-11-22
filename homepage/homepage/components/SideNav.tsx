@@ -17,14 +17,18 @@ interface SideNavItem {
 export function SideNav({
   items,
   children,
+  footer,
   className,
 }: {
   items: SideNavItem[];
   className?: string;
   children?: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
     <div className={clsx(className, "text-sm space-y-5")}>
+      {children}
+
       <div className="flex items-center gap-2">
         <span className="inline-block size-2 rounded-full bg-yellow-400"></span>{" "}
         Documentation coming soon
@@ -66,7 +70,7 @@ export function SideNav({
         </div>
       ))}
 
-      {children}
+      {footer}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
+import { FrameworkSelect } from "@/components/docs/FrameworkSelect";
 import { docNavigationItems } from "@/lib/docNavigationItems";
 import { useFramework } from "@/lib/framework";
 import { clsx } from "clsx";
@@ -26,8 +27,14 @@ export function DocNav({ className }: { className?: string }) {
   });
 
   return (
-    <SideNav items={items} className={clsx(className)}>
-      <SideNavHeader href="/api-reference">API Reference</SideNavHeader>
+    <SideNav
+      items={items}
+      className={clsx(className)}
+      footer={
+        <SideNavHeader href="/api-reference">API Reference</SideNavHeader>
+      }
+    >
+      <FrameworkSelect />
     </SideNav>
   );
 }

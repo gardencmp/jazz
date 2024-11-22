@@ -1,6 +1,6 @@
 import { usePathname } from "next/navigation";
 
-enum Framework {
+export enum Framework {
   React = "react",
   ReactNative = "react-native",
   Vue = "vue",
