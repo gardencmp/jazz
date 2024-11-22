@@ -176,10 +176,6 @@ export class CoValueState {
       return;
     }
 
-    if (peers.length === 0) {
-      return;
-    }
-
     const doLoad = async (peersToLoadFrom: PeerState[]) => {
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
@@ -264,13 +260,27 @@ async function loadCoValueFromPeers(
   peers: PeerState[],
 ) {
   for (const peer of peers) {
+    if (peer.closed) {
+      continue;
+    }
+
+    const timeout = setTimeout(() => {
+      if (coValueEntry.state.type === "loading") {
+        console.error("Failed to load coValue from peer", peer.id);
+        coValueEntry.dispatch({
+          type: "not-found-in-peer",
+          peerId: peer.id,
+        });
+      }
+    }, 3000);
+
     if (coValueEntry.state.type === "available") {
-      await peer.pushOutgoingMessage({
+      void peer.pushOutgoingMessage({
         action: "load",
         ...coValueEntry.state.coValue.knownState(),
       });
     } else {
-      await peer.pushOutgoingMessage({
+      void peer.pushOutgoingMessage({
         action: "load",
         id: coValueEntry.id,
         header: false,
@@ -281,6 +291,7 @@ async function loadCoValueFromPeers(
     if (coValueEntry.state.type === "loading") {
       await coValueEntry.state.waitForPeer(peer.id);
     }
+    clearTimeout(timeout);
   }
 }
 
