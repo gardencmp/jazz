@@ -2,13 +2,12 @@
 
 import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
-import { FrameworkContext } from "@/context/FrameworkContext";
 import { docNavigationItems } from "@/lib/docNavigationItems";
+import { useFramework } from "@/lib/framework";
 import { clsx } from "clsx";
-import { useContext } from "react";
 
 export function DocNav({ className }: { className?: string }) {
-  const framework = useContext(FrameworkContext);
+  const framework = useFramework();
   const items = docNavigationItems.map((headerItem) => {
     return {
       ...headerItem,
