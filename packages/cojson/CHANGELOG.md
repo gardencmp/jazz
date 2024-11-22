@@ -1,5 +1,12 @@
 # cojson
 
+## 0.8.30
+
+### Patch Changes
+
+- 0a2fae3: More optimised way to get knownState
+- 99cda2f: Reduce noise on peer close and increase the load timeout
+
 ## 0.8.29
 
 ### Patch Changes
