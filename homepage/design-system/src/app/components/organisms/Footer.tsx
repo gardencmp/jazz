@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { ThemeToggle } from "../molecules/ThemeToggle";
 import { NewsletterForm } from "./NewsletterForm";
+import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type FooterSection = {
   title: string;
@@ -20,11 +21,7 @@ type FooterProps = {
   logo: ReactNode;
   companyName: string;
   sections: FooterSection[];
-  socials?: {
-    href: string;
-    icon: ReactNode;
-    label: string;
-  }[];
+  socials: SocialLinksProps;
 };
 
 function Copyright({
@@ -77,17 +74,10 @@ export function Footer({ logo, companyName, sections, socials }: FooterProps) {
         <div className="flex flex-col justify-between gap-y-6 gap-3 md:flex-row">
           <Copyright companyName={companyName} />
 
-          <div className="flex gap-6 order-first md:order-last">
-            {socials?.map(({ href, icon, label }) => (
-              <a
-                key={label}
-                href={href}
-                className="hover:text-stone-900 hover:dark:text-white"
-              >
-                {icon}
-              </a>
-            ))}
-          </div>
+          <SocialLinks
+            {...socials}
+            className="order-first md:order-last"
+          ></SocialLinks>
         </div>
       </div>
     </footer>

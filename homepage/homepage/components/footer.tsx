@@ -1,4 +1,4 @@
-import { SiDiscord, SiGithub, SiX } from "@icons-pack/react-simple-icons";
+import { socials } from "@/lib/socials";
 import { GcmpLogo } from "gcmp-design-system/src/app/components/atoms/logos/GcmpLogo";
 import { Footer } from "gcmp-design-system/src/app/components/organisms/Footer";
 
@@ -7,23 +7,7 @@ export function JazzFooter() {
     <Footer
       logo={<GcmpLogo monochrome className="w-32" />}
       companyName="Garden Computing, Inc."
-      socials={[
-        {
-          href: "https://github.com/gardencmp/jazz",
-          icon: <SiGithub className="w-5" />,
-          label: "GitHub",
-        },
-        {
-          href: "https://discord.gg/utDMjHYg42",
-          icon: <SiDiscord className="w-5" />,
-          label: "Discord",
-        },
-        {
-          href: "https://x.com/jazz_tools",
-          icon: <SiX className="w-5" />,
-          label: "X",
-        },
-      ]}
+      socials={socials}
       sections={[
         {
           title: "Resources",
