@@ -51,6 +51,7 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage) {
+    // console.log("▶ Received message", msg);
     switch (msg.action) {
       case "load":
         await this.handleLoad(msg);
@@ -171,13 +172,14 @@ export class SyncManager {
     );
 
     setTimeout(() => {
-      this.toLocalNode
-        .push({
+      this.sendStateMessage(
+        {
           action: "known",
           ...ourKnown,
           asDependencyOf,
-        })
-        .catch((e) => console.error("Error sending known state", e));
+        },
+        "Error sending known state",
+      );
 
       const nonEmptyNewContentPieces = newContentPieces.filter(
         (piece) => piece.header || Object.keys(piece.new).length > 0,
@@ -186,9 +188,7 @@ export class SyncManager {
       // console.log(theirKnown.id, nonEmptyNewContentPieces);
 
       for (const piece of nonEmptyNewContentPieces) {
-        this.toLocalNode
-          .push(piece)
-          .catch((e) => console.error("Error sending new content piece", e));
+        this.sendStateMessage(piece, "Error sending new content piece");
       }
     });
   }
@@ -206,15 +206,16 @@ export class SyncManager {
     // TODO suspicious piece of code
     if (!msg.header) {
       console.error("Expected to be sent header first");
-      this.toLocalNode
-        .push({
+      this.sendStateMessage(
+        {
           action: "known",
           id: msg.id,
           header: false,
           sessions: {},
           isCorrection: true,
-        })
-        .catch((e) => console.error("Error sending known state", e));
+        },
+        "Error sending known state",
+      );
       return;
     }
 
@@ -263,13 +264,14 @@ export class SyncManager {
     );
 
     if (invalidAssumptions) {
-      this.toLocalNode
-        .push({
+      this.sendStateMessage(
+        {
           action: "known",
           ...ourKnown,
           isCorrection: invalidAssumptions,
-        })
-        .catch((e) => console.error("Error sending known state", e));
+        },
+        "Error sending known state",
+      );
     }
   }
 
@@ -359,6 +361,13 @@ export class SyncManager {
 
   handleKnown(msg: CojsonInternalTypes.KnownStateMessage) {
     return this.sendNewContentAfter(msg);
+  }
+
+  private sendStateMessage(msg: any, errorMessage: string): Promise<unknown> {
+    // console.log("sendStateMessage", msg);
+    return this.toLocalNode
+      .push(msg)
+      .catch((e) => console.error(errorMessage, e));
   }
 
   handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
