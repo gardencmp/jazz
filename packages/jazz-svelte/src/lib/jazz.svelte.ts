@@ -53,7 +53,7 @@ export function createJazzApp<Acc extends Account>() {
     depth?: MaybeBoxOrGetter<D>,
   ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
     const ctx = getJazzContext<Acc>();
-    if (!ctx.current) {
+    if (!ctx?.current) {
       throw new Error("useAccount must be used within a JazzProvider");
     }
     if (!("me" in ctx.current)) {
@@ -91,7 +91,7 @@ export function createJazzApp<Acc extends Account>() {
   ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
     const ctx = getJazzContext<Acc>();
 
-    if (!ctx.current) {
+    if (!ctx?.current) {
       throw new Error("useAccountOrGuest must be used within a JazzProvider");
     }
 

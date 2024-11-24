@@ -1,7 +1,7 @@
 <script lang="ts" generics="Acc extends Account">
 import { createJazzBrowserContext } from "jazz-browser";
-import { Account } from "jazz-tools";
 import type { AccountClass, AuthMethod } from "jazz-tools";
+import { Account } from "jazz-tools";
 import { type Snippet, setContext, untrack } from "svelte";
 import { JAZZ_CTX, type JazzContext } from "./jazz.svelte";
 
