@@ -51,7 +51,7 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage) {
-    // console.log("▶ Received message", msg);
+    console.log("▶▶▶ Received message", msg);
     switch (msg.action) {
       case "load":
         await this.handleLoad(msg);
@@ -227,7 +227,7 @@ export class SyncManager {
               id: msg.id,
               header: msg.header!,
             } satisfies CoValueRow),
-          // TODO is it always number?
+          // TODO is it always a number?
         )) as number);
 
     const allOurSessionsEntries = await this.makeRequest<StoredSessionRow[]>(
@@ -360,11 +360,11 @@ export class SyncManager {
   }
 
   handleKnown(msg: CojsonInternalTypes.KnownStateMessage) {
-    return this.sendNewContentAfter(msg);
+    // return this.sendNewContentAfter(msg);
   }
 
   private sendStateMessage(msg: any, errorMessage: string): Promise<unknown> {
-    // console.log("sendStateMessage", msg);
+    console.log("sendStateMessage --->>>", msg);
     return this.toLocalNode
       .push(msg)
       .catch((e) => console.error(errorMessage, e));
