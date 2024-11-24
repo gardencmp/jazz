@@ -53,7 +53,11 @@ import type {
   Peer,
   SyncMessage,
 } from "./sync.js";
-import { DisconnectedError, PingTimeoutError } from "./sync.js";
+import {
+  DisconnectedError,
+  PingTimeoutError,
+  emptyKnownState,
+} from "./sync.js";
 
 type Value = JsonValue | AnyRawCoValue;
 
@@ -116,6 +120,7 @@ export {
   SyncMessage,
   isRawCoID,
   LSMStorage,
+  emptyKnownState,
 };
 
 export type {

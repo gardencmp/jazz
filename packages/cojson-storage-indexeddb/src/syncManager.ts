@@ -1,16 +1,18 @@
 import {
   CojsonInternalTypes,
-  IncomingSyncStream,
   MAX_RECOMMENDED_TX_SIZE,
   OutgoingSyncQueue,
-  Peer,
   RawAccountID,
   SessionID,
   SyncMessage,
   cojsonInternals,
+  emptyKnownState,
 } from "cojson";
 import { IDBClient, MakeRequestFunction } from "./idbClient";
 import { SyncPromise } from "./syncPromises.js";
+import NewContentMessage = CojsonInternalTypes.NewContentMessage;
+import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
+import RawCoID = CojsonInternalTypes.RawCoID;
 
 type CoValueRow = {
   id: CojsonInternalTypes.RawCoID;
@@ -51,7 +53,6 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage) {
-    console.log("▶▶▶ Received message", msg);
     switch (msg.action) {
       case "load":
         await this.handleLoad(msg);
@@ -111,90 +112,119 @@ export class SyncManager {
     );
   }
 
-  async sendNewContentAfter(
-    theirKnown: CojsonInternalTypes.CoValueKnownState,
-    asDependencyOf?: CojsonInternalTypes.RawCoID,
+  async sendNewContent(
+    coValueKnownState: CojsonInternalTypes.CoValueKnownState,
   ): Promise<void> {
+    const { contentMessageMap, knownMessageMap } =
+      await this.collectCoValueData(coValueKnownState);
+
+    // reverse it to send the top level id the last in the order (hacky - check it explicitly instead or cover well by tests)
+    const collectedIds = Object.keys(knownMessageMap).reverse();
+    collectedIds.forEach((coId) => {
+      this.sendStateMessage(knownMessageMap[coId as RawCoID]);
+
+      const contentMessages = contentMessageMap[coId as RawCoID] || [];
+      contentMessages.forEach(this.sendStateMessage.bind(this));
+    });
+  }
+
+  private async collectCoValueData(
+    coValueKnownState: CojsonInternalTypes.CoValueKnownState,
+    knownMessageMap: Record<RawCoID, KnownStateMessage> = {},
+    contentMessageMap: Record<RawCoID, NewContentMessage[]> = {},
+    asDependencyOf?: CojsonInternalTypes.RawCoID,
+  ) {
+    if (knownMessageMap[coValueKnownState.id]) {
+      return { knownMessageMap, contentMessageMap };
+    }
+
     const coValueRow = await this.makeRequest<StoredCoValueRow | undefined>(
-      ({ coValues }) => coValues.index("coValuesById").get(theirKnown.id),
+      ({ coValues }) =>
+        coValues.index("coValuesById").get(coValueKnownState.id),
     );
 
-    const allOurSessions = coValueRow
-      ? await this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
-          sessions.index("sessionsByCoValue").getAll(coValueRow.rowID),
-        )
-      : [];
+    if (!coValueRow) {
+      const emptyKnownMessage: KnownStateMessage = {
+        action: "known",
+        ...emptyKnownState(coValueKnownState.id),
+      };
+      asDependencyOf && (emptyKnownMessage.asDependencyOf = asDependencyOf);
+      knownMessageMap[coValueKnownState.id] = emptyKnownMessage;
+      return { knownMessageMap, contentMessageMap };
+    }
 
-    const ourKnown: CojsonInternalTypes.CoValueKnownState = {
-      id: theirKnown.id,
-      header: !!coValueRow,
+    const allCoValueSessions = await this.makeRequest<StoredSessionRow[]>(
+      ({ sessions }) =>
+        sessions.index("sessionsByCoValue").getAll(coValueRow.rowID),
+    );
+
+    const newCoValueKnownState: CojsonInternalTypes.CoValueKnownState = {
+      id: coValueRow.id,
+      header: true,
       sessions: {},
     };
 
-    const newContentPieces: CojsonInternalTypes.NewContentMessage[] = [
+    const contentMessages: CojsonInternalTypes.NewContentMessage[] = [
       {
         action: "content",
-        id: theirKnown.id,
-        header: theirKnown.header ? undefined : coValueRow?.header,
+        id: coValueRow.id,
+        header: coValueRow.header,
         new: {},
-        priority: cojsonInternals.getPriorityFromHeader(coValueRow?.header),
+        priority: cojsonInternals.getPriorityFromHeader(coValueRow.header),
       },
     ];
 
     await Promise.all(
-      allOurSessions.map((sessionRow) =>
+      allCoValueSessions.map((sessionRow) =>
         this.handleSessionUpdate(
           sessionRow,
-          theirKnown,
-          ourKnown,
-          newContentPieces,
+          coValueKnownState,
+          newCoValueKnownState,
+          contentMessages,
         ),
       ),
     );
 
-    const dependedOnCoValues = getDependedOnCoValues(
-      coValueRow,
-      newContentPieces,
-      theirKnown,
+    const nonEmptyContentMessages = contentMessages.filter(
+      (contentMessage) => Object.keys(contentMessage.new).length > 0,
     );
 
+    const dependedOnCoValuesList = getDependedOnCoValues(
+      coValueRow,
+      nonEmptyContentMessages,
+    );
+
+    const knownMessage: KnownStateMessage = {
+      action: "known",
+      ...newCoValueKnownState,
+    };
+    asDependencyOf && (knownMessage.asDependencyOf = asDependencyOf);
+    knownMessageMap[newCoValueKnownState.id] = knownMessage;
+    contentMessageMap[newCoValueKnownState.id] = nonEmptyContentMessages;
+
     await Promise.all(
-      dependedOnCoValues.map((dependedOnCoValue) =>
-        this.sendNewContentAfter(
+      dependedOnCoValuesList.map((dependedOnCoValue) =>
+        this.collectCoValueData(
           {
             id: dependedOnCoValue,
             header: false,
             sessions: {},
           },
-          asDependencyOf || theirKnown.id,
+          knownMessageMap,
+          contentMessageMap,
+          asDependencyOf || coValueRow.id,
         ),
       ),
     );
 
-    setTimeout(() => {
-      this.sendStateMessage(
-        {
-          action: "known",
-          ...ourKnown,
-          asDependencyOf,
-        },
-        "Error sending known state",
-      );
-
-      const nonEmptyNewContentPieces = newContentPieces.filter(
-        (piece) => piece.header || Object.keys(piece.new).length > 0,
-      );
-
-      // console.log(theirKnown.id, nonEmptyNewContentPieces);
-
-      for (const piece of nonEmptyNewContentPieces) {
-        this.sendStateMessage(piece, "Error sending new content piece");
-      }
-    });
+    return {
+      knownMessageMap,
+      contentMessageMap,
+    };
   }
 
   handleLoad(msg: CojsonInternalTypes.LoadMessage) {
-    return this.sendNewContentAfter(msg);
+    return this.sendNewContent(msg);
   }
 
   async handleContent(
@@ -206,16 +236,13 @@ export class SyncManager {
     // TODO suspicious piece of code
     if (!msg.header) {
       console.error("Expected to be sent header first");
-      this.sendStateMessage(
-        {
-          action: "known",
-          id: msg.id,
-          header: false,
-          sessions: {},
-          isCorrection: true,
-        },
-        "Error sending known state",
-      );
+      this.sendStateMessage({
+        action: "known",
+        id: msg.id,
+        header: false,
+        sessions: {},
+        isCorrection: true,
+      });
       return;
     }
 
@@ -264,14 +291,11 @@ export class SyncManager {
     );
 
     if (invalidAssumptions) {
-      this.sendStateMessage(
-        {
-          action: "known",
-          ...ourKnown,
-          isCorrection: invalidAssumptions,
-        },
-        "Error sending known state",
-      );
+      this.sendStateMessage({
+        action: "known",
+        ...ourKnown,
+        isCorrection: invalidAssumptions,
+      });
     }
   }
 
@@ -363,50 +387,15 @@ export class SyncManager {
     // return this.sendNewContentAfter(msg);
   }
 
-  private sendStateMessage(msg: any, errorMessage: string): Promise<unknown> {
-    console.log("sendStateMessage --->>>", msg);
+  private sendStateMessage(msg: any): Promise<unknown> {
     return this.toLocalNode
       .push(msg)
-      .catch((e) => console.error(errorMessage, e));
+      .catch((e) =>
+        console.error(`Error sending ${msg.action} state, id ${msg.id}`, e),
+      );
   }
 
   handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
-
-  // inTransaction(mode: "readwrite" | "readonly"): {
-  //     coValues: IDBObjectStore;
-  //     sessions: IDBObjectStore;
-  //     transactions: IDBObjectStore;
-  //     signatureAfter: IDBObjectStore;
-  // } {
-  //     const tx = this.db.transaction(
-  //         ["coValues", "sessions", "transactions", "signatureAfter"],
-  //         mode
-  //     );
-
-  //     const txID = lastTx;
-  //     lastTx++;
-  //     console.time("IndexedDB TX" + txID);
-
-  //     tx.onerror = (event) => {
-  //         const target = event.target as unknown as {
-  //             error: DOMException;
-  //             source?: { name: string };
-  //         } | null;
-  //         throw new Error(
-  //             `Error in transaction (${target?.source?.name}): ${target?.error}`,
-  //             { cause: target?.error }
-  //         );
-  //     };
-  //     tx.oncomplete = () => {
-  //         console.timeEnd("IndexedDB TX" + txID);
-  //     }
-  //     const coValues = tx.objectStore("coValues");
-  //     const sessions = tx.objectStore("sessions");
-  //     const transactions = tx.objectStore("transactions");
-  //     const signatureAfter = tx.objectStore("signatureAfter");
-
-  //     return { coValues, sessions, transactions, signatureAfter };
-  // }
 }
 
 function collectNewTxs(
@@ -419,11 +408,6 @@ function collectNewTxs(
 ) {
   let idx = firstNewTxIdx;
 
-  // console.log(
-  //     theirKnown.id,
-  //     "newTxInSession",
-  //     newTxInSession.length
-  // );
   for (const tx of newTxsInSession) {
     let sessionEntry =
       newContentPieces[newContentPieces.length - 1]!.new[sessionRow.sessionID];
@@ -456,11 +440,10 @@ function collectNewTxs(
 }
 
 function getDependedOnCoValues(
-  coValueRow: StoredCoValueRow | undefined,
+  coValueRow: StoredCoValueRow,
   newContentPieces: CojsonInternalTypes.NewContentMessage[],
-  theirKnown: CojsonInternalTypes.CoValueKnownState,
 ) {
-  return coValueRow?.header.ruleset.type === "group"
+  return coValueRow.header.ruleset.type === "group"
     ? newContentPieces
         .flatMap((piece) => Object.values(piece.new))
         .flatMap((sessionEntry) =>
@@ -484,9 +467,9 @@ function getDependedOnCoValues(
               );
           }),
         )
-    : coValueRow?.header.ruleset.type === "ownedByGroup"
+    : coValueRow.header.ruleset.type === "ownedByGroup"
       ? [
-          coValueRow?.header.ruleset.group,
+          coValueRow.header.ruleset.group,
           ...new Set(
             newContentPieces.flatMap((piece) =>
               Object.keys(piece.new)
@@ -498,22 +481,10 @@ function getDependedOnCoValues(
                 .filter(
                   (accountID): accountID is RawAccountID =>
                     cojsonInternals.isAccountID(accountID) &&
-                    accountID !== theirKnown.id,
+                    accountID !== coValueRow.id,
                 ),
             ),
           ),
         ]
       : [];
 }
-// let lastTx = 0;
-
-// function promised<T>(request: IDBRequest<T>): Promise<T> {
-//     return new Promise<T>((resolve, reject) => {
-//         request.onsuccess = () => {
-//             resolve(request.result);
-//         };
-//         request.onerror = () => {
-//             reject(request.error);
-//         };
-//     });
-// }
