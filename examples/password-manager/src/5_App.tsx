@@ -1,11 +1,8 @@
-import { listenForCmdJ } from "jazz-tools";
 import React from "react";
 import { Navigate, RouterProvider, createHashRouter } from "react-router-dom";
 import { Folder } from "./1_schema";
 import { useAcceptInvite } from "./2_main";
 import VaultPage from "./3_vault";
-
-listenForCmdJ();
 
 const App: React.FC = () => {
   const router = createHashRouter([

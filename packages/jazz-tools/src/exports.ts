@@ -45,7 +45,6 @@ export {
   ephemeralCredentialsAuth,
   fixedCredentialsAuth,
   randomSessionProvider,
-  listenForCmdJ,
   type AuthMethod,
   type AuthResult,
   type Credentials,
