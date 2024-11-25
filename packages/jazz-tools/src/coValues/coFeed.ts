@@ -123,6 +123,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
    */
   [key: ID<Account>]: CoFeedEntry<Item>;
 
+  /**
+   * The current account's view of this `CoFeed`
+   * @category Content
+   */
   get byMe(): CoFeedEntry<Item> | undefined {
     if (this._loadedAs._type === "Account") {
       return this[this._loadedAs.id];
@@ -202,6 +206,22 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
 
   /**
    * Push items to this `CoFeed`
+   *
+   * Items are appended to the current session's log. Each session (tab, device, app instance)
+   * maintains its own append-only log, which is then aggregated into the per-account view.
+   *
+   * @example
+   * ```ts
+   * // Adds items to current session's log
+   * feed.push("item1", "item2");
+   *
+   * // View items from current session
+   * console.log(feed.inCurrentSession);
+   *
+   * // View aggregated items from all sessions for current account
+   * console.log(feed.byMe);
+   * ```
+   *
    * @category Content
    */
   push(...items: Item[]) {
