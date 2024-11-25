@@ -306,7 +306,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 
   /**
-   * Ensure a `CoFeed` is loaded
+   * Ensure a `CoFeed` is loaded to the specified depth
+   *
+   * @returns A new instance of the same CoFeed that's loaded to the specified depth,
+   * or undefined if it cannot be loaded that deeply
    * @category Subscription & Loading
    */
   ensureLoaded<S extends CoFeed, Depth>(
