@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
 import { TableOfContents } from "@/components/docs/TableOfContents";
+import { docNavigationItems } from "@/lib/docNavigationItems";
 import { Framework, frameworks, isValidFramework } from "@/lib/framework";
 import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
@@ -53,28 +52,28 @@ export const dynamicParams = false;
 export const dynamic = "force-static";
 
 export async function generateStaticParams() {
-  const docsDir = path.join(process.cwd(), "app/docs/[framework]/[...slug]");
-  const getAllMdxPaths = (dir: string, basePath = ""): string[] => {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    const paths: string[] = [];
+  const paths: Array<{ slug?: string[]; framework: Framework }> = [];
 
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const relativePath = path.join(basePath, entry.name);
-
-      if (entry.isDirectory()) {
-        paths.push(...getAllMdxPaths(fullPath, relativePath));
-      } else if (entry.isFile() && entry.name.endsWith(".mdx")) {
-        paths.push(relativePath.replace(/\.mdx$/, ""));
+  for (const framework of frameworks) {
+    for (const heading of docNavigationItems) {
+      for (const item of heading?.items) {
+        if (item.href && item.href.startsWith("/docs") && item.done) {
+          const slug = item.href
+            .replace("/docs", "")
+            .split("/")
+            .filter(Boolean);
+          if (slug.length) {
+            paths.push({
+              slug,
+              framework,
+            });
+          }
+        }
       }
     }
+  }
 
-    return paths;
-  };
-
-  const paths = getAllMdxPaths(docsDir).map((slug) => ({
-    slug: slug.split("/"),
-  }));
+  console.log(paths);
 
   return paths;
 }
