@@ -119,6 +119,24 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
 
   /**
    * The per-account view of this `CoFeed`
+   *
+   * @example
+   * ```ts
+   * // Access entries directly by account ID
+   * const aliceEntries = feed[aliceAccount.id];
+   * console.log(aliceEntries.value); // Latest value from Alice
+   *
+   * // Iterate through all accounts' entries
+   * for (const [accountId, entries] of Object.entries(feed)) {
+   *   console.log(`Latest entry from ${accountId}:`, entries.value);
+   *
+   *   // Access all entries from this account
+   *   for (const entry of entries.all) {
+   *     console.log(`Entry made at ${entry.madeAt}:`, entry.value);
+   *   }
+   * }
+   * ```
+   *
    * @category Content
    */
   [key: ID<Account>]: CoFeedEntry<Item>;
