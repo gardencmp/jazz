@@ -206,25 +206,11 @@ export type DeeplyLoaded<
                 _type: "BinaryCoStream";
               },
             ]
-          ? Depth extends never[]
-            ? V
-            : V & {
-                byMe?: { value: UnCoNotNull<Item> };
-                inCurrentSession?: { value: UnCoNotNull<Item> };
-                perSession: {
-                  [key: SessionID]: { value: UnCoNotNull<Item> };
-                };
-              } & { [key: ID<Account>]: { value: UnCoNotNull<Item> } }
+          ? V
           : [V] extends [
                 {
-                  _type: "BinaryCoStream";
+                  _type: "CoPlainText";
                 },
               ]
             ? V
-            : [V] extends [
-                  {
-                    _type: "CoPlainText";
-                  },
-                ]
-              ? V
-              : never;
+            : never;
