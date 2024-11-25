@@ -1,5 +1,16 @@
 # jazz-browser-media-images
 
+## 0.8.32
+
+### Patch Changes
+
+- 1a4bda0: Document usage in readme
+- Updated dependencies [df42b2b]
+- Updated dependencies [df42b2b]
+  - cojson@0.8.32
+  - jazz-tools@0.8.32
+  - jazz-browser@0.8.32
+
 ## 0.8.31
 
 ### Patch Changes
