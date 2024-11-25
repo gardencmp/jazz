@@ -251,6 +251,10 @@ export class CoMap extends CoValueBase implements CoValue {
     return instance;
   }
 
+  /**
+   * Return a JSON representation of the `CoMap`
+   * @category Content
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(_key?: string, seenAbove?: ID<CoValue>[]): any[] {
     const jsonedFields = this._raw.keys().map((key) => {
@@ -288,7 +292,10 @@ export class CoMap extends CoValueBase implements CoValue {
     return this.toJSON();
   }
 
-  /** @internal */
+  /**
+   * Create a new `RawCoMap` from an initialization object
+   * @internal
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawFromInit<Fields extends object = Record<string, any>>(
     init: Simplify<CoMapInit<Fields>> | undefined,

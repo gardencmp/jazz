@@ -34,8 +34,8 @@ importers:
         specifier: ^10.9.1
         version: 10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2)
       turbo:
-        specifier: ^1.11.2
-        version: 1.11.2
+        specifier: ^2.3.1
+        version: 2.3.1
       typedoc:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.6.2)
@@ -46,7 +46,7 @@ importers:
   e2e/BinaryCoStream:
     dependencies:
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
@@ -55,10 +55,10 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -150,13 +150,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       next:
         specifier: 14.2.5
@@ -205,16 +205,16 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -302,19 +302,19 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -732,10 +732,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/cojson-transport-ws
       hash-slash:
         specifier: workspace:0.2.1
@@ -808,7 +808,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
         specifier: workspace:*
@@ -897,10 +897,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1007,10 +1007,10 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -1071,13 +1071,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1132,7 +1132,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
@@ -1170,10 +1170,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1335,7 +1335,7 @@ importers:
   packages/cojson-storage-indexeddb:
     dependencies:
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
     devDependencies:
       '@vitest/browser':
@@ -1360,7 +1360,7 @@ importers:
         specifier: ^8.5.2
         version: 8.7.0
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1373,7 +1373,7 @@ importers:
   packages/cojson-transport-ws:
     dependencies:
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1403,16 +1403,16 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       cojson-storage-indexeddb:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson-storage-indexeddb
       cojson-transport-ws:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1421,13 +1421,13 @@ importers:
   packages/jazz-browser-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
     devDependencies:
       typescript:
@@ -1443,10 +1443,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
@@ -1462,13 +1462,13 @@ importers:
   packages/jazz-nodejs:
     dependencies:
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1487,13 +1487,13 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
     devDependencies:
       '@types/react':
@@ -1512,16 +1512,16 @@ importers:
   packages/jazz-react-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-react
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
       react:
         specifier: 18.3.1
@@ -1605,19 +1605,19 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5(effect@3.6.5)
       cojson:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson
       cojson-storage-sqlite:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson-storage-sqlite
       cojson-transport-ws:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../cojson-transport-ws
       effect:
         specifier: ^3.6.5
         version: 3.6.5
       jazz-tools:
-        specifier: workspace:0.8.28
+        specifier: workspace:0.8.31
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -9941,41 +9941,41 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
-  turbo-darwin-64@1.11.2:
-    resolution: {integrity: sha512-toFmRG/adriZY3hOps7nYCfqHAS+Ci6xqgX3fbo82kkLpC6OBzcXnleSwuPqjHVAaRNhVoB83L5njcE9Qwi2og==}
+  turbo-darwin-64@2.3.1:
+    resolution: {integrity: sha512-tjHfjW/Gs8Q9IO+9gPdIsSStZ8I09QYDRT/SyhFTPLnc7O2ZlxHPBVFfjUkHUjanHNYO8CpRGt+zdp1PaMCruw==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@1.11.2:
-    resolution: {integrity: sha512-FCsEDZ8BUSFYEOSC3rrARQrj7x2VOrmVcfrMUIhexTxproRh4QyMxLfr6LALk4ymx6jbDCxWa6Szal8ckldFbA==}
+  turbo-darwin-arm64@2.3.1:
+    resolution: {integrity: sha512-At1WStnxCfrBQ4M2g6ynre8WsusGwA11okhVolBxyFUemYozDTtbZwelr+IqNggjT251vviokxOkcFzzogbiFw==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@1.11.2:
-    resolution: {integrity: sha512-Vzda/o/QyEske5CxLf0wcu7UUS+7zB90GgHZV4tyN+WZtoouTvbwuvZ3V6b5Wgd3OJ/JwWR0CXDK7Sf4VEMr7A==}
+  turbo-linux-64@2.3.1:
+    resolution: {integrity: sha512-COwEev7s9fsxLM2eoRCyRLPj+BXvZjFIS+GxzdAubYhoSoZit8B8QGKczyDl6448xhuFEWKrpHhcR9aBuwB4ag==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@1.11.2:
-    resolution: {integrity: sha512-bRLwovQRz0yxDZrM4tQEAYV0fBHEaTzUF0JZ8RG1UmZt/CqtpnUrJpYb1VK8hj1z46z9YehARpYCwQ2K0qU4yw==}
+  turbo-linux-arm64@2.3.1:
+    resolution: {integrity: sha512-AP0uE15Rhxza2Jl+Q3gxdXRA92IIeFAYaufz6CMcZuGy9yZsBlLt9w6T47H6g7XQPzWuw8pzfjM1omcTKkkDpQ==}
     cpu: [arm64]
     os: [linux]
 
   turbo-stream@2.4.0:
     resolution: {integrity: sha512-FHncC10WpBd2eOmGwpmQsWLDoK4cqsA/UT/GqNoaKOQnT8uzhtCbg3EoUDMvqpOSAI0S26mr0rkjzbOO6S3v1g==}
 
-  turbo-windows-64@1.11.2:
-    resolution: {integrity: sha512-LgTWqkHAKgyVuLYcEPxZVGPInTjjeCnN5KQMdJ4uQZ+xMDROvMFS2rM93iQl4ieDJgidwHCxxCxaU9u8c3d/Kg==}
+  turbo-windows-64@2.3.1:
+    resolution: {integrity: sha512-HDSneq0dNZYZch74c2eygq+OiJE/JYDs7OsGM0yRYVj336383xkUnxz6W2I7qiyMCQXzp4UVUDZXvZhUYcX3BA==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@1.11.2:
-    resolution: {integrity: sha512-829aVBU7IX0c/B4G7g1VI8KniAGutHhIupkYMgF6xPkYVev2G3MYe6DMS/vsLt9GGM9ulDtdWxWrH5P2ngK8IQ==}
+  turbo-windows-arm64@2.3.1:
+    resolution: {integrity: sha512-7/2/sJZiquwoT/jWBCfV0qKq4NarsJPmDRjMcR9dDMIwCYsGM8ljomkDRTCtkNeFcUvYw54MiRWHehWgbcRPsw==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@1.11.2:
-    resolution: {integrity: sha512-jPC7LVQJzebs5gWf8FmEvsvXGNyKbN+O9qpvv98xpNaM59aS0/Irhd0H0KbcqnXfsz7ETlzOC3R+xFWthC4Z8A==}
+  turbo@2.3.1:
+    resolution: {integrity: sha512-vHZe/e6k1HZVKiMQPQ1BWFn53vjVQDFKdkjUq/pBKlRWi1gw9LQO6ntH4qZCcHY1rH6TXgsRmexXdgWl96YvVQ==}
     hasBin: true
 
   type-check@0.4.0:
@@ -20673,34 +20673,34 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  turbo-darwin-64@1.11.2:
+  turbo-darwin-64@2.3.1:
     optional: true
 
-  turbo-darwin-arm64@1.11.2:
+  turbo-darwin-arm64@2.3.1:
     optional: true
 
-  turbo-linux-64@1.11.2:
+  turbo-linux-64@2.3.1:
     optional: true
 
-  turbo-linux-arm64@1.11.2:
+  turbo-linux-arm64@2.3.1:
     optional: true
 
   turbo-stream@2.4.0: {}
 
-  turbo-windows-64@1.11.2:
+  turbo-windows-64@2.3.1:
     optional: true
 
-  turbo-windows-arm64@1.11.2:
+  turbo-windows-arm64@2.3.1:
     optional: true
 
-  turbo@1.11.2:
+  turbo@2.3.1:
     optionalDependencies:
-      turbo-darwin-64: 1.11.2
-      turbo-darwin-arm64: 1.11.2
-      turbo-linux-64: 1.11.2
-      turbo-linux-arm64: 1.11.2
-      turbo-windows-64: 1.11.2
-      turbo-windows-arm64: 1.11.2
+      turbo-darwin-64: 2.3.1
+      turbo-darwin-arm64: 2.3.1
+      turbo-linux-64: 2.3.1
+      turbo-linux-arm64: 2.3.1
+      turbo-windows-64: 2.3.1
+      turbo-windows-arm64: 2.3.1
 
   type-check@0.4.0:
     dependencies:

@@ -1,3 +1,4 @@
+import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
@@ -42,8 +43,8 @@ export function CollaborationFeaturesSection() {
 
       <GappedGrid>
         {data.map(({ title, description, codeSample: CodeSample }) => (
-          <div
-            className="col-span-2 border rounded-xl shadow-sm pt-4 px-4 flex flex-col gap-3"
+          <Card
+            className="col-span-2 pt-4 px-4 flex flex-col gap-3"
             key={title}
           >
             <div>
@@ -57,7 +58,7 @@ export function CollaborationFeaturesSection() {
             <pre className="flex-1 text-sm border-t border-x rounded-t-lg bg-stone-50 dark:bg-stone-925">
               <CodeSample />
             </pre>
-          </div>
+          </Card>
         ))}
       </GappedGrid>
     </div>

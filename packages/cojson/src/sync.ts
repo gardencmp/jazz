@@ -451,12 +451,17 @@ export class SyncManager {
           dependencyEntry.state.type === "available" ||
           dependencyEntry.state.type === "loading"
         ) {
-          this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
-            console.error(
-              `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
-              e,
-            );
-          });
+          this.local
+            .loadCoValueCore(
+              msg.id,
+              peer.role === "storage" ? undefined : peer.id,
+            )
+            .catch((e) => {
+              console.error(
+                `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
+                e,
+              );
+            });
         } else {
           throw new Error(
             "Expected coValue dependency entry to be created, missing subscribe?",
@@ -713,8 +718,8 @@ export class SyncManager {
       const unsubscribe =
         this.syncStateSubscriptionManager.subscribeToPeerUpdates(
           peerId,
-          (knownState, uploadCompleted) => {
-            if (uploadCompleted && knownState.id === id) {
+          (knownState, syncState) => {
+            if (syncState.isUploaded && knownState.id === id) {
               resolve(true);
               unsubscribe?.();
             }

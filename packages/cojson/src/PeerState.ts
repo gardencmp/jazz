@@ -97,6 +97,10 @@ export class PeerState {
   }
 
   pushOutgoingMessage(msg: SyncMessage) {
+    if (this.closed) {
+      return Promise.resolve();
+    }
+
     const promise = this.queue.push(msg);
 
     void this.processQueue();
@@ -114,8 +118,17 @@ export class PeerState {
     return this.peer.incoming;
   }
 
+  private closeQueue() {
+    let entry: QueueEntry | undefined;
+    while ((entry = this.queue.pull())) {
+      // Using resolve here to avoid unnecessary noise in the logs
+      entry.resolve();
+    }
+  }
+
   gracefulShutdown() {
     console.debug("Gracefully closing", this.id);
+    this.closeQueue();
     this.peer.outgoing.close();
     this.closed = true;
   }

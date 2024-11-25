@@ -388,6 +388,79 @@ describe("CoValueState", () => {
 
     vi.useRealTimers();
   });
+
+  test("should skip closed peers", async () => {
+    vi.useFakeTimers();
+
+    const mockCoValue = createMockCoValueCore(mockCoValueId);
+
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "storage",
+      },
+      async () => {
+        return new Promise(() => {});
+      },
+    );
+    const peer2 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {
+        state.dispatch({
+          type: "available",
+          coValue: mockCoValue,
+        });
+      },
+    );
+
+    peer1.closed = true;
+
+    const state = CoValueState.Unknown(mockCoValueId);
+    const loadPromise = state.loadFromPeers([peer1, peer2]);
+
+    for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES; i++) {
+      await vi.runAllTimersAsync();
+    }
+    await loadPromise;
+
+    expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(0);
+    expect(peer2.pushOutgoingMessage).toHaveBeenCalledTimes(1);
+
+    expect(state.state.type).toBe("available");
+    await expect(state.getCoValue()).resolves.toEqual({ id: mockCoValueId });
+
+    vi.useRealTimers();
+  });
+
+  test("should not be stuck in loading state when not getting a response", async () => {
+    vi.useFakeTimers();
+
+    const peer1 = createMockPeerState(
+      {
+        id: "peer1",
+        role: "server",
+      },
+      async () => {},
+    );
+
+    const state = CoValueState.Unknown(mockCoValueId);
+    const loadPromise = state.loadFromPeers([peer1]);
+
+    for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES * 2; i++) {
+      await vi.runAllTimersAsync();
+    }
+    await loadPromise;
+
+    expect(peer1.pushOutgoingMessage).toHaveBeenCalledTimes(5);
+
+    expect(state.state.type).toBe("unavailable");
+    await expect(state.getCoValue()).resolves.toEqual("unavailable");
+
+    vi.useRealTimers();
+  });
 });
 
 function createMockPeerState(

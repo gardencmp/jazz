@@ -1,5 +1,25 @@
 # cojson
 
+## 0.8.31
+
+### Patch Changes
+
+- e511d6d: Performance: make the isUploaded check on the SyncStateManager lazy
+
+## 0.8.30
+
+### Patch Changes
+
+- 0a2fae3: More optimised way to get knownState
+- 99cda2f: Reduce noise on peer close and increase the load timeout
+
+## 0.8.29
+
+### Patch Changes
+
+- dcc9c2e: Clear out the queues when closing a Peer
+- 699553f: Restore offline support and improve loading perfromance when values are cached
+
 ## 0.8.28
 
 ### Patch Changes

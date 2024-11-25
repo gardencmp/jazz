@@ -81,15 +81,15 @@ export function ClassOrInterface({
           className="inline-flex items-center gap-2 lg:-ml-[22px]"
         >
           <LinkIcon size={14} className="hidden lg:inline" />
-          <h3>
+          <h3 className="text-lg lg:text-xl">
             <Highlight>
               {(isInterface ? "interface " : "class ") + name + typeParameters}
             </Highlight>
           </h3>
         </Link>
       </div>
-      <div className="flex flex-col gap-5">
-        <div>{doc}</div>
+      <div className="flex flex-col gap-5 mt-5">
+        {doc && <div>{doc}</div>}
         <div>{children}</div>
       </div>
     </div>
@@ -120,7 +120,10 @@ export function PropDecl({
   example?: ReactNode;
 }) {
   return (
-    <div className="text-sm py-3 flex flex-col gap-5" data-pagefind-weight="4">
+    <div
+      className="text-sm flex flex-col gap-3 my-2 p-3 rounded bg-stone-50 dark:bg-stone-925"
+      data-pagefind-weight="4"
+    >
       {(name || type) && (
         <div>
           {name && <Highlight>{name + ":"}</Highlight>}
@@ -158,7 +161,10 @@ export function FnDecl({
   example: ReactNode;
 }) {
   return (
-    <div className="text-sm py-3 flex flex-col gap-5" data-pagefind-weight="5">
+    <div
+      className="text-sm flex flex-col gap-3 my-2 p-3 rounded bg-stone-50 dark:bg-stone-925"
+      data-pagefind-weight="5"
+    >
       <div className="flex flex-col gap-2">
         <div>
           {<Highlight>{signature + ":"}</Highlight>}{" "}
@@ -203,7 +209,7 @@ export function PropCategory({
   return (
     <>
       <div
-        className="col-span-6 uppercase font-medium tracking-widest text-stone-500 text-xs py-3"
+        className="col-span-6 py-3 font-display font-semibold text-lg text-stone-900 dark:text-white"
         data-pagefind-weight="3"
       >
         {name}
