@@ -1,6 +1,7 @@
 "use client";
 
-import { Framework, useFramework } from "@/lib/framework";
+import { Framework } from "@/lib/framework";
+import { useFramework } from "@/lib/use-framework";
 import { clsx } from "clsx";
 import { Select } from "gcmp-design-system/src/app/components/molecules/Select";
 import { usePathname, useRouter } from "next/navigation";
