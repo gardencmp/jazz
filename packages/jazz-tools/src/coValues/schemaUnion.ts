@@ -9,10 +9,8 @@ import {
  * SchemaUnion allows you to create union types of CoValues that can be discriminated at runtime.
  *
  * @categoryDescription Declaration
- * Declare your union types by extending `SchemaUnion.Of(...)` and passing a discriminator function
- * that determines which concrete type to use based on the raw data.
+ * Declare your union types by extending `SchemaUnion.Of(...)` and passing a discriminator function that determines which concrete type to use based on the raw data.
  *
- * @example
  * ```ts
  * import { SchemaUnion, CoMap } from "jazz-tools";
  *
@@ -40,28 +38,15 @@ import {
  * });
  * ```
  *
- * @categoryDescription Loading
- * When loading a SchemaUnion, the correct subclass will be instantiated based on the discriminator.
- * You can narrow the returned instance to a subclass by using `instanceof` like so:
- *
- * @example
- * ```ts
- * const widget = await loadCoValue(WidgetUnion, id, me, {});
- * if (widget instanceof ButtonWidget) {
- *   console.log(widget.label);
- * } else if (widget instanceof SliderWidget) {
- *   console.log(widget.min, widget.max);
- * }
- * ```
- *
  * @category CoValues
  */
 export abstract class SchemaUnion extends CoValueBase implements CoValue {
   /**
    * Create a new union type from a discriminator function.
    *
-   * The discriminator function receives the raw data and should return the appropriate
-   * concrete class to use for that data.
+   * The discriminator function receives the raw data and should return the appropriate concrete class to use for that data.
+   *
+   * When loading a SchemaUnion, the correct subclass will be instantiated based on the discriminator.
    *
    * @param discriminator - Function that determines which concrete type to use
    * @returns A new class that can create/load instances of the union type
@@ -75,10 +60,19 @@ export abstract class SchemaUnion extends CoValueBase implements CoValue {
    *     default: throw new Error("Unknown widget type");
    *   }
    * });
+   *
+   * const widget = await loadCoValue(WidgetUnion, id, me, {});
+   *
+   * // You can narrow the returned instance to a subclass by using `instanceof`
+   * if (widget instanceof ButtonWidget) {
+   *   console.log(widget.label);
+   * } else if (widget instanceof SliderWidget) {
+   *   console.log(widget.min, widget.max);
+   * }
    * ```
    *
-   * @category Creation
-   */
+   * @category Declaration
+   **/
   static Of<V extends CoValue>(
     discriminator: (raw: V["_raw"]) => CoValueClass<V> & CoValueFromRaw<V>,
   ): CoValueClass<V> & typeof SchemaUnion {
