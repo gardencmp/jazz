@@ -1,3 +1,4 @@
+import { socials } from "@/lib/socials";
 import { GcmpLogo } from "gcmp-design-system/src/app/components/atoms/logos/GcmpLogo";
 import { Footer } from "gcmp-design-system/src/app/components/organisms/Footer";
 
@@ -6,6 +7,7 @@ export function JazzFooter() {
     <Footer
       logo={<GcmpLogo monochrome className="w-32" />}
       companyName="Garden Computing, Inc."
+      socials={socials}
       sections={[
         {
           title: "Resources",
@@ -13,26 +15,6 @@ export function JazzFooter() {
             { href: "/", label: "Toolkit" },
             { href: "/cloud", label: "Jazz Cloud" },
             { href: "/docs", label: "Docs" },
-          ],
-        },
-        {
-          title: "Community",
-          links: [
-            {
-              href: "https://github.com/gardencmp/jazz",
-              label: "GitHub",
-              newTab: true,
-            },
-            {
-              href: "https://discord.gg/utDMjHYg42",
-              label: "Discord",
-              newTab: true,
-            },
-            {
-              href: "https://x.com/jazz_tools",
-              label: "X",
-              newTab: true,
-            },
           ],
         },
         {

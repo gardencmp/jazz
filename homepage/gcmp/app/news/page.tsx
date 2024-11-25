@@ -1,7 +1,7 @@
-import { NewsletterForm } from "@/components/NewsletterForm";
 import { Posts } from "@/components/blog/Posts";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
+import { NewsletterForm } from "gcmp-design-system/src/app/components/organisms/NewsletterForm";
 import Link from "next/link";
 
 export const metadata = {
