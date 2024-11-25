@@ -123,10 +123,46 @@ describe("Simple CoMap operations", async () => {
         color: {
           by: { id: me.id },
           value: "green",
+          all: [
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "red",
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "blue",
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "green",
+            }),
+          ],
         },
         nullable: {
           by: { id: me.id },
           value: null,
+          all: [
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: null,
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "not null",
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: null,
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: undefined,
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: null,
+            }),
+          ],
         },
       });
 
@@ -142,6 +178,20 @@ describe("Simple CoMap operations", async () => {
         color: {
           by: { id: me.id },
           value: "green",
+          all: [
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "red",
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "blue",
+            }),
+            expect.objectContaining({
+              by: { _type: "Account", id: me.id },
+              value: "green",
+            }),
+          ],
         },
         nullable: {
           by: { id: me.id },

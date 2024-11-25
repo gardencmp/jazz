@@ -107,6 +107,10 @@ export class RawCoMapView<
   timeFilteredOps<K extends keyof Shape & string>(
     key: K,
   ): MapOp<K, Shape[K]>[] | undefined {
+    if (key === "constructor") {
+      return undefined;
+    }
+
     if (this.atTimeFilter) {
       return this.ops[key]?.filter((op) => op.madeAt <= this.atTimeFilter!);
     } else {
