@@ -111,12 +111,27 @@ export const docNavigationItems = [
     ],
   },
   {
-    name: "Authentication",
+    name: "Authentication methods",
     items: [
       {
-        name: "Auth methods overview",
+        name: "Overview",
         href: "/docs/authentication/auth-methods",
-        done: 0,
+        done: 80,
+      },
+      {
+        name: "Passphrase",
+        href: "/docs/authentication/auth-methods#passphrase",
+        done: 20,
+      },
+      {
+        name: "Passkey",
+        href: "/docs/authentication/auth-methods#passkey",
+        done: 20,
+      },
+      {
+        name: "Clerk",
+        href: "/docs/authentication/auth-methods#clerk",
+        done: 20,
       },
       {
         name: "Writing your own",

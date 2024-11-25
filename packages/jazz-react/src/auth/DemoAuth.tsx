@@ -24,7 +24,16 @@ type DemoAuthState = (
   errors: string[];
 };
 
-/** @category Auth Providers */
+/**
+ * `useDemoAuth` is a hook that provides a `JazzAuth` object for demo authentication.
+ *
+ *
+ * ```ts
+ * const [auth, state] = useDemoAuth();
+ * ```
+ *
+ * @category Auth Providers
+ */
 export function useDemoAuth({
   seedAccounts,
 }: {
