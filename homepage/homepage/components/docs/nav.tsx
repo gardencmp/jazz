@@ -4,7 +4,7 @@ import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { FrameworkSelect } from "@/components/docs/FrameworkSelect";
 import { docNavigationItems } from "@/lib/docNavigationItems";
-import { useFramework } from "@/lib/framework";
+import { useFramework } from "@/lib/use-framework";
 import { clsx } from "clsx";
 
 export function DocNav({ className }: { className?: string }) {

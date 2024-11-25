@@ -1,6 +1,6 @@
 "use client";
 
-import { useFramework } from "@/lib/framework";
+import { useFramework } from "@/lib/use-framework";
 
 export interface ContentByFrameworkProps {
   framework: string;
