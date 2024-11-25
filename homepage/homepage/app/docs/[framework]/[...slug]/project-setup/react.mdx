@@ -16,7 +16,7 @@ Currently, the recommended pattern to set up a React app with Jazz is to create 
     ```
     </CodeGroup>
 
-    - You extract hooks here so they can be aware of a custom `AccountSchema` for your app once you start using one (see [Accounts & Migrations](/docs/schemas/accounts-and-migrations)).
+    - You extract hooks here so they can be aware of a custom `AccountSchema` for your app once you start using one (see [Accounts & Migrations](/docs/react/schemas/accounts-and-migrations)).
 
         This way, accounts returned by the hooks will be correctly typed throughout your app. Simply import them from `jazz.tsx` wherever you need them.
 
@@ -34,9 +34,9 @@ Currently, the recommended pattern to set up a React app with Jazz is to create 
 
     - the context provider of the Jazz React app context you just created
 
-    - the hooks and default/custom UI of one of the [Auth Methods](/docs/auth/auth-methods).
+    - the hooks and default/custom UI of one of the [Auth Methods](/docs/react/auth/auth-methods).
 
-    This is also where you specify the sync & storage server to connect to (see [Sync and storage](/docs/sync-and-storage)).
+    This is also where you specify the sync & storage server to connect to (see [Sync and storage](/docs/react/sync-and-storage)).
 
     <CodeGroup>
     {/* prettier-ignore */}
@@ -123,7 +123,7 @@ The easiest way to use Jazz with Next.JS is to only use it on the client side. Y
 
 ### SSR use (experimental)
 
-Pure SSR use of Jazz is basically just using jazz-nodejs (see [Node.JS / Server Workers](/docs/project-setup/server-side)) inside Server Components.
+Pure SSR use of Jazz is basically just using jazz-nodejs (see [Node.JS / Server Workers](/docs/react/project-setup/server-side)) inside Server Components.
 
 Instead of using hooks as you would on the client, you await promises returned by `CoValue.load(...)` inside your Server Components.
 
