@@ -1,4 +1,4 @@
-import { Framework, isValidFramework } from "@/lib/framework";
+import { DEFAULT_FRAMEWORK, isValidFramework } from "@/lib/framework";
 import { usePathname } from "next/navigation";
 
 export const useFramework = () => {
@@ -6,5 +6,7 @@ export const useFramework = () => {
   const framework = pathname.startsWith("/docs/")
     ? pathname.split("/")[2]
     : null;
-  return framework && isValidFramework(framework) ? framework : Framework.React;
+  return framework && isValidFramework(framework)
+    ? framework
+    : DEFAULT_FRAMEWORK;
 };
