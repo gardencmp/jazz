@@ -110,6 +110,44 @@ describe("Simple CoMap operations", async () => {
       delete map.name;
       expect(map.name).toEqual(undefined);
       expect(Object.keys(map)).not.toContain("name");
+
+      expect(map._edits).toMatchObject({
+        _height: {
+          by: { id: me.id },
+          value: 20,
+        },
+        birthday: {
+          by: { id: me.id },
+          value: newBirthday,
+        },
+        color: {
+          by: { id: me.id },
+          value: "green",
+        },
+        nullable: {
+          by: { id: me.id },
+          value: null,
+        },
+      });
+
+      expect(JSON.parse(JSON.stringify(map._edits))).toMatchObject({
+        _height: {
+          by: { id: me.id },
+          value: 20,
+        },
+        birthday: {
+          by: { id: me.id },
+          value: newBirthday.toISOString(),
+        },
+        color: {
+          by: { id: me.id },
+          value: "green",
+        },
+        nullable: {
+          by: { id: me.id },
+          value: null,
+        },
+      });
     });
   });
 

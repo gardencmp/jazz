@@ -157,7 +157,9 @@ export class CoMap extends CoValueBase implements CoValue {
             descriptor === "json"
               ? rawEdit.value
               : "encoded" in descriptor
-                ? descriptor.encoded.encode(rawEdit.value)
+                ? (rawEdit.value === null || rawEdit.value === undefined)
+                  ? rawEdit.value
+                  : descriptor.encoded.decode(rawEdit.value)
                 : new Ref(
                     rawEdit.value as ID<CoValue>,
                     target._loadedAs,
