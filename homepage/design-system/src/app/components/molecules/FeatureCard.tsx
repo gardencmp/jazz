@@ -3,7 +3,7 @@ import { LucideIcon } from "lucide-react";
 import { Card } from "../atoms/Card";
 import { Prose } from "./Prose";
 
-export function LabelledFeatureIcon({
+export function FeatureCard({
   label,
   icon: Icon,
   explanation,

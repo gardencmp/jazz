@@ -1,5 +1,5 @@
+import { FeatureCard } from "gcmp-design-system/src/app/components/molecules/FeatureCard";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
-import { LabelledFeatureIcon } from "gcmp-design-system/src/app/components/molecules/LabelledFeatureIcon";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
 import {
   GaugeIcon,
@@ -67,12 +67,12 @@ export function LocalFirstFeaturesSection() {
       />
       <GappedGrid cols={4}>
         {features.map(({ title, icon: Icon, description }) => (
-          <LabelledFeatureIcon
+          <FeatureCard
             label={title}
             icon={Icon}
             explanation={description}
             key={title}
-          ></LabelledFeatureIcon>
+          ></FeatureCard>
         ))}
       </GappedGrid>
     </div>
