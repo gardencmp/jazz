@@ -1,5 +1,14 @@
 # jazz-example-book-shelf
 
+## 0.1.24
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+  - jazz-browser-media-images@0.8.32
+
 ## 0.1.23
 
 ### Patch Changes

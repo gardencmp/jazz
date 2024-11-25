@@ -1,5 +1,13 @@
 # jazz-tools
 
+## 0.8.32
+
+### Patch Changes
+
+- df42b2b: Allow getting all edits for a specific key in a CoMap
+- Updated dependencies [df42b2b]
+  - cojson@0.8.32
+
 ## 0.8.31
 
 ### Patch Changes

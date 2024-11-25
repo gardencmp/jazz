@@ -1,5 +1,13 @@
 # minimal-auth-passkey
 
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+
 ## 0.0.7
 
 ### Patch Changes
