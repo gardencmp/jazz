@@ -47,7 +47,7 @@ export function listenForCmdJ(localStorageKey?: string) {
     if (e.metaKey && e.key === "j") {
       if (
         confirm(
-          "Are you sure you want to export your account to the inspector?",
+          "Are you sure you want to inspect your account using inspector.jazz.tools? This lets anyone with the secret inspector URL read your data and impersonate you.",
         )
       ) {
         exportAccountToInspector(localStorageKey);
