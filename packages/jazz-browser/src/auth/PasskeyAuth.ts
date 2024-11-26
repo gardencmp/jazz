@@ -104,6 +104,8 @@ export class BrowserPasskeyAuth implements AuthMethod {
                     pubKeyCredParams: [{ alg: -7, type: "public-key" }],
                     authenticatorSelection: {
                       authenticatorAttachment: "platform",
+                      requireResidentKey: true,
+                      residentKey: "required",
                     },
                     timeout: 60000,
                     attestation: "direct",
