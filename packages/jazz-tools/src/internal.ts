@@ -1,4 +1,3 @@
-export * from "./coValues/interfaces.js";
 export * from "./implementation/inspect.js";
 export * from "./implementation/symbols.js";
 
