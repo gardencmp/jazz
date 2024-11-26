@@ -18,7 +18,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       {state.errors.map((error) => (
         <div key={error}>{error}</div>
       ))}
-      {auth ? (
+      {clerk.user && auth ? (
         <Jazz.Provider
           auth={auth}
           peer="wss://cloud.jazz.tools/?key=chat-example-jazz-clerk@gcmp.io"
