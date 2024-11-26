@@ -10,18 +10,15 @@ export function JazzFooter() {
       socials={socials}
       sections={[
         {
-          title: "Resources",
-          links: [
-            { href: "/", label: "Toolkit" },
-            { href: "/cloud", label: "Jazz Cloud" },
-            { href: "/docs", label: "Docs" },
-          ],
-        },
-        {
-          title: "News",
+          title: "About",
           links: [
             {
-              href: "https://gcmp.io/news",
+              href: "https://garden.co/team",
+              label: "Team",
+              newTab: true,
+            },
+            {
+              href: "https://garden.co/news",
               label: "Blog",
               newTab: true,
             },
@@ -29,6 +26,23 @@ export function JazzFooter() {
               href: "https://github.com/gardencmp/jazz/releases",
               label: "Releases",
               newTab: true,
+            },
+          ],
+        },
+        {
+          title: "Resources",
+          links: [
+            {
+              href: "/docs",
+              label: "Documentation",
+            },
+            {
+              href: "/examples",
+              label: "Examples",
+            },
+            {
+              href: "/showcase",
+              label: "Built with Jazz",
             },
           ],
         },
