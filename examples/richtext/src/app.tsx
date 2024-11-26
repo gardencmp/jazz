@@ -6,11 +6,19 @@ import { ID, Marks, TreeLeaf, TreeNode } from "jazz-tools";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+/**
+ * Extends CoRichText to represent a collaborative rich text document.
+ * Used as the underlying data structure for the ProseMirror editor.
+ */
 export class Document extends CoRichText {}
 
 const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
 
+/**
+ * Main component that sets up Jazz and authentication.
+ * Provides the Jazz context and handles user authentication state.
+ */
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, state] = useDemoAuth();
 
@@ -29,6 +37,10 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Main application component that handles document creation and routing.
+ * Creates a new document with initial paragraph mark when no document is selected.
+ */
 function App() {
   const { me, logOut } = useAccount();
 
@@ -82,6 +94,12 @@ import { AddMarkStep, ReplaceStep } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import "prosemirror-view/style/prosemirror.css";
 
+/**
+ * Component that integrates CoRichText with ProseMirror editor.
+ * Handles bidirectional synchronization between Jazz and ProseMirror states.
+ *
+ * @param docID - The ID of the document to edit
+ */
 function DocumentComponent({ docID }: { docID: ID<Document> }) {
   const { me } = useAccount();
   const [mount, setMount] = useState<HTMLElement | null>(null);
@@ -169,6 +187,13 @@ function DocumentComponent({ docID }: { docID: ID<Document> }) {
   );
 }
 
+/**
+ * Converts a CoRichText document to a ProseMirror document node.
+ * Currently supports basic inline marks (strong, em) within paragraphs.
+ *
+ * @param text - The CoRichText document to convert
+ * @returns A ProseMirror document node, or undefined if conversion fails
+ */
 function richTextToProsemirrorDoc(
   text: CoRichText,
 ): ProsemirrorNode | undefined {
@@ -194,6 +219,15 @@ function richTextToProsemirrorDoc(
   ]);
 }
 
+/**
+ * Recursively collects inline marks from a CoRichText tree node.
+ * Handles leaf nodes (plain text) and mark nodes (strong, em).
+ *
+ * @param fullString - The complete document text
+ * @param node - Current tree node being processed
+ * @param currentMarks - Accumulated marks from parent nodes
+ * @returns A ProseMirror text node with appropriate marks
+ */
 function collectInlineMarks(
   fullString: string,
   node: TreeNode | TreeLeaf,
@@ -220,6 +254,18 @@ function collectInlineMarks(
   }
 }
 
+/**
+ * Applies ProseMirror transactions to the underlying CoRichText document.
+ * Handles text operations (insert, delete) and mark operations (add).
+ *
+ * @param text - The CoRichText document to modify
+ * @param tr - The ProseMirror transaction to apply
+ *
+ * Supported operations:
+ * - ReplaceStep: Text insertions and deletions
+ * - AddMarkStep: Adding strong (bold) and em (italic) marks
+ * - Paragraph splits: Creating new paragraph marks when Enter is pressed
+ */
 function applyTxToPlainText(text: CoRichText, tr: ProsemirrorTransaction) {
   console.log("transaction", tr);
   for (const step of tr.steps) {
