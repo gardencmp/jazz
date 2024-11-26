@@ -1,6 +1,7 @@
-export * from "./coValues/interfaces.js";
 export * from "./implementation/inspect.js";
 export * from "./implementation/symbols.js";
+
+export * from "./coValues/interfaces.js";
 
 export * from "./coValues/account.js";
 export * from "./coValues/coFeed.js";
