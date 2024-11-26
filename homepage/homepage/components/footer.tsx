@@ -5,7 +5,7 @@ import { Footer } from "gcmp-design-system/src/app/components/organisms/Footer";
 export function JazzFooter() {
   return (
     <Footer
-      logo={<GcmpLogo monochrome className="w-32" />}
+      logo={<GcmpLogo monochrome className="w-36" />}
       companyName="Garden Computing, Inc."
       socials={socials}
       sections={[
