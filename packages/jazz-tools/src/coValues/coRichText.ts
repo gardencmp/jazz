@@ -177,9 +177,7 @@ export class CoRichText extends CoMap {
    */
   insertMark<
     MarkClass extends {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       new (...args: any[]): Mark;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create(init: any, options: { owner: Account | Group }): Mark;
     },
   >(
