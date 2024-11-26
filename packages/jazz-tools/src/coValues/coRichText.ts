@@ -1,6 +1,10 @@
 import type { Account, CoMapInit, Group, TextPos } from "../internal.js";
 import { CoList, CoMap, CoPlainText, co } from "../internal.js";
 
+/**
+ * Base class for text annotations and formatting marks.
+ * Represents a mark with start and end positions in text.
+ */
 export class Mark extends CoMap {
   startAfter = co.json<TextPos | null>();
   startBefore = co.json<TextPos>();
@@ -9,6 +13,11 @@ export class Mark extends CoMap {
   tag = co.string;
 }
 
+/**
+ * A mark with resolved numeric positions in text.
+ * Contains both position information and reference to the source mark.
+ * @template R Type extending Mark, defaults to Mark
+ */
 export type ResolvedMark<R extends Mark = Mark> = {
   startAfter: number;
   startBefore: number;
@@ -17,6 +26,11 @@ export type ResolvedMark<R extends Mark = Mark> = {
   sourceMark: R;
 };
 
+/**
+ * A mark that has been resolved and diffused with certainty information.
+ * Includes start/end positions and indication of boundary certainty.
+ * @template R Type extending Mark, defaults to Mark
+ */
 export type ResolvedAndDiffusedMark<R extends Mark = Mark> = {
   start: number;
   end: number;
@@ -24,18 +38,37 @@ export type ResolvedAndDiffusedMark<R extends Mark = Mark> = {
   sourceMark: R;
 };
 
+/**
+ * Defines how marks should be focused when resolving positions.
+ * - 'far': Positions marks at furthest valid positions
+ * - 'close': Positions marks at nearest valid positions
+ * - 'closestWhitespace': Positions marks at nearest whitespace
+ */
 export type FocusBias = "far" | "close" | "closestWhitespace";
 
+/**
+ * A mark that has been resolved and focused to specific positions.
+ * Contains simplified position information and reference to source mark.
+ * @template R Type extending Mark, defaults to Mark
+ */
 export type ResolvedAndFocusedMark<R extends Mark = Mark> = {
   start: number;
   end: number;
   sourceMark: R;
 };
 
+/**
+ * Main class for handling rich text content with marks.
+ * Combines plain text with a list of marks for formatting and annotations.
+ * Provides methods for text manipulation, mark insertion, and tree conversion.
+ */
 export class CoRichText extends CoMap {
   text = co.ref(CoPlainText);
   marks = co.ref(CoList.Of(co.ref(Mark)));
 
+  /**
+   * Create a CoRichText from plain text.
+   */
   static createFromPlainText(
     text: string,
     options: { owner: Account | Group },
@@ -51,6 +84,9 @@ export class CoRichText extends CoMap {
     );
   }
 
+  /**
+   * Create a CoRichText from plain text and a mark.
+   */
   static createFromPlainTextAndMark<
     MarkClass extends {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,18 +110,27 @@ export class CoRichText extends CoMap {
     return richtext;
   }
 
+  /**
+   * Insert text at a specific index.
+   */
   insertAfter(idx: number, text: string) {
     if (!this.text)
       throw new Error("Cannot insert into a CoRichText without loaded text");
     this.text.insertAfter(idx, text);
   }
 
+  /**
+   * Delete a range of text.
+   */
   deleteRange(range: { from: number; to: number }) {
     if (!this.text)
       throw new Error("Cannot delete from a CoRichText without loaded text");
     this.text.deleteRange(range);
   }
 
+  /**
+   * Get the position of a specific index.
+   */
   posBefore(idx: number): TextPos | undefined {
     if (!this.text)
       throw new Error(
@@ -94,6 +139,9 @@ export class CoRichText extends CoMap {
     return this.text.posBefore(idx);
   }
 
+  /**
+   * Get the position of a specific index.
+   */
   posAfter(idx: number): TextPos | undefined {
     if (!this.text)
       throw new Error(
@@ -102,6 +150,9 @@ export class CoRichText extends CoMap {
     return this.text.posAfter(idx);
   }
 
+  /**
+   * Get the index of a specific position.
+   */
   idxBefore(pos: TextPos): number | undefined {
     if (!this.text)
       throw new Error(
@@ -110,6 +161,9 @@ export class CoRichText extends CoMap {
     return this.text.idxBefore(pos);
   }
 
+  /**
+   * Get the index of a specific position.
+   */
   idxAfter(pos: TextPos): number | undefined {
     if (!this.text)
       throw new Error(
@@ -118,6 +172,9 @@ export class CoRichText extends CoMap {
     return this.text.idxAfter(pos);
   }
 
+  /**
+   * Insert a mark at a specific range.
+   */
   insertMark<
     MarkClass extends {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -151,6 +208,9 @@ export class CoRichText extends CoMap {
     this.marks.push(range);
   }
 
+  /**
+   * Resolve the positions of all marks.
+   */
   resolveMarks(): ResolvedMark[] {
     if (!this.text || !this.marks) {
       throw new Error("Cannot resolve ranges without loaded text and ranges");
@@ -186,6 +246,9 @@ export class CoRichText extends CoMap {
     return ranges;
   }
 
+  /**
+   * Resolve and diffuse the positions of all marks.
+   */
   resolveAndDiffuseMarks(): ResolvedAndDiffusedMark[] {
     return this.resolveMarks().flatMap((range) => [
       ...(range.startAfter < range.startBefore - 1
@@ -217,6 +280,9 @@ export class CoRichText extends CoMap {
     ]);
   }
 
+  /**
+   * Resolve, diffuse, and focus the positions of all marks.
+   */
   resolveAndDiffuseAndFocusMarks(): ResolvedAndFocusedMark[] {
     // for now we only keep the certainMiddle ranges
     return this.resolveAndDiffuseMarks().filter(
@@ -224,6 +290,9 @@ export class CoRichText extends CoMap {
     );
   }
 
+  /**
+   * Convert a CoRichText to a tree structure useful for client libraries.
+   */
   toTree(tagPrecedence: string[]): TreeNode {
     const ranges = this.resolveAndDiffuseAndFocusMarks();
 
@@ -294,18 +363,29 @@ export class CoRichText extends CoMap {
     };
   }
 
+  /**
+   * Convert a CoRichText to plain text.
+   */
   toString() {
     if (!this.text) return "";
     return this.text.toString();
   }
 }
 
+/**
+ * Represents a leaf node in the rich text tree structure.
+ * Contains plain text without any marks.
+ */
 export type TreeLeaf = {
   type: "leaf";
   start: number;
   end: number;
 };
 
+/**
+ * Represents a node in the rich text tree structure.
+ * Can contain other nodes or leaves, and includes formatting information.
+ */
 export type TreeNode = {
   type: "node";
   tag: string;
@@ -315,6 +395,9 @@ export type TreeNode = {
   children: (TreeNode | TreeLeaf)[];
 };
 
+/**
+ * Split a node at a specific index. So that the node is split into two parts, one before the index, and one after the index.
+ */
 function splitNode(
   node: TreeNode | TreeLeaf,
   at: number,
@@ -365,6 +448,10 @@ function splitNode(
   }
 }
 
+/**
+ * Collection of predefined mark types for common text formatting.
+ * Includes marks for headings, paragraphs, links, and text styling.
+ */
 export const Marks = {
   Heading: class Heading extends Mark {
     tag = co.literal("heading");
