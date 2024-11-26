@@ -53,6 +53,7 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage) {
+    // console.log("--->>> IN", msg);
     switch (msg.action) {
       case "load":
         await this.handleLoad(msg);
@@ -111,7 +112,6 @@ export class SyncManager {
       firstNewTxIdx,
     );
   }
-
   async sendNewContent(
     coValueKnownState: CojsonInternalTypes.CoValueKnownState,
   ): Promise<void> {
@@ -229,32 +229,27 @@ export class SyncManager {
 
   async handleContent(
     msg: CojsonInternalTypes.NewContentMessage,
-  ): Promise<void> {
+  ): Promise<void | unknown> {
     const coValueRow = await this.makeRequest<StoredCoValueRow | undefined>(
       ({ coValues }) => coValues.index("coValuesById").get(msg.id),
     );
-    // TODO suspicious piece of code
-    if (!msg.header) {
-      console.error("Expected to be sent header first");
-      this.sendStateMessage({
+    if (!msg.header && !coValueRow) {
+      return this.sendStateMessage({
         action: "known",
         id: msg.id,
         header: false,
         sessions: {},
         isCorrection: true,
       });
-      return;
     }
 
     const storedCoValueRowID: number = coValueRow?.rowID
       ? coValueRow.rowID
-      : ((await this.makeRequest<IDBValidKey>(
-          ({ coValues }) =>
-            coValues.put({
-              id: msg.id,
-              header: msg.header!,
-            } satisfies CoValueRow),
-          // TODO is it always a number?
+      : ((await this.makeRequest<IDBValidKey>(({ coValues }) =>
+          coValues.put({
+            id: msg.id,
+            header: msg.header!,
+          } satisfies CoValueRow),
         )) as number);
 
     const allOurSessionsEntries = await this.makeRequest<StoredSessionRow[]>(
@@ -384,10 +379,11 @@ export class SyncManager {
   }
 
   handleKnown(msg: CojsonInternalTypes.KnownStateMessage) {
-    // return this.sendNewContentAfter(msg);
+    // return this.sendNewContent(msg);
   }
-
+  // count = 0;
   private sendStateMessage(msg: any): Promise<unknown> {
+    // console.log("OUT", ++this.count, msg);
     return this.toLocalNode
       .push(msg)
       .catch((e) =>
