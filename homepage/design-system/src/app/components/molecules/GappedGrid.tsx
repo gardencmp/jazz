@@ -15,13 +15,13 @@ export function GappedGrid({
 }) {
   const colsClassName =
     cols === 3
-      ? "md:grid-cols-4 lg:grid-cols-6"
+      ? "grid-cols-2 md:grid-cols-4 lg:grid-cols-6"
       : "sm:grid-cols-2 lg:grid-cols-4";
 
   return (
     <div
       className={clsx(
-        "grid grid-cols-2 gap-4 lg:gap-8",
+        "grid gap-4 lg:gap-8",
         colsClassName,
         "items-stretch",
         className,
