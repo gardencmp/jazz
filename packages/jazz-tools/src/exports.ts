@@ -8,7 +8,7 @@ export type {
   SyncMessage,
 } from "cojson";
 
-export type { CoValue, ID } from "./internal.js";
+export type { CoValue, ID, TreeLeaf, TreeNode } from "./internal.js";
 
 export { Encoders, co } from "./internal.js";
 
