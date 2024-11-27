@@ -77,11 +77,9 @@ export function Footer({ logo, companyName, sections, socials }: FooterProps) {
           ))}
 
           <Copyright
-            className="order-last col-span-full self-center md:col-span-8 md:order-none"
+            className="order-last col-span-full self-center md:col-span-10 md:order-none"
             companyName={companyName}
           />
-
-          <GithubStars className="md:col-span-2 self-center" />
 
           <div className="col-span-full flex items-center justify-between gap-6 md:col-span-2">
             <SocialLinks {...socials}></SocialLinks>
@@ -90,18 +88,6 @@ export function Footer({ logo, companyName, sections, socials }: FooterProps) {
         </div>
       </div>
     </footer>
-  );
-}
-
-function GithubStars({ className }: { className?: string }) {
-  return (
-    <iframe
-      className={className}
-      src="https://ghbtns.com/github-btn.html?user=garden-co&repo=jazz&type=star&count=true"
-      width="150"
-      height="20"
-      title="GitHub"
-    ></iframe>
   );
 }
 
