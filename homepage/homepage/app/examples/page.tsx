@@ -121,13 +121,12 @@ const reactExamples = [
     illustration: <ChatIllustration />,
   },
   {
-    name: "Chat",
-    slug: "chat-clerk",
-    description:
-      "Exactly like the chat app, but it uses Clerk for authentication.",
+    name: "Clerk",
+    slug: "clerk",
+    description: "A React app that uses Clerk for authentication",
     tech: [tech.react],
     features: [features.clerk],
-    demoUrl: "https://chat-clerk-demo.jazz.tools",
+    demoUrl: "https://clerk-demo.jazz.tools",
     illustration: <ClerkIllustration />,
   },
   {
@@ -215,6 +214,7 @@ const rnExamples: Example[] = [
     illustration: <ClerkIllustration />,
   },
 ];
+
 const categories = [
   {
     name: "React",
