@@ -4,6 +4,7 @@ import {
 } from "@/components/CodeExampleTabs";
 
 import { CodeGroup as CodeGroupClient } from "gcmp-design-system/src/app/components/molecules/CodeGroup";
+import { ComingSoon as ComingSoonClient } from "./docs/ComingSoon";
 
 export function CodeExampleTabs(props: CodeExampleTabsProps) {
   return <CodeExampleTabsClient {...props} />;
@@ -11,4 +12,8 @@ export function CodeExampleTabs(props: CodeExampleTabsProps) {
 
 export function CodeGroup(props: { children: React.ReactNode }) {
   return <CodeGroupClient {...props}></CodeGroupClient>;
+}
+
+export function ComingSoon() {
+  return <ComingSoonClient />;
 }
