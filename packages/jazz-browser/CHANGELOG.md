@@ -1,5 +1,11 @@
 # jazz-browser
 
+## 0.8.33
+
+### Patch Changes
+
+- 3cb27e1: Set created passkey credentials as discoverable
+
 ## 0.8.32
 
 ### Patch Changes

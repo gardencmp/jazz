@@ -1,6 +1,6 @@
 {
   "name": "jazz-browser",
-  "version": "0.8.32",
+  "version": "0.8.33",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
