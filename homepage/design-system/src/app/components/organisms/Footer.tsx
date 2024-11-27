@@ -40,11 +40,21 @@ function Copyright({
 
 export function Footer({ logo, companyName, sections, socials }: FooterProps) {
   return (
-    <footer className="w-full border-t py-8 mt-12 md:mt-20">
+    <footer className="w-full py-8 mt-12 md:mt-20">
       <div className="container grid gap-8 md:gap-12">
-        <div className=" grid gap-y-8 grid-cols-12">
-          <div className="flex flex-col gap-6 justify-between col-span-full md:col-span-7">
+        <div className="grid grid-cols-12 gap-y-3 sm:items-center pb-8 border-b">
+          <div className="col-span-full sm:col-span-6 md:col-span-8">
             {logo}
+          </div>
+          <p className="col-span-full sm:col-span-6 md:col-span-4 text-sm sm:text-base">
+            Playful software for serious problems.
+          </p>
+        </div>
+        <div className="grid gap-y-8 grid-cols-12">
+          <div className="flex flex-col gap-4 col-span-full md:col-span-8">
+            <p className="font-medium text-stone-900 dark:text-white">
+              Stay up to date
+            </p>
             <NewsletterForm />
           </div>
 
@@ -66,18 +76,15 @@ export function Footer({ logo, companyName, sections, socials }: FooterProps) {
             </div>
           ))}
 
-          <div className="hidden md:flex justify-end items-end md:col-span-1">
-            <ThemeToggle />
+          <Copyright
+            className="order-last col-span-full self-center md:col-span-10 md:order-none"
+            companyName={companyName}
+          />
+
+          <div className="col-span-full flex items-center justify-between gap-6 md:col-span-2">
+            <SocialLinks {...socials}></SocialLinks>
+            <ThemeToggle className="hidden md:block" />
           </div>
-        </div>
-
-        <div className="flex flex-col justify-between gap-y-6 gap-3 md:flex-row">
-          <Copyright companyName={companyName} />
-
-          <SocialLinks
-            {...socials}
-            className="order-first md:order-last"
-          ></SocialLinks>
         </div>
       </div>
     </footer>

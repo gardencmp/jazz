@@ -30,7 +30,7 @@ const socials = [
 
 export function SocialLinks(props: SocialLinksProps & { className?: string }) {
   return (
-    <div className={clsx(props.className, "flex gap-6 items-center")}>
+    <div className={clsx(props.className, "inline-flex gap-6 items-center")}>
       {socials.map(
         (social) =>
           props[social.key as keyof SocialLinksProps] && (
