@@ -1,4 +1,4 @@
-import { CodeGroup } from "@/components/forMdx";
+import { CodeGroup, ComingSoon } from "@/components/forMdx";
 
 # CoValues
 
@@ -9,7 +9,7 @@ As their name suggests, they are inherently collaborative, meaning **multiple us
 - CoValues allow for concurrent edits by always keeping their full edit histories, deriving the "current state" based on the currently locally available history.
 - **Think of CoValues as "super-fast Git for lots of tiny data".**
 - (The fact that this happens in an eventually-consistent way makes them [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type))
-- Having the full history around also means that you often don't need explicit timestamps and author info - you get this for free, just by having different accounts edit a value and then looking at its [edit metadata](/docs/covalues/metadata).
+- Having the full history around also means that you often don't need explicit timestamps and author info - you get this for free, just by having different accounts edit a value and then looking at its [edit metadata](/docs/coming-soon).
 
 CoValues mostly model JSON with CoMaps and CoLists, but also offer CoStreams for simple per-user value streams, and also let you represent binary data with BinaryCoStreams.
 
@@ -106,7 +106,7 @@ To represent complex structured data with Jazz, you form trees or graphs of CoVa
 
 Internally, this is represented by storing the IDs of the referenced CoValues in the corresponding fields, but Jazz abstracts this away, making it look like nested CoValues you can get or assign/insert.
 
-The important caveat here is that **a referenced CoValue might or might not be loaded yet,** but we'll see what exactly that means in [Subscribing and Deep Loading](/docs/TODO).
+The important caveat here is that **a referenced CoValue might or might not be loaded yet,** but we'll see what exactly that means in [Subscribing and Deep Loading](/docs/coming-soon).
 
 In Schemas, you define Refs using the `co.ref<T>()` definer:
 
@@ -123,7 +123,7 @@ class ListOfPeople extends CoList.Of(co.ref(Person)) {}
 
 #### Optional Refs
 
-If you want to make a referened CoValue field optional, you *have to* use `co.optional.ref<T>()`:
+If you want to make a referenced CoValue field optional, you *have to* use `co.optional.ref<T>()`:
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -135,3 +135,5 @@ class Person extends CoMap {
 </CodeGroup>
 
 ### Computed fields, methods & constructors
+
+<ComingSoon/>

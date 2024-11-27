@@ -7,6 +7,7 @@ import { CodeGroup as CodeGroupClient } from "gcmp-design-system/src/app/compone
 
 import { IframeHTMLAttributes } from "react";
 import { ResponsiveIframe as ResponsiveIframeClient } from "./ResponsiveIframe";
+import { ComingSoon as ComingSoonClient } from "./docs/ComingSoon";
 
 export function ResponsiveIframe(
   props: IframeHTMLAttributes<HTMLIFrameElement> & { localsrc: string },
@@ -20,4 +21,8 @@ export function CodeExampleTabs(props: CodeExampleTabsProps) {
 
 export function CodeGroup(props: { children: React.ReactNode }) {
   return <CodeGroupClient {...props}></CodeGroupClient>;
+}
+
+export function ComingSoon() {
+  return <ComingSoonClient />;
 }
