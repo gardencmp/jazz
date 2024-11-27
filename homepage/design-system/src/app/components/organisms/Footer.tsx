@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { ThemeToggle } from "../molecules/ThemeToggle";
+import { NewsletterForm } from "./NewsletterForm";
+import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type FooterSection = {
   title: string;
@@ -19,6 +21,7 @@ type FooterProps = {
   logo: ReactNode;
   companyName: string;
   sections: FooterSection[];
+  socials: SocialLinksProps;
 };
 
 function Copyright({
@@ -35,38 +38,54 @@ function Copyright({
   );
 }
 
-export function Footer({ logo, companyName, sections }: FooterProps) {
+export function Footer({ logo, companyName, sections, socials }: FooterProps) {
   return (
-    <footer className="w-full border-t bg-stone-100 mt-12 md:mt-20 dark:bg-stone-925">
-      <div className="container py-8 md:py-16 grid gap-y-8 grid-cols-12">
-        <div className="flex flex-col justify-between col-span-full md:col-span-4">
-          {logo}
-
-          <Copyright className="hidden md:block" companyName={companyName} />
-        </div>
-
-        {sections.map((section, index) => (
-          <div
-            key={index}
-            className="flex flex-col gap-2 text-sm col-span-4 sm:col-span-4 md:col-span-2"
-          >
-            <h2 className="font-medium">{section.title}</h2>
-            {section.links.map((link, linkIndex) => (
-              <FooterLink key={linkIndex} href={link.href} newTab={link.newTab}>
-                {link.label}
-              </FooterLink>
-            ))}
+    <footer className="w-full py-8 mt-12 md:mt-20">
+      <div className="container grid gap-8 md:gap-12">
+        <div className="grid grid-cols-12 gap-y-3 sm:items-center pb-8 border-b">
+          <div className="col-span-full sm:col-span-6 md:col-span-8">
+            {logo}
           </div>
-        ))}
-
-        <div className="hidden md:flex justify-end items-end md:col-span-2">
-          <ThemeToggle />
+          <p className="col-span-full sm:col-span-6 md:col-span-4 text-sm sm:text-base">
+            Playful software for serious problems.
+          </p>
         </div>
+        <div className="grid gap-y-8 grid-cols-12">
+          <div className="flex flex-col gap-4 col-span-full md:col-span-8">
+            <p className="font-medium text-stone-900 dark:text-white">
+              Stay up to date
+            </p>
+            <NewsletterForm />
+          </div>
 
-        <Copyright
-          className="col-span-full md:hidden"
-          companyName={companyName}
-        />
+          {sections.map((section, index) => (
+            <div
+              key={index}
+              className="flex flex-col gap-2 text-sm col-span-6 md:col-span-2"
+            >
+              <h2 className="font-medium">{section.title}</h2>
+              {section.links.map((link, linkIndex) => (
+                <FooterLink
+                  key={linkIndex}
+                  href={link.href}
+                  newTab={link.newTab}
+                >
+                  {link.label}
+                </FooterLink>
+              ))}
+            </div>
+          ))}
+
+          <Copyright
+            className="order-last col-span-full self-center md:col-span-10 md:order-none"
+            companyName={companyName}
+          />
+
+          <div className="col-span-full flex items-center justify-between gap-6 md:col-span-2">
+            <SocialLinks {...socials}></SocialLinks>
+            <ThemeToggle className="hidden md:block" />
+          </div>
+        </div>
       </div>
     </footer>
   );

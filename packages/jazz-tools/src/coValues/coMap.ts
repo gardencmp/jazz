@@ -1,6 +1,9 @@
 import {
+  AgentID,
   type CoValueUniqueness,
+  CojsonInternalTypes,
   type JsonValue,
+  RawAccountID,
   type RawCoMap,
   cojsonInternals,
 } from "cojson";
@@ -40,6 +43,8 @@ type CoMapEdit<V> = {
   by?: Account;
   madeAt: Date;
 };
+
+type LastAndAllCoMapEdits<V> = CoMapEdit<V> & { all: CoMapEdit<V>[] };
 
 export type Simplify<A> = {
   [K in keyof A]: A[K];
@@ -141,47 +146,82 @@ export class CoMap extends CoValueBase implements CoValue {
     ) as any;
   }
 
+  /** @internal */
+  private getEditFromRaw(
+    target: CoMap,
+    rawEdit: {
+      by: RawAccountID | AgentID;
+      tx: CojsonInternalTypes.TransactionID;
+      at: Date;
+      value?: JsonValue | undefined;
+    },
+    descriptor: Schema,
+    key: string,
+  ) {
+    return {
+      value:
+        descriptor === "json"
+          ? rawEdit.value
+          : "encoded" in descriptor
+            ? rawEdit.value === null || rawEdit.value === undefined
+              ? rawEdit.value
+              : descriptor.encoded.decode(rawEdit.value)
+            : new Ref(
+                rawEdit.value as ID<CoValue>,
+                target._loadedAs,
+                descriptor,
+              ).accessFrom(target, "_edits." + key + ".value"),
+      ref:
+        descriptor !== "json" && isRefEncoded(descriptor)
+          ? new Ref(rawEdit.value as ID<CoValue>, target._loadedAs, descriptor)
+          : undefined,
+      by:
+        rawEdit.by &&
+        new Ref<Account>(rawEdit.by as ID<Account>, target._loadedAs, {
+          ref: Account,
+          optional: false,
+        }).accessFrom(target, "_edits." + key + ".by"),
+      madeAt: rawEdit.at,
+    };
+  }
+
   /** @category Collaboration */
   get _edits() {
-    return new Proxy(this, {
-      get(target, key) {
-        const rawEdit = target._raw.lastEditAt(key as string);
-        if (!rawEdit) return undefined;
+    const map = this;
+    return new Proxy(
+      {},
+      {
+        get(_target, key) {
+          const rawEdit = map._raw.lastEditAt(key as string);
+          if (!rawEdit) return undefined;
 
-        const descriptor = target._schema[
-          key as keyof typeof target._schema
-        ] as Schema;
+          const descriptor = map._schema[
+            key as keyof typeof map._schema
+          ] as Schema;
 
-        return {
-          value:
-            descriptor === "json"
-              ? rawEdit.value
-              : "encoded" in descriptor
-                ? descriptor.encoded.encode(rawEdit.value)
-                : new Ref(
-                    rawEdit.value as ID<CoValue>,
-                    target._loadedAs,
-                    descriptor,
-                  ).accessFrom(target, "_edits." + key.toString() + ".value"),
-          ref:
-            descriptor !== "json" && isRefEncoded(descriptor)
-              ? new Ref(
-                  rawEdit.value as ID<CoValue>,
-                  target._loadedAs,
-                  descriptor,
-                )
-              : undefined,
-          by:
-            rawEdit.by &&
-            new Ref<Account>(rawEdit.by as ID<Account>, target._loadedAs, {
-              ref: Account,
-              optional: false,
-            }).accessFrom(target, "_edits." + key.toString() + ".by"),
-          madeAt: rawEdit.at,
-        };
+          return {
+            ...map.getEditFromRaw(map, rawEdit, descriptor, key as string),
+            get all() {
+              return [...map._raw.editsAt(key as string)].map((rawEdit) =>
+                map.getEditFromRaw(map, rawEdit, descriptor, key as string),
+              );
+            },
+          };
+        },
+        ownKeys(_target) {
+          return map._raw.keys();
+        },
+        getOwnPropertyDescriptor(target, key) {
+          return {
+            value: Reflect.get(target, key),
+            writable: false,
+            enumerable: true,
+            configurable: true,
+          };
+        },
       },
-    }) as {
-      [Key in CoKeys<this>]: IfCo<this[Key], CoMapEdit<this[Key]>>;
+    ) as {
+      [Key in CoKeys<this>]: IfCo<this[Key], LastAndAllCoMapEdits<this[Key]>>;
     };
   }
 
@@ -251,6 +291,10 @@ export class CoMap extends CoValueBase implements CoValue {
     return instance;
   }
 
+  /**
+   * Return a JSON representation of the `CoMap`
+   * @category Content
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(_key?: string, seenAbove?: ID<CoValue>[]): any[] {
     const jsonedFields = this._raw.keys().map((key) => {
@@ -288,7 +332,10 @@ export class CoMap extends CoValueBase implements CoValue {
     return this.toJSON();
   }
 
-  /** @internal */
+  /**
+   * Create a new `RawCoMap` from an initialization object
+   * @internal
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawFromInit<Fields extends object = Record<string, any>>(
     init: Simplify<CoMapInit<Fields>> | undefined,

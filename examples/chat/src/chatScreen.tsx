@@ -48,10 +48,11 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
 
 function ChatBubble(props: { msg: Message }) {
   const lastEdit = props.msg._edits.text;
+  const fromMe = lastEdit.by?.isMe;
 
   return (
-    <BubbleContainer fromMe={lastEdit.by?.isMe}>
-      <BubbleBody>{props.msg.text}</BubbleBody>
+    <BubbleContainer fromMe={fromMe}>
+      <BubbleBody fromMe={fromMe}>{props.msg.text}</BubbleBody>
       <BubbleInfo by={lastEdit.by?.profile?.name} madeAt={lastEdit.madeAt} />
     </BubbleContainer>
   );

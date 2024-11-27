@@ -20,7 +20,7 @@ importers:
         version: 2.27.3
       '@vitest/coverage-istanbul':
         specifier: 1.5.3
-        version: 1.5.3(vitest@1.5.3)
+        version: 1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0))
       '@vitest/ui':
         specifier: 1.5.3
         version: 1.5.3(vitest@1.5.3)
@@ -32,10 +32,10 @@ importers:
         version: 1.8.2
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2)
+        version: 10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2)
       turbo:
-        specifier: ^1.11.2
-        version: 1.11.2
+        specifier: ^2.3.1
+        version: 2.3.1
       typedoc:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.6.2)
@@ -46,7 +46,7 @@ importers:
   e2e/BinaryCoStream:
     dependencies:
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
@@ -55,10 +55,10 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -150,13 +150,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       next:
         specifier: 14.2.5
@@ -182,7 +182,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2))
       typescript:
         specifier: ^5.3.3
         version: 5.6.2
@@ -205,16 +205,16 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -242,7 +242,7 @@ importers:
         version: 1.14.0
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       uniqolor:
         specifier: ^1.1.0
         version: 1.1.1
@@ -273,7 +273,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -302,19 +302,19 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -342,7 +342,7 @@ importers:
         version: 1.14.0
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       uniqolor:
         specifier: ^1.1.0
         version: 1.1.1
@@ -367,7 +367,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -433,7 +433,7 @@ importers:
         version: link:../../packages/jazz-tools
       nativewind:
         specifier: ^2.0.11
-        version: 2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -476,7 +476,7 @@ importers:
         version: 18.2.79
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -542,7 +542,7 @@ importers:
         version: 6.3.1(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
       expo-router:
         specifier: ~3.5.23
-        version: 3.5.23(gxmcwa4qdc6bvqs2lj3c6b64ki)
+        version: 3.5.23(expo-constants@16.0.2(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(expo-linking@6.3.1(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(expo-modules-autolinking@1.11.3)(expo-status-bar@1.12.1)(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))(react-native-reanimated@3.10.1(@babel/core@7.25.2)(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1))(react-native-safe-area-context@4.10.5(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1))(react-native-screens@3.31.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1))(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)(typescript@5.3.3)
       expo-secure-store:
         specifier: ~13.0.2
         version: 13.0.2(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
@@ -572,7 +572,7 @@ importers:
         version: link:../../packages/jazz-tools
       nativewind:
         specifier: ^2.0.11
-        version: 2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -636,16 +636,16 @@ importers:
         version: 18.3.0
       jest:
         specifier: ^29.2.1
-        version: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       jest-expo:
         specifier: ~51.0.3
-        version: 51.0.4(@babel/core@7.25.2)(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))(react@18.3.1)
+        version: 51.0.4(@babel/core@7.25.2)(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))(react@18.3.1)
       react-test-renderer:
         specifier: 18.2.0
         version: 18.2.0(react@18.3.1)
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -700,7 +700,7 @@ importers:
         version: 8.4.47
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2))
       typescript:
         specifier: ^5.3.3
         version: 5.6.2
@@ -732,10 +732,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/cojson-transport-ws
       hash-slash:
         specifier: workspace:0.2.1
@@ -766,7 +766,7 @@ importers:
         version: 1.14.0
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       uniqolor:
         specifier: ^1.1.0
         version: 1.1.1
@@ -791,7 +791,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -808,7 +808,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
         specifier: workspace:*
@@ -897,10 +897,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -922,7 +922,7 @@ importers:
         version: 1.14.0
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
     devDependencies:
       '@playwright/test':
         specifier: ^1.46.1
@@ -944,7 +944,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -996,7 +996,7 @@ importers:
         version: 8.4.47
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2))
       typescript:
         specifier: ^5.3.3
         version: 5.6.2
@@ -1007,10 +1007,10 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -1045,7 +1045,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -1071,13 +1071,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1102,7 +1102,7 @@ importers:
         version: 1.14.0
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       uniqolor:
         specifier: ^1.1.0
         version: 1.1.1
@@ -1132,14 +1132,14 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -1170,10 +1170,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1198,7 +1198,7 @@ importers:
         version: 1.14.0
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+        version: 1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       uniqolor:
         specifier: ^1.1.0
         version: 1.1.1
@@ -1223,7 +1223,7 @@ importers:
         version: 8.4.32
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -1281,7 +1281,7 @@ importers:
         version: 8.4.47
       tailwindcss:
         specifier: 3.3.2
-        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2))
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2))
       typescript:
         specifier: ^5.3.3
         version: 5.6.2
@@ -1335,7 +1335,7 @@ importers:
   packages/cojson-storage-indexeddb:
     dependencies:
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
     devDependencies:
       '@vitest/browser':
@@ -1360,7 +1360,7 @@ importers:
         specifier: ^8.5.2
         version: 8.7.0
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1373,7 +1373,7 @@ importers:
   packages/cojson-transport-ws:
     dependencies:
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1401,16 +1401,16 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       cojson-storage-indexeddb:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson-storage-indexeddb
       cojson-transport-ws:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1419,13 +1419,13 @@ importers:
   packages/jazz-browser-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
     devDependencies:
       typescript:
@@ -1441,10 +1441,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
@@ -1460,13 +1460,13 @@ importers:
   packages/jazz-nodejs:
     dependencies:
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1485,13 +1485,13 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
     devDependencies:
       '@types/react':
@@ -1510,16 +1510,16 @@ importers:
   packages/jazz-react-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-react
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
       react:
         specifier: 18.3.1
@@ -1603,19 +1603,19 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5(effect@3.6.5)
       cojson:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson
       cojson-storage-sqlite:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson-storage-sqlite
       cojson-transport-ws:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../cojson-transport-ws
       effect:
         specifier: ^3.6.5
         version: 3.6.5
       jazz-tools:
-        specifier: workspace:0.8.23
+        specifier: workspace:0.8.32
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -9939,41 +9939,41 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
-  turbo-darwin-64@1.11.2:
-    resolution: {integrity: sha512-toFmRG/adriZY3hOps7nYCfqHAS+Ci6xqgX3fbo82kkLpC6OBzcXnleSwuPqjHVAaRNhVoB83L5njcE9Qwi2og==}
+  turbo-darwin-64@2.3.1:
+    resolution: {integrity: sha512-tjHfjW/Gs8Q9IO+9gPdIsSStZ8I09QYDRT/SyhFTPLnc7O2ZlxHPBVFfjUkHUjanHNYO8CpRGt+zdp1PaMCruw==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@1.11.2:
-    resolution: {integrity: sha512-FCsEDZ8BUSFYEOSC3rrARQrj7x2VOrmVcfrMUIhexTxproRh4QyMxLfr6LALk4ymx6jbDCxWa6Szal8ckldFbA==}
+  turbo-darwin-arm64@2.3.1:
+    resolution: {integrity: sha512-At1WStnxCfrBQ4M2g6ynre8WsusGwA11okhVolBxyFUemYozDTtbZwelr+IqNggjT251vviokxOkcFzzogbiFw==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@1.11.2:
-    resolution: {integrity: sha512-Vzda/o/QyEske5CxLf0wcu7UUS+7zB90GgHZV4tyN+WZtoouTvbwuvZ3V6b5Wgd3OJ/JwWR0CXDK7Sf4VEMr7A==}
+  turbo-linux-64@2.3.1:
+    resolution: {integrity: sha512-COwEev7s9fsxLM2eoRCyRLPj+BXvZjFIS+GxzdAubYhoSoZit8B8QGKczyDl6448xhuFEWKrpHhcR9aBuwB4ag==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@1.11.2:
-    resolution: {integrity: sha512-bRLwovQRz0yxDZrM4tQEAYV0fBHEaTzUF0JZ8RG1UmZt/CqtpnUrJpYb1VK8hj1z46z9YehARpYCwQ2K0qU4yw==}
+  turbo-linux-arm64@2.3.1:
+    resolution: {integrity: sha512-AP0uE15Rhxza2Jl+Q3gxdXRA92IIeFAYaufz6CMcZuGy9yZsBlLt9w6T47H6g7XQPzWuw8pzfjM1omcTKkkDpQ==}
     cpu: [arm64]
     os: [linux]
 
   turbo-stream@2.4.0:
     resolution: {integrity: sha512-FHncC10WpBd2eOmGwpmQsWLDoK4cqsA/UT/GqNoaKOQnT8uzhtCbg3EoUDMvqpOSAI0S26mr0rkjzbOO6S3v1g==}
 
-  turbo-windows-64@1.11.2:
-    resolution: {integrity: sha512-LgTWqkHAKgyVuLYcEPxZVGPInTjjeCnN5KQMdJ4uQZ+xMDROvMFS2rM93iQl4ieDJgidwHCxxCxaU9u8c3d/Kg==}
+  turbo-windows-64@2.3.1:
+    resolution: {integrity: sha512-HDSneq0dNZYZch74c2eygq+OiJE/JYDs7OsGM0yRYVj336383xkUnxz6W2I7qiyMCQXzp4UVUDZXvZhUYcX3BA==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@1.11.2:
-    resolution: {integrity: sha512-829aVBU7IX0c/B4G7g1VI8KniAGutHhIupkYMgF6xPkYVev2G3MYe6DMS/vsLt9GGM9ulDtdWxWrH5P2ngK8IQ==}
+  turbo-windows-arm64@2.3.1:
+    resolution: {integrity: sha512-7/2/sJZiquwoT/jWBCfV0qKq4NarsJPmDRjMcR9dDMIwCYsGM8ljomkDRTCtkNeFcUvYw54MiRWHehWgbcRPsw==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@1.11.2:
-    resolution: {integrity: sha512-jPC7LVQJzebs5gWf8FmEvsvXGNyKbN+O9qpvv98xpNaM59aS0/Irhd0H0KbcqnXfsz7ETlzOC3R+xFWthC4Z8A==}
+  turbo@2.3.1:
+    resolution: {integrity: sha512-vHZe/e6k1HZVKiMQPQ1BWFn53vjVQDFKdkjUq/pBKlRWi1gw9LQO6ntH4qZCcHY1rH6TXgsRmexXdgWl96YvVQ==}
     hasBin: true
 
   type-check@0.4.0:
@@ -12796,7 +12796,7 @@ snapshots:
       jest-util: 29.7.0
       slash: 3.0.0
 
-  '@jest/core@29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))':
+  '@jest/core@29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))':
     dependencies:
       '@jest/console': 29.7.0
       '@jest/reporters': 29.7.0
@@ -12810,7 +12810,7 @@ snapshots:
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
-      jest-config: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      jest-config: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -14614,7 +14614,7 @@ snapshots:
       - esbuild
       - rollup
 
-  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3)':
+  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0))':
     dependencies:
       debug: 4.3.7
       istanbul-lib-coverage: 3.2.2
@@ -15737,13 +15737,13 @@ snapshots:
       crc-32: 1.2.2
       readable-stream: 3.6.2
 
-  create-jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)):
+  create-jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)):
     dependencies:
       '@jest/types': 29.6.3
       chalk: 4.1.2
       exit: 0.1.2
       graceful-fs: 4.2.11
-      jest-config: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      jest-config: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       jest-util: 29.7.0
       prompts: 2.4.2
     transitivePeerDependencies:
@@ -16520,8 +16520,8 @@ snapshots:
     dependencies:
       invariant: 2.2.4
 
-  expo-router@3.5.23(gxmcwa4qdc6bvqs2lj3c6b64ki):
-    dependencies:
+  ? expo-router@3.5.23(expo-constants@16.0.2(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(expo-linking@6.3.1(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))))(expo-modules-autolinking@1.11.3)(expo-status-bar@1.12.1)(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))(react-native-reanimated@3.10.1(@babel/core@7.25.2)(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1))(react-native-safe-area-context@4.10.5(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1))(react-native-screens@3.31.1(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1))(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))(react@18.3.1)(typescript@5.3.3)
+  : dependencies:
       '@expo/metro-runtime': 3.2.3(react-native@0.74.5(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@types/react@18.2.79)(react@18.3.1))
       '@expo/server': 0.4.4(typescript@5.3.3)
       '@radix-ui/react-slot': 1.0.1(react@18.3.1)
@@ -17527,16 +17527,16 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  jest-cli@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)):
+  jest-cli@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)):
     dependencies:
-      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
       chalk: 4.1.2
-      create-jest: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      create-jest: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       exit: 0.1.2
       import-local: 3.2.0
-      jest-config: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      jest-config: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       jest-util: 29.7.0
       jest-validate: 29.7.0
       yargs: 17.7.2
@@ -17546,7 +17546,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  jest-config@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)):
+  jest-config@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)):
     dependencies:
       '@babel/core': 7.25.2
       '@jest/test-sequencer': 29.7.0
@@ -17572,7 +17572,7 @@ snapshots:
       strip-json-comments: 3.1.1
     optionalDependencies:
       '@types/node': 22.5.1
-      ts-node: 10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)
+      ts-node: 10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -17620,7 +17620,7 @@ snapshots:
       jest-mock: 29.7.0
       jest-util: 29.7.0
 
-  jest-expo@51.0.4(@babel/core@7.25.2)(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))(react@18.3.1):
+  jest-expo@51.0.4(@babel/core@7.25.2)(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))(react@18.3.1):
     dependencies:
       '@expo/config': 9.0.4
       '@expo/json-file': 8.3.3
@@ -17629,7 +17629,7 @@ snapshots:
       find-up: 5.0.0
       jest-environment-jsdom: 29.7.0
       jest-watch-select-projects: 2.0.0
-      jest-watch-typeahead: 2.2.1(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
+      jest-watch-typeahead: 2.2.1(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)))
       json5: 2.2.3
       lodash: 4.17.21
       react-test-renderer: 18.2.0(react@18.3.1)
@@ -17818,11 +17818,11 @@ snapshots:
       chalk: 3.0.0
       prompts: 2.4.2
 
-  jest-watch-typeahead@2.2.1(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))):
+  jest-watch-typeahead@2.2.1(jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))):
     dependencies:
       ansi-escapes: 6.2.1
       chalk: 4.1.2
-      jest: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      jest: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       jest-regex-util: 29.6.3
       jest-watcher: 29.7.0
       slash: 5.1.0
@@ -17847,12 +17847,12 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-  jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)):
+  jest@29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)):
     dependencies:
-      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       '@jest/types': 29.6.3
       import-local: 3.2.0
-      jest-cli: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      jest-cli: 29.7.0(@types/node@22.5.1)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -18643,7 +18643,7 @@ snapshots:
 
   napi-build-utils@1.0.2: {}
 
-  nativewind@2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))):
+  nativewind@2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))):
     dependencies:
       '@babel/generator': 7.25.6
       '@babel/helper-module-imports': 7.18.6
@@ -18657,7 +18657,7 @@ snapshots:
       postcss-css-variables: 0.18.0(postcss@8.4.47)
       postcss-nested: 5.0.6(postcss@8.4.47)
       react-is: 18.2.0
-      tailwindcss: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      tailwindcss: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       use-sync-external-store: 1.2.2(react@18.3.1)
     transitivePeerDependencies:
       - react
@@ -19116,21 +19116,21 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.4.47
 
-  postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)):
+  postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)):
     dependencies:
       lilconfig: 3.0.0
       yaml: 2.5.0
     optionalDependencies:
       postcss: 8.4.47
-      ts-node: 10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)
+      ts-node: 10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)
 
-  postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2)):
+  postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2)):
     dependencies:
       lilconfig: 3.0.0
       yaml: 2.5.0
     optionalDependencies:
       postcss: 8.4.47
-      ts-node: 10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2)
+      ts-node: 10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2)
 
   postcss-nested@5.0.6(postcss@8.4.47):
     dependencies:
@@ -20396,11 +20396,11 @@ snapshots:
 
   tailwind-merge@1.14.0: {}
 
-  tailwindcss-animate@1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))):
+  tailwindcss-animate@1.0.7(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))):
     dependencies:
-      tailwindcss: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      tailwindcss: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
 
-  tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)):
+  tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -20419,7 +20419,7 @@ snapshots:
       postcss: 8.4.47
       postcss-import: 15.1.0(postcss@8.4.47)
       postcss-js: 4.0.1(postcss@8.4.47)
-      postcss-load-config: 4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3))
+      postcss-load-config: 4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3))
       postcss-nested: 6.0.1(postcss@8.4.47)
       postcss-selector-parser: 6.0.13
       postcss-value-parser: 4.2.0
@@ -20428,7 +20428,7 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2)):
+  tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -20447,7 +20447,7 @@ snapshots:
       postcss: 8.4.47
       postcss-import: 15.1.0(postcss@8.4.47)
       postcss-js: 4.0.1(postcss@8.4.47)
-      postcss-load-config: 4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2))
+      postcss-load-config: 4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2))
       postcss-nested: 6.0.1(postcss@8.4.47)
       postcss-selector-parser: 6.0.13
       postcss-value-parser: 4.2.0
@@ -20612,7 +20612,7 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3):
+  ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.3.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.9
@@ -20633,7 +20633,7 @@ snapshots:
       '@swc/core': 1.7.22(@swc/helpers@0.5.5)
     optional: true
 
-  ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2):
+  ts-node@10.9.2(@swc/core@1.7.22)(@types/node@22.5.1)(typescript@5.6.2):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.9
@@ -20671,34 +20671,34 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  turbo-darwin-64@1.11.2:
+  turbo-darwin-64@2.3.1:
     optional: true
 
-  turbo-darwin-arm64@1.11.2:
+  turbo-darwin-arm64@2.3.1:
     optional: true
 
-  turbo-linux-64@1.11.2:
+  turbo-linux-64@2.3.1:
     optional: true
 
-  turbo-linux-arm64@1.11.2:
+  turbo-linux-arm64@2.3.1:
     optional: true
 
   turbo-stream@2.4.0: {}
 
-  turbo-windows-64@1.11.2:
+  turbo-windows-64@2.3.1:
     optional: true
 
-  turbo-windows-arm64@1.11.2:
+  turbo-windows-arm64@2.3.1:
     optional: true
 
-  turbo@1.11.2:
+  turbo@2.3.1:
     optionalDependencies:
-      turbo-darwin-64: 1.11.2
-      turbo-darwin-arm64: 1.11.2
-      turbo-linux-64: 1.11.2
-      turbo-linux-arm64: 1.11.2
-      turbo-windows-64: 1.11.2
-      turbo-windows-arm64: 1.11.2
+      turbo-darwin-64: 2.3.1
+      turbo-darwin-arm64: 2.3.1
+      turbo-linux-64: 2.3.1
+      turbo-linux-arm64: 2.3.1
+      turbo-windows-64: 2.3.1
+      turbo-windows-arm64: 2.3.1
 
   type-check@0.4.0:
     dependencies:

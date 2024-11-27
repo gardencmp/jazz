@@ -59,34 +59,92 @@ export type SingleCoFeedEntry<Item> = {
 /** @deprecated Use CoFeed instead */
 export { CoFeed as CoStream };
 
-/** @category CoValues */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * CoFeeds are collaborative logs of data.
+ *
+ * @categoryDescription Content
+ * They are similar to `CoList`s, but with a few key differences:
+ * - They are append-only
+ * - They consist of several internal append-only logs, one per account session (tab, device, app instance, etc.)
+ * - They expose those as a per-account aggregated view (default) or a precise per-session view
+ *
+ * ```ts
+ * favDog.push("Poodle");
+ * favDog.push("Schnowzer");
+ * ```
+ *
+ * @category CoValues
+ */
 export class CoFeed<Item = any> extends CoValueBase implements CoValue {
+  /**
+   * Declare a `CoFeed` by subclassing `CoFeed.Of(...)` and passing the item schema using a `co` primitive or a `co.ref`.
+   *
+   * @example
+   * ```ts
+   * class ColorFeed extends CoFeed.Of(co.string) {}
+   * class AnimalFeed extends CoFeed.Of(co.ref(Animal)) {}
+   * ```
+   *
+   * @category Declaration
+   */
   static Of<Item>(item: IfCo<Item, Item>): typeof CoFeed<Item> {
     return class CoFeedOf extends CoFeed<Item> {
       [co.items] = item;
     };
   }
 
+  /**
+   * The ID of this `CoFeed`
+   * @category Content */
   declare id: ID<this>;
+  /** @category Type Helpers */
   declare _type: "CoStream";
   static {
     this.prototype._type = "CoStream";
   }
+  /** @category Internals */
   declare _raw: RawCoStream;
 
   /** @internal This is only a marker type and doesn't exist at runtime */
   [ItemsSym]!: Item;
+  /** @internal */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static _schema: any;
+  /** @internal */
   get _schema(): {
     [ItemsSym]: SchemaFor<Item>;
   } {
     return (this.constructor as typeof CoFeed)._schema;
   }
 
+  /**
+   * The per-account view of this `CoFeed`
+   *
+   * @example
+   * ```ts
+   * // Access entries directly by account ID
+   * const aliceEntries = feed[aliceAccount.id];
+   * console.log(aliceEntries.value); // Latest value from Alice
+   *
+   * // Iterate through all accounts' entries
+   * for (const [accountId, entries] of Object.entries(feed)) {
+   *   console.log(`Latest entry from ${accountId}:`, entries.value);
+   *
+   *   // Access all entries from this account
+   *   for (const entry of entries.all) {
+   *     console.log(`Entry made at ${entry.madeAt}:`, entry.value);
+   *   }
+   * }
+   * ```
+   *
+   * @category Content
+   */
   [key: ID<Account>]: CoFeedEntry<Item>;
 
+  /**
+   * The current account's view of this `CoFeed`
+   * @category Content
+   */
   get byMe(): CoFeedEntry<Item> | undefined {
     if (this._loadedAs._type === "Account") {
       return this[this._loadedAs.id];
@@ -94,9 +152,22 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
       return undefined;
     }
   }
+
+  /**
+   * The per-session view of this `CoFeed`
+   * @category Content
+   */
   perSession!: {
     [key: SessionID]: CoFeedEntry<Item>;
   };
+
+  /**
+   * The current session's view of this `CoFeed`
+   *
+   * This is a shortcut for `this.perSession` where the session ID is the current session ID.
+   *
+   * @category Content
+   */
   get inCurrentSession(): CoFeedEntry<Item> | undefined {
     if (this._loadedAs._type === "Account") {
       return this.perSession[this._loadedAs.sessionID!];
@@ -125,6 +196,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return new Proxy(this, CoStreamProxyHandler as ProxyHandler<this>);
   }
 
+  /**
+   * Create a new `CoFeed`
+   * @category Creation
+   */
   static create<S extends CoFeed>(
     this: CoValueClass<S>,
     init: S extends CoFeed<infer Item> ? UnCo<Item>[] : never,
@@ -147,6 +222,26 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return instance;
   }
 
+  /**
+   * Push items to this `CoFeed`
+   *
+   * Items are appended to the current session's log. Each session (tab, device, app instance)
+   * maintains its own append-only log, which is then aggregated into the per-account view.
+   *
+   * @example
+   * ```ts
+   * // Adds items to current session's log
+   * feed.push("item1", "item2");
+   *
+   * // View items from current session
+   * console.log(feed.inCurrentSession);
+   *
+   * // View aggregated items from all sessions for current account
+   * console.log(feed.byMe);
+   * ```
+   *
+   * @category Content
+   */
   push(...items: Item[]) {
     for (const item of items) {
       this.pushItem(item);
@@ -165,6 +260,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     }
   }
 
+  /**
+   * Get a JSON representation of the `CoFeed`
+   * @category
+   */
   toJSON(): {
     id: string;
     _type: "CoStream";
@@ -197,6 +296,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     };
   }
 
+  /** @internal */
   [inspect](): {
     id: string;
     _type: "CoStream";
@@ -206,6 +306,7 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return this.toJSON();
   }
 
+  /** @internal */
   static schema<V extends CoFeed>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this: { new (...args: any): V } & typeof CoFeed,
@@ -215,7 +316,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     Object.assign(this._schema, def);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Load a `CoFeed`
+   * @category Subscription & Loading
+   */
   static load<S extends CoFeed, Depth>(
     this: CoValueClass<S>,
     id: ID<S>,
@@ -225,7 +329,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return loadCoValue(this, id, as, depth);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Subscribe to a `CoFeed`, when you have an ID but don't have a `CoFeed` instance yet
+   * @category Subscription & Loading
+   */
   static subscribe<S extends CoFeed, Depth>(
     this: CoValueClass<S>,
     id: ID<S>,
@@ -236,7 +343,13 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return subscribeToCoValue<S, Depth>(this, id, as, depth, listener);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Ensure a `CoFeed` is loaded to the specified depth
+   *
+   * @returns A new instance of the same CoFeed that's loaded to the specified depth,
+   * or undefined if it cannot be loaded that deeply
+   * @category Subscription & Loading
+   */
   ensureLoaded<S extends CoFeed, Depth>(
     this: S,
     depth: Depth & DepthsIn<S>,
@@ -244,7 +357,12 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
     return ensureCoValueLoaded(this, depth);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * An instance method to subscribe to an existing `CoFeed`
+   *
+   * No need to provide an ID or Account since they're already part of the instance.
+   * @category Subscription & Loading
+   */
   subscribe<S extends CoFeed, Depth>(
     this: S,
     depth: Depth & DepthsIn<S>,
@@ -254,6 +372,10 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   }
 }
 
+/**
+ * Converts a raw stream entry into a formatted CoFeed entry with proper typing and accessors.
+ * @internal
+ */
 function entryFromRawEntry<Item>(
   accessFrom: CoValue,
   rawEntry: {
@@ -316,6 +438,10 @@ function entryFromRawEntry<Item>(
   };
 }
 
+/**
+ * The proxy handler for `CoFeed` instances
+ * @internal
+ */
 export const CoStreamProxyHandler: ProxyHandler<CoFeed> = {
   get(target, key, receiver) {
     if (typeof key === "string" && key.startsWith("co_")) {
@@ -404,6 +530,10 @@ export const CoStreamProxyHandler: ProxyHandler<CoFeed> = {
   },
 };
 
+/**
+ * The proxy handler for the per-session view of a `CoFeed`
+ * @internal
+ */
 const CoStreamPerSessionProxyHandler = (
   innerTarget: CoFeed,
   accessFrom: CoFeed,
@@ -469,13 +599,34 @@ const CoStreamPerSessionProxyHandler = (
   },
 });
 
-/** @deprecated Use CoFeed instead */
+/** @deprecated Use FileStream instead */
 export { FileStream as BinaryCoStream };
 
-/** @category CoValues */
+/**
+ * FileStreams are `CoFeed`s that contain binary data, collaborative versions of `Blob`s.
+ *
+ * @categoryDescription Declaration
+ * `FileStream` can be referenced in schemas.
+ *
+ * ```ts
+ * import { co, FileStream } from "jazz-tools";
+ *
+ * class MyCoMap extends CoMap {
+ *   file = co.ref(FileStream);
+ * }
+ * ```
+ *
+ * @category CoValues
+ */
 export class FileStream extends CoValueBase implements CoValue {
+  /**
+   * The ID of this `FileStream`
+   * @category Content
+   */
   declare id: ID<this>;
+  /** @category Type Helpers */
   declare _type: "BinaryCoStream";
+  /** @internal */
   declare _raw: RawBinaryCoStream;
 
   constructor(
@@ -552,6 +703,11 @@ export class FileStream extends CoValueBase implements CoValue {
     return new Blob(chunks.chunks, { type: chunks.mimeType });
   }
 
+  /**
+   * Load a `FileStream` as a `Blob`
+   *
+   * @category Content
+   */
   static async loadAsBlob(
     id: ID<FileStream>,
     as: Account,
@@ -581,6 +737,17 @@ export class FileStream extends CoValueBase implements CoValue {
     });
   }
 
+  /**
+   * Create a `FileStream` from a `Blob` or `File`
+   *
+   * @example
+   * ```ts
+   * import { co, FileStream } from "jazz-tools";
+   *
+   * const fileStream = await FileStream.createFromBlob(file, {owner: group})
+   * ```
+   * @category Content
+   */
   static async createFromBlob(
     blob: Blob | File,
     options: {
@@ -626,6 +793,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return stream;
   }
 
+  /**
+   * Get a JSON representation of the `FileStream`
+   * @category Content
+   */
   toJSON(): {
     id: string;
     _type: "BinaryCoStream";
@@ -642,11 +813,15 @@ export class FileStream extends CoValueBase implements CoValue {
     };
   }
 
+  /** @internal */
   [inspect]() {
     return this.toJSON();
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Load a `FileStream`
+   * @category Subscription & Loading
+   */
   static load<B extends FileStream, Depth>(
     this: CoValueClass<B>,
     id: ID<B>,
@@ -656,7 +831,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return loadCoValue(this, id, as, depth);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * Subscribe to a `FileStream`, when you have an ID but don't have a `FileStream` instance yet
+   * @category Subscription & Loading
+   */
   static subscribe<B extends FileStream, Depth>(
     this: CoValueClass<B>,
     id: ID<B>,
@@ -667,7 +845,6 @@ export class FileStream extends CoValueBase implements CoValue {
     return subscribeToCoValue<B, Depth>(this, id, as, depth, listener);
   }
 
-  /** @category Subscription & Loading */
   ensureLoaded<B extends FileStream, Depth>(
     this: B,
     depth: Depth & DepthsIn<B>,
@@ -675,7 +852,10 @@ export class FileStream extends CoValueBase implements CoValue {
     return ensureCoValueLoaded(this, depth);
   }
 
-  /** @category Subscription & Loading */
+  /**
+   * An instance method to subscribe to an existing `FileStream`
+   * @category Subscription & Loading
+   */
   subscribe<B extends FileStream, Depth>(
     this: B,
     depth: Depth & DepthsIn<B>,

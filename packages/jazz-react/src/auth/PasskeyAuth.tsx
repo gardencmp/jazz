@@ -14,7 +14,16 @@ export type PasskeyAuthState = (
   errors: string[];
 };
 
-/** @category Auth Providers */
+/**
+ * `usePasskeyAuth` hook provides a `JazzAuth` object for passkey authentication.
+ *
+ * @example
+ * ```ts
+ * const [auth, state] = usePasskeyAuth({ appName, appHostname });
+ * ```
+ *
+ * @category Auth Providers
+ */
 export function usePasskeyAuth({
   appName,
   appHostname,

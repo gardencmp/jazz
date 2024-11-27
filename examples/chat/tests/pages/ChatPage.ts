@@ -20,10 +20,6 @@ export class ChatPage {
     await this.messageInput.press("Enter");
   }
 
-  async expectLoaded() {
-    await expect(this.messageInput).toBeVisible();
-  }
-
   async expectMessageRow(message: string) {
     await expect(this.page.getByText(message)).toBeVisible();
   }

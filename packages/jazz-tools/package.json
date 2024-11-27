@@ -19,7 +19,7 @@
   },
   "type": "module",
   "license": "MIT",
-  "version": "0.8.23",
+  "version": "0.8.32",
   "dependencies": {
     "cojson": "workspace:*",
     "fast-check": "^3.17.2"

@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useId } from "react";
 
 export function AppContainer(props: { children: React.ReactNode }) {
@@ -10,7 +11,7 @@ export function AppContainer(props: { children: React.ReactNode }) {
 
 export function TopBar(props: { children: React.ReactNode }) {
   return (
-    <div className="p-3 bg-white w-full flex justify-end gap-1 text-xs border-b dark:bg-transparent dark:border-stone-800">
+    <div className="p-3 bg-white w-full flex justify-between gap-2 border-b dark:bg-transparent dark:border-stone-800">
       {props.children}
     </div>
   );
@@ -29,7 +30,7 @@ export function ChatBody(props: { children: React.ReactNode }) {
 
 export function EmptyChatMessage() {
   return (
-    <div className="h-full text-base text-stone-500 flex items-center justify-center px-3 md:text-xl">
+    <div className="h-full text-base text-stone-500 flex items-center justify-center px-3 text-lg md:text-2xl">
       Start a conversation below.
     </div>
   );
@@ -41,15 +42,26 @@ export function BubbleContainer(props: {
 }) {
   const align = props.fromMe ? "items-end" : "items-start";
   return (
-    <div className={`${align} flex flex-col m-2`} role="row">
+    <div className={`${align} flex flex-col m-3`} role="row">
       {props.children}
     </div>
   );
 }
 
-export function BubbleBody(props: { children: React.ReactNode }) {
+export function BubbleBody(props: {
+  children: React.ReactNode;
+  fromMe: boolean | undefined;
+}) {
   return (
-    <div className="rounded-2xl text-sm line-clamp-10 text-ellipsis bg-white max-w-full whitespace-pre-wrap dark:bg-stone-700 dark:text-white py-1 px-3 shadow-sm">
+    <div
+      className={clsx(
+        "line-clamp-10 text-ellipsis whitespace-pre-wrap",
+        "rounded-2xl max-w-full py-1 px-3 shadow-sm",
+        props.fromMe
+          ? "bg-white dark:bg-stone-700 dark:text-white"
+          : "bg-blue text-white",
+      )}
+    >
       {props.children}
     </div>
   );
@@ -73,7 +85,7 @@ export function ChatInput(props: { onSubmit: (text: string) => void }) {
       </label>
       <input
         id={inputId}
-        className="rounded-full py-2 px-4 text-sm border block w-full dark:bg-black dark:text-white dark:border-stone-700"
+        className="rounded-full py-2 px-4 border block w-full dark:bg-black dark:text-white dark:border-stone-700"
         placeholder="Type a message and press Enter"
         maxLength={2048}
         onKeyDown={({ key, currentTarget: input }) => {

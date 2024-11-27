@@ -1,5 +1,61 @@
 # todo-vue
 
+## 0.0.13
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-browser@0.8.32
+  - jazz-vue@0.8.20
+
+## 0.0.12
+
+### Patch Changes
+
+- jazz-browser@0.8.31
+- jazz-tools@0.8.31
+- jazz-vue@0.8.19
+
+## 0.0.11
+
+### Patch Changes
+
+- jazz-browser@0.8.30
+- jazz-tools@0.8.30
+- jazz-vue@0.8.18
+
+## 0.0.10
+
+### Patch Changes
+
+- jazz-browser@0.8.29
+- jazz-tools@0.8.29
+- jazz-vue@0.8.17
+
+## 0.0.9
+
+### Patch Changes
+
+- jazz-browser@0.8.28
+- jazz-tools@0.8.28
+- jazz-vue@0.8.16
+
+## 0.0.8
+
+### Patch Changes
+
+- jazz-browser@0.8.27
+- jazz-tools@0.8.27
+- jazz-vue@0.8.15
+
+## 0.0.7
+
+### Patch Changes
+
+- jazz-browser@0.8.24
+- jazz-vue@0.8.14
+
 ## 0.0.6
 
 ### Patch Changes

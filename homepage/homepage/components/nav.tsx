@@ -1,5 +1,4 @@
-import { SiDiscord, SiGithub, SiX } from "@icons-pack/react-simple-icons";
-import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
+import { socials } from "@/lib/socials";
 import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
 import { BookTextIcon, BoxIcon, CodeIcon } from "lucide-react";
@@ -68,25 +67,8 @@ export function JazzNav() {
           href: "https://github.com/gardencmp/jazz/releases",
           newTab: true,
         },
-        {
-          title: "GitHub",
-          href: "https://github.com/gardencmp/jazz",
-          newTab: true,
-          icon: <SiGithub className="w-5" />,
-        },
-        {
-          title: "Discord",
-          href: "https://discord.gg/utDMjHYg42",
-          newTab: true,
-          icon: <SiDiscord className="w-5" />,
-        },
-        {
-          title: "X",
-          href: "https://x.com/jazz_tools",
-          newTab: true,
-          icon: <SiX className="w-5" />,
-        },
       ]}
+      socials={socials}
       docNav={<DocNav className="block h-auto" />}
     />
   );

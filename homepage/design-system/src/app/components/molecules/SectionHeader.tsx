@@ -5,7 +5,7 @@ import { Prose } from "./Prose";
 
 function H2Sub({ children }: { children: React.ReactNode }) {
   return (
-    <Prose size="lg" className="max-w-3xl">
+    <Prose size="lg" className="text-balance max-w-3xl">
       {children}
     </Prose>
   );

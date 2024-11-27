@@ -1,5 +1,54 @@
 # jazz-browser-media-images
 
+## 0.8.32
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-browser@0.8.32
+
+## 0.8.31
+
+### Patch Changes
+
+- jazz-browser@0.8.31
+- jazz-tools@0.8.31
+
+## 0.8.30
+
+### Patch Changes
+
+- jazz-browser@0.8.30
+- jazz-tools@0.8.30
+
+## 0.8.29
+
+### Patch Changes
+
+- jazz-browser@0.8.29
+- jazz-tools@0.8.29
+
+## 0.8.28
+
+### Patch Changes
+
+- jazz-browser@0.8.28
+- jazz-tools@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- jazz-browser@0.8.27
+- jazz-tools@0.8.27
+
+## 0.8.24
+
+### Patch Changes
+
+- jazz-browser@0.8.24
+
 ## 0.8.23
 
 ### Patch Changes

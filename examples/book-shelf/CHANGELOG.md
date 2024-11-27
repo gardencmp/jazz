@@ -1,5 +1,68 @@
 # jazz-example-book-shelf
 
+## 0.1.24
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+  - jazz-browser-media-images@0.8.32
+
+## 0.1.23
+
+### Patch Changes
+
+- jazz-react@0.8.31
+- jazz-tools@0.8.31
+- jazz-browser-media-images@0.8.31
+
+## 0.1.22
+
+### Patch Changes
+
+- jazz-react@0.8.30
+- jazz-tools@0.8.30
+- jazz-browser-media-images@0.8.30
+
+## 0.1.21
+
+### Patch Changes
+
+- jazz-react@0.8.29
+- jazz-tools@0.8.29
+- jazz-browser-media-images@0.8.29
+
+## 0.1.20
+
+### Patch Changes
+
+- jazz-react@0.8.28
+- jazz-tools@0.8.28
+- jazz-browser-media-images@0.8.28
+
+## 0.1.19
+
+### Patch Changes
+
+- jazz-react@0.8.27
+- jazz-tools@0.8.27
+- jazz-browser-media-images@0.8.27
+
+## 0.1.18
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
+## 0.1.17
+
+### Patch Changes
+
+- jazz-browser-media-images@0.8.24
+- jazz-react@0.8.24
+
 ## 0.1.16
 
 ### Patch Changes

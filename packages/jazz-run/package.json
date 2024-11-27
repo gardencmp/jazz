@@ -3,7 +3,7 @@
   "bin": "./dist/index.js",
   "type": "module",
   "license": "MIT",
-  "version": "0.8.23",
+  "version": "0.8.32",
   "scripts": {
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
@@ -18,11 +18,11 @@
     "@effect/printer-ansi": "^0.34.5",
     "@effect/schema": "^0.71.1",
     "@effect/typeclass": "^0.25.5",
-    "cojson": "workspace:0.8.23",
-    "cojson-storage-sqlite": "workspace:0.8.23",
-    "cojson-transport-ws": "workspace:0.8.23",
+    "cojson": "workspace:0.8.32",
+    "cojson-storage-sqlite": "workspace:0.8.32",
+    "cojson-transport-ws": "workspace:0.8.32",
     "effect": "^3.6.5",
-    "jazz-tools": "workspace:0.8.23",
+    "jazz-tools": "workspace:0.8.32",
     "ws": "^8.14.2"
   },
   "devDependencies": {

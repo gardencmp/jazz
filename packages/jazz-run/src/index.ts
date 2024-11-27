@@ -9,23 +9,28 @@ import { startSyncServer } from "./startSyncServer.js";
 const jazzTools = Command.make("jazz-tools");
 
 const nameOption = Options.text("name").pipe(Options.withAlias("n"));
+const jsonOption = Options.boolean("json");
 const peerOption = Options.text("peer")
   .pipe(Options.withAlias("p"))
   .pipe(Options.withDefault("wss://cloud.jazz.tools"));
 
 const createAccountCommand = Command.make(
   "create",
-  { name: nameOption, peer: peerOption },
-  ({ name, peer }) => {
+  { name: nameOption, peer: peerOption, json: jsonOption },
+  ({ name, peer, json }) => {
     return Effect.gen(function* () {
       const { accountId, agentSecret } = yield* Effect.promise(() =>
         createWorkerAccount({ name, peer }),
       );
 
-      yield* Console.log(`# Credentials for Jazz account "${name}":
+      if (json) {
+        Console.log(JSON.stringify({ accountId, agentSecret }));
+      } else {
+        yield* Console.log(`# Credentials for Jazz account "${name}":
 JAZZ_WORKER_ACCOUNT=${accountId}
 JAZZ_WORKER_SECRET=${agentSecret}
 `);
+      }
     });
   },
 );

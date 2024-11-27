@@ -1,0 +1,111 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Authentication methods
+
+Jazz supports a variety of authentication methods, which you can use to authenticate users in your app.
+
+- Passphrase (built-in)
+- Passkey (built-in)
+- Clerk ([React](https://www.npmjs.com/package/jazz-react-auth-clerk) and [vanilla](https://www.npmjs.com/package/jazz-browser-auth-clerk) packages)
+
+## Passphrase
+
+Passphrase authentication allows users to create a new account or log in with an existing one by providing a passphrase.
+
+Passphrase authentication is supported out of the box and imported from `jazz-react`.
+
+### How to use
+
+1. Setup up Jazz as described in the [React setup guide](/docs/project-setup/react).
+
+2. Use the `usePassphraseAuth` hook to authenticate.
+
+<CodeGroup>
+```ts
+import { usePassphraseAuth } from "jazz-react";
+
+// ...
+
+const [passphraseAuth, passphraseState] = usePassphraseAuth({ appName });
+```
+</CodeGroup>
+
+## Passkey
+
+Passkey authentication allows users to create a new account or log in with an existing one by providing a passkey.
+
+Passkey authentication is supported out of the box.
+
+We have a [minimal example of a passkey authentication setup](https://github.com/garden-co/jazz/tree/main/examples/minimal-auth-passkey).
+
+### How to use
+
+1. Setup up Jazz as described in the [React setup guide](/docs/project-setup/react).
+
+2. Use the `usePasskeyAuth` hook to authenticate.
+
+<CodeGroup>
+```ts
+import { usePasskeyAuth } from "jazz-react";
+
+// ...
+
+const [passkeyAuth, passkeyState] = usePasskeyAuth({ appName });
+```
+</CodeGroup>
+
+## Clerk
+
+We have a React package `jazz-react-auth-clerk` to add Clerk authentication to your app. 
+
+We have a [minimal example of a Clerk authentication setup](https://github.com/garden-co/jazz/tree/main/examples/minimal-auth-clerk).
+
+### How to use
+
+1. Setup up Jazz as described in the [React setup guide](/docs/project-setup/react).
+
+2. Install Clerk as described in the [Clerk docs](https://clerk.com/docs/components/overview).
+
+3. Then add the appropriate package to your project (e.g. `jazz-react-auth-clerk`).
+
+<CodeGroup>
+```bash
+pnpm install jazz-react-auth-clerk
+```
+</CodeGroup>
+
+4. Provide a Clerk instance to the `useJazzClerkAuth` hook.
+
+<CodeGroup>
+```tsx
+import { useClerk, SignInButton } from "@clerk/clerk-react";
+import { useJazzClerkAuth } from "jazz-react-auth-clerk";
+
+// ...
+
+function JazzAndAuth({ children }: { children: React.ReactNode }) {
+  const clerk = useClerk();
+  const [auth, state] = useJazzClerkAuth(clerk);
+
+  return (
+    <>
+      {clerk.user && auth ? (
+        <Jazz.Provider auth={auth}></Jazz.Provider>
+      ) : (
+        <SignInButton />
+      )}
+    </>
+  );
+}
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <JazzAndAuth>
+        <App />
+      </JazzAndAuth>
+    </ClerkProvider>
+  </StrictMode>,
+);
+```
+</CodeGroup>

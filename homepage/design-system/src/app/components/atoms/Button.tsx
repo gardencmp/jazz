@@ -1,22 +1,39 @@
 import { clsx } from "clsx";
+import { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { Spinner } from "./Spinner";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "tertiary";
   size?: "sm" | "md" | "lg";
   href?: string;
+  newTab?: boolean;
+  icon?: LucideIcon;
+  loading?: boolean;
+  loadingText?: string;
+}
+
+function ButtonIcon({ icon: Icon, loading }: ButtonProps) {
+  if (!Icon) return null;
+
+  const className = "size-5";
+
+  if (loading) return <Spinner className={className} />;
+
+  return <Icon strokeWidth={1.5} className={className} />;
 }
 
 export function Button(props: ButtonProps) {
   const {
-    type = "button",
     className,
     children,
     size = "md",
     variant = "primary",
     href,
     disabled,
+    newTab,
+    loadingText,
   } = props;
 
   const sizeClasses = {
@@ -36,6 +53,7 @@ export function Button(props: ButtonProps) {
   const classNames = clsx(
     className,
     "inline-flex items-center justify-center gap-2 rounded-lg text-center transition-colors",
+    "disabled:pointer-events-none disabled:opacity-70",
     sizeClasses[size],
     variantClasses[variant],
     disabled && "opacity-50 cursor-not-allowed pointer-events-none",
@@ -43,15 +61,26 @@ export function Button(props: ButtonProps) {
 
   if (href) {
     return (
-      <Link href={href} className={classNames}>
+      <Link
+        href={href}
+        target={newTab ? "_blank" : undefined}
+        className={classNames}
+      >
+        <ButtonIcon {...props} />
         {children}
       </Link>
     );
   }
 
   return (
-    <button className={classNames} {...props}>
-      {children}
+    <button
+      {...props}
+      disabled={props.disabled || props.loading}
+      className={classNames}
+    >
+      <ButtonIcon {...props} />
+
+      {props.loading && props.loadingText ? props.loadingText : children}
     </button>
   );
 }
