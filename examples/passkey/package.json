@@ -1,5 +1,5 @@
 {
-  "name": "minimal-auth-passkey",
+  "name": "passkey",
   "private": true,
   "version": "0.0.9",
   "type": "module",
