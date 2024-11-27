@@ -31,18 +31,24 @@ const features = {
   inviteLink: "Invite link",
 };
 
+const MockButton = ({ children }: { children: React.ReactNode }) => (
+  <p className="bg-blue-100 text-blue-800 py-1 p-2 rounded-full font-medium text-center text-xs">
+    {children}
+  </p>
+);
+
 const ChatIllustration = () => (
   <div className="p-4 flex flex-col gap-4 justify-center h-full">
     <div className="flex flex-col gap-1 items-end">
       <p className="text-2xs">Sebastian</p>
-      <p className="inline-block text-xs py-1.5 px-3 rounded-full bg-blue text-white">
+      <p className="inline-block text-xs py-1.5 p-2 rounded-full bg-blue text-white">
         No one likes jazz. Not even you.
       </p>
     </div>
 
     <div className="flex flex-col gap-1 items-start">
       <p className="text-2xs">Mia</p>
-      <p className="inline-block text-xs py-1.5 px-3 rounded-full bg-stone-200 text-stone-900 dark:bg-white">
+      <p className="inline-block text-xs py-1.5 p-2 rounded-full bg-stone-200 text-stone-900 dark:bg-white">
         I do like jazz now, because of you.
       </p>
     </div>
@@ -77,9 +83,7 @@ const BookShelfIllustration = () => (
         Your book shelf
       </p>
 
-      <p className="bg-blue-100 text-blue-800 py-1 px-3 rounded-full font-medium text-xs">
-        Add book
-      </p>
+      <MockButton>Add book</MockButton>
     </div>
 
     <div className="grid grid-cols-3 gap-4 mt-3">
@@ -188,15 +192,58 @@ const reactExamples = [
     features: [features.passkey],
     demoUrl: "https://passwords-demo.jazz.tools",
     illustration: (
-      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
-        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
-          <FingerprintIcon
-            size={36}
-            strokeWidth={0.75}
-            className="stroke-red-600"
-          />
-          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
+      <div className="max-w-[30rem] mx-auto flex flex-col justify-center h-full p-5 gap-4">
+        <div className="flex justify-between items-center">
+          <p className="font-display font-medium tracking-tight text-sm text-stone-900 dark:text-white">
+            Password manager
+          </p>
+
+          <button
+            type="button"
+            className="border py-1 p-2 rounded-full font-medium text-xs"
+          >
+            Log out
+          </button>
         </div>
+
+        <table className="text-xs">
+          <thead>
+            <tr className="w-full text-stone-700 bg-stone-50 border-b dark:bg-transparent dark:text-stone-400">
+              <th className="font-medium tracking-wider text-left uppercase p-2">
+                Username
+              </th>
+              <th className="font-medium tracking-wider text-left uppercase p-2">
+                URI
+              </th>
+              <th className="font-medium tracking-wider text-left uppercase p-2">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b">
+              <td className="p-2">user@gmail.com</td>
+              <td className="p-2">gmail.com</td>
+              <td className="p-2">
+                <MockButton>Copy password</MockButton>
+              </td>
+            </tr>
+            <tr className="border-b">
+              <td className="p-2">user@gmail.com</td>
+              <td className="p-2">fb.com</td>
+              <td className="p-2">
+                <MockButton>Copy password</MockButton>
+              </td>
+            </tr>
+            <tr className="border-b">
+              <td className="p-2">user@gmail.com</td>
+              <td className="p-2">x.com</td>
+              <td className="p-2">
+                <MockButton>Copy password</MockButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     ),
   },
@@ -259,12 +306,12 @@ function Example({ example }: { example: Example }) {
   const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
 
   return (
-    <div className="col-span-2 border bg-stone-50 shadow-sm p-3 flex flex-col gap-3 rounded-lg md:gap-4 dark:bg-stone-950">
-      <div className="aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
+    <div className="col-span-2 border bg-stone-50 shadow-sm p-3 flex flex-col rounded-lg dark:bg-stone-950">
+      <div className="mb-3 aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
         {illustration}
       </div>
 
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-2 mb-2">
         <h2 className="font-medium text-stone-900 dark:text-white leading-none">
           {name}
         </h2>
@@ -287,16 +334,16 @@ function Example({ example }: { example: Example }) {
           ))}
         </div>
         <p className="text-sm">{description}</p>
-        <div className="flex gap-2">
-          <Button href={githubUrl} variant="secondary" size="sm">
-            View code
+      </div>
+      <div className="flex gap-2">
+        <Button href={githubUrl} variant="secondary" size="sm">
+          View code
+        </Button>
+        {demoUrl && (
+          <Button href={demoUrl} variant="secondary" size="sm">
+            View demo
           </Button>
-          {demoUrl && (
-            <Button href={demoUrl} variant="secondary" size="sm">
-              View demo
-            </Button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
