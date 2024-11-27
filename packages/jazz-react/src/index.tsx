@@ -208,7 +208,6 @@ export function createJazzReactApp<Acc extends Account>({
       if (id !== cachedId) {
         setResolvedValue(undefined);
         setCachedId(id);
-        console.log("ID changed", id, cachedId);
       }
     }, [id, cachedId]);
 
