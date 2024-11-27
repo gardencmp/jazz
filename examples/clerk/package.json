@@ -1,5 +1,5 @@
 {
-  "name": "minimal-auth-clerk",
+  "name": "clerk",
   "private": true,
   "version": "0.0.10",
   "type": "module",

@@ -130,6 +130,26 @@ const reactExamples = [
     illustration: <ClerkIllustration />,
   },
   {
+    name: "Passkey",
+    slug: "passkey",
+    description: "A React app that uses Passkey for authentication",
+    tech: [tech.react],
+    features: [features.passkey],
+    demoUrl: "https://passkey-demo.jazz.tools",
+    illustration: (
+      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
+          <FingerprintIcon
+            size={36}
+            strokeWidth={0.75}
+            className="stroke-red-600"
+          />
+          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
+        </div>
+      </div>
+    ),
+  },
+  {
     name: "Music player",
     slug: "music-player",
     description:
