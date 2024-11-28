@@ -12,7 +12,7 @@
       "**/ios/**",
       "**/android/**",
       "packages/jazz-svelte/**",
-      "examples/minimal-svelte-auth-passkey/**"
+      "examples/*svelte*/**"
     ]
   },
   "formatter": {
