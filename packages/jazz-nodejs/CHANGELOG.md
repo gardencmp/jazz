@@ -1,5 +1,14 @@
 # jazz-autosub
 
+## 0.8.34
+
+### Patch Changes
+
+- Updated dependencies [e4f110f]
+  - cojson@0.8.34
+  - cojson-transport-ws@0.8.34
+  - jazz-tools@0.8.34
+
 ## 0.8.32
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "@jazz-e2e/covalues",
   "private": true,
-  "version": "0.0.109",
+  "version": "0.0.110",
   "type": "module",
   "scripts": {
     "dev": "vite",

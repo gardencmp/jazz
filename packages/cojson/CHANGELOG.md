@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.34
+
+### Patch Changes
+
+- e4f110f: Removed a no more valid error on the known state message sync
+
 ## 0.8.32
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # minimal-auth-clerk
 
+## 0.0.11
+
+### Patch Changes
+
+- 9ca25d1: Rename passkey and clerk examples
+- Updated dependencies [9ca25d1]
+  - jazz-react-auth-clerk@0.8.34
+  - jazz-react@0.8.34
+  - jazz-tools@0.8.34
+
 ## 0.0.10
 
 ### Patch Changes

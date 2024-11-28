@@ -1,5 +1,13 @@
 # minimal-auth-passkey
 
+## 0.0.10
+
+### Patch Changes
+
+- 9ca25d1: Rename passkey and clerk examples
+  - jazz-react@0.8.34
+  - jazz-tools@0.8.34
+
 ## 0.0.9
 
 ### Patch Changes
