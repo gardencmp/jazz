@@ -155,7 +155,7 @@ export class CoPlainText extends String implements CoValue {
   //   }
 
   /**
-   * Load and subscribe to a `CoMap` with a given ID, as a given account.
+   * Load and subscribe to a `CoPlainText` with a given ID, as a given account.
    *
    * Automatically also subscribes to updates to all referenced/nested CoValues as soon as they are accessed in the listener.
    *
@@ -206,9 +206,9 @@ export class CoPlainText extends String implements CoValue {
   //   }
 
   /**
-   * Given an already loaded `CoMap`, subscribe to updates to the `CoMap` and ensure that the specified fields are loaded to the specified depth.
+   * Given an already loaded `CoPlainText`, subscribe to updates to the `CoPlainText` and ensure that the specified fields are loaded to the specified depth.
    *
-   * Works like `CoMap.subscribe()`, but you don't need to pass the ID or the account to load as again.
+   * Works like `CoPlainText.subscribe()`, but you don't need to pass the ID or the account to load as again.
    *
    * Returns an unsubscribe function that you should call when you no longer need updates.
    *

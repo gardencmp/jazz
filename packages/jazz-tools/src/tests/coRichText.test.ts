@@ -47,9 +47,6 @@ describe("Simple CoRichText operations", async () => {
 
       text.insertMark(6, 9, Marks.Strong, { tag: "strong" });
 
-      console.log(text.text?._raw.entries());
-      console.log(text.text?._raw.mapping);
-
       expect(text.resolveMarks()).toEqual([
         {
           startAfter: 6,
