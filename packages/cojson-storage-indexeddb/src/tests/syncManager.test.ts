@@ -31,7 +31,6 @@ describe("IDB sync manager", () => {
   let queue: OutgoingSyncQueue = {} as unknown as OutgoingSyncQueue;
 
   const IDBClient = vi.fn();
-  IDBClient.prototype.makeRequest = vi.fn();
   IDBClient.prototype.getCoValue = vi.fn();
   IDBClient.prototype.getCoValueSessions = vi.fn();
 

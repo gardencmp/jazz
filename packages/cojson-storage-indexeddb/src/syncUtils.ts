@@ -9,7 +9,7 @@ import {
   StoredCoValueRow,
   StoredSessionRow,
   TransactionRow,
-} from "./syncManager";
+} from "./idbClient";
 
 export function collectNewTxs(
   newTxsInSession: TransactionRow[],

@@ -7,41 +7,18 @@ import {
   cojsonInternals,
   emptyKnownState,
 } from "cojson";
-import { IDBClient, MakeRequestFunction } from "./idbClient";
+import {
+  CoValueRow,
+  IDBClient,
+  SignatureAfterRow,
+  StoredSessionRow,
+  TransactionRow,
+} from "./idbClient";
 import { SyncPromise } from "./syncPromises.js";
+import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
-import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
-
-type CoValueRow = {
-  id: CojsonInternalTypes.RawCoID;
-  header: CojsonInternalTypes.CoValueHeader;
-};
-
-export type StoredCoValueRow = CoValueRow & { rowID: number };
-
-type SessionRow = {
-  coValue: number;
-  sessionID: SessionID;
-  lastIdx: number;
-  lastSignature: CojsonInternalTypes.Signature;
-  bytesSinceLastSignature?: number;
-};
-
-export type StoredSessionRow = SessionRow & { rowID: number };
-
-export type TransactionRow = {
-  ses: number;
-  idx: number;
-  tx: CojsonInternalTypes.Transaction;
-};
-
-export type SignatureAfterRow = {
-  ses: number;
-  idx: number;
-  signature: CojsonInternalTypes.Signature;
-};
 
 export class SyncManager {
   private readonly toLocalNode: OutgoingSyncQueue;
@@ -86,26 +63,13 @@ export class SyncManager {
       return;
 
     const firstNewTxIdx = theirKnown.sessions[sessionRow.sessionID] || 0;
-
-    const signaturesAndIdxs = await this.idbClient.makeRequest<
-      SignatureAfterRow[]
-    >(({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
-      signatureAfter.getAll(
-        IDBKeyRange.bound(
-          [sessionRow.rowID, firstNewTxIdx],
-          [sessionRow.rowID, Infinity],
-        ),
-      ),
+    const signaturesAndIdxs = await this.idbClient.getSignatures(
+      sessionRow,
+      firstNewTxIdx,
     );
-
-    const newTxsInSession = await this.idbClient.makeRequest<TransactionRow[]>(
-      ({ transactions }) =>
-        transactions.getAll(
-          IDBKeyRange.bound(
-            [sessionRow.rowID, firstNewTxIdx],
-            [sessionRow.rowID, Infinity],
-          ),
-        ),
+    const newTxsInSession = await this.idbClient.getNewTransactionInSession(
+      sessionRow,
+      firstNewTxIdx,
     );
 
     collectNewTxs(
@@ -117,6 +81,7 @@ export class SyncManager {
       firstNewTxIdx,
     );
   }
+
   async sendNewContent(
     coValueKnownState: CojsonInternalTypes.CoValueKnownState,
   ): Promise<void> {
@@ -230,9 +195,7 @@ export class SyncManager {
   async handleContent(
     msg: CojsonInternalTypes.NewContentMessage,
   ): Promise<void | unknown> {
-    const coValueRow = await this.idbClient.makeRequest<
-      StoredCoValueRow | undefined
-    >(({ coValues }) => coValues.index("coValuesById").get(msg.id));
+    const coValueRow = await this.idbClient.getCoValue(msg.id);
     if (!msg.header && !coValueRow) {
       return this.sendStateMessage({
         action: "known",
@@ -245,18 +208,10 @@ export class SyncManager {
 
     const storedCoValueRowID: number = coValueRow?.rowID
       ? coValueRow.rowID
-      : ((await this.idbClient.makeRequest<IDBValidKey>(({ coValues }) =>
-          coValues.put({
-            id: msg.id,
-            header: msg.header!,
-          } satisfies CoValueRow),
-        )) as number);
+      : await this.idbClient.insertNewCoValue(msg);
 
-    const allOurSessionsEntries = await this.idbClient.makeRequest<
-      StoredSessionRow[]
-    >(({ sessions }) =>
-      sessions.index("sessionsByCoValue").getAll(storedCoValueRowID),
-    );
+    const allOurSessionsEntries =
+      await this.idbClient.getCoValueSessions(storedCoValueRowID);
 
     const allOurSessions: {
       [sessionID: SessionID]: StoredSessionRow;

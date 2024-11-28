@@ -1,9 +1,35 @@
-import { CojsonInternalTypes } from "cojson";
-import { StoredCoValueRow, StoredSessionRow } from "./syncManager";
+import { CojsonInternalTypes, SessionID } from "cojson";
 import { SyncPromise } from "./syncPromises";
 import RawCoID = CojsonInternalTypes.RawCoID;
 
-export type MakeRequestFunction = typeof IDBClient.prototype.makeRequest;
+export type CoValueRow = {
+  id: CojsonInternalTypes.RawCoID;
+  header: CojsonInternalTypes.CoValueHeader;
+};
+
+export type StoredCoValueRow = CoValueRow & { rowID: number };
+
+export type TransactionRow = {
+  ses: number;
+  idx: number;
+  tx: CojsonInternalTypes.Transaction;
+};
+
+export type SignatureAfterRow = {
+  ses: number;
+  idx: number;
+  signature: CojsonInternalTypes.Signature;
+};
+
+export type SessionRow = {
+  coValue: number;
+  sessionID: SessionID;
+  lastIdx: number;
+  lastSignature: CojsonInternalTypes.Signature;
+  bytesSinceLastSignature?: number;
+};
+
+export type StoredSessionRow = SessionRow & { rowID: number };
 
 export class IDBClient {
   private db;
@@ -117,5 +143,45 @@ export class IDBClient {
     return this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
       sessions.index("sessionsByCoValue").getAll(coValueRowId),
     );
+  }
+
+  async getNewTransactionInSession(
+    sessionRow: SessionRow & { rowID: number },
+    firstNewTxIdx: number,
+  ): Promise<TransactionRow[]> {
+    return this.makeRequest<TransactionRow[]>(({ transactions }) =>
+      transactions.getAll(
+        IDBKeyRange.bound(
+          [sessionRow.rowID, firstNewTxIdx],
+          [sessionRow.rowID, Infinity],
+        ),
+      ),
+    );
+  }
+
+  async getSignatures(
+    sessionRow: SessionRow & { rowID: number },
+    firstNewTxIdx: number,
+  ): Promise<SignatureAfterRow[]> {
+    return this.makeRequest<SignatureAfterRow[]>(
+      ({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
+        signatureAfter.getAll(
+          IDBKeyRange.bound(
+            [sessionRow.rowID, firstNewTxIdx],
+            [sessionRow.rowID, Infinity],
+          ),
+        ),
+    );
+  }
+
+  async insertNewCoValue(
+    msg: CojsonInternalTypes.NewContentMessage,
+  ): Promise<number> {
+    return (await this.makeRequest<IDBValidKey>(({ coValues }) =>
+      coValues.put({
+        id: msg.id,
+        header: msg.header!,
+      } satisfies CoValueRow),
+    )) as number;
   }
 }
