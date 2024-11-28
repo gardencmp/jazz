@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { Account, CoPlainText, WasmCrypto } from "../index.web.js";
+import { createJazzContext, Account, CoPlainText, WasmCrypto, fixedCredentialsAuth, isControlledAccount } from "../index.web.js";
+import type { ID } from '../internal.js';
+import { connectedPeers } from "cojson/src/streamUtils.js";
+import {  randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -58,6 +61,46 @@ describe("Simple CoPlainText operations", async () => {
       // and idxAfter returns the index of the first character after that position
       const idx = text.idxAfter(pos!);
       expect(idx).toBe(5);  // Index of ' ' in "hello world"
+    });
+  });
+});
+
+  describe("CoPlainText resolution", async () => {
+    const me = await Account.create({
+      creationProps: { name: "Hermes Puggington" },
+      crypto: Crypto,
+    });
+
+  describe("Loading and availability", () => {
+    test("can load text across peers", async () => {
+      // Create a text that we'll load later
+      const text = CoPlainText.create("hello world", { owner: me });
+      const id = text.id;
+
+      // Set up peer connections
+      const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
+        peer1role: "server",
+        peer2role: "client",
+      });
+
+      if (!isControlledAccount(me)) {
+        throw "me is not a controlled account";
+      }
+      me._raw.core.node.syncManager.addPeer(secondPeer);
+      const { account: meOnSecondPeer } = await createJazzContext({
+        auth: fixedCredentialsAuth({
+          accountID: me.id,
+          secret: me._raw.agentSecret,
+        }),
+        sessionProvider: randomSessionProvider,
+        peersToLoadFrom: [initialAsPeer],
+        crypto: Crypto,
+      });
+
+      // Load the text on the second peer
+      const loaded = await CoPlainText.load(id, meOnSecondPeer);
+      expect(loaded).toBeDefined();
+      expect(loaded!.toString()).toBe("hello world");
     });
   });
 });
