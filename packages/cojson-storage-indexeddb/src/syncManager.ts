@@ -7,13 +7,7 @@ import {
   cojsonInternals,
   emptyKnownState,
 } from "cojson";
-import {
-  CoValueRow,
-  IDBClient,
-  SignatureAfterRow,
-  StoredSessionRow,
-  TransactionRow,
-} from "./idbClient";
+import { IDBClient, StoredSessionRow } from "./idbClient";
 import { SyncPromise } from "./syncPromises.js";
 import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
@@ -208,7 +202,7 @@ export class SyncManager {
 
     const storedCoValueRowID: number = coValueRow?.rowID
       ? coValueRow.rowID
-      : await this.idbClient.insertNewCoValue(msg);
+      : await this.idbClient.addCoValue(msg);
 
     const allOurSessionsEntries =
       await this.idbClient.getCoValueSessions(storedCoValueRowID);
@@ -294,28 +288,18 @@ export class SyncManager {
       bytesSinceLastSignature: newBytesSinceLastSignature,
     };
 
-    const sessionRowID = await this.idbClient.makeRequest<number>(
-      ({ sessions }) =>
-        sessions.put(
-          sessionRow?.rowID
-            ? {
-                rowID: sessionRow.rowID,
-                ...sessionUpdate,
-              }
-            : sessionUpdate,
-        ),
+    const sessionRowID: number = await this.idbClient.addSessionUpdate(
+      sessionRow,
+      sessionUpdate,
     );
 
     let maybePutRequest;
     if (shouldWriteSignature) {
-      maybePutRequest = this.idbClient.makeRequest(({ signatureAfter }) =>
-        signatureAfter.put({
-          ses: sessionRowID,
-          // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
-          idx: newLastIdx - 1,
-          signature: msg.new[sessionID]!.lastSignature,
-        } satisfies SignatureAfterRow),
-      );
+      maybePutRequest = this.idbClient.addSignatureAfter({
+        sessionRowID,
+        idx: newLastIdx - 1,
+        signature: msg.new[sessionID]!.lastSignature,
+      });
     } else {
       maybePutRequest = SyncPromise.resolve();
     }
@@ -323,19 +307,17 @@ export class SyncManager {
     return maybePutRequest.then(() =>
       Promise.all(
         actuallyNewTransactions.map((newTransaction, i) => {
-          return this.idbClient.makeRequest(({ transactions }) =>
-            transactions.add({
-              ses: sessionRowID,
-              idx: nextIdx + i,
-              tx: newTransaction,
-            } satisfies TransactionRow),
+          return this.idbClient.addTransaction(
+            sessionRowID,
+            nextIdx + i,
+            newTransaction,
           );
         }),
       ),
     );
   }
 
-  handleKnown(_msg: CojsonInternalTypes.KnownStateMessage) {
+  handleKnown(_msg: KnownStateMessage) {
     // No need to process known messages from the local node as IDB storage can't be updated by another peer
   }
 

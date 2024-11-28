@@ -1,6 +1,8 @@
 import { CojsonInternalTypes, SessionID } from "cojson";
 import { SyncPromise } from "./syncPromises";
 import RawCoID = CojsonInternalTypes.RawCoID;
+import Transaction = CojsonInternalTypes.Transaction;
+import Signature = CojsonInternalTypes.Signature;
 
 export type CoValueRow = {
   id: CojsonInternalTypes.RawCoID;
@@ -146,7 +148,7 @@ export class IDBClient {
   }
 
   async getNewTransactionInSession(
-    sessionRow: SessionRow & { rowID: number },
+    sessionRow: StoredSessionRow,
     firstNewTxIdx: number,
   ): Promise<TransactionRow[]> {
     return this.makeRequest<TransactionRow[]>(({ transactions }) =>
@@ -160,7 +162,7 @@ export class IDBClient {
   }
 
   async getSignatures(
-    sessionRow: SessionRow & { rowID: number },
+    sessionRow: StoredSessionRow,
     firstNewTxIdx: number,
   ): Promise<SignatureAfterRow[]> {
     return this.makeRequest<SignatureAfterRow[]>(
@@ -174,7 +176,7 @@ export class IDBClient {
     );
   }
 
-  async insertNewCoValue(
+  async addCoValue(
     msg: CojsonInternalTypes.NewContentMessage,
   ): Promise<number> {
     return (await this.makeRequest<IDBValidKey>(({ coValues }) =>
@@ -183,5 +185,50 @@ export class IDBClient {
         header: msg.header!,
       } satisfies CoValueRow),
     )) as number;
+  }
+
+  async addSessionUpdate(
+    sessionRow: StoredSessionRow | undefined,
+    sessionUpdate: SessionRow,
+  ): Promise<number> {
+    return this.makeRequest<number>(({ sessions }) =>
+      sessions.put(
+        sessionRow?.rowID
+          ? {
+              rowID: sessionRow.rowID,
+              ...sessionUpdate,
+            }
+          : sessionUpdate,
+      ),
+    );
+  }
+
+  addTransaction(
+    sessionRowID: number,
+    idx: number,
+    newTransaction: Transaction,
+  ) {
+    return this.makeRequest(({ transactions }) =>
+      transactions.add({
+        ses: sessionRowID,
+        idx,
+        tx: newTransaction,
+      } satisfies TransactionRow),
+    );
+  }
+
+  addSignatureAfter({
+    sessionRowID,
+    idx,
+    signature,
+  }: { sessionRowID: number; idx: number; signature: Signature }) {
+    return this.makeRequest(({ signatureAfter }) =>
+      signatureAfter.put({
+        ses: sessionRowID,
+        // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
+        idx,
+        signature,
+      } satisfies SignatureAfterRow),
+    );
   }
 }

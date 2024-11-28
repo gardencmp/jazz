@@ -160,7 +160,7 @@ describe("IDB sync manager", () => {
       });
     });
 
-    test.only("Sends messages belonging to unique dependencies only, leaving out circular dependencies", async () => {
+    test("Sends messages for unique coValue dependencies only, leaving out circular dependencies", async () => {
       const loadMsg = getEmptyLoadMsg(coValueIdToLoad);
       const dependency1 = "co_zMKhQJs5rAeGjta3JX2qEdBS6hS";
       const dependency2 = "co_zP51HdyAVCuRY9ptq5iu8DhMyAb";
