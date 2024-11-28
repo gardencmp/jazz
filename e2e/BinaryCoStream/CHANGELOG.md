@@ -1,5 +1,14 @@
 # @jazz-e2e/binarycostream
 
+## 0.0.111
+
+### Patch Changes
+
+- Updated dependencies [e4f110f]
+  - cojson@0.8.34
+  - jazz-react@0.8.34
+  - jazz-tools@0.8.34
+
 ## 0.0.110
 
 ### Patch Changes
