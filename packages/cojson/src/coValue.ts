@@ -41,6 +41,7 @@ export type AnyRawCoValue =
   | RawAccount
   | Profile
   | RawCoList
+  | RawCoPlainText
   | RawCoStream
   | RawBinaryCoStream;
 
