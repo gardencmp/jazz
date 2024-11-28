@@ -7,7 +7,12 @@ import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import { CloudUploadIcon, FingerprintIcon, KeyRoundIcon } from "lucide-react";
+import {
+  CloudUploadIcon,
+  FingerprintIcon,
+  ImageIcon,
+  KeyRoundIcon,
+} from "lucide-react";
 
 type Example = {
   name: string;
@@ -28,6 +33,7 @@ const tech = {
 
 const features = {
   fileUpload: "File upload",
+  imageUpload: "Image upload",
   passkey: "Passkey auth",
   clerk: "Clerk auth",
   inviteLink: "Invite link",
@@ -65,7 +71,7 @@ const ClerkIllustration = () => (
 
 const MusicIllustration = () => (
   <div className="flex flex-col items-center justify-center h-full p-8">
-    <div className="py-3 px-8 border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center">
+    <div className="p-3 w-[12rem] h-[8rem] border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center justify-center">
       <CloudUploadIcon
         size={40}
         strokeWidth={1.5}
@@ -73,6 +79,21 @@ const MusicIllustration = () => (
       />
       <p className="whitespace-nowrap text-stone-900 dark:text-white">
         take-five.mp3
+      </p>
+    </div>
+  </div>
+);
+
+const ImageUploadIllustration = () => (
+  <div className="flex flex-col items-center justify-center h-full p-8">
+    <div className="p-3 w-[12rem] h-[8rem] border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center justify-center">
+      <ImageIcon
+        size={40}
+        strokeWidth={1.5}
+        className="stroke-blue mx-auto dark:stroke-blue-500"
+      />
+      <p className="whitespace-nowrap text-stone-900 dark:text-white">
+        profile-photo.jpg
       </p>
     </div>
   </div>
@@ -117,6 +138,62 @@ const PetIllustration = () => (
   </div>
 );
 
+const PasswordManagerIllustration = () => (
+  <div className="max-w-[30rem] mx-auto flex flex-col justify-center h-full p-5 gap-4">
+    <div className="flex justify-between items-center">
+      <p className="font-display font-medium tracking-tight text-sm text-stone-900 dark:text-white">
+        Password manager
+      </p>
+
+      <button
+        type="button"
+        className="border py-1 p-2 rounded-full font-medium text-xs"
+      >
+        Log out
+      </button>
+    </div>
+
+    <table className="text-xs">
+      <thead>
+        <tr className="w-full text-stone-700 bg-stone-50 border-b dark:bg-transparent dark:text-stone-400">
+          <th className="font-medium tracking-wider text-left uppercase p-2">
+            Username
+          </th>
+          <th className="font-medium tracking-wider text-left uppercase p-2">
+            URI
+          </th>
+          <th className="font-medium tracking-wider text-left uppercase p-2">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="border-b">
+          <td className="p-2">user@gmail.com</td>
+          <td className="p-2">gmail.com</td>
+          <td className="p-2">
+            <MockButton>Copy password</MockButton>
+          </td>
+        </tr>
+        <tr className="border-b">
+          <td className="p-2">user@gmail.com</td>
+          <td className="p-2">fb.com</td>
+          <td className="p-2">
+            <MockButton>Copy password</MockButton>
+          </td>
+        </tr>
+        <tr className="border-b">
+          <td className="p-2">user@gmail.com</td>
+          <td className="p-2">x.com</td>
+          <td className="p-2">
+            <MockButton>Copy password</MockButton>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+);
+
 const reactExamples = [
   {
     name: "Chat",
@@ -156,14 +233,13 @@ const reactExamples = [
     ),
   },
   {
-    name: "Music player",
-    slug: "music-player",
-    description:
-      "Upload your favorite songs, and share them with your friends.",
+    name: "Image upload",
+    slug: "image-upload",
+    description: "Learn how to upload and delete images",
     tech: [tech.react],
-    features: [features.fileUpload],
-    demoUrl: "https://music-demo.jazz.tools",
-    illustration: <MusicIllustration />,
+    features: [features.imageUpload],
+    demoUrl: "https://image-upload-demo.jazz.tools",
+    illustration: <ImageUploadIllustration />,
   },
   {
     name: "Rate my pet",
@@ -171,7 +247,7 @@ const reactExamples = [
     description:
       "Upload a photo of your pet, and invite your friends to react to it.",
     tech: [tech.react],
-    features: [features.fileUpload, features.inviteLink],
+    features: [features.imageUpload, features.inviteLink],
     demoUrl: "https://pets-demo.jazz.tools",
     illustration: <PetIllustration />,
   },
@@ -193,61 +269,17 @@ const reactExamples = [
     tech: [tech.react],
     features: [features.passkey],
     demoUrl: "https://passwords-demo.jazz.tools",
-    illustration: (
-      <div className="max-w-[30rem] mx-auto flex flex-col justify-center h-full p-5 gap-4">
-        <div className="flex justify-between items-center">
-          <p className="font-display font-medium tracking-tight text-sm text-stone-900 dark:text-white">
-            Password manager
-          </p>
-
-          <button
-            type="button"
-            className="border py-1 p-2 rounded-full font-medium text-xs"
-          >
-            Log out
-          </button>
-        </div>
-
-        <table className="text-xs">
-          <thead>
-            <tr className="w-full text-stone-700 bg-stone-50 border-b dark:bg-transparent dark:text-stone-400">
-              <th className="font-medium tracking-wider text-left uppercase p-2">
-                Username
-              </th>
-              <th className="font-medium tracking-wider text-left uppercase p-2">
-                URI
-              </th>
-              <th className="font-medium tracking-wider text-left uppercase p-2">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b">
-              <td className="p-2">user@gmail.com</td>
-              <td className="p-2">gmail.com</td>
-              <td className="p-2">
-                <MockButton>Copy password</MockButton>
-              </td>
-            </tr>
-            <tr className="border-b">
-              <td className="p-2">user@gmail.com</td>
-              <td className="p-2">fb.com</td>
-              <td className="p-2">
-                <MockButton>Copy password</MockButton>
-              </td>
-            </tr>
-            <tr className="border-b">
-              <td className="p-2">user@gmail.com</td>
-              <td className="p-2">x.com</td>
-              <td className="p-2">
-                <MockButton>Copy password</MockButton>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    ),
+    illustration: <PasswordManagerIllustration />,
+  },
+  {
+    name: "Music player",
+    slug: "music-player",
+    description:
+      "Upload your favorite songs, and share them with your friends.",
+    tech: [tech.react],
+    features: [features.fileUpload],
+    demoUrl: "https://music-demo.jazz.tools",
+    illustration: <MusicIllustration />,
   },
 ];
 
@@ -258,7 +290,7 @@ const nextExamples = [
     description:
       "Track and rate the books you read, readable by everyone with the link.",
     tech: [tech.nextjs],
-    features: [features.fileUpload],
+    features: [features.imageUpload],
     demoUrl: "https://books-demo.jazz.tools",
     imageUrl: "/books.jpg",
     illustration: <BookShelfIllustration />,
