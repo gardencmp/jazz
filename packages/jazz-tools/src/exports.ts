@@ -18,6 +18,7 @@ export {
   CoFeed,
   CoList,
   CoMap,
+  CoPlainText,
   CoRichText,
   CoStream,
   CoValueBase,
