@@ -9,7 +9,7 @@ Looking for a React integration? Check out [`jazz-react-auth-clerk`](https://www
 `BrowserClerkAuth` is a class that provides a `JazzAuth` object. Provide a Clerk instance to `BrowserClerkAuth`, and it will return the appropriate `JazzAuth` object. Once authenticated, authentication will persist across page reloads, even if the device is offline.
 
 
-From [the example chat app](https://github.com/gardencmp/jazz/tree/main/examples/chat-clerk):
+From [the example app](https://github.com/gardencmp/jazz/tree/main/examples/clerk):
 
 ```ts
 import { BrowserClerkAuth } from "jazz-browser-auth-clerk";

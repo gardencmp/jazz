@@ -11,7 +11,8 @@ jobs:
       matrix:
         example: [
           "chat",
-          "chat-clerk",
+          "clerk",
+          "passkey",
           "inspector",
           "music-player",
           "password-manager",
