@@ -3,8 +3,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { JazzAccount } from "./schema.ts";
 
-const Jazz = createJazzReactApp();
+const Jazz = createJazzReactApp({
+  AccountSchema: JazzAccount,
+});
 
 export const { useAccount, useCoState } = Jazz;
 

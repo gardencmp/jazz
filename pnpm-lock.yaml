@@ -665,6 +665,9 @@ importers:
 
   examples/image-upload:
     dependencies:
+      jazz-browser-media-images:
+        specifier: ^0.8.33
+        version: 0.8.33
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
@@ -5801,6 +5804,15 @@ packages:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
 
+  cojson-storage-indexeddb@0.8.32:
+    resolution: {integrity: sha512-pkwi7KPYa6dqJGg9ZKnrBlHOHpFpx7glH3P4GOt7MPnmS/GEX6fptLUjglc+/GvBlXBdvhUf6auf0jR2a5s4vQ==}
+
+  cojson-transport-ws@0.8.32:
+    resolution: {integrity: sha512-eQtDMTGsy+cCHnQlidSv395mPoAu00z5nb/CQGd2nh4aDuEiaYxF8cQEv4Al4pFIx2q8MP/Wle0vwhHUp2jXuQ==}
+
+  cojson@0.8.32:
+    resolution: {integrity: sha512-fqk6M0le44wct77FYEV+CY7OCJa2oE/cAgv25hhlnKFE3FdDnaDd0UwAneKzwdmWzBLNiWhTNi0pkrgtvKTygQ==}
+
   collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
 
@@ -7628,6 +7640,15 @@ packages:
 
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
+
+  jazz-browser-media-images@0.8.33:
+    resolution: {integrity: sha512-t0jyEqCGWfk1Ei8LxETaFJMxfhG/auj5+MD9xlCRTbxeReItarbzXVW8UZvQSIEHFFrlcFrqNEAur4JNtS5DvA==}
+
+  jazz-browser@0.8.33:
+    resolution: {integrity: sha512-LGPHF//k8il3sSfYV+fhTJmx/tfx5kJ+jjXo89YwplSXp3eMpFrhfSSrGm3x+CR0hTZI8INBZR4SYEtLAy/Y5w==}
+
+  jazz-tools@0.8.32:
+    resolution: {integrity: sha512-hbH+qOY0NDi3Zy43OZGQrdSCIkDxj2iEa/Ue/xcdHbNFsQVIgRly6M15xxKesSH8IV4f5K9LBYgTF3UNWJ+HBw==}
 
   jest-changed-files@29.7.0:
     resolution: {integrity: sha512-fEArFiwf1BpQ+4bXSprcDc3/x4HSzL4al2tozwVpDFpsxALjLYdyiIK4e5Vz66GQJIbXJ82+35PtysofptNX2w==}
@@ -16235,6 +16256,26 @@ snapshots:
 
   co@4.6.0: {}
 
+  cojson-storage-indexeddb@0.8.32:
+    dependencies:
+      cojson: 0.8.32
+
+  cojson-transport-ws@0.8.32:
+    dependencies:
+      cojson: 0.8.32
+      typescript: 5.6.2
+
+  cojson@0.8.32:
+    dependencies:
+      '@hazae41/berith': 1.2.6
+      '@noble/ciphers': 0.1.4
+      '@noble/curves': 1.3.0
+      '@noble/hashes': 1.4.0
+      '@scure/base': 1.1.6
+      hash-wasm: 4.11.0
+      neverthrow: 7.0.1
+      queueueue: 4.1.2
+
   collect-v8-coverage@1.0.2: {}
 
   color-convert@1.9.3:
@@ -18248,6 +18289,29 @@ snapshots:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
+
+  jazz-browser-media-images@0.8.33:
+    dependencies:
+      '@types/image-blob-reduce': 4.1.4
+      image-blob-reduce: 4.1.0
+      jazz-browser: 0.8.33
+      jazz-tools: 0.8.32
+      pica: 9.0.1
+      typescript: 5.6.2
+
+  jazz-browser@0.8.33:
+    dependencies:
+      '@scure/bip39': 1.3.0
+      cojson: 0.8.32
+      cojson-storage-indexeddb: 0.8.32
+      cojson-transport-ws: 0.8.32
+      jazz-tools: 0.8.32
+      typescript: 5.6.2
+
+  jazz-tools@0.8.32:
+    dependencies:
+      cojson: 0.8.32
+      fast-check: 3.21.0
 
   jest-changed-files@29.7.0:
     dependencies:
