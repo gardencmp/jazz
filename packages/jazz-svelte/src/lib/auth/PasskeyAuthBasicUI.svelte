@@ -31,11 +31,9 @@
 		</form>
 	{:else if authState.state === 'signedIn'}
 		<h1>You're logged in</h1>
-		<!-- <p>Welcome back, {me?.profile?.name}</p> -->
 		<button onclick={authState.logOut}>Log out</button>
 	{/if}
 </div>
-
 
 <style>
 	.login {

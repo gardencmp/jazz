@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Login from '$lib/Login.svelte';
-	import { JazzProvider, usePasskeyAuth } from 'jazz-svelte';
+	import { JazzProvider, usePasskeyAuth, PasskeyAuthBasicUI } from 'jazz-svelte';
 
 	let { children } = $props();
 
@@ -9,7 +8,7 @@
 	$inspect(auth.state);
 </script>
 
-<Login state={auth.state} />
+<PasskeyAuthBasicUI state={auth.state} />
 
 {#if auth.current}
 	<JazzProvider
