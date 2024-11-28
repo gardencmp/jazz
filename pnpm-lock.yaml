@@ -55,7 +55,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -150,10 +150,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -211,7 +211,7 @@ importers:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -308,10 +308,10 @@ importers:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
         specifier: workspace:0.8.32
@@ -808,7 +808,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
         specifier: workspace:*
@@ -897,7 +897,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1007,7 +1007,7 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1071,10 +1071,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1170,7 +1170,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1422,7 +1422,7 @@ importers:
         specifier: workspace:0.8.32
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1441,7 +1441,7 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1488,7 +1488,7 @@ importers:
         specifier: workspace:0.8.32
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:0.8.32
@@ -1513,10 +1513,10 @@ importers:
         specifier: workspace:0.8.32
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.32
+        specifier: workspace:0.8.33
         version: link:../jazz-react
       jazz-tools:
         specifier: workspace:0.8.32
