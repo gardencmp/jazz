@@ -44,12 +44,12 @@ export type SignatureAfterRow = {
 };
 
 export class SyncManager {
-  private readonly makeRequest: MakeRequestFunction;
   private readonly toLocalNode: OutgoingSyncQueue;
+  private readonly idbClient: IDBClient;
 
-  constructor(dbClient: IDBClient, toLocalNode: OutgoingSyncQueue) {
-    this.makeRequest = dbClient.makeRequest.bind(dbClient);
+  constructor(idbClient: IDBClient, toLocalNode: OutgoingSyncQueue) {
     this.toLocalNode = toLocalNode;
+    this.idbClient = idbClient;
   }
 
   async handleSyncMessage(msg: SyncMessage) {
@@ -87,17 +87,18 @@ export class SyncManager {
 
     const firstNewTxIdx = theirKnown.sessions[sessionRow.sessionID] || 0;
 
-    const signaturesAndIdxs = await this.makeRequest<SignatureAfterRow[]>(
-      ({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
-        signatureAfter.getAll(
-          IDBKeyRange.bound(
-            [sessionRow.rowID, firstNewTxIdx],
-            [sessionRow.rowID, Infinity],
-          ),
+    const signaturesAndIdxs = await this.idbClient.makeRequest<
+      SignatureAfterRow[]
+    >(({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
+      signatureAfter.getAll(
+        IDBKeyRange.bound(
+          [sessionRow.rowID, firstNewTxIdx],
+          [sessionRow.rowID, Infinity],
         ),
+      ),
     );
 
-    const newTxsInSession = await this.makeRequest<TransactionRow[]>(
+    const newTxsInSession = await this.idbClient.makeRequest<TransactionRow[]>(
       ({ transactions }) =>
         transactions.getAll(
           IDBKeyRange.bound(
@@ -142,10 +143,7 @@ export class SyncManager {
       return { knownMessageMap, contentMessageMap };
     }
 
-    const coValueRow = await this.makeRequest<StoredCoValueRow | undefined>(
-      ({ coValues }) =>
-        coValues.index("coValuesById").get(coValueKnownState.id),
-    );
+    const coValueRow = await this.idbClient.getCoValue(coValueKnownState.id);
 
     if (!coValueRow) {
       const emptyKnownMessage: KnownStateMessage = {
@@ -157,9 +155,8 @@ export class SyncManager {
       return { knownMessageMap, contentMessageMap };
     }
 
-    const allCoValueSessions = await this.makeRequest<StoredSessionRow[]>(
-      ({ sessions }) =>
-        sessions.index("sessionsByCoValue").getAll(coValueRow.rowID),
+    const allCoValueSessions = await this.idbClient.getCoValueSessions(
+      coValueRow.rowID,
     );
 
     const newCoValueKnownState: CojsonInternalTypes.CoValueKnownState = {
@@ -233,9 +230,9 @@ export class SyncManager {
   async handleContent(
     msg: CojsonInternalTypes.NewContentMessage,
   ): Promise<void | unknown> {
-    const coValueRow = await this.makeRequest<StoredCoValueRow | undefined>(
-      ({ coValues }) => coValues.index("coValuesById").get(msg.id),
-    );
+    const coValueRow = await this.idbClient.makeRequest<
+      StoredCoValueRow | undefined
+    >(({ coValues }) => coValues.index("coValuesById").get(msg.id));
     if (!msg.header && !coValueRow) {
       return this.sendStateMessage({
         action: "known",
@@ -248,16 +245,17 @@ export class SyncManager {
 
     const storedCoValueRowID: number = coValueRow?.rowID
       ? coValueRow.rowID
-      : ((await this.makeRequest<IDBValidKey>(({ coValues }) =>
+      : ((await this.idbClient.makeRequest<IDBValidKey>(({ coValues }) =>
           coValues.put({
             id: msg.id,
             header: msg.header!,
           } satisfies CoValueRow),
         )) as number);
 
-    const allOurSessionsEntries = await this.makeRequest<StoredSessionRow[]>(
-      ({ sessions }) =>
-        sessions.index("sessionsByCoValue").getAll(storedCoValueRowID),
+    const allOurSessionsEntries = await this.idbClient.makeRequest<
+      StoredSessionRow[]
+    >(({ sessions }) =>
+      sessions.index("sessionsByCoValue").getAll(storedCoValueRowID),
     );
 
     const allOurSessions: {
@@ -341,20 +339,21 @@ export class SyncManager {
       bytesSinceLastSignature: newBytesSinceLastSignature,
     };
 
-    const sessionRowID = await this.makeRequest<number>(({ sessions }) =>
-      sessions.put(
-        sessionRow?.rowID
-          ? {
-              rowID: sessionRow.rowID,
-              ...sessionUpdate,
-            }
-          : sessionUpdate,
-      ),
+    const sessionRowID = await this.idbClient.makeRequest<number>(
+      ({ sessions }) =>
+        sessions.put(
+          sessionRow?.rowID
+            ? {
+                rowID: sessionRow.rowID,
+                ...sessionUpdate,
+              }
+            : sessionUpdate,
+        ),
     );
 
     let maybePutRequest;
     if (shouldWriteSignature) {
-      maybePutRequest = this.makeRequest(({ signatureAfter }) =>
+      maybePutRequest = this.idbClient.makeRequest(({ signatureAfter }) =>
         signatureAfter.put({
           ses: sessionRowID,
           // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
@@ -369,7 +368,7 @@ export class SyncManager {
     return maybePutRequest.then(() =>
       Promise.all(
         actuallyNewTransactions.map((newTransaction, i) => {
-          return this.makeRequest(({ transactions }) =>
+          return this.idbClient.makeRequest(({ transactions }) =>
             transactions.add({
               ses: sessionRowID,
               idx: nextIdx + i,

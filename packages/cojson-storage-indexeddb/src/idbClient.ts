@@ -1,4 +1,7 @@
+import { CojsonInternalTypes } from "cojson";
+import { StoredCoValueRow, StoredSessionRow } from "./syncManager";
 import { SyncPromise } from "./syncPromises";
+import RawCoID = CojsonInternalTypes.RawCoID;
 
 export type MakeRequestFunction = typeof IDBClient.prototype.makeRequest;
 
@@ -102,5 +105,17 @@ export class IDBClient {
         txEntry.pendingRequests.push(requestEntry);
       }
     });
+  }
+
+  async getCoValue(coValueId: RawCoID): Promise<StoredCoValueRow | undefined> {
+    return this.makeRequest<StoredCoValueRow | undefined>(({ coValues }) =>
+      coValues.index("coValuesById").get(coValueId),
+    );
+  }
+
+  async getCoValueSessions(coValueRowId: number): Promise<StoredSessionRow[]> {
+    return this.makeRequest<StoredSessionRow[]>(({ sessions }) =>
+      sessions.index("sessionsByCoValue").getAll(coValueRowId),
+    );
   }
 }
