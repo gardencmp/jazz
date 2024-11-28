@@ -21,7 +21,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, state] = useJazzClerkAuth(clerk);
 
   return (
-    <>
+    <main className="container">
       {state?.errors?.map((error) => (
         <div key={error}>{error}</div>
       ))}
@@ -35,7 +35,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       ) : (
         <SignInButton />
       )}
-    </>
+    </main>
   );
 }
 
