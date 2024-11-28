@@ -463,14 +463,16 @@ export class SyncManager {
               );
             });
         } else {
-          throw new Error(
+          console.error(
             "Expected coValue dependency entry to be created, missing subscribe?",
           );
+          return;
         }
       } else {
-        throw new Error(
+        console.error(
           `Expected coValue entry for ${msg.id} to be created on known state, missing subscribe?`,
         );
+        return;
       }
     }
 
