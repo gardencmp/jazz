@@ -2,6 +2,7 @@ import { ClerkFullLogo } from "@/components/icons/ClerkFullLogo";
 import { NextjsLogo } from "@/components/icons/NextjsLogo";
 import { ReactLogo } from "@/components/icons/ReactLogo";
 import { ReactNativeLogo } from "@/components/icons/ReactNativeLogo";
+import { VueLogo } from "@/components/icons/VueLogo";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
@@ -22,6 +23,7 @@ const tech = {
   react: "React",
   nextjs: "Next.js",
   reactNative: "React Native",
+  vue: "Vue",
 };
 
 const features = {
@@ -282,6 +284,27 @@ const rnExamples: Example[] = [
   },
 ];
 
+const vueExamples: Example[] = [
+  {
+    name: "Chat",
+    slug: "chat-vue",
+    description: "A simple app that creates a chat room with a shareable link.",
+    tech: [tech.vue],
+    illustration: <ChatIllustration />,
+  },
+  {
+    name: "Todo list",
+    slug: "todo-vue",
+    description: "A todo list where you can collaborate with invited guests.",
+    tech: [tech.vue],
+    features: [features.inviteLink],
+    demoUrl: "https://todo-demo.jazz.tools",
+    illustration: (
+      <div className="h-full w-full bg-cover bg-[url('/todo.jpg')] bg-left-bottom"></div>
+    ),
+  },
+];
+
 const categories = [
   {
     name: "React",
@@ -297,6 +320,11 @@ const categories = [
     name: "React Native",
     logo: ReactNativeLogo,
     examples: rnExamples,
+  },
+  {
+    name: "Vue",
+    logo: VueLogo,
+    examples: vueExamples,
   },
 ];
 
