@@ -215,6 +215,7 @@ export class CoRichText extends CoMap {
     }
     const ranges = this.marks.flatMap((mark) => {
       if (!mark) return [];
+      if (!mark.startBefore || !mark.endAfter) return [];
       const startBefore = this.idxAfter(mark.startBefore);
       const endAfter = this.idxAfter(mark.endAfter);
       if (startBefore === undefined || endAfter === undefined) {
@@ -294,10 +295,10 @@ export class CoRichText extends CoMap {
   toTree(tagPrecedence: string[]): TreeNode {
     const ranges = this.resolveAndDiffuseAndFocusMarks();
 
-    // convert a bunch of (potentially overlapping) ranges into a tree
+    // Convert a bunch of (potentially overlapping) ranges into a tree
     // - make sure we include all text in leaves, even if it's not covered by a range
     // - we split overlapping ranges in a way where the higher precedence (tag earlier in tagPrecedence)
-    // stays intact and the lower precende tag is split into two ranges, one inside and one outside the higher precedence range
+    // stays intact and the lower precedence tag is split into two ranges, one inside and one outside the higher precedence range
 
     const text = this.text?.toString() || "";
 
@@ -329,8 +330,6 @@ export class CoRichText extends CoMap {
         //     inside,
         //     after,
         // });
-
-        // TODO: also split children
 
         return [
           ...(before ? [before] : []),
@@ -396,7 +395,7 @@ export type TreeNode = {
 /**
  * Split a node at a specific index. So that the node is split into two parts, one before the index, and one after the index.
  */
-function splitNode(
+export function splitNode(
   node: TreeNode | TreeLeaf,
   at: number,
 ): [TreeNode | TreeLeaf | undefined, TreeNode | TreeLeaf | undefined] {
