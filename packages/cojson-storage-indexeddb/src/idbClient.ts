@@ -95,21 +95,11 @@ export class IDBClient {
           pendingRequests: [],
         };
 
-        // console.time("IndexedDB TX" + txEntry.id);
-
-        // txEntry.tx.oncomplete = () => {
-        //     console.timeEnd("IndexedDB TX" + txEntry!.id);
-        // };
-
         this.currentTx = txEntry;
 
         requestEntry(txEntry);
       } else {
         txEntry.pendingRequests.push(requestEntry);
-        // console.log(
-        //     "Queued request in TX " + txEntry.id,
-        //     txEntry.pendingRequests.length
-        // );
       }
     });
   }

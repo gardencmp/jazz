@@ -2,7 +2,6 @@ import {
   CojsonInternalTypes,
   MAX_RECOMMENDED_TX_SIZE,
   OutgoingSyncQueue,
-  RawAccountID,
   SessionID,
   SyncMessage,
   cojsonInternals,
@@ -13,13 +12,14 @@ import { SyncPromise } from "./syncPromises.js";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
+import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
 
 type CoValueRow = {
   id: CojsonInternalTypes.RawCoID;
   header: CojsonInternalTypes.CoValueHeader;
 };
 
-type StoredCoValueRow = CoValueRow & { rowID: number };
+export type StoredCoValueRow = CoValueRow & { rowID: number };
 
 type SessionRow = {
   coValue: number;
@@ -29,15 +29,15 @@ type SessionRow = {
   bytesSinceLastSignature?: number;
 };
 
-type StoredSessionRow = SessionRow & { rowID: number };
+export type StoredSessionRow = SessionRow & { rowID: number };
 
-type TransactionRow = {
+export type TransactionRow = {
   ses: number;
   idx: number;
   tx: CojsonInternalTypes.Transaction;
 };
 
-type SignatureAfterRow = {
+export type SignatureAfterRow = {
   ses: number;
   idx: number;
   signature: CojsonInternalTypes.Signature;
@@ -53,7 +53,6 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage) {
-    // console.log("--->>> IN", msg);
     switch (msg.action) {
       case "load":
         await this.handleLoad(msg);
@@ -70,12 +69,17 @@ export class SyncManager {
     }
   }
 
-  async handleSessionUpdate(
-    sessionRow: StoredSessionRow,
-    theirKnown: CojsonInternalTypes.CoValueKnownState,
-    ourKnown: CojsonInternalTypes.CoValueKnownState,
-    newContentPieces: CojsonInternalTypes.NewContentMessage[],
-  ) {
+  async handleSessionUpdate({
+    sessionRow,
+    theirKnown,
+    ourKnown,
+    newContentPieces,
+  }: {
+    sessionRow: StoredSessionRow;
+    theirKnown: CojsonInternalTypes.CoValueKnownState;
+    ourKnown: CojsonInternalTypes.CoValueKnownState;
+    newContentPieces: CojsonInternalTypes.NewContentMessage[];
+  }) {
     ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
 
     if (sessionRow.lastIdx <= (theirKnown.sessions[sessionRow.sessionID] || 0))
@@ -124,7 +128,7 @@ export class SyncManager {
       this.sendStateMessage(knownMessageMap[coId as RawCoID]);
 
       const contentMessages = contentMessageMap[coId as RawCoID] || [];
-      contentMessages.forEach(this.sendStateMessage.bind(this));
+      contentMessages.forEach((msg) => this.sendStateMessage(msg));
     });
   }
 
@@ -176,23 +180,22 @@ export class SyncManager {
 
     await Promise.all(
       allCoValueSessions.map((sessionRow) =>
-        this.handleSessionUpdate(
+        this.handleSessionUpdate({
           sessionRow,
-          coValueKnownState,
-          newCoValueKnownState,
-          contentMessages,
-        ),
+          theirKnown: coValueKnownState,
+          ourKnown: newCoValueKnownState,
+          newContentPieces: contentMessages,
+        }),
       ),
     );
 
     const nonEmptyContentMessages = contentMessages.filter(
       (contentMessage) => Object.keys(contentMessage.new).length > 0,
     );
-
-    const dependedOnCoValuesList = getDependedOnCoValues(
+    const dependedOnCoValuesList = getDependedOnCoValues({
       coValueRow,
-      nonEmptyContentMessages,
-    );
+      newContentPieces: nonEmptyContentMessages,
+    });
 
     const knownMessage: KnownStateMessage = {
       action: "known",
@@ -378,12 +381,11 @@ export class SyncManager {
     );
   }
 
-  handleKnown(msg: CojsonInternalTypes.KnownStateMessage) {
-    // return this.sendNewContent(msg);
+  handleKnown(_msg: CojsonInternalTypes.KnownStateMessage) {
+    // No need to process known messages from the local node as IDB storage can't be updated by another peer
   }
-  // count = 0;
-  private sendStateMessage(msg: any): Promise<unknown> {
-    // console.log("OUT", ++this.count, msg);
+
+  async sendStateMessage(msg: any): Promise<unknown> {
     return this.toLocalNode
       .push(msg)
       .catch((e) =>
@@ -392,95 +394,4 @@ export class SyncManager {
   }
 
   handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
-}
-
-function collectNewTxs(
-  newTxsInSession: TransactionRow[],
-  newContentPieces: CojsonInternalTypes.NewContentMessage[],
-  sessionRow: StoredSessionRow,
-  signaturesAndIdxs: SignatureAfterRow[],
-  theirKnown: CojsonInternalTypes.CoValueKnownState,
-  firstNewTxIdx: number,
-) {
-  let idx = firstNewTxIdx;
-
-  for (const tx of newTxsInSession) {
-    let sessionEntry =
-      newContentPieces[newContentPieces.length - 1]!.new[sessionRow.sessionID];
-    if (!sessionEntry) {
-      sessionEntry = {
-        after: idx,
-        lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
-        newTransactions: [],
-      };
-      newContentPieces[newContentPieces.length - 1]!.new[sessionRow.sessionID] =
-        sessionEntry;
-    }
-
-    sessionEntry.newTransactions.push(tx.tx);
-
-    if (signaturesAndIdxs[0] && idx === signaturesAndIdxs[0].idx) {
-      sessionEntry.lastSignature = signaturesAndIdxs[0].signature;
-      signaturesAndIdxs.shift();
-      newContentPieces.push({
-        action: "content",
-        id: theirKnown.id,
-        new: {},
-        priority: cojsonInternals.getPriorityFromHeader(undefined),
-      });
-    } else if (idx === firstNewTxIdx + newTxsInSession.length - 1) {
-      sessionEntry.lastSignature = sessionRow.lastSignature;
-    }
-    idx += 1;
-  }
-}
-
-function getDependedOnCoValues(
-  coValueRow: StoredCoValueRow,
-  newContentPieces: CojsonInternalTypes.NewContentMessage[],
-) {
-  return coValueRow.header.ruleset.type === "group"
-    ? newContentPieces
-        .flatMap((piece) => Object.values(piece.new))
-        .flatMap((sessionEntry) =>
-          sessionEntry.newTransactions.flatMap((tx) => {
-            if (tx.privacy !== "trusting") return [];
-            // TODO: avoid parse here?
-            return cojsonInternals
-              .parseJSON(tx.changes)
-              .map(
-                (change) =>
-                  change &&
-                  typeof change === "object" &&
-                  "op" in change &&
-                  change.op === "set" &&
-                  "key" in change &&
-                  change.key,
-              )
-              .filter(
-                (key): key is CojsonInternalTypes.RawCoID =>
-                  typeof key === "string" && key.startsWith("co_"),
-              );
-          }),
-        )
-    : coValueRow.header.ruleset.type === "ownedByGroup"
-      ? [
-          coValueRow.header.ruleset.group,
-          ...new Set(
-            newContentPieces.flatMap((piece) =>
-              Object.keys(piece.new)
-                .map((sessionID) =>
-                  cojsonInternals.accountOrAgentIDfromSessionID(
-                    sessionID as SessionID,
-                  ),
-                )
-                .filter(
-                  (accountID): accountID is RawAccountID =>
-                    cojsonInternals.isAccountID(accountID) &&
-                    accountID !== coValueRow.id,
-                ),
-            ),
-          ),
-        ]
-      : [];
 }
