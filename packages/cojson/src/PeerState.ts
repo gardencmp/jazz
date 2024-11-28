@@ -4,6 +4,7 @@ import {
   QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
 import { TryAddTransactionsError } from "./coValueCore.js";
+import { isFeatureEnabled } from "./featureFlags.js";
 import { RawCoID } from "./ids.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
@@ -58,7 +59,10 @@ export class PeerState {
   }
 
   shouldRetryUnavailableCoValues() {
-    return this.peer.role === "server";
+    return (
+      isFeatureEnabled("RetryUnavailableCoValues") &&
+      this.peer.role === "server"
+    );
   }
 
   isServerOrStoragePeer() {

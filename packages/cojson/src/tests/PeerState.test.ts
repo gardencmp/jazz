@@ -1,6 +1,7 @@
-import { describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { PeerKnownStateActions } from "../PeerKnownStates.js";
 import { PeerState } from "../PeerState.js";
+import { setFeatureFlag } from "../featureFlags.js";
 import { CO_VALUE_PRIORITY } from "../priority.js";
 import { Peer, SyncMessage } from "../sync.js";
 
@@ -19,6 +20,10 @@ function setup() {
   const peerState = new PeerState(mockPeer, undefined);
   return { mockPeer, peerState };
 }
+
+beforeEach(() => {
+  setFeatureFlag("RetryUnavailableCoValues", true);
+});
 
 describe("PeerState", () => {
   test("should push outgoing message to peer", async () => {
@@ -187,5 +192,28 @@ describe("PeerState", () => {
 
     expect(knownStatesSpy).toHaveBeenCalledWith(action);
     expect(optimisticKnownStatesSpy).toHaveBeenCalledWith(action);
+  });
+
+  describe("shouldRetryUnavailableCoValues", () => {
+    test("returns false for non-server peers", () => {
+      const clientPeer = new PeerState({ role: "client" } as Peer, undefined);
+      const storagePeer = new PeerState({ role: "storage" } as Peer, undefined);
+
+      expect(clientPeer.shouldRetryUnavailableCoValues()).toBe(false);
+      expect(storagePeer.shouldRetryUnavailableCoValues()).toBe(false);
+    });
+
+    test("returns true for server peers", () => {
+      const serverPeer = new PeerState({ role: "server" } as Peer, undefined);
+
+      expect(serverPeer.shouldRetryUnavailableCoValues()).toBe(true);
+    });
+
+    test("returns false if the feature is disabled", () => {
+      setFeatureFlag("RetryUnavailableCoValues", false);
+      const serverPeer = new PeerState({ role: "server" } as Peer, undefined);
+
+      expect(serverPeer.shouldRetryUnavailableCoValues()).toBe(false);
+    });
   });
 });

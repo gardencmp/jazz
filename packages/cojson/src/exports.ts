@@ -23,6 +23,7 @@ import {
   secretSeedLength,
   shortHashLength,
 } from "./crypto/crypto.js";
+import { setFeatureFlag } from "./featureFlags.js";
 import { isRawCoID, rawCoIDfromBytes, rawCoIDtoBytes } from "./ids.js";
 import { parseJSON } from "./jsonStringify.js";
 import { LocalNode } from "./localNode.js";
@@ -116,6 +117,7 @@ export {
   SyncMessage,
   isRawCoID,
   LSMStorage,
+  setFeatureFlag,
 };
 
 export type {
