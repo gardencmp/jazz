@@ -1,48 +1,65 @@
 <script lang="ts">
-	import { type PasskeyAuthState } from 'jazz-svelte';
-	
-	let { state: authState }: { state: PasskeyAuthState } = $props();
+  import { type PasskeyAuthState } from 'jazz-svelte';
 
-	let name = $state('');
+  let { state: authState }: { state: PasskeyAuthState } = $props();
 
-	function signUp(e: Event) {
-		e.preventDefault();
-		if (!name.trim() || authState.state !== 'ready') return;
-		authState.signUp(name);
-	}
+  let name = $state('');
 
-	function logIn(e: Event) {
-		e.preventDefault();
-		e.stopPropagation();
-		if (authState.state !== 'ready') return;
-		authState.logIn();
-	}
+  function signUp(e: Event) {
+    e.preventDefault();
+    if (!name.trim() || authState.state !== 'ready') return;
+    authState.signUp(name);
+  }
+
+  function logIn(e: Event) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (authState.state !== 'ready') return;
+    authState.logIn();
+  }
 </script>
 
-<div class="login">
-	{#if authState.state === 'loading'}
-		<p>Loading...</p>
-	{:else if authState.state === 'ready'}
-		<h1>Login</h1>
-		<form onsubmit={signUp}>
-			<input type="text" name="name" placeholder="John Doe" bind:value={name} />
-			<input type="submit" value="Create account" />
-			<button onclick={logIn}>I have an account</button>
-		</form>
-	{:else if authState.state === 'signedIn'}
-		<h1>You're logged in</h1>
-		<button onclick={authState.logOut}>Log out</button>
-	{/if}
+<div style="max-width: 18rem; display: flex; flex-direction: column; gap: 2rem;">
+  {#if authState.state === 'loading'}
+    <div>Loading...</div>
+  {:else if authState.state === 'ready'}
+    {#if authState.errors?.length > 0}
+      <div style="color: red;">
+        {#each authState.errors as error}
+          <div>{error}</div>
+        {/each}
+      </div>
+    {/if}
+    <form onsubmit={signUp}>
+      <input type="text" placeholder="Display name" bind:value={name} autocomplete="name" />
+      <input type="submit" value="Sign up" />
+    </form>
+    <button onclick={logIn}> Log in with existing account </button>
+  {/if}
 </div>
 
 <style>
-	.login {
-		margin-bottom: 2rem;
-		padding-top: 2rem;
-		max-width: 480px;
-		margin: 0 auto;
-	}
-	.login input, .login button {
-		padding: 0.3rem 0.5rem;
-	}
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  button,
+  input[type='submit'] {
+    background: #000;
+    color: #fff;
+	padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+	min-height: 38px;
+    cursor: pointer;
+  }
+
+  input[type='text'] {
+    border: 2px solid #000;
+	padding: 6px 12px;
+    border-radius: 6px;
+	min-height: 24px;
+  }
 </style>

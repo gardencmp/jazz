@@ -8,6 +8,10 @@
 	$inspect(auth.state);
 </script>
 
+<div
+  style="width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;"
+>
+
 <PasskeyAuthBasicUI state={auth.state} />
 
 {#if auth.current}
@@ -18,3 +22,11 @@
 		{@render children?.()}
 	</JazzProvider>
 {/if}
+
+</div>
+
+<style>
+	:global(html, body) {
+		margin: 0;
+	}
+</style>
