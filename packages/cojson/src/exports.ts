@@ -6,17 +6,19 @@ import {
   MAX_RECOMMENDED_TX_SIZE,
   idforHeader,
 } from "./coValueCore.js";
-import { ControlledAgent, RawControlledAccount } from "./coValues/account.js";
 import {
+  ControlledAgent,
   RawAccount,
+  RawControlledAccount,
   RawProfile,
   accountHeaderForInitialAgentSecret,
 } from "./coValues/account.js";
-import { RawCoList } from "./coValues/coList.js";
+import { OpID, RawCoList } from "./coValues/coList.js";
 import { RawCoMap } from "./coValues/coMap.js";
+import { RawCoPlainText, stringifyOpID } from "./coValues/coPlainText.js";
 import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
-import { EVERYONE, RawGroup } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
+import { EVERYONE, RawGroup } from "./coValues/group.js";
 import {
   CryptoProvider,
   StreamingHash,
@@ -82,52 +84,55 @@ export const cojsonInternals = {
 };
 
 export {
-  LocalNode,
-  RawGroup,
-  Role,
-  EVERYONE,
-  Everyone,
-  RawCoMap,
-  RawCoList,
-  RawCoStream,
-  RawBinaryCoStream,
-  RawCoValue,
-  CoID,
-  AnyRawCoValue,
-  RawAccount,
-  RawAccountID,
   AccountMeta,
-  RawAccountMigration,
-  RawProfile as Profile,
-  SessionID,
-  Media,
-  CoValueCore,
-  ControlledAgent,
-  RawControlledAccount,
-  MAX_RECOMMENDED_TX_SIZE,
-  JsonValue,
-  Peer,
-  BinaryStreamInfo,
-  BinaryCoStreamMeta,
   AgentID,
   AgentSecret,
-  InviteSecret,
+  AnyRawCoValue,
+  BinaryCoStreamMeta,
+  BinaryStreamInfo,
+  CoID,
+  CoValueCore,
+  ControlledAgent,
   CryptoProvider,
+  EVERYONE,
+  Everyone,
+  InviteSecret,
+  JsonValue,
+  LSMStorage,
+  LocalNode,
+  MAX_RECOMMENDED_TX_SIZE,
+  Media,
+  Peer,
+  RawProfile as Profile,
+  RawAccount,
+  RawAccountID,
+  RawAccountMigration,
+  RawBinaryCoStream,
+  RawCoList,
+  RawCoMap,
+  RawCoPlainText,
+  RawCoStream,
+  RawCoValue,
+  RawControlledAccount,
+  RawGroup,
+  Role,
+  SessionID,
   SyncMessage,
   isRawCoID,
-  LSMStorage,
+  stringifyOpID,
 };
 
 export type {
-  Value,
-  FileSystem,
   BlockFilename,
-  WalFilename,
-  IncomingSyncStream,
-  OutgoingSyncQueue,
-  DisconnectedError,
-  PingTimeoutError,
   CoValueUniqueness,
+  DisconnectedError,
+  FileSystem,
+  IncomingSyncStream,
+  OpID,
+  OutgoingSyncQueue,
+  PingTimeoutError,
+  Value,
+  WalFilename,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

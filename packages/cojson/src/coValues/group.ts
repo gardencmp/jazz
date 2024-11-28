@@ -12,6 +12,7 @@ import {
 } from "./account.js";
 import { RawCoList } from "./coList.js";
 import { RawCoMap } from "./coMap.js";
+import { RawCoPlainText } from "./coPlainText.js";
 import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
 
 export const EVERYONE = "everyone" as const;
@@ -310,6 +311,36 @@ export class RawGroup<
     return list;
   }
 
+  /**
+   * Creates a new `CoPlainText` within this group, with the specified specialized
+   * `CoPlainText` type `T` and optional static metadata.
+   *
+   * @category 3. Value creation
+   */
+  createPlainText<T extends RawCoPlainText>(
+    init?: string,
+    meta?: T["headerMeta"],
+    initPrivacy: "trusting" | "private" = "private",
+  ): T {
+    const text = this.core.node
+      .createCoValue({
+        type: "coplaintext",
+        ruleset: {
+          type: "ownedByGroup",
+          group: this.id,
+        },
+        meta: meta || null,
+        ...this.core.crypto.createdNowUnique(),
+      })
+      .getCurrentContent() as T;
+
+    if (init) {
+      text.insertAfter(0, init, initPrivacy);
+    }
+
+    return text;
+  }
+
   /** @category 3. Value creation */
   createStream<C extends RawCoStream>(
     meta?: C["headerMeta"],
@@ -346,7 +377,6 @@ export class RawGroup<
       .getCurrentContent() as C;
   }
 }
-
 export type InviteSecret = `inviteSecret_z${string}`;
 
 function inviteSecretFromSecretSeed(secretSeed: Uint8Array): InviteSecret {
