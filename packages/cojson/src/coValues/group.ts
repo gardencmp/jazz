@@ -666,8 +666,8 @@ export class RawGroup<
   }
 
   /**
-   * Creates a new `CoList` within this group, with the specified specialized
-   * `CoList` type `L` and optional static metadata.
+   * Creates a new `CoPlainText` within this group, with the specified specialized
+   * `CoPlainText` type `T` and optional static metadata.
    *
    * @category 3. Value creation
    */
