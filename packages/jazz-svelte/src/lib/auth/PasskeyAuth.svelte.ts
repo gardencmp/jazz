@@ -33,8 +33,8 @@ export function usePasskeyAuth({
     errors: [],
   });
 
-  // Initialize the passkey auth on mount
-  onMount(() => {
+  // Function to create a new auth instance
+  function createAuthInstance() {
     instance = new BrowserPasskeyAuth(
       {
         onReady(next) {
@@ -49,8 +49,12 @@ export function usePasskeyAuth({
           state = {
             state: "signedIn",
             logOut: () => {
-              next.logOut();
+              // First set state to loading
               state = { state: "loading", errors: [] };
+              // Then trigger logout
+              next.logOut();
+              // Create new instance to trigger onReady
+              createAuthInstance();
             },
             errors: [],
           };
@@ -65,6 +69,11 @@ export function usePasskeyAuth({
       appName,
       appHostname,
     );
+  }
+
+  // Initialize the auth instance on mount
+  onMount(() => {
+    createAuthInstance();
   });
 
   return {

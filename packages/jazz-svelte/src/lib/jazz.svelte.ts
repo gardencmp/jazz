@@ -140,33 +140,37 @@ export function createJazzApp<Acc extends Account>() {
     const ctx = getJazzContext<Acc>();
     const _id = box.from(id);
     const _depth = box.from(depth);
-    let state = $state.raw<DeeplyLoaded<V, D> | undefined>();
-    let observable = createCoValueObservable();
+    
+    // Create state and a stable observable
+    let state = $state.raw<DeeplyLoaded<V, D> | undefined>(undefined);
+    const observable = $state.raw(createCoValueObservable());
 
-    // Subscribe to the CoValue.
+    // Effect to handle subscription
     $effect(() => {
-      // Get the current context, id and depth.
-      ctx.current;
-      _id.current;
-      _depth.current;
-      // Subscribe to the CoValue.
-      return untrack(() => {
-        // If there is no id or context, return.
-        if (!_id.current || !ctx.current) return;
-        // Subscribe to the CoValue.
-        return observable.subscribe(
-          Schema,
-          _id.current,
-          "me" in ctx.current ? ctx.current.me : ctx.current.guest,
-          _depth.current,
-          () => {
-            // Set the state to the current value.
-            state = observable.getCurrentValue();
-          },
-        );
-      });
+      // Reset state when dependencies change
+      state = undefined;
+
+      // Get latest values
+      const currentCtx = ctx.current;
+      const currentId = _id.current;
+      const currentDepth = _depth.current;
+
+      // Return early if no context or id, effectively cleaning up any previous subscription
+      if (!currentCtx || !currentId) return;
+
+      // Setup subscription with current values
+      return observable.subscribe(
+        Schema,
+        currentId,
+        "me" in currentCtx ? currentCtx.me : currentCtx.guest,
+        currentDepth,
+        () => {
+          // Get current value from our stable observable
+          state = observable.getCurrentValue();
+        },
+      );
     });
-    // Return the current value of the CoValue.
+
     return {
       get current() {
         return state;
