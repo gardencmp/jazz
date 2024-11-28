@@ -13,7 +13,6 @@ import type {
 } from "jazz-tools";
 import { Account, createCoValueObservable } from "jazz-tools";
 import { getContext, untrack } from "svelte";
-import { type MaybeBoxOrGetter, box } from "svelte-toolbelt";
 
 /**
  * The key for the Jazz context.
@@ -42,7 +41,7 @@ export function getJazzContext<Acc extends Account>() {
 export function createJazzApp<Acc extends Account>() {
   function useAccount(): { me: Acc | undefined; logOut: () => void };
   function useAccount<D extends DepthsIn<Acc>>(
-    depth: MaybeBoxOrGetter<D>,
+    depth: D,
   ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
   /**
    * Use the current account with a optional depth.
@@ -50,7 +49,7 @@ export function createJazzApp<Acc extends Account>() {
    * @returns The current account.
    */
   function useAccount<D extends DepthsIn<Acc>>(
-    depth?: MaybeBoxOrGetter<D>,
+    depth?: D,
   ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
     const ctx = getJazzContext<Acc>();
     if (!ctx?.current) {
@@ -63,7 +62,7 @@ export function createJazzApp<Acc extends Account>() {
     }
     const me = useCoState<Acc, D>(
       ctx.current.me.constructor as CoValueClass<Acc>,
-      () => (ctx.current as BrowserContext<Acc>).me?.id,
+      (ctx.current as BrowserContext<Acc>).me.id,
       depth,
     );
     return {
@@ -79,7 +78,7 @@ export function createJazzApp<Acc extends Account>() {
 
   function useAccountOrGuest(): { me: Acc | AnonymousJazzAgent };
   function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: MaybeBoxOrGetter<D>,
+    depth: D,
   ): { me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent };
   /**
    * Use the current account or guest with a optional depth.
@@ -87,7 +86,7 @@ export function createJazzApp<Acc extends Account>() {
    * @returns The current account or guest.
    */
   function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth?: MaybeBoxOrGetter<D>,
+    depth?: D,
   ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
     const ctx = getJazzContext<Acc>();
 
@@ -130,16 +129,14 @@ export function createJazzApp<Acc extends Account>() {
    * @param depth - The depth.
    * @returns The CoValue.
    */
-  function useCoState<V extends CoValue, D>(
+  function useCoState<V extends CoValue, D extends DepthsIn<V> = []>(
     Schema: CoValueClass<V>,
-    id: MaybeBoxOrGetter<ID<V>> | undefined,
-    depth: MaybeBoxOrGetter<D & DepthsIn<V>> = [] as D & DepthsIn<V>,
+    id: ID<V> | undefined,
+    depth: D = [] as D,
   ): {
     current?: DeeplyLoaded<V, D>;
   } {
     const ctx = getJazzContext<Acc>();
-    const _id = box.from(id);
-    const _depth = box.from(depth);
     
     // Create state and a stable observable
     let state = $state.raw<DeeplyLoaded<V, D> | undefined>(undefined);
@@ -152,18 +149,16 @@ export function createJazzApp<Acc extends Account>() {
 
       // Get latest values
       const currentCtx = ctx.current;
-      const currentId = _id.current;
-      const currentDepth = _depth.current;
 
       // Return early if no context or id, effectively cleaning up any previous subscription
-      if (!currentCtx || !currentId) return;
+      if (!currentCtx || !id) return;
 
       // Setup subscription with current values
       return observable.subscribe(
         Schema,
-        currentId,
+        id,
         "me" in currentCtx ? currentCtx.me : currentCtx.guest,
-        currentDepth,
+        depth,
         () => {
           // Get current value from our stable observable
           state = observable.getCurrentValue();
@@ -191,11 +186,11 @@ export function createJazzApp<Acc extends Account>() {
     forValueHint,
   }: {
     invitedObjectSchema: CoValueClass<V>;
-    onAccept: MaybeBoxOrGetter<(projectID: ID<V>) => void>;
+    onAccept: (projectID: ID<V>) => void;
     forValueHint?: string;
   }): void {
     const ctx = getJazzContext<Acc>();
-    const _onAccept = box.from(onAccept);
+    const _onAccept = onAccept;
 
     if (!ctx.current) {
       throw new Error("useAcceptInvite must be used within a JazzProvider");
@@ -209,7 +204,7 @@ export function createJazzApp<Acc extends Account>() {
 
     // Subscribe to the onAccept function.
     $effect(() => {
-      _onAccept.current;
+      _onAccept;
       // Subscribe to the onAccept function.
       untrack(() => {
         // If there is no context, return.
@@ -222,7 +217,7 @@ export function createJazzApp<Acc extends Account>() {
         });
         // If the result is valid, call the onAccept function.
         result
-          .then((result) => result && _onAccept.current?.(result?.valueID))
+          .then((result) => result && _onAccept(result?.valueID))
           .catch((e) => {
             console.error("Failed to accept invite", e);
           });

@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "jazz-browser": "workspace:*",
-    "jazz-tools": "workspace:*",
-    "svelte-toolbelt": "^0.4.4"
+    "jazz-tools": "workspace:*"
   }
 }
