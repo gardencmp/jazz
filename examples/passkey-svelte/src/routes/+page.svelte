@@ -1,14 +1,16 @@
 <script lang="ts">
   import { useAccount } from '../Jazz.svelte.js';
 
-  const { logOut } = useAccount({
+  const account = useAccount({
     root: {}
   });
+
+  $inspect(account);
 </script>
 
 <div class="container">
-  <h1>Welcome back</h1>
-  <button on:click={() => logOut()}>Log out</button>
+  <h1>Welcome back, {account?.me?.profile?.name}</h1>
+  <button onclick={() => account.logOut()}>Log out</button>
 </div>
 
 <style>
