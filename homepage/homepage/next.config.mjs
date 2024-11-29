@@ -28,7 +28,7 @@ const config = {
       {
         source: "/docs",
         destination: "/docs/react",
-        permanent: true,
+        permanent: false,
       },
     ];
   },
