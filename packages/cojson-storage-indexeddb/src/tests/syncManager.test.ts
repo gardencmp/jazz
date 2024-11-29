@@ -8,23 +8,35 @@ import {
   vi,
 } from "vitest";
 
-import { CojsonInternalTypes, OutgoingSyncQueue, SyncMessage } from "cojson";
+import {
+  CojsonInternalTypes,
+  OutgoingSyncQueue,
+  SessionID,
+  SyncMessage,
+} from "cojson";
 import { IDBClient } from "../idbClient";
 import { SyncManager } from "../syncManager";
 import { getDependedOnCoValues } from "../syncUtils";
 import { fixtures } from "./fixtureMessages";
 import RawCoID = CojsonInternalTypes.RawCoID;
+import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 
 vi.mock("../syncUtils");
 
 const coValueIdToLoad = "co_zKwG8NyfZ8GXqcjDHY4NS3SbU2m";
-const getEmptyLoadMsg = (id: string) =>
+const createEmptyLoadMsg = (id: string) =>
   ({
     action: "load",
     id,
     header: false,
     sessions: {},
   }) as SyncMessage;
+
+const sessionsData = fixtures[coValueIdToLoad].sessionRecords;
+const coValueHeader = fixtures[coValueIdToLoad].getContent({ after: 0 }).header;
+const incomingContentMessage = fixtures[coValueIdToLoad].getContent({
+  after: 0,
+}) as SyncMessage;
 
 describe("IDB sync manager", () => {
   let syncManager: SyncManager;
@@ -33,6 +45,8 @@ describe("IDB sync manager", () => {
   const IDBClient = vi.fn();
   IDBClient.prototype.getCoValue = vi.fn();
   IDBClient.prototype.getCoValueSessions = vi.fn();
+  IDBClient.prototype.addSessionUpdate = vi.fn();
+  IDBClient.prototype.addTransaction = vi.fn();
 
   beforeEach(async () => {
     const idbClient = new IDBClient() as unknown as Mocked<IDBClient>;
@@ -53,11 +67,8 @@ describe("IDB sync manager", () => {
   });
 
   describe("Handle load incoming message", () => {
-    const sessionsData = fixtures[coValueIdToLoad].sessionRecords;
-    const coValueHeader = fixtures[coValueIdToLoad].content.header;
-
     test("sends empty known message for unknown coValue", async () => {
-      const loadMsg = getEmptyLoadMsg(coValueIdToLoad);
+      const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
 
       IDBClient.prototype.getCoValue.mockResolvedValueOnce(undefined);
 
@@ -72,12 +83,12 @@ describe("IDB sync manager", () => {
     });
 
     test("Sends one known message when we have no more sessions info for the requested coValue", async () => {
-      const loadMsg = getEmptyLoadMsg(coValueIdToLoad);
+      const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
 
       IDBClient.prototype.getCoValue.mockResolvedValueOnce({
         id: coValueIdToLoad,
         header: coValueHeader,
-        rawId: 3,
+        rowID: 3,
       });
       IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce([]);
 
@@ -93,12 +104,12 @@ describe("IDB sync manager", () => {
     });
 
     test("Sends both known and content messages when we have new sessions info for the requested coValue ", async () => {
-      const loadMsg = getEmptyLoadMsg(coValueIdToLoad);
+      const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
 
       IDBClient.prototype.getCoValue.mockResolvedValueOnce({
         id: coValueIdToLoad,
         header: coValueHeader,
-        rawId: 3,
+        rowID: 3,
       });
       IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce(
         sessionsData,
@@ -161,7 +172,7 @@ describe("IDB sync manager", () => {
     });
 
     test("Sends messages for unique coValue dependencies only, leaving out circular dependencies", async () => {
-      const loadMsg = getEmptyLoadMsg(coValueIdToLoad);
+      const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
       const dependency1 = "co_zMKhQJs5rAeGjta3JX2qEdBS6hS";
       const dependency2 = "co_zP51HdyAVCuRY9ptq5iu8DhMyAb";
       const dependency3 = "co_zGyBniuJmKkcirCKYrccWpjQEFY";
@@ -176,13 +187,13 @@ describe("IDB sync manager", () => {
         (coValueId: RawCoID) => ({
           id: coValueId,
           header: coValueHeader,
-          rawId: 3,
+          rowID: 3,
         }),
       );
 
-      // No new data will be returned for coValue and dependencies as it's not a goal of this test
       IDBClient.prototype.getCoValueSessions.mockResolvedValue([]);
 
+      // Fetch dependencies of the current dependency for the future recursion iterations
       vi.mocked(getDependedOnCoValues).mockImplementation(
         ({ coValueRow }) => dependenciesTreeWithLoop[coValueRow.id] || [],
       );
@@ -219,6 +230,77 @@ describe("IDB sync manager", () => {
         header: true,
         id: coValueIdToLoad,
         sessions: {},
+      });
+    });
+  });
+
+  describe("Handle content incoming message", () => {
+    test("Sends correction message for unknown coValue", async () => {
+      IDBClient.prototype.getCoValue.mockResolvedValueOnce(undefined);
+
+      await syncManager.handleSyncMessage({
+        ...incomingContentMessage,
+        header: undefined,
+      } as SyncMessage);
+
+      expect(syncManager.sendStateMessage).toBeCalledWith({
+        action: "known",
+        header: false,
+        id: coValueIdToLoad,
+        isCorrection: true,
+        sessions: {},
+      });
+    });
+
+    test("Saves new transaction without sending message when IDB has fewer transactions", async () => {
+      IDBClient.prototype.getCoValue.mockResolvedValueOnce({
+        id: coValueIdToLoad,
+        header: coValueHeader,
+        rowID: 3,
+      });
+      IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce([]);
+      const msg = {
+        ...incomingContentMessage,
+        header: undefined,
+      } as NewContentMessage;
+
+      await syncManager.handleSyncMessage(msg);
+
+      const incomingTxCount = Object.keys(msg.new).reduce(
+        (acc, sessionID) =>
+          acc + msg.new[sessionID as SessionID]!.newTransactions.length,
+        0,
+      );
+      expect(IDBClient.prototype.addTransaction).toBeCalledTimes(
+        incomingTxCount,
+      );
+
+      expect(syncManager.sendStateMessage).not.toBeCalled();
+    });
+
+    test("Sends correction message when peer sends a message far ahead of our state due to invalid assumption", async () => {
+      IDBClient.prototype.getCoValue.mockResolvedValueOnce({
+        id: coValueIdToLoad,
+        header: coValueHeader,
+        rowID: 3,
+      });
+      IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce(
+        sessionsData,
+      );
+
+      const farAheadContentMessage = fixtures[coValueIdToLoad].getContent({
+        after: 10000,
+      });
+      await syncManager.handleSyncMessage(
+        farAheadContentMessage as SyncMessage,
+      );
+
+      expect(syncManager.sendStateMessage).toBeCalledWith({
+        action: "known",
+        header: true,
+        id: coValueIdToLoad,
+        isCorrection: true,
+        sessions: expect.any(Object),
       });
     });
   });

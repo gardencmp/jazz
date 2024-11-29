@@ -1,6 +1,6 @@
 export const fixtures = {
   co_zKwG8NyfZ8GXqcjDHY4NS3SbU2m: {
-    content: {
+    getContent: ({ after = 0 }: { after?: number }) => ({
       action: "content",
       id: "co_zKwG8NyfZ8GXqcjDHY4NS3SbU2m",
       header: {
@@ -19,7 +19,7 @@ export const fixtures = {
       new: {
         "sealer_zRKetKBH6tdGP8poA2rV9JDejXqTyAmpusCT4jRcXa4m/signer_z6bcctDRiWxtgmuqLRR6rVhM54DA3xJ2pWCEs6DVf4PSy_session_zbcBS6rHy8kA":
           {
-            after: 0,
+            after,
             lastSignature:
               "signature_z2kcFHUPe1qGFYDY4ayvvFR2unFc4jeYph93nSCSjZYS14vnGN4uAw7pKZx1PEhwnspJcDizMRbLaFC8v13i6S79A",
             newTransactions: [
@@ -45,7 +45,7 @@ export const fixtures = {
           },
         "sealer_zRKetKBH6tdGP8poA2rV9JDejXqTyAmpusCT4jRcXa4m/signer_z6bcctDRiWxtgmuqLRR6rVhM54DA3xJ2pWCEs6DVf4PSy_session_zXgW54i2cCNA":
           {
-            after: 0,
+            after,
             lastSignature:
               "signature_z5FsinkJCpqZfozVBkEMSchCQarsAjvMYpWN4d227PZtqCiM7KRBNukND3B25Q73idBLdY2MsghbmYFz5JHXk3d4D",
             newTransactions: [
@@ -59,7 +59,7 @@ export const fixtures = {
           },
       },
       priority: 0,
-    },
+    }),
     known: {
       action: "known",
       id: "co_zKwG8NyfZ8GXqcjDHY4NS3SbU2m",
