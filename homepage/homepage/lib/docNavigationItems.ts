@@ -16,6 +16,7 @@ export const docNavigationItems = [
           react: 100,
           "react-native": 0,
           vue: 0,
+          svelte: 0,
         },
       },
     ],
@@ -26,7 +27,12 @@ export const docNavigationItems = [
       {
         name: "Installation",
         href: "/docs/project-setup",
-        done: 100,
+        done: {
+          react: 100,
+          vue: 100,
+          "react-native": 100,
+          svelte: 0,
+        },
       },
       {
         // jazz mesh, setting api key, free plan, unlimited
@@ -111,6 +117,7 @@ export const docNavigationItems = [
           react: 50,
           vue: 0,
           "react-native": 0,
+          svelte: 0,
         },
       },
       {
@@ -120,6 +127,7 @@ export const docNavigationItems = [
           react: 50,
           vue: 0,
           "react-native": 0,
+          svelte: 0,
         },
       },
       {
@@ -129,6 +137,7 @@ export const docNavigationItems = [
           react: 50,
           vue: 0,
           "react-native": 0,
+          svelte: 0,
         },
       },
       {
@@ -138,6 +147,7 @@ export const docNavigationItems = [
           react: 50,
           vue: 0,
           "react-native": 0,
+          svelte: 0,
         },
       },
       {
