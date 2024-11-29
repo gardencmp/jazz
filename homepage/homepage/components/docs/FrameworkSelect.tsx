@@ -1,6 +1,6 @@
 "use client";
 
-import { Framework } from "@/lib/framework";
+import { Framework, frameworkNames, frameworks } from "@/lib/framework";
 import { useFramework } from "@/lib/use-framework";
 import { clsx } from "clsx";
 import { Select } from "gcmp-design-system/src/app/components/molecules/Select";
@@ -30,9 +30,11 @@ export function FrameworkSelect({ className }: { className?: string }) {
       onChange={onChange}
       className={clsx("label:sr-only", className)}
     >
-      <option value="react">React</option>
-      <option value="react-native">React Native</option>
-      <option value="vue">Vue</option>
+      {frameworks.map((framework) => (
+        <option key={framework} value={framework}>
+          {frameworkNames[framework]}
+        </option>
+      ))}
     </Select>
   );
 }
