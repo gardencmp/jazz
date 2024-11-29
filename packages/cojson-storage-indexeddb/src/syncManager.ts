@@ -14,6 +14,11 @@ import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
 
+type OutputMessageMap = Record<
+  RawCoID,
+  { knownMessage: KnownStateMessage; contentMessages?: NewContentMessage[] }
+>;
+
 export class SyncManager {
   private readonly toLocalNode: OutgoingSyncQueue;
   private readonly idbClient: IDBClient;
@@ -42,21 +47,19 @@ export class SyncManager {
 
   async handleSessionUpdate({
     sessionRow,
-    theirKnown,
-    ourKnown,
-    newContentPieces,
+    peerKnownState,
+    newContentMessages,
   }: {
     sessionRow: StoredSessionRow;
-    theirKnown: CojsonInternalTypes.CoValueKnownState;
-    ourKnown: CojsonInternalTypes.CoValueKnownState;
-    newContentPieces: CojsonInternalTypes.NewContentMessage[];
+    peerKnownState: CojsonInternalTypes.CoValueKnownState;
+    newContentMessages: CojsonInternalTypes.NewContentMessage[];
   }) {
-    ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
-
-    if (sessionRow.lastIdx <= (theirKnown.sessions[sessionRow.sessionID] || 0))
+    if (
+      sessionRow.lastIdx <= (peerKnownState.sessions[sessionRow.sessionID] || 0)
+    )
       return;
 
-    const firstNewTxIdx = theirKnown.sessions[sessionRow.sessionID] || 0;
+    const firstNewTxIdx = peerKnownState.sessions[sessionRow.sessionID] || 0;
     const signaturesAndIdxs = await this.idbClient.getSignatures(
       sessionRow,
       firstNewTxIdx,
@@ -68,10 +71,10 @@ export class SyncManager {
 
     collectNewTxs(
       newTxsInSession,
-      newContentPieces,
+      newContentMessages,
       sessionRow,
       signaturesAndIdxs,
-      theirKnown,
+      peerKnownState,
       firstNewTxIdx,
     );
   }
@@ -79,39 +82,38 @@ export class SyncManager {
   async sendNewContent(
     coValueKnownState: CojsonInternalTypes.CoValueKnownState,
   ): Promise<void> {
-    const { contentMessageMap, knownMessageMap } =
+    const outputMessages: OutputMessageMap =
       await this.collectCoValueData(coValueKnownState);
 
-    // reverse it to send the top level id the last in the order (hacky - check it explicitly instead or cover well by tests)
-    const collectedIds = Object.keys(knownMessageMap).reverse();
-    collectedIds.forEach((coId) => {
-      this.sendStateMessage(knownMessageMap[coId as RawCoID]);
+    // reverse it to send the top level id the last in the order
+    const collectedMessages = Object.values(outputMessages).reverse();
+    collectedMessages.forEach(({ knownMessage, contentMessages }) => {
+      this.sendStateMessage(knownMessage);
 
-      const contentMessages = contentMessageMap[coId as RawCoID] || [];
-      contentMessages.forEach((msg) => this.sendStateMessage(msg));
+      contentMessages?.length &&
+        contentMessages.forEach((msg) => this.sendStateMessage(msg));
     });
   }
 
   private async collectCoValueData(
-    coValueKnownState: CojsonInternalTypes.CoValueKnownState,
-    knownMessageMap: Record<RawCoID, KnownStateMessage> = {},
-    contentMessageMap: Record<RawCoID, NewContentMessage[]> = {},
+    peerKnownState: CojsonInternalTypes.CoValueKnownState,
+    messageMap: OutputMessageMap = {},
     asDependencyOf?: CojsonInternalTypes.RawCoID,
   ) {
-    if (knownMessageMap[coValueKnownState.id]) {
-      return { knownMessageMap, contentMessageMap };
+    if (messageMap[peerKnownState.id]) {
+      return messageMap;
     }
 
-    const coValueRow = await this.idbClient.getCoValue(coValueKnownState.id);
+    const coValueRow = await this.idbClient.getCoValue(peerKnownState.id);
 
     if (!coValueRow) {
       const emptyKnownMessage: KnownStateMessage = {
         action: "known",
-        ...emptyKnownState(coValueKnownState.id),
+        ...emptyKnownState(peerKnownState.id),
       };
       asDependencyOf && (emptyKnownMessage.asDependencyOf = asDependencyOf);
-      knownMessageMap[coValueKnownState.id] = emptyKnownMessage;
-      return { knownMessageMap, contentMessageMap };
+      messageMap[peerKnownState.id] = { knownMessage: emptyKnownMessage };
+      return messageMap;
     }
 
     const allCoValueSessions = await this.idbClient.getCoValueSessions(
@@ -124,7 +126,7 @@ export class SyncManager {
       sessions: {},
     };
 
-    const contentMessages: CojsonInternalTypes.NewContentMessage[] = [
+    const newContentMessages: CojsonInternalTypes.NewContentMessage[] = [
       {
         action: "content",
         id: coValueRow.id,
@@ -135,17 +137,19 @@ export class SyncManager {
     ];
 
     await Promise.all(
-      allCoValueSessions.map((sessionRow) =>
-        this.handleSessionUpdate({
+      allCoValueSessions.map((sessionRow) => {
+        newCoValueKnownState.sessions[sessionRow.sessionID] =
+          sessionRow.lastIdx;
+        // Collect new sessions data into newContentMessages
+        return this.handleSessionUpdate({
           sessionRow,
-          theirKnown: coValueKnownState,
-          ourKnown: newCoValueKnownState,
-          newContentPieces: contentMessages,
-        }),
-      ),
+          peerKnownState,
+          newContentMessages,
+        });
+      }),
     );
 
-    const nonEmptyContentMessages = contentMessages.filter(
+    const nonEmptyContentMessages = newContentMessages.filter(
       (contentMessage) => Object.keys(contentMessage.new).length > 0,
     );
     const dependedOnCoValuesList = getDependedOnCoValues({
@@ -158,8 +162,10 @@ export class SyncManager {
       ...newCoValueKnownState,
     };
     asDependencyOf && (knownMessage.asDependencyOf = asDependencyOf);
-    knownMessageMap[newCoValueKnownState.id] = knownMessage;
-    contentMessageMap[newCoValueKnownState.id] = nonEmptyContentMessages;
+    messageMap[newCoValueKnownState.id] = {
+      knownMessage: knownMessage,
+      contentMessages: nonEmptyContentMessages,
+    };
 
     await Promise.all(
       dependedOnCoValuesList.map((dependedOnCoValue) =>
@@ -169,17 +175,13 @@ export class SyncManager {
             header: false,
             sessions: {},
           },
-          knownMessageMap,
-          contentMessageMap,
+          messageMap,
           asDependencyOf || coValueRow.id,
         ),
       ),
     );
 
-    return {
-      knownMessageMap,
-      contentMessageMap,
-    };
+    return messageMap;
   }
 
   handleLoad(msg: CojsonInternalTypes.LoadMessage) {
@@ -190,7 +192,11 @@ export class SyncManager {
     msg: CojsonInternalTypes.NewContentMessage,
   ): Promise<void | unknown> {
     const coValueRow = await this.idbClient.getCoValue(msg.id);
-    if (!msg.header && !coValueRow) {
+
+    // We have no info about coValue header
+    const invalidAssumptionOnHeaderPresence = !msg.header && !coValueRow;
+
+    if (invalidAssumptionOnHeaderPresence) {
       return this.sendStateMessage({
         action: "known",
         id: msg.id,
@@ -200,7 +206,7 @@ export class SyncManager {
       });
     }
 
-    const storedCoValueRowID: number = coValueRow?.rowID
+    const storedCoValueRowID: number = coValueRow
       ? coValueRow.rowID
       : await this.idbClient.addCoValue(msg);
 
@@ -318,7 +324,7 @@ export class SyncManager {
   }
 
   handleKnown(_msg: KnownStateMessage) {
-    // No need to process known messages from the local node as IDB storage can't be updated by another peer
+    // We don't intend to use IndexedDB itself as a synchronisation mechanism, so we can ignore the known messages
   }
 
   async sendStateMessage(msg: any): Promise<unknown> {

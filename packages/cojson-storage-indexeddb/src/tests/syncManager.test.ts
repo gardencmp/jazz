@@ -129,9 +129,8 @@ describe("IDB sync manager", () => {
 
       // mock content data combined with session updates
       syncManager.handleSessionUpdate = vi.fn(
-        async ({ sessionRow, newContentPieces, ourKnown }) => {
-          newContentPieces[0]!.new[sessionRow.sessionID] = newTxData;
-          ourKnown.sessions[sessionRow.sessionID] = sessionRow.lastIdx;
+        async ({ sessionRow, newContentMessages }) => {
+          newContentMessages[0]!.new[sessionRow.sessionID] = newTxData;
         },
       );
 

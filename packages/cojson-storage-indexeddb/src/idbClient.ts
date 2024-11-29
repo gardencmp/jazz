@@ -90,7 +90,6 @@ export class IDBClient {
           console.error("Error in request", request.error);
           this.currentTx = undefined;
           reject(request.error);
-          // TODO: recover pending requests in new tx
         };
         request.onsuccess = () => {
           const value = request.result as T;
@@ -108,6 +107,7 @@ export class IDBClient {
         };
       };
 
+      // Transaction batching
       if (!txEntry || performance.now() - txEntry.startedAt > 20) {
         const tx = this.db.transaction(
           ["coValues", "sessions", "transactions", "signatureAfter"],
@@ -179,6 +179,10 @@ export class IDBClient {
   async addCoValue(
     msg: CojsonInternalTypes.NewContentMessage,
   ): Promise<number> {
+    if (!msg.header) {
+      throw new Error("Header is required, coId: " + msg.id);
+    }
+
     return (await this.makeRequest<IDBValidKey>(({ coValues }) =>
       coValues.put({
         id: msg.id,
@@ -225,7 +229,6 @@ export class IDBClient {
     return this.makeRequest(({ signatureAfter }) =>
       signatureAfter.put({
         ses: sessionRowID,
-        // TODO: newLastIdx is a misnomer, it's actually more like nextIdx or length
         idx,
         signature,
       } satisfies SignatureAfterRow),

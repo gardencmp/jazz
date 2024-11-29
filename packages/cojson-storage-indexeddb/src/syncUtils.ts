@@ -13,7 +13,7 @@ import {
 
 export function collectNewTxs(
   newTxsInSession: TransactionRow[],
-  newContentPieces: CojsonInternalTypes.NewContentMessage[],
+  newContentMessages: CojsonInternalTypes.NewContentMessage[],
   sessionRow: StoredSessionRow,
   signaturesAndIdxs: SignatureAfterRow[],
   theirKnown: CojsonInternalTypes.CoValueKnownState,
@@ -23,15 +23,18 @@ export function collectNewTxs(
 
   for (const tx of newTxsInSession) {
     let sessionEntry =
-      newContentPieces[newContentPieces.length - 1]!.new[sessionRow.sessionID];
+      newContentMessages[newContentMessages.length - 1]!.new[
+        sessionRow.sessionID
+      ];
     if (!sessionEntry) {
       sessionEntry = {
         after: idx,
         lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
         newTransactions: [],
       };
-      newContentPieces[newContentPieces.length - 1]!.new[sessionRow.sessionID] =
-        sessionEntry;
+      newContentMessages[newContentMessages.length - 1]!.new[
+        sessionRow.sessionID
+      ] = sessionEntry;
     }
 
     sessionEntry.newTransactions.push(tx.tx);
@@ -39,7 +42,7 @@ export function collectNewTxs(
     if (signaturesAndIdxs[0] && idx === signaturesAndIdxs[0].idx) {
       sessionEntry.lastSignature = signaturesAndIdxs[0].signature;
       signaturesAndIdxs.shift();
-      newContentPieces.push({
+      newContentMessages.push({
         action: "content",
         id: theirKnown.id,
         new: {},
@@ -65,7 +68,6 @@ export function getDependedOnCoValues({
         .flatMap((sessionEntry) =>
           sessionEntry.newTransactions.flatMap((tx) => {
             if (tx.privacy !== "trusting") return [];
-            // TODO: avoid parse here?
             return cojsonInternals
               .parseJSON(tx.changes)
               .map(
