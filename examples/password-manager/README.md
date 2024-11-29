@@ -1,4 +1,4 @@
-# Password Manager Example
+# Password manager example with Jazz and React
 
 Live version: https://passwords-demo.jazz.tools
 
@@ -6,28 +6,24 @@ Live version: https://passwords-demo.jazz.tools
 
 ## Installing & running the example locally
 
-(this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
+(This requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
-Start by checking out `jazz`
+Start by downloading the [jazz repository](https://github.com/garden-co/jazz):
 ```bash
-git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/password-manager
-pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/password-manager # or any other directory
-tar -xf /tmp/jazz-example-pass-manager-* --strip-components 1 -C ~/jazz-examples/password-manager
-cd ~/jazz-examples/password-manager
+npx degit gardencmp/jazz jazz
 ```
 
-This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
-
-Install dependencies:
-
+Go to the password-manager example directory:
 ```bash
-pnpm install
+cd jazz/examples/password-manager
+```
+
+Install and build dependencies:
+```bash
+pnpm i && npx turbo build
 ```
 
 Start the dev server:
-
 ```bash
 pnpm dev
 ```
