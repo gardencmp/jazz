@@ -18,7 +18,7 @@ function App() {
 
   return (
     <div className="container">
-      <nav className="flex justify-between items-center py-2 border-b mb-8">
+      <nav>
         <span>
           You're logged in as <strong>{me?.profile?.name}</strong>
         </span>

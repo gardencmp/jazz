@@ -13,63 +13,62 @@ const reactionEmojiMap: {
   chonkers: "🐘",
 };
 
+const ReactionForm = ({ reactions }: { reactions: Reactions }) => (
+  <div className="reaction-form">
+    {ReactionTypes.map((reactionType) => (
+      <button
+        key={reactionType}
+        type="button"
+        onClick={() => {
+          reactions?.push(reactionType);
+        }}
+        title={`React with ${reactionType}`}
+        className={reactions?.byMe?.value === reactionType ? "active" : ""}
+        data-selected={reactions?.byMe?.value === reactionType}
+      >
+        {reactionEmojiMap[reactionType]}
+      </button>
+    ))}
+  </div>
+);
+
 export function ReactionsScreen(props: { id: ID<Reactions> }) {
   const reactions = useCoState(Reactions, props.id, []);
 
-  console.log({ reactions });
+  if (!reactions) return;
 
   return (
     <>
-      <h1 className="mb-3">Add your reaction</h1>
-      <div className="flex justify-between max-w-xs flex-wrap mb-8">
-        {ReactionTypes.map((reactionType) => (
-          <button
-            key={reactionType}
-            type="button"
-            onClick={() => {
-              reactions?.push(reactionType);
-            }}
-            title={`React with ${reactionType}`}
-            className={[
-              "text-2xl p-2 leading-none inline-flex items-center justify-center border rounded",
-              reactions?.byMe?.value === reactionType ? "bg-blue-500" : "",
-            ].join(" ")}
-            data-selected={reactions?.byMe?.value === reactionType}
-          >
-            {reactionEmojiMap[reactionType]}
-          </button>
-        ))}
-      </div>
+      <section>
+        <h1>Add your reaction</h1>
+        <ReactionForm reactions={reactions} />
+      </section>
 
-      {reactions && <ReactionOverview reactions={reactions} />}
+      <section>
+        <h2>Reactions from you and other users</h2>
+        {reactions && <ReactionOverview reactions={reactions} />}
+      </section>
     </>
   );
 }
 
-function ReactionOverview({ reactions }: { reactions: Reactions }) {
-  return (
-    <>
-      <h2 className="mb-3">Reactions from you and other users</h2>
-      <div className="flex flex-col gap-1">
-        {ReactionTypes.map((reactionType) => {
-          const reactionsOfThisType = Object.values(reactions).filter(
-            (entry) => entry.value === reactionType,
-          );
+const ReactionOverview = ({ reactions }: { reactions: Reactions }) => (
+  <>
+    {ReactionTypes.map((reactionType) => {
+      const reactionsOfThisType = Object.values(reactions).filter(
+        (entry) => entry.value === reactionType,
+      );
 
-          if (reactionsOfThisType.length === 0) return null;
+      if (reactionsOfThisType.length === 0) return null;
 
-          return (
-            <div className="flex gap-2 items-center" key={reactionType}>
-              <span className="text-2xl">{reactionEmojiMap[reactionType]}</span>
-              <p>
-                {reactionsOfThisType
-                  .map((reaction) => reaction.by?.profile?.name)
-                  .join(", ")}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
-}
+      return (
+        <div key={reactionType} className="reaction-row">
+          <span>{reactionEmojiMap[reactionType]}</span>{" "}
+          {reactionsOfThisType
+            .map((reaction) => reaction.by?.profile?.name)
+            .join(", ")}
+        </div>
+      );
+    })}
+  </>
+);
