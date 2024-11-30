@@ -149,12 +149,9 @@ export class SyncManager {
       }),
     );
 
-    const nonEmptyContentMessages = newContentMessages.filter(
-      (contentMessage) => Object.keys(contentMessage.new).length > 0,
-    );
     const dependedOnCoValuesList = getDependedOnCoValues({
       coValueRow,
-      newContentPieces: nonEmptyContentMessages,
+      newContentMessages,
     });
 
     const knownMessage: KnownStateMessage = {
@@ -164,7 +161,7 @@ export class SyncManager {
     asDependencyOf && (knownMessage.asDependencyOf = asDependencyOf);
     messageMap[newCoValueKnownState.id] = {
       knownMessage: knownMessage,
-      contentMessages: nonEmptyContentMessages,
+      contentMessages: newContentMessages,
     };
 
     await Promise.all(

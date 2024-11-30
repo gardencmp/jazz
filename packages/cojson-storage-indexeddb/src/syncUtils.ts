@@ -57,13 +57,13 @@ export function collectNewTxs(
 
 export function getDependedOnCoValues({
   coValueRow,
-  newContentPieces,
+  newContentMessages,
 }: {
   coValueRow: StoredCoValueRow;
-  newContentPieces: CojsonInternalTypes.NewContentMessage[];
+  newContentMessages: CojsonInternalTypes.NewContentMessage[];
 }) {
   return coValueRow.header.ruleset.type === "group"
-    ? newContentPieces
+    ? newContentMessages
         .flatMap((piece) => Object.values(piece.new))
         .flatMap((sessionEntry) =>
           sessionEntry.newTransactions.flatMap((tx) => {
@@ -89,7 +89,7 @@ export function getDependedOnCoValues({
       ? [
           coValueRow.header.ruleset.group,
           ...new Set(
-            newContentPieces.flatMap((piece) =>
+            newContentMessages.flatMap((piece) =>
               Object.keys(piece.new)
                 .map((sessionID) =>
                   cojsonInternals.accountOrAgentIDfromSessionID(
