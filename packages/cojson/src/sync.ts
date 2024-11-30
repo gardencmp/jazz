@@ -25,7 +25,10 @@ export type SyncMessage =
   | LoadMessage
   | KnownStateMessage
   | NewContentMessage
-  | DoneMessage;
+  | DoneMessage
+  | PersistSyncStateMessage
+  | RequestSyncStateHydrationMessage
+  | HydrateSyncStateMessage;
 
 export type LoadMessage = {
   action: "load";
@@ -55,6 +58,25 @@ export type SessionNewContent = {
 export type DoneMessage = {
   action: "done";
   id: RawCoID;
+};
+
+export type PersistSyncStateMessage = {
+  action: "persistSyncState";
+  id: RawCoID;
+  payload: CoValueKnownState;
+  fullySynced: boolean;
+  peerId: PeerID;
+};
+
+export type RequestSyncStateHydrationMessage = {
+  action: "requestSyncStateHydration";
+  peerId: PeerID;
+};
+
+export type HydrateSyncStateMessage = {
+  action: "hydrateSyncState";
+  knownStates: CoValueKnownState[];
+  peerId: PeerID;
 };
 
 export type PeerID = string;
@@ -163,10 +185,61 @@ export class SyncManager {
         return await this.handleNewContent(msg, peer);
       case "done":
         return await this.handleUnsubscribe(msg);
+      case "hydrateSyncState":
+        return await this.handleHydrateSyncState(msg);
+      case "persistSyncState":
+      case "requestSyncStateHydration":
+        return;
       default:
         throw new Error(
           `Unknown message type ${(msg as { action: "string" }).action}`,
         );
+    }
+  }
+
+  async requestSyncStateHydration(peerId: PeerID) {
+    const peers = this.peersInPriorityOrder().filter(
+      (peer) => peer.id !== peerId && peer.role === "storage",
+    );
+
+    for (const peer of peers) {
+      await peer.pushOutgoingMessage({
+        action: "requestSyncStateHydration",
+        peerId,
+      });
+    }
+  }
+
+  async handleHydrateSyncState(msg: HydrateSyncStateMessage) {
+    const peer = this.peers[msg.peerId];
+
+    if (!peer) {
+      throw new Error(`Unknown peer ${msg.peerId}`);
+    }
+
+    const coValuesToResume = new Set<RawCoID>();
+
+    for (const knownState of msg.knownStates) {
+      if (peer.knownStates.has(knownState.id)) {
+        peer.knownStates.dispatch({
+          type: "COMBINE_WITH",
+          id: knownState.id,
+          value: knownState,
+        });
+        continue;
+      }
+
+      peer.knownStates.dispatch({
+        type: "SET",
+        id: knownState.id,
+        value: knownState,
+      });
+
+      coValuesToResume.add(knownState.id);
+    }
+
+    for (const id of coValuesToResume) {
+      void this.local.loadCoValueCore(id);
     }
   }
 
@@ -367,6 +440,65 @@ export class SyncManager {
           delete this.peers[peer.id];
         }
       });
+  }
+
+  syncStateUpdateListeners = new Set<
+    (
+      peerId: PeerID,
+      knownState: CoValueKnownState,
+      fullySynced: boolean,
+    ) => void
+  >();
+
+  subscribeToSyncStateUpdate(
+    listener: (
+      peerId: PeerID,
+      knownState: CoValueKnownState,
+      fullySynced: boolean,
+    ) => void,
+  ) {
+    this.syncStateUpdateListeners.add(listener);
+
+    return () => {
+      this.syncStateUpdateListeners.delete(listener);
+    };
+  }
+
+  triggerSyncStateUpdate(peerId: PeerID, id: RawCoID) {
+    const peer = this.peers[peerId];
+
+    if (!peer) {
+      return;
+    }
+
+    const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
+    const fullySynced = this.getIsCoValueFullySyncedIntoPeer(peerId, id);
+
+    for (const listener of this.syncStateUpdateListeners) {
+      listener(peerId, knownState, fullySynced);
+    }
+  }
+
+  getIsCoValueFullySyncedIntoPeer(peerId: PeerID, id: RawCoID) {
+    const peer = this.peers[peerId];
+    const entry = this.local.coValues[id];
+
+    if (!peer) {
+      return false;
+    }
+
+    if (entry?.state.type !== "available") {
+      return false;
+    }
+
+    const coValue = entry.state.coValue;
+    const knownState = peer.knownStates.get(id);
+
+    if (!knownState) {
+      return false;
+    }
+
+    return getIsFullySynced(knownState.sessions, coValue.knownState().sessions);
   }
 
   trySendToPeer(peer: PeerState, msg: SyncMessage) {
@@ -733,4 +865,17 @@ function knownStateIn(msg: LoadMessage | KnownStateMessage) {
     header: msg.header,
     sessions: msg.sessions,
   };
+}
+
+function getIsFullySynced(
+  localSessions: Record<string, number>,
+  remoteSessions: Record<string, number>,
+) {
+  for (const sessionId of Object.keys(localSessions)) {
+    if (localSessions[sessionId] !== remoteSessions[sessionId]) {
+      return false;
+    }
+  }
+
+  return true;
 }

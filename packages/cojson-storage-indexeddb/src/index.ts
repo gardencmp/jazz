@@ -110,7 +110,7 @@ export class IDBStorage {
     toLocalNode: OutgoingSyncQueue,
   ) {
     const dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open("jazz-storage", 4);
+      const request = indexedDB.open("jazz-storage", 5);
       request.onerror = () => {
         reject(request.error);
       };
@@ -148,6 +148,15 @@ export class IDBStorage {
             keyPath: ["ses", "idx"],
           });
         }
+        if (ev.oldVersion <= 5) {
+          const peersKnownStates = db.createObjectStore("peersKnownStates", {
+            keyPath: "id",
+          });
+
+          peersKnownStates.createIndex("peersKnownStatesByPeerId", "peerId", {
+            multiEntry: true,
+          });
+        }
       };
     });
 
@@ -168,6 +177,12 @@ export class IDBStorage {
       case "done":
         await this.handleDone(msg);
         break;
+      case "persistSyncState":
+        await this.handlePersistSyncState(msg);
+        break;
+      case "requestSyncStateHydration":
+        await this.handleRequestSyncStateHydration(msg);
+        break;
     }
   }
 
@@ -180,6 +195,7 @@ export class IDBStorage {
           sessions: IDBObjectStore;
           transactions: IDBObjectStore;
           signatureAfter: IDBObjectStore;
+          peersKnownStates: IDBObjectStore;
         };
         startedAt: number;
         pendingRequests: ((txEntry: {
@@ -188,6 +204,7 @@ export class IDBStorage {
             sessions: IDBObjectStore;
             transactions: IDBObjectStore;
             signatureAfter: IDBObjectStore;
+            peersKnownStates: IDBObjectStore;
           };
         }) => void)[];
       }
@@ -200,6 +217,7 @@ export class IDBStorage {
       sessions: IDBObjectStore;
       transactions: IDBObjectStore;
       signatureAfter: IDBObjectStore;
+      peersKnownStates: IDBObjectStore;
     }) => IDBRequest,
   ): SyncPromise<T> {
     return new SyncPromise((resolve, reject) => {
@@ -213,6 +231,7 @@ export class IDBStorage {
           sessions: IDBObjectStore;
           transactions: IDBObjectStore;
           signatureAfter: IDBObjectStore;
+          peersKnownStates: IDBObjectStore;
         };
       }) => {
         const request = handler(stores);
@@ -240,7 +259,13 @@ export class IDBStorage {
 
       if (!txEntry || performance.now() - txEntry.startedAt > 20) {
         const tx = this.db.transaction(
-          ["coValues", "sessions", "transactions", "signatureAfter"],
+          [
+            "coValues",
+            "sessions",
+            "transactions",
+            "signatureAfter",
+            "peersKnownStates",
+          ],
           "readwrite",
         );
         txEntry = {
@@ -251,6 +276,7 @@ export class IDBStorage {
             sessions: tx.objectStore("sessions"),
             transactions: tx.objectStore("transactions"),
             signatureAfter: tx.objectStore("signatureAfter"),
+            peersKnownStates: tx.objectStore("peersKnownStates"),
           },
           startedAt: performance.now(),
           pendingRequests: [],
@@ -272,6 +298,42 @@ export class IDBStorage {
         //     txEntry.pendingRequests.length
         // );
       }
+    });
+  }
+
+  async handlePersistSyncState(
+    msg: CojsonInternalTypes.PersistSyncStateMessage,
+  ) {
+    if (msg.fullySynced) {
+      await this.makeRequest(({ peersKnownStates }) =>
+        peersKnownStates.delete(`${msg.peerId}-${msg.id}`),
+      );
+    } else {
+      await this.makeRequest(({ peersKnownStates }) =>
+        peersKnownStates.put({
+          id: `${msg.peerId}-${msg.id}`,
+          peerId: msg.peerId,
+          knownState: msg.payload,
+        }),
+      );
+    }
+  }
+
+  async handleRequestSyncStateHydration(
+    msg: CojsonInternalTypes.RequestSyncStateHydrationMessage,
+  ) {
+    const result = await this.makeRequest<
+      {
+        knownState: CojsonInternalTypes.CoValueKnownState;
+      }[]
+    >(({ peersKnownStates }) =>
+      peersKnownStates.index("peersKnownStatesByPeerId").getAll(msg.peerId),
+    );
+
+    void this.toLocalNode.push({
+      action: "hydrateSyncState",
+      peerId: msg.peerId,
+      knownStates: result.map((row) => row.knownState),
     });
   }
 
