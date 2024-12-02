@@ -241,6 +241,6 @@ export const pingColorThresholds = [
   { ping: 100, color: "hsl(235,80%,77%)" },
   { ping: 150, color: "hsl(232,73%,80%)" },
   { ping: 200, color: "hsl(230,69%,83%)" },
-  { ping: 300, color: "hsl(230,65%,94%)" },
-  { ping: 1000, color: "hsl(220,60%,97%)" },
+  { ping: 300, color: "hsl(230,65%,88%)" },
+  { ping: 1000, color: "hsl(220,60%,92%)" },
 ];
