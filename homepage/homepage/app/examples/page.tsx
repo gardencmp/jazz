@@ -7,12 +7,7 @@ import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import {
-  CloudUploadIcon,
-  FingerprintIcon,
-  ImageIcon,
-  KeyRoundIcon,
-} from "lucide-react";
+import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
 
 type Example = {
   name: string;
@@ -37,6 +32,7 @@ const features = {
   passkey: "Passkey auth",
   clerk: "Clerk auth",
   inviteLink: "Invite link",
+  coFeed: "CoFeed",
 };
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
@@ -99,6 +95,22 @@ const ImageUploadIllustration = () => (
   </div>
 );
 
+const ReactionsIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="inline-flex justify-center gap-1.5 mx-auto">
+      {["😍", "😮", "🤩", "😂", "👍"].map((emoji) => (
+        <button
+          type="button"
+          key={emoji}
+          className="size-10 text-xl rounded shadow-sm bg-white leading-none"
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 const BookShelfIllustration = () => (
   <div className="h-full max-w-[30rem] mx-auto flex flex-col justify-center p-6 md:p-5">
     <div className="flex justify-between items-baseline">
@@ -129,7 +141,7 @@ const PetIllustration = () => (
         <button
           type="button"
           key={emoji}
-          className="size-6 rounded shadow-sm bg-white leading-none hover:bg-stone-100"
+          className="size-6 rounded shadow-sm bg-white leading-none"
         >
           {emoji}
         </button>
@@ -240,6 +252,15 @@ const reactExamples = [
     features: [features.imageUpload],
     demoUrl: "https://image-upload-demo.jazz.tools",
     illustration: <ImageUploadIllustration />,
+  },
+  {
+    name: "Reactions",
+    slug: "reactions",
+    description: "Collect and render reactions from multiple users.",
+    tech: [tech.react],
+    features: [features.coFeed],
+    demoUrl: "https://reactions-demo.jazz.tools",
+    illustration: <ReactionsIllustration />,
   },
   {
     name: "Rate my pet",

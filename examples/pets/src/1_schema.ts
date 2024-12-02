@@ -23,6 +23,7 @@ export const ReactionTypes = [
   "tiny",
   "chonkers",
 ] as const;
+
 export type ReactionType = (typeof ReactionTypes)[number];
 
 export class PetReactions extends CoFeed.Of(co.json<ReactionType>()) {}
