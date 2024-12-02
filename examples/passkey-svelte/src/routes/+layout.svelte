@@ -1,6 +1,6 @@
 <script lang="ts">
   import { usePasskeyAuth, PasskeyAuthBasicUI } from 'jazz-svelte';
-  import { Provider } from '../Jazz.svelte';
+  import { Provider } from '$lib/jazz';
 
   let { children } = $props();
 
