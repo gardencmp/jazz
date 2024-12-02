@@ -10,6 +10,15 @@ import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/Gapp
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
 
+import {
+  Schema_ts as ImageUploadSchema,
+  ImageUpload_tsx,
+} from "@/codeSamples/examples/image-upload/src";
+import {
+  Schema_ts as ReactionsSchema,
+  ReactionsScreen_tsx,
+} from "@/codeSamples/examples/reactions/src";
+
 type Example = {
   name: string;
   slug: string;
@@ -19,6 +28,8 @@ type Example = {
   features?: string[];
   demoUrl?: string;
   showDemo?: boolean;
+  imageUrl?: string;
+  codeSamples?: { name: string; source: string }[];
 };
 
 const tech = {
@@ -247,6 +258,16 @@ const reactExamples: Example[] = [
     demoUrl: "https://image-upload-demo.jazz.tools",
     illustration: <ImageUploadIllustration />,
     showDemo: true,
+    codeSamples: [
+      {
+        name: "image-upload.tsx",
+        source: ImageUpload_tsx,
+      },
+      {
+        name: "schema.ts",
+        source: ImageUploadSchema,
+      },
+    ],
   },
   {
     name: "Reactions",
@@ -257,6 +278,16 @@ const reactExamples: Example[] = [
     demoUrl: "https://reactions-demo.jazz.tools",
     illustration: <ReactionsIllustration />,
     showDemo: true,
+    codeSamples: [
+      {
+        name: "reactions.tsx",
+        source: ReactionsScreen_tsx,
+      },
+      {
+        name: "schema.ts",
+        source: ReactionsSchema,
+      },
+    ],
   },
   {
     name: "Clerk",
@@ -445,15 +476,24 @@ function ExampleDemo({ example }: { example: Example }) {
   const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 col-span-full divide-x border bg-stone-50 shadow-sm rounded-lg dark:bg-stone-950">
-      <div className="p-3 col-span-2">
+    <GappedGrid
+      gap="none"
+      className="col-span-full my-12 border bg-stone-50 shadow-sm rounded-lg dark:bg-stone-950 overflow-hidden"
+    >
+      <div className="p-3 col-span-full border-b">
         <Example example={{ ...example, illustration: null }} />
       </div>
-      <div className="col-span-2"></div>
-      <div className="h-[30rem] col-span-2">
+      <div className="h-[30rem] overflow-auto col-span-3">
+        {example.codeSamples?.map(({ source: Source }) => (
+          <div className="text-base">
+            <Source />
+          </div>
+        ))}
+      </div>
+      <div className="h-[30rem] col-span-3">
         <iframe width="100%" height="100%" src={demoUrl} title={name} />
       </div>
-    </div>
+    </GappedGrid>
   );
 
   return (
