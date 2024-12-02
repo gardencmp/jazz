@@ -14,6 +14,15 @@
   --border-color: #404040;
 }
 
+button.btn {
+  border-radius: 8px;
+  border: 0;
+  padding: 0.6em 1.2em;
+  font-weight: 500;
+  background-color: #1a1a1a;
+  cursor: pointer;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     --border-color: #e5e5e5;
@@ -38,15 +47,6 @@ html,
 body,
 #root {
   height: 100%;
-}
-
-button.btn {
-  border-radius: 8px;
-  border: 0;
-  padding: 0.6em 1.2em;
-  font-weight: 500;
-  background-color: #1a1a1a;
-  cursor: pointer;
 }
 
 nav {
