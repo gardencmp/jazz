@@ -14,8 +14,8 @@ import type {
 } from 'jazz-tools';
 import { Account, createCoValueObservable } from 'jazz-tools';
 import { getContext, untrack, type Component } from 'svelte';
-import type { Props } from './JazzProvider.svelte';
-import Provider from './JazzProvider.svelte';
+import type { Props } from './Provider.svelte';
+import Provider from './Provider.svelte';
 
 /**
  * The key for the Jazz context.

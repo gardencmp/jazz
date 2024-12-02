@@ -13,7 +13,7 @@
   import type { AccountClass, AuthMethod } from 'jazz-tools';
   import { Account } from 'jazz-tools';
   import { type Snippet, setContext, untrack } from 'svelte';
-  import { JAZZ_CTX, type JazzContext } from './jazz.svelte';
+  import { JAZZ_CTX, type JazzContext } from './jazz.svelte.js';
 
   let { children, auth, peer, storage, schema }: Props<Acc> = $props();
 
