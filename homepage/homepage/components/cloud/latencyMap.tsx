@@ -216,17 +216,17 @@ export const MapSVG = memo(({ spacing = 1.5 }: { spacing?: number }) => {
 // export const pingColorThresholds = [
 //   { ping: 5, color: "hsl(248, 50%, 100%)" },
 //   { ping: 10, color: "hsl(248, 50%, 80%)" },
-//   { ping: 15, color: "hsl(248, 50%, 70%)" },
-//   { ping: 25, color: "hsl(248, 50%, 60%)" },
-//   { ping: 35, color: "hsl(248, 50%, 52%)" },
-//   { ping: 45, color: "hsl(248, 50%, 47%)" },
-//   { ping: 55, color: "hsl(248, 50%, 45%)" },
-//   { ping: 65, color: "hsl(248, 50%, 40%)" },
+//   { ping: 15, color: "hsl(248, 50%, 72%)" },
+//   { ping: 25, color: "hsl(248, 50%, 62%)" },
+//   { ping: 35, color: "hsl(248, 50%, 54%)" },
+//   { ping: 45, color: "hsl(248, 50%, 49%)" },
+//   { ping: 55, color: "hsl(248, 50%, 43%)" },
+//   { ping: 65, color: "hsl(248, 50%, 39%)" },
 //   { ping: 100, color: "hsl(248, 50%, 35%)" },
 //   { ping: 150, color: "hsl(248, 50%, 28%)" },
-//   { ping: 200, color: "hsl(248, 50%, 19%)" },
-//   { ping: 300, color: "hsl(248, 50%, 16%)" },
-//   { ping: 1000, color: "hsl(248, 50%, 13%)" },
+//   { ping: 200, color: "hsl(248, 50%, 23%)" },
+//   { ping: 300, color: "hsl(248, 50%, 20%)" },
+//   { ping: 1000, color: "hsl(248, 50%, 16%)" },
 // ];
 
 export const pingColorThresholds = [
