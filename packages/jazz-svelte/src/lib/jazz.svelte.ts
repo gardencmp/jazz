@@ -1,18 +1,21 @@
 import {
   type BrowserContext,
   type BrowserGuestContext,
-  consumeInviteLinkFromWindowLocation,
-} from "jazz-browser";
+  consumeInviteLinkFromWindowLocation
+} from 'jazz-browser';
 import type {
+  AccountClass,
   AnonymousJazzAgent,
   CoValue,
   CoValueClass,
   DeeplyLoaded,
   DepthsIn,
-  ID,
-} from "jazz-tools";
-import { Account, createCoValueObservable } from "jazz-tools";
-import { getContext, untrack } from "svelte";
+  ID
+} from 'jazz-tools';
+import { Account, createCoValueObservable } from 'jazz-tools';
+import { getContext, untrack, type Component } from 'svelte';
+import type { Props } from './Provider.svelte';
+import Provider from './Provider.svelte';
 
 /**
  * The key for the Jazz context.
@@ -38,10 +41,24 @@ export function getJazzContext<Acc extends Account>() {
  * Create a Jazz app.
  * @returns The Jazz app.
  */
-export function createJazzApp<Acc extends Account>() {
+export function createJazzApp<Acc extends Account = Account>({
+  AccountSchema = Account as unknown as AccountClass<Acc>
+}: {
+  AccountSchema?: AccountClass<Acc>;
+} = {}) {
+  type PropsWithoutSchema<Acc extends Account = Account> = Omit<Props<Acc>, 'schema'>;
+
+  // Create a provider component with the schema baked in
+  const ProviderWithSchema: Component<PropsWithoutSchema<Acc>> = (internal, props) => {
+    return Provider(internal, {
+      ...props,
+      schema: AccountSchema
+    });
+  };
+
   function useAccount(): { me: Acc | undefined; logOut: () => void };
   function useAccount<D extends DepthsIn<Acc>>(
-    depth: D,
+    depth: D
   ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
   /**
    * Use the current account with a optional depth.
@@ -49,36 +66,36 @@ export function createJazzApp<Acc extends Account>() {
    * @returns The current account.
    */
   function useAccount<D extends DepthsIn<Acc>>(
-    depth?: D,
+    depth?: D
   ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
     const ctx = getJazzContext<Acc>();
     if (!ctx?.current) {
-      throw new Error("useAccount must be used within a JazzProvider");
+      throw new Error('useAccount must be used within a JazzProvider');
     }
-    if (!("me" in ctx.current)) {
+    if (!('me' in ctx.current)) {
       throw new Error(
-        "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()",
+        "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()"
       );
     }
     const me = useCoState<Acc, D>(
       ctx.current.me.constructor as CoValueClass<Acc>,
       (ctx.current as BrowserContext<Acc>).me.id,
-      depth,
+      depth
     );
     return {
       get me() {
-        if (!ctx.current || !("me" in ctx.current)) return;
+        if (!ctx.current || !('me' in ctx.current)) return;
         return depth === undefined ? me.current || ctx.current.me : me.current;
       },
       logOut() {
         return ctx.current?.logOut();
-      },
+      }
     };
   }
 
   function useAccountOrGuest(): { me: Acc | AnonymousJazzAgent };
   function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: D,
+    depth: D
   ): { me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent };
   /**
    * Use the current account or guest with a optional depth.
@@ -86,30 +103,30 @@ export function createJazzApp<Acc extends Account>() {
    * @returns The current account or guest.
    */
   function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth?: D,
+    depth?: D
   ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
     const ctx = getJazzContext<Acc>();
 
     if (!ctx?.current) {
-      throw new Error("useAccountOrGuest must be used within a JazzProvider");
+      throw new Error('useAccountOrGuest must be used within a JazzProvider');
     }
 
-    const contextMe = "me" in ctx.current ? ctx.current.me : undefined;
+    const contextMe = 'me' in ctx.current ? ctx.current.me : undefined;
 
     const me = useCoState<Acc, D>(
       contextMe?.constructor as CoValueClass<Acc>,
       contextMe?.id,
-      depth,
+      depth
     );
 
     // If the context has a me, return the account.
-    if ("me" in ctx.current) {
+    if ('me' in ctx.current) {
       return {
         get me() {
           return depth === undefined
             ? me.current || (ctx.current as BrowserContext<Acc>)?.me
             : me.current;
-        },
+        }
       };
     }
     // If the context has no me, return the guest.
@@ -117,7 +134,7 @@ export function createJazzApp<Acc extends Account>() {
       return {
         get me() {
           return (ctx.current as BrowserGuestContext)?.guest;
-        },
+        }
       };
     }
   }
@@ -132,12 +149,12 @@ export function createJazzApp<Acc extends Account>() {
   function useCoState<V extends CoValue, D extends DepthsIn<V> = []>(
     Schema: CoValueClass<V>,
     id: ID<V> | undefined,
-    depth: D = [] as D,
+    depth: D = [] as D
   ): {
     current?: DeeplyLoaded<V, D>;
   } {
     const ctx = getJazzContext<Acc>();
-    
+
     // Create state and a stable observable
     let state = $state.raw<DeeplyLoaded<V, D> | undefined>(undefined);
     const observable = $state.raw(createCoValueObservable());
@@ -157,19 +174,19 @@ export function createJazzApp<Acc extends Account>() {
       return observable.subscribe(
         Schema,
         id,
-        "me" in currentCtx ? currentCtx.me : currentCtx.guest,
+        'me' in currentCtx ? currentCtx.me : currentCtx.guest,
         depth,
         () => {
           // Get current value from our stable observable
           state = observable.getCurrentValue();
-        },
+        }
       );
     });
 
     return {
       get current() {
         return state;
-      },
+      }
     };
   }
 
@@ -183,7 +200,7 @@ export function createJazzApp<Acc extends Account>() {
   function useAcceptInvite<V extends CoValue>({
     invitedObjectSchema,
     onAccept,
-    forValueHint,
+    forValueHint
   }: {
     invitedObjectSchema: CoValueClass<V>;
     onAccept: (projectID: ID<V>) => void;
@@ -193,13 +210,11 @@ export function createJazzApp<Acc extends Account>() {
     const _onAccept = onAccept;
 
     if (!ctx.current) {
-      throw new Error("useAcceptInvite must be used within a JazzProvider");
+      throw new Error('useAcceptInvite must be used within a JazzProvider');
     }
 
-    if (!("me" in ctx.current)) {
-      throw new Error(
-        "useAcceptInvite can't be used in a JazzProvider with auth === 'guest'.",
-      );
+    if (!('me' in ctx.current)) {
+      throw new Error("useAcceptInvite can't be used in a JazzProvider with auth === 'guest'.");
     }
 
     // Subscribe to the onAccept function.
@@ -213,22 +228,23 @@ export function createJazzApp<Acc extends Account>() {
         const result = consumeInviteLinkFromWindowLocation({
           as: (ctx.current as BrowserContext<Acc>).me,
           invitedObjectSchema,
-          forValueHint,
+          forValueHint
         });
         // If the result is valid, call the onAccept function.
         result
           .then((result) => result && _onAccept(result?.valueID))
           .catch((e) => {
-            console.error("Failed to accept invite", e);
+            console.error('Failed to accept invite', e);
           });
       });
     });
   }
 
   return {
+    Provider: ProviderWithSchema,
     useAccount,
     useAccountOrGuest,
     useCoState,
-    useAcceptInvite,
+    useAcceptInvite
   };
 }
