@@ -1,6 +1,6 @@
 import { ID } from "jazz-tools";
 import { useCoState } from "./main.tsx";
-import { ReactionTypes, Reactions } from "./schema.ts";
+import { ReactionType, ReactionTypes, Reactions } from "./schema.ts";
 
 const reactionEmojiMap: {
   [reaction in (typeof ReactionTypes)[number]]: string;
@@ -13,8 +13,28 @@ const reactionEmojiMap: {
   chonkers: "🐘",
 };
 
-const ReactionForm = ({ reactions }: { reactions: Reactions }) => (
-  <div className="reaction-form">
+export function ReactionsScreen(props: { id: ID<Reactions> }) {
+  const reactions = useCoState(Reactions, props.id, []);
+
+  if (!reactions) return;
+
+  return (
+    <>
+      <section>
+        <h1>Add your reaction</h1>
+        <ReactionButtons reactions={reactions} />
+      </section>
+
+      <section>
+        <h2>Reactions from you and other users</h2>
+        <ReactionOverview reactions={reactions} />
+      </section>
+    </>
+  );
+}
+
+const ReactionButtons = ({ reactions }: { reactions: Reactions }) => (
+  <div className="reaction-buttons">
     {ReactionTypes.map((reactionType) => (
       <button
         key={reactionType}
@@ -32,43 +52,13 @@ const ReactionForm = ({ reactions }: { reactions: Reactions }) => (
   </div>
 );
 
-export function ReactionsScreen(props: { id: ID<Reactions> }) {
-  const reactions = useCoState(Reactions, props.id, []);
-
-  if (!reactions) return;
-
-  return (
-    <>
-      <section>
-        <h1>Add your reaction</h1>
-        <ReactionForm reactions={reactions} />
-      </section>
-
-      <section>
-        <h2>Reactions from you and other users</h2>
-        {reactions && <ReactionOverview reactions={reactions} />}
-      </section>
-    </>
-  );
-}
-
 const ReactionOverview = ({ reactions }: { reactions: Reactions }) => (
   <>
-    {ReactionTypes.map((reactionType) => {
-      const reactionsOfThisType = Object.values(reactions).filter(
-        (entry) => entry.value === reactionType,
-      );
-
-      if (reactionsOfThisType.length === 0) return null;
-
-      return (
-        <div key={reactionType} className="reaction-row">
-          <span>{reactionEmojiMap[reactionType]}</span>{" "}
-          {reactionsOfThisType
-            .map((reaction) => reaction.by?.profile?.name)
-            .join(", ")}
-        </div>
-      );
-    })}
+    {Object.values(reactions).map((reaction) => (
+      <div key={reaction.by?.profile?.name} className="reaction-row">
+        {reactionEmojiMap[reaction.value as ReactionType]}{" "}
+        {reaction.by?.profile?.name}
+      </div>
+    ))}
   </>
 );

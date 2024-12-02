@@ -79,12 +79,12 @@ section {
   margin-bottom: 2rem;
 }
 
-.reaction-form {
+.reaction-buttons {
   display: flex;
   gap: 0.5rem;
 }
 
-.reaction-form button {
+.reaction-buttons button {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1.5rem;
@@ -92,12 +92,12 @@ section {
   line-height: 1;
 }
 
-.reaction-form button.active {
+.reaction-buttons button.active {
   background-color: blue;
   border-color: blue;
 }
 
-.reaction-form button:not(.active) {
+.reaction-buttons button:not(.active) {
   background-color: transparent;
 }
 

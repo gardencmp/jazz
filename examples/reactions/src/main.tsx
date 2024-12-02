@@ -19,7 +19,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       >
         {children}
       </Jazz.Provider>
-      <DemoAuthBasicUI appName="Image upload" state={authState} />
+      <DemoAuthBasicUI appName="Reactions" state={authState} />
     </>
   );
 }
