@@ -16,6 +16,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { MapSVG } from "../cloud/latencyMap";
 
 const features = [
   {
@@ -138,44 +139,51 @@ export function FeaturesSection() {
           </Card>
         ))}
 
-        <div className="border p-4 sm:p-8 shadow-sm rounded-xl col-span-2 sm:col-span-4 space-y-5">
-          <H3>Jazz Cloud</H3>
-          <Prose className="max-w-xl">
-            <p>
-              Jazz Cloud is a real-time sync and storage infrastructure that
-              scales your Jazz app up to millions of users.{" "}
-              <strong>Instant setup, no configuration needed.</strong>
-            </p>
-          </Prose>
-          <ul className="flex flex-col sm:flex-row gap-4 text-sm">
-            {[
-              "Data & blob storage",
-              "Global sync",
-              "No limits for public alpha",
-            ].map((feature) => (
-              <li
-                key={feature}
-                className="flex items-center gap-1.5 whitespace-nowrap"
-              >
-                <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-white/10">
-                  <CheckIcon size={12} strokeWidth={3} />
-                </span>
-                {feature}
-              </li>
-            ))}
-          </ul>
-          <div className="flex items-center flex-wrap gap-x-5 flex-wrap gap-y-3">
-            <Button href="/cloud" variant="primary">
-              View free tier & pricing
-            </Button>
+        <div className="relative border p-4 sm:p-8 shadow-sm rounded-xl col-span-2 sm:col-span-4 flex flex-col justify-end">
+          <div className="absolute top-6 left-[23%] -right-3 bottom-30">
+            <MapSVG spacing={3} />
           </div>
-          <Prose size="sm">
-            Or{" "}
-            <Link href="/docs/sync-and-storage#running-your-own">
-              self-host
-            </Link>
-            .
-          </Prose>
+
+          <H3>Jazz Cloud</H3>
+          <div className="relative z-10 space-y-4">
+            <Prose className="max-w-[45%]" size="sm">
+              <p>
+                Jazz Cloud is real-time sync and storage infrastructure that
+                scales your Jazz app up to millions of users.{" "}
+                <strong>Instant setup, no config.</strong>
+              </p>
+            </Prose>
+            <div className="flex items-center flex-wrap gap-3">
+              <Button href="/cloud" variant="primary">
+                View free tier & pricing
+              </Button>
+
+              <Prose size="sm">
+                or{" "}
+                <Link href="/docs/sync-and-storage#running-your-own">
+                  self-host
+                </Link>
+                .
+              </Prose>
+            </div>
+            <ul className="flex flex-col sm:flex-row gap-4 text-sm">
+              {[
+                "Data & blob storage",
+                "Global sync",
+                "No limits for public alpha",
+              ].map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-white/10">
+                    <CheckIcon size={12} strokeWidth={3} />
+                  </span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

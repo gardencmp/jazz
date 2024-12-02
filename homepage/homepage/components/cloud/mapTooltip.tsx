@@ -21,7 +21,7 @@ export default function MapTooltip() {
         const ping = parseInt(circ.dataset.ping || "0");
         const via = circ.dataset.via;
         const to = circ.dataset.to;
-        const text = `${ping} via ${via} to ${to}`;
+        const text = `${ping}ms via ${via} to ${to}`;
 
         el.style.display = "flex";
 
@@ -44,8 +44,10 @@ export default function MapTooltip() {
     };
   }, []);
 
-  return <div className="map-tooltip absolute pointer-events-none text-xs bg-stone-925 text-stone-50 p-2 rounded-lg gap-1 items-center">
-    <div className="w-3 h-3 rounded-full"></div>
-    <div className="text-xs"></div>
-  </div>;
+  return (
+    <div className="map-tooltip absolute pointer-events-none text-xs bg-stone-925 text-stone-50 p-2 rounded-lg gap-1 items-center">
+      <div className="w-3 h-3 rounded-full"></div>
+      <div className="text-xs"></div>
+    </div>
+  );
 }

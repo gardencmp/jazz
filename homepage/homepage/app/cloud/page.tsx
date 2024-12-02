@@ -1,4 +1,5 @@
 import { Pricing } from "@/components/Pricing";
+import { LatencyMap } from "@/components/cloud/latencyMap";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import {
   H2,
@@ -15,7 +16,6 @@ import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/S
 import CloudPlusBackup from "./cloudPlusBackup.mdx";
 import CloudPlusDIY from "./cloudPlusDIY.mdx";
 import CompletelyDIY from "./completelyDIY.mdx";
-import LatencyMap from "@/components/cloud/latencyMap";
 
 export const metadata = {
   title: "Jazz Cloud",

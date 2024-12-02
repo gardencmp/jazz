@@ -1,16 +1,16 @@
 import React, { memo, useEffect } from "react";
 
-import land from "./ne_110m_land.json";
 import * as turf from "@turf/turf";
 import type { FeatureCollection, Point, Position } from "geojson";
+import land from "./ne_110m_land.json";
 
-// generated with globalping ping cloud.jazz.tools from world --limit 50 --json > pings.json
-import pings from "./pings.json";
 import MapTooltip from "./mapTooltip";
+// generated with: globalping ping cloud.jazz.tools from world --limit 500 --packets 16 --json | jq "del(.results[].result.rawOutput)" > pings.json
+import pings from "./pings.json";
 
-const PingMap = () => {
+export const LatencyMap = () => {
   return (
-    <div className="relative mb-10 -mx-[10rem] -mt-5 bg-stone-950 rounded-lg">
+    <div className="relative mb-10 -mx-[10rem] -mt-5 rounded-lg">
       <MapSVG />
       <MapTooltip />
       <div className="absolute bottom-4 left-[10rem] flex flex-col gap-1">
@@ -28,35 +28,84 @@ const PingMap = () => {
   );
 };
 
-const MapSVG = memo(() => {
+export const MapSVG = memo(({ spacing = 1.5 }: { spacing?: number }) => {
   // Define the data points with their latitudes, longitudes, and ping times
   const serverLocations = [
     {
-      city: "LosAngeles",
+      city: "Los Angeles",
       lat: 34.0522,
       lng: -118.2437,
       ip: "134.195.91.235",
       color: "hsl(0, 50%, 50%)",
     },
     {
-      city: "NewYork",
+      city: "New York",
       lat: 40.7128,
       lng: -74.006,
       ip: "45.45.219.149",
-      color: "hsl(100, 50%, 50%)",
+      color: "hsl(25, 50%, 50%)",
     },
     {
       city: "London",
       lat: 51.5074,
       lng: -0.1278,
       ip: "150.107.201.83",
-      color: "hsl(200, 50%, 50%)",
+      color: "hsl(50, 50%, 50%)",
     },
     {
       city: "Singapore",
       lat: 1.3521,
       lng: 103.8198,
       ip: "103.214.23.227",
+      color: "hsl(250, 50%, 50%)",
+    },
+    {
+      city: "Sydney",
+      lat: -33.8688,
+      lng: 151.2153,
+      ip: "103.73.65.179",
+      color: "hsl(100, 50%, 50%)",
+    },
+    {
+      city: "Tokyo",
+      lat: 35.6895,
+      lng: 139.7014,
+      ip: "103.173.179.181",
+      color: "hsl(150, 50%, 50%)",
+    },
+    {
+      city: "Tel Aviv",
+      lat: 32.0853,
+      lng: 34.7818,
+      ip: "64.176.162.228",
+      color: "hsl(200, 50%, 50%)",
+    },
+    {
+      city: "Johannesburg",
+      lat: -26.2041,
+      lng: 28.0473,
+      ip: "139.84.228.42",
+      color: "hsl(225, 50%, 50%)",
+    },
+    {
+      city: "Vienna",
+      lat: 48.2085,
+      lng: 16.3721,
+      ip: "185.175.59.44",
+      color: "hsl(75, 50%, 50%)",
+    },
+    {
+      city: "Sao Paulo",
+      lat: -23.5505,
+      lng: -46.6333,
+      ip: "216.238.99.7",
+      color: "hsl(275, 50%, 50%)",
+    },
+    {
+      city: "Dallas",
+      lat: 32.7767,
+      lng: -96.797,
+      ip: "45.32.192.94",
       color: "hsl(300, 50%, 50%)",
     },
   ];
@@ -64,7 +113,6 @@ const MapSVG = memo(() => {
   // create a grid of dots that are green if on land (contained in landOutlines) and blue if not
   const extentX = 720;
   const extentY = 160;
-  const spacing = 1.5;
   const grid = new Array(Math.round(extentX / spacing))
     .fill(0)
     .map((_, i) =>
@@ -72,6 +120,8 @@ const MapSVG = memo(() => {
         .fill(0)
         .map((_, j) => ({ x: i, y: j })),
     );
+  // manually add Hawaii by lat/lng
+  grid.push([{ x: -155.844437, y: 19.8987 }]);
   const dots = grid.flatMap((row) =>
     row.map(({ x, y }) => ({
       x: -450 + x * spacing + ((y % 2) * spacing) / 2,
@@ -102,6 +152,12 @@ const MapSVG = memo(() => {
           .map((dot, index) => {
             const nearestMeasurement = pings.results.reduce(
               (minDistance, ping) => {
+                if (
+                  !ping.result.stats ||
+                  ping.result.stats.rcv === 0 ||
+                  ping.result.stats.avg === null
+                )
+                  return minDistance;
                 const distance = turf.distance(
                   dot.geometry.coordinates,
                   [ping.probe.longitude, ping.probe.latitude],
@@ -109,13 +165,13 @@ const MapSVG = memo(() => {
                 );
                 const totalPing =
                   (2 * 1000 * distance) / (0.66 * 299_792) +
-                  ping.result.stats.avg;
+                  ping.result.stats.min;
 
                 if (distance < minDistance.dist) {
                   return {
                     city: ping.probe.city,
                     dist: distance,
-                    ping: ping.result.stats.avg,
+                    ping: ping.result.stats.min,
                     totalPing,
                     resolvedAddress: ping.result.resolvedAddress,
                   };
@@ -131,24 +187,20 @@ const MapSVG = memo(() => {
               },
             );
 
-            // fill=${
-            //   serverLocations.find(
-            //     (srv) => srv.ip == nearestMeasurement.resolvedAddress,
-            //   )?.color
-            // }
             return `<circle cx="${
               dot.geometry.coordinates[0] * scaleX + offsetX
             }" cy="${
               -dot.geometry.coordinates[1] * scaleY + offsetY
-            }" r="${4.2 / spacing}" fill="${
+            }" r="${1.9 * spacing}" fill="${
               pingColorThresholds.find(
                 (t) => nearestMeasurement.totalPing < t.ping,
               )?.color
-            }" data-ping="${
-              nearestMeasurement.totalPing.toFixed(1)
-            }ms" data-via="${
-              nearestMeasurement.city + ""
-            }" data-to="${
+              // serverLocations.find(
+              //   (srv) => srv.ip == nearestMeasurement.resolvedAddress,
+              // )?.color
+            }" data-ping="${nearestMeasurement.totalPing.toFixed(
+              1,
+            )}ms" data-via="${nearestMeasurement.city + ""}" data-to="${
               serverLocations.find(
                 (srv) => srv.ip == nearestMeasurement.resolvedAddress,
               )?.city
@@ -161,34 +213,34 @@ const MapSVG = memo(() => {
 });
 
 // dark mode
-export const pingColorThresholds = [
-  { ping: 5, color: "hsl(244, 50%, 100%)" },
-  { ping: 10, color: "hsl(244, 50%, 80%)" },
-  { ping: 15, color: "hsl(244, 50%, 70%)" },
-  { ping: 25, color: "hsl(244, 50%, 60%)" },
-  { ping: 35, color: "hsl(244, 50%, 52%)" },
-  { ping: 45, color: "hsl(244, 50%, 40%)" },
-  { ping: 55, color: "hsl(244, 50%, 30%)" },
-  { ping: 65, color: "hsl(244, 50%, 25%)" },
-  { ping: 100, color: "hsl(244, 50%, 22%)" },
-  { ping: 200, color: "hsl(244, 50%, 19%)" },
-  { ping: 300, color: "hsl(244, 50%, 16%)" },
-  { ping: 1000, color: "hsl(244, 50%, 13%)" },
-];
-
 // export const pingColorThresholds = [
-//   { ping: 5, color: "hsl(244, 100%, 50%)" },
-//   { ping: 10, color: "hsl(244, 90%, 55%)" },
-//   { ping: 15, color: "hsl(244, 80%, 56%)" },
-//   { ping: 25, color: "hsl(244, 70%, 57%)" },
-//   { ping: 35, color: "hsl(244, 65%, 58%)" },
-//   { ping: 45, color: "hsl(244, 60%, 59%)" },
-//   { ping: 55, color: "hsl(244, 55%, 63%)" },
-//   { ping: 65, color: "hsl(244, 50%, 69%)" },
-//   { ping: 100, color: "hsl(244, 45%, 73%)" },
-//   { ping: 200, color: "hsl(244, 40%, 78%)" },
-//   { ping: 300, color: "hsl(244, 35%, 82%)" },
-//   { ping: 1000, color: "hsl(244, 30%, 85%)" },
+//   { ping: 5, color: "hsl(248, 50%, 100%)" },
+//   { ping: 10, color: "hsl(248, 50%, 80%)" },
+//   { ping: 15, color: "hsl(248, 50%, 70%)" },
+//   { ping: 25, color: "hsl(248, 50%, 60%)" },
+//   { ping: 35, color: "hsl(248, 50%, 52%)" },
+//   { ping: 45, color: "hsl(248, 50%, 47%)" },
+//   { ping: 55, color: "hsl(248, 50%, 45%)" },
+//   { ping: 65, color: "hsl(248, 50%, 40%)" },
+//   { ping: 100, color: "hsl(248, 50%, 35%)" },
+//   { ping: 150, color: "hsl(248, 50%, 28%)" },
+//   { ping: 200, color: "hsl(248, 50%, 19%)" },
+//   { ping: 300, color: "hsl(248, 50%, 16%)" },
+//   { ping: 1000, color: "hsl(248, 50%, 13%)" },
 // ];
 
-export default PingMap;
+export const pingColorThresholds = [
+  { ping: 5, color: "hsl(248, 100%, 90%)" },
+  { ping: 10, color: "hsl(248, 90%, 80%)" },
+  { ping: 15, color: "hsl(248, 80%, 70%)" },
+  { ping: 25, color: "hsl(248, 70%, 60%)" },
+  { ping: 35, color: "hsl(248, 60%, 52%)" },
+  { ping: 45, color: "hsl(248, 50%, 47%)" },
+  { ping: 55, color: "hsl(248, 45%, 45%)" },
+  { ping: 65, color: "hsl(248, 40%, 43%)" },
+  { ping: 100, color: "hsl(248, 35%, 40%)" },
+  { ping: 150, color: "hsl(248, 30%, 37%)" },
+  { ping: 200, color: "hsl(248, 25%, 33%)" },
+  { ping: 300, color: "hsl(248, 20%, 30%)" },
+  { ping: 1000, color: "hsl(248, 15%, 25%)" },
+];
