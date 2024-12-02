@@ -1,5 +1,5 @@
 {
-  "name": "@jazz-e2e/covalues",
+  "name": "@jazz/e2e-test-suite",
   "private": true,
   "version": "0.0.110",
   "type": "module",

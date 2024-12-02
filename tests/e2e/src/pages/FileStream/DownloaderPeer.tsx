@@ -1,6 +1,6 @@
 import { Account, FileStream, ID } from "jazz-tools";
 import { useEffect } from "react";
-import { useAccount, useCoState } from "./jazz";
+import { useAccount, useCoState } from "../../jazz";
 import { UploadedFile } from "./schema";
 
 async function getUploadedFile(me: Account, uploadedFileId: ID<UploadedFile>) {

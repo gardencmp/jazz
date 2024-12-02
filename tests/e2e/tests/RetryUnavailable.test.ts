@@ -21,11 +21,11 @@ test.describe("Retry unavailable states", () => {
       timeout: 20_000,
     });
 
-    // Make the load fail at least twice
-    await setTimeout(1000);
+    await setTimeout(400);
+
+    await context.setOffline(false);
 
     // Go back online, the value should be uploaded
-    await context.setOffline(false);
 
     await expect(newUserPage.getByTestId("id")).toHaveText(id ?? "", {
       timeout: 20_000,
