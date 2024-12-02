@@ -1,10 +1,30 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Link, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AuthAndJazz } from "./jazz";
+import { FileStreamTest } from "./pages/FileStream";
 import { ResumeSyncState } from "./pages/ResumeSyncState";
 import { RetryUnavailable } from "./pages/RetryUnavailable";
 import { TestInput } from "./pages/TestInput";
+
+function Index() {
+  return (
+    <ul>
+      <li>
+        <Link to="/test-input">Test Input</Link>
+      </li>
+      <li>
+        <Link to="/resume-sync">Resume Sync</Link>
+      </li>
+      <li>
+        <Link to="/file-stream">File Stream</Link>
+      </li>
+      <li>
+        <Link to="/retry-unavailable">Retry Unavailable</Link>
+      </li>
+    </ul>
+  );
+}
 
 const router = createBrowserRouter([
   {
@@ -20,8 +40,12 @@ const router = createBrowserRouter([
     element: <RetryUnavailable />,
   },
   {
+    path: "/file-stream",
+    element: <FileStreamTest />,
+  },
+  {
     path: "/",
-    element: <TestInput />,
+    element: <Index />,
   },
 ]);
 

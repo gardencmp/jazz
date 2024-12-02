@@ -1,9 +1,9 @@
 import { setTimeout } from "node:timers/promises";
 import { expect, test } from "@playwright/test";
 
-test.describe("BinaryCoStream - Sync", () => {
+test.describe("FileStream - Sync", () => {
   test("should sync a file between the two peers", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/file-stream");
 
     await page.getByRole("button", { name: "Upload Test File" }).click();
 
@@ -14,7 +14,7 @@ test.describe("BinaryCoStream - Sync", () => {
 
   test("should handle reconnections", async ({ page, browser }) => {
     const context = browser.contexts()[0];
-    await page.goto("/?fileSize=" + 1e6); // 1MB file
+    await page.goto("/file-stream?fileSize=" + 1e6); // 1MB file
 
     await page.getByRole("button", { name: "Upload Test File" }).click();
 

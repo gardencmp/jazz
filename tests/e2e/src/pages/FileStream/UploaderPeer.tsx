@@ -1,12 +1,12 @@
 import { ID } from "jazz-tools";
 import { useEffect, useState } from "react";
-import { useAccount, useCoState } from "./jazz";
+import { useAccount, useCoState } from "../../jazz";
+import { createCredentiallessIframe } from "../../lib/createCredentiallessIframe";
+import { waitForCoValue } from "../../lib/waitForCoValue";
 import { BytesRadioGroup } from "./lib/BytesRadioGroup";
-import { createCredentiallessIframe } from "./lib/createCredentiallessIframe";
 import { generateTestFile } from "./lib/generateTestFile";
 import { getDownloaderPeerUrl } from "./lib/getDownloaderPeerUrl";
 import { getDefaultFileSize, getIsAutoUpload } from "./lib/searchParams";
-import { waitForCoValue } from "./lib/waitForCoValue";
 import { UploadedFile } from "./schema";
 
 export function UploaderPeer() {

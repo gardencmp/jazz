@@ -1,4 +1,4 @@
-import { UploadedFile } from "src/schema";
+import { UploadedFile } from "../schema";
 
 export function getDownloaderPeerUrl(value: UploadedFile) {
   const url = new URL(window.location.href);
