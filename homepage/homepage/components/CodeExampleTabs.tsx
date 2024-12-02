@@ -24,7 +24,7 @@ export function CodeExampleTabs({
   return (
     <div
       className={clsx(
-        "bg-white h-[40rem] max-h-[80vh] flex flex-col",
+        "bg-white h-full flex flex-col",
         "dark:bg-stone-925",
         className,
       )}

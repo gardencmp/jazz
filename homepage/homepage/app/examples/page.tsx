@@ -18,6 +18,7 @@ import {
   Schema_ts as ReactionsSchema,
   ReactionsScreen_tsx,
 } from "@/codeSamples/examples/reactions/src";
+import { CodeExampleTabs } from "@/components/CodeExampleTabs";
 
 type Example = {
   name: string;
@@ -29,7 +30,7 @@ type Example = {
   demoUrl?: string;
   showDemo?: boolean;
   imageUrl?: string;
-  codeSamples?: { name: string; source: string }[];
+  codeSamples?: { name: string; content: React.ReactNode }[];
 };
 
 const tech = {
@@ -250,46 +251,6 @@ const reactExamples: Example[] = [
     ),
   },
   {
-    name: "Image upload",
-    slug: "image-upload",
-    description: "Learn how to upload and delete images",
-    tech: [tech.react],
-    features: [features.imageUpload],
-    demoUrl: "https://image-upload-demo.jazz.tools",
-    illustration: <ImageUploadIllustration />,
-    showDemo: true,
-    codeSamples: [
-      {
-        name: "image-upload.tsx",
-        source: ImageUpload_tsx,
-      },
-      {
-        name: "schema.ts",
-        source: ImageUploadSchema,
-      },
-    ],
-  },
-  {
-    name: "Reactions",
-    slug: "reactions",
-    description: "Collect and render reactions from multiple users.",
-    tech: [tech.react],
-    features: [features.coFeed],
-    demoUrl: "https://reactions-demo.jazz.tools",
-    illustration: <ReactionsIllustration />,
-    showDemo: true,
-    codeSamples: [
-      {
-        name: "reactions.tsx",
-        source: ReactionsScreen_tsx,
-      },
-      {
-        name: "schema.ts",
-        source: ReactionsSchema,
-      },
-    ],
-  },
-  {
     name: "Clerk",
     slug: "clerk",
     description: "A React app that uses Clerk for authentication",
@@ -393,6 +354,49 @@ const vueExamples: Example[] = [
   },
 ];
 
+const demos = [
+  {
+    name: "Image upload",
+    slug: "image-upload",
+    description: "Learn how to upload and delete images",
+    tech: [tech.react],
+    features: [features.imageUpload],
+    demoUrl: "https://image-upload-demo.jazz.tools",
+    illustration: <ImageUploadIllustration />,
+    showDemo: true,
+    codeSamples: [
+      {
+        name: "image-upload.tsx",
+        content: <ImageUpload_tsx />,
+      },
+      {
+        name: "schema.ts",
+        content: <ImageUploadSchema />,
+      },
+    ],
+  },
+  {
+    name: "Reactions",
+    slug: "reactions",
+    description: "Collect and render reactions from multiple users.",
+    tech: [tech.react],
+    features: [features.coFeed],
+    demoUrl: "https://reactions-demo.jazz.tools",
+    illustration: <ReactionsIllustration />,
+    showDemo: true,
+    codeSamples: [
+      {
+        name: "reactions.tsx",
+        content: <ReactionsScreen_tsx />,
+      },
+      {
+        name: "schema.ts",
+        content: <ReactionsSchema />,
+      },
+    ],
+  },
+];
+
 const categories = [
   {
     name: "React",
@@ -483,69 +487,15 @@ function ExampleDemo({ example }: { example: Example }) {
       <div className="p-3 col-span-full border-b">
         <Example example={{ ...example, illustration: null }} />
       </div>
-      <div className="h-[30rem] overflow-auto col-span-3">
-        {example.codeSamples?.map(({ source: Source }) => (
-          <div className="text-base">
-            <Source />
-          </div>
-        ))}
+      <div className="h-[40rem] border-r overflow-auto col-span-3">
+        {example.codeSamples && (
+          <CodeExampleTabs tabs={example.codeSamples}></CodeExampleTabs>
+        )}
       </div>
-      <div className="h-[30rem] col-span-3">
+      <div className="col-span-3">
         <iframe width="100%" height="100%" src={demoUrl} title={name} />
       </div>
     </GappedGrid>
-  );
-
-  return (
-    <div className="col-span-full">
-      <div className="flex items-baseline justify-between mb-3">
-        <div className="flex gap-3 items-center">
-          <h2 className="font-medium text-stone-900 dark:text-white leading-none">
-            {name}
-          </h2>
-          <div className="flex gap-1">
-            {tech?.map((tech) => (
-              <p
-                className="bg-green-50 border border-green-500 text-green-600 rounded-full py-0.5 px-2 text-xs dark:bg-green-800 dark:text-green-200 dark:border-green-700"
-                key={tech}
-              >
-                {tech}
-              </p>
-            ))}
-            {features?.map((feature) => (
-              <p
-                className="bg-pink-50 border border-pink-500 text-pink-600 rounded-full py-0.5 px-2 text-xs dark:bg-pink-800 dark:text-pink-200 dark:border-pink-700"
-                key={feature}
-              >
-                {feature}
-              </p>
-            ))}
-          </div>
-        </div>
-        <div className="space-x-2">
-          <Button href={githubUrl} variant="secondary" size="sm">
-            View code
-          </Button>
-          {demoUrl && (
-            <Button href={demoUrl} variant="secondary" size="sm">
-              View demo
-            </Button>
-          )}
-        </div>
-      </div>
-      <GappedGrid className="col-span-full border divide-x shadow-sm rounded-lg dark:bg-stone-950">
-        <div className="col-span-3"></div>
-        <div className="h-[40rem] bg-stone-50 p-16 flex items-center justify-center col-span-3">
-          <iframe
-            width="100%"
-            height="100%"
-            src={demoUrl}
-            title={name}
-            className="rounded-xl shadow-lg"
-          />
-        </div>
-      </GappedGrid>
-    </div>
   );
 }
 
@@ -558,6 +508,12 @@ export default function Page() {
       />
 
       <div className="grid gap-12 lg:gap-20">
+        <GappedGrid>
+          {demos.map(
+            (demo) =>
+              demo.showDemo && <ExampleDemo key={demo.slug} example={demo} />,
+          )}
+        </GappedGrid>
         {categories.map((category) => (
           <div key={category.name}>
             <div className="flex items-center gap-3 mb-5">
