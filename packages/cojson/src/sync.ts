@@ -305,13 +305,15 @@ export class SyncManager {
     if (peerState.isServerOrStoragePeer()) {
       const initialSync = async () => {
         for (const id of this.local.coValuesStore.getKeys()) {
-          // console.log("subscribing to after peer added", id, peer.id)
           await this.subscribeToIncludingDependencies(id, peerState);
+          await this.sendNewContentIncludingDependencies(id, peerState);
 
-          peerState.optimisticKnownStates.dispatch({
-            type: "SET_AS_EMPTY",
-            id,
-          });
+          if (!peerState.optimisticKnownStates.has(id)) {
+            peerState.optimisticKnownStates.dispatch({
+              type: "SET_AS_EMPTY",
+              id,
+            });
+          }
         }
       };
       void initialSync();
