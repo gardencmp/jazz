@@ -1,3 +1,11 @@
+import { describe, expect, it } from "vitest";
+
+describe("createCoValueObservable", () => {
+  it("remove this test when circular imports are fixed", async () => {
+    expect(true).toBe(true);
+  });
+});
+
 // Uncomment this file when circular imports are fixed. Otherwise, all tests will fail.
 
 // import { describe, expect, it, vi } from "vitest";
