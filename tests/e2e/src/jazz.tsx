@@ -10,7 +10,7 @@ const peer =
 
 const Jazz = createJazzReactApp();
 
-export const { useAccount, useCoState } = Jazz;
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function getUserInfo() {
   return url.searchParams.get("userName") ?? "Mister X";
