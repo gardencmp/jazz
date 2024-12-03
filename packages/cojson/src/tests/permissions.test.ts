@@ -1033,7 +1033,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
   ).toEqual("bar2");
 });
 
-test("Admins can set group read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", () => {
+test("Admins can set group read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", async () => {
   const { node, group } = newGroupHighLevel();
 
   const childObject = group.createMap();
@@ -1057,7 +1057,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
   childObject.set("foo2", "bar2", "private");
   expect(childObject.get("foo2")).toEqual("bar2");
 
-  group.removeMember(reader);
+  await group.removeMember(reader);
 
   expect(childObject.core.getCurrentReadKey()).not.toEqual(secondReadKey);
 
@@ -2411,7 +2411,7 @@ test("Calling extend to create grand-child groups parent and child references an
   expect(childContentAsReader.get("foo")).toEqual("bar");
 });
 
-test("High-level permissions work correctly when a group is extended", () => {
+test("High-level permissions work correctly when a group is extended", async () => {
   const { group, node } = newGroupHighLevel();
   const parentGroup = node.createGroup();
 
@@ -2441,7 +2441,7 @@ test("High-level permissions work correctly when a group is extended", () => {
 
   const groupKeyBeforeRemove = group.core.getCurrentReadKey().id;
 
-  parentGroup.removeMember(reader);
+  await parentGroup.removeMember(reader);
 
   const groupKeyAfterRemove = group.core.getCurrentReadKey().id;
   expect(groupKeyAfterRemove).not.toEqual(groupKeyBeforeRemove);

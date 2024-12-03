@@ -125,6 +125,43 @@ export class RawGroup<
     return groups;
   }
 
+  loadAllChildGroups() {
+    const requests: Promise<unknown>[] = [];
+    const store = this.core.node.coValuesStore;
+    const peers = this.core.node.syncManager.getServerAndStoragePeers();
+
+    for (const key of this.keys()) {
+      if (!isChildGroupReference(key)) {
+        continue;
+      }
+
+      const id = getChildGroupId(key);
+      const child = store.get(id);
+
+      if (
+        child.state.type === "unknown" ||
+        child.state.type === "unavailable"
+      ) {
+        child.loadFromPeers(peers).catch(() => {
+          console.error(`Failed to load child group ${id}`);
+        });
+      }
+
+      requests.push(
+        child.getCoValue().then((coValue) => {
+          if (coValue === "unavailable") {
+            throw new Error(`Child group ${child.id} is unavailable`);
+          }
+
+          // Recursively load child groups
+          return expectGroup(coValue.getCurrentContent()).loadAllChildGroups();
+        }),
+      );
+    }
+
+    return Promise.all(requests);
+  }
+
   getChildGroups() {
     const groups: RawGroup[] = [];
 
@@ -230,6 +267,10 @@ export class RawGroup<
       }
     }) as (RawAccountID | AgentID)[];
 
+    // Get these early, so we fail fast if they are unavailable
+    const parentGroups = this.getParentGroups();
+    const childGroups = this.getChildGroups();
+
     const maybeCurrentReadKey = this.core.getCurrentReadKey();
 
     if (!maybeCurrentReadKey.secret) {
@@ -279,7 +320,7 @@ export class RawGroup<
 
     // when we rotate our readKey (because someone got kicked out), we also need to (recursively)
     // rotate the readKeys of all child groups (so they are kicked out there as well)
-    for (const parent of this.getParentGroups()) {
+    for (const parent of parentGroups) {
       const { id: parentReadKeyID, secret: parentReadKeySecret } =
         parent.core.getCurrentReadKey();
       if (!parentReadKeySecret) {
@@ -301,7 +342,7 @@ export class RawGroup<
       );
     }
 
-    for (const child of this.getChildGroups()) {
+    for (const child of childGroups) {
       child.rotateReadKey();
     }
   }
@@ -351,7 +392,12 @@ export class RawGroup<
    *
    * @category 2. Role changing
    */
-  removeMember(account: RawAccount | ControlledAccountOrAgent | Everyone) {
+  async removeMember(
+    account: RawAccount | ControlledAccountOrAgent | Everyone,
+  ) {
+    // Ensure all child groups are loaded before removing a member
+    await this.loadAllChildGroups();
+
     this.removeMemberInternal(account);
   }
 
