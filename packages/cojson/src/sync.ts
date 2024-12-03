@@ -403,27 +403,39 @@ export class SyncManager {
     }
 
     if (entry.state.type === "loading") {
-      const value = await entry.getCoValue();
+      // We need to return from handleLoad immediately and wait for the CoValue to be loaded
+      // in a new task, otherwise we might block further incoming content messages that would
+      // resolve the CoValue as available. This can happen when we receive fresh
+      // content from a client, but we are a server with our own upstream server(s)
+      entry
+        .getCoValue()
+        .then(async (value) => {
+          if (value === "unavailable") {
+            peer.dispatchToKnownStates({
+              type: "SET",
+              id: msg.id,
+              value: knownStateIn(msg),
+            });
+            peer.toldKnownState.add(msg.id);
 
-      if (value === "unavailable") {
-        peer.dispatchToKnownStates({
-          type: "SET",
-          id: msg.id,
-          value: knownStateIn(msg),
+            this.trySendToPeer(peer, {
+              action: "known",
+              id: msg.id,
+              header: false,
+              sessions: {},
+            }).catch((e) => {
+              console.error("Error sending known state back", e);
+            });
+
+            return;
+          }
+
+          await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
+          await this.sendNewContentIncludingDependencies(msg.id, peer);
+        })
+        .catch((e) => {
+          console.error("Error loading coValue in handleLoad loading state", e);
         });
-        peer.toldKnownState.add(msg.id);
-
-        this.trySendToPeer(peer, {
-          action: "known",
-          id: msg.id,
-          header: false,
-          sessions: {},
-        }).catch((e) => {
-          console.error("Error sending known state back", e);
-        });
-
-        return;
-      }
     }
 
     if (entry.state.type === "available") {
@@ -451,21 +463,18 @@ export class SyncManager {
           dependencyEntry.state.type === "available" ||
           dependencyEntry.state.type === "loading"
         ) {
-          this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
-            console.error(
-              `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
-              e,
-            );
-          });
-        } else {
-          throw new Error(
-            "Expected coValue dependency entry to be created, missing subscribe?",
-          );
+          this.local
+            .loadCoValueCore(
+              msg.id,
+              peer.role === "storage" ? undefined : peer.id,
+            )
+            .catch((e) => {
+              console.error(
+                `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
+                e,
+              );
+            });
         }
-      } else {
-        throw new Error(
-          `Expected coValue entry for ${msg.id} to be created on known state, missing subscribe?`,
-        );
       }
     }
 
@@ -713,8 +722,8 @@ export class SyncManager {
       const unsubscribe =
         this.syncStateSubscriptionManager.subscribeToPeerUpdates(
           peerId,
-          (knownState, uploadCompleted) => {
-            if (uploadCompleted && knownState.id === id) {
+          (knownState, syncState) => {
+            if (syncState.isUploaded && knownState.id === id) {
               resolve(true);
               unsubscribe?.();
             }

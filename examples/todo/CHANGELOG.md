@@ -1,5 +1,47 @@
 # jazz-example-todo
 
+## 0.0.128
+
+### Patch Changes
+
+- jazz-react@0.8.34
+- jazz-tools@0.8.34
+
+## 0.0.127
+
+### Patch Changes
+
+- jazz-react@0.8.33
+
+## 0.0.126
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+
+## 0.0.125
+
+### Patch Changes
+
+- jazz-react@0.8.31
+- jazz-tools@0.8.31
+
+## 0.0.124
+
+### Patch Changes
+
+- jazz-react@0.8.30
+- jazz-tools@0.8.30
+
+## 0.0.123
+
+### Patch Changes
+
+- jazz-react@0.8.29
+- jazz-tools@0.8.29
+
 ## 0.0.122
 
 ### Patch Changes

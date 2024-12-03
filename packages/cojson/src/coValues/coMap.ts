@@ -59,8 +59,8 @@ export class RawCoMapView<
     for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
       options,
     )) {
-      for (const [changeIdx, changeUntyped] of changes.entries()) {
-        const change = changeUntyped as MapOpPayload<
+      for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
+        const change = changes[changeIdx] as MapOpPayload<
           keyof Shape & string,
           Shape[keyof Shape & string]
         >;
@@ -73,10 +73,7 @@ export class RawCoMapView<
           txID,
           madeAt,
           changeIdx,
-          ...(change as MapOpPayload<
-            keyof Shape & string,
-            Shape[keyof Shape & string]
-          >),
+          ...change,
         });
       }
     }
@@ -107,6 +104,10 @@ export class RawCoMapView<
   timeFilteredOps<K extends keyof Shape & string>(
     key: K,
   ): MapOp<K, Shape[K]>[] | undefined {
+    if (key === "constructor") {
+      return undefined;
+    }
+
     if (this.atTimeFilter) {
       return this.ops[key]?.filter((op) => op.madeAt <= this.atTimeFilter!);
     } else {

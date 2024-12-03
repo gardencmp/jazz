@@ -3,9 +3,8 @@ import CursorsAndCaretsDescription from "@/app/(home)/toolkit/cursorsAndCarets.m
 import TwoWaySyncDescription from "@/app/(home)/toolkit/twoWaySync.mdx";
 import VideoPresenceCallsDescription from "@/app/(home)/toolkit/videoPresenceCalls.mdx";
 import { CodeRef } from "gcmp-design-system/src/app/components/atoms/CodeRef";
-import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
-import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { P } from "gcmp-design-system/src/app/components/atoms/Paragraph";
+import { FeatureCard } from "gcmp-design-system/src/app/components/molecules/FeatureCard";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
@@ -15,39 +14,40 @@ export function ComingSoonSection() {
     <div>
       <SectionHeader title="More features coming soon" />
 
-      <GappedGrid>
-        <GridCard>
-          <H3>Cursors & carets</H3>
-          <P className="text-lg">Ready-made spatial presence.</P>
+      <GappedGrid cols={4}>
+        <FeatureCard className="p-4" label={<h3>Cursors & carets</h3>}>
+          <P>Ready-made spatial presence.</P>
           <Prose size="sm">
             <CursorsAndCaretsDescription />
           </Prose>
-        </GridCard>
+        </FeatureCard>
 
-        <GridCard>
-          <H3>Two-way sync to your DB</H3>
-          <P className="text-lg">Add Jazz to an existing app.</P>
+        <FeatureCard className="p-4" label={<h3>Two-way sync to your DB</h3>}>
+          <P>Add Jazz to an existing app.</P>
           <Prose size="sm">
             <TwoWaySyncDescription />
           </Prose>
-        </GridCard>
+        </FeatureCard>
 
-        <GridCard>
-          <H3>Video presence & calls</H3>
-          <P className="text-lg">Stream and record audio & video.</P>
+        <FeatureCard className="p-4" label={<h3>Video presence & calls</h3>}>
+          <P>Stream and record audio & video.</P>
           <Prose size="sm">
             <VideoPresenceCallsDescription />
           </Prose>
-        </GridCard>
+        </FeatureCard>
 
-        <GridCard>
-          <H3>
-            <CodeRef>CoPlainText</CodeRef> & <CodeRef>CoRichText</CodeRef>
-          </H3>
+        <FeatureCard
+          className="p-4"
+          label={
+            <h3>
+              <CodeRef>CoPlainText</CodeRef> & <CodeRef>CoRichText</CodeRef>
+            </h3>
+          }
+        >
           <Prose size="sm">
             <CoPlainTextDescription />
           </Prose>
-        </GridCard>
+        </FeatureCard>
       </GappedGrid>
     </div>
   );

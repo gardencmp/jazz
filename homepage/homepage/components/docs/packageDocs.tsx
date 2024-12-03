@@ -70,7 +70,11 @@ function RenderPackageChild({
     return child.getAllSignatures().map((signature, i) => {
       const paramTypes = printParamsWithTypes(signature);
       return (
-        <div key={i} id={child.name} className="not-prose mt-4">
+        <div
+          key={i}
+          id={child.name}
+          className="not-prose mt-4 p-3 rounded bg-stone-50 dark:bg-stone-925"
+        >
           {
             <Highlight hide={[0, 2]}>
               {`function \n${printSimpleSignature(child, signature) + ":"}\n {}`}
@@ -171,10 +175,7 @@ function RenderClassOrInterface({
         </div>
       )}
       {classOrInterface.categories?.map((category) => (
-        <div
-          className="flex flex-col divide-y divide-stone-200 dark:divide-stone-900"
-          key={category.title}
-        >
+        <div className="flex flex-col mt-6 first:mt-0" key={category.title}>
           <PropCategory
             name={category.title}
             description={renderSummary(

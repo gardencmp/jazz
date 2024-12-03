@@ -19,7 +19,7 @@
   },
   "type": "module",
   "license": "MIT",
-  "version": "0.8.28",
+  "version": "0.8.34",
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "typescript": "^5.3.3",

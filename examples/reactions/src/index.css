@@ -1,0 +1,106 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #000;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --border-color: #404040;
+}
+
+button.btn {
+  border-radius: 8px;
+  border: 0;
+  padding: 0.6em 1.2em;
+  font-weight: 500;
+  background-color: #1a1a1a;
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --border-color: #e5e5e5;
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button.btn {
+    background-color: #f9f9f9;
+  }
+}
+
+* {
+  border-color: var(--border-color);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+h1,
+h2 {
+  margin-bottom: 1rem;
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+section {
+  margin-bottom: 2rem;
+}
+
+.reaction-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.reaction-buttons button {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.reaction-buttons button.active {
+  background-color: blue;
+  border-color: blue;
+}
+
+.reaction-buttons button:not(.active) {
+  background-color: transparent;
+}
+
+.reaction-row {
+  margin: 0.5rem 0;
+}

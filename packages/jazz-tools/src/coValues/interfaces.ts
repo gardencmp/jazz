@@ -58,7 +58,18 @@ export function isCoValueClass<V extends CoValue>(
   return typeof value === "function" && value.fromRaw !== undefined;
 }
 
-/** @category CoValues */
+/**
+ * IDs are unique identifiers for `CoValue`s.
+ * Can be used with a type argument to refer to a specific `CoValue` type.
+ *
+ * @example
+ *
+ * ```ts
+ * type AccountID = ID<Account>;
+ * ```
+ *
+ * @category CoValues
+ */
 export type ID<T> = CojsonInternalTypes.RawCoID & IDMarker<T>;
 
 type IDMarker<out T> = { __type(_: never): T };
@@ -217,6 +228,7 @@ export function subscribeToCoValue<V extends CoValue, Depth>(
 
 export function createCoValueObservable<V extends CoValue, Depth>() {
   let currentValue: DeeplyLoaded<V, Depth> | undefined = undefined;
+  let subscriberCount = 0;
 
   function subscribe(
     cls: CoValueClass<V>,
@@ -226,6 +238,8 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
     listener: () => void,
     onUnavailable?: () => void,
   ) {
+    subscriberCount++;
+
     const unsubscribe = subscribeToCoValue(
       cls,
       id,
@@ -238,7 +252,13 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
       onUnavailable,
     );
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      subscriberCount--;
+      if (subscriberCount === 0) {
+        currentValue = undefined;
+      }
+    };
   }
 
   const observable = {
