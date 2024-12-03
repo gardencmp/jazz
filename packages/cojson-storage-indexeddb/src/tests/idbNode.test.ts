@@ -6,7 +6,7 @@ import { IDBStorage } from "../index.js";
 
 const Crypto = await WasmCrypto.create();
 
-test.skip("Should be able to initialize and load from empty DB", async () => {
+test("Should be able to initialize and load from empty DB", async () => {
   const agentSecret = Crypto.newRandomAgentSecret();
 
   const node = new LocalNode(
@@ -23,7 +23,7 @@ test.skip("Should be able to initialize and load from empty DB", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  expect(node.syncManager.peers["storage"]).toBeDefined();
+  expect(node.syncManager.peers["indexedDB"]).toBeDefined();
 });
 
 test("Should be able to sync data to database and then load that from a new node", async () => {
