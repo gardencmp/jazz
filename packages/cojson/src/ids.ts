@@ -5,6 +5,8 @@ import { shortHashLength } from "./crypto/crypto.js";
 import { RawGroup } from "./exports.js";
 
 export type RawCoID = `co_z${string}`;
+export type ParentGroupReference = `parent_${CoID<RawGroup>}`;
+export type ChildGroupReference = `child_${CoID<RawGroup>}`;
 
 export function isRawCoID(id: unknown): id is RawCoID {
   return typeof id === "string" && id.startsWith("co_z");
@@ -34,25 +36,19 @@ export type SessionID = `${RawAccountID | AgentID}_session_z${string}`;
 
 export function isParentGroupReference(
   key: string,
-): key is `parent_${CoID<RawGroup>}` {
+): key is ParentGroupReference {
   return key.startsWith("parent_");
 }
 
-export function getParentGroupId(
-  key: `parent_${CoID<RawGroup>}`,
-): CoID<RawGroup> {
+export function getParentGroupId(key: ParentGroupReference): CoID<RawGroup> {
   return key.slice("parent_".length) as CoID<RawGroup>;
 }
 
-export function isChildGroupReference(
-  key: string,
-): key is `child_${CoID<RawGroup>}` {
+export function isChildGroupReference(key: string): key is ChildGroupReference {
   return key.startsWith("child_");
 }
 
-export function getChildGroupId(
-  key: `child_${CoID<RawGroup>}`,
-): CoID<RawGroup> {
+export function getChildGroupId(key: ChildGroupReference): CoID<RawGroup> {
   return key.slice("child_".length) as CoID<RawGroup>;
 }
 

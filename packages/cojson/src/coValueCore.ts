@@ -1,5 +1,5 @@
 import { Result, err, ok } from "neverthrow";
-import { AnyRawCoValue, CoID, RawCoValue } from "./coValue.js";
+import { AnyRawCoValue, RawCoValue } from "./coValue.js";
 import { ControlledAccountOrAgent, RawAccountID } from "./coValues/account.js";
 import { RawGroup } from "./coValues/group.js";
 import { coreToCoValue } from "./coreToCoValue.js";
@@ -18,6 +18,8 @@ import {
   SessionID,
   TransactionID,
   getGroupDependentKeyList,
+  getParentGroupId,
+  isParentGroupReference,
 } from "./ids.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
@@ -798,8 +800,8 @@ export class CoValueCore {
       // try to find revelation to parent group read keys
 
       for (const co of content.keys()) {
-        if (co.startsWith("parent_")) {
-          const parentGroupID = co.slice("parent_".length) as CoID<RawGroup>;
+        if (isParentGroupReference(co)) {
+          const parentGroupID = getParentGroupId(co);
           const parentGroup = this.node.expectCoValueLoaded(
             parentGroupID,
             "Expected parent group to be loaded",

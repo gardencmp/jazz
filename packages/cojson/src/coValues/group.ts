@@ -4,6 +4,8 @@ import { CoValueUniqueness } from "../coValueCore.js";
 import { Encrypted, KeyID, KeySecret, Sealed } from "../crypto/crypto.js";
 import {
   AgentID,
+  ChildGroupReference,
+  ParentGroupReference,
   getChildGroupId,
   getParentGroupId,
   isAgentID,
@@ -37,8 +39,8 @@ export type GroupShape = {
     KeySecret,
     { encryptedID: KeyID; encryptingID: KeyID }
   >;
-  [parent: `parent_${CoID<RawGroup>}`]: "extend";
-  [child: `child_${CoID<RawGroup>}`]: "extend";
+  [parent: ParentGroupReference]: "extend";
+  [child: ChildGroupReference]: "extend";
 };
 
 /** A `Group` is a scope for permissions of its members (`"reader" | "writer" | "admin"`), applying to objects owned by that group.
