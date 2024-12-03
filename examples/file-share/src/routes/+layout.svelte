@@ -9,6 +9,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>File Share</title>
+</svelte:head>
+
 <div class="fixed bottom-4 right-4">
   <PasskeyAuthBasicUI state={auth.state} />
 </div>
