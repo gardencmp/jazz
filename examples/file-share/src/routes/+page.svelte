@@ -5,6 +5,7 @@
   import { FileStream } from 'jazz-tools';
   import { formatFileSize } from '$lib/utils';
   import { SvelteSet } from 'svelte/reactivity';
+  import { slide, fade } from 'svelte/transition';
 
   const { me, logOut } = useAccount();
 
@@ -13,8 +14,6 @@
 
   let fileInput: HTMLInputElement;
   const uploadingFiles = new SvelteSet<string>();
-
-  $inspect('uploadingFiles', uploadingFiles);
 
   async function handleFileUpload(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -59,9 +58,9 @@
   }
 
   async function deleteFile(file: SharedFile) {
-    if (!me?.root?.sharedFiles) return;
+    if (!me?.root?.sharedFiles || !sharedFiles.current) return;
 
-    const index = me.root.sharedFiles.indexOf(file);
+    const index = sharedFiles.current.indexOf(file);
     if (index > -1) {
       me.root.sharedFiles.splice(index, 1);
     }
@@ -90,20 +89,13 @@
   </div>
 
   <div class="grid gap-4">
-    {#each [...uploadingFiles] as fileName}
-      <div class="flex items-center justify-between rounded-lg border bg-gray-50 p-4 shadow-sm">
-        <div>
-          <h3 class="flex items-center gap-2 font-semibold">
-            {fileName}
-            <span class="inline-block animate-spin">⟳</span>
-          </h3>
-          <p class="text-sm text-gray-500">Uploading...</p>
-        </div>
-      </div>
-    {/each}
     {#if sharedFiles.current}
       {#each sharedFiles.current as file (file?.id)}
-        <div class="flex items-center justify-between rounded-lg border p-4 shadow-sm">
+        <div
+          class="flex items-center justify-between rounded-lg border p-4 shadow-sm"
+          in:fade={{ duration: 300 }}
+          out:slide={{ duration: 300 }}
+        >
           <div>
             <h3 class="font-semibold">{file?.name}</h3>
             <p class="text-sm text-gray-500">
@@ -113,17 +105,34 @@
           </div>
           <div class="flex gap-2">
             <button
-              onclick={() => shareFile(file)}
+              onclick={() => shareFile(file!)}
               class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
             >
               Share
             </button>
             <button
-              onclick={() => deleteFile(file)}
+              onclick={() => deleteFile(file!)}
               class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600"
             >
               Delete
             </button>
+          </div>
+        </div>
+      {/each}
+      {#if uploadingFiles.size}
+      <hr />
+      {/if}
+      {#each [...uploadingFiles] as fileName (fileName)}
+        <div
+          class="flex items-center justify-between rounded-lg border bg-gray-50 p-4 shadow-sm"
+          transition:fade={{ duration: 300 }}
+        >
+          <div>
+            <h3 class="flex items-center gap-2 font-semibold">
+              {fileName}
+              <span class="inline-block animate-spin">⟳</span>
+            </h3>
+            <p class="text-sm text-gray-500">Uploading...</p>
           </div>
         </div>
       {/each}
