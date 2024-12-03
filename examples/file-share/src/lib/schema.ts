@@ -1,11 +1,10 @@
-import { Account, CoList, CoMap, FileStream, Profile, co } from 'jazz-tools';
+import { Account, CoList, CoMap, FileStream, Profile, co} from 'jazz-tools';
 
 export class SharedFile extends CoMap {
   name = co.string;
-  description = co.string;
   file = co.ref(FileStream);
-  createdAt = co.number;
-  updatedAt = co.number;
+  createdAt = co.Date;
+  uploadedAt = co.Date;
   size = co.number;
 }
 

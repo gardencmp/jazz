@@ -3,9 +3,10 @@
   import { SharedFile, ListOfSharedFiles } from '$lib/schema';
   import { createInviteLink } from 'jazz-svelte';
   import { FileStream } from 'jazz-tools';
-  import { formatFileSize } from '$lib/utils';
-  import { SvelteSet } from 'svelte/reactivity';
+  import FileItem from '$lib/components/FileItem.svelte';
   import { slide, fade } from 'svelte/transition';
+  import { SvelteMap } from 'svelte/reactivity';
+  import { generateTempFileId } from '$lib/utils';
 
   const { me, logOut } = useAccount();
 
@@ -13,7 +14,15 @@
   const sharedFiles = $derived(useCoState(ListOfSharedFiles, mySharedFilesId, [{}]));
 
   let fileInput: HTMLInputElement;
-  const uploadingFiles = new SvelteSet<string>();
+
+  type PendingSharedFile = {
+    name: string;
+    id: string;
+    createdAt: Date;
+  };
+
+  // Track files that are currently uploading
+  const uploadingFiles = new SvelteMap<string, PendingSharedFile>();
 
   async function handleFileUpload(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -22,7 +31,18 @@
     if (!files || !files.length || !me?.root?.sharedFiles) return;
 
     const file = files[0];
-    uploadingFiles.add(file.name);
+    const fileName = file.name;
+    const createdAt = new Date();
+    const fileId = generateTempFileId(fileName, createdAt);
+
+    const tempFile: PendingSharedFile = {
+      name: fileName,
+      id: fileId,
+      createdAt
+    };
+
+    // Add to uploading files
+    uploadingFiles.set(fileId, tempFile);
 
     try {
       const ownership = { owner: me };
@@ -30,14 +50,13 @@
       // Create a FileStream from the uploaded file
       const fileStream = await FileStream.createFromBlob(file, ownership);
 
-      // Create a new SharedFile instance
+      // Create a new SharedFile instance with same ID
       const sharedFile = SharedFile.create(
         {
-          name: file.name,
-          description: '',
+          name: fileName,
           file: fileStream,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
+          createdAt,
+          uploadedAt: new Date(),
           size: file.size
         },
         ownership
@@ -46,7 +65,7 @@
       // Add the file to the user's files list
       me.root.sharedFiles.push(sharedFile);
     } finally {
-      uploadingFiles.delete(file.name);
+      uploadingFiles.delete(fileId);
       fileInput.value = ''; // reset input
     }
   }
@@ -67,90 +86,72 @@
   }
 </script>
 
-<div class="container mx-auto px-4 py-8">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="mb-2 text-3xl font-bold">File Share</h1>
-      <h2 class="text-xl font-semibold">Welcome back, {me?.profile?.name}</h2>
+<div class="min-h-screen bg-gray-50">
+  <div class="container mx-auto max-w-4xl px-4 py-8">
+    <div class="mb-12 flex items-center justify-between">
+      <div>
+        <h1 class="mb-2 text-4xl font-bold text-gray-900">File Share</h1>
+        <h2 class="text-xl text-gray-600">Welcome back, {me?.profile?.name}</h2>
+      </div>
+
+      <button
+        onclick={logOut}
+        class="rounded-lg bg-red-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+      >
+        Log Out
+      </button>
     </div>
 
-    <button onclick={logOut} class="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600">
-      Log Out
-    </button>
-  </div>
-
-  <div class="grid gap-4">
-       {#if sharedFiles.current}
-      {#each sharedFiles.current as file (file?.id)}
-        <div
-          class="flex items-center justify-between rounded-lg border p-4 shadow-sm"
-          in:fade={{ duration: 300 }}
-          out:slide={{ duration: 300 }}
+    <!-- Upload Section -->
+    <div class="mb-8 rounded-xl bg-white p-6 shadow-sm">
+      <div
+        class="group relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center hover:border-blue-500 hover:bg-blue-50"
+        onclick={() => fileInput.click()}
+        onkeydown={(e) => e.key === 'Enter' && fileInput.click()}
+        role="button"
+        tabindex="0"
+      >
+        <svg
+          class="mb-4 h-12 w-12 text-gray-400 group-hover:text-blue-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
         >
-          <div>
-            <h3 class="font-semibold">{file?.name}</h3>
-            <p class="text-sm text-gray-500">
-              Uploaded {new Date(file?.createdAt || 0).toLocaleDateString()} •
-              {formatFileSize(file?.size || 0)}
-            </p>
-          </div>
-          <div class="flex gap-2">
-            <button
-              onclick={() => shareFile(file!)}
-              class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-            >
-              Share
-            </button>
-            <button
-              onclick={() => deleteFile(file!)}
-              class="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      {/each}
-      {#if uploadingFiles.size}
-      <hr />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
+        </svg>
+        <h3 class="mb-1 text-lg font-medium text-gray-900">Upload a new file</h3>
+        <p class="text-sm text-gray-500">Click to select a file from your computer</p>
+        <input
+          type="file"
+          bind:this={fileInput}
+          onchange={handleFileUpload}
+          class="hidden"
+          accept="*/*"
+        />
+      </div>
+    </div>
+
+    <!-- Files List -->
+    <div class="space-y-4">
+      {#if sharedFiles.current}
+        {#if !(sharedFiles.current.length === 0 && uploadingFiles.size === 0)}
+          {#each [...sharedFiles.current, ...uploadingFiles.values()] as file (generateTempFileId(file?.name, file?.createdAt))}
+            <FileItem
+              {file}
+              loading={uploadingFiles.has(generateTempFileId(file?.name, file?.createdAt))}
+              onShare={shareFile}
+              onDelete={deleteFile}
+            />
+          {/each}
+        {:else}
+          <p class="text-center text-gray-500">No files yet</p>
+        {/if}
       {/if}
-      {#each [...uploadingFiles] as fileName (fileName)}
-        <div
-          class="flex items-center justify-between rounded-lg border bg-gray-50 p-4 shadow-sm"
-          in:fade={{ duration: 300 }}
-          out:slide={{ duration: 300 }}
-        >
-          <div>
-            <h3 class="flex items-center gap-2 font-semibold">
-              {fileName}
-              <svg class="h-5 w-5 animate-spin text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </h3>
-            <p class="text-sm text-gray-500">Uploading...</p>
-          </div>
-        </div>
-      {/each}
-    {:else}
-      <p class="text-center text-gray-500">No files yet</p>
-    {/if}
-
-    <label
-    class="flex cursor-pointer items-center justify-between rounded-lg border p-4 shadow-sm hover:bg-gray-50"
-  >
-    <div>
-      <h3 class="font-semibold">Upload a new file</h3>
-      <p class="text-sm text-gray-500">Click to select a file from your computer</p>
     </div>
-    <input
-      type="file"
-      bind:this={fileInput}
-      onchange={handleFileUpload}
-      class="hidden"
-    />
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-    </svg>
-  </label>
   </div>
 </div>
