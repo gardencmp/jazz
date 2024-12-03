@@ -6,6 +6,7 @@ export class SharedFile extends CoMap {
   file = co.ref(FileStream);
   createdAt = co.number;
   updatedAt = co.number;
+  size = co.number;
 }
 
 export class FileShareProfile extends Profile {
