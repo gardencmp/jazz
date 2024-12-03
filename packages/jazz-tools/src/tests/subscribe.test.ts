@@ -18,6 +18,7 @@ import {
   randomSessionProvider,
   subscribeToCoValue,
 } from "../internal.js";
+import { setupAccount, waitFor } from "./utils.js";
 
 class ChatRoom extends CoMap {
   messages = co.ref(MessagesList);
@@ -32,34 +33,6 @@ class Message extends CoMap {
 
 class MessagesList extends CoList.Of(co.ref(Message)) {}
 class ReactionsStream extends CoFeed.Of(co.string) {}
-
-async function setupAccount() {
-  const me = await Account.create({
-    creationProps: { name: "Hermes Puggington" },
-    crypto: Crypto,
-  });
-
-  const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
-    peer1role: "server",
-    peer2role: "client",
-  });
-
-  if (!isControlledAccount(me)) {
-    throw "me is not a controlled account";
-  }
-  me._raw.core.node.syncManager.addPeer(secondPeer);
-  const { account: meOnSecondPeer } = await createJazzContext({
-    auth: fixedCredentialsAuth({
-      accountID: me.id,
-      secret: me._raw.agentSecret,
-    }),
-    sessionProvider: randomSessionProvider,
-    peersToLoadFrom: [initialAsPeer],
-    crypto: Crypto,
-  });
-
-  return { me, meOnSecondPeer };
-}
 
 function createChatRoom(me: Account | Group, name: string) {
   return ChatRoom.create(
@@ -331,31 +304,3 @@ describe("subscribeToCoValue", () => {
     expect(lastValue.messages[1]).toBe(initialValue.messages[1]);
   });
 });
-
-function waitFor(callback: () => boolean | void) {
-  return new Promise<void>((resolve, reject) => {
-    const checkPassed = () => {
-      try {
-        return { ok: callback(), error: null };
-      } catch (error) {
-        return { ok: false, error };
-      }
-    };
-
-    let retries = 0;
-
-    const interval = setInterval(() => {
-      const { ok, error } = checkPassed();
-
-      if (ok !== false) {
-        clearInterval(interval);
-        resolve();
-      }
-
-      if (++retries > 10) {
-        clearInterval(interval);
-        reject(error);
-      }
-    }, 100);
-  });
-}
