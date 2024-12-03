@@ -1,13 +1,129 @@
 # jazz-example-pets
 
-## 0.0.115-group-inheritance.0
+## 0.0.129
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
-  - jazz-browser-media-images@0.8.19-group-inheritance.0
-  - jazz-react@0.8.19-group-inheritance.0
+- jazz-react@0.8.34
+- jazz-tools@0.8.34
+- jazz-browser-media-images@0.8.34
+
+## 0.0.128
+
+### Patch Changes
+
+- jazz-browser-media-images@0.8.33
+- jazz-react@0.8.33
+
+## 0.0.127
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+  - jazz-browser-media-images@0.8.32
+
+## 0.0.126
+
+### Patch Changes
+
+- jazz-react@0.8.31
+- jazz-tools@0.8.31
+- jazz-browser-media-images@0.8.31
+
+## 0.0.125
+
+### Patch Changes
+
+- jazz-react@0.8.30
+- jazz-tools@0.8.30
+- jazz-browser-media-images@0.8.30
+
+## 0.0.124
+
+### Patch Changes
+
+- jazz-react@0.8.29
+- jazz-tools@0.8.29
+- jazz-browser-media-images@0.8.29
+
+## 0.0.123
+
+### Patch Changes
+
+- jazz-react@0.8.28
+- jazz-tools@0.8.28
+- jazz-browser-media-images@0.8.28
+
+## 0.0.122
+
+### Patch Changes
+
+- jazz-react@0.8.27
+- jazz-tools@0.8.27
+- jazz-browser-media-images@0.8.27
+
+## 0.0.121
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
+## 0.0.120
+
+### Patch Changes
+
+- jazz-browser-media-images@0.8.24
+- jazz-react@0.8.24
+
+## 0.0.119
+
+### Patch Changes
+
+- Updated dependencies [d348c2d]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - jazz-tools@0.8.23
+  - jazz-react@0.8.23
+  - jazz-browser-media-images@0.8.23
+
+## 0.0.118
+
+### Patch Changes
+
+- Updated dependencies [59cc64d]
+  - jazz-react@0.8.22
+  - jazz-browser-media-images@0.8.22
+
+## 0.0.117
+
+### Patch Changes
+
+- Updated dependencies [149ca97]
+  - jazz-tools@0.8.21
+  - jazz-react@0.8.21
+  - jazz-browser-media-images@0.8.21
+
+## 0.0.116
+
+### Patch Changes
+
+- Updated dependencies [dd9b13f]
+- Updated dependencies [a69ed0b]
+- Updated dependencies [3ef3ff3]
+- Updated dependencies [c6931b8]
+  - jazz-react@0.8.20
+  - jazz-browser-media-images@0.8.20
+
+## 0.0.115
+
+### Patch Changes
+
+- jazz-react@0.8.19
+- jazz-tools@0.8.19
+- jazz-browser-media-images@0.8.19
 
 ## 0.0.114
 

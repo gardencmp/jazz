@@ -95,8 +95,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <JazzNav />
-          <main className="flex-1 w-full">{children}</main>
+          <div className="flex-1 w-full">
+            <JazzNav />
+            <main>{children}</main>
+          </div>
           <JazzFooter />
         </ThemeProvider>
       </body>

@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { PeerKnownStateActions } from "../PeerKnownStates.js";
 import { PeerState } from "../PeerState.js";
 import { CO_VALUE_PRIORITY } from "../priority.js";
 import { Peer, SyncMessage } from "../sync.js";
@@ -15,7 +16,7 @@ function setup() {
       close: vi.fn(),
     },
   };
-  const peerState = new PeerState(mockPeer);
+  const peerState = new PeerState(mockPeer, undefined);
   return { mockPeer, peerState };
 }
 
@@ -54,6 +55,36 @@ describe("PeerState", () => {
     expect(peerState.closed).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith("Gracefully closing", "test-peer");
     consoleSpy.mockRestore();
+  });
+
+  test("should empty the queue when closing", async () => {
+    const { mockPeer, peerState } = setup();
+
+    mockPeer.outgoing.push = vi.fn().mockImplementation((message) => {
+      return new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    });
+
+    const message1 = peerState.pushOutgoingMessage({
+      action: "content",
+      id: "co_z1",
+      new: {},
+      priority: CO_VALUE_PRIORITY.HIGH,
+    });
+    const message2 = peerState.pushOutgoingMessage({
+      action: "content",
+      id: "co_z1",
+      new: {},
+      priority: CO_VALUE_PRIORITY.HIGH,
+    });
+
+    peerState.gracefulShutdown();
+
+    await Promise.allSettled([message1, message2]);
+
+    await expect(message1).resolves.toBe(undefined);
+    await expect(message2).resolves.toBe(undefined);
   });
 
   test("should schedule outgoing messages based on their priority", async () => {
@@ -114,5 +145,47 @@ describe("PeerState", () => {
       4,
       contentMessageMid,
     );
+  });
+
+  test("should clone the knownStates into optimisticKnownStates and knownStates when passed as argument", () => {
+    const { peerState, mockPeer } = setup();
+    const action: PeerKnownStateActions = {
+      type: "SET",
+      id: "co_z1",
+      value: {
+        id: "co_z1",
+        header: false,
+        sessions: {},
+      },
+    };
+    peerState.dispatchToKnownStates(action);
+
+    const newPeerState = new PeerState(mockPeer, peerState.knownStates);
+
+    expect(newPeerState.knownStates).toEqual(peerState.knownStates);
+    expect(newPeerState.optimisticKnownStates).toEqual(peerState.knownStates);
+  });
+
+  test("should dispatch to both states", () => {
+    const { peerState } = setup();
+    const knownStatesSpy = vi.spyOn(peerState.knownStates, "dispatch");
+    const optimisticKnownStatesSpy = vi.spyOn(
+      peerState.optimisticKnownStates,
+      "dispatch",
+    );
+
+    const action: PeerKnownStateActions = {
+      type: "SET",
+      id: "co_z1",
+      value: {
+        id: "co_z1",
+        header: false,
+        sessions: {},
+      },
+    };
+    peerState.dispatchToKnownStates(action);
+
+    expect(knownStatesSpy).toHaveBeenCalledWith(action);
+    expect(optimisticKnownStatesSpy).toHaveBeenCalledWith(action);
   });
 });

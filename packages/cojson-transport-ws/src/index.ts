@@ -18,6 +18,7 @@ export type CreateWebSocketPeerOpts = {
   role: Peer["role"];
   expectPings?: boolean;
   batchingByDefault?: boolean;
+  deletePeerStateOnClose?: boolean;
   onClose?: () => void;
 };
 
@@ -58,6 +59,7 @@ function createOutgoingMessagesManager(
   websocket: AnyWebSocket,
   batchingByDefault: boolean,
 ) {
+  let closed = false;
   const outgoingMessages = new BatchedOutgoingMessages((messages) => {
     if (websocket.readyState === 1) {
       websocket.send(messages);
@@ -67,6 +69,10 @@ function createOutgoingMessagesManager(
   let batchingEnabled = batchingByDefault;
 
   async function sendMessage(msg: SyncMessage) {
+    if (closed) {
+      return Promise.reject(new Error("WebSocket closed"));
+    }
+
     if (websocket.readyState !== 1) {
       await waitForWebSocketOpen(websocket);
     }
@@ -97,6 +103,7 @@ function createOutgoingMessagesManager(
       batchingEnabled = enabled;
     },
     close() {
+      closed = true;
       outgoingMessages.close();
     },
   };
@@ -118,6 +125,7 @@ export function createWebSocketPeer({
   role,
   expectPings = true,
   batchingByDefault = true,
+  deletePeerStateOnClose = false,
   onClose,
 }: CreateWebSocketPeerOpts): Peer {
   const incoming = new cojsonInternals.Channel<
@@ -212,5 +220,6 @@ export function createWebSocketPeer({
     },
     role,
     crashOnClose: false,
+    deletePeerStateOnClose,
   };
 }

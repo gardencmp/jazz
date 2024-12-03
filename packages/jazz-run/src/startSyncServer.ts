@@ -73,6 +73,7 @@ export const startSyncServer = async ({
         websocket: ws,
         expectPings: false,
         batchingByDefault: false,
+        deletePeerStateOnClose: true,
       }),
     );
 

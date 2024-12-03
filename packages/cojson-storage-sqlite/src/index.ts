@@ -413,7 +413,7 @@ export class SQLiteStorage {
               parsedHeader?.ruleset.group,
               ...new Set(
                 newContentPieces.flatMap((piece) =>
-                  Object.keys(piece)
+                  Object.keys(piece.new)
                     .map((sessionID) =>
                       cojsonInternals.accountOrAgentIDfromSessionID(
                         sessionID as SessionID,

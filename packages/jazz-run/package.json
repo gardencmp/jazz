@@ -3,12 +3,12 @@
   "bin": "./dist/index.js",
   "type": "module",
   "license": "MIT",
-  "version": "0.8.19-group-inheritance.0",
+  "version": "0.8.34",
   "scripts": {
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
-    "build-and-run": "pnpm turbo build && chmod +x ./dist/index.js && ./dist/index.js sync --in-memory",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist && chmod +x ./dist/index.js",
+    "build-and-run": "pnpm turbo build && ./dist/index.js sync --in-memory",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -18,11 +18,11 @@
     "@effect/printer-ansi": "^0.34.5",
     "@effect/schema": "^0.71.1",
     "@effect/typeclass": "^0.25.5",
-    "cojson": "workspace:0.8.19-group-inheritance.0",
-    "cojson-storage-sqlite": "workspace:0.8.19-group-inheritance.0",
-    "cojson-transport-ws": "workspace:0.8.19-group-inheritance.0",
+    "cojson": "workspace:0.8.34",
+    "cojson-storage-sqlite": "workspace:0.8.34",
+    "cojson-transport-ws": "workspace:0.8.34",
     "effect": "^3.6.5",
-    "jazz-tools": "workspace:0.8.19-group-inheritance.0",
+    "jazz-tools": "workspace:0.8.34",
     "ws": "^8.14.2"
   },
   "devDependencies": {

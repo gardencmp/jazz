@@ -73,22 +73,22 @@ export function ClassOrInterface({
     <div className="relative not-prose">
       <div
         id={name}
-        className="peer sticky top-0 mt-4 md:mt-0 md:top-[2rem] md:pt-[2.5rem] bg-white dark:bg-stone-950 z-20"
+        className="peer sticky top-0 mt-4 md:top-[65px] md:pt-8 bg-white dark:bg-stone-950 z-20"
       >
         <Link
           href={"#" + name}
           className="inline-flex items-center gap-2 lg:-ml-[22px]"
         >
           <LinkIcon size={14} className="hidden lg:inline" />
-          <h3>
+          <h3 className="text-lg lg:text-xl">
             <Highlight>
               {(isInterface ? "interface " : "class ") + name + typeParameters}
             </Highlight>
           </h3>
         </Link>
       </div>
-      <div className="flex flex-col gap-5">
-        <div>{doc}</div>
+      <div className="flex flex-col gap-5 mt-5">
+        {doc && <div>{doc}</div>}
         <div>{children}</div>
       </div>
     </div>
@@ -119,7 +119,7 @@ export function PropDecl({
   example?: ReactNode;
 }) {
   return (
-    <div className="text-sm py-3 flex flex-col gap-5">
+    <div className="text-sm flex flex-col gap-3 my-2 p-3 rounded bg-stone-50 dark:bg-stone-925">
       {(name || type) && (
         <div>
           {name && <Highlight>{name + ":"}</Highlight>}
@@ -157,7 +157,7 @@ export function FnDecl({
   example: ReactNode;
 }) {
   return (
-    <div className="text-sm py-3 flex flex-col gap-5">
+    <div className="text-sm flex flex-col gap-3 my-2 p-3 rounded bg-stone-50 dark:bg-stone-925">
       <div className="flex flex-col gap-2">
         <div>
           {<Highlight>{signature + ":"}</Highlight>}{" "}
@@ -201,7 +201,7 @@ export function PropCategory({
 }) {
   return (
     <>
-      <div className="col-span-6 uppercase font-medium tracking-widest text-stone-500 text-xs py-3">
+      <div className="col-span-6 py-3 font-display font-semibold text-lg text-stone-900 dark:text-white">
         {name}
       </div>
       {description && <PropDecl doc={description} example={example} />}

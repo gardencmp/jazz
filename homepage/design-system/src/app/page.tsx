@@ -1,4 +1,5 @@
 import { Prose } from "@components/molecules/Prose";
+import { NewsletterForm } from "@components/organisms/NewsletterForm";
 
 export default function Home() {
   return (
@@ -62,6 +63,12 @@ export default function Home() {
             This is a one-line <code>piece of code</code>
           </Prose>
         </div>
+      </div>
+
+      <h2>Newsletter Subscription Form</h2>
+
+      <div className="p-3 border">
+        <NewsletterForm />
       </div>
     </main>
   );

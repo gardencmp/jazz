@@ -1,7 +1,7 @@
 import { MusicTrack, Playlist } from "@/1_schema";
 import { usePlayMedia } from "@/lib/audio/usePlayMedia";
 import { usePlayState } from "@/lib/audio/usePlayState";
-import { BinaryCoStream, ID } from "jazz-tools";
+import { FileStream, ID } from "jazz-tools";
 import { useRef, useState } from "react";
 import { useAccount } from "./2_main";
 import { updateActivePlaylist, updateActiveTrack } from "./4_actions";
@@ -27,7 +27,7 @@ export function useMediaPlayer() {
 
     setLoading(track.id);
 
-    const file = await BinaryCoStream.loadAsBlob(track._refs.file.id, me);
+    const file = await FileStream.loadAsBlob(track._refs.file.id, me);
 
     if (!file) {
       setLoading(null);

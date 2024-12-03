@@ -14,15 +14,18 @@ export { Encoders, co } from "./internal.js";
 
 export {
   Account,
+  FileStream,
   BinaryCoStream,
   CoList,
   CoMap,
+  CoFeed,
   CoStream,
   CoValueBase,
   Group,
   ImageDefinition,
   Profile,
   isControlledAccount,
+  SchemaUnion,
   type AccountClass,
   type CoMapInit,
   type CoValueClass,

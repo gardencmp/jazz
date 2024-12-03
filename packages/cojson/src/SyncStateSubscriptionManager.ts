@@ -6,29 +6,31 @@ import {
   emptyKnownState,
 } from "./sync.js";
 
+export type SyncStateGetter = {
+  isUploaded: boolean;
+};
+
+export type GlobalSyncStateListenerCallback = (
+  peerId: PeerID,
+  knownState: CoValueKnownState,
+  sync: SyncStateGetter,
+) => void;
+
+export type PeerSyncStateListenerCallback = (
+  knownState: CoValueKnownState,
+  sync: SyncStateGetter,
+) => void;
+
 export class SyncStateSubscriptionManager {
   constructor(private syncManager: SyncManager) {}
 
-  private listeners = new Set<
-    (
-      peerId: PeerID,
-      knownState: CoValueKnownState,
-      uploadCompleted: boolean,
-    ) => void
-  >();
-
+  private listeners = new Set<GlobalSyncStateListenerCallback>();
   private listenersByPeers = new Map<
     PeerID,
-    Set<(knownState: CoValueKnownState, uploadCompleted: boolean) => void>
+    Set<PeerSyncStateListenerCallback>
   >();
 
-  subscribeToUpdates(
-    listener: (
-      peerId: PeerID,
-      knownState: CoValueKnownState,
-      uploadCompleted: boolean,
-    ) => void,
-  ) {
+  subscribeToUpdates(listener: GlobalSyncStateListenerCallback) {
     this.listeners.add(listener);
 
     return () => {
@@ -38,7 +40,7 @@ export class SyncStateSubscriptionManager {
 
   subscribeToPeerUpdates(
     peerId: PeerID,
-    listener: (knownState: CoValueKnownState, uploadCompleted: boolean) => void,
+    listener: PeerSyncStateListenerCallback,
   ) {
     const listeners = this.listenersByPeers.get(peerId) ?? new Set();
 
@@ -68,27 +70,37 @@ export class SyncStateSubscriptionManager {
     }
 
     const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
-    const fullyUploadedIntoPeer = this.getIsCoValueFullyUploadedIntoPeer(
-      peerId,
-      id,
+
+    // Build a lazy sync state object to process the isUploaded info
+    // only when requested
+    const syncState = {} as SyncStateGetter;
+
+    const getIsUploaded = simpleMemoize(() =>
+      this.getIsCoValueFullyUploadedIntoPeer(peerId, id),
     );
+    Object.defineProperties(syncState, {
+      isUploaded: {
+        enumerable: true,
+        get: getIsUploaded,
+      },
+    });
 
     for (const listener of this.listeners) {
-      listener(peerId, knownState, fullyUploadedIntoPeer);
+      listener(peerId, knownState, syncState);
     }
 
     if (!peerListeners) return;
 
     for (const listener of peerListeners) {
-      listener(knownState, fullyUploadedIntoPeer);
+      listener(knownState, syncState);
     }
   }
 
   getIsCoValueFullyUploadedIntoPeer(peerId: PeerID, id: RawCoID) {
     const peer = this.syncManager.peers[peerId];
-    const entry = this.syncManager.local.coValues[id];
+    const entry = this.syncManager.local.coValuesStore.get(id);
 
-    if (!peer || !entry) {
+    if (!peer) {
       return false;
     }
 
@@ -121,4 +133,9 @@ function getIsUploadCompleted(
   }
 
   return true;
+}
+
+function simpleMemoize<T>(fn: () => T): () => T {
+  let value: T | undefined;
+  return () => value ?? (value = fn());
 }

@@ -1,14 +1,14 @@
 {
   "name": "jazz-browser-auth-clerk",
-  "version": "0.8.19-group-inheritance.0",
+  "version": "0.8.34",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "workspace:0.8.19-group-inheritance.0",
-    "jazz-browser": "workspace:0.8.19-group-inheritance.0",
-    "jazz-tools": "workspace:0.8.19-group-inheritance.0"
+    "cojson": "workspace:0.8.34",
+    "jazz-browser": "workspace:0.8.34",
+    "jazz-tools": "workspace:0.8.34"
   },
   "scripts": {
     "format-and-lint": "biome check .",

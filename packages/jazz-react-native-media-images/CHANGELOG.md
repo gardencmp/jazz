@@ -1,11 +1,75 @@
 # jazz-browser-media-images
 
-## 0.8.15-group-inheritance.0
+## 0.8.25
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
+- jazz-tools@0.8.34
+
+## 0.8.24
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+
+## 0.8.23
+
+### Patch Changes
+
+- jazz-tools@0.8.31
+
+## 0.8.22
+
+### Patch Changes
+
+- jazz-tools@0.8.30
+
+## 0.8.21
+
+### Patch Changes
+
+- jazz-tools@0.8.29
+
+## 0.8.20
+
+### Patch Changes
+
+- jazz-tools@0.8.28
+
+## 0.8.19
+
+### Patch Changes
+
+- jazz-tools@0.8.27
+
+## 0.8.18
+
+### Patch Changes
+
+- Updated dependencies [d348c2d]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - jazz-tools@0.8.23
+
+## 0.8.17
+
+### Patch Changes
+
+- Updated dependencies [149ca97]
+  - jazz-tools@0.8.21
+
+## 0.8.16
+
+### Patch Changes
+
+- 3ef3ff3: Remove typescript from the direct dependencies
+
+## 0.8.15
+
+### Patch Changes
+
+- jazz-tools@0.8.19
 
 ## 0.8.14
 

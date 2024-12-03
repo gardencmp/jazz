@@ -1,8 +1,9 @@
-import { PeerKnownStates } from "./PeerKnownStates.js";
+import { PeerKnownStateActions, PeerKnownStates } from "./PeerKnownStates.js";
 import {
   PriorityBasedMessageQueue,
   QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
+import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
@@ -33,6 +34,13 @@ export class PeerState {
   readonly optimisticKnownStates: PeerKnownStates;
   readonly toldKnownState: Set<RawCoID> = new Set();
 
+  dispatchToKnownStates(action: PeerKnownStateActions) {
+    this.knownStates.dispatch(action);
+    this.optimisticKnownStates.dispatch(action);
+  }
+
+  readonly erroredCoValues: Map<RawCoID, TryAddTransactionsError> = new Map();
+
   get id() {
     return this.peer.id;
   }
@@ -47,6 +55,10 @@ export class PeerState {
 
   get crashOnClose() {
     return this.peer.crashOnClose;
+  }
+
+  shouldRetryUnavailableCoValues() {
+    return this.peer.role === "server";
   }
 
   isServerOrStoragePeer() {
@@ -85,6 +97,10 @@ export class PeerState {
   }
 
   pushOutgoingMessage(msg: SyncMessage) {
+    if (this.closed) {
+      return Promise.resolve();
+    }
+
     const promise = this.queue.push(msg);
 
     void this.processQueue();
@@ -102,8 +118,17 @@ export class PeerState {
     return this.peer.incoming;
   }
 
+  private closeQueue() {
+    let entry: QueueEntry | undefined;
+    while ((entry = this.queue.pull())) {
+      // Using resolve here to avoid unnecessary noise in the logs
+      entry.resolve();
+    }
+  }
+
   gracefulShutdown() {
     console.debug("Gracefully closing", this.id);
+    this.closeQueue();
     this.peer.outgoing.close();
     this.closed = true;
   }

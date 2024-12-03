@@ -1,12 +1,95 @@
 # cojson-storage-indexeddb
 
-## 0.8.19-group-inheritance.0
+## 0.8.34
 
 ### Patch Changes
 
-- 8b87117: Implement Group Inheritance
-- Updated dependencies [8b87117]
-  - cojson@0.8.19-group-inheritance.0
+- Updated dependencies [e4f110f]
+  - cojson@0.8.34
+
+## 0.8.32
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - cojson@0.8.32
+
+## 0.8.31
+
+### Patch Changes
+
+- Updated dependencies [e511d6d]
+  - cojson@0.8.31
+
+## 0.8.30
+
+### Patch Changes
+
+- Updated dependencies [0a2fae3]
+- Updated dependencies [99cda2f]
+  - cojson@0.8.30
+
+## 0.8.29
+
+### Patch Changes
+
+- Updated dependencies [dcc9c2e]
+- Updated dependencies [699553f]
+  - cojson@0.8.29
+
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+
+## 0.8.24
+
+### Patch Changes
+
+- e17e959: Fix: IndexedDB not delivering depended-on CoValues
+
+## 0.8.23
+
+### Patch Changes
+
+- Updated dependencies [6f745be]
+- Updated dependencies [124bf67]
+  - cojson@0.8.23
+
+## 0.8.22
+
+### Patch Changes
+
+- f6bc8af: Set up a unique peer id for the indexeddb storage
+
+## 0.8.21
+
+### Patch Changes
+
+- Updated dependencies [0f30eea]
+  - cojson@0.8.21
+
+## 0.8.20
+
+### Patch Changes
+
+- 3ef3ff3: Remove typescript from the direct dependencies
+
+## 0.8.19
+
+### Patch Changes
+
+- Updated dependencies [9c2aadb]
+  - cojson@0.8.19
 
 ## 0.8.18
 

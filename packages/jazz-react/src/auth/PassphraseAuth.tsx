@@ -17,7 +17,16 @@ export type PassphraseAuthState = (
   errors: string[];
 };
 
-/** @category Auth Providers */
+/**
+ * `usePassphraseAuth` hook provides a `JazzAuth` object for passphrase authentication.
+ *
+ * @example
+ * ```ts
+ * const [auth, state] = usePassphraseAuth({ appName, appHostname, wordlist });
+ * ```
+ *
+ * @category Auth Providers
+ */
 export function usePassphraseAuth({
   appName,
   appHostname,

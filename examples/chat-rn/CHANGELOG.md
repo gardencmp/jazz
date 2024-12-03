@@ -1,12 +1,86 @@
 # chat-rn
 
-## 1.0.14-group-inheritance.0
+## 1.0.24
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
-  - jazz-react-native@0.8.19-group-inheritance.0
+- jazz-react-native@0.8.34
+- jazz-tools@0.8.34
+
+## 1.0.23
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react-native@0.8.32
+
+## 1.0.22
+
+### Patch Changes
+
+- jazz-react-native@0.8.31
+- jazz-tools@0.8.31
+
+## 1.0.21
+
+### Patch Changes
+
+- jazz-react-native@0.8.30
+- jazz-tools@0.8.30
+
+## 1.0.20
+
+### Patch Changes
+
+- jazz-react-native@0.8.29
+- jazz-tools@0.8.29
+
+## 1.0.19
+
+### Patch Changes
+
+- jazz-react-native@0.8.28
+- jazz-tools@0.8.28
+
+## 1.0.18
+
+### Patch Changes
+
+- jazz-react-native@0.8.27
+- jazz-tools@0.8.27
+
+## 1.0.17
+
+### Patch Changes
+
+- Updated dependencies [d348c2d]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - jazz-tools@0.8.23
+  - jazz-react-native@0.8.23
+
+## 1.0.16
+
+### Patch Changes
+
+- Updated dependencies [149ca97]
+  - jazz-tools@0.8.21
+  - jazz-react-native@0.8.21
+
+## 1.0.15
+
+### Patch Changes
+
+- Updated dependencies [3ef3ff3]
+  - jazz-react-native@0.8.20
+
+## 1.0.14
+
+### Patch Changes
+
+- jazz-react-native@0.8.19
+- jazz-tools@0.8.19
 
 ## 1.0.13
 

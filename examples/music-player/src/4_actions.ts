@@ -1,5 +1,5 @@
 import { getAudioFileData } from "@/lib/audio/getAudioFileData";
-import { BinaryCoStream, Group } from "jazz-tools";
+import { FileStream, Group } from "jazz-tools";
 import {
   ListOfTracks,
   MusicTrack,
@@ -35,14 +35,14 @@ export async function uploadMusicTracks(
 
     const data = await getAudioFileData(file);
 
-    // We transform the file blob into a BinaryCoStream
+    // We transform the file blob into a FileStream
     // making it a collaborative value that is encrypted, easy
     // to share across devices and users and available offline!
-    const binaryCoStream = await BinaryCoStream.createFromBlob(file, ownership);
+    const fileStream = await FileStream.createFromBlob(file, ownership);
 
     const musicTrack = MusicTrack.create(
       {
-        file: binaryCoStream,
+        file: fileStream,
         duration: data.duration,
         waveform: MusicTrackWaveform.create({ data: data.waveform }, ownership),
         title: file.name,
@@ -113,7 +113,7 @@ export async function addTrackToPlaylist(
    * Doing this for backwards compatibility for when the Group inheritance wasn't possible
    */
   const ownership = { owner: playlist._owner };
-  const blob = await BinaryCoStream.loadAsBlob(track._refs.file.id, account);
+  const blob = await FileStream.loadAsBlob(track._refs.file.id, account);
   const waveform = await MusicTrackWaveform.load(
     track._refs.waveform.id,
     account,
@@ -124,7 +124,7 @@ export async function addTrackToPlaylist(
 
   const trackClone = MusicTrack.create(
     {
-      file: await BinaryCoStream.createFromBlob(blob, ownership),
+      file: await FileStream.createFromBlob(blob, ownership),
       duration: track.duration,
       waveform: MusicTrackWaveform.create({ data: waveform.data }, ownership),
       title: track.title,

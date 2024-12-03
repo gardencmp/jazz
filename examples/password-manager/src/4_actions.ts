@@ -7,7 +7,6 @@ import {
   PasswordList,
   PasswordManagerAccount,
 } from "./1_schema";
-import { waitForCoValue } from "./lib/waitForCoValue";
 import { PasswordItemFormValues } from "./types";
 
 export const saveItem = (item: CoMapInit<PasswordItem>): PasswordItem => {
@@ -61,13 +60,15 @@ export async function addSharedFolder(
   me: PasswordManagerAccount,
 ) {
   const [sharedFolder, account] = await Promise.all([
-    await waitForCoValue(Folder, sharedFolderId, me, Boolean, {}),
-    await waitForCoValue(PasswordManagerAccount, me.id, me, Boolean, {
+    Folder.load(sharedFolderId, me, {}),
+    PasswordManagerAccount.load(me.id, me, {
       root: {
         folders: [],
       },
     }),
   ]);
+
+  if (!sharedFolder || !account) return;
 
   if (!account.root?.folders) return;
 

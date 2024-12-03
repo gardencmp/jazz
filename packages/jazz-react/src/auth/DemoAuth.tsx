@@ -1,7 +1,7 @@
 import { AgentSecret } from "cojson";
 import { BrowserDemoAuth } from "jazz-browser";
 import { Account, ID } from "jazz-tools";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DemoAuthState = (
   | {
@@ -24,7 +24,16 @@ type DemoAuthState = (
   errors: string[];
 };
 
-/** @category Auth Providers */
+/**
+ * `useDemoAuth` is a hook that provides a `JazzAuth` object for demo authentication.
+ *
+ *
+ * ```ts
+ * const [auth, state] = useDemoAuth();
+ * ```
+ *
+ * @category Auth Providers
+ */
 export function useDemoAuth({
   seedAccounts,
 }: {
@@ -74,10 +83,30 @@ export const DemoAuthBasicUI = ({
   state: DemoAuthState;
 }) => {
   const [username, setUsername] = useState<string>("");
+
   const darkMode =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
       : false;
+
+  const user =
+    typeof window !== "undefined"
+      ? new URL(window.location.href).searchParams.get("user")
+      : undefined;
+
+  const isAutoLogin = !!(user && state.state === "ready");
+
+  useEffect(() => {
+    if (!isAutoLogin) return;
+
+    if (state.existingUsers.includes(user)) {
+      state.logInAs(user);
+    } else {
+      state.signUp(user);
+    }
+  }, [isAutoLogin]);
+
+  if (isAutoLogin) return <></>;
 
   return (
     <div

@@ -1,14 +1,155 @@
 # jazz-browser-media-images
 
-## 0.8.19-group-inheritance.0
+## 0.8.34
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
-  - cojson@0.8.19-group-inheritance.0
-  - jazz-browser-auth-clerk@0.8.19-group-inheritance.0
-  - jazz-react@0.8.19-group-inheritance.0
+- 9ca25d1: Rename passkey and clerk examples
+- Updated dependencies [e4f110f]
+  - cojson@0.8.34
+  - jazz-browser-auth-clerk@0.8.34
+  - jazz-react@0.8.34
+  - jazz-tools@0.8.34
+
+## 0.8.33
+
+### Patch Changes
+
+- jazz-browser-auth-clerk@0.8.33
+- jazz-react@0.8.33
+
+## 0.8.32
+
+### Patch Changes
+
+- 1a4bda0: Document usage in readme
+- Updated dependencies [df42b2b]
+- Updated dependencies [1a4bda0]
+- Updated dependencies [df42b2b]
+  - cojson@0.8.32
+  - jazz-browser-auth-clerk@0.8.32
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+
+## 0.8.31
+
+### Patch Changes
+
+- Updated dependencies [e511d6d]
+  - cojson@0.8.31
+  - jazz-browser-auth-clerk@0.8.31
+  - jazz-react@0.8.31
+  - jazz-tools@0.8.31
+
+## 0.8.30
+
+### Patch Changes
+
+- Updated dependencies [0a2fae3]
+- Updated dependencies [99cda2f]
+  - cojson@0.8.30
+  - jazz-browser-auth-clerk@0.8.30
+  - jazz-react@0.8.30
+  - jazz-tools@0.8.30
+
+## 0.8.29
+
+### Patch Changes
+
+- Updated dependencies [dcc9c2e]
+- Updated dependencies [699553f]
+  - cojson@0.8.29
+  - jazz-browser-auth-clerk@0.8.29
+  - jazz-react@0.8.29
+  - jazz-tools@0.8.29
+
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+  - jazz-browser-auth-clerk@0.8.28
+  - jazz-react@0.8.28
+  - jazz-tools@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+  - jazz-browser-auth-clerk@0.8.27
+  - jazz-react@0.8.27
+  - jazz-tools@0.8.27
+
+## 0.8.26
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
+## 0.8.24
+
+### Patch Changes
+
+- jazz-browser-auth-clerk@0.8.24
+- jazz-react@0.8.24
+
+## 0.8.23
+
+### Patch Changes
+
+- Updated dependencies [6f745be]
+- Updated dependencies [d348c2d]
+- Updated dependencies [124bf67]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - cojson@0.8.23
+  - jazz-tools@0.8.23
+  - jazz-browser-auth-clerk@0.8.23
+  - jazz-react@0.8.23
+
+## 0.8.22
+
+### Patch Changes
+
+- Updated dependencies [59cc64d]
+  - jazz-react@0.8.22
+  - jazz-browser-auth-clerk@0.8.22
+
+## 0.8.21
+
+### Patch Changes
+
+- Updated dependencies [0f30eea]
+- Updated dependencies [149ca97]
+  - cojson@0.8.21
+  - jazz-tools@0.8.21
+  - jazz-browser-auth-clerk@0.8.21
+  - jazz-react@0.8.21
+
+## 0.8.20
+
+### Patch Changes
+
+- Updated dependencies [dd9b13f]
+- Updated dependencies [a69ed0b]
+- Updated dependencies [3ef3ff3]
+- Updated dependencies [c6931b8]
+  - jazz-react@0.8.20
+  - jazz-browser-auth-clerk@0.8.20
+
+## 0.8.19
+
+### Patch Changes
+
+- Updated dependencies [9c2aadb]
+  - cojson@0.8.19
+  - jazz-browser-auth-clerk@0.8.19
+  - jazz-react@0.8.19
+  - jazz-tools@0.8.19
 
 ## 0.8.18
 

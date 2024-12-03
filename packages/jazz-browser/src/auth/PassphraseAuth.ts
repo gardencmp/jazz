@@ -9,6 +9,17 @@ type LocalStorageData = {
 
 const localStorageKey = "jazz-logged-in-secret";
 
+/**
+ * `BrowserPassphraseAuth` provides a `JazzAuth` object for passphrase authentication.
+ *
+ * ```ts
+ * import { BrowserPassphraseAuth } from "jazz-browser";
+ *
+ * const auth = new BrowserPassphraseAuth(driver, wordlist, appName);
+ * ```
+ *
+ * @category Auth Providers
+ */
 export class BrowserPassphraseAuth implements AuthMethod {
   constructor(
     public driver: BrowserPassphraseAuth.Driver,
@@ -18,6 +29,9 @@ export class BrowserPassphraseAuth implements AuthMethod {
     public appHostname: string = window.location.hostname,
   ) {}
 
+  /**
+   * @returns A `JazzAuth` object
+   */
   async start(crypto: CryptoProvider): Promise<AuthResult> {
     if (localStorage[localStorageKey]) {
       const localStorageData = JSON.parse(
@@ -98,11 +112,13 @@ export class BrowserPassphraseAuth implements AuthMethod {
             resolve({
               type: "existing",
               credentials: { accountID, secret: accountSecret },
-              onSuccess: () => {
+              saveCredentials: async ({ accountID, secret }) => {
                 localStorage[localStorageKey] = JSON.stringify({
                   accountID,
-                  accountSecret,
+                  accountSecret: secret,
                 } satisfies LocalStorageData);
+              },
+              onSuccess: () => {
                 this.driver.onSignedIn({ logOut });
               },
               onError: (error: string | Error) => {
@@ -119,8 +135,7 @@ export class BrowserPassphraseAuth implements AuthMethod {
   }
 }
 
-/** @category Auth Providers */
-// eslint-disable-next-line @typescript-eslint/no-namespace
+/** @internal */
 export namespace BrowserPassphraseAuth {
   export interface Driver {
     onReady: (next: {

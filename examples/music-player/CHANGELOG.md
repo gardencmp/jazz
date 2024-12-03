@@ -1,12 +1,115 @@
 # jazz-example-musicplayer
 
-## 0.0.18-group-inheritance.0
+## 0.0.32
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
-  - jazz-react@0.8.19-group-inheritance.0
+- jazz-react@0.8.34
+- jazz-tools@0.8.34
+
+## 0.0.31
+
+### Patch Changes
+
+- jazz-react@0.8.33
+
+## 0.0.30
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+
+## 0.0.29
+
+### Patch Changes
+
+- jazz-react@0.8.31
+- jazz-tools@0.8.31
+
+## 0.0.28
+
+### Patch Changes
+
+- jazz-react@0.8.30
+- jazz-tools@0.8.30
+
+## 0.0.27
+
+### Patch Changes
+
+- jazz-react@0.8.29
+- jazz-tools@0.8.29
+
+## 0.0.26
+
+### Patch Changes
+
+- jazz-react@0.8.28
+- jazz-tools@0.8.28
+
+## 0.0.25
+
+### Patch Changes
+
+- jazz-react@0.8.27
+- jazz-tools@0.8.27
+
+## 0.0.24
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
+## 0.0.23
+
+### Patch Changes
+
+- jazz-react@0.8.24
+
+## 0.0.22
+
+### Patch Changes
+
+- Updated dependencies [d348c2d]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - jazz-tools@0.8.23
+  - jazz-react@0.8.23
+
+## 0.0.21
+
+### Patch Changes
+
+- Updated dependencies [59cc64d]
+  - jazz-react@0.8.22
+
+## 0.0.20
+
+### Patch Changes
+
+- Updated dependencies [149ca97]
+  - jazz-tools@0.8.21
+  - jazz-react@0.8.21
+
+## 0.0.19
+
+### Patch Changes
+
+- Updated dependencies [dd9b13f]
+- Updated dependencies [a69ed0b]
+- Updated dependencies [3ef3ff3]
+- Updated dependencies [c6931b8]
+  - jazz-react@0.8.20
+
+## 0.0.18
+
+### Patch Changes
+
+- jazz-react@0.8.19
+- jazz-tools@0.8.19
 
 ## 0.0.17
 

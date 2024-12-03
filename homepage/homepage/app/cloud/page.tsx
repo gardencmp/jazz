@@ -32,7 +32,7 @@ export default function Cloud() {
       <div className="container">
         <GappedGrid>
           <GridCard>
-            <H3>Optimal cloud routing.</H3>
+            <H3>Optimal cloud routing</H3>
 
             <P>
               Get ultra-low latency between any group of users with our
@@ -68,7 +68,7 @@ export default function Cloud() {
       <div className="container space-y-16">
         <div>
           <SectionHeader
-            title="Global Footprint"
+            title="Global footprint"
             slogan="We're rapidly expanding our network of sync & storage nodes. This is our current coverage."
           />
           <GappedGrid>
@@ -131,7 +131,7 @@ export default function Cloud() {
 
         <div>
           <SectionHeader
-            title="Custom Deployment Scenarios"
+            title="Custom deployment scenarios"
             slogan="You can rely on Jazz Cloud. But you don't have to."
           />
           <P>

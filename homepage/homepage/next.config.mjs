@@ -1,4 +1,7 @@
 import createMDX from "@next/mdx";
+import withToc from "@stefanprobst/rehype-extract-toc";
+import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
+import rehypeSlug from "rehype-slug";
 import { getHighlighter } from "shiki";
 import { SKIP, visit } from "unist-util-visit";
 
@@ -7,23 +10,28 @@ const nextConfig = {
   // Configure `pageExtensions`` to include MDX files
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   transpilePackages: ["gcmp-design-system"],
-  // Optionally, add any other Next.js config below
-  experimental: {
-    serverActions: true,
-  },
 };
 
 const withMDX = createMDX({
   // Add markdown plugins here, as desired
   options: {
     remarkPlugins: [highlightPlugin, remarkHtmlToJsx],
-    rehypePlugins: [],
+    rehypePlugins: [rehypeSlug, withToc, withTocExport],
   },
 });
 
 const config = {
   ...withMDX(nextConfig),
   output: "standalone",
+  redirects: async () => {
+    return [
+      {
+        source: "/docs",
+        destination: "/docs/react",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 function highlightPlugin() {

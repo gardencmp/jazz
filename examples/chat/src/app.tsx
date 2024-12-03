@@ -1,3 +1,4 @@
+import { inIframe, onChatLoad } from "@/util.ts";
 import { useIframeHashRouter } from "hash-slash";
 import { Group, ID } from "jazz-tools";
 import { ChatScreen } from "./chatScreen.tsx";
@@ -15,12 +16,16 @@ export function App() {
     group.addMember("everyone", "writer");
     const chat = Chat.create([], { owner: group });
     router.navigate("/#/chat/" + chat.id);
+
+    // for https://jazz.tools marketing site demo only
+    onChatLoad(chat, me);
   };
 
   return (
     <AppContainer>
       <TopBar>
-        <p>{me?.profile?.name}</p> · <button onClick={logOut}>Log out</button>
+        <p>{me?.profile?.name}</p>
+        {!inIframe && <button onClick={logOut}>Log out</button>}
       </TopBar>
       {router.route({
         "/": () => createChat() as never,

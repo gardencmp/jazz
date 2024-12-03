@@ -1,13 +1,129 @@
 # jazz-example-book-shelf
 
-## 0.1.12-group-inheritance.0
+## 0.1.26
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
-  - jazz-browser-media-images@0.8.19-group-inheritance.0
-  - jazz-react@0.8.19-group-inheritance.0
+- jazz-react@0.8.34
+- jazz-tools@0.8.34
+- jazz-browser-media-images@0.8.34
+
+## 0.1.25
+
+### Patch Changes
+
+- jazz-browser-media-images@0.8.33
+- jazz-react@0.8.33
+
+## 0.1.24
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+  - jazz-tools@0.8.32
+  - jazz-react@0.8.32
+  - jazz-browser-media-images@0.8.32
+
+## 0.1.23
+
+### Patch Changes
+
+- jazz-react@0.8.31
+- jazz-tools@0.8.31
+- jazz-browser-media-images@0.8.31
+
+## 0.1.22
+
+### Patch Changes
+
+- jazz-react@0.8.30
+- jazz-tools@0.8.30
+- jazz-browser-media-images@0.8.30
+
+## 0.1.21
+
+### Patch Changes
+
+- jazz-react@0.8.29
+- jazz-tools@0.8.29
+- jazz-browser-media-images@0.8.29
+
+## 0.1.20
+
+### Patch Changes
+
+- jazz-react@0.8.28
+- jazz-tools@0.8.28
+- jazz-browser-media-images@0.8.28
+
+## 0.1.19
+
+### Patch Changes
+
+- jazz-react@0.8.27
+- jazz-tools@0.8.27
+- jazz-browser-media-images@0.8.27
+
+## 0.1.18
+
+### Patch Changes
+
+- Updated dependencies [59d37df]
+  - jazz-react@0.8.26
+
+## 0.1.17
+
+### Patch Changes
+
+- jazz-browser-media-images@0.8.24
+- jazz-react@0.8.24
+
+## 0.1.16
+
+### Patch Changes
+
+- Updated dependencies [d348c2d]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - jazz-tools@0.8.23
+  - jazz-react@0.8.23
+  - jazz-browser-media-images@0.8.23
+
+## 0.1.15
+
+### Patch Changes
+
+- Updated dependencies [59cc64d]
+  - jazz-react@0.8.22
+  - jazz-browser-media-images@0.8.22
+
+## 0.1.14
+
+### Patch Changes
+
+- Updated dependencies [149ca97]
+  - jazz-tools@0.8.21
+  - jazz-react@0.8.21
+  - jazz-browser-media-images@0.8.21
+
+## 0.1.13
+
+### Patch Changes
+
+- Updated dependencies [dd9b13f]
+- Updated dependencies [a69ed0b]
+- Updated dependencies [3ef3ff3]
+- Updated dependencies [c6931b8]
+  - jazz-react@0.8.20
+  - jazz-browser-media-images@0.8.20
+
+## 0.1.12
+
+### Patch Changes
+
+- jazz-react@0.8.19
+- jazz-tools@0.8.19
+- jazz-browser-media-images@0.8.19
 
 ## 0.1.11
 

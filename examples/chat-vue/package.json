@@ -1,6 +1,6 @@
 {
   "name": "chat-vue",
-  "version": "0.0.4-group-inheritance.0",
+  "version": "0.0.17",
   "private": true,
   "type": "module",
   "scripts": {

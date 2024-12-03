@@ -1,13 +1,140 @@
 # jazz-react
 
-## 0.8.19-group-inheritance.0
+## 0.8.34
 
 ### Patch Changes
 
-- Updated dependencies [8b87117]
-  - jazz-tools@0.8.19-group-inheritance.0
-  - cojson@0.8.19-group-inheritance.0
-  - jazz-browser@0.8.19-group-inheritance.0
+- Updated dependencies [e4f110f]
+  - cojson@0.8.34
+  - jazz-browser@0.8.34
+  - jazz-tools@0.8.34
+
+## 0.8.33
+
+### Patch Changes
+
+- Updated dependencies [3cb27e1]
+  - jazz-browser@0.8.33
+
+## 0.8.32
+
+### Patch Changes
+
+- Updated dependencies [df42b2b]
+- Updated dependencies [df42b2b]
+  - cojson@0.8.32
+  - jazz-tools@0.8.32
+  - jazz-browser@0.8.32
+
+## 0.8.31
+
+### Patch Changes
+
+- Updated dependencies [e511d6d]
+  - cojson@0.8.31
+  - jazz-browser@0.8.31
+  - jazz-tools@0.8.31
+
+## 0.8.30
+
+### Patch Changes
+
+- Updated dependencies [0a2fae3]
+- Updated dependencies [99cda2f]
+  - cojson@0.8.30
+  - jazz-browser@0.8.30
+  - jazz-tools@0.8.30
+
+## 0.8.29
+
+### Patch Changes
+
+- Updated dependencies [dcc9c2e]
+- Updated dependencies [699553f]
+  - cojson@0.8.29
+  - jazz-browser@0.8.29
+  - jazz-tools@0.8.29
+
+## 0.8.28
+
+### Patch Changes
+
+- Updated dependencies [605734c]
+  - cojson@0.8.28
+  - jazz-browser@0.8.28
+  - jazz-tools@0.8.28
+
+## 0.8.27
+
+### Patch Changes
+
+- Updated dependencies [75fdff4]
+  - cojson@0.8.27
+  - jazz-browser@0.8.27
+  - jazz-tools@0.8.27
+
+## 0.8.26
+
+### Patch Changes
+
+- 59d37df: add autologin option to DemoAuth to skip login
+
+## 0.8.24
+
+### Patch Changes
+
+- jazz-browser@0.8.24
+
+## 0.8.23
+
+### Patch Changes
+
+- Updated dependencies [6f745be]
+- Updated dependencies [d348c2d]
+- Updated dependencies [124bf67]
+- Updated dependencies [e442bb8]
+- Updated dependencies [6902b5b]
+- Updated dependencies [1a0cd3d]
+  - cojson@0.8.23
+  - jazz-tools@0.8.23
+  - jazz-browser@0.8.23
+
+## 0.8.22
+
+### Patch Changes
+
+- 59cc64d: Trigger invite accept on hashchange
+- Updated dependencies [f6bc8af]
+  - jazz-browser@0.8.22
+
+## 0.8.21
+
+### Patch Changes
+
+- Updated dependencies [0f30eea]
+- Updated dependencies [149ca97]
+  - cojson@0.8.21
+  - jazz-tools@0.8.21
+  - jazz-browser@0.8.21
+
+## 0.8.20
+
+### Patch Changes
+
+- dd9b13f: Move auto login check to useEffect
+- a69ed0b: Fix the Jazz.Provider initialization when multiple storage options are provided
+- 3ef3ff3: Remove typescript from the direct dependencies
+- c6931b8: Add user prop to demo auth to skip login on demos
+  - jazz-browser@0.8.20
+
+## 0.8.19
+
+### Patch Changes
+
+- Updated dependencies [9c2aadb]
+  - cojson@0.8.19
+  - jazz-browser@0.8.19
+  - jazz-tools@0.8.19
 
 ## 0.8.18
 

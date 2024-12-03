@@ -12,13 +12,28 @@ export const docNavigationItems = [
       {
         name: "Guide",
         href: "/docs/guide",
-        done: 50,
+        done: {
+          react: 100,
+          "react-native": 0,
+          vue: 0,
+          svelte: 0,
+        },
       },
     ],
   },
   {
-    name: "Project Setup",
+    name: "Project setup",
     items: [
+      {
+        name: "Installation",
+        href: "/docs/project-setup",
+        done: {
+          react: 100,
+          vue: 100,
+          "react-native": 100,
+          svelte: 0,
+        },
+      },
       {
         // jazz mesh, setting api key, free plan, unlimited
         name: "Sync and storage",
@@ -26,27 +41,14 @@ export const docNavigationItems = [
         done: 100,
       },
       {
-        name: "React",
-        href: "/docs/project-setup/react",
-        done: 80,
-      },
-      {
-        name: "React Native",
-        href: "/docs/project-setup/react-native",
-      },
-      {
-        name: "Next.js",
-        href: "/docs/project-setup/next",
-      },
-      {
-        name: "Node.JS / Server Workers",
+        name: "Node.JS / server workers",
         href: "/docs/project-setup/server-side",
         done: 80,
       },
     ],
   },
   {
-    name: "Defining Schemas",
+    name: "Defining schemas",
     items: [
       {
         name: "CoValues",
@@ -54,7 +56,7 @@ export const docNavigationItems = [
         done: 20,
       },
       {
-        name: "Accounts & Migrations",
+        name: "Accounts & migrations",
         href: "/docs/schemas/accounts",
         done: 0,
       },
@@ -64,57 +66,92 @@ export const docNavigationItems = [
     name: "Using CoValues",
     items: [
       {
-        name: "Creation & Ownership",
+        name: "Creation & ownership",
         href: "/docs/covalues/creation",
         done: 0,
       },
       {
-        name: "Subscribing & Deep Loading",
+        name: "Subscribing & deep loading",
         href: "/docs/covalues/reading",
         done: 0,
       },
       {
-        name: "Updating & Deleting",
+        name: "Updating & deleting",
         href: "/docs/covalues/updating",
         done: 0,
       },
       {
-        name: "Metadata & Time-travel",
+        name: "Metadata & time-travel",
         href: "/docs/covalues/metadata",
         done: 0,
       },
     ],
   },
   {
-    name: "Groups, Permissions & Sharing",
+    name: "Groups, permissions & sharing",
     items: [
       {
-        name: "Groups as Permission Scopes",
+        name: "Groups as permission scopes",
         href: "/docs/groups/intro",
         done: 0,
       },
       {
-        name: "Public Sharing & Invites",
+        name: "Public sharing & Invites",
         href: "/docs/groups/sharing",
         done: 0,
       },
       {
-        name: "Group Inheritance",
+        name: "Group inheritance",
         href: "/docs/groups/inheritance",
         done: 0,
       },
     ],
   },
   {
-    name: "Authentication",
+    name: "Authentication methods",
     items: [
       {
-        name: "Auth Methods Overview",
+        name: "Overview",
         href: "/docs/authentication/auth-methods",
-        done: 0,
+        done: {
+          react: 50,
+          vue: 0,
+          "react-native": 0,
+          svelte: 0,
+        },
       },
       {
-        name: "Writing Your Own",
+        name: "Passphrase",
+        href: "/docs/authentication/auth-methods#passphrase",
+        done: {
+          react: 50,
+          vue: 0,
+          "react-native": 0,
+          svelte: 0,
+        },
+      },
+      {
+        name: "Passkey",
+        href: "/docs/authentication/auth-methods#passkey",
+        done: {
+          react: 50,
+          vue: 0,
+          "react-native": 0,
+          svelte: 0,
+        },
+      },
+      {
+        name: "Clerk",
+        href: "/docs/authentication/auth-methods#clerk",
+        done: {
+          react: 50,
+          vue: 0,
+          "react-native": 0,
+          svelte: 0,
+        },
+      },
+      {
+        name: "Writing your own",
         href: "/docs/authentication/writing-your-own",
         done: 0,
       },
@@ -125,7 +162,7 @@ export const docNavigationItems = [
     items: [
       {
         name: "Example apps",
-        href: "/docs/examples",
+        href: "/examples",
         done: 30,
       },
       {

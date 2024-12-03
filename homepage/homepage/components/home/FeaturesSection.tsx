@@ -1,6 +1,7 @@
 import { ServerWorkersDiagram } from "@/components/home/ServerWorkersDiagram";
 import { ClerkLogo } from "@/components/icons/ClerkLogo";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
+import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
@@ -124,10 +125,7 @@ export function FeaturesSection() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 lg:gap-8">
         {features.map(({ title, icon: Icon, description, illustration }) => (
-          <div
-            key={title}
-            className="col-span-2 border rounded-xl shadow-sm overflow-hidden"
-          >
+          <Card key={title} className="col-span-2 overflow-hidden">
             <div className="h-48 flex w-full items-center justify-center">
               {illustration}
             </div>
@@ -137,7 +135,7 @@ export function FeaturesSection() {
               </h3>
               <Prose size="sm">{description}</Prose>
             </div>
-          </div>
+          </Card>
         ))}
 
         <div className="border p-4 sm:p-8 shadow-sm rounded-xl col-span-2 sm:col-span-4 space-y-5">

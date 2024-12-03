@@ -3,9 +3,9 @@ import { connectedPeers } from "cojson/src/streamUtils.ts";
 import { describe, expect, expectTypeOf, test } from "vitest";
 import {
   Account,
+  CoFeed,
   CoList,
   CoMap,
-  CoStream,
   ID,
   Profile,
   SessionID,
@@ -28,7 +28,7 @@ class InnerMap extends CoMap {
   stream = co.ref(TestStream);
 }
 
-class TestStream extends CoStream.Of(co.ref(() => InnermostMap)) {}
+class TestStream extends CoFeed.Of(co.ref(() => InnermostMap)) {}
 
 class InnermostMap extends CoMap {
   value = co.string;

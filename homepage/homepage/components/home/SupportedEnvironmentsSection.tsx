@@ -31,16 +31,16 @@ export function SupportedEnvironmentsSection() {
       icon: <ReactNativeLogo />,
     },
     {
+      name: "Vue",
+      icon: <VueLogo />,
+    },
+    {
       name: "Node.js",
       icon: <NodejsLogo />,
     },
   ];
 
   const comingSoon = [
-    {
-      name: "Vue",
-      icon: <VueLogo />,
-    },
     {
       name: "Svelte",
       icon: <SvelteLogo />,

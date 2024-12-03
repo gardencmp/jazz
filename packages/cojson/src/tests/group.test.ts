@@ -42,7 +42,7 @@ test("Can create a CoStream in a group", () => {
   expect(stream instanceof RawCoStream).toEqual(true);
 });
 
-test("Can create a BinaryCoStream in a group", () => {
+test("Can create a FileStream in a group", () => {
   const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
   const group = node.createGroup();
