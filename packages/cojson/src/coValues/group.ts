@@ -2,7 +2,14 @@ import { base58 } from "@scure/base";
 import { CoID } from "../coValue.js";
 import { CoValueUniqueness } from "../coValueCore.js";
 import { Encrypted, KeyID, KeySecret, Sealed } from "../crypto/crypto.js";
-import { AgentID, isAgentID } from "../ids.js";
+import {
+  AgentID,
+  getChildGroupId,
+  getParentGroupId,
+  isAgentID,
+  isChildGroupReference,
+  isParentGroupReference,
+} from "../ids.js";
 import { JsonObject } from "../jsonValue.js";
 import { Role } from "../permissions.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
@@ -100,32 +107,36 @@ export class RawGroup<
     return roleInfo;
   }
 
-  getParentGroups(): RawGroup[] {
-    return (
-      this.keys().filter((key) =>
-        key.startsWith("parent_"),
-      ) as `parent_${CoID<RawGroup>}`[]
-    ).map((parentKey) => {
-      const parent = this.core.node.expectCoValueLoaded(
-        parentKey.slice("parent_".length) as CoID<RawGroup>,
-        "Expected parent group to be loaded",
-      );
-      return expectGroup(parent.getCurrentContent());
-    });
+  getParentGroups() {
+    const groups: RawGroup[] = [];
+
+    for (const key of this.keys()) {
+      if (isParentGroupReference(key)) {
+        const parent = this.core.node.expectCoValueLoaded(
+          getParentGroupId(key),
+          "Expected parent group to be loaded",
+        );
+        groups.push(expectGroup(parent.getCurrentContent()));
+      }
+    }
+
+    return groups;
   }
 
-  getChildGroups(): RawGroup[] {
-    return (
-      this.keys().filter((key) =>
-        key.startsWith("child_"),
-      ) as `child_${CoID<RawGroup>}`[]
-    ).map((childKey) => {
-      const child = this.core.node.expectCoValueLoaded(
-        childKey.slice("child_".length) as CoID<RawGroup>,
-        "Expected child group to be loaded",
-      );
-      return expectGroup(child.getCurrentContent());
-    });
+  getChildGroups() {
+    const groups: RawGroup[] = [];
+
+    for (const key of this.keys()) {
+      if (isChildGroupReference(key)) {
+        const child = this.core.node.expectCoValueLoaded(
+          getChildGroupId(key),
+          "Expected child group to be loaded",
+        );
+        groups.push(expectGroup(child.getCurrentContent()));
+      }
+    }
+
+    return groups;
   }
 
   /**
@@ -262,10 +273,10 @@ export class RawGroup<
       "trusting",
     );
 
-    console.log("Setting", `readKey`, "to", newReadKey.id, "in", this.id);
-
     this.set("readKey", newReadKey.id, "trusting");
 
+    // when we rotate our readKey (because someone got kicked out), we also need to (recursively)
+    // rotate the readKeys of all child groups (so they are kicked out there as well)
     for (const parent of this.getParentGroups()) {
       const { id: parentReadKeyID, secret: parentReadKeySecret } =
         parent.core.getCurrentReadKey();
@@ -274,13 +285,6 @@ export class RawGroup<
           "Can't reveal new child key to parent where we don't have access to the parent read key",
         );
       }
-
-      console.log(
-        "Setting",
-        `${newReadKey.id}_for_${parentReadKeyID}`,
-        "in",
-        this.id,
-      );
 
       this.set(
         `${newReadKey.id}_for_${parentReadKeyID}`,
@@ -296,7 +300,6 @@ export class RawGroup<
     }
 
     for (const child of this.getChildGroups()) {
-      console.log("Rotating child", child.id);
       child.rotateReadKey();
     }
   }

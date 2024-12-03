@@ -382,8 +382,8 @@ export class SQLiteStorage {
                   return [];
                 }
 
-                return parsedChanges
-                  .map(
+                return cojsonInternals.getGroupDependentKeyList(
+                  parsedChanges.map(
                     (change) =>
                       change &&
                       typeof change === "object" &&
@@ -391,21 +391,8 @@ export class SQLiteStorage {
                       change.op === "set" &&
                       "key" in change &&
                       change.key,
-                  )
-                  .flatMap((key) =>
-                    typeof key === "string"
-                      ? key.startsWith("co_")
-                        ? [key as CojsonInternalTypes.RawCoID]
-                        : key.startsWith("parent_co_")
-                          ? [
-                              key.replace(
-                                "parent_",
-                                "",
-                              ) as CojsonInternalTypes.RawCoID,
-                            ]
-                          : []
-                      : [],
-                  );
+                  ),
+                );
               }),
             )
         : parsedHeader?.ruleset.type === "ownedByGroup"

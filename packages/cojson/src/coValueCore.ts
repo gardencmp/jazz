@@ -13,7 +13,12 @@ import {
   SignerID,
   StreamingHash,
 } from "./crypto/crypto.js";
-import { RawCoID, SessionID, TransactionID } from "./ids.js";
+import {
+  RawCoID,
+  SessionID,
+  TransactionID,
+  getGroupDependentKeyList,
+} from "./ids.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { LocalNode, ResolveAccountAgentError } from "./localNode.js";
@@ -995,15 +1000,7 @@ export class CoValueCore {
   /** @internal */
   getDependedOnCoValuesUncached(): RawCoID[] {
     return this.header.ruleset.type === "group"
-      ? [
-          ...expectGroup(this.getCurrentContent())
-            .keys()
-            .filter((k): k is RawAccountID => k.startsWith("co_")),
-          ...expectGroup(this.getCurrentContent())
-            .keys()
-            .filter((k) => k.startsWith("parent_"))
-            .map((k) => k.replace("parent_", "") as RawCoID),
-        ]
+      ? getGroupDependentKeyList(expectGroup(this.getCurrentContent()).keys())
       : this.header.ruleset.type === "ownedByGroup"
         ? [
             this.header.ruleset.group,

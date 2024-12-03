@@ -103,19 +103,6 @@ describe("Group inheritance", () => {
 
     group.extend(parentGroup);
 
-    console.log(
-      group.id,
-      group._raw.core.getDependedOnCoValuesUncached(),
-      parentGroup.id,
-    );
-
-    console.log(
-      (group._raw.core.getCurrentContent() as RawGroup)
-        .keys()
-        .filter((k) => k.startsWith("parent_"))
-        .map((k) => k.replace("parent_", "")),
-    );
-
     const reader = await Account.createAs(me, {
       creationProps: { name: "Reader" },
     });
