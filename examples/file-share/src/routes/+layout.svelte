@@ -1,5 +1,6 @@
 <script lang="ts">
   import { PasskeyAuthBasicUI, usePasskeyAuth } from 'jazz-svelte';
+  import { Toaster } from 'svelte-sonner';
   import '../app.css';
   import { Provider } from '$lib/jazz';
 
@@ -12,6 +13,8 @@
 <svelte:head>
   <title>File Share</title>
 </svelte:head>
+
+<Toaster richColors />
 
 <div class="fixed bottom-4 right-4">
   <PasskeyAuthBasicUI state={auth.state} />

@@ -5,12 +5,11 @@
   import { File, Link2, FileDown } from 'lucide-svelte';
   import { FileStream, type ID } from 'jazz-tools';
   import { formatFileSize } from '$lib/utils';
+  import { toast } from 'svelte-sonner';
 
   const { me } = useAccount();
   const fileId = $page.params.fileId;
   const ownerId = $page.params.ownerId;
-
-  let error = $state('');
 
   const file = $state(useCoState(SharedFile, fileId as ID<SharedFile>, {}));
 
@@ -18,31 +17,30 @@
   const hasAccess = $derived(!!file.current?.file);
 
   async function downloadFile() {
-    if (!(file.current?._refs.file?.id && me)) {
-      error = 'Failed to download file';
+    if (!file.current || !file.current._refs.file?.id || !me) {
+      toast.error('Failed to download file');
       return;
     }
 
     try {
-      // Add a null check before accessing the file ID
-      const fileId = file.current?._refs.file?.id;
-      if (!fileId) {
-        alert('No file available for download.');
+      const fileId = file.current._refs.file.id;
+      const blob = await FileStream.loadAsBlob(fileId, me, {});
+      if (!blob) {
+        toast.error('Failed to download file');
         return;
       }
-      const blob = await FileStream.loadAsBlob(fileId, me, {});
-      if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.current?.name || 'download';
+      a.download = file.current.name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success('File downloaded successfully');
     } catch (error) {
       console.error('Error downloading file:', error);
-      alert('Failed to download file. Please try again.');
+      toast.error('Failed to download file');
     }
   }
 
@@ -51,10 +49,10 @@
     try {
       const fileUrl = `${window.location.origin}/file/${file.current._owner?.id}/${file.current.id}`;
       await navigator.clipboard.writeText(fileUrl);
-      alert('Share link copied to clipboard!');
+      toast.success('Share link copied to clipboard');
     } catch (error) {
       console.error('Error sharing file:', error);
-      alert('Failed to create share link. Please try again.');
+      toast.error('Failed to create share link');
     }
   }
 </script>
@@ -76,7 +74,12 @@
         </div>
         <div>
           <h1 class="text-xl font-semibold text-gray-900">{file.current.name}</h1>
-          <p class="text-sm text-gray-500">{formatFileSize(file.current.size)}</p>
+          <p class="text-sm text-gray-500">
+            {#if file.current._owner?.profile?.name}
+              {isOwner ? 'Owned by you' : `Shared by ${file.current._owner.profile.name}`} •
+            {/if}
+            {formatFileSize(file.current.size)}
+          </p>
         </div>
       </div>
 
@@ -88,7 +91,6 @@
           <FileDown size={20} />
           <span>Download</span>
         </button>
-
         {#if isOwner}
           <button
             onclick={shareFile}
@@ -100,14 +102,9 @@
         {/if}
       </div>
     </div>
-    {#if error}
-      <div class="mt-4 text-red-500">{error}</div>
-    {/if}
   </div>
 {:else}
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <div class="rounded-lg border border-gray-200 bg-white p-8 text-center">
-      <p class="text-gray-500">Loading file...</p>
-    </div>
+    <div class="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">Loading...</div>
   </div>
 {/if}

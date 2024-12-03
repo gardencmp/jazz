@@ -1,23 +1,35 @@
 <script lang="ts">
-  import { formatFileSize } from '$lib/utils';
   import { slide } from 'svelte/transition';
   import { SharedFile } from '$lib/schema';
   import { type Account, FileStream } from 'jazz-tools';
   import { File, FileDown, Trash2, Link2 } from 'lucide-svelte';
   import { useAccount } from '$lib/jazz';
   import { goto } from '$app/navigation';
+  import { toast } from 'svelte-sonner';
+  import { formatFileSize } from '$lib/utils';
 
-  export let file: SharedFile;
-  export let loading = false;
-  export let onDelete: (file: SharedFile) => void;
+  const { file, loading = false, onDelete }: {
+    file: SharedFile,
+    loading?: boolean,
+    onDelete: (file: SharedFile) => void
+  } = $props();
 
   const { me } = useAccount();
-  const isOwner = me?.id === file._owner?.id;
+  const isOwner = $derived(me?.id === file._owner?.id);
 
   async function downloadFile() {
+    if (!file._refs.file?.id || !me) {
+      toast.error('Failed to download file');
+      return;
+    }
+
     try {
-      const blob = await FileStream.loadAsBlob(file._refs.file.id, file._owner as Account, {});
-      if (!blob) return;
+      const fileId = file._refs.file.id;
+      const blob = await FileStream.loadAsBlob(fileId, me, {});
+      if (!blob) {
+        toast.error('Failed to download file');
+        return;
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -26,8 +38,10 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success('File downloaded successfully');
     } catch (error) {
       console.error('Error downloading file:', error);
+      toast.error('Failed to download file');
     }
   }
 
@@ -35,10 +49,10 @@
     try {
       const fileUrl = `${window.location.origin}/file/${file._owner?.id}/${file.id}`;
       await navigator.clipboard.writeText(fileUrl);
-      alert('Share link copied to clipboard!');
+      toast.success('Share link copied to clipboard');
     } catch (error) {
       console.error('Error sharing file:', error);
-      alert('Failed to create share link. Please try again.');
+      toast.error('Failed to create share link');
     }
   }
 
@@ -48,7 +62,7 @@
 </script>
 
 <div
-  class="group relative flex items-center justify-between rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+  class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
   transition:slide|local={{ duration: 200 }}
 >
   <div class="flex items-center space-x-4">
@@ -69,7 +83,7 @@
     </div>
   </div>
 
-  <div class="flex items-center space-x-3">
+  <div class="flex items-center space-x-2">
     {#if loading}
       <div class="text-sm text-gray-500">Uploading...</div>
     {:else}
