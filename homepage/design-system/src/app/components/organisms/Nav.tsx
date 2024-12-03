@@ -11,9 +11,15 @@ import clsx from "clsx";
 import { ChevronDownIcon, MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  ComponentType,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { BreadCrumb } from "../molecules/Breadcrumb";
-import { ThemeToggle } from "../molecules/ThemeToggle";
 import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type NavItemProps = {
@@ -32,6 +38,7 @@ type NavProps = {
   docNav?: ReactNode;
   cta?: ReactNode;
   socials?: SocialLinksProps;
+  themeToggle: ComponentType<{ className?: string }>;
 };
 
 function NavItem({
@@ -112,7 +119,14 @@ function NavItem({
   );
 }
 
-export function MobileNav({ mainLogo, items, docNav, cta, socials }: NavProps) {
+export function MobileNav({
+  mainLogo,
+  items,
+  docNav,
+  cta,
+  socials,
+  themeToggle: ThemeToggle,
+}: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);

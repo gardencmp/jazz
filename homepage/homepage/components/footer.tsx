@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { socials } from "@/lib/socials";
 import { GcmpLogo } from "gcmp-design-system/src/app/components/atoms/logos/GcmpLogo";
 import { Footer } from "gcmp-design-system/src/app/components/organisms/Footer";
@@ -8,6 +9,7 @@ export function JazzFooter() {
       logo={<GcmpLogo monochrome className="w-36" />}
       companyName="Garden Computing, Inc."
       socials={socials}
+      themeToggle={ThemeToggle}
       sections={[
         {
           title: "About",

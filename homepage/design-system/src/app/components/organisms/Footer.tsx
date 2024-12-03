@@ -3,8 +3,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
-import { ThemeToggle } from "../molecules/ThemeToggle";
+import { ComponentType, ReactNode } from "react";
 import { NewsletterForm } from "./NewsletterForm";
 import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
@@ -22,6 +21,7 @@ type FooterProps = {
   companyName: string;
   sections: FooterSection[];
   socials: SocialLinksProps;
+  themeToggle: ComponentType<{ className?: string }>;
 };
 
 function Copyright({
@@ -38,7 +38,13 @@ function Copyright({
   );
 }
 
-export function Footer({ logo, companyName, sections, socials }: FooterProps) {
+export function Footer({
+  logo,
+  companyName,
+  sections,
+  socials,
+  themeToggle: ThemeToggle,
+}: FooterProps) {
   return (
     <footer className="w-full py-8 mt-12 md:mt-20">
       <div className="container grid gap-8 md:gap-12">

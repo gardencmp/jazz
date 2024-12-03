@@ -3,10 +3,14 @@
 import clsx from "clsx";
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { UseThemeProps } from "next-themes/dist/types";
 import { useEffect, useState } from "react";
 
-export function ThemeToggle({ className }: { className?: string }) {
-  let { resolvedTheme, setTheme } = useTheme();
+export function ThemeToggle({
+  className,
+  resolvedTheme,
+  setTheme,
+}: { className?: string } & UseThemeProps) {
   let otherTheme = resolvedTheme === "dark" ? "light" : "dark";
   let [mounted, setMounted] = useState(false);
 
