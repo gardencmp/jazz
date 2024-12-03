@@ -1,5 +1,23 @@
 # jazz-browser-media-images
 
+## 0.8.34
+
+### Patch Changes
+
+- 9ca25d1: Rename passkey and clerk examples
+- Updated dependencies [e4f110f]
+  - cojson@0.8.34
+  - jazz-browser-auth-clerk@0.8.34
+  - jazz-react@0.8.34
+  - jazz-tools@0.8.34
+
+## 0.8.33
+
+### Patch Changes
+
+- jazz-browser-auth-clerk@0.8.33
+- jazz-react@0.8.33
+
 ## 0.8.32
 
 ### Patch Changes

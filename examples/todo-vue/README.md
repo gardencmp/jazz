@@ -1,39 +1,35 @@
-# todo-vue
+# Todo list example with Jazz and Vue
 
-This template should help get you started developing with Vue 3 in Vite.
+## Installing & running the example locally
 
-## Recommended IDE Setup
+(This requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-pnpm install
+Start by downloading the [jazz repository](https://github.com/garden-co/jazz):
+```bash
+npx degit gardencmp/jazz jazz
 ```
 
-### Compile and Hot-Reload for Development
+Go to the todo-vue example directory:
+```bash
+cd jazz/examples/todo-vue
+```
 
-```sh
+Install and build dependencies:
+```bash
+pnpm i && npx turbo build
+```
+
+Start the dev server:
+```bash
 pnpm dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## Questions / problems / feedback
 
-```sh
-pnpm build
-```
+If you have feedback, let us know on [Discord](https://discord.gg/utDMjHYg42) or open an issue or PR to fix something that seems wrong.
 
-### Lint with [ESLint](https://eslint.org/)
+## Configuration: sync server
 
-```sh
-pnpm lint
-```
+By default, the example app uses [Jazz Cloud](https://jazz.tools/cloud) (`wss://cloud.jazz.tools`) - so cross-device use, invites and collaboration should just work.
+
+You can also run a local sync server by running `npx jazz-run sync` and adding the query param `?sync=ws://localhost:4200` to the URL of the example app (for example: `http://localhost:5173/?peer=ws://localhost:4200`), or by setting the `sync` parameter of `JazzProvider` in [./src/main.ts](./src/main.ts).

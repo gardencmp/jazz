@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-todo",
   "private": true,
-  "version": "0.0.126",
+  "version": "0.0.128",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,8 +16,8 @@
     "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "jazz-react": "workspace:0.8.32",
-    "jazz-tools": "workspace:0.8.32",
+    "jazz-react": "workspace:0.8.34",
+    "jazz-tools": "workspace:0.8.34",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",

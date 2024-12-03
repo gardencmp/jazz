@@ -1,25 +1,34 @@
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { SideNavItem } from "@/components/SideNavItem";
+import { Framework } from "@/lib/framework";
 import { clsx } from "clsx";
 import React from "react";
 
 interface SideNavItem {
   name: string;
   href?: string;
-  done?: number;
+  done?:
+    | number
+    | {
+        [key in Framework]: number;
+      };
   items?: SideNavItem[];
 }
 export function SideNav({
   items,
   children,
+  footer,
   className,
 }: {
   items: SideNavItem[];
   className?: string;
   children?: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
     <div className={clsx(className, "text-sm space-y-5")}>
+      {children}
+
       <div className="flex items-center gap-2">
         <span className="inline-block size-2 rounded-full bg-yellow-400"></span>{" "}
         Documentation coming soon
@@ -32,7 +41,7 @@ export function SideNav({
             items.map(({ name, href, items, done }) => (
               <ul key={name}>
                 <li>
-                  <SideNavItem href={done === 0 ? "/docs/coming-soon" : href}>
+                  <SideNavItem href={href}>
                     {done == 0 && (
                       <span className="mr-1.5 inline-block size-2 rounded-full bg-yellow-400"></span>
                     )}
@@ -61,7 +70,7 @@ export function SideNav({
         </div>
       ))}
 
-      {children}
+      {footer}
     </div>
   );
 }
