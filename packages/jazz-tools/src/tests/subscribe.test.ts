@@ -1,23 +1,6 @@
-const Crypto = await WasmCrypto.create();
-import { connectedPeers } from "cojson/src/streamUtils.js";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
-import {
-  Account,
-  CoFeed,
-  CoList,
-  CoMap,
-  WasmCrypto,
-  co,
-  createJazzContext,
-  fixedCredentialsAuth,
-  isControlledAccount,
-} from "../index.web.js";
-import {
-  FileStream,
-  Group,
-  randomSessionProvider,
-  subscribeToCoValue,
-} from "../internal.js";
+import { Account, CoFeed, CoList, CoMap, co } from "../index.web.js";
+import { FileStream, Group, subscribeToCoValue } from "../internal.js";
 import { setupAccount, waitFor } from "./utils.js";
 
 class ChatRoom extends CoMap {

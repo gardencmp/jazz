@@ -36,7 +36,8 @@ describe("createCoValueObservable", () => {
 
     testMap.color = "blue";
 
-    expect(mockListener).toHaveBeenCalled();
+    await waitFor(() => mockListener.mock.calls.length > 0);
+
     expect(observable.getCurrentValue()).toMatchObject({
       id: testMap.id,
       color: "blue",
