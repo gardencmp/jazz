@@ -567,6 +567,9 @@ importers:
       jazz-tools:
         specifier: workspace:*
         version: link:../../packages/jazz-tools
+      lucide-svelte:
+        specifier: ^0.463.0
+        version: 0.463.0(svelte@5.2.7)
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
@@ -8642,6 +8645,11 @@ packages:
     resolution: {integrity: sha512-qiWcojRXEwDiSimMX1+arnxha+ROJzZjJaVvCC0rsG6a9pUPjZePXSq7em4ZKMp0NDm1hyzPNkM7UaWC3LU2AA==}
     peerDependencies:
       react: 18.3.1
+
+  lucide-svelte@0.463.0:
+    resolution: {integrity: sha512-zKfqFlcrQ/zdcbxmuDs92hA+ksRIi3swJw1sZ73CX6ShjnbEujQlppzZSwj+fqyNGPB4s7MeRIudCQa5s8/Scw==}
+    peerDependencies:
+      svelte: ^3 || ^4 || ^5.0.0-next.42
 
   lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
@@ -20001,6 +20009,10 @@ snapshots:
   lucide-react@0.274.0(react@18.3.1):
     dependencies:
       react: 18.3.1
+
+  lucide-svelte@0.463.0(svelte@5.2.7):
+    dependencies:
+      svelte: 5.2.7
 
   lunr@2.3.9: {}
 

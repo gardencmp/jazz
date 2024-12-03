@@ -39,6 +39,7 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "jazz-svelte": "workspace:*",
-    "jazz-tools": "workspace:*"
+    "jazz-tools": "workspace:*",
+    "lucide-svelte": "^0.463.0"
   }
 }
