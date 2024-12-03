@@ -221,7 +221,7 @@ export class IDBClient {
     );
   }
 
-  addSignatureAfter({
+  async addSignatureAfter({
     sessionRowID,
     idx,
     signature,
