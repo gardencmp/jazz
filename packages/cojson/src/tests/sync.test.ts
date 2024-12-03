@@ -1437,6 +1437,7 @@ describe("sync - extra tests", () => {
     const reasonableMemoryUsage = 1; // 500 MB
     expect(memoryUsage).toBeLessThan(reasonableMemoryUsage);
   });
+
   test("Node correctly handles and recovers from network partitions", async () => {
     // Create three nodes
     const [admin1, session1] = randomAnonymousAccountAndSessionID();
@@ -1871,6 +1872,34 @@ describe("SyncManager.addPeer", () => {
     // Verify thet the first peer had not been closed again
     expect(closeSpy).not.toHaveBeenCalled();
     expect(firstPeer.closed).toBe(true);
+  });
+
+  test("when adding a server peer the local coValues should be sent to it", async () => {
+    // Setup nodes
+    const client = createTestNode();
+    const jazzCloud = createTestNode();
+
+    // Connect nodes initially
+    const [connectionWithClientAsPeer, jazzCloudConnectionAsPeer] =
+      connectedPeers("connectionWithClient", "jazzCloudConnection", {
+        peer1role: "client",
+        peer2role: "server",
+      });
+
+    jazzCloud.syncManager.addPeer(connectionWithClientAsPeer);
+
+    const group = client.createGroup();
+    const map = group.createMap();
+    map.set("key1", "value1", "trusting");
+
+    client.syncManager.addPeer(jazzCloudConnectionAsPeer);
+
+    await client.syncManager.waitForUploadIntoPeer(
+      jazzCloudConnectionAsPeer.id,
+      map.core.id,
+    );
+
+    expect(jazzCloud.coValuesStore.get(map.id).state.type).toBe("available");
   });
 });
 
