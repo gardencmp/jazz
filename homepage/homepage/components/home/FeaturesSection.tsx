@@ -140,13 +140,13 @@ export function FeaturesSection() {
         ))}
 
         <div className="relative border p-4 sm:p-8 shadow-sm rounded-xl col-span-2 sm:col-span-4 flex flex-col justify-end">
-          <div className="absolute top-6 left-[23%] -right-3 bottom-30">
+          <div className="mb-3 sm:-right-3 sm:bottom-30 sm:absolute sm:left-[40%] sm:top-2 md:top-4 md:left-[23%]">
             <MapSVG spacing={3} />
           </div>
 
           <H3>Jazz Cloud</H3>
           <div className="relative z-10 space-y-4">
-            <Prose className="max-w-[45%]" size="sm">
+            <Prose className="sm:max-w-[45%]" size="sm">
               <p>
                 Jazz Cloud is real-time sync and storage infrastructure that
                 scales your Jazz app up to millions of users.{" "}
