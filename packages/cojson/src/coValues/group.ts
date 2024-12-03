@@ -307,6 +307,12 @@ export class RawGroup<
   }
 
   extend(parent: RawGroup) {
+    if (parent.myRole() !== "admin" || this.myRole() !== "admin") {
+      throw new Error(
+        "To extend a group, the current account must have admin role in both groups",
+      );
+    }
+
     this.set(`parent_${parent.id}`, "extend", "trusting");
     parent.set(`child_${this.id}`, "extend", "trusting");
 

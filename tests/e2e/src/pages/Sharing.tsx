@@ -12,7 +12,7 @@ class SharedCoList extends CoList.Of(co.ref(SharedCoMap)) {}
 export function Sharing() {
   const { me } = useAccount();
   const [id, setId] = useState<ID<SharedCoList> | undefined>(undefined);
-  const [inviteLink, setInviteLink] = useState<string | undefined>(undefined);
+  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
   const coList = useCoState(SharedCoList, id, [{}]);
 
   const createCoList = () => {
@@ -22,7 +22,11 @@ export function Sharing() {
 
     const coList = SharedCoList.create([], { owner: group });
 
-    setInviteLink(createInviteLink(coList, "writer"));
+    setInviteLinks({
+      writer: createInviteLink(coList, "writer"),
+      reader: createInviteLink(coList, "reader"),
+      admin: createInviteLink(coList, "admin"),
+    });
 
     setId(coList.id);
   };
@@ -50,6 +54,18 @@ export function Sharing() {
     }
   };
 
+  const revokeAccess = () => {
+    if (!coList) return;
+
+    const coListGroup = coList._owner as Group;
+
+    for (const member of coListGroup.members) {
+      if (member.account && member.account.id !== me.id) {
+        coListGroup.removeMember(member.account);
+      }
+    }
+  };
+
   useAcceptInvite({
     invitedObjectSchema: SharedCoList,
     onAccept: (id) => {
@@ -61,12 +77,17 @@ export function Sharing() {
     <div>
       <h1>Sharing</h1>
       <p data-testid="id">{coList?.id}</p>
-      <p data-testid="invite-link">{inviteLink}</p>
+      {Object.entries(inviteLinks).map(([role, inviteLink]) => (
+        <p key={role} data-testid={`invite-link-${role}`}>
+          {inviteLink}
+        </p>
+      ))}
       <pre data-testid="values">
         {coList?.map((coMap) => coMap.value).join(", ")}
       </pre>
       {!id && <button onClick={createCoList}>Create a new list!</button>}
       {coList && <button onClick={addCoMap}>Add a new value!</button>}
+      {coList && <button onClick={revokeAccess}>Revoke access!</button>}
       {Boolean(coList?.length) && (
         <button onClick={shareCoMaps}>Share the co-maps!</button>
       )}
