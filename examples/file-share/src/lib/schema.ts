@@ -25,9 +25,11 @@ export class FileShareAccount extends Account {
   /** The account migration is run on account creation and on every log-in.
    *  You can use it to set up the account root and any other initial CoValues you need.
    */
-  migrate(this: FileShareAccount, creationProps?: { name: string }) {
+  async migrate(this: FileShareAccount, creationProps?: { name: string }) {
     super.migrate(creationProps);
-
+    
+    await this._refs.root?.load(); // Why isn't root loaded already?
+    
     // Initialize root if it doesn't exist
     if (!this.root) {
       this.root = FileShareAccountRoot.create(
@@ -39,7 +41,7 @@ export class FileShareAccount extends Account {
     }
 
     // Ensure sharedFiles exists even if root was already created
-    if (!this.root.sharedFiles) {
+    if (!this.root?._refs.sharedFiles) {
       this.root.sharedFiles = ListOfSharedFiles.create([], { owner: this });
     }
   }
